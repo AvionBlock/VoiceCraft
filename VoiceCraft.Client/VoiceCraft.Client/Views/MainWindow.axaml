@@ -8,20 +8,7 @@
         Title="VoiceCraft.Client"
         d:DesignHeight="450"
         d:DesignWidth="800"
-        Background="Transparent"
         Icon="/Assets/avalonia-logo.ico"
-        TransparencyLevelHint="AcrylicBlur"
         mc:Ignorable="d">
-    <Panel>
-        <ExperimentalAcrylicBorder IsHitTestVisible="False">
-            <ExperimentalAcrylicBorder.Material>
-                <ExperimentalAcrylicMaterial BackgroundSource="Digger"
-                                             MaterialOpacity="0.65"
-                                             TintColor="Black"
-                                             TintOpacity="1" />
-            </ExperimentalAcrylicBorder.Material>
-        </ExperimentalAcrylicBorder>
-
-        <views:MainView />
-    </Panel>
+    <views:MainView />
 </Window>

@@ -49,7 +49,11 @@ namespace VoiceCraft.Client
             services.AddSingleton<HistoryRouter<ViewModelBase>>(s => new HistoryRouter<ViewModelBase>(t => (ViewModelBase)s.GetRequiredService(t)));
 
             services.AddSingleton<MainViewModel>();
+            services.AddSingleton<HomeViewModel>();
+
             services.AddSingleton<ServersViewModel>();
+            services.AddSingleton<SettingsViewModel>();
+            services.AddSingleton<CreditsViewModel>();
             return services.BuildServiceProvider();
         }
     }

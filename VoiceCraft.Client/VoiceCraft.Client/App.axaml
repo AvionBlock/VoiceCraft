@@ -11,5 +11,6 @@
 
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://VoiceCraft.Client/Assets/Icons.axaml" />
     </Application.Styles>
 </Application>
