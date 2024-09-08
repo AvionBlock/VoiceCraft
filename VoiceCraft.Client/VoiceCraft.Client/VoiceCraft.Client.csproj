@@ -13,6 +13,10 @@
   <ItemGroup>
     <AvaloniaXaml Remove="Assets\Icons.axaml" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Assets\bgdark.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.1.3" />

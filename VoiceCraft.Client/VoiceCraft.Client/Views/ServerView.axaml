@@ -1,0 +1,39 @@
+<UserControl x:Class="VoiceCraft.Client.Views.ServerView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             x:DataType="vm:ServerViewModel"
+             mc:Ignorable="d">
+    <StackPanel Grid.Row="2"
+                Margin="10"
+                Spacing="5">
+        <TextBlock VerticalAlignment="Center"
+                   FontSize="15"
+                   FontWeight="Bold">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0}:{1}">
+                    <Binding Path="SelectedServer.Ip" />
+                    <Binding Path="SelectedServer.Port" />
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+
+        <TextBlock VerticalAlignment="Center"
+                   FontSize="15"
+                   FontWeight="Bold"
+                   Text="{Binding SelectedServer.Key, StringFormat='Key: {0}'}" />
+
+        <TextBlock VerticalAlignment="Center"
+                   FontSize="15"
+                   FontWeight="Bold"
+                   Text="{Binding PingInfo}" />
+
+        <Button Background="#AA008800">
+            <TextBlock FontSize="16">Connect</TextBlock>
+        </Button>
+    </StackPanel>
+</UserControl>

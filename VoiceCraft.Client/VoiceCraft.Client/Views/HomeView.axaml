@@ -19,6 +19,7 @@
         <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
             <ListBox Grid.Column="0"
                      VerticalAlignment="Top"
+                     Background="#88000000"
                      CornerRadius="0,5,5,0"
                      ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedListItem}">

@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using VoiceCraft.Client.Models;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.HomeViews;
 using VoiceCraft.Client.Views;
@@ -21,6 +22,8 @@ namespace VoiceCraft.Client
         public override void OnFrameworkInitializationCompleted()
         {
             IServiceProvider services = ConfigureServices();
+            var settings = services.GetRequiredService<SettingsModel>();
+            settings.Load();
             var mainViewModel = services.GetRequiredService<MainViewModel>();
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -55,6 +58,9 @@ namespace VoiceCraft.Client
             services.AddSingleton<ServersViewModel>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<CreditsViewModel>();
+            services.AddSingleton<ServerViewModel>();
+            services.AddSingleton<AddServerViewModel>();
+            services.AddSingleton<SettingsModel>();
             return services.BuildServiceProvider();
         }
     }
