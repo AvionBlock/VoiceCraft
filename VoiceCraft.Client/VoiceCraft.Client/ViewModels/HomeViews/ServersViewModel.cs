@@ -1,6 +1,8 @@
 ﻿using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Threading.Tasks;
 using VoiceCraft.Client.Models;
 
 namespace VoiceCraft.Client.ViewModels.HomeViews
@@ -28,6 +30,13 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         {
             _router = router;
             _settings = settings;
+        }
+
+        [RelayCommand]
+        public async Task DeleteServer(ServerModel server)
+        {
+            Settings.Servers.Remove(server);
+            await Settings.SaveAsync();
         }
     }
 }

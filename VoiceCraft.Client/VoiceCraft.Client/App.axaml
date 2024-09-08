@@ -12,5 +12,8 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://VoiceCraft.Client/Assets/Icons.axaml" />
+        <Style Selector="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
     </Application.Styles>
 </Application>

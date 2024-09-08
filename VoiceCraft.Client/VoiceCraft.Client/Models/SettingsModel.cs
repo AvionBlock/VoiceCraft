@@ -16,10 +16,7 @@ namespace VoiceCraft.Client.Models
 
         public async Task SaveAsync()
         {
-            using (var fs = File.OpenWrite(SettingsPath))
-            {
-                await SaveToStreamAsync(this, fs);
-            }
+            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(this));
         }
 
         public void Load()
@@ -31,11 +28,6 @@ namespace VoiceCraft.Client.Models
                 if (settings == null) return;
                 Servers = settings.Servers;
             }
-        }
-
-        private static async Task SaveToStreamAsync(SettingsModel data, Stream stream)
-        {
-            await JsonSerializer.SerializeAsync(stream, data).ConfigureAwait(false);
         }
     }
 }
