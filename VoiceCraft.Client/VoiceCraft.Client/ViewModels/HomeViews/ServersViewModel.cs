@@ -35,7 +35,7 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         [RelayCommand]
         public async Task DeleteServer(ServerModel server)
         {
-            Settings.Servers.Remove(server);
+            Settings.RemoveServer(server);
             await Settings.SaveAsync();
         }
     }

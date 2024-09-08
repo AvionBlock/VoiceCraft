@@ -8,7 +8,6 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
     public partial class AddServerViewModel : ViewModelBase
     {
         public override string Title { get => "Add Server"; protected set => throw new NotSupportedException(); }
-        public event EventHandler<ServerModel>? OnServerAdded;
 
         [ObservableProperty]
         private SettingsModel _settings;
@@ -24,10 +23,9 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         [RelayCommand]
         public void AddServer()
         {
-            Settings.Servers.Add(Server);
+            Settings.AddServer(Server);
             Server = new ServerModel("", "", 9050, 0);
             _ = Settings.SaveAsync();
-            OnServerAdded?.Invoke(this, Server);
         }
     }
 }
