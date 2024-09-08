@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace VoiceCraft.Client.Views
+namespace VoiceCraft.Client.Views.HomeViews
 {
     public partial class CreditsView : UserControl
     {

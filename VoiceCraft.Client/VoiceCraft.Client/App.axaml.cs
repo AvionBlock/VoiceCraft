@@ -6,6 +6,7 @@ using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.ViewModels;
+using VoiceCraft.Client.ViewModels.HomeViews;
 using VoiceCraft.Client.Views;
 
 namespace VoiceCraft.Client

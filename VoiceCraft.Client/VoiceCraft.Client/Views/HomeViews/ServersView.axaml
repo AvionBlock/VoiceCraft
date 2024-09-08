@@ -1,0 +1,63 @@
+<UserControl x:Class="VoiceCraft.Client.Views.HomeViews.ServersView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:m="clr-namespace:VoiceCraft.Client.Models"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             x:DataType="vm:HomeViews.ServersViewModel"
+             mc:Ignorable="d">
+    <Grid ColumnDefinitions="*, 10, Auto, Auto, Auto">
+        <ListBox Background="Transparent"
+                 ItemsSource="{Binding Servers}"
+                 SelectionMode="Multiple">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="CornerRadius" Value="5" />
+                    <Setter Property="Margin" Value="0,0,0,5" />
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type m:ServerModel}">
+                    <StackPanel Orientation="Horizontal" Spacing="15">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Text="{Binding Name}" />
+
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="18"
+                                   FontWeight="Bold">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{} Address: {0}:{1}">
+                                    <Binding Path="Ip" />
+                                    <Binding Path="Port" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Text="{Binding Key, StringFormat='Key: {0}'}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Column="2" Spacing="5">
+            <Button Padding="5" VerticalAlignment="Top">
+                <PathIcon Data="{StaticResource add_regular}" />
+            </Button>
+
+            <Button Padding="5">
+                <PathIcon Data="{StaticResource edit_regular}" />
+            </Button>
+
+            <Button Padding="5">
+                <PathIcon Data="{StaticResource delete_regular}" />
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

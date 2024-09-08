@@ -1,4 +1,4 @@
-<UserControl x:Class="VoiceCraft.Client.Views.ServersView"
+<UserControl x:Class="VoiceCraft.Client.Views.HomeViews.CreditsView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,11 +6,7 @@
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
              d:DesignHeight="450"
              d:DesignWidth="800"
-             x:DataType="vm:ServersViewModel"
+             x:DataType="vm:HomeViews.CreditsViewModel"
              mc:Ignorable="d">
-    <Button HorizontalAlignment="Right"
-            VerticalAlignment="Top"
-            FontSize="20">
-        +
-    </Button>
+    Credits!
 </UserControl>

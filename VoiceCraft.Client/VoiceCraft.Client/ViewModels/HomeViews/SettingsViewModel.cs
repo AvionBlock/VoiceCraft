@@ -1,7 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
+﻿using System;
 
-namespace VoiceCraft.Client.ViewModels
+namespace VoiceCraft.Client.ViewModels.HomeViews
 {
     public partial class SettingsViewModel : ViewModelBase
     {
