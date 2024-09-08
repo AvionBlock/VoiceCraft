@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.SimpleRouter;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System;
-using System.Collections.ObjectModel;
 using VoiceCraft.Client.Models;
 
 namespace VoiceCraft.Client.ViewModels.HomeViews
@@ -8,19 +8,26 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
     public partial class ServersViewModel : ViewModelBase
     {
         public override string Title { get => "Servers"; protected set => throw new NotSupportedException(); }
+        private HistoryRouter<ViewModelBase> _router;
 
         [ObservableProperty]
-        private ObservableCollection<ServerModel> _servers = new ObservableCollection<ServerModel>();
+        private ServerModel? _selectedServer;
 
-        public ServersViewModel()
+        [ObservableProperty]
+        private SettingsModel _settings = default!;
+
+        partial void OnSelectedServerChanged(ServerModel? value)
         {
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
-            _servers.Add(new ServerModel("Test", "127.0.0.1", 9050, 0));
+            if (value == null) return;
+            var model = _router.GoTo<ServerViewModel>();
+            model.SelectedServer = value;
+            SelectedServer = null;
+        }
+
+        public ServersViewModel(HistoryRouter<ViewModelBase> router, SettingsModel settings)
+        {
+            _router = router;
+            _settings = settings;
         }
     }
 }
