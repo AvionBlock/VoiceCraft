@@ -19,6 +19,32 @@ namespace VoiceCraft.Client.Models
         [ObservableProperty]
         private ObservableCollection<ServerModel> _servers = new ObservableCollection<ServerModel>();
 
+        //Voice Settings
+        [ObservableProperty]
+        private int _inputDevice = -1;
+        [ObservableProperty]
+        private int _outputDevice = -1;
+        [ObservableProperty]
+        private float _softLimiterGain = 5.0f;
+        [ObservableProperty]
+        private float _microphoneSensitivity = 0.04f;
+        [ObservableProperty]
+        private bool _directionalHearing = false;
+        [ObservableProperty]
+        private bool _linearProximity = true;
+
+        //Behavior Settings
+        [ObservableProperty]
+        private ushort _clientSidedPort = 8080;
+        [ObservableProperty]
+        private ushort _jitterBufferSize = 80;
+        [ObservableProperty]
+        private bool _hideServerAddresses = false;
+        [ObservableProperty]
+        private bool _clientSidedPositioning = false;
+        [ObservableProperty]
+        private bool _customClientProtocol = false;
+
         public void AddServer(ServerModel server)
         {
             if (string.IsNullOrWhiteSpace(server.Name))
@@ -53,6 +79,18 @@ namespace VoiceCraft.Client.Models
                 var settings = JsonSerializer.Deserialize<SettingsModel>(result);
                 if (settings == null) return;
                 Servers = settings.Servers;
+                InputDevice = settings.InputDevice;
+                OutputDevice = settings.OutputDevice;
+                SoftLimiterGain = settings.SoftLimiterGain;
+                MicrophoneSensitivity = settings.MicrophoneSensitivity;
+                DirectionalHearing = settings.DirectionalHearing;
+                LinearProximity = settings.LinearProximity;
+
+                ClientSidedPort = settings.ClientSidedPort;
+                JitterBufferSize = settings.JitterBufferSize;
+                HideServerAddresses = settings.HideServerAddresses;
+                ClientSidedPositioning = settings.ClientSidedPositioning;
+                CustomClientProtocol = settings.CustomClientProtocol;
             }
         }
     }

@@ -9,7 +9,9 @@
              x:DataType="vm:SettingsViewModel"
              mc:Ignorable="d">
     <StackPanel>
-        <Expander HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundBrush}">
+        <Expander HorizontalAlignment="Stretch"
+                  Background="{DynamicResource BackgroundBrush}"
+                  IsExpanded="{Binding VoiceSettingsExpanded}">
             <Expander.Header>
                 <TextBlock FontWeight="Bold" Text="Voice Settings" />
             </Expander.Header>
@@ -43,19 +45,23 @@
                 </ComboBox>
 
                 <StackPanel>
-                    <TextBlock VerticalAlignment="Center" Text="SoftLimiter Gain: 7db" />
-                    <Slider />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Settings.SoftLimiterGain, StringFormat='SoftLimiter Gain: {0:F1}'}" />
+                    <Slider Maximum="20.0"
+                            Minimum="1.0"
+                            Value="{Binding Settings.SoftLimiterGain}" />
                 </StackPanel>
 
                 <StackPanel>
-                    <TextBlock VerticalAlignment="Center" Text="Microphone Sensitivity: 2db" />
-                    <Slider />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Settings.MicrophoneSensitivity, StringFormat='Microphone Sensitivity: {0:P0}'}" />
+                    <Slider Maximum="1.0"
+                            Minimum="0.0"
+                            Value="{Binding Settings.MicrophoneSensitivity}" />
                 </StackPanel>
 
-                <ToggleButton HorizontalAlignment="Stretch">
+                <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.DirectionalHearing}">
                     <TextBlock Text="Directional Hearing" />
                 </ToggleButton>
-                <ToggleButton HorizontalAlignment="Stretch">
+                <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.LinearProximity}">
                     <TextBlock Text="Linear Proximity" />
                 </ToggleButton>
             </StackPanel>
@@ -63,7 +69,8 @@
 
         <Expander Margin="0,10,0,0"
                   HorizontalAlignment="Stretch"
-                  Background="{DynamicResource BackgroundBrush}">
+                  Background="{DynamicResource BackgroundBrush}"
+                  IsExpanded="{Binding BehaviorSettingsExpanded}">
             <Expander.Header>
                 <TextBlock FontWeight="Bold" Text="Behavior Settings" />
             </Expander.Header>
@@ -74,22 +81,28 @@
                            FontSize="15"
                            Text="Client Sided Port" />
 
-                <NumericUpDown Maximum="65535" Minimum="0" />
+                <NumericUpDown Increment="1"
+                               Maximum="65535"
+                               Minimum="0"
+                               Value="{Binding Settings.ClientSidedPort}" />
 
                 <TextBlock HorizontalAlignment="Left"
                            VerticalAlignment="Center"
                            FontSize="15"
                            Text="Jitter Buffer Size (MS)" />
 
-                <NumericUpDown Maximum="65535" Minimum="0" />
+                <NumericUpDown Increment="1"
+                               Maximum="65535"
+                               Minimum="0"
+                               Value="{Binding Settings.JitterBufferSize}" />
 
-                <ToggleButton HorizontalAlignment="Stretch">
+                <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.HideServerAddresses}">
                     <TextBlock Text="Hide Server Address's" />
                 </ToggleButton>
-                <ToggleButton HorizontalAlignment="Stretch">
+                <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.ClientSidedPositioning}">
                     <TextBlock Text="Client Sided Positioning" />
                 </ToggleButton>
-                <ToggleButton HorizontalAlignment="Stretch">
+                <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.CustomClientProtocol}">
                     <TextBlock Text="Custom Client Protocol" />
                 </ToggleButton>
             </StackPanel>
