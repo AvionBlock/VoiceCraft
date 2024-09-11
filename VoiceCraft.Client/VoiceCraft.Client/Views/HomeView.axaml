@@ -19,7 +19,7 @@
         <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
             <ListBox Grid.Column="0"
                      VerticalAlignment="Top"
-                     Background="#88000000"
+                     Background="{DynamicResource BackgroundBrush}"
                      CornerRadius="0,5,5,0"
                      ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedListItem}">
@@ -31,9 +31,9 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TransitioningContentControl Grid.Column="1"
-                                         Margin="10,0,10,0"
-                                         Content="{Binding Content}" />
+            <ScrollViewer Grid.Column="1" Margin="10,0,10,0">
+                <TransitioningContentControl Content="{Binding Content}" />
+            </ScrollViewer>
         </Grid>
     </Grid>
 </UserControl>

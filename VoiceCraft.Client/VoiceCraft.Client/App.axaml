@@ -5,6 +5,21 @@
              RequestedThemeVariant="Default">
     <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="BackgroundBrush">#88FFFFFF</SolidColorBrush>
+                    <SolidColorBrush x:Key="ForegroundBrush">Black</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="BackgroundBrush">#88000000</SolidColorBrush>
+                    <SolidColorBrush x:Key="ForegroundBrush">White</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
@@ -12,6 +27,7 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://VoiceCraft.Client/Assets/Icons.axaml" />
+        <StyleInclude Source="avares://Notification.Avalonia/Themes/Generic.xaml" />
         <Style Selector="TextBlock">
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>

@@ -8,5 +8,91 @@
              d:DesignWidth="800"
              x:DataType="vm:SettingsViewModel"
              mc:Ignorable="d">
-    Welcome to Avalonia!
+    <StackPanel>
+        <Expander HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundBrush}">
+            <Expander.Header>
+                <TextBlock FontWeight="Bold" Text="Voice Settings" />
+            </Expander.Header>
+            <StackPanel Spacing="10">
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Input Devices" />
+
+                <ComboBox HorizontalAlignment="Stretch">
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Output Devices" />
+
+                <ComboBox HorizontalAlignment="Stretch">
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                </ComboBox>
+
+                <StackPanel>
+                    <TextBlock VerticalAlignment="Center" Text="SoftLimiter Gain: 7db" />
+                    <Slider />
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock VerticalAlignment="Center" Text="Microphone Sensitivity: 2db" />
+                    <Slider />
+                </StackPanel>
+
+                <ToggleButton HorizontalAlignment="Stretch">
+                    <TextBlock Text="Directional Hearing" />
+                </ToggleButton>
+                <ToggleButton HorizontalAlignment="Stretch">
+                    <TextBlock Text="Linear Proximity" />
+                </ToggleButton>
+            </StackPanel>
+        </Expander>
+
+        <Expander Margin="0,10,0,0"
+                  HorizontalAlignment="Stretch"
+                  Background="{DynamicResource BackgroundBrush}">
+            <Expander.Header>
+                <TextBlock FontWeight="Bold" Text="Behavior Settings" />
+            </Expander.Header>
+
+            <StackPanel Spacing="10">
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Client Sided Port" />
+
+                <NumericUpDown Maximum="65535" Minimum="0" />
+
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Jitter Buffer Size (MS)" />
+
+                <NumericUpDown Maximum="65535" Minimum="0" />
+
+                <ToggleButton HorizontalAlignment="Stretch">
+                    <TextBlock Text="Hide Server Address's" />
+                </ToggleButton>
+                <ToggleButton HorizontalAlignment="Stretch">
+                    <TextBlock Text="Client Sided Positioning" />
+                </ToggleButton>
+                <ToggleButton HorizontalAlignment="Stretch">
+                    <TextBlock Text="Custom Client Protocol" />
+                </ToggleButton>
+            </StackPanel>
+        </Expander>
+    </StackPanel>
 </UserControl>

@@ -23,33 +23,33 @@
             <PathIcon Data="{StaticResource arrow_left_regular}" />
         </Button>
 
-        <StackPanel Grid.Row="1"
-                    Margin="20"
-                    Spacing="5">
-            <TextBlock VerticalAlignment="Center"
-                       FontSize="15"
-                       FontWeight="Bold">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0}:{1}">
-                        <Binding Path="SelectedServer.Ip" />
-                        <Binding Path="SelectedServer.Port" />
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
+        <ScrollViewer Grid.Row="1" Margin="20">
+            <StackPanel Spacing="5">
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="15"
+                           FontWeight="Bold">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0}:{1}">
+                            <Binding Path="SelectedServer.Ip" />
+                            <Binding Path="SelectedServer.Port" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
 
-            <TextBlock VerticalAlignment="Center"
-                       FontSize="15"
-                       FontWeight="Bold"
-                       Text="{Binding SelectedServer.Key, StringFormat='Key: {0}'}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="15"
+                           FontWeight="Bold"
+                           Text="{Binding SelectedServer.Key, StringFormat='Key: {0}'}" />
 
-            <TextBlock VerticalAlignment="Center"
-                       FontSize="15"
-                       FontWeight="Bold"
-                       Text="{Binding PingInfo}" />
+                <TextBlock VerticalAlignment="Center"
+                           FontSize="15"
+                           FontWeight="Bold"
+                           Text="{Binding PingInfo}" />
 
-            <Button Background="#AA008800">
-                <TextBlock FontSize="16">Connect</TextBlock>
-            </Button>
-        </StackPanel>
+                <Button Background="#AA008800">
+                    <TextBlock>Connect</TextBlock>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

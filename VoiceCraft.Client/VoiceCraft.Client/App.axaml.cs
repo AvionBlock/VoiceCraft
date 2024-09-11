@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Notification;
 using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -24,7 +25,7 @@ namespace VoiceCraft.Client
             IServiceProvider services = ConfigureServices();
             var settings = services.GetRequiredService<SettingsModel>();
             settings.Load();
-            var mainViewModel = services.GetRequiredService<MainViewModel>();
+            var mainViewModel = services.GetRequiredService<MainWindowViewModel>();
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Line below is needed to remove Avalonia data validation.
@@ -37,7 +38,7 @@ namespace VoiceCraft.Client
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
-                singleViewPlatform.MainView = new MainView
+                singleViewPlatform.MainView = new MainWindow
                 {
                     DataContext = mainViewModel
                 };
@@ -52,7 +53,8 @@ namespace VoiceCraft.Client
 
             services.AddSingleton<HistoryRouter<ViewModelBase>>(s => new HistoryRouter<ViewModelBase>(t => (ViewModelBase)s.GetRequiredService(t)));
 
-            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<NotificationMessageManager>();
             services.AddSingleton<HomeViewModel>();
 
             services.AddSingleton<ServersViewModel>();

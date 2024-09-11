@@ -55,12 +55,6 @@
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
-
-                    <TextBlock Grid.Row="2"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="16"
-                               Text="{Binding Key, StringFormat='Key: {0}'}" />
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

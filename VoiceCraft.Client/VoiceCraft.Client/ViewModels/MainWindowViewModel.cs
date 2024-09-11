@@ -1,18 +1,23 @@
-﻿using Avalonia.SimpleRouter;
+﻿using Avalonia.Notification;
+using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 
 namespace VoiceCraft.Client.ViewModels
 {
-    public partial class MainViewModel : ViewModelBase
+    public partial class MainWindowViewModel : ViewModelBase
     {
         public override string Title { get => "Main View Model"; protected set => throw new NotSupportedException(); }
 
         [ObservableProperty]
         private ViewModelBase _content = default!;
 
-        public MainViewModel(HistoryRouter<ViewModelBase> router)
+        [ObservableProperty]
+        private INotificationMessageManager _manager;
+
+        public MainWindowViewModel(HistoryRouter<ViewModelBase> router, NotificationMessageManager manager)
         {
+            _manager = manager;
             // register route changed event to set content to viewModel, whenever 
             // a route changes
             router.CurrentViewModelChanged += viewModel => Content = viewModel;

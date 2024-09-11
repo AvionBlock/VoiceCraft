@@ -8,32 +8,30 @@
              d:DesignWidth="800"
              x:DataType="vm:AddServerViewModel"
              mc:Ignorable="d">
-    <Grid Margin="10" RowDefinitions="Auto, 20, *">
-        <Border Grid.Row="2"
-                VerticalAlignment="Top"
-                Background="#88000000"
-                CornerRadius="5">
-            <StackPanel Margin="20" Spacing="15">
-                <TextBlock Text="Name" />
-                <TextBox Text="{Binding Server.Name}" />
-                <TextBlock Text="IP" />
-                <TextBox Text="{Binding Server.Ip}" />
-                <TextBlock Text="Port" />
-                <NumericUpDown Increment="1"
-                               Maximum="65535"
-                               Minimum="0"
-                               Value="{Binding Server.Port}" />
-                <TextBlock Text="Key" />
-                <NumericUpDown Increment="1"
-                               Maximum="65535"
-                               Minimum="0"
-                               Value="{Binding Server.Key}" />
-                <Button HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding AddServerCommand}">
-                    <TextBlock Text="Add Server" TextAlignment="Center" />
-                </Button>
-            </StackPanel>
-        </Border>
-    </Grid>
+    <Border Padding="15"
+            VerticalAlignment="Top"
+            Background="{DynamicResource BackgroundBrush}"
+            CornerRadius="5">
+        <StackPanel Spacing="15">
+            <TextBlock Text="Name" />
+            <TextBox Text="{Binding Server.Name}" />
+            <TextBlock Text="IP" />
+            <TextBox Text="{Binding Server.Ip}" />
+            <TextBlock Text="Port" />
+            <NumericUpDown Increment="1"
+                           Maximum="65535"
+                           Minimum="0"
+                           Value="{Binding Server.Port}" />
+            <TextBlock Text="Key" />
+            <NumericUpDown Increment="1"
+                           Maximum="65535"
+                           Minimum="0"
+                           Value="{Binding Server.Key}" />
+            <Button HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding AddServerCommand}">
+                <TextBlock Text="Add Server" TextAlignment="Center" />
+            </Button>
+        </StackPanel>
+    </Border>
 </UserControl>

@@ -9,6 +9,9 @@ namespace VoiceCraft.Client.Models
 {
     public partial class SettingsModel : ObservableObject
     {
+        private const byte NameLimit = 12;
+        private const byte IPLimit = 20;
+
         private static string SettingsPath = $"{AppContext.BaseDirectory}/Settings.json";
         public event EventHandler<ServerModel>? OnServerAdded;
         public event EventHandler<ServerModel>? OnServerRemoved;
@@ -18,6 +21,15 @@ namespace VoiceCraft.Client.Models
 
         public void AddServer(ServerModel server)
         {
+            if (string.IsNullOrWhiteSpace(server.Name))
+                throw new Exception("Server name cannot be empty or whitespace!");
+            if (string.IsNullOrWhiteSpace(server.Ip))
+                throw new Exception("Server IP cannot be empty or whitespace!");
+            if (server.Name.Length > 12)
+                throw new Exception("Server name cannot be longer than 12 characters!");
+            if (server.Ip.Length > 20)
+                throw new Exception("Server name cannot be longer than 20 characters!");
+
             Servers.Add(server);
             OnServerAdded?.Invoke(this, server);
         }
