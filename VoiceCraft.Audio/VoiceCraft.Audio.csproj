@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Core" Version="2.2.1" />
+    <PackageReference Include="Silk.NET.OpenAL.Extensions.EXT" Version="2.21.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.23.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+  </ItemGroup>
+
+</Project>

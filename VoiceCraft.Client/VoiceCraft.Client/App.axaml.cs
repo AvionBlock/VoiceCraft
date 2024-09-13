@@ -25,12 +25,12 @@ namespace VoiceCraft.Client
             IServiceProvider services = ConfigureServices();
             var settings = services.GetRequiredService<SettingsModel>();
             settings.Load();
-            var mainViewModel = services.GetRequiredService<MainWindowViewModel>();
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Line below is needed to remove Avalonia data validation.
                 // Without this line you will get duplicate validations from both Avalonia and CT
                 BindingPlugins.DataValidators.RemoveAt(0);
+                var mainViewModel = services.GetRequiredService<MainWindowViewModel>();
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = mainViewModel
@@ -38,7 +38,8 @@ namespace VoiceCraft.Client
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
-                singleViewPlatform.MainView = new MainWindow
+                var mainViewModel = services.GetRequiredService<MainViewModel>();
+                singleViewPlatform.MainView = new MainView
                 {
                     DataContext = mainViewModel
                 };
@@ -52,11 +53,14 @@ namespace VoiceCraft.Client
             var services = new ServiceCollection();
 
             services.AddSingleton<HistoryRouter<ViewModelBase>>(s => new HistoryRouter<ViewModelBase>(t => (ViewModelBase)s.GetRequiredService(t)));
-
+            
+            //Main stuff.
             services.AddSingleton<MainWindowViewModel>();
-            services.AddSingleton<NotificationMessageManager>();
-            services.AddSingleton<HomeViewModel>();
+            services.AddSingleton<MainViewModel>();
 
+            services.AddSingleton<NotificationMessageManager>();
+
+            services.AddSingleton<HomeViewModel>();
             services.AddSingleton<ServersViewModel>();
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<CreditsViewModel>();

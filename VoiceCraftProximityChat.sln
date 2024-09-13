@@ -3,15 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client", "VoiceCraft.Client\VoiceCraft.Client\VoiceCraft.Client.csproj", "{28D3DDF2-43D6-42A8-9130-58E501EEC132}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client", "VoiceCraft.Client\VoiceCraft.Client\VoiceCraft.Client.csproj", "{28D3DDF2-43D6-42A8-9130-58E501EEC132}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Android", "VoiceCraft.Client\VoiceCraft.Client.Android\VoiceCraft.Client.Android.csproj", "{1B5AEC0B-263E-484C-A4AA-5AB49F009F5B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Android", "VoiceCraft.Client\VoiceCraft.Client.Android\VoiceCraft.Client.Android.csproj", "{1B5AEC0B-263E-484C-A4AA-5AB49F009F5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Desktop", "VoiceCraft.Client\VoiceCraft.Client.Desktop\VoiceCraft.Client.Desktop.csproj", "{1ACD2E1B-29A2-4A2A-A1D5-EAA84B9BC450}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Desktop", "VoiceCraft.Client\VoiceCraft.Client.Desktop\VoiceCraft.Client.Desktop.csproj", "{1ACD2E1B-29A2-4A2A-A1D5-EAA84B9BC450}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.iOS", "VoiceCraft.Client\VoiceCraft.Client.iOS\VoiceCraft.Client.iOS.csproj", "{8F69E937-F5A9-4451-B2E5-187802F88D08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.iOS", "VoiceCraft.Client\VoiceCraft.Client.iOS\VoiceCraft.Client.iOS.csproj", "{8F69E937-F5A9-4451-B2E5-187802F88D08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Browser", "VoiceCraft.Client\VoiceCraft.Client.Browser\VoiceCraft.Client.Browser.csproj", "{E0386406-1ADC-4FA2-85B4-3D84947FC126}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Browser", "VoiceCraft.Client\VoiceCraft.Client.Browser\VoiceCraft.Client.Browser.csproj", "{E0386406-1ADC-4FA2-85B4-3D84947FC126}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{55E949E0-55F4-4D61-A850-0937E6AEA4DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Audio", "VoiceCraft.Audio\VoiceCraft.Audio.csproj", "{D758BC8F-7C0D-4DEC-9D27-253E34DE3954}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +47,14 @@ Global
 		{E0386406-1ADC-4FA2-85B4-3D84947FC126}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0386406-1ADC-4FA2-85B4-3D84947FC126}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0386406-1ADC-4FA2-85B4-3D84947FC126}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D758BC8F-7C0D-4DEC-9D27-253E34DE3954}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D758BC8F-7C0D-4DEC-9D27-253E34DE3954}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D758BC8F-7C0D-4DEC-9D27-253E34DE3954}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D758BC8F-7C0D-4DEC-9D27-253E34DE3954}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
