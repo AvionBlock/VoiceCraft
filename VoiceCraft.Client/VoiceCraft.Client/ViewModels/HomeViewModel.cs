@@ -28,7 +28,7 @@ namespace VoiceCraft.Client.ViewModels
             settingsModel.OnServerAdded += (obj, server) => SelectedListItem = Items[0];
 
             _items.Add(new ListItemTemplate(servers, "home_regular"));
-            _items.Add(new ListItemTemplate(settings,"mic_settings_regular"));
+            _items.Add(new ListItemTemplate(settings, "mic_settings_regular"));
             _items.Add(new ListItemTemplate(credits, "book_information_regular"));
             _items.Add(new ListItemTemplate(addServer, "add_regular"));
 

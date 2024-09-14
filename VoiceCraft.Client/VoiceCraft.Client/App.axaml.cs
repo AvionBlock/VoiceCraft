@@ -6,7 +6,6 @@ using Avalonia.Notification;
 using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Runtime.InteropServices;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.HomeViews;
@@ -55,7 +54,7 @@ namespace VoiceCraft.Client
             var services = new ServiceCollection();
 
             services.AddSingleton<HistoryRouter<ViewModelBase>>(s => new HistoryRouter<ViewModelBase>(t => (ViewModelBase)s.GetRequiredService(t)));
-            
+
             //Main stuff.
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<MainViewModel>();

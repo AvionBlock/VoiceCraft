@@ -1,7 +1,5 @@
-﻿using Avalonia;
-using Avalonia.Notification;
+﻿using Avalonia.Notification;
 using Avalonia.SimpleRouter;
-using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;

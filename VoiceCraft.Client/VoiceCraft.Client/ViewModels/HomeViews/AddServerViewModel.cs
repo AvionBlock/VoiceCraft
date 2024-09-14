@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         [ObservableProperty]
         private ServerModel _server = new ServerModel("", "", 9050, 0);
 
-        public AddServerViewModel(NotificationMessageManager manager,  SettingsModel settings)
+        public AddServerViewModel(NotificationMessageManager manager, SettingsModel settings)
         {
             _manager = manager;
             _settings = settings;
