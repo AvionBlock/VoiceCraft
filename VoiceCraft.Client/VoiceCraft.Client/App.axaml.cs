@@ -6,6 +6,7 @@ using Avalonia.Notification;
 using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Runtime.InteropServices;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.HomeViews;
@@ -20,7 +21,7 @@ namespace VoiceCraft.Client
             AvaloniaXamlLoader.Load(this);
         }
 
-        public override void OnFrameworkInitializationCompleted()
+        public unsafe override void OnFrameworkInitializationCompleted()
         {
             IServiceProvider services = ConfigureServices();
             var settings = services.GetRequiredService<SettingsModel>();

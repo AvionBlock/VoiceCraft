@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
-using System.Runtime.InteropServices;
 using VoiceCraft.Client.Models;
 
 namespace VoiceCraft.Client.ViewModels.HomeViews
@@ -9,7 +8,7 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
     public partial class SettingsViewModel : ViewModelBase
     {
         public override string Title { get => "Settings"; protected set => throw new NotSupportedException(); }
-        //private AudioCapture capture = new AudioCapture() { WaveFormat = new NAudio.Wave.WaveFormat(48000, 1), BufferMilliseconds = 20 };
+        //private AudioCapture capture = new AudioCapture() { WaveFormat = new NAudio.Wave.WaveFormat(48000, 1), BufferMilliseconds = 20 }; Deal with this later, OpenAL compilations for android absolutely destroy this.
 
         [ObservableProperty]
         private bool _voiceSettingsExpanded = false;
@@ -35,6 +34,7 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
             //capture.DataAvailable += Capture_DataAvailable;
         }
 
+        /*
         private void Capture_DataAvailable(object? sender, NAudio.Wave.WaveInEventArgs e)
         {
             float max = 0;
@@ -53,6 +53,7 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
 
             Value = max;
         }
+        */
 
         [RelayCommand]
         public void Test()
