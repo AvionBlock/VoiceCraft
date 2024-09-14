@@ -1,8 +1,7 @@
 <Application x:Class="VoiceCraft.Client.App"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:VoiceCraft.Client"
-             RequestedThemeVariant="Default">
+             xmlns:local="using:VoiceCraft.Client">
     <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
     <Application.Resources>
@@ -10,11 +9,9 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="BackgroundBrush">#88FFFFFF</SolidColorBrush>
-                    <SolidColorBrush x:Key="ForegroundBrush">Black</SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="BackgroundBrush">#88000000</SolidColorBrush>
-                    <SolidColorBrush x:Key="ForegroundBrush">White</SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

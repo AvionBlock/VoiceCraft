@@ -1,6 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
+using System.Collections.ObjectModel;
 using VoiceCraft.Client.Models;
 
 namespace VoiceCraft.Client.ViewModels.HomeViews
@@ -9,6 +11,9 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
     {
         public override string Title { get => "Settings"; protected set => throw new NotSupportedException(); }
         //private AudioCapture capture = new AudioCapture() { WaveFormat = new NAudio.Wave.WaveFormat(48000, 1), BufferMilliseconds = 20 }; Deal with this later, OpenAL compilations for android absolutely destroy this.
+
+        [ObservableProperty]
+        private bool _isRecording = false;
 
         [ObservableProperty]
         private bool _voiceSettingsExpanded = false;
@@ -22,6 +27,9 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         [ObservableProperty]
         private float _value = 0;
 
+        [ObservableProperty]
+        private ObservableCollection<string> _themes = new ObservableCollection<string>() { "Default", "Light", "Dark" };
+
         public SettingsViewModel(SettingsModel settings)
         {
             _settings = settings;
@@ -29,6 +37,12 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
             Settings.PropertyChanged += (sender, ev) =>
             {
                 _ = settings.SaveAsync(); //Inefficient but idc for now
+
+                if (ev.PropertyName == nameof(Settings.SelectedTheme) && Application.Current != null)
+                {
+                    Application.Current.RequestedThemeVariant = new Avalonia.Styling.ThemeVariant(Settings.SelectedTheme, null);
+                }
+
             };
 
             //capture.DataAvailable += Capture_DataAvailable;

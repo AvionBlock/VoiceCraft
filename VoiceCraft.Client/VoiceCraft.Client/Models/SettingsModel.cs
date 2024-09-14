@@ -9,8 +9,8 @@ namespace VoiceCraft.Client.Models
 {
     public partial class SettingsModel : ObservableObject
     {
-        private const byte NameLimit = 12;
-        private const byte IPLimit = 20;
+        public const int NameLimit = 12;
+        public const int IPLimit = 30;
 
         private static string SettingsPath = $"{AppContext.BaseDirectory}/Settings.json";
         public event EventHandler<ServerModel>? OnServerAdded;
@@ -35,6 +35,8 @@ namespace VoiceCraft.Client.Models
 
         //Behavior Settings
         [ObservableProperty]
+        private string _selectedTheme = "Default";
+        [ObservableProperty]
         private ushort _clientSidedPort = 8080;
         [ObservableProperty]
         private ushort _jitterBufferSize = 80;
@@ -51,12 +53,12 @@ namespace VoiceCraft.Client.Models
                 throw new Exception("Server name cannot be empty or whitespace!");
             if (string.IsNullOrWhiteSpace(server.Ip))
                 throw new Exception("Server IP cannot be empty or whitespace!");
-            if (server.Name.Length > 12)
-                throw new Exception("Server name cannot be longer than 12 characters!");
-            if (server.Ip.Length > 20)
-                throw new Exception("Server name cannot be longer than 20 characters!");
+            if (server.Name.Length > NameLimit)
+                throw new Exception($"Server name cannot be longer than {NameLimit} characters!");
+            if (server.Ip.Length > IPLimit)
+                throw new Exception($"Server name cannot be longer than {IPLimit} characters!");
 
-            Servers.Add(server);
+            Servers.Insert(0, server);
             OnServerAdded?.Invoke(this, server);
         }
 

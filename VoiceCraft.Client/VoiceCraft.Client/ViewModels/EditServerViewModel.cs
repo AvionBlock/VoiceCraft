@@ -1,14 +1,16 @@
 ﻿using Avalonia.Notification;
+using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using VoiceCraft.Client.Models;
 
-namespace VoiceCraft.Client.ViewModels.HomeViews
+namespace VoiceCraft.Client.ViewModels
 {
-    public partial class AddServerViewModel : ViewModelBase
+    public partial class EditServerViewModel : ViewModelBase
     {
-        public override string Title { get => "Add Server"; protected set => throw new NotSupportedException(); }
+        public override string Title { get => "Edit Server"; protected set => throw new NotSupportedException(); }
+        private HistoryRouter<ViewModelBase> _router;
         private INotificationMessageManager _manager;
 
         [ObservableProperty]
@@ -17,28 +19,38 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         [ObservableProperty]
         private ServerModel _server = new ServerModel("", "", 9050, 0);
 
-        public AddServerViewModel(NotificationMessageManager manager,  SettingsModel settings)
+        public EditServerViewModel(HistoryRouter<ViewModelBase> router, NotificationMessageManager manager, SettingsModel settings)
         {
+            _router = router;
             _manager = manager;
             _settings = settings;
         }
 
         [RelayCommand]
-        public void AddServer()
+        public void Cancel()
+        {
+            _router.Back();
+        }
+
+        [RelayCommand]
+        public void EditServer()
         {
             try
             {
+                Settings.RemoveServer(Server);
                 Settings.AddServer(Server);
+
                 _manager.CreateMessage()
-                    .Accent("#1751C3")
+                .Accent("#1751C3")
                     .Animates(true)
                     .Background("#333")
                     .HasBadge("Info")
-                    .HasMessage($"{Server.Name} has been added.")
+                    .HasMessage($"{Server.Name} has been edited.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
                     .Queue();
                 Server = new ServerModel("", "", 9050, 0);
                 _ = Settings.SaveAsync();
+                _router.Back();
             }
             catch (Exception ex)
             {

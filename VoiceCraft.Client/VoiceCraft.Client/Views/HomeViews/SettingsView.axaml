@@ -56,6 +56,22 @@
                     <Slider Maximum="1.0"
                             Minimum="0.0"
                             Value="{Binding Settings.MicrophoneSensitivity}" />
+                    <Grid ColumnDefinitions="Auto, *">
+                        <ToggleButton Grid.Column="0"
+                                      HorizontalAlignment="Stretch"
+                                      Command="{Binding TestCommand}"
+                                      IsChecked="{Binding IsRecording}">
+                            <TextBlock Text="Test Microphone" />
+                        </ToggleButton>
+                        <ProgressBar Grid.Column="1"
+                                     Margin="1"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch"
+                                     Maximum="1"
+                                     Minimum="0"
+                                     ShowProgressText="True"
+                                     Value="{Binding Value}" />
+                    </Grid>
                 </StackPanel>
 
                 <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.DirectionalHearing}">
@@ -76,6 +92,15 @@
             </Expander.Header>
 
             <StackPanel Spacing="10">
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Theme" />
+
+                <ComboBox HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Themes}"
+                          SelectedItem="{Binding Settings.SelectedTheme}" />
+
                 <TextBlock HorizontalAlignment="Left"
                            VerticalAlignment="Center"
                            FontSize="15"
@@ -105,17 +130,6 @@
                 <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding Settings.CustomClientProtocol}">
                     <TextBlock Text="Custom Client Protocol" />
                 </ToggleButton>
-
-                <Button HorizontalAlignment="Stretch" Command="{Binding TestCommand}">
-                    <Grid RowDefinitions="Auto, Auto">
-                        <TextBlock Grid.Row="0" Text="Test Audio" />
-                        <ProgressBar Grid.Row="1"
-                                     Height="10"
-                                     Maximum="1"
-                                     Minimum="0"
-                                     Value="{Binding Value}" />
-                    </Grid>
-                </Button>
             </StackPanel>
         </Expander>
     </StackPanel>

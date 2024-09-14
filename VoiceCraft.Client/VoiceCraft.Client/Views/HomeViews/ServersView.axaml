@@ -21,7 +21,7 @@
         </ListBox.Styles>
         <ListBox.ItemTemplate>
             <DataTemplate DataType="{x:Type m:ServerModel}">
-                <Grid RowDefinitions="*, *, *">
+                <Grid RowDefinitions="Auto, Auto, Auto">
                     <TextBlock Grid.Row="0"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -33,7 +33,9 @@
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal"
                                 Spacing="10">
-                        <Button Padding="5">
+                        <Button Padding="5"
+                                Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).EditServerCommand}"
+                                CommandParameter="{Binding}">
                             <PathIcon Data="{StaticResource edit_regular}" />
                         </Button>
 
@@ -47,14 +49,14 @@
                     <TextBlock Grid.Row="1"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
-                               FontSize="16">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}:{1}">
-                                <Binding Path="Ip" />
-                                <Binding Path="Port" />
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
+                               FontSize="16"
+                               Text="{Binding Ip}" />
+
+                    <TextBlock Grid.Row="2"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Text="{Binding Port}" />
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

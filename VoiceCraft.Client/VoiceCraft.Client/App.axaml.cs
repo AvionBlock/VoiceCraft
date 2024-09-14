@@ -26,6 +26,7 @@ namespace VoiceCraft.Client
             IServiceProvider services = ConfigureServices();
             var settings = services.GetRequiredService<SettingsModel>();
             settings.Load();
+            RequestedThemeVariant = new Avalonia.Styling.ThemeVariant(settings.SelectedTheme, null);
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Line below is needed to remove Avalonia data validation.
@@ -66,6 +67,7 @@ namespace VoiceCraft.Client
             services.AddSingleton<SettingsViewModel>();
             services.AddSingleton<CreditsViewModel>();
             services.AddSingleton<ServerViewModel>();
+            services.AddSingleton<EditServerViewModel>();
             services.AddSingleton<AddServerViewModel>();
             services.AddSingleton<SettingsModel>();
             return services.BuildServiceProvider();

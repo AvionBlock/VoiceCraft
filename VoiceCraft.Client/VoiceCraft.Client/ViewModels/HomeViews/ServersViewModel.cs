@@ -51,5 +51,13 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
                 .Queue();
             await Settings.SaveAsync();
         }
+
+        [RelayCommand]
+        public void EditServer(ServerModel? server)
+        {
+            if (server == null) return; //Somehow can be null.
+            var model = _router.GoTo<EditServerViewModel>();
+            model.Server = server;
+        }
     }
 }
