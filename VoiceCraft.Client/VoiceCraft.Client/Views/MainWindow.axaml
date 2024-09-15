@@ -5,18 +5,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:VoiceCraft.Client.Views"
-        xmlns:vm="using:VoiceCraft.Client.ViewModels"
         Title="VoiceCraft.Client"
         d:DesignHeight="450"
         d:DesignWidth="800"
-        x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         mc:Ignorable="d">
-    <Grid>
-        <Image Opacity="150"
-               Source="avares://VoiceCraft.Client/Assets/bgdark.png"
-               Stretch="UniformToFill" />
-        <TransitioningContentControl Content="{Binding Content}" />
-        <controls:NotificationMessageContainer Manager="{Binding Manager}" />
-    </Grid>
+	<views:MainView />
 </Window>

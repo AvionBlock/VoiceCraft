@@ -14,10 +14,37 @@
   
   <ItemGroup>
     <AvaloniaXaml Remove="Assets\Icons.axaml" />
+    <AvaloniaXaml Remove="Ignore\Views\HomeViews\AddServerView.axaml" />
+    <AvaloniaXaml Remove="Ignore\Views\HomeViews\CreditsView.axaml" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Ignore\EditServerViewModel.cs" />
+    <Compile Remove="Ignore\HomeViews\AddServerViewModel.cs" />
+    <Compile Remove="Ignore\HomeViews\CreditsViewModel.cs" />
+    <Compile Remove="Ignore\HomeViews\ServersViewModel.cs" />
+    <Compile Remove="Ignore\HomeViews\SettingsViewModel.cs" />
+    <Compile Remove="Ignore\ServerViewModel.cs" />
+    <Compile Remove="Ignore\Views\HomeViews\AddServerView.axaml.cs" />
+    <Compile Remove="Ignore\Views\HomeViews\CreditsView.axaml.cs" />
   </ItemGroup>
   
   <ItemGroup>
     <None Remove="Assets\bgdark.png" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Ignore\Views\HomeViews\AddServerView.axaml.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Ignore\EditServerViewModel.cs" />
+    <None Include="Ignore\HomeViews\AddServerViewModel.cs" />
+    <None Include="Ignore\HomeViews\CreditsViewModel.cs" />
+    <None Include="Ignore\HomeViews\ServersViewModel.cs" />
+    <None Include="Ignore\HomeViews\SettingsViewModel.cs" />
+    <None Include="Ignore\ServerViewModel.cs" />
+    <None Include="Ignore\Views\HomeViews\CreditsView.axaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +57,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
     <PackageReference Include="OpusSharp.Core" Version="1.0.4" />
-    <PackageReference Include="Sandreas.Avalonia.SimpleRouter" Version="0.0.4" />
   </ItemGroup>
 
   <ItemGroup>

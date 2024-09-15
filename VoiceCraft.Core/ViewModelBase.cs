@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace VoiceCraft.Client.ViewModels
+namespace VoiceCraft.Core
 {
     public abstract class ViewModelBase : ObservableObject
     {

@@ -3,7 +3,7 @@ using OpusSharp.Core;
 using System;
 using System.Reflection;
 
-namespace VoiceCraft.Client.ViewModels.HomeViews
+namespace VoiceCraft.Client.Ignore.HomeViews
 {
     public partial class CreditsViewModel : ViewModelBase
     {

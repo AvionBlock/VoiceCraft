@@ -4,8 +4,10 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.ObjectModel;
+using VoiceCraft.Client.Ignore.HomeViews;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.ViewModels.HomeViews;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels
 {

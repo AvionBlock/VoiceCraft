@@ -1,5 +1,4 @@
-﻿using Avalonia.SimpleRouter;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using VoiceCraft.Client.Models;

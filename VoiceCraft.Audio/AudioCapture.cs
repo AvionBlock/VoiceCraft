@@ -63,11 +63,11 @@ namespace VoiceCraft.Audio
                 // Query the number of captured samples
                 _captureContext.GetContextProperty(_device, GetCaptureContextInteger.CaptureSamples, sizeof(int), &capturedSamples);
 
-                if (capturedSamples >= bufferSize / 2)
+                if (capturedSamples >= bufferSize)
                 {
                     byte[] buffer = new byte[bufferSize];
                     fixed (void* bufferPtr = buffer)
-                        _captureContext.CaptureSamples(_device, bufferPtr, bufferSize / 2); // Correct size in samples
+                        _captureContext.CaptureSamples(_device, bufferPtr, bufferSize); // Correct size in samples
 
                     // Check for errors after capturing samples
                     if (_alContext.GetError(_device) == ContextError.NoError)
