@@ -4,9 +4,8 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.ObjectModel;
-using VoiceCraft.Client.Ignore.HomeViews;
-using VoiceCraft.Client.Models;
 using VoiceCraft.Client.ViewModels.HomeViews;
+using VoiceCraft.Client.Views.HomeViews;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels
@@ -24,17 +23,17 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty]
         private ListItemTemplate? _selectedListItem = null;
 
-        public HomeViewModel(SettingsModel settingsModel, ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer)
+        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings)
         {
-            _content = servers;
-            settingsModel.OnServerAdded += (obj, server) => SelectedListItem = Items[0];
-
             _items.Add(new ListItemTemplate(servers, "home_regular"));
             _items.Add(new ListItemTemplate(settings, "mic_settings_regular"));
+            /*
             _items.Add(new ListItemTemplate(credits, "book_information_regular"));
             _items.Add(new ListItemTemplate(addServer, "add_regular"));
+            */
 
             SelectedListItem = _items[0];
+            _content = _items[0].ViewModel;
         }
 
         partial void OnSelectedListItemChanged(ListItemTemplate? value)

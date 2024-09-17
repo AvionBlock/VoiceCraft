@@ -1,0 +1,101 @@
+<UserControl x:Class="VoiceCraft.Client.Views.HomeViews.SettingsView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.HomeViews"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             x:DataType="vm:SettingsViewModel"
+             mc:Ignorable="d">
+    <StackPanel Spacing="10">
+        <Expander HorizontalAlignment="Stretch"
+                  Background="{DynamicResource BackgroundBrush}"
+                  IsExpanded="{Binding GeneralSettingsExpanded}">
+            <Expander.Header>
+                <TextBlock FontWeight="Bold" Text="General Settings" />
+            </Expander.Header>
+
+            <!--  List themes here somehow  -->
+            <StackPanel Spacing="10">
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Theme" />
+
+                <ComboBox HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding ThemeKeys}"
+                          SelectedItem="{Binding ThemeSettings.SelectedTheme}" />
+
+                <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding ServersSettings.HideServerAddresses}">
+                    <TextBlock Text="Hide Server Addresses" />
+                </ToggleButton>
+            </StackPanel>
+        </Expander>
+
+        <Expander HorizontalAlignment="Stretch"
+                  Background="{DynamicResource BackgroundBrush}"
+                  IsExpanded="{Binding AudioSettingsExpanded}">
+            <Expander.Header>
+                <TextBlock FontWeight="Bold" Text="Audio Settings" />
+            </Expander.Header>
+            <StackPanel Spacing="10">
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Input Devices" />
+                <ComboBox HorizontalAlignment="Stretch">
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           FontSize="15"
+                           Text="Output Devices" />
+
+                <ComboBox HorizontalAlignment="Stretch">
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                    <ComboBoxItem>Test</ComboBoxItem>
+                </ComboBox>
+
+                <StackPanel>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneGain, StringFormat='Microphone Gain: {0:F1}'}" />
+                    <Slider Maximum="20.0"
+                            Minimum="1.0"
+                            Value="{Binding AudioSettings.MicrophoneGain}" />
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='Microphone Sensitivity: {0:P0}'}" />
+                    <Slider Maximum="1.0"
+                            Minimum="0.0"
+                            Value="{Binding AudioSettings.MicrophoneSensitivity}" />
+                    <Grid ColumnDefinitions="Auto, *">
+                        <ToggleButton Grid.Column="0"
+                                      HorizontalAlignment="Stretch"
+                                      IsChecked="{Binding IsRecording}">
+                            <TextBlock Text="Test Microphone" />
+                        </ToggleButton>
+                        <ProgressBar Grid.Column="1"
+                                     Margin="1"
+                                     HorizontalAlignment="Stretch"
+                                     VerticalAlignment="Stretch"
+                                     Maximum="1"
+                                     Minimum="0"
+                                     ShowProgressText="True"
+                                     Value="{Binding MicrophoneValue}" />
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </Expander>
+    </StackPanel>
+</UserControl>

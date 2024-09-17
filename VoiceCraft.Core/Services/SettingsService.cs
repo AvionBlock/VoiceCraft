@@ -3,67 +3,89 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Services
+namespace VoiceCraft.Core.Services
 {
     public class SettingsService
     {
         private static string SettingsPath = $"{AppContext.BaseDirectory}/Settings.json";
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>> _registeredSettings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>>();
-        private ConcurrentDictionary<Guid, ConcurrentDictionary<string, dynamic>> _settings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, dynamic>>();
+        private ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>> _settings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>();
 
-        public void Set<T>(Guid id, string settingId, T value) where T : unmanaged
+        public void Set<T>(Guid id, T value) where T : Setting<T>
         {
-            if (_registeredSettings.TryGetValue(id, out var registeredSettings) && registeredSettings.TryGetValue(settingId, out var rSetting) && rSetting == typeof(ISetting<T>))
+            var settingType = typeof(T);
+            if (_registeredSettings.TryGetValue(id, out var registeredSettings) && registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
             {
-                _settings.TryGetValue(id, out var settings);
-                settings.AddOrUpdate(settingId, value, (key, old) => old = value);
+                var setting = _settings.GetOrAdd(id, new ConcurrentDictionary<string, object>());
+                setting.AddOrUpdate(settingType.Name, value, (key, old) => old = value);
+                return;
             }
 
-            throw new Exception($"Could not find registered setting {settingId} of type {typeof(T)} in {id}.");
+            throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)} in {id}.");
         }
 
-        public T Get<T>(Guid id, string settingId) where T : unmanaged
+        public T Get<T>(Guid id) where T : Setting<T>
         {
-            if (_registeredSettings.TryGetValue(id, out var registeredSettings) && registeredSettings.TryGetValue(settingId, out var rSetting) && rSetting is ISetting<T> registeredSetting)
+            var settingType = typeof(T);
+            if (_registeredSettings.TryGetValue(id, out var registeredSettings) && registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
             {
-                if(_settings.TryGetValue(id, out var settings) && settings.TryGetValue(settingId, out var settingValue) && settingValue is T setting)
-                {
-                    return setting;
-                }
-                return registeredSetting.Default;
+                var setting = _settings.GetOrAdd(id, new ConcurrentDictionary<string, object>());
+                return (T)setting.GetOrAdd(settingType.Name, Activator.CreateInstance<T>());
             }
-            throw new Exception($"Could not find registered setting {settingId} of type {typeof(T)} in {id}.");
+
+            throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)} in {id}.");
         }
 
-        public void RegisterSetting<T>(Guid id, ISetting<T> setting) where T : unmanaged
+        public void RegisterSetting<T>(Guid id) where T : Setting<T>
         {
+            var settingType = typeof(T);
             var registeredSetting = _registeredSettings.GetOrAdd(id, new ConcurrentDictionary<string, Type>());
-            registeredSetting.AddOrUpdate(setting.Id, setting.GetType(), (key, old) => old = setting.GetType());
+            registeredSetting.AddOrUpdate(settingType.Name, settingType, (key, old) => old = settingType);
         }
 
-        public void UnregisterSetting(Guid id, string settingId)
+        public void UnregisterSetting<T>(Guid id) where T : Setting<T>
         {
-            if(_registeredSettings.TryGetValue(id, out var registeredSettings))
+            if (_registeredSettings.TryGetValue(id, out var registeredSettings))
             {
-                registeredSettings.TryRemove(settingId, out _);
+                registeredSettings.TryRemove(typeof(T).Name, out _);
             }
         }
 
         public async Task SaveAsync()
         {
-            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings));
+            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
-        public async Task LoadAsync()
+        public void Load()
         {
-            if (File.Exists(SettingsPath))
+            if (!File.Exists(SettingsPath)) { return; }
+
+            var result = File.ReadAllText(SettingsPath);
+            var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>>(result);
+            if (loadedSettings is null) { return; }
+
+            //Convert them to the actual objects.
+            foreach (var settings in loadedSettings)
             {
-                var result = await File.ReadAllTextAsync(SettingsPath);
-                var settings = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>>>(result);
-                if (settings == null) return;
+                if (_registeredSettings.TryGetValue(settings.Key, out var registeredSettings))
+                {
+                    foreach (var setting in settings.Value)
+                    {
+                        if (setting.Value is JsonElement element
+                            && registeredSettings.TryGetValue(setting.Key, out var registeredSetting)
+                            && element.Deserialize(registeredSetting) is object deserializedSetting)
+                        {
+                            _ = settings.Value.TryUpdate(setting.Key, deserializedSetting, setting.Value);
+                            continue;
+                        }
+                        settings.Value.TryRemove(setting.Key, out _);
+                    }
+                    continue;
+                }
+                loadedSettings.TryRemove(settings.Key, out _);
             }
+            _settings = loadedSettings;
         }
     }
 }

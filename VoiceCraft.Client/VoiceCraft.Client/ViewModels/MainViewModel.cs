@@ -1,8 +1,8 @@
 ﻿using Avalonia.Notification;
+using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Services;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -16,12 +16,14 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty]
         private INotificationMessageManager _manager;
 
-        public MainViewModel(NavigationService<ViewModelBase> navigationService, NotificationMessageManager manager)
+        public MainViewModel(HistoryRouter<ViewModelBase> router, NotificationMessageManager manager)
         {
             _manager = manager;
-            // register route changed event to set content to viewModel, whenever 
+            // register route changed event to set content to viewModel, whenever
             // a route changes
-            navigationService.GoTo<HomeViewModel>();
+            router.CurrentViewModelChanged += viewModel => Content = viewModel;
+
+            router.GoTo<HomeViewModel>();
         }
     }
 }

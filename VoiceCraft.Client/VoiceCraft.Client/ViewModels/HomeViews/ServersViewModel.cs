@@ -4,7 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
-using VoiceCraft.Client.Models;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Services;
+using VoiceCraft.Core.Settings;
 
 namespace VoiceCraft.Client.ViewModels.HomeViews
 {
@@ -13,32 +15,26 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         public override string Title { get => "Servers"; protected set => throw new NotSupportedException(); }
         private HistoryRouter<ViewModelBase> _router;
         private INotificationMessageManager _manager;
+        private SettingsService _settings;
 
         [ObservableProperty]
-        private ServerModel? _selectedServer;
+        private ServersSettings _servers;
 
         [ObservableProperty]
-        private SettingsModel _settings = default!;
+        private Server? _selectedServer;
 
-        partial void OnSelectedServerChanged(ServerModel? value)
-        {
-            if (value == null) return;
-            var model = _router.GoTo<ServerViewModel>();
-            model.SelectedServer = value;
-            SelectedServer = null;
-        }
-
-        public ServersViewModel(HistoryRouter<ViewModelBase> router, NotificationMessageManager manager, SettingsModel settings)
+        public ServersViewModel(HistoryRouter<ViewModelBase> router, SettingsService settings, NotificationMessageManager manager)
         {
             _manager = manager;
             _router = router;
             _settings = settings;
+            _servers = settings.Get<ServersSettings>(App.SettingsId);
         }
 
         [RelayCommand]
-        public async Task DeleteServer(ServerModel server)
+        public async Task DeleteServer(Server server)
         {
-            Settings.RemoveServer(server);
+            Servers.RemoveServer(server);
             _manager.CreateMessage()
                 .Accent("#1751C3")
                 .Animates(true)
@@ -47,15 +43,17 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
                 .HasMessage($"{server.Name} has been removed.")
                 .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
                 .Queue();
-            await Settings.SaveAsync();
+            await _settings.SaveAsync();
         }
 
         [RelayCommand]
-        public void EditServer(ServerModel? server)
+        public void EditServer(Server? server)
         {
+            /*
             if (server == null) return; //Somehow can be null.
             var model = _router.GoTo<EditServerViewModel>();
             model.Server = server;
+            */
         }
     }
 }
