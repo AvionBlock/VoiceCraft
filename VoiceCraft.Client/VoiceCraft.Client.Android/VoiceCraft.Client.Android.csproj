@@ -11,6 +11,16 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="lib\arm64-v8a\libm.so.6" />
+    <None Remove="lib\arm64-v8a\libopenal.so.6" />
+    <None Remove="lib\arm64-v8a\libstdc++.so.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidNativeLibrary Include="lib\arm64-v8a\libm.so.6" />
+    <AndroidNativeLibrary Include="lib\arm64-v8a\libopenal.so.6" />
+    <AndroidNativeLibrary Include="lib\arm64-v8a\libstdc++.so.6" />
+  </ItemGroup>
 
   <ItemGroup>
     <AndroidResource Include="Icon.png">

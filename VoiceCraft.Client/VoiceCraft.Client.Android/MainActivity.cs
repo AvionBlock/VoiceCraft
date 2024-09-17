@@ -16,6 +16,7 @@ namespace VoiceCraft.Client.Android
     {
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
+            Java.Lang.JavaSystem.LoadLibrary("openal");
             return base.CustomizeAppBuilder(builder)
                 .WithInterFont();
         }
