@@ -41,7 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\VoiceCraft.Audio\VoiceCraft.Audio.csproj" />
+    <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+    <ProjectReference Include="..\..\VoiceCraft.Plugin\VoiceCraft.Plugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>
