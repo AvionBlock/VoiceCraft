@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace VoiceCraft.Audio
 {
-    public unsafe class AudioCapture : Core.AudioCapture, IWaveIn
+    public unsafe class AudioCapture : Core.Audio.AudioCapture, IWaveIn
     {
         public WaveFormat WaveFormat { get; set; }
         public int BufferMilliseconds { get; set; }

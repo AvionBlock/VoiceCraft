@@ -2,7 +2,7 @@
 
 namespace VoiceCraft.Audio
 {
-    public unsafe class AudioSource : Core.AudioSource
+    public unsafe class AudioSource : Core.Audio.AudioSource
     {
         public readonly Device* Device;
 

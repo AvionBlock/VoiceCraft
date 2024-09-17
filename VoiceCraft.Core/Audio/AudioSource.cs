@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core.Audio
 {
     public abstract class AudioSource
     {

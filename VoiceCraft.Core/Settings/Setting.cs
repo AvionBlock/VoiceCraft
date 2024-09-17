@@ -2,7 +2,7 @@
 using System;
 using System.Text.Json.Serialization;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core.Settings
 {
     public abstract class Setting<T> : ObservableObject
     {
