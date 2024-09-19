@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.ObjectModel;
 using VoiceCraft.Client.ViewModels.HomeViews;
-using VoiceCraft.Client.Views.HomeViews;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels

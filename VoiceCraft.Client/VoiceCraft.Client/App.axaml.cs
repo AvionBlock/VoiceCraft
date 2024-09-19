@@ -4,9 +4,12 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.SimpleRouter;
+using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
+using Avalonia.Themes.Simple;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.HomeViews;
 using VoiceCraft.Client.Views;
@@ -67,6 +70,7 @@ namespace VoiceCraft.Client
             services.AddSingleton<MainViewModel>();
 
             //Pages
+            services.AddTransient<RefreshingViewModel>();
             services.AddTransient<HomeViewModel>();
             services.AddTransient<ServersViewModel>();
             services.AddTransient<SettingsViewModel>();
@@ -85,19 +89,18 @@ namespace VoiceCraft.Client
             settings.Load();
 
             var themes = services.GetRequiredService<ThemesService>();
-            themes.RegisterTheme(new FluentTheme(), "Default", "Light", "Dark");
-
-            foreach(var theme in themes.Themes)
-            {
-                Current?.Styles.Add(theme);
-            }
-
+            themes.RegisterTheme("Fluent", new Theme(new FluentTheme(), new ThemeVariant("Default", null), new ThemeVariant("Dark", null), new ThemeVariant("Light", null)));
+            themes.RegisterTheme("Simple", new Theme(new SimpleTheme(), new ThemeVariant("Default", null), new ThemeVariant("Dark", null), new ThemeVariant("Light", null)));
             var themeSetting = settings.Get<ThemeSettings>(SettingsId);
 
-            if (Current?.RequestedThemeVariant != null)
+            themes.OnThemeChanged += (from, to) =>
             {
-                Current.RequestedThemeVariant = new Avalonia.Styling.ThemeVariant(themeSetting.SelectedTheme, null);
-            }
+                if (Current == null) return;
+                Current.Styles.Clear();
+
+                Current.Styles.Add(to.ThemeStyle);
+                Current.RequestedThemeVariant = new ThemeVariant("Default", null);
+            };
         }
     }
 }

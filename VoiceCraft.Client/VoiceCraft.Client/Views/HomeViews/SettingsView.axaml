@@ -24,7 +24,7 @@
                            Text="Theme" />
 
                 <ComboBox HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding ThemeKeys}"
+                          ItemsSource="{Binding Themes}"
                           SelectedItem="{Binding ThemeSettings.SelectedTheme}" />
 
                 <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding ServersSettings.HideServerAddresses}">

@@ -1,10 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Styling;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace VoiceCraft.Core.Settings
 {
     public partial class ThemeSettings : Setting<ThemeSettings>
     {
         [ObservableProperty]
-        public string _selectedTheme = "Default";
+        private string _selectedTheme = "Dark";
+
+        [ObservableProperty]
+        private ThemeVariant _selectedVariant = ThemeVariant.Default;
     }
 }

@@ -8,32 +8,32 @@
              d:DesignWidth="800"
              x:DataType="vm:HomeViewModel"
              mc:Ignorable="d">
-	<Grid RowDefinitions="Auto, *">
-		<TextBlock Grid.Row="0"
-				   Margin="10"
+    <Grid RowDefinitions="Auto, *">
+        <TextBlock Grid.Row="0"
+                   Margin="10"
                    VerticalAlignment="Center"
                    FontSize="20"
                    FontWeight="Bold"
                    Text="{Binding Content.Title}"
                    TextAlignment="Center" />
-		<Grid Grid.Row="1" ColumnDefinitions="Auto, *">
-			<ListBox Grid.Column="0"
+        <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
+            <ListBox Grid.Column="0"
                      VerticalAlignment="Top"
                      Background="{DynamicResource BackgroundBrush}"
                      CornerRadius="0,5,5,0"
                      ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedListItem}">
-				<ListBox.ItemTemplate>
-					<DataTemplate DataType="{x:Type vm:ListItemTemplate}">
-						<StackPanel Orientation="Horizontal" Spacing="15">
-							<PathIcon Data="{Binding Icon}" />
-						</StackPanel>
-					</DataTemplate>
-				</ListBox.ItemTemplate>
-			</ListBox>
-			<ScrollViewer Grid.Column="1" Margin="10,0,10,0">
-				<TransitioningContentControl Content="{Binding Content}" />
-			</ScrollViewer>
-		</Grid>
-	</Grid>
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:ListItemTemplate}">
+                        <StackPanel Orientation="Horizontal" Spacing="15">
+                            <PathIcon Data="{Binding Icon}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ScrollViewer Grid.Column="1" Margin="10,0,10,0">
+                <TransitioningContentControl Content="{Binding Content}" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
 </UserControl>

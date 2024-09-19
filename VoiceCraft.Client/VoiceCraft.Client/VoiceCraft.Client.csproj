@@ -54,4 +54,10 @@
       <SubType>Designer</SubType>
     </AvaloniaResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\RefreshingView.axaml.cs">
+      <DependentUpon>RefreshingView.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -60,33 +60,40 @@ namespace VoiceCraft.Core.Services
 
         public void Load()
         {
-            if (!File.Exists(SettingsPath)) { return; }
-
-            var result = File.ReadAllText(SettingsPath);
-            var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>>(result);
-            if (loadedSettings is null) { return; }
-
-            //Convert them to the actual objects.
-            foreach (var settings in loadedSettings)
+            try
             {
-                if (_registeredSettings.TryGetValue(settings.Key, out var registeredSettings))
+                if (!File.Exists(SettingsPath)) { return; }
+
+                var result = File.ReadAllText(SettingsPath);
+                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>>(result);
+                if (loadedSettings is null) { return; }
+
+                //Convert them to the actual objects.
+                foreach (var settings in loadedSettings)
                 {
-                    foreach (var setting in settings.Value)
+                    if (_registeredSettings.TryGetValue(settings.Key, out var registeredSettings))
                     {
-                        if (setting.Value is JsonElement element
-                            && registeredSettings.TryGetValue(setting.Key, out var registeredSetting)
-                            && element.Deserialize(registeredSetting) is object deserializedSetting)
+                        foreach (var setting in settings.Value)
                         {
-                            _ = settings.Value.TryUpdate(setting.Key, deserializedSetting, setting.Value);
-                            continue;
+                            if (setting.Value is JsonElement element
+                                && registeredSettings.TryGetValue(setting.Key, out var registeredSetting)
+                                && element.Deserialize(registeredSetting) is object deserializedSetting)
+                            {
+                                _ = settings.Value.TryUpdate(setting.Key, deserializedSetting, setting.Value);
+                                continue;
+                            }
+                            settings.Value.TryRemove(setting.Key, out _);
                         }
-                        settings.Value.TryRemove(setting.Key, out _);
+                        continue;
                     }
-                    continue;
+                    loadedSettings.TryRemove(settings.Key, out _);
                 }
-                loadedSettings.TryRemove(settings.Key, out _);
+                _settings = loadedSettings;
             }
-            _settings = loadedSettings;
+            catch(JsonException)
+            {
+                //Do nothing.
+            }
         }
     }
 }
