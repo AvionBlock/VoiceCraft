@@ -5,19 +5,6 @@
              RequestedThemeVariant="Default">
     <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
-    <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="BackgroundBrush">#88FFFFFF</SolidColorBrush>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="BackgroundBrush">#88000000</SolidColorBrush>
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-        </ResourceDictionary>
-    </Application.Resources>
-
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>

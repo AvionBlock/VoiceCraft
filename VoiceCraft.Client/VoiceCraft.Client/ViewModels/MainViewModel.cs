@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Services;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -18,19 +17,12 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty]
         private INotificationMessageManager _manager;
 
-        public MainViewModel(HistoryRouter<ViewModelBase> router, NotificationMessageManager manager, ThemesService themes)
+        public MainViewModel(HistoryRouter<ViewModelBase> router, NotificationMessageManager manager)
         {
             _manager = manager;
             // register route changed event to set content to viewModel, whenever
             // a route changes
             router.CurrentViewModelChanged += viewModel => Content = viewModel;
-            themes.OnThemeChanged += (from, to) =>
-            {
-                //Stupid, but it works.
-                var currContent = Content;
-                Content = new RefreshingViewModel();
-                Task.Delay(500).ContinueWith(x => Content = currContent);
-            };
 
             router.GoTo<HomeViewModel>();
         }

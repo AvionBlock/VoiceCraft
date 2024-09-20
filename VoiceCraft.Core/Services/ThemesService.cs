@@ -1,4 +1,7 @@
-﻿using Avalonia.Styling;
+﻿using Avalonia;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Platform;
+using Avalonia.Styling;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
@@ -6,60 +9,45 @@ namespace VoiceCraft.Core.Services
 {
     public class ThemesService
     {
-        public delegate void ThemeChanged(Theme? from, Theme to);
-        public delegate void VariantChanged(ThemeVariant? from, ThemeVariant to);
-
-        public event ThemeChanged? OnThemeChanged;
-        public event VariantChanged? OnVariantChanged;
-
-        public IEnumerable<KeyValuePair<string, Theme>> Themes { get => _themes; }
+        public IEnumerable<string> ThemeNames { get => _themes.Keys; }
 
         private ConcurrentDictionary<string, Theme> _themes = new ConcurrentDictionary<string, Theme>();
-        private Theme? _currentTheme;
-        private ThemeVariant? _currentVariant;
 
-        public void RegisterTheme(string name, Theme theme)
+        public void RegisterTheme(string themeName, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light, params ResourceInclude[] themeResources)
         {
-            _themes.AddOrUpdate(name, theme, (key, old) => old = theme);
+            var theme = new Theme(themeVariant, themeResources);
+            _themes.AddOrUpdate(themeName, theme, (key, old) => old = theme);
         }
 
-        public void ChangeTheme(string name)
+        public void UnregisterTheme(string themeName)
         {
-            if (_themes.TryGetValue(name, out var theme))
-            {
-                var currTheme = _currentTheme;
-                _currentTheme = theme;
-
-                OnThemeChanged?.Invoke(currTheme, _currentTheme);
-            }
+            _themes.TryRemove(themeName, out _);
         }
 
-        public void ChangeVariant(string name)
+        public void SwitchTheme(string themeName)
         {
-            if (_currentTheme == null) return;
-
-            foreach(var variant in _currentTheme.ThemeVariants)
+            if (_themes.TryGetValue(themeName, out var theme) && Application.Current != null)
             {
-                if (variant.Key.ToString() == name)
+                Application.Current.Resources.MergedDictionaries.Clear();
+                Application.Current.RequestedThemeVariant = theme.Variant == PlatformThemeVariant.Light ? ThemeVariant.Light : ThemeVariant.Dark;
+
+                foreach (var themeResource in theme.ThemeResources)
                 {
-                    var currVariant = _currentVariant;
-                    _currentVariant = variant;
-
-                    OnVariantChanged?.Invoke(currVariant, _currentVariant);
+                    Application.Current.Resources.MergedDictionaries.Add(themeResource);
                 }
             }
         }
-    }
 
-    public class Theme
-    {
-        public readonly IStyle ThemeStyle;
-        public readonly ThemeVariant[] ThemeVariants;
-
-        public Theme(IStyle themeStyle, params ThemeVariant[] variants)
+        private class Theme
         {
-            ThemeStyle = themeStyle;
-            ThemeVariants = variants;
+            public readonly PlatformThemeVariant Variant;
+            public readonly ResourceInclude[] ThemeResources;
+
+            public Theme(PlatformThemeVariant variant, params ResourceInclude[] themeResources)
+            {
+                Variant = variant;
+                ThemeResources = themeResources;
+            }
         }
     }
 }

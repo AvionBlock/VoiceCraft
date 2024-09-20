@@ -20,7 +20,9 @@
   </ItemGroup>
   
   <ItemGroup>
+    <AvaloniaXaml Remove="Assets\ApplicationResources.axaml" />
     <AvaloniaXaml Remove="Assets\Icons.axaml" />
+    <AvaloniaXaml Remove="Assets\ResourceDictTest.axaml" />
   </ItemGroup>
   
   <ItemGroup>
@@ -50,14 +52,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Update="Assets\ApplicationResources.axaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
     <AvaloniaResource Update="Assets\Icons.axaml">
       <SubType>Designer</SubType>
     </AvaloniaResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Views\RefreshingView.axaml.cs">
-      <DependentUpon>RefreshingView.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 </Project>

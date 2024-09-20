@@ -1,9 +1,7 @@
-﻿using Avalonia;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Services;
 using VoiceCraft.Core.Settings;
@@ -21,6 +19,9 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         private bool _generalSettingsExpanded = false;
 
         [ObservableProperty]
+        private ObservableCollection<string> _themes;
+
+        [ObservableProperty]
         private AudioSettings _audioSettings;
 
         [ObservableProperty]
@@ -30,12 +31,6 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         private ServersSettings _serversSettings;
 
         [ObservableProperty]
-        private ObservableCollection<string> _themes;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _themeVariants;
-
-        [ObservableProperty]
         private bool _isRecording = false;
 
         [ObservableProperty]
@@ -43,8 +38,7 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
 
         public SettingsViewModel(SettingsService settings, ThemesService themes)
         {
-            _themes = new ObservableCollection<string>(themes.Themes.Select(x => x.Key));
-            _themeVariants = new ObservableCollection<string>();
+            _themes = new ObservableCollection<string>(themes.ThemeNames);
 
             _audioSettings = settings.Get<AudioSettings>(App.SettingsId);
             _themeSettings = settings.Get<ThemeSettings>(App.SettingsId);
@@ -52,9 +46,9 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
 
             _themeSettings.PropertyChanged += (sender, e) =>
             {
-                if (e.PropertyName == nameof(ThemeSettings.SelectedTheme) && Application.Current != null)
+                if(e.PropertyName == nameof(ThemeSettings.SelectedTheme))
                 {
-                    themes.ChangeTheme(ThemeSettings.SelectedTheme);
+                    themes.SwitchTheme(ThemeSettings.SelectedTheme);
                 }
             };
         }

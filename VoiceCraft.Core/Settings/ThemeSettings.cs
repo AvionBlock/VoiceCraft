@@ -7,8 +7,5 @@ namespace VoiceCraft.Core.Settings
     {
         [ObservableProperty]
         private string _selectedTheme = "Dark";
-
-        [ObservableProperty]
-        private ThemeVariant _selectedVariant = ThemeVariant.Default;
     }
 }

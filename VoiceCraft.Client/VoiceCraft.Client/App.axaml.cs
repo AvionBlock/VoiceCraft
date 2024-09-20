@@ -2,14 +2,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Notification;
 using Avalonia.SimpleRouter;
-using Avalonia.Styling;
-using Avalonia.Themes.Fluent;
-using Avalonia.Themes.Simple;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.HomeViews;
 using VoiceCraft.Client.Views;
@@ -22,24 +19,24 @@ namespace VoiceCraft.Client
     public partial class App : Application
     {
         public static readonly Guid SettingsId = Guid.Empty;
+        public static IServiceProvider? Services { get; private set; }
         public override void Initialize()
         {
+            Services = ConfigureServices();
+            ConfigureApplicationServices(Services);
+
+            //Initialize All Plugins
             AvaloniaXamlLoader.Load(this);
         }
 
         public unsafe override void OnFrameworkInitializationCompleted()
         {
-            IServiceProvider services = ConfigureServices();
+            if(Services == null)
+                throw new NullReferenceException($"{nameof(Services)} was not created!");
 
-            //Initialize All Plugins
-
-            ConfigureApplicationServices(services);
-
-            var mainViewModel = services.GetRequiredService<MainViewModel>();
+            var mainViewModel = Services.GetRequiredService<MainViewModel>();
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Line below is needed to remove Avalonia data validation.
-                // Without this line you will get duplicate validations from both Avalonia and CT
                 BindingPlugins.DataValidators.RemoveAt(0);
                 desktop.MainWindow = new MainWindow()
                 {
@@ -57,7 +54,7 @@ namespace VoiceCraft.Client
             base.OnFrameworkInitializationCompleted();
         }
 
-        private static ServiceProvider ConfigureServices()
+        private ServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection();
             services.AddSingleton<HistoryRouter<ViewModelBase>>(s => new HistoryRouter<ViewModelBase>(t => (ViewModelBase)s.GetRequiredService(t)));
@@ -70,7 +67,6 @@ namespace VoiceCraft.Client
             services.AddSingleton<MainViewModel>();
 
             //Pages
-            services.AddTransient<RefreshingViewModel>();
             services.AddTransient<HomeViewModel>();
             services.AddTransient<ServersViewModel>();
             services.AddTransient<SettingsViewModel>();
@@ -80,7 +76,7 @@ namespace VoiceCraft.Client
             return services.BuildServiceProvider();
         }
 
-        private static void ConfigureApplicationServices(IServiceProvider services)
+        private void ConfigureApplicationServices(IServiceProvider services)
         {
             var settings = services.GetRequiredService<SettingsService>();
             settings.RegisterSetting<ServersSettings>(SettingsId);
@@ -89,18 +85,14 @@ namespace VoiceCraft.Client
             settings.Load();
 
             var themes = services.GetRequiredService<ThemesService>();
-            themes.RegisterTheme("Fluent", new Theme(new FluentTheme(), new ThemeVariant("Default", null), new ThemeVariant("Dark", null), new ThemeVariant("Light", null)));
-            themes.RegisterTheme("Simple", new Theme(new SimpleTheme(), new ThemeVariant("Default", null), new ThemeVariant("Dark", null), new ThemeVariant("Light", null)));
-            var themeSetting = settings.Get<ThemeSettings>(SettingsId);
+            var themeSettings = settings.Get<ThemeSettings>(SettingsId);
+            var baseUri = new Uri(@"avares://Avalonia.Themes.Fluent");
+            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ApplicationResources.axaml", UriKind.Relative) });
+            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ApplicationResources.axaml", UriKind.Relative) });
+            themes.RegisterTheme("Test", Avalonia.Platform.PlatformThemeVariant.Dark, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ResourceDictTest.axaml", UriKind.Relative) });
+            themes.RegisterTheme("TestLight", Avalonia.Platform.PlatformThemeVariant.Light, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ResourceDictTest.axaml", UriKind.Relative) });
 
-            themes.OnThemeChanged += (from, to) =>
-            {
-                if (Current == null) return;
-                Current.Styles.Clear();
-
-                Current.Styles.Add(to.ThemeStyle);
-                Current.RequestedThemeVariant = new ThemeVariant("Default", null);
-            };
+            themes.SwitchTheme(themeSettings.SelectedTheme);
         }
     }
 }
