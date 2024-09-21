@@ -37,13 +37,13 @@
                             <Button Padding="5"
                                     Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).EditServerCommand}"
                                     CommandParameter="{Binding}">
-                                <PathIcon Data="{StaticResource edit_regular}" />
+                                <PathIcon Data="{DynamicResource edit_regular}" />
                             </Button>
 
                             <Button Padding="5"
                                     Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).DeleteServerCommand}"
                                     CommandParameter="{Binding}">
-                                <PathIcon Data="{StaticResource delete_regular}" />
+                                <PathIcon Data="{DynamicResource delete_regular}" />
                             </Button>
                         </StackPanel>
 
