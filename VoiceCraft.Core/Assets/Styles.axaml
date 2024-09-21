@@ -24,4 +24,9 @@
     <Style Selector="TextBlock">
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
+
+    <Style Selector="Border">
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    </Style>
 </Styles>

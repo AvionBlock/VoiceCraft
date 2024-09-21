@@ -22,14 +22,13 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty]
         private ListItemTemplate? _selectedListItem = null;
 
-        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings)
+        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits)
         {
             _items.Add(new ListItemTemplate(servers, "home_regular"));
             _items.Add(new ListItemTemplate(settings, "mic_settings_regular"));
-            /*
             _items.Add(new ListItemTemplate(credits, "book_information_regular"));
-            _items.Add(new ListItemTemplate(addServer, "add_regular"));
-            */
+            //_items.Add(new ListItemTemplate(addServer, "add_regular"));
+            
 
             SelectedListItem = _items[0];
             _content = _items[0].ViewModel;

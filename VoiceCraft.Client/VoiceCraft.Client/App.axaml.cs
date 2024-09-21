@@ -72,6 +72,7 @@ namespace VoiceCraft.Client
             services.AddTransient<HomeViewModel>();
             services.AddTransient<ServersViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<CreditsViewModel>();
 
             //Build Plugin Services.
 
