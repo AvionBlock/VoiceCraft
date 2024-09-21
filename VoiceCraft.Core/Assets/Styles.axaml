@@ -7,6 +7,12 @@
         </ResourceDictionary>
     </Styles.Resources>
 
+    <Style Selector="Image.backgroundImage">
+        <Setter Property="Source" Value="avares://VoiceCraft.Core/Assets/bgdark.png" />
+        <Setter Property="Stretch" Value="UniformToFill" />
+        <Setter Property="Opacity" Value="150" />
+    </Style>
+
     <Style Selector="ListBox">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     </Style>

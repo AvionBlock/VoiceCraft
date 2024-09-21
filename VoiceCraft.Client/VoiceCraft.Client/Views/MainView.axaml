@@ -9,10 +9,8 @@
              d:DesignWidth="800"
              x:DataType="vm:MainViewModel"
              mc:Ignorable="d">
-    <Grid x:Name="grid">
-        <Image Opacity="150"
-               Source="avares://VoiceCraft.Core/Assets/bgdark.png"
-               Stretch="UniformToFill" />
+    <Grid>
+        <Image Classes="backgroundImage" />
         <TransitioningContentControl Content="{Binding Content}" />
         <controls:NotificationMessageContainer Manager="{Binding Manager}" />
     </Grid>
