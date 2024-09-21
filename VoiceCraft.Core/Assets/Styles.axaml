@@ -14,4 +14,8 @@
     <Style Selector="Expander">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
 </Styles>
