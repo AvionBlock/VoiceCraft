@@ -1,5 +1,4 @@
 ﻿using Avalonia;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Concurrent;
@@ -12,10 +11,11 @@ namespace VoiceCraft.Core.Services
         public IEnumerable<string> ThemeNames { get => _themes.Keys; }
 
         private ConcurrentDictionary<string, Theme> _themes = new ConcurrentDictionary<string, Theme>();
+        private Theme? _currentTheme;
 
-        public void RegisterTheme(string themeName, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light, params ResourceInclude[] themeResources)
+        public void RegisterTheme(string themeName, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light, params IStyle[] themeStyles)
         {
-            var theme = new Theme(themeVariant, themeResources);
+            var theme = new Theme(themeVariant, themeStyles);
             _themes.AddOrUpdate(themeName, theme, (key, old) => old = theme);
         }
 
@@ -31,9 +31,18 @@ namespace VoiceCraft.Core.Services
                 Application.Current.Resources.MergedDictionaries.Clear();
                 Application.Current.RequestedThemeVariant = theme.Variant == PlatformThemeVariant.Light ? ThemeVariant.Light : ThemeVariant.Dark;
 
-                foreach (var themeResource in theme.ThemeResources)
+                if (_currentTheme != null)
                 {
-                    Application.Current.Resources.MergedDictionaries.Add(themeResource);
+                    foreach (var themeStyle in _currentTheme.ThemeStyles)
+                    {
+                        Application.Current.Styles.Remove(themeStyle);
+                    }
+                }
+
+                _currentTheme = theme;
+                foreach (var themeStyle in theme.ThemeStyles)
+                {
+                    Application.Current.Styles.Add(themeStyle);
                 }
             }
         }
@@ -41,12 +50,12 @@ namespace VoiceCraft.Core.Services
         private class Theme
         {
             public readonly PlatformThemeVariant Variant;
-            public readonly ResourceInclude[] ThemeResources;
+            public readonly IStyle[] ThemeStyles;
 
-            public Theme(PlatformThemeVariant variant, params ResourceInclude[] themeResources)
+            public Theme(PlatformThemeVariant variant, params IStyle[] themeStyles)
             {
                 Variant = variant;
-                ThemeResources = themeResources;
+                ThemeStyles = themeStyles;
             }
         }
     }

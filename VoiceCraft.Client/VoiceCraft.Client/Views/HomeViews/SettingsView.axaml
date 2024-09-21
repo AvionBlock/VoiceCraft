@@ -10,14 +10,10 @@
              mc:Ignorable="d">
     <ScrollViewer>
         <StackPanel Spacing="10">
-            <Expander HorizontalAlignment="Stretch"
-                      Background="{DynamicResource BackgroundBrush}"
-                      IsExpanded="{Binding GeneralSettingsExpanded}">
+            <Expander HorizontalAlignment="Stretch" IsExpanded="{Binding GeneralSettingsExpanded}">
                 <Expander.Header>
                     <TextBlock FontWeight="Bold" Text="General Settings" />
                 </Expander.Header>
-
-                <!--  List themes here somehow  -->
                 <StackPanel Spacing="10">
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -34,9 +30,7 @@
                 </StackPanel>
             </Expander>
 
-            <Expander HorizontalAlignment="Stretch"
-                      Background="{DynamicResource BackgroundBrush}"
-                      IsExpanded="{Binding AudioSettingsExpanded}">
+            <Expander HorizontalAlignment="Stretch" IsExpanded="{Binding AudioSettingsExpanded}">
                 <Expander.Header>
                     <TextBlock FontWeight="Bold" Text="Audio Settings" />
                 </Expander.Header>

@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Notification;
 using Avalonia.SimpleRouter;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.ViewModels;
@@ -88,8 +89,8 @@ namespace VoiceCraft.Client
             var themes = services.GetRequiredService<ThemesService>();
             var themeSettings = settings.Get<ThemeSettings>(SettingsId);
             var baseUri = new Uri(@"avares://Avalonia.Themes.Fluent");
-            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light);
-            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark);
+            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light, new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) });
+            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark, new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) });
 
             themes.SwitchTheme(themeSettings.SelectedTheme);
         }
