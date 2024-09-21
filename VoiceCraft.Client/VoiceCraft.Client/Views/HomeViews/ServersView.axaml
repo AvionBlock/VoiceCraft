@@ -4,61 +4,63 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:server="clr-namespace:VoiceCraft.Core.Settings;assembly=VoiceCraft.Core"
-             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.HomeViews"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.HomeViews;assembly=VoiceCraft.Client"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:ServersViewModel"
              mc:Ignorable="d">
-    <ListBox Background="Transparent"
-             ItemsSource="{Binding Servers.Servers}"
-             SelectedItem="{Binding SelectedServer}"
-             SelectionMode="Multiple">
-        <ListBox.Styles>
-            <Style Selector="ListBoxItem">
-                <Setter Property="CornerRadius" Value="5" />
-                <Setter Property="Margin" Value="0,0,0,5" />
-            </Style>
-        </ListBox.Styles>
-        <ListBox.ItemTemplate>
-            <DataTemplate DataType="{x:Type server:Server}">
-                <Grid RowDefinitions="Auto, Auto, Auto">
-                    <TextBlock Grid.Row="0"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Text="{Binding Name}" />
+    <ScrollViewer>
+        <ListBox Background="Transparent"
+                 ItemsSource="{Binding Servers.Servers}"
+                 SelectedItem="{Binding SelectedServer}"
+                 SelectionMode="Multiple">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="CornerRadius" Value="5" />
+                    <Setter Property="Margin" Value="0,0,0,5" />
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type server:Server}">
+                    <Grid RowDefinitions="Auto, Auto, Auto">
+                        <TextBlock Grid.Row="0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Text="{Binding Name}" />
 
-                    <StackPanel Grid.Row="0"
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal"
-                                Spacing="10">
-                        <Button Padding="5"
-                                Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).EditServerCommand}"
-                                CommandParameter="{Binding}">
-                            <PathIcon Data="{StaticResource edit_regular}" />
-                        </Button>
+                        <StackPanel Grid.Row="0"
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="10">
+                            <Button Padding="5"
+                                    Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).EditServerCommand}"
+                                    CommandParameter="{Binding}">
+                                <PathIcon Data="{StaticResource edit_regular}" />
+                            </Button>
 
-                        <Button Padding="5"
-                                Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).DeleteServerCommand}"
-                                CommandParameter="{Binding}">
-                            <PathIcon Data="{StaticResource delete_regular}" />
-                        </Button>
-                    </StackPanel>
+                            <Button Padding="5"
+                                    Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).DeleteServerCommand}"
+                                    CommandParameter="{Binding}">
+                                <PathIcon Data="{StaticResource delete_regular}" />
+                            </Button>
+                        </StackPanel>
 
-                    <TextBlock Grid.Row="1"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="16"
-                               Text="{Binding Ip}" />
+                        <TextBlock Grid.Row="1"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Text="{Binding Ip}" />
 
-                    <TextBlock Grid.Row="2"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="16"
-                               Text="{Binding Port}" />
-                </Grid>
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-    </ListBox>
+                        <TextBlock Grid.Row="2"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   Text="{Binding Port}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </ScrollViewer>
 </UserControl>

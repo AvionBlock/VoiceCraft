@@ -19,7 +19,8 @@ namespace VoiceCraft.Client
     public partial class App : Application
     {
         public static readonly Guid SettingsId = Guid.Empty;
-        public static IServiceProvider? Services { get; private set; }
+        private static IServiceProvider? Services;
+
         public override void Initialize()
         {
             Services = ConfigureServices();
@@ -87,10 +88,8 @@ namespace VoiceCraft.Client
             var themes = services.GetRequiredService<ThemesService>();
             var themeSettings = settings.Get<ThemeSettings>(SettingsId);
             var baseUri = new Uri(@"avares://Avalonia.Themes.Fluent");
-            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ApplicationResources.axaml", UriKind.Relative) });
-            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ApplicationResources.axaml", UriKind.Relative) });
-            themes.RegisterTheme("Test", Avalonia.Platform.PlatformThemeVariant.Dark, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ResourceDictTest.axaml", UriKind.Relative) });
-            themes.RegisterTheme("TestLight", Avalonia.Platform.PlatformThemeVariant.Light, new ResourceInclude(new Uri(@"avares://VoiceCraft.Client")) { Source = new Uri(@"/Assets/ResourceDictTest.axaml", UriKind.Relative) });
+            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light);
+            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark);
 
             themes.SwitchTheme(themeSettings.SelectedTheme);
         }

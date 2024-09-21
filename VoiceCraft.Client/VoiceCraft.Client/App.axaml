@@ -12,7 +12,7 @@
     <Application.Styles>
         <FluentTheme />
 
-        <StyleInclude Source="avares://VoiceCraft.Client/Assets/Icons.axaml" />
+        <StyleInclude Source="avares://VoiceCraft.Core/Assets/Icons.axaml" />
         <StyleInclude Source="avares://Notification.Avalonia/Themes/Generic.xaml" />
         <Style Selector="TextBlock">
             <Setter Property="TextWrapping" Value="Wrap" />

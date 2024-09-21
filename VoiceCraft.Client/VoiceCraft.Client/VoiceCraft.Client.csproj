@@ -18,16 +18,6 @@
     <EmbeddedResource Remove="Ignore\**" />
     <None Remove="Ignore\**" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <AvaloniaXaml Remove="Assets\ApplicationResources.axaml" />
-    <AvaloniaXaml Remove="Assets\Icons.axaml" />
-    <AvaloniaXaml Remove="Assets\ResourceDictTest.axaml" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Remove="Assets\bgdark.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.1.3" />
@@ -35,7 +25,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.3" />    
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.3" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="NAudio.Core" Version="2.2.1" />
     <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
@@ -52,11 +42,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Update="Assets\ApplicationResources.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
-    <AvaloniaResource Update="Assets\Icons.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaResource>
+    <Compile Update="Views\HomeView.axaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <Compile Update="Views\HomeViews\ServersView.axaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <Compile Update="Views\HomeViews\SettingsView.axaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
