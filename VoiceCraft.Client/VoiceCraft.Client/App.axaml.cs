@@ -89,8 +89,12 @@ namespace VoiceCraft.Client
             var themes = services.GetRequiredService<ThemesService>();
             var themeSettings = settings.Get<ThemeSettings>(SettingsId);
             var baseUri = new Uri(@"avares://Avalonia.Themes.Fluent");
-            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light, new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) });
-            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark, new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) });
+            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light,
+                new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
+                new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Icons.axaml", UriKind.Relative) });
+            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark,
+                new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
+                new StyleInclude(new Uri(@"avares://VoiceCraft.Core")) { Source = new Uri(@"/Assets/Icons.axaml", UriKind.Relative) });
 
             themes.SwitchTheme(themeSettings.SelectedTheme);
         }
