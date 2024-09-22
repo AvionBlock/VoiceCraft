@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<EnableDynamicLoading>true</EnableDynamicLoading>
+	<BaseOutputPath></BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaXaml Remove="Assets\Icons.axaml" />
+    <AvaloniaXaml Remove="Assets\Resources.axaml" />
+    <AvaloniaXaml Remove="Assets\Styles.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\bgdark.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\bgdark.png" />
+    <AvaloniaResource Include="Assets\Icons.axaml" />
+    <AvaloniaResource Include="Assets\Resources.axaml" />
+    <AvaloniaResource Include="Assets\Styles.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <ProjectReference Include="..\VoiceCraft.Client.PDK\VoiceCraft.Client.PDK.csproj">
+		  <Private>false</Private>
+		  <ExcludeAssets>runtime</ExcludeAssets>
+	  </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\MainView.axaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>

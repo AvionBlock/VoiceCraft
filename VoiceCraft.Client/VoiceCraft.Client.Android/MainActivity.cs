@@ -2,7 +2,6 @@
 using Android.Content.PM;
 using Avalonia;
 using Avalonia.Android;
-using System.Diagnostics;
 
 namespace VoiceCraft.Client.Android
 {
