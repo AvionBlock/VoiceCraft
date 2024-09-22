@@ -1,5 +1,4 @@
-﻿using Avalonia.Notification;
-using Avalonia.SimpleRouter;
+﻿using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -14,7 +13,6 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
     {
         public override string Title { get => "Servers"; protected set => throw new NotSupportedException(); }
         private HistoryRouter<ViewModelBase> _router;
-        private INotificationMessageManager _manager;
         private SettingsService _settings;
 
         [ObservableProperty]
@@ -23,9 +21,8 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         [ObservableProperty]
         private Server? _selectedServer;
 
-        public ServersViewModel(HistoryRouter<ViewModelBase> router, SettingsService settings, NotificationMessageManager manager)
+        public ServersViewModel(HistoryRouter<ViewModelBase> router, SettingsService settings)
         {
-            _manager = manager;
             _router = router;
             _settings = settings;
             _servers = settings.Get<ServersSettings>(App.SettingsId);
@@ -35,14 +32,6 @@ namespace VoiceCraft.Client.ViewModels.HomeViews
         public async Task DeleteServer(Server server)
         {
             Servers.RemoveServer(server);
-            _manager.CreateMessage()
-                .Accent("#1751C3")
-                .Animates(true)
-                .Background("#333")
-                .HasBadge("Info")
-                .HasMessage($"{server.Name} has been removed.")
-                .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
-                .Queue();
             await _settings.SaveAsync();
         }
 

@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace VoiceCraft.Plugin
+﻿namespace VoiceCraft.Plugin
 {
-    public interface IClientPlugin
+    public interface IPlugin
     {
         Guid PluginId { get; }
         public void Load(ServiceCollection services);

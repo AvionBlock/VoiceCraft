@@ -5,7 +5,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Notification;
 using Avalonia.SimpleRouter;
-using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.ViewModels;
@@ -20,12 +19,13 @@ namespace VoiceCraft.Client
     public partial class App : Application
     {
         public static readonly Guid SettingsId = Guid.Empty;
-        private static IServiceProvider? Services;
+        private static IServiceProvider? _services;
+        private static PluginService _pluginService = new PluginService();
 
         public override void Initialize()
         {
-            Services = ConfigureServices();
-            ConfigureApplicationServices(Services);
+            _services = ConfigureServices();
+            ConfigureApplicationServices(_services);
 
             //Initialize All Plugins
             AvaloniaXamlLoader.Load(this);
@@ -33,10 +33,10 @@ namespace VoiceCraft.Client
 
         public unsafe override void OnFrameworkInitializationCompleted()
         {
-            if(Services == null)
-                throw new NullReferenceException($"{nameof(Services)} was not created!");
+            if(_services == null)
+                throw new NullReferenceException($"{nameof(_services)} was not created!");
 
-            var mainViewModel = Services.GetRequiredService<MainViewModel>();
+            var mainViewModel = _services.GetRequiredService<MainViewModel>();
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 BindingPlugins.DataValidators.RemoveAt(0);
@@ -75,6 +75,7 @@ namespace VoiceCraft.Client
             services.AddTransient<CreditsViewModel>();
 
             //Build Plugin Services.
+            _pluginService.LoadPlugins(services);
 
             return services.BuildServiceProvider();
         }

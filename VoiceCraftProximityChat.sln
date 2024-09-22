@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.iOS", "Vo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{55E949E0-55F4-4D61-A850-0937E6AEA4DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Plugin", "VoiceCraft.Plugin\VoiceCraft.Plugin.csproj", "{E52606D4-6CFE-4901-BC7F-9430ADF78C05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.ClientPlugin", "VoiceCraft.ClientPlugin\VoiceCraft.ClientPlugin.csproj", "{EA87D0DD-5240-48A1-A836-CA4394EDAC13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,14 +67,14 @@ Global
 		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{55E949E0-55F4-4D61-A850-0937E6AEA4DC}.Release|ARM64.Build.0 = Release|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{E52606D4-6CFE-4901-BC7F-9430ADF78C05}.Release|ARM64.Build.0 = Release|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{EA87D0DD-5240-48A1-A836-CA4394EDAC13}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

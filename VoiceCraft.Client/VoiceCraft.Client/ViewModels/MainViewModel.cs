@@ -2,7 +2,6 @@
 using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System;
-using System.Threading.Tasks;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels
