@@ -8,7 +8,7 @@ namespace VoiceCraft.Client.PDK
         string Name { get; }
         string Description { get; }
 
-        ushort Priority { get; }
+        int Priority { get; }
         IEnumerable<Guid> ClientDependencies { get; }
         IEnumerable<Guid> ServerDependencies { get; }
 

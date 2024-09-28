@@ -16,7 +16,8 @@ namespace VoiceCraft.Client.Plugin
         public Guid Id => PluginId;
         public string Name => "VoiceCraft";
         public string Description => "The main voicecraft plugin";
-        public ushort Priority => 0;
+
+        public int Priority => 0;
         public IEnumerable<Guid> ClientDependencies => [];
         public IEnumerable<Guid> ServerDependencies => [PluginId];
 

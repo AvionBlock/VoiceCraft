@@ -76,7 +76,21 @@
                         <Slider Maximum="1.0"
                                 Minimum="0.0"
                                 Value="{Binding AudioSettings.MicrophoneSensitivity}" />
+                    </StackPanel>
 
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Aec}">
+                        <TextBlock Text="Echo Cancellation" />
+                    </ToggleButton>
+
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Agc}">
+                        <TextBlock Text="Automatic Gain Control" />
+                    </ToggleButton>
+
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Denoiser}">
+                        <TextBlock Text="Denoiser" />
+                    </ToggleButton>
+
+                    <StackPanel>
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="15"

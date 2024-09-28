@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Avalonia.Notification;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -13,30 +14,77 @@ namespace VoiceCraft.Client.PDK
                 .Select(Assembly.LoadFrom)
                 .ToArray();
 
-            var pluginInterfaceType = typeof(IPlugin);
             foreach (var assembly in assemblies)
             {
-                var assemblyType = assembly.GetTypes().FirstOrDefault(x => pluginInterfaceType.IsAssignableFrom(x) && x.IsClass);
-                if (assemblyType != null)
-                {
-                    var plugin = (IPlugin?)Activator.CreateInstance(assemblyType);
-                    if (plugin != null)
-                    {
-                        Debug.WriteLine($"Loading Plugin: {plugin.Name}");
-                        _plugins.Add(plugin);
-                        plugin?.Load(serviceCollection);
-                        break;
-                    }
-                }
+                AddPlugin(assembly);
+            }
+
+            //Order by priority.
+            _plugins = _plugins.OrderBy(x => x.Priority).ToList();
+
+            foreach (var plugin in _plugins)
+            {
+                LoadPlugin(plugin, serviceCollection);
             }
         }
 
         public static void InitializePlugins(IServiceProvider serviceProvider)
         {
+            var notifications = serviceProvider.GetRequiredService<NotificationMessageManager>();
             foreach (var plugin in _plugins)
             {
-                plugin.Initialize(serviceProvider);
+                try
+                {
+                    plugin.Initialize(serviceProvider);
+
+                    notifications.CreateMessage()
+                        .Accent("#1751C3")
+                        .Animates(true)
+                        .Background("#040")
+                        .HasBadge("Info")
+                        .HasMessage($"Loaded plugin: {plugin.Name}")
+                        .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                        .Queue();
+                }
+                catch (Exception ex)
+                {
+                    notifications.CreateMessage()
+                        .Accent("#1751C3")
+                        .Animates(true)
+                        .Background("#400")
+                        .HasBadge("Error")
+                        .HasMessage(ex.Message)
+                        .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                        .Queue();
+                }
             }
+        }
+
+        private static void AddPlugin(Assembly assembly)
+        {
+            var pluginInterfaceType = typeof(IPlugin);
+            //Find and instantiate plugin.
+            var assemblyType = assembly.GetTypes().FirstOrDefault(x => pluginInterfaceType.IsAssignableFrom(x) && x.IsClass);
+            if (assemblyType == null) return;
+            var plugin = (IPlugin?)Activator.CreateInstance(assemblyType);
+            if (plugin == null) return;
+
+            Debug.WriteLine($"Adding Plugin: {plugin.Name}");
+
+            //If conflicted with another plugin, don't add it. This order can be completely random.
+            if (_plugins.Exists(x => x.Id == plugin.Id)) return;
+            _plugins.Add(plugin);
+        }
+
+        private static void LoadPlugin(IPlugin plugin, ServiceCollection serviceCollection)
+        {
+            foreach (var dependency in plugin.ClientDependencies)
+            {
+                //Cannot find dependency, don't load the plugin.
+                if (_plugins.Exists(x => x.Id != dependency)) return;
+            }
+
+            plugin.Load(serviceCollection);
         }
     }
 }
