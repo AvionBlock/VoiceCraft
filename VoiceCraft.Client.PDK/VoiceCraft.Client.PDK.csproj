@@ -14,7 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+	  <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj">
+		  <Private>false</Private>
+		  <ExcludeAssets>runtime</ExcludeAssets>
+	  </ProjectReference>
   </ItemGroup>
 
 </Project>
