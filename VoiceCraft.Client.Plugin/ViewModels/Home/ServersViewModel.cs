@@ -26,10 +26,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             if (value == null) return;
             var model = _navigator.NavigateTo<ServerView>();
-            model.SelectedServer = value;
-            SelectedServer = null;
-            // OnPropertyChanged(nameof(SelectedServer));
-            // TODO this still needs to be fixed, since it DOESN'T actually unset the selected server
+            model.ViewModel.SelectedServer = value;
+
+            //I don't know why this fixes it, it just does.
+            Task.Run(() =>
+            {
+                SelectedServer = null;
+            });
         }
 
         public ServersViewModel(NavigationService navigator, NotificationMessageManager manager, SettingsService settings)
@@ -60,7 +63,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             if (server == null) return; //Somehow can be null.
             var model = _navigator.NavigateTo<EditServerView>();
-            model.Server = server;
+            model.ViewModel.Server = server;
         }
     }
 }

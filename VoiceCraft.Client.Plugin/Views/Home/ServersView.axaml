@@ -13,7 +13,8 @@
         <ListBox Background="Transparent"
                  ItemsSource="{Binding Servers.Servers}"
                  SelectedItem="{Binding SelectedServer}"
-                 SelectionMode="Multiple">
+                 SelectedValue="{Binding SelectedServer}"
+                 SelectionMode="Single">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="CornerRadius" Value="5" />
