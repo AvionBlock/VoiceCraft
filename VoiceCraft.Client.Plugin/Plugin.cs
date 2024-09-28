@@ -30,12 +30,14 @@ namespace VoiceCraft.Client.Plugin
             serviceCollection.AddTransient<HomeViewModel>();
             serviceCollection.AddTransient<ServersViewModel>();
             serviceCollection.AddTransient<AddServerViewModel>();
+            serviceCollection.AddTransient<EditServerViewModel>();
             serviceCollection.AddTransient<SettingsViewModel>();
             serviceCollection.AddTransient<CreditsViewModel>();
 
             serviceCollection.AddTransient<HomeView>();
             serviceCollection.AddTransient<ServersView>();
             serviceCollection.AddTransient<AddServerView>();
+            serviceCollection.AddTransient<EditServerView>();
             serviceCollection.AddTransient<SettingsView>();
             serviceCollection.AddTransient<CreditsView>();
         }

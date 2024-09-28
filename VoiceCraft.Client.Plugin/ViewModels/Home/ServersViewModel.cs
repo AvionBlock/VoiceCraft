@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
+using VoiceCraft.Client.Plugin.Views;
 
 namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
@@ -10,6 +11,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
     {
         public override string Title => "Servers";
 
+        private NavigationService _navigator;
         private SettingsService _settings;
 
         [ObservableProperty]
@@ -18,8 +20,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private Server? _selectedServer;
 
-        public ServersViewModel(SettingsService settings)
+        public ServersViewModel(NavigationService navigator, SettingsService settings)
         {
+            _navigator = navigator;
             _settings = settings;
             _servers = settings.Get<ServersSettings>(Plugin.PluginId);
         }
@@ -34,11 +37,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [RelayCommand]
         public void EditServer(Server? server)
         {
-            /*
             if (server == null) return; //Somehow can be null.
-            var model = _router.GoTo<EditServerViewModel>();
+            var model = _navigator.NavigateTo<EditServerView>();
             model.Server = server;
-            */
         }
     }
 }

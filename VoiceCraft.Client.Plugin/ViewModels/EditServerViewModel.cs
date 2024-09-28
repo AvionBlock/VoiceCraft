@@ -1,16 +1,17 @@
-﻿using Avalonia.Notification;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Client.PDK.Services;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.PDK.ViewModels;
+using Avalonia.Notification;
+using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Plugin.Settings;
+using VoiceCraft.Client.PDK.Services;
 
-namespace VoiceCraft.Client.Plugin.ViewModels.Home
+namespace VoiceCraft.Client.Plugin.ViewModels
 {
-    public partial class AddServerViewModel : ViewModelBase
+    public partial class EditServerViewModel : ViewModelBase
     {
-        public override string Title => "Add Server";
+        public override string Title => "Edit Server";
 
+        private NavigationService _navigator;
         private INotificationMessageManager _manager;
         private SettingsService _settings;
 
@@ -18,31 +19,41 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private ServersSettings _servers;
 
         [ObservableProperty]
-        private Server _server = new();
+        private Server _server = new Server();
 
-        public AddServerViewModel(NotificationMessageManager manager, SettingsService settings)
+        public EditServerViewModel(NavigationService navigator, NotificationMessageManager manager, SettingsService settings)
         {
+            _navigator = navigator;
             _manager = manager;
             _settings = settings;
             _servers = settings.Get<ServersSettings>(Plugin.PluginId);
         }
 
         [RelayCommand]
-        public async Task AddServer()
+        public void Cancel()
+        {
+            _navigator.Back();
+        }
+
+        [RelayCommand]
+        public async Task EditServer()
         {
             try
             {
+                Servers.RemoveServer(Server);
                 Servers.AddServer(Server);
+
                 _manager.CreateMessage()
-                    .Accent("#1751C3")
+                .Accent("#1751C3")
                     .Animates(true)
                     .Background("#333")
                     .HasBadge("Info")
-                    .HasMessage($"{Server.Name} has been added.")
+                    .HasMessage($"{Server.Name} has been edited.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
                     .Queue();
                 Server = new Server();
                 await _settings.SaveAsync();
+                _navigator.Back();
             }
             catch (Exception ex)
             {
