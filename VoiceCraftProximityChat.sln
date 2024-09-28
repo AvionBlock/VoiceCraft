@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.iOS", "Vo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Plugin", "VoiceCraft.Client.Plugin\VoiceCraft.Client.Plugin.csproj", "{B6B7482B-DC5A-40B4-8231-C310372571A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{07BF798F-18E8-4B56-8FBA-B295CC0827AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

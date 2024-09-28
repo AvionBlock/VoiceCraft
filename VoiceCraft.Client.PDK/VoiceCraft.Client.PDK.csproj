@@ -13,4 +13,8 @@
     <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+  </ItemGroup>
+
 </Project>
