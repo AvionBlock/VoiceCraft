@@ -22,14 +22,13 @@ namespace VoiceCraft.Client
         public override void OnFrameworkInitializationCompleted()
         {
             var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<NavigationService>(s => new NavigationService(p => (Control)s.GetRequiredService(p)));
             serviceCollection.AddSingleton<NotificationMessageManager>();
             serviceCollection.AddSingleton<SettingsService>();
             serviceCollection.AddSingleton<ThemesService>();
             PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            PluginLoader.InitializePlugins(serviceProvider);
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -47,6 +46,8 @@ namespace VoiceCraft.Client
                 var mainView = serviceProvider.GetRequiredService<IMainView>();
                 singleViewPlatform.MainView = (Control)mainView;
             }
+
+            PluginLoader.InitializePlugins(serviceProvider);
 
             base.OnFrameworkInitializationCompleted();
         }

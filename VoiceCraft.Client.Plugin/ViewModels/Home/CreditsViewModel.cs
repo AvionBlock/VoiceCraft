@@ -6,6 +6,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
     public partial class CreditsViewModel : ViewModelBase
     {
+        public override string Title => "Credits";
+
         [ObservableProperty]
         private string _voicecraftVersion = "N.A.";
 

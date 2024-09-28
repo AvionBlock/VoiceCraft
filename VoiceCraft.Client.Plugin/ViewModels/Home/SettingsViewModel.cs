@@ -9,6 +9,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
     public partial class SettingsViewModel : ViewModelBase
     {
+        public override string Title => "Settings";
+
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
 

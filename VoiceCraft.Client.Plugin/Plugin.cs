@@ -57,6 +57,9 @@ namespace VoiceCraft.Client.Plugin
                 new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) });
 
             themes.SwitchTheme(themeSettings.SelectedTheme);
+
+            var navigation = serviceProvider.GetRequiredService<NavigationService>();
+            navigation.NavigateTo<HomeView>();
         }
     }
 }

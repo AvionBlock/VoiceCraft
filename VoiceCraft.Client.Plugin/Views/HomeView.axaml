@@ -14,7 +14,7 @@
                    VerticalAlignment="Center"
                    FontSize="20"
                    FontWeight="Bold"
-                   Text="{Binding Test}"
+                   Text="{Binding Content.DataContext.Title}"
                    TextAlignment="Center" />
         <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
             <ListBox Grid.Column="0"

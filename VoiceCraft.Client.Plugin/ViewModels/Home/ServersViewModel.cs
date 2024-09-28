@@ -8,6 +8,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
     public partial class ServersViewModel : ViewModelBase
     {
+        public override string Title => "Servers";
+
         private SettingsService _settings;
 
         [ObservableProperty]

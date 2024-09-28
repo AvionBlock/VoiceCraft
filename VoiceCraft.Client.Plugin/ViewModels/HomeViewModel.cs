@@ -10,8 +10,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
 {
     public partial class HomeViewModel : ViewModelBase
     {
-        [ObservableProperty]
-        private string _test = "HELLO";
+        public override string Title => "Home";
 
         [ObservableProperty]
         private Control _content = default!;
