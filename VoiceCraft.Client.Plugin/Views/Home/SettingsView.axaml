@@ -89,6 +89,7 @@
                                 <TextBlock Text="Test" />
                             </ToggleButton>
                             <ProgressBar Grid.Column="1"
+                                         MinWidth="10"
                                          Margin="1"
                                          HorizontalAlignment="Stretch"
                                          VerticalAlignment="Stretch"

@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <!-- This is so we can get auto completions for the axaml files. -->
+	  <ProjectReference Include="..\..\VoiceCraft.Client.Plugin\VoiceCraft.Client.Plugin.csproj">
+		  <Private>false</Private>
+		  <ExcludeAssets>runtime</ExcludeAssets>
+	  </ProjectReference>
     <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
   </ItemGroup>
 

@@ -8,15 +8,22 @@
              d:DesignWidth="800"
              x:DataType="vm:HomeViewModel"
              mc:Ignorable="d">
-    <Grid RowDefinitions="Auto, *">
+    <Grid ColumnDefinitions="{OnFormFactor '*', Mobile='Auto, *'}" RowDefinitions="{OnFormFactor '', Desktop='Auto, *'}">
         <TextBlock Grid.Row="0"
+                   Grid.Column="0"
                    Margin="10"
                    VerticalAlignment="Center"
                    FontSize="20"
                    FontWeight="Bold"
                    Text="{Binding Content.DataContext.Title}"
                    TextAlignment="Center" />
-        <Grid Grid.Row="1" ColumnDefinitions="Auto, *">
+        <Grid Grid.Row="{OnFormFactor '1',
+                                      Mobile='0',
+                                      Desktop='1'}"
+              Grid.Column="{OnFormFactor '0',
+                                         Mobile='1',
+                                         Mobile='0'}"
+              ColumnDefinitions="Auto, *">
             <ListBox Grid.Column="0"
                      VerticalAlignment="Top"
                      CornerRadius="0,5,5,0"
@@ -24,7 +31,7 @@
                      SelectedItem="{Binding SelectedListItem}">
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:ListItemTemplate}">
-                        <StackPanel Orientation="Horizontal" Spacing="15">
+                        <StackPanel Orientation="{OnFormFactor 'Horizontal', Mobile='Vertical', Desktop='Horizontal'}" Spacing="15">
                             <PathIcon Data="{Binding Icon}" />
                         </StackPanel>
                     </DataTemplate>
