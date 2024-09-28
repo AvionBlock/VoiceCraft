@@ -21,12 +21,12 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         [ObservableProperty]
         private ListItemTemplate? _selectedListItem = null;
 
-        public HomeViewModel(ServersView servers, SettingsView settings, CreditsView credits)
+        public HomeViewModel(ServersView servers, SettingsView settings, CreditsView credits, AddServerView addServer)
         {
             _items.Add(new ListItemTemplate(servers, "home_regular"));
             _items.Add(new ListItemTemplate(settings, "mic_settings_regular"));
             _items.Add(new ListItemTemplate(credits, "book_information_regular"));
-            //_items.Add(new ListItemTemplate(addServer, "add_regular"));
+            _items.Add(new ListItemTemplate(addServer, "add_regular"));
 
 
             SelectedListItem = _items[0];
