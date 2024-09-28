@@ -5,7 +5,7 @@ namespace VoiceCraft.Client.Plugin.Views
 {
     public partial class ServerView : UserControl
     {
-        public ServerViewModel ViewModel;
+        public readonly ServerViewModel ViewModel;
 
         public ServerView(ServerViewModel viewModel)
         {
