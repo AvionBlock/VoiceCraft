@@ -29,21 +29,20 @@ namespace VoiceCraft.Client
             PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
+            var mainView = serviceProvider.GetRequiredService<IMainView>();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Line below is needed to remove Avalonia data validation.
                 // Without this line you will get duplicate validations from both Avalonia and CT
                 BindingPlugins.DataValidators.RemoveAt(0);
-                var mainViewModel = serviceProvider.GetRequiredService<IMainView>();
                 desktop.MainWindow = new MainWindow
                 {
-                    Content = mainViewModel,
+                    Content = mainView,
                 };
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
-                var mainView = serviceProvider.GetRequiredService<IMainView>();
                 singleViewPlatform.MainView = (Control)mainView;
             }
 
