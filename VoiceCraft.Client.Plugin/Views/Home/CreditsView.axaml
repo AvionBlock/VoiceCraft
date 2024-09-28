@@ -9,7 +9,9 @@
              x:DataType="vm:CreditsViewModel"
              mc:Ignorable="d">
     <ScrollViewer>
-        <Border Padding="15" VerticalAlignment="Top">
+        <Border Padding="15"
+                VerticalAlignment="Top"
+                Classes="card">
             <StackPanel Spacing="10">
                 <TextBlock HorizontalAlignment="Left"
                            VerticalAlignment="Center"
