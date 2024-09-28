@@ -1,0 +1,70 @@
+<UserControl x:Class="VoiceCraft.Client.Plugin.Views.ServerView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.Plugin.ViewModels"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             x:DataType="vm:ServerViewModel"
+             mc:Ignorable="d">
+    <Grid RowDefinitions="Auto, *">
+        <TextBlock Grid.Row="0"
+                   Margin="10"
+                   VerticalAlignment="Center"
+                   FontSize="20"
+                   FontWeight="Bold"
+                   Text="{Binding SelectedServer.Name}"
+                   TextAlignment="Center" />
+        <Button Grid.Row="0"
+                Margin="10"
+                Padding="5"
+                Command="{Binding CancelCommand}">
+            <PathIcon Data="{StaticResource arrow_left_regular}" />
+        </Button>
+
+        <ScrollViewer Grid.Row="1" Margin="20">
+            <StackPanel Spacing="5">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Text="Address: " />
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}:{1}">
+                                <Binding Path="SelectedServer.Ip" />
+                                <Binding Path="SelectedServer.Port" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Text="Key: " />
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="15"
+                                   Text="{Binding SelectedServer.Key}" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Text="Ping: " />
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding PingInfo}" />
+                </StackPanel>
+
+                <Button Background="#AA008800">
+                    <TextBlock>Connect</TextBlock>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Notification;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
@@ -12,6 +13,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override string Title => "Servers";
 
         private NavigationService _navigator;
+        private INotificationMessageManager _manager;
         private SettingsService _settings;
 
         [ObservableProperty]
@@ -20,9 +22,20 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private Server? _selectedServer;
 
-        public ServersViewModel(NavigationService navigator, SettingsService settings)
+        partial void OnSelectedServerChanged(Server? value)
+        {
+            if (value == null) return;
+            var model = _navigator.NavigateTo<ServerView>();
+            model.SelectedServer = value;
+            SelectedServer = null;
+            // OnPropertyChanged(nameof(SelectedServer));
+            // TODO this still needs to be fixed, since it DOESN'T actually unset the selected server
+        }
+
+        public ServersViewModel(NavigationService navigator, NotificationMessageManager manager, SettingsService settings)
         {
             _navigator = navigator;
+            _manager = manager;
             _settings = settings;
             _servers = settings.Get<ServersSettings>(Plugin.PluginId);
         }
@@ -31,6 +44,14 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public async Task DeleteServer(Server server)
         {
             Servers.RemoveServer(server);
+            _manager.CreateMessage()
+                .Accent("#1751C3")
+                .Animates(true)
+                .Background("#333")
+                .HasBadge("Info")
+                .HasMessage($"{server.Name} has been removed.")
+                .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
+                .Queue();
             await _settings.SaveAsync();
         }
 

@@ -29,6 +29,7 @@ namespace VoiceCraft.Client.Plugin
             //Pages
             serviceCollection.AddTransient<HomeViewModel>();
             serviceCollection.AddTransient<ServersViewModel>();
+            serviceCollection.AddTransient<ServerViewModel>();
             serviceCollection.AddTransient<AddServerViewModel>();
             serviceCollection.AddTransient<EditServerViewModel>();
             serviceCollection.AddTransient<SettingsViewModel>();
@@ -36,6 +37,7 @@ namespace VoiceCraft.Client.Plugin
 
             serviceCollection.AddTransient<HomeView>();
             serviceCollection.AddTransient<ServersView>();
+            serviceCollection.AddTransient<ServerView>();
             serviceCollection.AddTransient<AddServerView>();
             serviceCollection.AddTransient<EditServerView>();
             serviceCollection.AddTransient<SettingsView>();
