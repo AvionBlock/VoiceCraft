@@ -7,6 +7,11 @@ namespace VoiceCraft.Client.PDK
         Guid Id { get; }
         string Name { get; }
         string Description { get; }
+
+        ushort Priority { get; }
+        IEnumerable<Guid> ClientDependencies { get; }
+        IEnumerable<Guid> ServerDependencies { get; }
+
         void Load(ServiceCollection serviceCollection);
         void Initialize(IServiceProvider serviceProvider);
     }

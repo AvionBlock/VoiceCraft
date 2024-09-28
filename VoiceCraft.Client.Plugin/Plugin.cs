@@ -13,12 +13,12 @@ namespace VoiceCraft.Client.Plugin
     public class Plugin : IPlugin
     {
         public static Guid PluginId => Guid.Empty;
-
         public Guid Id => PluginId;
-
         public string Name => "VoiceCraft";
-
-        public string Description => throw new NotImplementedException();
+        public string Description => "The main voicecraft plugin";
+        public ushort Priority => 0;
+        public IEnumerable<Guid> ClientDependencies => [];
+        public IEnumerable<Guid> ServerDependencies => [PluginId];
 
         public void Load(ServiceCollection serviceCollection)
         {
