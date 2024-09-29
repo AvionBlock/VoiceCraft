@@ -1,40 +1,49 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
-        <!--  Light  -->
-        <ResourceDictionary x:Key="Light">
-            <!--  Accents  -->
-            <SolidColorBrush x:Key="accentBrush">#1751C3</SolidColorBrush>
-            <SolidColorBrush x:Key="errorAccentBrush">#E0A030</SolidColorBrush>
-            <SolidColorBrush x:Key="successAccentBrush">#3A823D</SolidColorBrush>
+        <!--  Default/Light  -->
+        <ResourceDictionary x:Key="Default">
+            <!--  Accent Brushes  -->
+            <SolidColorBrush x:Key="accentBrush" Color="{StaticResource accentColor}" />
+            <SolidColorBrush x:Key="errorAccentBrush" Color="{StaticResource errorAccentColor}" />
+            <SolidColorBrush x:Key="successAccentBrush" Color="{StaticResource successAccentColor}" />
 
-            <!--  Backgrounds  -->
-            <SolidColorBrush x:Key="backgroundBrush">#88FFFFFF</SolidColorBrush>
-            <SolidColorBrush x:Key="errorBackgroundBrush">#300</SolidColorBrush>
-            <SolidColorBrush x:Key="successBackgroundBrush">#300</SolidColorBrush>
+            <!--  Background Brushes  -->
+            <SolidColorBrush x:Key="backgroundBrush" Color="{StaticResource backgroundColor}" />
+            <SolidColorBrush x:Key="errorBackgroundBrush" Color="{StaticResource errorBackgroundColor}" />
+            <SolidColorBrush x:Key="successBackgroundBrush" Color="{StaticResource successBackgroundColor}" />
+
+            <!--  Notification Accent Brushes  -->
+            <SolidColorBrush x:Key="notificationAccentBrush" Color="{StaticResource accentColor}" />
+            <SolidColorBrush x:Key="notificationAccentErrorBrush" Color="{StaticResource errorAccentColor}" />
+            <SolidColorBrush x:Key="notificationAccentSuccessBrush" Color="{StaticResource successAccentColor}" />
+
+            <!--  Notification Background Brushes  -->
+            <SolidColorBrush x:Key="notificationBackgroundBrush" Color="{StaticResource backgroundColor}" />
+            <SolidColorBrush x:Key="notificationBackgroundErrorBrush" Color="{StaticResource errorBackgroundColor}" />
+            <SolidColorBrush x:Key="notificationBackgroundSuccessBrush" Color="{StaticResource successBackgroundColor}" />
         </ResourceDictionary>
 
         <!--  Dark  -->
         <ResourceDictionary x:Key="Dark">
-            <!--  Accents  -->
-            <SolidColorBrush x:Key="accentBrush">#1751C3</SolidColorBrush>
-            <SolidColorBrush x:Key="errorAccentBrush">#E0A030</SolidColorBrush>
-            <SolidColorBrush x:Key="successAccentBrush">#3A823D</SolidColorBrush>
+            <!--  Accent Brushes  -->
+            <SolidColorBrush x:Key="accentBrush" Color="{StaticResource accentColor}" />
+            <SolidColorBrush x:Key="errorAccentBrush" Color="{StaticResource errorAccentColor}" />
+            <SolidColorBrush x:Key="successAccentBrush" Color="{StaticResource successAccentColor}" />
 
-            <!--  Backgrounds  -->
-            <SolidColorBrush x:Key="backgroundBrush">#88000000</SolidColorBrush>
-            <SolidColorBrush x:Key="errorBackgroundBrush">#300</SolidColorBrush>
-            <SolidColorBrush x:Key="successBackgroundBrush">#300</SolidColorBrush>
+            <!--  Background Brushes  -->
+            <SolidColorBrush x:Key="backgroundBrush" Color="{StaticResource backgroundColor}" />
+            <SolidColorBrush x:Key="errorBackgroundBrush" Color="{StaticResource errorBackgroundColor}" />
+            <SolidColorBrush x:Key="successBackgroundBrush" Color="{StaticResource successBackgroundColor}" />
+
+            <!--  Notification Accent Brushes  -->
+            <SolidColorBrush x:Key="notificationAccentBrush" Color="{StaticResource accentColor}" />
+            <SolidColorBrush x:Key="notificationAccentErrorBrush" Color="{StaticResource errorAccentColor}" />
+            <SolidColorBrush x:Key="notificationAccentSuccessBrush" Color="{StaticResource successAccentColor}" />
+
+            <!--  Notification Background Brushes  -->
+            <SolidColorBrush x:Key="notificationBackgroundBrush" Color="{StaticResource backgroundColor}" />
+            <SolidColorBrush x:Key="notificationBackgroundErrorBrush" Color="{StaticResource errorBackgroundColor}" />
+            <SolidColorBrush x:Key="notificationBackgroundSuccessBrush" Color="{StaticResource successBackgroundColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
-    <!--  Notifications  -->
-    <!--  Accents  -->
-    <SolidColorBrush x:Key="notificationAccentBrush" Color="{DynamicResource accentBrush}" />
-    <SolidColorBrush x:Key="notificationAccentErrorBrush" Color="{DynamicResource errorAccentBrush}" />
-    <SolidColorBrush x:Key="notificationAccentSuccessBrush" Color="{DynamicResource successAccentBrush}" />
-
-    <!--  Backgrounds  -->
-    <SolidColorBrush x:Key="notificationBackgroundBrush" Color="{DynamicResource backgroundBrush}" />
-    <SolidColorBrush x:Key="notificationBackgroundErrorBrush" Color="{DynamicResource errorBackgroundBrush}" />
-    <SolidColorBrush x:Key="notificationBackgroundSuccessBrush" Color="{DynamicResource successBackgroundBrush}" />
 </ResourceDictionary>

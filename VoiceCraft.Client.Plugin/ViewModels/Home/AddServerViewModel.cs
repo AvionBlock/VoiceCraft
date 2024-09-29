@@ -35,6 +35,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             try
             {
+                var t = Application.Current.TryGetResource("notificationAccentBrush", Application.Current.ActualThemeVariant, out var val);
+
                 Servers.AddServer(Server);
                 _manager.CreateMessage()
                     .Accent("#1751C3")
@@ -44,6 +46,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                     .HasMessage($"{Server.Name} has been added.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
                     .Queue();
+
                 Server = new Server();
                 await _settings.SaveAsync();
             }
