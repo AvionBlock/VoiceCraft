@@ -1,4 +1,6 @@
 ﻿using Avalonia;
+using Avalonia.Markup.Xaml.Converters;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Concurrent;
@@ -44,6 +46,11 @@ namespace VoiceCraft.Client.PDK.Services
                     Application.Current.Styles.Add(themeStyle);
                 }
             }
+        }
+
+        public static IBrush GetBrushFromKey(string key)
+        {
+            return Application.Current is not null && Application.Current.TryGetResource(key, Application.Current.ActualThemeVariant, out var val) && val is not null ? (IBrush)val : new SolidColorBrush(new Color());
         }
 
         private class Theme

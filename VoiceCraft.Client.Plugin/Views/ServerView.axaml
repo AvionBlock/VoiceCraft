@@ -61,7 +61,7 @@
                                Text="{Binding PingInfo}" />
                 </StackPanel>
 
-                <Button Background="#AA008800">
+                <Button Background="#AA008800" Command="{Binding ConnectCommand}">
                     <TextBlock>Connect</TextBlock>
                 </Button>
             </StackPanel>

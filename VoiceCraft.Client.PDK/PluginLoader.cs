@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Reflection;
+using VoiceCraft.Client.PDK.Services;
 
 namespace VoiceCraft.Client.PDK
 {
@@ -38,9 +39,9 @@ namespace VoiceCraft.Client.PDK
                     plugin.Initialize(serviceProvider);
 
                     notifications.CreateMessage()
-                        .Accent("#1751C3")
+                        .Accent(ThemesService.GetBrushFromKey("notificationAccentBrush"))
                         .Animates(true)
-                        .Background("#040")
+                        .Background(ThemesService.GetBrushFromKey("notificationBackgroundBrush"))
                         .HasBadge("Info")
                         .HasMessage($"Loaded plugin: {plugin.Name}")
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
@@ -49,9 +50,9 @@ namespace VoiceCraft.Client.PDK
                 catch (Exception ex)
                 {
                     notifications.CreateMessage()
-                        .Accent("#1751C3")
+                        .Accent(ThemesService.GetBrushFromKey("notificationAccentErrorBrush"))
                         .Animates(true)
-                        .Background("#400")
+                        .Background(ThemesService.GetBrushFromKey("notificationBackgroundErrorBrush"))
                         .HasBadge("Error")
                         .HasMessage(ex.Message)
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(5))

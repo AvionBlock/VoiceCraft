@@ -44,9 +44,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels
                 Servers.AddServer(Server);
 
                 _manager.CreateMessage()
-                .Accent("#1751C3")
+                    .Accent(ThemesService.GetBrushFromKey("notificationAccentBrush"))
                     .Animates(true)
-                    .Background("#333")
+                    .Background(ThemesService.GetBrushFromKey("notificationBackgroundBrush"))
                     .HasBadge("Info")
                     .HasMessage($"{Server.Name} has been edited.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
@@ -58,9 +58,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels
             catch (Exception ex)
             {
                 _manager.CreateMessage()
-                    .Accent("#E0A030")
+                    .Accent(ThemesService.GetBrushFromKey("notificationAccentErrorBrush"))
                     .Animates(true)
-                    .Background("#333")
+                    .Background(ThemesService.GetBrushFromKey("notificationBackgroundErrorBrush"))
                     .HasBadge("Error")
                     .HasMessage(ex.Message)
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(5))

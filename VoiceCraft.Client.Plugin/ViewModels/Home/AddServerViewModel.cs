@@ -1,11 +1,6 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Converters;
-using Avalonia.Media;
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Diagnostics;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
@@ -39,9 +34,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             {
                 Servers.AddServer(Server);
                 _manager.CreateMessage()
-                    .Accent(Application.Current.TryGetResource("notificationAccentBrush", Application.Current.ActualThemeVariant, out var val)? (IBrush)val : (IBrush)ColorToBrushConverter.Convert(new Color(), typeof(IBrush)))
+                    .Accent(ThemesService.GetBrushFromKey("notificationAccentBrush"))
                     .Animates(true)
-                    .Background(Application.Current.TryGetResource("notificationBackgroundBrush", Application.Current.ActualThemeVariant, out var val2) ? (IBrush)val2 : (IBrush)ColorToBrushConverter.Convert(new Color(), typeof(IBrush)))
+                    .Background(ThemesService.GetBrushFromKey("notificationBackgroundBrush"))
                     .HasBadge("Info")
                     .HasMessage($"{Server.Name} has been added.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
@@ -53,9 +48,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             catch (Exception ex)
             {
                 _manager.CreateMessage()
-                    .Accent("#E0A030")
+                    .Accent(ThemesService.GetBrushFromKey("notificationAccentErrorBrush"))
                     .Animates(true)
-                    .Background("#333")
+                    .Background(ThemesService.GetBrushFromKey("notificationBackgroundErrorBrush"))
                     .HasBadge("Error")
                     .HasMessage(ex.Message)
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
