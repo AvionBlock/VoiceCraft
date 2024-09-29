@@ -1,5 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Converters;
+using Avalonia.Media;
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -35,13 +37,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             try
             {
-                var t = Application.Current.TryGetResource("notificationAccentBrush", Application.Current.ActualThemeVariant, out var val);
-
                 Servers.AddServer(Server);
                 _manager.CreateMessage()
-                    .Accent("#1751C3")
+                    .Accent(Application.Current.TryGetResource("notificationAccentBrush", Application.Current.ActualThemeVariant, out var val)? (IBrush)val : (IBrush)ColorToBrushConverter.Convert(new Color(), typeof(IBrush)))
                     .Animates(true)
-                    .Background("#333")
+                    .Background(Application.Current.TryGetResource("notificationBackgroundBrush", Application.Current.ActualThemeVariant, out var val2) ? (IBrush)val2 : (IBrush)ColorToBrushConverter.Convert(new Color(), typeof(IBrush)))
                     .HasBadge("Info")
                     .HasMessage($"{Server.Name} has been added.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
