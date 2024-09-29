@@ -34,9 +34,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             {
                 Servers.AddServer(Server);
                 _manager.CreateMessage()
-                    .Accent(ThemesService.GetBrushFromKey("notificationAccentBrush"))
+                    .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
                     .Animates(true)
-                    .Background(ThemesService.GetBrushFromKey("notificationBackgroundBrush"))
+                    .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
                     .HasBadge("Info")
                     .HasMessage($"{Server.Name} has been added.")
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
@@ -48,9 +48,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             catch (Exception ex)
             {
                 _manager.CreateMessage()
-                    .Accent(ThemesService.GetBrushFromKey("notificationAccentErrorBrush"))
+                    .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
                     .Animates(true)
-                    .Background(ThemesService.GetBrushFromKey("notificationBackgroundErrorBrush"))
+                    .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
                     .HasBadge("Error")
                     .HasMessage(ex.Message)
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(5))

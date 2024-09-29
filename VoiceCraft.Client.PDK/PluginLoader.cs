@@ -39,9 +39,9 @@ namespace VoiceCraft.Client.PDK
                     plugin.Initialize(serviceProvider);
 
                     notifications.CreateMessage()
-                        .Accent(ThemesService.GetBrushFromKey("notificationAccentBrush"))
+                        .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
                         .Animates(true)
-                        .Background(ThemesService.GetBrushFromKey("notificationBackgroundBrush"))
+                        .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
                         .HasBadge("Info")
                         .HasMessage($"Loaded plugin: {plugin.Name}")
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
@@ -50,9 +50,9 @@ namespace VoiceCraft.Client.PDK
                 catch (Exception ex)
                 {
                     notifications.CreateMessage()
-                        .Accent(ThemesService.GetBrushFromKey("notificationAccentErrorBrush"))
+                        .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
                         .Animates(true)
-                        .Background(ThemesService.GetBrushFromKey("notificationBackgroundErrorBrush"))
+                        .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
                         .HasBadge("Error")
                         .HasMessage(ex.Message)
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(5))

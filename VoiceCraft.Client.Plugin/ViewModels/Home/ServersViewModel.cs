@@ -48,9 +48,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             Servers.RemoveServer(server);
             _manager.CreateMessage()
-                .Accent(ThemesService.GetBrushFromKey("notificationAccentBrush"))
+                .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
                 .Animates(true)
-                .Background(ThemesService.GetBrushFromKey("notificationBackgroundBrush"))
+                .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
                 .HasBadge("Info")
                 .HasMessage($"{server.Name} has been removed.")
                 .Dismiss().WithDelay(TimeSpan.FromSeconds(3))

@@ -48,9 +48,15 @@ namespace VoiceCraft.Client.PDK.Services
             }
         }
 
-        public static IBrush GetBrushFromKey(string key)
+        /// <summary>
+        /// Get Brush from resource <paramref name="key"/>. Returns <paramref name="fallback"/> if key has not been found OR returns a default color if <paramref name="fallback"/> has not been defined.
+        /// </summary>
+        /// <param name="key">Key for TryGetResource</param>
+        /// <param name="fallback">Fallback for when the resource cannot be found. Can be null</param>
+        /// <returns>An IBrush with the value of <paramref name="key"/> or <paramref name="fallback"/> or the default color.</returns>
+        public static IBrush GetBrushResource(string key, IBrush? fallback = null)
         {
-            return Application.Current is not null && Application.Current.TryGetResource(key, Application.Current.ActualThemeVariant, out var val) && val is not null ? (IBrush)val : new SolidColorBrush(new Color());
+            return Application.Current is not null && Application.Current.TryGetResource(key, Application.Current.ActualThemeVariant, out var val) && val is not null ? (IBrush)val : (fallback is not null ? fallback : new SolidColorBrush(new Color()));
         }
 
         private class Theme
