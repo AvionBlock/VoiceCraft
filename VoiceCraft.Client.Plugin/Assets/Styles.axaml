@@ -14,11 +14,11 @@
     </Style>
 
     <Style Selector="ListBox">
-        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource backgroundBrush}" />
     </Style>
 
     <Style Selector="Expander">
-        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource backgroundBrush}" />
     </Style>
 
     <Style Selector="TextBlock">
@@ -27,6 +27,6 @@
 
     <Style Selector="Border.card">
         <Setter Property="CornerRadius" Value="5" />
-        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="Background" Value="{DynamicResource backgroundBrush}" />
     </Style>
 </Styles>
