@@ -7,6 +7,10 @@ namespace VoiceCraft.Client.PDK.Services
 {
     public class SettingsService
     {
+        private const int FILE_WRITING_DELAY = 2000;
+
+        private bool _writing = false;
+        private bool _queueWrite = false;
         private static string SettingsPath = $"{AppContext.BaseDirectory}/Settings.json";
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>> _registeredSettings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>>();
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>> _settings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>();
@@ -53,7 +57,19 @@ namespace VoiceCraft.Client.PDK.Services
 
         public async Task SaveAsync()
         {
-            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
+            _queueWrite = true;
+            //Writing boolean is so we don't get multiple loop instances.
+            if (!_writing)
+            {
+                _writing = true;
+                while (_queueWrite)
+                {
+                    _queueWrite = false;
+                    await Task.Delay(FILE_WRITING_DELAY);
+                    await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
+                }
+                _writing = false;
+            }
         }
 
         public void Load()
