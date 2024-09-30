@@ -12,6 +12,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
     {
         public override string Title => "Servers";
 
+        private NotificationSettings _notificationSettings;
         private NavigationService _navigator;
         private INotificationMessageManager _manager;
         private SettingsService _settings;
@@ -41,22 +42,26 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             _manager = manager;
             _settings = settings;
             _servers = settings.Get<ServersSettings>(Plugin.PluginId);
+            _notificationSettings = settings.Get<NotificationSettings>(Plugin.PluginId);
         }
 
         [RelayCommand]
-        public async Task DeleteServer(Server server)
+        public void DeleteServer(Server server)
         {
             Servers.RemoveServer(server);
-            _manager.CreateMessage()
+            if (!_notificationSettings.DisableNotifications)
+            {
+                _manager.CreateMessage()
                 .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
                 .Animates(true)
                 .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
                 .HasBadge("Server")
                 .HasMessage($"{server.Name} has been removed.")
-                .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
                 .Dismiss().WithButton("Dismiss", (button) => { })
                 .Queue();
-            await _settings.SaveAsync();
+            }
+            _ = _settings.SaveAsync();
         }
 
         [RelayCommand]

@@ -24,8 +24,22 @@
                               ItemsSource="{Binding Themes}"
                               SelectedItem="{Binding ThemeSettings.SelectedTheme}" />
 
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="Notification Dismiss(ms)" />
+
+                    <NumericUpDown Increment="1"
+                                   Maximum="65535"
+                                   Minimum="0"
+                                   Value="{Binding NotificationSettings.DismissDelayMS}" />
+
                     <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding ServersSettings.HideServerAddresses}">
                         <TextBlock Text="Hide Server Addresses" />
+                    </ToggleButton>
+
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding NotificationSettings.DisableNotifications}">
+                        <TextBlock Text="Disable Notifications" />
                     </ToggleButton>
                 </StackPanel>
             </Expander>

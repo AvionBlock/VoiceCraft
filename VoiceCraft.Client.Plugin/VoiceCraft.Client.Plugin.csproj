@@ -16,10 +16,12 @@
 
   <ItemGroup>
     <None Remove="Assets\bgdark.png" />
+    <None Remove="Assets\bglight.png" />
   </ItemGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\bgdark.png" />
+    <AvaloniaResource Include="Assets\bglight.png" />
     <AvaloniaResource Include="Assets\Icons.axaml" />
     <AvaloniaResource Include="Assets\Resources.axaml" />
     <AvaloniaResource Include="Assets\Styles.axaml" />

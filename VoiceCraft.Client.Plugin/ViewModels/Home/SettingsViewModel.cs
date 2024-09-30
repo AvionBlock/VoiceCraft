@@ -33,6 +33,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private ServersSettings _serversSettings;
 
         [ObservableProperty]
+        private NotificationSettings _notificationSettings;
+
+        [ObservableProperty]
         private bool _isRecording = false;
 
         [ObservableProperty]
@@ -47,6 +50,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             _audioSettings = settings.Get<AudioSettings>(Plugin.PluginId);
             _themeSettings = settings.Get<ThemeSettings>(Plugin.PluginId);
             _serversSettings = settings.Get<ServersSettings>(Plugin.PluginId);
+            _notificationSettings = settings.Get<NotificationSettings>(Plugin.PluginId);
         }
 
         private void SaveSettings(object? sender, PropertyChangedEventArgs e)
@@ -69,6 +73,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
             ServersSettings.PropertyChanged += SaveSettings;
+            NotificationSettings.PropertyChanged += SaveSettings;
         }
 
         public override void OnDisappearing(object? sender)
@@ -78,6 +83,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
             ServersSettings.PropertyChanged -= SaveSettings;
+            NotificationSettings.PropertyChanged -= SaveSettings;
         }
     }
 

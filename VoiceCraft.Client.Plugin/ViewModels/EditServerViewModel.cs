@@ -11,6 +11,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
     {
         public override string Title => "Edit Server";
 
+        private NotificationSettings _notificationSettings;
         private NavigationService _navigator;
         private INotificationMessageManager _manager;
         private SettingsService _settings;
@@ -27,6 +28,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
             _manager = manager;
             _settings = settings;
             _servers = settings.Get<ServersSettings>(Plugin.PluginId);
+            _notificationSettings = settings.Get<NotificationSettings>(Plugin.PluginId);
         }
 
         [RelayCommand]
@@ -36,37 +38,43 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         }
 
         [RelayCommand]
-        public async Task EditServer()
+        public void EditServer()
         {
             try
             {
                 Servers.RemoveServer(Server);
                 Servers.AddServer(Server);
 
-                _manager.CreateMessage()
+                if (!_notificationSettings.DisableNotifications)
+                {
+                    _manager.CreateMessage()
                     .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
                     .HasBadge("Server")
                     .HasMessage($"{Server.Name} has been edited.")
-                    .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
                     .Dismiss().WithButton("Dismiss", (button) => { })
                     .Queue();
+                }
                 Server = new Server();
-                await _settings.SaveAsync();
+                _ = _settings.SaveAsync();
                 _navigator.Back();
             }
             catch (Exception ex)
             {
-                _manager.CreateMessage()
+                if (!_notificationSettings.DisableNotifications)
+                {
+                    _manager.CreateMessage()
                     .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
                     .HasBadge("Error")
                     .HasMessage(ex.Message)
-                    .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
                     .Dismiss().WithButton("Dismiss", (button) => { })
                     .Queue();
+                }
             }
         }
     }

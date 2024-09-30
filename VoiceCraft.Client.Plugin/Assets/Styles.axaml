@@ -9,7 +9,7 @@
     </Styles.Resources>
 
     <Style Selector="Image.backgroundImage">
-        <Setter Property="Source" Value="avares://VoiceCraft.Client.Plugin/Assets/bgdark.png" />
+        <Setter Property="Source" Value="{DynamicResource backgroundImage}" />
         <Setter Property="Stretch" Value="UniformToFill" />
         <Setter Property="Opacity" Value="150" />
     </Style>

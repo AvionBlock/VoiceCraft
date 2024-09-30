@@ -9,8 +9,10 @@
 
             <!--  Backgrounds  -->
             <Color x:Key="backgroundColor">#88FFFFFF</Color>
-            <Color x:Key="errorBackgroundColor">#300</Color>
-            <Color x:Key="successBackgroundColor">#030</Color>
+            <!--  We have to do this because foregrounds are broken on the avalonia notification styling.  -->
+            <Color x:Key="notificationBackgroundColor">#444</Color>
+            <Color x:Key="errorBackgroundColor">#800</Color>
+            <Color x:Key="successBackgroundColor">#080</Color>
         </ResourceDictionary>
 
         <!--  Dark  -->
@@ -22,8 +24,10 @@
 
             <!--  Backgrounds  -->
             <Color x:Key="backgroundColor">#88000000</Color>
-            <Color x:Key="errorBackgroundColor">#300</Color>
-            <Color x:Key="successBackgroundColor">#030</Color>
+            <!--  We have to do this because foregrounds are broken on the avalonia notification styling.  -->
+            <Color x:Key="notificationBackgroundColor">#222</Color>
+            <Color x:Key="errorBackgroundColor">#800</Color>
+            <Color x:Key="successBackgroundColor">#080</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
