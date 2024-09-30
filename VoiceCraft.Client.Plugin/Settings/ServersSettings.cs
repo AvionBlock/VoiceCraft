@@ -4,7 +4,7 @@ using VoiceCraft.Client.PDK.Services;
 
 namespace VoiceCraft.Client.Plugin.Settings
 {
-    public partial class ServersSettings : Setting<ServersSettings>
+    public partial class ServersSettings : Setting
     {
         [ObservableProperty]
         private bool _hideServerAddresses = false;

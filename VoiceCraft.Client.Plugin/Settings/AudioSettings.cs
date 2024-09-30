@@ -3,7 +3,7 @@ using VoiceCraft.Client.PDK.Services;
 
 namespace VoiceCraft.Client.Plugin.Settings
 {
-    public partial class AudioSettings : Setting<AudioSettings>
+    public partial class AudioSettings : Setting
     {
         [ObservableProperty]
         private string? _inputDevice;

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Concurrent;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace VoiceCraft.Client.PDK.Services
 {
@@ -15,7 +14,7 @@ namespace VoiceCraft.Client.PDK.Services
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>> _registeredSettings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>>();
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>> _settings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>();
 
-        public void Set<T>(Guid id, T value) where T : Setting<T>
+        public void Set<T>(Guid id, T value) where T : Setting
         {
             var settingType = typeof(T);
             if (_registeredSettings.TryGetValue(id, out var registeredSettings) && registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
@@ -28,7 +27,7 @@ namespace VoiceCraft.Client.PDK.Services
             throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)} in {id}.");
         }
 
-        public T Get<T>(Guid id) where T : Setting<T>
+        public T Get<T>(Guid id) where T : Setting
         {
             var settingType = typeof(T);
             if (_registeredSettings.TryGetValue(id, out var registeredSettings) && registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
@@ -40,14 +39,14 @@ namespace VoiceCraft.Client.PDK.Services
             throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)} in {id}.");
         }
 
-        public void RegisterSetting<T>(Guid id) where T : Setting<T>
+        public void RegisterSetting<T>(Guid id) where T : Setting
         {
             var settingType = typeof(T);
             var registeredSetting = _registeredSettings.GetOrAdd(id, new ConcurrentDictionary<string, Type>());
             registeredSetting.AddOrUpdate(settingType.Name, settingType, (key, old) => old = settingType);
         }
 
-        public void UnregisterSetting<T>(Guid id) where T : Setting<T>
+        public void UnregisterSetting<T>(Guid id) where T : Setting
         {
             if (_registeredSettings.TryGetValue(id, out var registeredSettings))
             {
@@ -66,6 +65,15 @@ namespace VoiceCraft.Client.PDK.Services
                 {
                     _queueWrite = false;
                     await Task.Delay(FILE_WRITING_DELAY);
+                    foreach(var settings in _settings)
+                    {
+                        foreach (var setting in settings.Value)
+                        {
+                            if(setting.Value is Setting settingValue)
+                                settingValue.OnSaving();
+                        }
+                    }
+
                     await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
                 }
                 _writing = false;
@@ -91,9 +99,10 @@ namespace VoiceCraft.Client.PDK.Services
                         {
                             if (setting.Value is JsonElement element
                                 && registeredSettings.TryGetValue(setting.Key, out var registeredSetting)
-                                && element.Deserialize(registeredSetting) is object deserializedSetting)
+                                && element.Deserialize(registeredSetting) is Setting deserializedSetting
+                                && deserializedSetting.OnLoading())
                             {
-                                _ = settings.Value.TryUpdate(setting.Key, deserializedSetting, setting.Value);
+                                settings.Value.TryUpdate(setting.Key, deserializedSetting, setting.Value);
                                 continue;
                             }
                             settings.Value.TryRemove(setting.Key, out _);
@@ -111,12 +120,10 @@ namespace VoiceCraft.Client.PDK.Services
         }
     }
 
-    public abstract class Setting<T> : ObservableObject
+    public abstract class Setting : ObservableObject
     {
-        [JsonIgnore]
-        public virtual Action<T>? SettingSaved { get; }
+        public virtual bool OnLoading() => true;
 
-        [JsonIgnore]
-        public virtual Action<T>? SettingLoaded { get; }
+        public virtual void OnSaving() { }
     }
 }
