@@ -62,18 +62,18 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
         }
 
-        public override void OnAppearing()
+        public override void OnAppearing(object? sender)
         {
-            base.OnAppearing();
+            base.OnAppearing(sender);
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
             ServersSettings.PropertyChanged += SaveSettings;
         }
 
-        public override void OnDisappearing()
+        public override void OnDisappearing(object? sender)
         {
-            base.OnDisappearing();
+            base.OnDisappearing(sender);
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
