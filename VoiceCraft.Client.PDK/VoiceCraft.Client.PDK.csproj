@@ -11,6 +11,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
+    <PackageReference Include="OpusSharp.Core" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>

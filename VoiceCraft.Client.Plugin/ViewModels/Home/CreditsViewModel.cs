@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using OpusSharp.Core;
 using System.Reflection;
 using VoiceCraft.Client.PDK.ViewModels;
 
@@ -15,9 +16,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private string _appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.";
 
         [ObservableProperty]
-        private string _opusVersion = "N.A."; //OpusInfo.Version();
-
-        [ObservableProperty]
-        private string _openAlVersion = "N.A.";
+        private string _opusVersion = OpusInfo.Version();
     }
 }

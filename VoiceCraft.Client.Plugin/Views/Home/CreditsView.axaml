@@ -42,12 +42,6 @@
                            FontSize="16"
                            FontWeight="Bold"
                            Text="{Binding OpusVersion, StringFormat='Codec: Opus - {0}'}" />
-
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Text="{Binding OpenAlVersion, StringFormat='Audio: OpenAL - {0}'}" />
             </StackPanel>
         </Border>
     </ScrollViewer>

@@ -4,10 +4,12 @@
     <TargetFramework>net8.0-ios</TargetFramework>
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
+	<Version>1.1.1.0-prerelease</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia.iOS" Version="11.1.3" />
+    <PackageReference Include="OpusSharp.iOS" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
