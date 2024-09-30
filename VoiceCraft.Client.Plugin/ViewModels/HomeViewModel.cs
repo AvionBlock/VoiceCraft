@@ -36,7 +36,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         partial void OnSelectedListItemChanged(ListItemTemplate? value)
         {
             if (value == null) return;
+            if (Content != null && Content.DataContext is ViewModelBase currentViewModel)
+                currentViewModel.OnDisappearing(this);
+
             Content = value.Content;
+
+            if (Content != null && Content.DataContext is ViewModelBase newViewModel)
+                newViewModel.OnAppearing(this);
         }
     }
 

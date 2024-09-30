@@ -39,12 +39,13 @@ namespace VoiceCraft.Client.PDK
                     plugin.Initialize(serviceProvider);
 
                     notifications.CreateMessage()
-                        .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
+                        .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
                         .Animates(true)
-                        .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
-                        .HasBadge("Info")
+                        .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
+                        .HasBadge("Plugin")
                         .HasMessage($"Loaded plugin: {plugin.Name}")
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                        .Dismiss().WithButton("Dismiss", (button) => { })
                         .Queue();
                 }
                 catch (Exception ex)
@@ -56,6 +57,7 @@ namespace VoiceCraft.Client.PDK
                         .HasBadge("Error")
                         .HasMessage(ex.Message)
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                        .Dismiss().WithButton("Dismiss", (button) => { })
                         .Queue();
                 }
             }

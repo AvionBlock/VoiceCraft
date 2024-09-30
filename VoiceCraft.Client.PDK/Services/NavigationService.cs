@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using VoiceCraft.Client.PDK.ViewModels;
 
 namespace VoiceCraft.Client.PDK.Services
 {
@@ -25,10 +26,16 @@ namespace VoiceCraft.Client.PDK.Services
             var page = InstantiatePage<TPage>();
             OnPageChanging?.Invoke(this, page);
 
+            if (CurrentPage != null && CurrentPage.DataContext is ViewModelBase currentViewModel)
+                currentViewModel.OnDisappearing(this);
+
             CurrentPage = page;
             if (_history.Count >= MaxHistory)
                 _history.RemoveAt(0);
             _history.Add(page);
+
+            if (page.DataContext is ViewModelBase newViewModel)
+                newViewModel.OnAppearing(this);
 
             OnPageChanged?.Invoke(this, CurrentPage);
             return page;
@@ -41,7 +48,13 @@ namespace VoiceCraft.Client.PDK.Services
                 _history.RemoveAt(_history.Count - 1);
                 var page = _history.Last();
                 OnPageChanging?.Invoke(this, page);
+                if (CurrentPage != null && CurrentPage.DataContext is ViewModelBase currentViewModel)
+                    currentViewModel.OnDisappearing(this);
+
                 CurrentPage = page;
+
+                if (page.DataContext is ViewModelBase newViewModel)
+                    newViewModel.OnAppearing(this);
                 OnPageChanged?.Invoke(this, CurrentPage);
             }
         }

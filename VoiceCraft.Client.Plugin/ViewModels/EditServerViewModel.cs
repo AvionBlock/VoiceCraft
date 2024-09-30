@@ -47,9 +47,10 @@ namespace VoiceCraft.Client.Plugin.ViewModels
                     .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
-                    .HasBadge("Info")
+                    .HasBadge("Server")
                     .HasMessage($"{Server.Name} has been edited.")
-                    .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
+                    .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                    .Dismiss().WithButton("Dismiss", (button) => { })
                     .Queue();
                 Server = new Server();
                 await _settings.SaveAsync();
@@ -64,6 +65,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
                     .HasBadge("Error")
                     .HasMessage(ex.Message)
                     .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                    .Dismiss().WithButton("Dismiss", (button) => { })
                     .Queue();
             }
         }

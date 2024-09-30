@@ -10,7 +10,7 @@
             <!--  Backgrounds  -->
             <Color x:Key="backgroundColor">#88FFFFFF</Color>
             <Color x:Key="errorBackgroundColor">#300</Color>
-            <Color x:Key="successBackgroundColor">#300</Color>
+            <Color x:Key="successBackgroundColor">#030</Color>
         </ResourceDictionary>
 
         <!--  Dark  -->
@@ -23,7 +23,7 @@
             <!--  Backgrounds  -->
             <Color x:Key="backgroundColor">#88000000</Color>
             <Color x:Key="errorBackgroundColor">#300</Color>
-            <Color x:Key="successBackgroundColor">#300</Color>
+            <Color x:Key="successBackgroundColor">#030</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

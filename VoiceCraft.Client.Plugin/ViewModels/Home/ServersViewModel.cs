@@ -48,12 +48,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             Servers.RemoveServer(server);
             _manager.CreateMessage()
-                .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
+                .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
                 .Animates(true)
-                .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
-                .HasBadge("Info")
+                .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
+                .HasBadge("Server")
                 .HasMessage($"{server.Name} has been removed.")
-                .Dismiss().WithDelay(TimeSpan.FromSeconds(3))
+                .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                .Dismiss().WithButton("Dismiss", (button) => { })
                 .Queue();
             await _settings.SaveAsync();
         }
