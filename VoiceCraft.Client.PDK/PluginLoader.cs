@@ -11,6 +11,11 @@ namespace VoiceCraft.Client.PDK
         private static List<IPlugin> _plugins = new List<IPlugin>();
         public static void LoadPlugins(string pluginDirectory, ServiceCollection serviceCollection)
         {
+            if (!Directory.Exists(pluginDirectory))
+            {
+                Directory.CreateDirectory(pluginDirectory);
+            }
+
             var assemblies = Directory.GetFiles(pluginDirectory, "*.dll")
                 .Select(Assembly.LoadFrom)
                 .ToArray();

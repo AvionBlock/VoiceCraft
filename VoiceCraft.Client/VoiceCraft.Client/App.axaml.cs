@@ -9,6 +9,7 @@ using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Views;
 using Avalonia.Notification;
+using VoiceCraft.Client.ViewModels;
 
 namespace VoiceCraft.Client
 {
@@ -26,10 +27,20 @@ namespace VoiceCraft.Client
             serviceCollection.AddSingleton<NotificationMessageManager>();
             serviceCollection.AddSingleton<SettingsService>();
             serviceCollection.AddSingleton<ThemesService>();
-            PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", serviceCollection);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var mainView = serviceProvider.GetRequiredService<IMainView>();
+            IMainView? mainView = null;
+            ServiceProvider? serviceProvider = null;
+            try
+            {
+                PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", serviceCollection);
+
+                serviceProvider = serviceCollection.BuildServiceProvider();
+                mainView = serviceProvider.GetRequiredService<IMainView>();
+            }
+            catch (Exception ex)
+            {
+                mainView = new DefaultMainView(new DefaultMainViewModel() { Message = $"Error: {ex.Message}" });
+            }
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
@@ -46,7 +57,8 @@ namespace VoiceCraft.Client
                 singleViewPlatform.MainView = (Control)mainView;
             }
 
-            PluginLoader.InitializePlugins(serviceProvider);
+            if(serviceProvider != null)
+                PluginLoader.InitializePlugins(serviceProvider);
 
             base.OnFrameworkInitializationCompleted();
         }
