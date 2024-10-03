@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
@@ -24,6 +25,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private ObservableCollection<string> _themes;
 
         [ObservableProperty]
+        private ObservableCollection<string> _inputDevices;
+
+        [ObservableProperty]
         private AudioSettings _audioSettings;
 
         [ObservableProperty]
@@ -41,11 +45,12 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits, IAudioDevices audioDevices)
         {
             _settingsService = settings;
             _themesService = themes;
             _themes = new ObservableCollection<string>(themes.ThemeNames);
+            _inputDevices = new ObservableCollection<string>(audioDevices.GetWaveInDevices());
 
             _audioSettings = settings.Get<AudioSettings>(Plugin.PluginId);
             _themeSettings = settings.Get<ThemeSettings>(Plugin.PluginId);

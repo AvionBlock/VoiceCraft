@@ -53,14 +53,7 @@
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="Input Devices" />
-                    <ComboBox HorizontalAlignment="Stretch">
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                    </ComboBox>
+                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding InputDevices}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"

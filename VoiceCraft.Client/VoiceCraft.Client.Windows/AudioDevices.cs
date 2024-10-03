@@ -1,9 +1,8 @@
 ﻿using NAudio.Wave;
-using System;
 using System.Collections.Generic;
 using VoiceCraft.Client.PDK;
 
-namespace VoiceCraft.Client.Desktop
+namespace VoiceCraft.Client.Windows
 {
     internal class AudioDevices : IAudioDevices
     {

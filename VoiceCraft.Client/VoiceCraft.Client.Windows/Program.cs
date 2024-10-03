@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using NAudio.Wave;
 using System;
+using VoiceCraft.Client.PDK;
 
 namespace VoiceCraft.Client.Windows
 {
@@ -18,6 +19,7 @@ namespace VoiceCraft.Client.Windows
             //Register Native Players. TODO - THIS ONLY APPLIES TO WINDOWS, WE NEED TO SEPARATE THE DESKTOP PROJECT INTO 3 PLATFORM PROJECTS.
             App.Services.AddSingleton<IWaveIn, WaveInEvent>();
             App.Services.AddSingleton<IWavePlayer, WaveOutEvent>();
+            App.Services.AddSingleton<IAudioDevices, AudioDevices>();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }
 

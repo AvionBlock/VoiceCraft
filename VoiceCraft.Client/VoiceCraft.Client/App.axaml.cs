@@ -10,7 +10,6 @@ using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Views;
 using Avalonia.Notification;
 using VoiceCraft.Client.ViewModels;
-using System.Diagnostics;
 
 namespace VoiceCraft.Client
 {
