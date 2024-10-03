@@ -53,21 +53,18 @@
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="Input Devices" />
-                    <ComboBox HorizontalAlignment="Stretch" ItemsSource="{Binding InputDevices}" />
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding InputDevices}"
+                              SelectedItem="{Binding AudioSettings.InputDevice}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="Output Devices" />
 
-                    <ComboBox HorizontalAlignment="Stretch">
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                        <ComboBoxItem>Test</ComboBoxItem>
-                    </ComboBox>
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding OutputDevices}"
+                              SelectedItem="{Binding AudioSettings.OutputDevice}" />
 
                     <StackPanel>
                         <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneGain, StringFormat='Microphone Gain: {0:F1}'}" />

@@ -6,9 +6,9 @@ namespace VoiceCraft.Client.Plugin.Settings
     public partial class AudioSettings : Setting
     {
         [ObservableProperty]
-        private string? _inputDevice;
+        private string _inputDevice = "Default";
         [ObservableProperty]
-        private string? _outputDevice;
+        private string _outputDevice = "Default";
         [ObservableProperty]
         private float _microphoneSensitivity = 0.04f;
         [ObservableProperty]

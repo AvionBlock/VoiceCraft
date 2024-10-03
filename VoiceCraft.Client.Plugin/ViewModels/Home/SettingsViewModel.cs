@@ -28,6 +28,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private ObservableCollection<string> _inputDevices;
 
         [ObservableProperty]
+        private ObservableCollection<string> _outputDevices;
+
+        [ObservableProperty]
         private AudioSettings _audioSettings;
 
         [ObservableProperty]
@@ -51,11 +54,25 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             _themesService = themes;
             _themes = new ObservableCollection<string>(themes.ThemeNames);
             _inputDevices = new ObservableCollection<string>(audioDevices.GetWaveInDevices());
+            _outputDevices = new ObservableCollection<string>(audioDevices.GetWaveOutDevices());
 
             _audioSettings = settings.Get<AudioSettings>(Plugin.PluginId);
             _themeSettings = settings.Get<ThemeSettings>(Plugin.PluginId);
             _serversSettings = settings.Get<ServersSettings>(Plugin.PluginId);
             _notificationSettings = settings.Get<NotificationSettings>(Plugin.PluginId);
+
+            //Settings Validation.
+            if (!_inputDevices.Contains(_audioSettings.InputDevice))
+            {
+                _audioSettings.InputDevice = audioDevices.DefaultWaveInDevice();
+                _ = _settingsService.SaveAsync();
+            }
+
+            if (!_outputDevices.Contains(_audioSettings.OutputDevice))
+            {
+                _audioSettings.OutputDevice = audioDevices.DefaultWaveOutDevice();
+                _ = _settingsService.SaveAsync();
+            }
         }
 
         private void SaveSettings(object? sender, PropertyChangedEventArgs e)
