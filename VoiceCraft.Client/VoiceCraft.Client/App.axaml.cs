@@ -10,11 +10,13 @@ using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Views;
 using Avalonia.Notification;
 using VoiceCraft.Client.ViewModels;
+using System.Diagnostics;
 
 namespace VoiceCraft.Client
 {
     public partial class App : Application
     {
+        public static ServiceCollection Services { get; } = new ServiceCollection();
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -22,19 +24,18 @@ namespace VoiceCraft.Client
 
         public override void OnFrameworkInitializationCompleted()
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<NavigationService>(s => new NavigationService(p => (Control)s.GetRequiredService(p)));
-            serviceCollection.AddSingleton<NotificationMessageManager>();
-            serviceCollection.AddSingleton<SettingsService>();
-            serviceCollection.AddSingleton<ThemesService>();
+            Services.AddSingleton<NavigationService>(s => new NavigationService(p => (Control)s.GetRequiredService(p)));
+            Services.AddSingleton<NotificationMessageManager>();
+            Services.AddSingleton<SettingsService>();
+            Services.AddSingleton<ThemesService>();
 
             IMainView? mainView = null;
             ServiceProvider? serviceProvider = null;
             try
             {
-                PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", serviceCollection);
+                PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", Services);
 
-                serviceProvider = serviceCollection.BuildServiceProvider();
+                serviceProvider = Services.BuildServiceProvider();
                 mainView = serviceProvider.GetRequiredService<IMainView>();
             }
             catch (Exception ex)
