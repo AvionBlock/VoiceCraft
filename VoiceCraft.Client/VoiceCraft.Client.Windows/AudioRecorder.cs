@@ -7,7 +7,7 @@ namespace VoiceCraft.Client.Windows
     public class AudioRecorder : IAudioRecorder
     {
         private bool _isRecording;
-        private IWaveIn _nativeRecorder;
+        private WaveInEvent _nativeRecorder;
 
         public IWaveIn NativeRecorder => _nativeRecorder;
         public bool IsRecording => _isRecording;
@@ -18,9 +18,13 @@ namespace VoiceCraft.Client.Windows
 
         public AudioRecorder()
         {
-            _nativeRecorder = new WaveInEvent();
-            _nativeRecorder.DataAvailable += (s, e) => DataAvailable?.Invoke(s, e);
-            _nativeRecorder.RecordingStopped += (s, e) => RecordingStopped?.Invoke(s, e);
+            _nativeRecorder = new WaveInEvent()
+            {
+                BufferMilliseconds = IAudioRecorder.BufferMilliseconds,
+                WaveFormat = IAudioRecorder.RecordFormat
+            };
+            _nativeRecorder.DataAvailable += InvokeDataAvailable;
+            _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
         }
 
         public void Dispose()
@@ -30,7 +34,17 @@ namespace VoiceCraft.Client.Windows
 
         public void SetDevice(string device)
         {
-            throw new NotImplementedException();
+            for (int n = 0; n < WaveIn.DeviceCount; n++)
+            {
+                var caps = WaveIn.GetCapabilities(n);
+                if(caps.ProductName == device)
+                {
+                    _nativeRecorder.DeviceNumber = n;
+                    return;
+                }
+            }
+
+            _nativeRecorder.DeviceNumber = -1;
         }
 
         public void StartRecording()
@@ -43,6 +57,16 @@ namespace VoiceCraft.Client.Windows
         {
             _nativeRecorder.StopRecording();
             _isRecording = false;
+        }
+
+        private void InvokeDataAvailable(object? sender, WaveInEventArgs e)
+        {
+            DataAvailable?.Invoke(sender, e);
+        }
+
+        private void InvokeRecordingStopped(object? sender, StoppedEventArgs e)
+        {
+            RecordingStopped?.Invoke(sender, e);
         }
     }
 }

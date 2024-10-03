@@ -23,6 +23,7 @@ namespace VoiceCraft.Client.Windows
                 WaveFormat = new WaveFormat(48000, 1)
             });
             App.Services.AddSingleton<IWavePlayer, WaveOutEvent>();
+            App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
             App.Services.AddSingleton<IAudioDevices, AudioDevices>();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }

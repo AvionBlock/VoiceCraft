@@ -15,7 +15,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override string Title => "Settings";
         private ThemesService _themesService;
         private SettingsService _settingsService;
-        private IWaveIn _recorder;
+        private IAudioRecorder _recorder;
+        private IAudioDevices _audioDevices;
 
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
@@ -50,11 +51,12 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits, IAudioDevices audioDevices, IWaveIn recorder)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits, IAudioDevices audioDevices, IAudioRecorder recorder)
         {
             _settingsService = settings;
             _themesService = themes;
             _recorder = recorder;
+            _audioDevices = audioDevices;
             _themes = new ObservableCollection<string>(themes.ThemeNames);
             _inputDevices = new ObservableCollection<string>(audioDevices.GetWaveInDevices());
             _outputDevices = new ObservableCollection<string>(audioDevices.GetWaveOutDevices());
@@ -91,6 +93,19 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
         }
 
+        private void UpdateRecorder(object? sender, PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(AudioSettings.InputDevice))
+            {
+                _recorder.SetDevice(AudioSettings.InputDevice);
+                if(IsRecording)
+                {
+                    IsRecording = false;
+                    IsRecording = true;
+                }
+            }
+        }
+
         private void RecordingData(object? sender, WaveInEventArgs e)
         {
             float max = 0;
@@ -110,19 +125,17 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             MicrophoneValue = max;
         }
 
-        private void RecordingStopped(object? sender, StoppedEventArgs e)
-        {
-            IsRecording = false;
-        }
-
         public override void OnAppearing(object? sender)
         {
             base.OnAppearing(sender);
+            InputDevices = new ObservableCollection<string>(_audioDevices.GetWaveInDevices());
+            OutputDevices = new ObservableCollection<string>(_audioDevices.GetWaveOutDevices());
+
             _recorder.DataAvailable += RecordingData;
-            _recorder.RecordingStopped += RecordingStopped;
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
+            AudioSettings.PropertyChanged += UpdateRecorder;
             ServersSettings.PropertyChanged += SaveSettings;
             NotificationSettings.PropertyChanged += SaveSettings;
         }
@@ -131,10 +144,10 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             base.OnDisappearing(sender);
             _recorder.DataAvailable -= RecordingData;
-            _recorder.RecordingStopped -= RecordingStopped;
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
+            AudioSettings.PropertyChanged -= UpdateRecorder;
             ServersSettings.PropertyChanged -= SaveSettings;
             NotificationSettings.PropertyChanged -= SaveSettings;
 
@@ -144,21 +157,14 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
         partial void OnIsRecordingChanged(bool oldValue, bool newValue)
         {
-            if(oldValue == newValue) return;
+            if (oldValue == newValue) return;
 
-            if(newValue)
+            if (newValue)
                 _recorder.StartRecording();
             else
                 _recorder.StopRecording();
 
             MicrophoneValue = 0;
-        }
-    }
-
-    internal class ObservableCollection : ObservableCollection<string>
-    {
-        public ObservableCollection(IEnumerable<string> collection) : base(collection)
-        {
         }
     }
 }
