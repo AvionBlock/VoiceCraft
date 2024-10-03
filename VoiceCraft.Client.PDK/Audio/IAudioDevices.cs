@@ -1,4 +1,4 @@
-﻿namespace VoiceCraft.Client.PDK
+﻿namespace VoiceCraft.Client.PDK.Audio
 {
     public interface IAudioDevices
     {

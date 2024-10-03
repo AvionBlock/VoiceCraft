@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using NAudio.Wave;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using VoiceCraft.Client.PDK;
+using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
@@ -14,6 +15,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override string Title => "Settings";
         private ThemesService _themesService;
         private SettingsService _settingsService;
+        private IWaveIn _recorder;
 
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
@@ -48,10 +50,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits, IAudioDevices audioDevices)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits, IAudioDevices audioDevices, IWaveIn recorder)
         {
             _settingsService = settings;
             _themesService = themes;
+            _recorder = recorder;
             _themes = new ObservableCollection<string>(themes.ThemeNames);
             _inputDevices = new ObservableCollection<string>(audioDevices.GetWaveInDevices());
             _outputDevices = new ObservableCollection<string>(audioDevices.GetWaveOutDevices());
@@ -88,9 +91,35 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
         }
 
+        private void RecordingData(object? sender, WaveInEventArgs e)
+        {
+            float max = 0;
+            // interpret as 16 bit audio
+            for (int index = 0; index < e.BytesRecorded; index += 2)
+            {
+                short sample = (short)((e.Buffer[index + 1] << 8) |
+                                        e.Buffer[index + 0]);
+                // to floating point
+                var sample32 = sample / 32768f;
+                // absolute value 
+                if (sample32 < 0) sample32 = -sample32;
+                // is this the max value?
+                if (sample32 > max) max = sample32;
+            }
+
+            MicrophoneValue = max;
+        }
+
+        private void RecordingStopped(object? sender, StoppedEventArgs e)
+        {
+            IsRecording = false;
+        }
+
         public override void OnAppearing(object? sender)
         {
             base.OnAppearing(sender);
+            _recorder.DataAvailable += RecordingData;
+            _recorder.RecordingStopped += RecordingStopped;
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
@@ -101,11 +130,28 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override void OnDisappearing(object? sender)
         {
             base.OnDisappearing(sender);
+            _recorder.DataAvailable -= RecordingData;
+            _recorder.RecordingStopped -= RecordingStopped;
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
             ServersSettings.PropertyChanged -= SaveSettings;
             NotificationSettings.PropertyChanged -= SaveSettings;
+
+            if (IsRecording)
+                IsRecording = false; //Changing this automatically stops the recorder.
+        }
+
+        partial void OnIsRecordingChanged(bool oldValue, bool newValue)
+        {
+            if(oldValue == newValue) return;
+
+            if(newValue)
+                _recorder.StartRecording();
+            else
+                _recorder.StopRecording();
+
+            MicrophoneValue = 0;
         }
     }
 
