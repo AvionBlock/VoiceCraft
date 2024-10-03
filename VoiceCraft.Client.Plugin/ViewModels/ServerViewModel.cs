@@ -16,7 +16,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         private Server _selectedServer = new();
 
         [ObservableProperty]
-        private string _pingInfo = "Pinging...";
+        private string _pingTime = "127ms";
+
+        [ObservableProperty]
+        private string _MOTD = "WELCOME TO THE COOL SERVER!";
+
+        [ObservableProperty]
+        private string _connectedParticipants = "2";
 
         public ServerViewModel(NavigationService navigator)
         {
@@ -26,7 +32,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         [RelayCommand]
         public void Cancel()
         {
-            PingInfo = "Pinging...";
             _navigator.Back();
         }
 

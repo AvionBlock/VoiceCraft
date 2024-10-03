@@ -9,14 +9,17 @@
              x:DataType="vm:HomeViewModel"
              mc:Ignorable="d">
     <Grid ColumnDefinitions="{OnFormFactor '*', Mobile='Auto, *'}" RowDefinitions="{OnFormFactor '', Desktop='Auto, *'}">
-        <TextBlock Grid.Row="0"
-                   Grid.Column="0"
-                   Margin="10"
-                   VerticalAlignment="Center"
-                   FontSize="20"
-                   FontWeight="Bold"
-                   Text="{Binding Content.DataContext.Title}"
-                   TextAlignment="Center" />
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource backgroundBrush}">
+            <TextBlock Grid.Column="0"
+                       Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{Binding Content.DataContext.Title}"
+                       TextAlignment="Center" />
+        </Grid>
         <Grid Grid.Row="{OnFormFactor '1',
                                       Mobile='0',
                                       Desktop='1'}"

@@ -10,21 +10,25 @@
              x:DataType="vm:EditServerViewModel"
              mc:Ignorable="d">
     <Grid RowDefinitions="Auto, *">
-        <TextBlock Grid.Row="0"
-                   Margin="10"
-                   VerticalAlignment="Center"
-                   FontSize="20"
-                   FontWeight="Bold"
-                   Text="{Binding Server.Name}"
-                   TextAlignment="Center" />
-        <Button Grid.Row="0"
-                Margin="10"
-                Padding="5"
-                Command="{Binding CancelCommand}">
-            <PathIcon Data="{StaticResource arrow_left_regular}" />
-        </Button>
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource backgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{Binding Server.Name}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{StaticResource arrow_left_regular}" />
+            </Button>
+        </Grid>
 
-        <ScrollViewer Grid.Row="1" Margin="20">
+        <ScrollViewer Grid.Row="1" Margin="10,0,10,10">
             <Border Padding="15"
                     VerticalAlignment="Top"
                     Classes="card">
