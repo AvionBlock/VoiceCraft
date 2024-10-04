@@ -7,22 +7,17 @@ namespace VoiceCraft.Client.Windows
     public class AudioRecorder : IAudioRecorder
     {
         private bool _isRecording;
-        private WaveInEvent _nativeRecorder;
+        private WaveInEvent _nativeRecorder = new WaveInEvent();
 
-        public IWaveIn NativeRecorder => _nativeRecorder;
         public bool IsRecording => _isRecording;
-        public WaveFormat WaveFormat { get => NativeRecorder.WaveFormat; set => NativeRecorder.WaveFormat = value; }
+        public WaveFormat WaveFormat { get => _nativeRecorder.WaveFormat; set => _nativeRecorder.WaveFormat = value; }
+        public int BufferMilliseconds { get => _nativeRecorder.BufferMilliseconds; set => _nativeRecorder.BufferMilliseconds = value; }
 
         public event EventHandler<WaveInEventArgs>? DataAvailable;
         public event EventHandler<StoppedEventArgs>? RecordingStopped;
 
         public AudioRecorder()
         {
-            _nativeRecorder = new WaveInEvent()
-            {
-                BufferMilliseconds = IAudioRecorder.BufferMilliseconds,
-                WaveFormat = IAudioRecorder.RecordFormat
-            };
             _nativeRecorder.DataAvailable += InvokeDataAvailable;
             _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
         }
@@ -66,6 +61,7 @@ namespace VoiceCraft.Client.Windows
 
         private void InvokeRecordingStopped(object? sender, StoppedEventArgs e)
         {
+            _isRecording = false;
             RecordingStopped?.Invoke(sender, e);
         }
     }
