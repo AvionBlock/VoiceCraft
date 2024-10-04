@@ -22,11 +22,6 @@ namespace VoiceCraft.Client.Windows
             _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
         }
 
-        public void Dispose()
-        {
-            _nativeRecorder.Dispose();
-        }
-
         public void SetDevice(string device)
         {
             for (int n = 0; n < WaveIn.DeviceCount; n++)
@@ -54,6 +49,12 @@ namespace VoiceCraft.Client.Windows
             _isRecording = false;
         }
 
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
+        }
+
         private void InvokeDataAvailable(object? sender, WaveInEventArgs e)
         {
             DataAvailable?.Invoke(sender, e);
@@ -63,6 +64,14 @@ namespace VoiceCraft.Client.Windows
         {
             _isRecording = false;
             RecordingStopped?.Invoke(sender, e);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _nativeRecorder.Dispose();
+            }
         }
     }
 }
