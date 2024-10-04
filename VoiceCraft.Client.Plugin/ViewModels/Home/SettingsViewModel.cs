@@ -1,21 +1,29 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
-using VoiceCraft.Client.Plugin.Views.Home;
 
 namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
     public partial class SettingsViewModel : ViewModelBase
     {
         public override string Title => "Settings";
+        private SignalGenerator _signal = new SignalGenerator(48000, 2)
+        {
+            Gain = 0.2,
+            Frequency = 500, // start frequency of the sweep
+            Type = SignalGeneratorType.Sin
+        };
         private ThemesService _themesService;
         private SettingsService _settingsService;
         private IAudioRecorder _recorder;
+        private IAudioPlayer _player;
         private IAudioDevices _audioDevices;
 
         [ObservableProperty]
@@ -49,13 +57,20 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private bool _isRecording = false;
 
         [ObservableProperty]
+        private bool _isPlaying = false;
+
+        [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, CreditsView credits, IAudioDevices audioDevices, IAudioRecorder recorder)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, IAudioDevices audioDevices, IAudioRecorder recorder, IAudioPlayer player)
         {
             _settingsService = settings;
             _themesService = themes;
             _recorder = recorder;
+            _player = player;
+
+            _recorder.BufferMilliseconds = 20;
+
             _audioDevices = audioDevices;
             _themes = new ObservableCollection<string>(themes.ThemeNames);
             _inputDevices = new ObservableCollection<string>(audioDevices.GetWaveInDevices());
@@ -80,6 +95,38 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
         }
 
+        [RelayCommand]
+        public void TestPlayer()
+        {
+            if (_player.PlaybackState == PlaybackState.Playing)
+            {
+                IsPlaying = false;
+                _player.Stop();
+            }
+            else
+            {
+                IsPlaying = true;
+                _player.Init(_signal);
+                _player.Play();
+            }
+        }
+        
+        [RelayCommand]
+        public void TestRecorder()
+        {
+            if (_recorder.IsRecording)
+            {
+                _recorder.StopRecording();
+                IsRecording = false;
+                MicrophoneValue = 0;
+            }
+            else
+            {
+                IsRecording = true;
+                _recorder.StartRecording();
+            }
+        }
+
         private void SaveSettings(object? sender, PropertyChangedEventArgs e)
         {
             _ = _settingsService.SaveAsync();
@@ -98,10 +145,21 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             if (e.PropertyName == nameof(AudioSettings.InputDevice))
             {
                 _recorder.SetDevice(AudioSettings.InputDevice);
-                if (IsRecording)
+                if (_recorder.IsRecording)
                 {
-                    IsRecording = false;
-                    IsRecording = true;
+                    TestRecorder(); //Stop Recorder.
+                }
+            }
+        }
+
+        private void UpdatePlayer(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AudioSettings.OutputDevice))
+            {
+                _player.SetDevice(AudioSettings.OutputDevice);
+                if (_player.PlaybackState == PlaybackState.Playing)
+                {
+                    TestPlayer(); //Stop player.
                 }
             }
         }
@@ -136,6 +194,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += UpdateRecorder;
+            AudioSettings.PropertyChanged += UpdatePlayer;
             ServersSettings.PropertyChanged += SaveSettings;
             NotificationSettings.PropertyChanged += SaveSettings;
         }
@@ -148,23 +207,15 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= UpdateRecorder;
+            AudioSettings.PropertyChanged -= UpdatePlayer;
             ServersSettings.PropertyChanged -= SaveSettings;
             NotificationSettings.PropertyChanged -= SaveSettings;
 
-            if (IsRecording)
-                IsRecording = false; //Changing this automatically stops the recorder.
-        }
+            if (_recorder.IsRecording)
+                TestRecorder();
 
-        partial void OnIsRecordingChanged(bool oldValue, bool newValue)
-        {
-            if (oldValue == newValue) return;
-
-            if (newValue)
-                _recorder.StartRecording();
-            else
-                _recorder.StopRecording();
-
-            MicrophoneValue = 0;
+            if (_player.PlaybackState == PlaybackState.Playing)
+                TestPlayer();
         }
     }
 }

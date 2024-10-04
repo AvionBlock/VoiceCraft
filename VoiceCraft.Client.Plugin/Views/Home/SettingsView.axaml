@@ -103,6 +103,7 @@
                         <Grid Margin="0,10,0,0" ColumnDefinitions="Auto, *">
                             <ToggleButton Grid.Column="0"
                                           HorizontalAlignment="Stretch"
+                                          Command="{Binding TestRecorderCommand}"
                                           IsChecked="{Binding IsRecording}">
                                 <TextBlock Text="Test" />
                             </ToggleButton>
@@ -117,6 +118,12 @@
                                          Value="{Binding MicrophoneValue}" />
                         </Grid>
                     </StackPanel>
+
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  Command="{Binding TestPlayerCommand}"
+                                  IsChecked="{Binding IsPlaying}">
+                        <TextBlock Text="Test Output" />
+                    </ToggleButton>
                 </StackPanel>
             </Expander>
         </StackPanel>

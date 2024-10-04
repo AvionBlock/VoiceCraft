@@ -23,13 +23,11 @@ namespace VoiceCraft.Client.Plugin.Settings
                 throw new Exception($"Server IP cannot be longer than {Server.IPLimit} characters!");
 
             Servers.Insert(0, server);
-            //OnServerAdded?.Invoke(this, server);
         }
 
         public void RemoveServer(Server server)
         {
             Servers.Remove(server);
-            //OnServerRemoved?.Invoke(this, server);
         }
     }
 
