@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace VoiceCraft.Core.Audio.Filters
 {
-	class Example
-	{
-		public Example()
-		{
-			/*
+    class Example
+    {
+        public Example()
+        {
+            /*
 			var enhancer = new WebRtcFilter(240, 100, new AudioFormat(8000), new AudioFormat(8000),
 				true, true, true);
 
@@ -30,6 +28,6 @@ namespace VoiceCraft.Core.Audio.Filters
 			} while (moreFrames);
 			*/
 
-		}
-	}
+        }
+    }
 }

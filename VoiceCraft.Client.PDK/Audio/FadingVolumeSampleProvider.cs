@@ -2,6 +2,7 @@
 
 namespace VoiceCraft.Client.PDK.Audio
 {
+    //I don't know if this should be changed to LerpedVolumeSampleProvider.
     public class FadingVolumeSampleProvider : ISampleProvider
     {
         private ISampleProvider _source;

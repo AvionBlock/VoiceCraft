@@ -27,7 +27,7 @@ namespace VoiceCraft.Client.Windows
             for (int n = 0; n < WaveIn.DeviceCount; n++)
             {
                 var caps = WaveIn.GetCapabilities(n);
-                if(caps.ProductName == device)
+                if (caps.ProductName == device)
                 {
                     _nativeRecorder.DeviceNumber = n;
                     return;

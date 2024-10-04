@@ -95,10 +95,10 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
         private void UpdateRecorder(object? sender, PropertyChangedEventArgs e)
         {
-            if(e.PropertyName == nameof(AudioSettings.InputDevice))
+            if (e.PropertyName == nameof(AudioSettings.InputDevice))
             {
                 _recorder.SetDevice(AudioSettings.InputDevice);
-                if(IsRecording)
+                if (IsRecording)
                 {
                     IsRecording = false;
                     IsRecording = true;

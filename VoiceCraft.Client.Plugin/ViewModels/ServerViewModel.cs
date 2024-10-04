@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using VoiceCraft.Client.PDK.ViewModels;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Client.Plugin.Settings;
 using VoiceCraft.Client.PDK.Services;
+using VoiceCraft.Client.PDK.ViewModels;
+using VoiceCraft.Client.Plugin.Settings;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {

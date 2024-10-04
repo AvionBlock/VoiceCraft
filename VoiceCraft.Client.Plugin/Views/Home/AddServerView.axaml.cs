@@ -8,7 +8,7 @@ namespace VoiceCraft.Client.Plugin.Views.Home
         public AddServerView(AddServerViewModel viewModel)
         {
             InitializeComponent();
-            
+
             DataContext = viewModel;
         }
     }

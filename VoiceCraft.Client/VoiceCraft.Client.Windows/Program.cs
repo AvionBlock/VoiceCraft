@@ -1,6 +1,5 @@
 ﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
-using NAudio.Wave;
 using System;
 using VoiceCraft.Client.PDK.Audio;
 

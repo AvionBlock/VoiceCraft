@@ -43,7 +43,7 @@ namespace VoiceCraft.Client.PDK.Services
 
         public void Back()
         {
-            if(_history.Count > 1)
+            if (_history.Count > 1)
             {
                 _history.RemoveAt(_history.Count - 1);
                 var page = _history.Last();

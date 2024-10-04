@@ -127,7 +127,7 @@ namespace VoiceCraft.Core.Audio.Filters
                     AverageSamplesLengthRetrievedTotal, // 10
                     AverageScaledLengthRecent, // 11
                     AverageSamplesLengthRetrievedRecent); // 12
-				//ClientLogger.Debug(stats);
+                                                          //ClientLogger.Debug(stats);
                 ResetRecentCounters(DateTime.Now);
             }
         }
@@ -190,7 +190,7 @@ namespace VoiceCraft.Core.Audio.Filters
                 minCorrectionFactor,
                 range);
             ResetRecentCounters(DateTime.Now);
-			//ClientLogger.Debug(stats);
+            //ClientLogger.Debug(stats);
         }
 
         internal void LogReadingTooSlow(int unreadBytes)

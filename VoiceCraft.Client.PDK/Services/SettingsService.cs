@@ -65,11 +65,11 @@ namespace VoiceCraft.Client.PDK.Services
                 {
                     _queueWrite = false;
                     await Task.Delay(FILE_WRITING_DELAY);
-                    foreach(var settings in _settings)
+                    foreach (var settings in _settings)
                     {
                         foreach (var setting in settings.Value)
                         {
-                            if(setting.Value is Setting settingValue)
+                            if (setting.Value is Setting settingValue)
                                 settingValue.OnSaving();
                         }
                     }
@@ -113,7 +113,7 @@ namespace VoiceCraft.Client.PDK.Services
                 }
                 _settings = loadedSettings;
             }
-            catch(JsonException)
+            catch (JsonException)
             {
                 //Do nothing.
             }

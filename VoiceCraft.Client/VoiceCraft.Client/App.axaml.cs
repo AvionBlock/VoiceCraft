@@ -3,13 +3,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
-using VoiceCraft.Client.Views;
-using Avalonia.Notification;
 using VoiceCraft.Client.ViewModels;
+using VoiceCraft.Client.Views;
 
 namespace VoiceCraft.Client
 {
@@ -57,7 +57,7 @@ namespace VoiceCraft.Client
                 singleViewPlatform.MainView = (Control)mainView;
             }
 
-            if(serviceProvider != null)
+            if (serviceProvider != null)
                 PluginLoader.InitializePlugins(serviceProvider);
 
             base.OnFrameworkInitializationCompleted();

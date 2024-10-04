@@ -4,10 +4,10 @@ namespace VoiceCraft.Core.Audio.Filters
 {
     public class NullAudioFilter : IAudioTwoWayFilter
     {
-    	readonly byte[] buffer = new byte[10000];
+        readonly byte[] buffer = new byte[10000];
         int writePosition;
         int readPosition;
-    	readonly int outputBytesPerFrame;
+        readonly int outputBytesPerFrame;
 
         public NullAudioFilter(int outputBytesPerFrame)
         {
@@ -31,8 +31,8 @@ namespace VoiceCraft.Core.Audio.Filters
                 }
                 return true;
             }
-        	moreFrames = false;
-        	return false;
+            moreFrames = false;
+            return false;
         }
 
         public void Write(byte[] sampleData)
