@@ -7,7 +7,7 @@ namespace VoiceCraft.Client.Windows
     public class AudioRecorder : IAudioRecorder
     {
         private bool _isRecording;
-        private WaveInEvent _nativeRecorder = new WaveInEvent();
+        private readonly WaveInEvent _nativeRecorder = new WaveInEvent();
 
         public bool IsRecording => _isRecording;
         public WaveFormat WaveFormat { get => _nativeRecorder.WaveFormat; set => _nativeRecorder.WaveFormat = value; }

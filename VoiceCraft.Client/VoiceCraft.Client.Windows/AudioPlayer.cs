@@ -11,7 +11,7 @@ namespace VoiceCraft.Client.Windows
         public PlaybackState PlaybackState => _nativePlayer.PlaybackState;
         public WaveFormat OutputWaveFormat => _nativePlayer.OutputWaveFormat;
         public float Volume { get => _nativePlayer.Volume; set => _nativePlayer.Volume = value; }
-        public int Latency { get => _nativePlayer.DesiredLatency; set => _nativePlayer.DesiredLatency = value; }
+        public int DesiredLatency { get => _nativePlayer.DesiredLatency; set => _nativePlayer.DesiredLatency = value; }
 
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
 

@@ -17,12 +17,7 @@ namespace VoiceCraft.Client.Windows
             var avaloniaApp = BuildAvaloniaApp();
 
             //Register Native Players. TODO - THIS ONLY APPLIES TO WINDOWS, WE NEED TO SEPARATE THE DESKTOP PROJECT INTO 3 PLATFORM PROJECTS.
-            App.Services.AddSingleton<IWaveIn, WaveInEvent>((s) => new WaveInEvent()
-            {
-                BufferMilliseconds = 20,
-                WaveFormat = new WaveFormat(48000, 1)
-            });
-            App.Services.AddSingleton<IWavePlayer, WaveOutEvent>();
+            App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
             App.Services.AddSingleton<IAudioDevices, AudioDevices>();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
