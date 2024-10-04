@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private SignalGenerator _signal = new SignalGenerator(48000, 2)
         {
             Gain = 0.2,
-            Frequency = 500, // start frequency of the sweep
+            Frequency = 500,
             Type = SignalGeneratorType.Sin
         };
         private ThemesService _themesService;
@@ -188,6 +188,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             base.OnAppearing(sender);
             InputDevices = new ObservableCollection<string>(_audioDevices.GetWaveInDevices());
             OutputDevices = new ObservableCollection<string>(_audioDevices.GetWaveOutDevices());
+
+            if (!InputDevices.Contains(AudioSettings.InputDevice))
+                AudioSettings.InputDevice = _audioDevices.DefaultWaveInDevice();
+            if (!InputDevices.Contains(AudioSettings.OutputDevice))
+                AudioSettings.InputDevice = _audioDevices.DefaultWaveOutDevice();
 
             _recorder.DataAvailable += RecordingData;
             ThemeSettings.PropertyChanged += UpdateTheme;
