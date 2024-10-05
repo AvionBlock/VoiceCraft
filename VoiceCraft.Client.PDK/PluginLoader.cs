@@ -49,7 +49,7 @@ namespace VoiceCraft.Client.PDK
                         .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
                         .HasBadge("Plugin")
                         .HasMessage($"Loaded plugin: {plugin.Name}")
-                        .Dismiss().WithDelay(TimeSpan.FromSeconds(2))
+                        .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
                         .Dismiss().WithButton("Dismiss", (button) => { })
                         .Queue();
                 }
@@ -61,7 +61,7 @@ namespace VoiceCraft.Client.PDK
                         .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
                         .HasBadge("Error")
                         .HasMessage(ex.Message)
-                        .Dismiss().WithDelay(TimeSpan.FromSeconds(2))
+                        .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
                         .Dismiss().WithButton("Dismiss", (button) => { })
                         .Queue();
                 }

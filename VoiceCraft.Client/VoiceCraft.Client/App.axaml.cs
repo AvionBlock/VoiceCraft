@@ -16,6 +16,7 @@ namespace VoiceCraft.Client
     public partial class App : Application
     {
         public static ServiceCollection Services { get; } = new ServiceCollection();
+        public static readonly string PluginDirectory = $"{AppContext.BaseDirectory}/Plugins";
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -32,7 +33,7 @@ namespace VoiceCraft.Client
             ServiceProvider? serviceProvider = null;
             try
             {
-                PluginLoader.LoadPlugins($"{AppContext.BaseDirectory}/Plugins", Services);
+                PluginLoader.LoadPlugins(PluginDirectory, Services);
 
                 serviceProvider = Services.BuildServiceProvider();
                 mainView = serviceProvider.GetRequiredService<IMainView>();

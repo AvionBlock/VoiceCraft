@@ -11,6 +11,9 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
 	<Version>1.1.1.0-prerelease</Version>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\VoiceCraft.Client.Plugin.dll" />
+  </ItemGroup>
 
   <ItemGroup>
     <AndroidResource Include="Icon.png">
