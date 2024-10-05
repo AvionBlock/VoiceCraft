@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.PDK.Audio;
+using VoiceCraft.Client.Windows.Audio;
 
 namespace VoiceCraft.Client.Windows
 {
@@ -15,7 +16,6 @@ namespace VoiceCraft.Client.Windows
         {
             var avaloniaApp = BuildAvaloniaApp();
 
-            //Register Native Players. TODO - THIS ONLY APPLIES TO WINDOWS, WE NEED TO SEPARATE THE DESKTOP PROJECT INTO 3 PLATFORM PROJECTS.
             App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
             App.Services.AddSingleton<IAudioDevices, AudioDevices>();

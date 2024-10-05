@@ -8,7 +8,7 @@
              d:DesignWidth="800"
              x:DataType="vm:HomeViewModel"
              mc:Ignorable="d">
-    <Grid ColumnDefinitions="{OnFormFactor '*', Mobile='Auto, *'}" RowDefinitions="{OnFormFactor '', Desktop='Auto, *'}">
+    <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0"
               Margin="0,0,0,10"
               Background="{DynamicResource backgroundBrush}">
@@ -20,27 +20,32 @@
                        Text="{Binding Content.DataContext.Title}"
                        TextAlignment="Center" />
         </Grid>
-        <Grid Grid.Row="{OnFormFactor '1',
-                                      Mobile='0',
-                                      Desktop='1'}"
-              Grid.Column="{OnFormFactor '0',
-                                         Mobile='1',
-                                         Mobile='0'}"
-              ColumnDefinitions="Auto, *">
-            <ListBox Grid.Column="0"
+        <Grid Grid.Row="1"
+              ColumnDefinitions="{OnFormFactor 'Auto, *',
+                                               Mobile='*'}"
+              RowDefinitions="{OnFormFactor '*',
+                                            Mobile='*, Auto'}">
+            <ListBox Grid.Row="{OnFormFactor '0',
+                                             Mobile='1'}"
+                     Grid.Column="0"
                      VerticalAlignment="Top"
                      CornerRadius="0,5,5,0"
                      ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedListItem}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="{OnFormFactor 'Vertical', Mobile='Horizontal'}" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:ListItemTemplate}">
-                        <StackPanel Orientation="{OnFormFactor 'Horizontal', Mobile='Vertical', Desktop='Horizontal'}" Spacing="15">
-                            <PathIcon Data="{Binding Icon}" />
-                        </StackPanel>
+                        <PathIcon Data="{Binding Icon}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TransitioningContentControl Grid.Column="1"
+            <TransitioningContentControl Grid.Row="0"
+                                         Grid.Column="{OnFormFactor '1',
+                                                                    Mobile='0'}"
                                          Margin="10,0,10,0"
                                          Content="{Binding Content}" />
 

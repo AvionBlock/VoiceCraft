@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <ApplicationId>com.CompanyName.VoiceCraft.Client</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
@@ -29,5 +29,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AndroidAsset Update="Assets\VoiceCraft.Client.Plugin.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidAsset>
   </ItemGroup>
 </Project>

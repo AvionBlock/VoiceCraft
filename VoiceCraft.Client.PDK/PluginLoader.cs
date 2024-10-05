@@ -1,14 +1,16 @@
 ﻿using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
 using System.Reflection;
 using VoiceCraft.Client.PDK.Services;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.PDK
 {
     public static class PluginLoader
     {
         private static List<IPlugin> _plugins = new List<IPlugin>();
+        public static IEnumerable<IPlugin> Plugins { get => _plugins; }
+
         public static void LoadPlugins(string pluginDirectory, ServiceCollection serviceCollection)
         {
             if (!Directory.Exists(pluginDirectory))
@@ -49,7 +51,7 @@ namespace VoiceCraft.Client.PDK
                         .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
                         .HasBadge("Plugin")
                         .HasMessage($"Loaded plugin: {plugin.Name}")
-                        .Dismiss().WithDelay(TimeSpan.FromSeconds(5))
+                        .Dismiss().WithDelay(TimeSpan.FromSeconds(2))
                         .Dismiss().WithButton("Dismiss", (button) => { })
                         .Queue();
                 }
@@ -76,8 +78,6 @@ namespace VoiceCraft.Client.PDK
             if (assemblyType == null) return;
             var plugin = (IPlugin?)Activator.CreateInstance(assemblyType);
             if (plugin == null) return;
-
-            Debug.WriteLine($"Adding Plugin: {plugin.Name}");
 
             //If conflicted with another plugin, don't add it. This order can be completely random.
             if (_plugins.Exists(x => x.Id == plugin.Id)) return;

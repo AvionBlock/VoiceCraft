@@ -7,6 +7,7 @@ using VoiceCraft.Client.Plugin.ViewModels;
 using VoiceCraft.Client.Plugin.ViewModels.Home;
 using VoiceCraft.Client.Plugin.Views;
 using VoiceCraft.Client.Plugin.Views.Home;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Plugin
 {
@@ -15,7 +16,7 @@ namespace VoiceCraft.Client.Plugin
         public static Guid PluginId => Guid.Empty;
         public Guid Id => PluginId;
         public string Name => "VoiceCraft";
-        public string Description => "The main voicecraft plugin";
+        public string Description => "The main voicecraft plugin.";
 
         public int Priority => 0;
         public IEnumerable<Guid> ClientDependencies => [];
@@ -31,6 +32,7 @@ namespace VoiceCraft.Client.Plugin
             serviceCollection.AddTransient<ServersViewModel>();
             serviceCollection.AddTransient<ServerViewModel>();
             serviceCollection.AddTransient<AddServerViewModel>();
+            serviceCollection.AddTransient<PluginsViewModel>();
             serviceCollection.AddTransient<EditServerViewModel>();
             serviceCollection.AddTransient<SettingsViewModel>();
             serviceCollection.AddTransient<CreditsViewModel>();
@@ -39,6 +41,7 @@ namespace VoiceCraft.Client.Plugin
             serviceCollection.AddTransient<ServersView>();
             serviceCollection.AddTransient<ServerView>();
             serviceCollection.AddTransient<AddServerView>();
+            serviceCollection.AddTransient<PluginsView>();
             serviceCollection.AddTransient<EditServerView>();
             serviceCollection.AddTransient<SettingsView>();
             serviceCollection.AddTransient<CreditsView>();
