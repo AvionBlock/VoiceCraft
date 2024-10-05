@@ -12,11 +12,16 @@
 	<Version>1.1.1.0-prerelease</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <RunAOTCompilation>True</RunAOTCompilation>
-    <PublishTrimmed>True</PublishTrimmed>
+    <RunAOTCompilation>False</RunAOTCompilation>
+    <PublishTrimmed>False</PublishTrimmed>
+    <TrimMode>link</TrimMode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <RunAOTCompilation>True</RunAOTCompilation>
+    <RunAOTCompilation>False</RunAOTCompilation>
+    <TrimMode>link</TrimMode>
+  </PropertyGroup>
+  <PropertyGroup Label="Avalonia">
+    <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\VoiceCraft.Client.Plugin.dll" />

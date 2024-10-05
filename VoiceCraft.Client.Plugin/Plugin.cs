@@ -1,6 +1,5 @@
 ﻿using Avalonia.Markup.Xaml.Styling;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics.CodeAnalysis;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Plugin.Settings;
