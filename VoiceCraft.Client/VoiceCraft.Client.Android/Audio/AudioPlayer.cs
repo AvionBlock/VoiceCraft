@@ -6,12 +6,11 @@ namespace VoiceCraft.Client.Android.Audio
 {
     public class AudioPlayer : IAudioPlayer
     {
-        public int DesiredLatency { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public float Volume { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public PlaybackState PlaybackState => throw new NotImplementedException();
-
-        public WaveFormat OutputWaveFormat => throw new NotImplementedException();
+        private readonly AndroidAudioPlayer _nativePlayer = new AndroidAudioPlayer();
+        public PlaybackState PlaybackState => _nativePlayer.PlaybackState;
+        public WaveFormat? OutputWaveFormat => _nativePlayer.OutputWaveFormat;
+        public float Volume { get => _nativePlayer.Volume; set => _nativePlayer.Volume = value; }
+        public int DesiredLatency { get => _nativePlayer.DesiredLatency; set => _nativePlayer.DesiredLatency = value; }
 
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
 

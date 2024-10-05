@@ -28,8 +28,12 @@
             <ListBox Grid.Row="{OnFormFactor '0',
                                              Mobile='1'}"
                      Grid.Column="0"
-                     VerticalAlignment="Top"
-                     CornerRadius="0,5,5,0"
+                     HorizontalAlignment="{OnFormFactor 'Left',
+                                                        Mobile='Center'}"
+                     VerticalAlignment="{OnFormFactor 'Top',
+                                                      Mobile='Stretch'}"
+                     CornerRadius="{OnFormFactor '0,5,5,0',
+                                                 Mobile='5,0,5,0'}"
                      ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedListItem}">
                 <ListBox.ItemsPanel>

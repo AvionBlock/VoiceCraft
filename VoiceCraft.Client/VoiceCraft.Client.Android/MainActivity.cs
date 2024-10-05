@@ -23,9 +23,6 @@ namespace VoiceCraft.Client.Android
 
         protected override void OnCreate(Bundle? savedInstanceState)
         {
-            AudioHelper = new AudioHelper(this);
-
-            AudioHelper.PlayWithSpeaker();
 #if DEBUG
             if (!Directory.Exists(App.PluginDirectory))
             {
@@ -63,7 +60,6 @@ namespace VoiceCraft.Client.Android
             App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
             App.Services.AddSingleton<IAudioDevices, AudioDevices>();
-
             base.OnCreate(savedInstanceState);
         }
 

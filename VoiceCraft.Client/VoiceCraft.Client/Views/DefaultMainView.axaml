@@ -8,7 +8,10 @@
              d:DesignWidth="800"
              x:DataType="vm:DefaultMainViewModel"
              mc:Ignorable="d">
-    <TextBlock HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Text="{Binding Message}" />
+    <ScrollViewer>
+        <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="{Binding Message}"
+                   TextWrapping="Wrap" />
+    </ScrollViewer>
 </UserControl>

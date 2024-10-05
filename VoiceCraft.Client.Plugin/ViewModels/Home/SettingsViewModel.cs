@@ -14,6 +14,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
     public partial class SettingsViewModel : ViewModelBase
     {
         public override string Title => "Settings";
+
         private SignalGenerator _signal = new SignalGenerator(48000, 2)
         {
             Gain = 0.2,
@@ -110,7 +111,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                 _player.Play();
             }
         }
-        
+
         [RelayCommand]
         public void TestRecorder()
         {

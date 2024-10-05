@@ -8,6 +8,14 @@
 	<Version>1.1.1.0-prerelease</Version>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <IsTrimmable>True</IsTrimmable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <IsTrimmable>True</IsTrimmable>
+  </PropertyGroup>
+
   <ItemGroup>
     <AvaloniaXaml Remove="Assets\Icons.axaml" />
     <AvaloniaXaml Remove="Assets\Resources.axaml" />

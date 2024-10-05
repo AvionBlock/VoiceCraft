@@ -22,7 +22,7 @@ namespace VoiceCraft.Client.Android.Audio
         public void PlayWithSpeaker()
         {
             var devices = _audioManager.GetDevices(GetDevicesTargets.Outputs);
-            foreach(var device in devices)
+            foreach (var device in devices)
             {
                 Debug.WriteLine(device.ProductName);
             }

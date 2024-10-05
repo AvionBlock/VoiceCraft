@@ -24,7 +24,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void SetDevice(string device)
         {
-            
+
         }
 
         public void StartRecording()
