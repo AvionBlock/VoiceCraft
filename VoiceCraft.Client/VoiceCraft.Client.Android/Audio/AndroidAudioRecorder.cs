@@ -84,6 +84,9 @@ namespace VoiceCraft.Client.Android.Audio
             if (audioRecord != null && audioRecord.RecordingState != RecordState.Stopped)
             {
                 audioRecord.Stop();
+                audioRecord.Release();
+                audioRecord.Dispose();
+                audioRecord = null;
             }
         }
 
@@ -166,10 +169,8 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void StartRecording()
         {
-            if (audioRecord == null)
-            {
-                return;
-            }
+            //Starting capture procedure
+            OpenRecorder();
 
             //Check if we are already recording.
             if (captureState == CaptureState.Capturing)
@@ -183,10 +184,8 @@ namespace VoiceCraft.Client.Android.Audio
                 throw new ArgumentNullException(nameof(WaveFormat));
             }
 
-            //Starting capture procedure
-            OpenRecorder();
             captureState = CaptureState.Starting;
-            audioRecord.StartRecording();
+            audioRecord?.StartRecording();
             ThreadPool.QueueUserWorkItem((state) => RecordThread(), null);
         }
 

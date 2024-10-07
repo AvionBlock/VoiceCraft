@@ -32,6 +32,10 @@
 		<ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Assets\" />
+	</ItemGroup>
+
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="echo &quot;hello&quot;" />
 	</Target>

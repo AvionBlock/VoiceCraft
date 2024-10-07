@@ -4,6 +4,7 @@ using Android.OS;
 using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using System.IO;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.PDK.Audio;
@@ -20,6 +21,13 @@ namespace VoiceCraft.Client.Android
     {
         //Shutup
         public static AudioHelper AudioHelper = default!;
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
 
         protected override void OnCreate(Bundle? savedInstanceState)
         {
@@ -60,6 +68,7 @@ namespace VoiceCraft.Client.Android
             App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
             App.Services.AddSingleton<IAudioDevices, AudioDevices>();
+            Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
         }
 

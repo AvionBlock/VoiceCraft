@@ -1,9 +1,9 @@
-﻿using Avalonia.Controls;
-using Avalonia.Notification;
+﻿using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
+using VoiceCraft.Client.PDK.Views;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {
@@ -12,7 +12,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         public override string Title => "Main";
 
         [ObservableProperty]
-        private Control? _content = default!;
+        private ViewBase? _content = default!;
 
         [ObservableProperty]
         private INotificationMessageManager _manager;

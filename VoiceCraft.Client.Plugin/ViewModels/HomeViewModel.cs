@@ -4,6 +4,7 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using VoiceCraft.Client.PDK.ViewModels;
+using VoiceCraft.Client.PDK.Views;
 using VoiceCraft.Client.Plugin.Views.Home;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
@@ -13,7 +14,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         public override string Title => "Home";
 
         [ObservableProperty]
-        private Control _content = default!;
+        private ViewBase _content = default!;
 
         [ObservableProperty]
         private ObservableCollection<ListItemTemplate> _items = new ObservableCollection<ListItemTemplate>();
@@ -49,14 +50,14 @@ namespace VoiceCraft.Client.Plugin.ViewModels
 
     public class ListItemTemplate
     {
-        public ListItemTemplate(Control control, string iconKey)
+        public ListItemTemplate(ViewBase control, string iconKey)
         {
             Content = control;
             Application.Current!.TryFindResource(iconKey, out var icon);
             Icon = (StreamGeometry)icon!;
         }
 
-        public Control Content { get; }
+        public ViewBase Content { get; }
         public StreamGeometry? Icon { get; }
     }
 }

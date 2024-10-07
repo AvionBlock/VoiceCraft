@@ -1,19 +1,20 @@
-using Avalonia.Controls;
 using VoiceCraft.Client.PDK;
-using VoiceCraft.Client.ViewModels;
+using VoiceCraft.Client.PDK.ViewModels;
+using VoiceCraft.Client.PDK.Views;
 
 namespace VoiceCraft.Client.Views
 {
-    public partial class DefaultMainView : UserControl, IMainView
+    public partial class DefaultMainView : ViewBase, IMainView
     {
-        public readonly DefaultMainViewModel ViewModel;
+        public override ViewModelBase ViewModel => (ViewModelBase)_mainViewModel;
+        private readonly IMainViewModel _mainViewModel;
 
-        public DefaultMainView(DefaultMainViewModel defaultViewModel)
+        public DefaultMainView(IMainViewModel mainViewModel)
         {
             InitializeComponent();
 
-            DataContext = defaultViewModel;
-            ViewModel = defaultViewModel;
+            DataContext = mainViewModel;
+            _mainViewModel = mainViewModel;
         }
     }
 }

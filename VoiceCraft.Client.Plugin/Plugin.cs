@@ -61,11 +61,13 @@ namespace VoiceCraft.Client.Plugin
             themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light,
                 new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
                 new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Icons.axaml", UriKind.Relative) },
-                new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) });
+                new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) },
+                new StyleInclude(new Uri(@"avares://DialogHost.Avalonia")) { Source = new Uri(@"/Styles.xaml", UriKind.Relative) });
             themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark,
                 new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
                 new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Icons.axaml", UriKind.Relative) },
-                new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) });
+                new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) },
+                new StyleInclude(new Uri(@"avares://DialogHost.Avalonia")) { Source = new Uri(@"/Styles.xaml", UriKind.Relative) });
 
             themes.SwitchTheme(themeSettings.SelectedTheme);
 

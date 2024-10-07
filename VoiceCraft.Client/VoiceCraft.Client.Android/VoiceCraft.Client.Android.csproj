@@ -14,11 +14,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <RunAOTCompilation>False</RunAOTCompilation>
     <PublishTrimmed>False</PublishTrimmed>
-    <TrimMode>link</TrimMode>
+    <TrimMode>copyused</TrimMode>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <RunAOTCompilation>False</RunAOTCompilation>
-    <TrimMode>link</TrimMode>
+    <TrimMode>copyused</TrimMode>
+    <PublishTrimmed>False</PublishTrimmed>
   </PropertyGroup>
   <PropertyGroup Label="Avalonia">
     <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
@@ -41,11 +42,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AndroidAsset Update="Assets\VoiceCraft.Client.Plugin.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </AndroidAsset>
   </ItemGroup>
 </Project>

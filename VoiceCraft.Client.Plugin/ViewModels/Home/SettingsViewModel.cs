@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.ApplicationModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Collections.ObjectModel;
@@ -113,7 +114,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         }
 
         [RelayCommand]
-        public void TestRecorder()
+        public async Task TestRecorder()
         {
             if (_recorder.IsRecording)
             {
@@ -123,6 +124,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
             else
             {
+                var status = await Permissions.RequestAsync<Permissions.Microphone>();
+
+                if (status != PermissionStatus.Granted)
+                    return;
+
                 IsRecording = true;
                 _recorder.StartRecording();
             }
@@ -148,7 +154,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                 _recorder.SetDevice(AudioSettings.InputDevice);
                 if (_recorder.IsRecording)
                 {
-                    TestRecorder(); //Stop Recorder.
+                    _ = TestRecorder(); //Shutup.
                 }
             }
         }
@@ -184,6 +190,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             MicrophoneValue = max;
         }
 
+        private void RecordingStopped(object? sender, StoppedEventArgs e)
+        {
+            IsRecording = false;
+        }
+
         public override void OnAppearing(object? sender)
         {
             base.OnAppearing(sender);
@@ -196,6 +207,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                 AudioSettings.InputDevice = _audioDevices.DefaultWaveOutDevice();
 
             _recorder.DataAvailable += RecordingData;
+            _recorder.RecordingStopped += RecordingStopped;
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
@@ -209,6 +221,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             base.OnDisappearing(sender);
             _recorder.DataAvailable -= RecordingData;
+            _recorder.RecordingStopped -= RecordingStopped;
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
@@ -218,7 +231,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             NotificationSettings.PropertyChanged -= SaveSettings;
 
             if (_recorder.IsRecording)
-                TestRecorder();
+                _ = TestRecorder(); //Shutup
 
             if (_player.PlaybackState == PlaybackState.Playing)
                 TestPlayer();

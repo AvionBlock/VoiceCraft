@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
+using VoiceCraft.Client.PDK.Views;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.Views;
 
@@ -24,7 +25,7 @@ namespace VoiceCraft.Client
 
         public override void OnFrameworkInitializationCompleted()
         {
-            Services.AddSingleton<NavigationService>(s => new NavigationService(p => (Control)s.GetRequiredService(p)));
+            Services.AddSingleton<NavigationService>(s => new NavigationService(p => (ViewBase)s.GetRequiredService(p)));
             Services.AddSingleton<NotificationMessageManager>();
             Services.AddSingleton<SettingsService>();
             Services.AddSingleton<ThemesService>();

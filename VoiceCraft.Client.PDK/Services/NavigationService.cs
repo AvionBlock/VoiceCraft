@@ -1,42 +1,39 @@
-﻿using Avalonia.Controls;
-using VoiceCraft.Client.PDK.ViewModels;
+﻿using VoiceCraft.Client.PDK.Views;
 
 namespace VoiceCraft.Client.PDK.Services
 {
     public class NavigationService
     {
-        public Control CurrentPage { get; private set; } = default!;
+        public ViewBase CurrentPage { get; private set; } = default!;
         public int MaxHistory { get; }
 
-        public event EventHandler<Control>? OnPageChanging;
-        public event EventHandler<Control>? OnPageChanged;
+        public event EventHandler<ViewBase>? OnPageChanging;
+        public event EventHandler<ViewBase>? OnPageChanged;
 
-        private Func<Type, Control> _createView;
-        private List<Control> _history;
+        private Func<Type, ViewBase> _createView;
+        private List<ViewBase> _history;
 
-        public NavigationService(Func<Type, Control> createView, int maxHistory = 50)
+        public NavigationService(Func<Type, ViewBase> createView, int maxHistory = 50)
         {
             _createView = createView;
-            _history = new List<Control>();
+            _history = new List<ViewBase>();
             MaxHistory = maxHistory;
         }
 
-        public TPage NavigateTo<TPage>() where TPage : Control
+        public TPage NavigateTo<TPage>() where TPage : ViewBase
         {
             var page = InstantiatePage<TPage>();
             OnPageChanging?.Invoke(this, page);
 
-            if (CurrentPage != null && CurrentPage.DataContext is ViewModelBase currentViewModel)
-                currentViewModel.OnDisappearing(this);
+            if (CurrentPage != null)
+                CurrentPage.ViewModel.OnDisappearing(this);
 
             CurrentPage = page;
             if (_history.Count >= MaxHistory)
                 _history.RemoveAt(0);
             _history.Add(page);
 
-            if (page.DataContext is ViewModelBase newViewModel)
-                newViewModel.OnAppearing(this);
-
+            CurrentPage.ViewModel.OnAppearing(this);
             OnPageChanged?.Invoke(this, CurrentPage);
             return page;
         }
@@ -48,13 +45,11 @@ namespace VoiceCraft.Client.PDK.Services
                 _history.RemoveAt(_history.Count - 1);
                 var page = _history.Last();
                 OnPageChanging?.Invoke(this, page);
-                if (CurrentPage != null && CurrentPage.DataContext is ViewModelBase currentViewModel)
-                    currentViewModel.OnDisappearing(this);
+                if (CurrentPage != null)
+                    CurrentPage.ViewModel.OnDisappearing(this);
 
                 CurrentPage = page;
-
-                if (page.DataContext is ViewModelBase newViewModel)
-                    newViewModel.OnAppearing(this);
+                CurrentPage.ViewModel.OnAppearing(this);
                 OnPageChanged?.Invoke(this, CurrentPage);
             }
         }
