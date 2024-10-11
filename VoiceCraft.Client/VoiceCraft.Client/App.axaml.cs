@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.Views;
@@ -30,34 +31,51 @@ namespace VoiceCraft.Client
             Services.AddSingleton<SettingsService>();
             Services.AddSingleton<ThemesService>();
 
-            IMainView? mainView = null;
             ServiceProvider? serviceProvider = null;
-            try
-            {
-                PluginLoader.LoadPlugins(PluginDirectory, Services);
-
-                serviceProvider = Services.BuildServiceProvider();
-                mainView = serviceProvider.GetRequiredService<IMainView>();
-            }
-            catch (Exception ex)
-            {
-                mainView = new DefaultMainView(new DefaultMainViewModel() { Message = $"Error: {ex.Message}" });
-            }
+            PluginLoader.LoadPlugins(PluginDirectory, Services);
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Line below is needed to remove Avalonia data validation.
                 // Without this line you will get duplicate validations from both Avalonia and CT
                 BindingPlugins.DataValidators.RemoveAt(0);
-                desktop.MainWindow = new MainWindow
+                var mainWindow = new MainWindow();
+                IMainView mainView;
+                try
                 {
-                    Content = mainView,
-                };
+                    Services.AddSingleton(mainWindow.StorageProvider);
+                    serviceProvider = Services.BuildServiceProvider();
+
+                    mainView = serviceProvider.GetRequiredService<IMainView>();
+                }
+                catch (Exception ex)
+                {
+                    mainView = new DefaultMainView(new DefaultMainViewModel() { Message = $"Error: {ex.Message}" });
+                }
+
+                mainWindow.Content = mainView;
+                desktop.MainWindow = mainWindow;
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
-                singleViewPlatform.MainView = (Control)mainView;
+                var topLevel = (TopLevel?)ApplicationLifetime.GetType()?.GetProperty(nameof(TopLevel))?.GetValue(ApplicationLifetime, null);
+                IMainView mainView;
+                try
+                {
+                    if (topLevel == null)
+                        throw new Exception("Could not find visual root!");
 
+                    Services.AddSingleton(topLevel.StorageProvider);
+                    serviceProvider = Services.BuildServiceProvider();
+
+                    mainView = serviceProvider.GetRequiredService<IMainView>();
+                }
+                catch (Exception ex)
+                {
+                    mainView = new DefaultMainView(new DefaultMainViewModel() { Message = $"Error: {ex.Message}" });
+                }
+
+                singleViewPlatform.MainView = (Control)mainView;
             }
 
             if (serviceProvider != null)

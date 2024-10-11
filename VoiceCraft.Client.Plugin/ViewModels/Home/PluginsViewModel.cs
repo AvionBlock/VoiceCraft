@@ -10,29 +10,25 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
     public partial class PluginsViewModel : ViewModelBase
     {
         public override string Title => "Plugins";
-
-        public IStorageProvider? StorageProvider { get; set; }
+        private IStorageProvider _storageProvider;
 
         [ObservableProperty]
         public ObservableCollection<PluginDisplay> _plugins;
 
-        public PluginsViewModel()
+        public PluginsViewModel(IStorageProvider storageProvider)
         {
             _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.Name, x.Description)));
+            _storageProvider = storageProvider;
         }
 
         [RelayCommand]
         public async Task AddPlugin()
         {
-            //Will figure this shit out later.
-            if (StorageProvider == null)
-                return;
-
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            var files = await _storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = "Add Plugin",
-                AllowMultiple = false,
-                FileTypeFilter = [new FilePickerFileType("*.dll")]
+                AllowMultiple = false
+                //TODO FOR FILE PICKING!
             });
         }
     }

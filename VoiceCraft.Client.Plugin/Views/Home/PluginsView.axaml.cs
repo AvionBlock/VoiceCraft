@@ -17,8 +17,6 @@ namespace VoiceCraft.Client.Plugin.Views.Home
 
             DataContext = viewModel;
             PluginsViewModel = viewModel;
-
-            PluginsViewModel.StorageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
         }
     }
 }
