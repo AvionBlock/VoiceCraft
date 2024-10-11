@@ -57,6 +57,7 @@ namespace VoiceCraft.Client
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
                 singleViewPlatform.MainView = (Control)mainView;
+
             }
 
             if (serviceProvider != null)

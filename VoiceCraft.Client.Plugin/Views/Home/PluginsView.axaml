@@ -37,7 +37,9 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Border>
-            <Button Padding="5" HorizontalAlignment="Stretch">
+            <Button Padding="5"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding AddPluginCommand}">
                 <TextBlock Text="Add Plugin" TextAlignment="Center" />
             </Button>
         </StackPanel>

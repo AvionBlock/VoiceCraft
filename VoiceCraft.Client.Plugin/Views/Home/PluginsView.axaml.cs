@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.PDK.Views;
 using VoiceCraft.Client.Plugin.ViewModels.Home;
@@ -16,6 +17,8 @@ namespace VoiceCraft.Client.Plugin.Views.Home
 
             DataContext = viewModel;
             PluginsViewModel = viewModel;
+
+            PluginsViewModel.StorageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
         }
     }
 }

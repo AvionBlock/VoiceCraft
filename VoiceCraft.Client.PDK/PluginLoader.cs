@@ -70,13 +70,6 @@ namespace VoiceCraft.Client.PDK
             }
         }
 
-        public static void AddPlugin(IPlugin plugin)
-        {
-            //If conflicted with another plugin, don't add it. This order can be completely random.
-            if (_plugins.Exists(x => x.Id == plugin.Id)) return;
-            _plugins.Add(plugin);
-        }
-
         private static void AddPlugin(Assembly assembly)
         {
             var pluginInterfaceType = typeof(IPlugin);

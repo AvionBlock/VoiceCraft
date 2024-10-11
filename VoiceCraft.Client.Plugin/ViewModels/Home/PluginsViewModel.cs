@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.ViewModels;
@@ -9,12 +11,29 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
     {
         public override string Title => "Plugins";
 
+        public IStorageProvider? StorageProvider { get; set; }
+
         [ObservableProperty]
         public ObservableCollection<PluginDisplay> _plugins;
 
         public PluginsViewModel()
         {
             _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.Name, x.Description)));
+        }
+
+        [RelayCommand]
+        public async Task AddPlugin()
+        {
+            //Will figure this shit out later.
+            if (StorageProvider == null)
+                return;
+
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Add Plugin",
+                AllowMultiple = false,
+                FileTypeFilter = [new FilePickerFileType("*.dll")]
+            });
         }
     }
 
