@@ -6,7 +6,7 @@
 		<TargetFramework>net8.0-macos</TargetFramework>
 		<Nullable>enable</Nullable>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-		<ApplicationVersion>1.1.1.0-prerelease</ApplicationVersion>
+		<Version>1.1.1.0-prerelease</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
