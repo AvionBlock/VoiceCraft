@@ -1,10 +1,12 @@
 ﻿using Android.App;
 using Android.Content.PM;
+using Android.Media;
 using Android.OS;
 using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
+using System.Diagnostics;
 using System.IO;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.PDK.Audio;
@@ -67,7 +69,7 @@ namespace VoiceCraft.Client.Android
 
             App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
-            App.Services.AddSingleton<IAudioDevices, AudioDevices>();
+            App.Services.AddSingleton<IAudioDevices, AudioDevices>(x => new AudioDevices((AudioManager?)GetSystemService(MainActivity.AudioService)));
             Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
         }

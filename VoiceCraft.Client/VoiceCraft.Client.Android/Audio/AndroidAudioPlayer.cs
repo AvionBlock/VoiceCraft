@@ -32,8 +32,6 @@ namespace VoiceCraft.Client.Android.Audio
 
         public AudioContentType ContentType { get; set; }
 
-        public AudioTrackPerformanceMode PerformanceMode { get; set; }
-
         public WaveFormat OutputWaveFormat { get; set; }
 
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
@@ -50,7 +48,6 @@ namespace VoiceCraft.Client.Android.Audio
 
             Usage = AudioUsageKind.Media;
             ContentType = AudioContentType.Music;
-            PerformanceMode = AudioTrackPerformanceMode.None;
         }
 
         ~AndroidAudioPlayer()
@@ -116,7 +113,6 @@ namespace VoiceCraft.Client.Android.Audio
                     .Build()!)
                 .SetBufferSizeInBytes(bufferSize)
                 .SetTransferMode(AudioTrackMode.Stream)
-                .SetPerformanceMode(PerformanceMode)
                 .Build();
             _audioTrack.SetVolume(Volume);
         }

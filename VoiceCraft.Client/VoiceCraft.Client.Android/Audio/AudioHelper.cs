@@ -1,5 +1,5 @@
 ﻿using Android.Media;
-using System.Diagnostics;
+using Android.OS;
 
 namespace VoiceCraft.Client.Android.Audio
 {
@@ -14,17 +14,45 @@ namespace VoiceCraft.Client.Android.Audio
             _audioManager = manager;
         }
 
+        private void Reset()
+        {
+            _audioManager.Mode = Mode.Normal;
+
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+            {
+#pragma warning disable CA1416
+                _audioManager.ClearCommunicationDevice();
+#pragma warning restore CA1416
+            }
+            else if(Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+            {
+#pragma warning disable CA1422
+                _audioManager.StopBluetoothSco();
+                _audioManager.BluetoothScoOn = false;
+                _audioManager.SpeakerphoneOn = false;
+#pragma warning restore CA1422
+            }
+        }
+
         public void PlayWithPhone()
         {
-            _audioManager.Mode = Mode.InCall;
+            Reset();
+            _audioManager.Mode = Mode.InCommunication;
         }
 
         public void PlayWithSpeaker()
         {
-            var devices = _audioManager.GetDevices(GetDevicesTargets.Outputs);
-            foreach (var device in devices)
+            Reset();
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
             {
-                Debug.WriteLine(device.ProductName);
+#pragma warning disable CA1416
+#pragma warning restore CA1416
+            }
+            else if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+            {
+#pragma warning disable CA1422
+                _audioManager.SpeakerphoneOn = true;
+#pragma warning restore CA1422
             }
         }
 

@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <ApplicationId>com.CompanyName.VoiceCraft.Client</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
