@@ -14,6 +14,11 @@ namespace VoiceCraft.Client.Android.Audio
 
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
 
+        public AudioPlayer()
+        {
+            _nativePlayer.PlaybackStopped += InvokePlaybackStopped;
+        }
+
         public void Dispose()
         {
             _nativePlayer.Dispose();
@@ -36,12 +41,17 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void SetDevice(string device)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Stop()
         {
             _nativePlayer.Stop();
+        }
+
+        private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)
+        {
+            PlaybackStopped?.Invoke(sender, e);
         }
     }
 }
