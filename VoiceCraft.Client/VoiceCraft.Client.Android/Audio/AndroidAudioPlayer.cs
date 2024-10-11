@@ -9,7 +9,6 @@ namespace VoiceCraft.Client.Android.Audio
     {
         private readonly SynchronizationContext? _synchronizationContext;
         private volatile PlaybackState _playbackState;
-        private AutoResetEvent? _callbackEvent;
         private IWaveProvider? _waveStream;
         private AudioTrack? _audioTrack;
         private float _volume;
@@ -46,7 +45,10 @@ namespace VoiceCraft.Client.Android.Audio
 
             if (_audioTrack != null)
             {
-                //Close audio track.
+                _audioTrack.Stop();
+                _audioTrack.Release();
+                _audioTrack.Dispose();
+                _audioTrack = null;
             }
 
             Encoding encoding;
@@ -65,7 +67,6 @@ namespace VoiceCraft.Client.Android.Audio
                 throw new ArgumentException("Input wave provider must be PCM or IEEE float", nameof(waveProvider));
             }
 
-            _callbackEvent = new AutoResetEvent(false);
             _waveStream = waveProvider;
 
             //Determine the channel mask
@@ -103,22 +104,148 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void Play()
         {
-            throw new NotImplementedException();
+            if (_audioTrack == null || _waveStream == null)
+            {
+                throw new InvalidOperationException("Must call Init first");
+            }
+
+            if (_playbackState == PlaybackState.Stopped)
+            {
+                _playbackState = PlaybackState.Playing;
+                ThreadPool.QueueUserWorkItem(state => PlaybackThread(), null);
+            }
+            else if (_playbackState == PlaybackState.Paused)
+            {
+                _playbackState = PlaybackState.Playing;
+                _audioTrack?.Play();
+            }
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            if (_playbackState == PlaybackState.Stopped)
+            {
+                return;
+            }
+
+            _playbackState = PlaybackState.Stopped;
+            _audioTrack?.Stop();
         }
 
         public void Pause()
         {
-            throw new NotImplementedException();
+            if (_playbackState == PlaybackState.Stopped || _playbackState == PlaybackState.Paused)
+            {
+                return;
+            }
+
+            _playbackState = PlaybackState.Paused;
+            _audioTrack?.Pause();
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void PlaybackThread()
+        {
+            Exception? exception = null;
+            try
+            {
+                PlaybackLogic();
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
+            finally
+            {
+                _playbackState = PlaybackState.Stopped;
+                // we're exiting our background thread
+                RaisePlaybackStoppedEvent(exception);
+            }
+        }
+
+        private void PlaybackLogic()
+        {
+            if (_waveStream == null)
+                throw new Exception("WaveStream was not found, could not initialize buffers!");
+
+            int bufferSize = _waveStream.WaveFormat.ConvertLatencyToByteSize(DesiredLatency);
+            //Initialize the wave buffer
+            WaveBuffer waveBuffer = new(bufferSize)
+            {
+                ByteBufferCount = bufferSize
+            };
+
+            while (PlaybackState != PlaybackState.Stopped)
+            {
+                //Check the playback state
+                if (PlaybackState != PlaybackState.Playing)
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                //Fill the wave buffer with new samples
+                int bytesRead = _waveStream.Read(waveBuffer.ByteBuffer, 0, waveBuffer.ByteBufferCount);
+                if (bytesRead > 0)
+                {
+                    //Clear the unused space in the wave buffer if necessary
+                    if (bytesRead < waveBuffer.ByteBufferCount)
+                    {
+                        waveBuffer.ByteBufferCount = (bytesRead + 3) & ~3;
+                        Array.Clear(waveBuffer.ByteBuffer, bytesRead, waveBuffer.ByteBufferCount - bytesRead);
+                    }
+
+                    //Write the specified wave buffer to the audio track
+                    if (_waveStream.WaveFormat.Encoding == WaveFormatEncoding.Pcm)
+                    {
+                        _audioTrack?.Write(waveBuffer.ByteBuffer, 0, waveBuffer.ByteBufferCount);
+                    }
+                    else if (_waveStream.WaveFormat.Encoding == WaveFormatEncoding.IeeeFloat)
+                    {
+                        //AudioTrack.Write doesn't appreciate WaveBuffer.FloatBuffer
+                        float[] floatBuffer = new float[waveBuffer.FloatBufferCount];
+                        for (int i = 0; i < waveBuffer.FloatBufferCount; i++)
+                        {
+                            floatBuffer[i] = waveBuffer.FloatBuffer[i];
+                        }
+                        _audioTrack?.Write(floatBuffer, 0, floatBuffer.Length, WriteMode.Blocking);
+                    }
+                }
+                else
+                {
+                    //Stop the audio track
+                    _audioTrack?.Stop();
+                    break;
+                }
+            }
+
+            //Flush the audio track
+            _audioTrack?.Flush();
+        }
+
+        protected virtual void RaisePlaybackStoppedEvent(Exception? exception = null)
+        {
+            //Raise the playback stopped event
+            PlaybackStopped?.Invoke(this, new StoppedEventArgs(exception));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_playbackState != PlaybackState.Stopped)
+                {
+                    Stop();
+                }
+                _audioTrack?.Release();
+                _audioTrack?.Dispose();
+                _audioTrack = null;
+            }
         }
     }
 }

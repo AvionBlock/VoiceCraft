@@ -8,10 +8,9 @@ namespace VoiceCraft.Client.Android.Audio
 {
     public class AndroidAudioRecorder : IWaveIn
     {
-        private readonly AutoResetEvent callbackEvent;
-        private readonly SynchronizationContext? synchronizationContext;
-        private CaptureState captureState;
-        private AudioRecord? audioRecord;
+        private readonly SynchronizationContext? _synchronizationContext;
+        private CaptureState _captureState;
+        private AudioRecord? _audioRecord;
 
         public WaveFormat WaveFormat { get; set; }
         public int BufferMilliseconds { get; set; }
@@ -22,12 +21,68 @@ namespace VoiceCraft.Client.Android.Audio
 
         public AndroidAudioRecorder()
         {
-            callbackEvent = new AutoResetEvent(false);
-            synchronizationContext = SynchronizationContext.Current;
+            _synchronizationContext = SynchronizationContext.Current;
             audioSource = AudioSource.Mic;
             WaveFormat = new WaveFormat(8000, 16, 1);
             BufferMilliseconds = 100;
-            captureState = CaptureState.Stopped;
+            _captureState = CaptureState.Stopped;
+        }
+
+        public void StartRecording()
+        {
+            //Starting capture procedure
+            OpenRecorder();
+
+            //Check if we are already recording.
+            if (_captureState == CaptureState.Capturing)
+            {
+                return;
+            }
+
+            //Make sure that we have some format to use.
+            if (WaveFormat == null)
+            {
+                throw new ArgumentNullException(nameof(WaveFormat));
+            }
+
+            _captureState = CaptureState.Starting;
+            _audioRecord?.StartRecording();
+            ThreadPool.QueueUserWorkItem((state) => RecordThread(), null);
+        }
+
+        public void StopRecording()
+        {
+            if (_audioRecord == null)
+            {
+                return;
+            }
+
+            //Check if it has already been stopped
+            if (_captureState != CaptureState.Stopped)
+            {
+                _captureState = CaptureState.Stopped;
+                CloseRecorder();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_captureState != CaptureState.Stopped)
+                {
+                    StopRecording();
+                }
+                _audioRecord?.Release();
+                _audioRecord?.Dispose();
+                _audioRecord = null;
+            }
         }
 
         private void OpenRecorder()
@@ -75,18 +130,18 @@ namespace VoiceCraft.Client.Android.Audio
                 bufferSize = minBufferSize;
             }
             //Create the AudioRecord Object.
-            audioRecord = new AudioRecord(audioSource, WaveFormat.SampleRate, channelMask, encoding, bufferSize);
+            _audioRecord = new AudioRecord(audioSource, WaveFormat.SampleRate, channelMask, encoding, bufferSize);
         }
 
         private void CloseRecorder()
         {
             //Make sure that the recorder was opened
-            if (audioRecord != null && audioRecord.RecordingState != RecordState.Stopped)
+            if (_audioRecord != null && _audioRecord.RecordingState != RecordState.Stopped)
             {
-                audioRecord.Stop();
-                audioRecord.Release();
-                audioRecord.Dispose();
-                audioRecord = null;
+                _audioRecord.Stop();
+                _audioRecord.Release();
+                _audioRecord.Dispose();
+                _audioRecord = null;
             }
         }
 
@@ -103,8 +158,24 @@ namespace VoiceCraft.Client.Android.Audio
             }
             finally
             {
-                captureState = CaptureState.Stopped;
+                _captureState = CaptureState.Stopped;
                 RaiseRecordingStoppedEvent(exception);
+            }
+        }
+
+        private void RaiseRecordingStoppedEvent(Exception? e)
+        {
+            var handler = RecordingStopped;
+            if (handler != null)
+            {
+                if (_synchronizationContext == null)
+                {
+                    handler(this, new StoppedEventArgs(e));
+                }
+                else
+                {
+                    _synchronizationContext.Post(state => handler(this, new StoppedEventArgs(e)), null);
+                }
             }
         }
 
@@ -117,12 +188,12 @@ namespace VoiceCraft.Client.Android.Audio
                 bufferSize -= bufferSize % WaveFormat.BlockAlign;
             }
 
-            captureState = CaptureState.Capturing;
+            _captureState = CaptureState.Capturing;
 
             //Run the record loop
-            while (captureState != CaptureState.Stopped && audioRecord != null)
+            while (_captureState != CaptureState.Stopped && _audioRecord != null)
             {
-                if (captureState != CaptureState.Capturing)
+                if (_captureState != CaptureState.Capturing)
                 {
                     Thread.Sleep(10);
                     continue;
@@ -131,7 +202,7 @@ namespace VoiceCraft.Client.Android.Audio
                 if (WaveFormat.Encoding == WaveFormatEncoding.Pcm)
                 {
                     byte[] byteBuffer = new byte[bufferSize];
-                    var bytesRead = audioRecord.Read(byteBuffer, 0, bufferSize);
+                    var bytesRead = _audioRecord.Read(byteBuffer, 0, bufferSize);
                     if (bytesRead > 0)
                     {
                         DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, bytesRead));
@@ -141,86 +212,13 @@ namespace VoiceCraft.Client.Android.Audio
                 {
                     float[] floatBuffer = new float[bufferSize / 4];
                     byte[] byteBuffer = new byte[bufferSize];
-                    var floatsRead = audioRecord.Read(floatBuffer, 0, floatBuffer.Length, 0);
+                    var floatsRead = _audioRecord.Read(floatBuffer, 0, floatBuffer.Length, 0);
                     Buffer.BlockCopy(floatBuffer, 0, byteBuffer, 0, byteBuffer.Length);
                     if (floatsRead > 0)
                     {
                         DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, floatsRead * 4));
                     }
                 }
-            }
-        }
-
-        private void RaiseRecordingStoppedEvent(Exception? e)
-        {
-            var handler = RecordingStopped;
-            if (handler != null)
-            {
-                if (synchronizationContext == null)
-                {
-                    handler(this, new StoppedEventArgs(e));
-                }
-                else
-                {
-                    synchronizationContext.Post(state => handler(this, new StoppedEventArgs(e)), null);
-                }
-            }
-        }
-
-        public void StartRecording()
-        {
-            //Starting capture procedure
-            OpenRecorder();
-
-            //Check if we are already recording.
-            if (captureState == CaptureState.Capturing)
-            {
-                return;
-            }
-
-            //Make sure that we have some format to use.
-            if (WaveFormat == null)
-            {
-                throw new ArgumentNullException(nameof(WaveFormat));
-            }
-
-            captureState = CaptureState.Starting;
-            audioRecord?.StartRecording();
-            ThreadPool.QueueUserWorkItem((state) => RecordThread(), null);
-        }
-
-        public void StopRecording()
-        {
-            if (audioRecord == null)
-            {
-                return;
-            }
-
-            //Check if it has already been stopped
-            if (captureState != CaptureState.Stopped)
-            {
-                captureState = CaptureState.Stopped;
-                CloseRecorder();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (captureState != CaptureState.Stopped)
-                {
-                    StopRecording();
-                }
-                audioRecord?.Release();
-                audioRecord?.Dispose();
-                audioRecord = null;
             }
         }
     }
