@@ -8,7 +8,7 @@ namespace VoiceCraft.Client.Android.Audio
     {
         private readonly AndroidAudioPlayer _nativePlayer = new AndroidAudioPlayer();
         public PlaybackState PlaybackState => _nativePlayer.PlaybackState;
-        public WaveFormat? OutputWaveFormat => _nativePlayer.OutputWaveFormat;
+        public WaveFormat OutputWaveFormat => _nativePlayer.OutputWaveFormat;
         public float Volume { get => _nativePlayer.Volume; set => _nativePlayer.Volume = value; }
         public int DesiredLatency { get => _nativePlayer.DesiredLatency; set => _nativePlayer.DesiredLatency = value; }
 
@@ -16,22 +16,22 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _nativePlayer.Dispose();
         }
 
         public void Init(IWaveProvider waveProvider)
         {
-            throw new NotImplementedException();
+            _nativePlayer.Init(waveProvider);
         }
 
         public void Pause()
         {
-            throw new NotImplementedException();
+            _nativePlayer.Pause();
         }
 
         public void Play()
         {
-            throw new NotImplementedException();
+            _nativePlayer.Play();
         }
 
         public void SetDevice(string device)
@@ -41,7 +41,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            _nativePlayer.Stop();
         }
     }
 }
