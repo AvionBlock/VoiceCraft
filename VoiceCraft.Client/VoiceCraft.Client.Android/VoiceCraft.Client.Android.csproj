@@ -14,6 +14,10 @@
 	<PropertyGroup Label="Avalonia">
 		<AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <PublishTrimmed>False</PublishTrimmed>
+	  <RunAOTCompilation>False</RunAOTCompilation>
+	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Assets\VoiceCraft.Client.Plugin.dll" />
 	</ItemGroup>
