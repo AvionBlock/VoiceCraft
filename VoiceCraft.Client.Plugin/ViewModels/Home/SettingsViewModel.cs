@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Devices;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Collections.ObjectModel;
@@ -124,9 +125,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
             else
             {
-                var status = await Permissions.RequestAsync<Permissions.Microphone>();
-
-                if (status != PermissionStatus.Granted)
+                if (await CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
                     return;
 
                 IsRecording = true;
@@ -235,6 +234,30 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
             if (_player.PlaybackState == PlaybackState.Playing)
                 TestPlayer();
+        }
+
+        public async Task<PermissionStatus> CheckAndRequestPermission<TPermission>(string? rationalDescription = null) where TPermission : Permissions.BasePermission, new()
+        {
+            PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
+
+            if (status == PermissionStatus.Granted)
+                return status;
+
+            if (status == PermissionStatus.Denied && DeviceInfo.Platform == DevicePlatform.iOS)
+            {
+                // Prompt the user to turn on in settings
+                // On iOS once a permission has been denied it may not be requested again from the application
+                return status;
+            }
+
+            if (Permissions.ShouldShowRationale<TPermission>() && !string.IsNullOrWhiteSpace(rationalDescription))
+            {
+                // Prompt the user with additional information as to why the permission is needed
+            }
+
+            status = await Permissions.RequestAsync<TPermission>();
+
+            return status;
         }
     }
 }
