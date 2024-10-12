@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using System;
 using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.Windows.Audio;
@@ -19,6 +20,8 @@ namespace VoiceCraft.Client.Windows
             App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
             App.Services.AddSingleton<IAudioDevices, AudioDevices>();
+
+            AppInfo.ShowSettingsUI();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }
 
