@@ -1,46 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0-android</TargetFramework>
-    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
-    <Nullable>enable</Nullable>
-    <ApplicationId>com.CompanyName.VoiceCraft.Client</ApplicationId>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <AndroidPackageFormat>apk</AndroidPackageFormat>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-	<Version>1.1.1.0-prerelease</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <RunAOTCompilation>False</RunAOTCompilation>
-    <PublishTrimmed>False</PublishTrimmed>
-    <TrimMode>copyused</TrimMode>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <RunAOTCompilation>False</RunAOTCompilation>
-    <TrimMode>copyused</TrimMode>
-    <PublishTrimmed>False</PublishTrimmed>
-  </PropertyGroup>
-  <PropertyGroup Label="Avalonia">
-    <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Assets\VoiceCraft.Client.Plugin.dll" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0-android</TargetFramework>
+		<SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+		<Nullable>enable</Nullable>
+		<ApplicationId>com.CompanyName.VoiceCraft.Client</ApplicationId>
+		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+		<Version>1.1.1.0-prerelease</Version>
+	</PropertyGroup>
+	<PropertyGroup Label="Avalonia">
+		<AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Assets\VoiceCraft.Client.Plugin.dll" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <AndroidResource Include="Icon.png">
-      <Link>Resources\drawable\Icon.png</Link>
-    </AndroidResource>
-  </ItemGroup>
+	<ItemGroup>
+		<AndroidResource Include="Icon.png">
+			<Link>Resources\drawable\Icon.png</Link>
+		</AndroidResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Android" Version="11.1.3" />
-    <PackageReference Include="OpusSharp.Android" Version="1.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.12" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Android" Version="11.1.3" />
+		<PackageReference Include="OpusSharp.Android" Version="1.0.2" />
+		<PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.12" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
+	</ItemGroup>
 </Project>

@@ -1,55 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<EnableDynamicLoading>true</EnableDynamicLoading>
-	<Version>1.1.1.0-prerelease</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<Version>1.1.1.0-prerelease</Version>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <IsTrimmable>False</IsTrimmable>
-  </PropertyGroup>
+	<PropertyGroup Label="Avalonia">
+		<AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <IsTrimmable>False</IsTrimmable>
-  </PropertyGroup>
+	<ItemGroup>
+		<AvaloniaXaml Remove="Assets\Icons.axaml" />
+		<AvaloniaXaml Remove="Assets\Resources.axaml" />
+		<AvaloniaXaml Remove="Assets\Styles.axaml" />
+	</ItemGroup>
 
-  <PropertyGroup Label="Avalonia">
-    <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
-  </PropertyGroup>
+	<ItemGroup>
+		<None Remove="Assets\bgdark.png" />
+		<None Remove="Assets\bglight.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <AvaloniaXaml Remove="Assets\Icons.axaml" />
-    <AvaloniaXaml Remove="Assets\Resources.axaml" />
-    <AvaloniaXaml Remove="Assets\Styles.axaml" />
-  </ItemGroup>
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\bgdark.png" />
+		<AvaloniaResource Include="Assets\bglight.png" />
+		<AvaloniaResource Include="Assets\Icons.axaml" />
+		<AvaloniaResource Include="Assets\Resources.axaml" />
+		<AvaloniaResource Include="Assets\Styles.axaml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Assets\bgdark.png" />
-    <None Remove="Assets\bglight.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\VoiceCraft.Client.PDK\VoiceCraft.Client.PDK.csproj">
+			<Private>false</Private>
+			<ExcludeAssets>runtime</ExcludeAssets>
+		</ProjectReference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\bgdark.png" />
-    <AvaloniaResource Include="Assets\bglight.png" />
-    <AvaloniaResource Include="Assets\Icons.axaml" />
-    <AvaloniaResource Include="Assets\Resources.axaml" />
-    <AvaloniaResource Include="Assets\Styles.axaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-	  <ProjectReference Include="..\VoiceCraft.Client.PDK\VoiceCraft.Client.PDK.csproj">
-		  <Private>false</Private>
-		  <ExcludeAssets>runtime</ExcludeAssets>
-	  </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Views\MainView.axaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="Views\MainView.axaml.cs">
+			<DependentUpon>%(Filename)</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
 </Project>
