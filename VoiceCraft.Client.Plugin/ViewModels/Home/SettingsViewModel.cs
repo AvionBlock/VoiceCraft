@@ -107,6 +107,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             else
             {
                 IsPlaying = true;
+                _player.SetDevice(AudioSettings.OutputDevice);
                 _player.Init(_signal);
                 _player.Play();
             }
@@ -127,6 +128,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                     return;
 
                 IsRecording = true;
+                _player.SetDevice(AudioSettings.InputDevice);
                 _recorder.StartRecording();
             }
         }
@@ -144,28 +146,23 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
         }
 
-        private void UpdateRecorder(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(AudioSettings.InputDevice))
-            {
-                _recorder.SetDevice(AudioSettings.InputDevice);
-                if (_recorder.IsRecording)
-                {
-                    _ = TestRecorder(); //Shutup.
-                }
-            }
-        }
-
-        private void UpdatePlayer(object? sender, PropertyChangedEventArgs e)
+        private void StopAudio(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(AudioSettings.OutputDevice))
             {
-                _player.SetDevice(AudioSettings.OutputDevice);
                 if (_player.PlaybackState == PlaybackState.Playing)
                 {
                     TestPlayer(); //Stop player.
                 }
             }
+            else if (e.PropertyName == nameof(AudioSettings.InputDevice))
+            {
+                if (_recorder.IsRecording)
+                {
+                    _ = TestRecorder();
+                }
+            }
+
         }
 
         private void RecordingData(object? sender, WaveInEventArgs e)
@@ -208,8 +205,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
-            AudioSettings.PropertyChanged += UpdateRecorder;
-            AudioSettings.PropertyChanged += UpdatePlayer;
+            AudioSettings.PropertyChanged += StopAudio;
             ServersSettings.PropertyChanged += SaveSettings;
             NotificationSettings.PropertyChanged += SaveSettings;
         }
@@ -222,8 +218,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
-            AudioSettings.PropertyChanged -= UpdateRecorder;
-            AudioSettings.PropertyChanged -= UpdatePlayer;
+            AudioSettings.PropertyChanged -= StopAudio;
             ServersSettings.PropertyChanged -= SaveSettings;
             NotificationSettings.PropertyChanged -= SaveSettings;
 
