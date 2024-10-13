@@ -1,5 +1,6 @@
 ﻿using NAudio.Wave;
 using System;
+using System.Collections.Generic;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Windows.Audio
@@ -7,6 +8,7 @@ namespace VoiceCraft.Client.Windows.Audio
     public class AudioRecorder : IAudioRecorder
     {
         private bool _isRecording;
+        private string? _selectedDevice;
         private readonly WaveInEvent _nativeRecorder = new WaveInEvent();
 
         public bool IsRecording => _isRecording;
@@ -22,23 +24,21 @@ namespace VoiceCraft.Client.Windows.Audio
             _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
         }
 
-        public void SetDevice(string device)
+        public void StartRecording()
         {
             for (int n = 0; n < WaveIn.DeviceCount; n++)
             {
                 var caps = WaveIn.GetCapabilities(n);
-                if (caps.ProductName == device)
+                if (caps.ProductName == _selectedDevice)
                 {
                     _nativeRecorder.DeviceNumber = n;
+                    _nativeRecorder.StartRecording();
+                    _isRecording = true;
                     return;
                 }
             }
 
             _nativeRecorder.DeviceNumber = -1;
-        }
-
-        public void StartRecording()
-        {
             _nativeRecorder.StartRecording();
             _isRecording = true;
         }
@@ -47,6 +47,28 @@ namespace VoiceCraft.Client.Windows.Audio
         {
             _nativeRecorder.StopRecording();
             _isRecording = false;
+        }
+
+        public void SetDevice(string device)
+        {
+            _selectedDevice = device;
+        }
+
+        public string GetDefaultDevice()
+        {
+            return "Default";
+        }
+
+        public List<string> GetDevices()
+        {
+            var devices = new List<string>() { GetDefaultDevice() };
+            for (int n = 0; n < WaveIn.DeviceCount; n++)
+            {
+                var caps = WaveIn.GetCapabilities(n);
+                devices.Add(caps.ProductName);
+            }
+
+            return devices;
         }
 
         public void Dispose()

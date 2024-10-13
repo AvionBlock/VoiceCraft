@@ -1,11 +1,13 @@
 ﻿using NAudio.Wave;
 using System;
+using System.Collections.Generic;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Windows.Audio
 {
     public class AudioPlayer : IAudioPlayer
     {
+        private string? _selectedDevice;
         private readonly WaveOutEvent _nativePlayer = new WaveOutEvent();
 
         public PlaybackState PlaybackState => _nativePlayer.PlaybackState;
@@ -20,23 +22,20 @@ namespace VoiceCraft.Client.Windows.Audio
             _nativePlayer.PlaybackStopped += InvokePlaybackStopped;
         }
 
-        public void SetDevice(string device)
+        public void Init(IWaveProvider waveProvider)
         {
             for (int n = 0; n < WaveOut.DeviceCount; n++)
             {
                 var caps = WaveOut.GetCapabilities(n);
-                if (caps.ProductName == device)
+                if (caps.ProductName == _selectedDevice)
                 {
                     _nativePlayer.DeviceNumber = n;
+                    _nativePlayer.Init(waveProvider);
                     return;
                 }
             }
 
             _nativePlayer.DeviceNumber = -1;
-        }
-
-        public void Init(IWaveProvider waveProvider)
-        {
             _nativePlayer.Init(waveProvider);
         }
 
@@ -53,6 +52,28 @@ namespace VoiceCraft.Client.Windows.Audio
         public void Stop()
         {
             _nativePlayer.Stop();
+        }
+
+        public void SetDevice(string device)
+        {
+            _selectedDevice = device;
+        }
+
+        public string GetDefaultDevice()
+        {
+            return "Default";
+        }
+
+        public List<string> GetDevices()
+        {
+            var devices = new List<string>() { GetDefaultDevice() };
+            for (int n = 0; n < WaveOut.DeviceCount; n++)
+            {
+                var caps = WaveOut.GetCapabilities(n);
+                devices.Add(caps.ProductName);
+            }
+
+            return devices;
         }
 
         public void Dispose()

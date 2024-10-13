@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.PDK.Audio;
+using System;
 
 namespace VoiceCraft.Client.Android
 {
@@ -21,9 +22,6 @@ namespace VoiceCraft.Client.Android
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
     public class MainActivity : AvaloniaMainActivity<App>
     {
-        //Shutup
-        public static AudioHelper AudioHelper = default!;
-
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
             Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -67,9 +65,8 @@ namespace VoiceCraft.Client.Android
             }
 #endif
 
-            App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
-            App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
-            App.Services.AddSingleton<IAudioDevices, AudioDevices>(x => new AudioDevices((AudioManager?)GetSystemService(MainActivity.AudioService)));
+            App.Services.AddSingleton<IAudioPlayer, AudioPlayer>(x => new AudioPlayer((AudioManager?)GetSystemService(MainActivity.AudioService) ?? throw new Exception("Could not find audio manager. Cannot initialize audio player.")));
+            App.Services.AddSingleton<IAudioRecorder, AudioRecorder>(x => new AudioRecorder((AudioManager?)GetSystemService(MainActivity.AudioService) ?? throw new Exception("Could not find audio manager. Cannot initialize audio recorder.")));
             Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
         }

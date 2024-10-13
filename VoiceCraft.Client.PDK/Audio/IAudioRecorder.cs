@@ -9,5 +9,9 @@ namespace VoiceCraft.Client.PDK.Audio
         bool IsRecording { get; }
 
         void SetDevice(string device);
+
+        string GetDefaultDevice();
+
+        List<string> GetDevices();
     }
 }

@@ -18,7 +18,6 @@ namespace VoiceCraft.Client.Windows
 
             App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
             App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
-            App.Services.AddSingleton<IAudioDevices, AudioDevices>();
 
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }

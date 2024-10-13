@@ -27,7 +27,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private SettingsService _settingsService;
         private IAudioRecorder _recorder;
         private IAudioPlayer _player;
-        private IAudioDevices _audioDevices;
 
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
@@ -65,7 +64,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, IAudioDevices audioDevices, IAudioRecorder recorder, IAudioPlayer player)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, IAudioRecorder recorder, IAudioPlayer player)
         {
             _settingsService = settings;
             _themesService = themes;
@@ -74,10 +73,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
             _recorder.BufferMilliseconds = 20;
 
-            _audioDevices = audioDevices;
             _themes = new ObservableCollection<string>(themes.ThemeNames);
-            _inputDevices = new ObservableCollection<string>(audioDevices.GetWaveInDevices());
-            _outputDevices = new ObservableCollection<string>(audioDevices.GetWaveOutDevices());
+            _inputDevices = new ObservableCollection<string>(recorder.GetDevices());
+            _outputDevices = new ObservableCollection<string>(player.GetDevices());
 
             _audioSettings = settings.Get<AudioSettings>(Plugin.PluginId);
             _themeSettings = settings.Get<ThemeSettings>(Plugin.PluginId);
@@ -87,13 +85,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             //Settings Validation.
             if (!_inputDevices.Contains(_audioSettings.InputDevice))
             {
-                _audioSettings.InputDevice = audioDevices.DefaultWaveInDevice();
+                _audioSettings.InputDevice = recorder.GetDefaultDevice();
                 _ = _settingsService.SaveAsync();
             }
 
             if (!_outputDevices.Contains(_audioSettings.OutputDevice))
             {
-                _audioSettings.OutputDevice = audioDevices.DefaultWaveOutDevice();
+                _audioSettings.OutputDevice = player.GetDefaultDevice();
                 _ = _settingsService.SaveAsync();
             }
         }
@@ -197,13 +195,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override void OnAppearing(object? sender)
         {
             base.OnAppearing(sender);
-            InputDevices = new ObservableCollection<string>(_audioDevices.GetWaveInDevices());
-            OutputDevices = new ObservableCollection<string>(_audioDevices.GetWaveOutDevices());
+            InputDevices = new ObservableCollection<string>(_recorder.GetDevices());
+            OutputDevices = new ObservableCollection<string>(_player.GetDevices());
 
             if (!InputDevices.Contains(AudioSettings.InputDevice))
-                AudioSettings.InputDevice = _audioDevices.DefaultWaveInDevice();
-            if (!InputDevices.Contains(AudioSettings.OutputDevice))
-                AudioSettings.InputDevice = _audioDevices.DefaultWaveOutDevice();
+                AudioSettings.InputDevice = _recorder.GetDefaultDevice();
+            if (!OutputDevices.Contains(AudioSettings.OutputDevice))
+                AudioSettings.OutputDevice = _player.GetDefaultDevice();
 
             _recorder.DataAvailable += RecordingData;
             _recorder.RecordingStopped += RecordingStopped;
