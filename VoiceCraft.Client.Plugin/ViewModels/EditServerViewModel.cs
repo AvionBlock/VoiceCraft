@@ -22,6 +22,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         [ObservableProperty]
         private Server _server = new Server();
 
+        [ObservableProperty]
+        private Server _editableServer = new Server();
+
         public EditServerViewModel(NavigationService navigator, NotificationMessageManager manager, SettingsService settings)
         {
             _navigator = navigator;
@@ -42,8 +45,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         {
             try
             {
+                Servers.AddServer(EditableServer);
                 Servers.RemoveServer(Server);
-                Servers.AddServer(Server);
 
                 if (!_notificationSettings.DisableNotifications)
                 {
@@ -76,6 +79,17 @@ namespace VoiceCraft.Client.Plugin.ViewModels
                     .Queue();
                 }
             }
+        }
+
+        partial void OnServerChanged(Server value)
+        {
+            EditableServer = new Server()
+            {
+                Ip = value.Ip,
+                Port = value.Port,
+                Key = value.Key,
+                Name = value.Name
+            };
         }
     }
 }

@@ -11,6 +11,7 @@ namespace VoiceCraft.Client.Android.Audio
 {
     public class AudioPlayer : IAudioPlayer
     {
+        //This may or may not include bugged devices that can crash the application.
         private static AudioDeviceType[] _allowedDeviceTypes = [
             AudioDeviceType.AuxLine,
             AudioDeviceType.BluetoothA2dp,

@@ -12,6 +12,7 @@ namespace VoiceCraft.Client.Android.Audio
 {
     public class AudioRecorder : IAudioRecorder
     {
+        //This may or may not include bugged devices that can crash the application.
         private static AudioDeviceType[] _allowedDeviceTypes = [
             AudioDeviceType.AuxLine,
             AudioDeviceType.BluetoothA2dp,
