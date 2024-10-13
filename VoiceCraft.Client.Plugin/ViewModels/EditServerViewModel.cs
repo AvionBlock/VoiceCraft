@@ -83,13 +83,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
 
         partial void OnServerChanged(Server value)
         {
-            EditableServer = new Server()
-            {
-                Ip = value.Ip,
-                Port = value.Port,
-                Key = value.Key,
-                Name = value.Name
-            };
+            EditableServer = (Server)value.Clone();
         }
     }
 }

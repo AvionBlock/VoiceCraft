@@ -120,10 +120,12 @@ namespace VoiceCraft.Client.PDK.Services
         }
     }
 
-    public abstract class Setting : ObservableObject
+    public abstract class Setting : ObservableObject, ICloneable
     {
         public virtual bool OnLoading() => true;
 
         public virtual void OnSaving() { }
+
+        public abstract object Clone();
     }
 }

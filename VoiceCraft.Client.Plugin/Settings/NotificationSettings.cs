@@ -9,5 +9,10 @@ namespace VoiceCraft.Client.Plugin.Settings
         private ushort _dismissDelayMS = 2000;
         [ObservableProperty]
         private bool _disableNotifications = false;
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

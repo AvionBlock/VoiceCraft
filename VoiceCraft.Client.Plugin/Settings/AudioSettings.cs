@@ -19,5 +19,10 @@ namespace VoiceCraft.Client.Plugin.Settings
         private bool _agc = true;
         [ObservableProperty]
         private bool _denoiser = false;
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

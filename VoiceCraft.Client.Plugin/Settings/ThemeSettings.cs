@@ -7,5 +7,10 @@ namespace VoiceCraft.Client.Plugin.Settings
     {
         [ObservableProperty]
         private string _selectedTheme = "Dark";
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

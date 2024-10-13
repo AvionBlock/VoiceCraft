@@ -29,9 +29,14 @@ namespace VoiceCraft.Client.Plugin.Settings
         {
             Servers.Remove(server);
         }
+
+        public override object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 
-    public partial class Server : ObservableObject
+    public partial class Server : ObservableObject, ICloneable
     {
         public const int NameLimit = 12;
         public const int IPLimit = 30;
@@ -55,6 +60,11 @@ namespace VoiceCraft.Client.Plugin.Settings
         {
             if (Ip.Length > IPLimit)
                 Ip = Ip.Substring(0, IPLimit);
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }
