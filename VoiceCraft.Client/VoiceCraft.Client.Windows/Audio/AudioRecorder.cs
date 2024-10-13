@@ -26,19 +26,18 @@ namespace VoiceCraft.Client.Windows.Audio
 
         public void StartRecording()
         {
+            var selectedDevice = -1;
             for (int n = 0; n < WaveIn.DeviceCount; n++)
             {
                 var caps = WaveIn.GetCapabilities(n);
                 if (caps.ProductName == _selectedDevice)
                 {
-                    _nativeRecorder.DeviceNumber = n;
-                    _nativeRecorder.StartRecording();
-                    _isRecording = true;
-                    return;
+                    selectedDevice = n;
+                    break;
                 }
             }
 
-            _nativeRecorder.DeviceNumber = -1;
+            _nativeRecorder.DeviceNumber = selectedDevice;
             _nativeRecorder.StartRecording();
             _isRecording = true;
         }
@@ -65,7 +64,8 @@ namespace VoiceCraft.Client.Windows.Audio
             for (int n = 0; n < WaveIn.DeviceCount; n++)
             {
                 var caps = WaveIn.GetCapabilities(n);
-                devices.Add(caps.ProductName);
+                if(!devices.Contains(caps.ProductName))
+                    devices.Add(caps.ProductName);
             }
 
             return devices;

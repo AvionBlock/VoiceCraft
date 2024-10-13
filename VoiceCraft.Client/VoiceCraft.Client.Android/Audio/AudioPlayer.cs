@@ -2,7 +2,6 @@
 using NAudio.Wave;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using VoiceCraft.Client.PDK.Audio;
@@ -12,6 +11,25 @@ namespace VoiceCraft.Client.Android.Audio
 {
     public class AudioPlayer : IAudioPlayer
     {
+        private static AudioDeviceType[] _allowedDeviceTypes = [
+            AudioDeviceType.AuxLine,
+            AudioDeviceType.BluetoothA2dp,
+            AudioDeviceType.BluetoothSco,
+            AudioDeviceType.BuiltinEarpiece,
+            AudioDeviceType.BuiltinSpeaker,
+            AudioDeviceType.Dock,
+            AudioDeviceType.Fm,
+            AudioDeviceType.Hdmi,
+            AudioDeviceType.HdmiArc,
+            AudioDeviceType.Ip,
+            AudioDeviceType.LineAnalog,
+            AudioDeviceType.LineDigital,
+            AudioDeviceType.UsbAccessory,
+            AudioDeviceType.UsbDevice,
+            AudioDeviceType.WiredHeadphones,
+            AudioDeviceType.WiredHeadset
+            ];
+
         private readonly SynchronizationContext? _synchronizationContext;
         private string? _selectedDevice;
         private AudioManager _audioManager;
@@ -125,16 +143,10 @@ namespace VoiceCraft.Client.Android.Audio
 
             _audioTrack.SetVolume(Volume);
 
-            var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs)?.Where(x => x.Type != AudioDeviceType.Telephony) ?? []; //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
-            foreach (var audioDevice in audioDevices)
-            {
-                if ($"{audioDevice.ProductName.Truncate(8)} - {audioDevice.Type}" == _selectedDevice)
-                {
-                    _audioTrack.SetPreferredDevice(audioDevice);
-                    return;
-                }
-            }
-            _audioTrack.SetPreferredDevice(null);
+            AudioDeviceInfo? selectedDevice = null;
+            var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs)?.Where(x => _allowedDeviceTypes.Contains(x.Type))
+                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == _selectedDevice); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
+            _audioTrack.SetPreferredDevice(selectedDevice);
         }
 
         public void Play()
@@ -196,9 +208,9 @@ namespace VoiceCraft.Client.Android.Audio
             _audioTrack.Stop();
         }
 
-        public void SetDevice(string device)
+        public void SetDevice(string deviceId)
         {
-            _selectedDevice = device;
+            _selectedDevice = deviceId;
         }
 
         public string GetDefaultDevice()
@@ -209,12 +221,15 @@ namespace VoiceCraft.Client.Android.Audio
         public List<string> GetDevices()
         {
             var devices = new List<string>() { GetDefaultDevice() };
-            var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs)?.Where(x => x.Type != AudioDeviceType.Telephony); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
+
+            var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs)?.Where(x => _allowedDeviceTypes.Contains(x.Type)); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
             if (audioDevices == null) return devices;
 
             foreach (var audioDevice in audioDevices)
             {
-                devices.Add($"{audioDevice.ProductName.Truncate(8)} - {audioDevice.Type}");
+                var deviceName = $"{audioDevice.ProductName.Truncate(8)} - {audioDevice.Type}";
+                if (!devices.Contains(deviceName))
+                    devices.Add(deviceName);
             }
             return devices;
         }

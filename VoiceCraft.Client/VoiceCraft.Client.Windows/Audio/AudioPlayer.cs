@@ -1,6 +1,7 @@
 ﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Windows.Audio
@@ -24,18 +25,18 @@ namespace VoiceCraft.Client.Windows.Audio
 
         public void Init(IWaveProvider waveProvider)
         {
+            var selectedDevice = -1;
             for (int n = 0; n < WaveOut.DeviceCount; n++)
             {
                 var caps = WaveOut.GetCapabilities(n);
                 if (caps.ProductName == _selectedDevice)
                 {
-                    _nativePlayer.DeviceNumber = n;
-                    _nativePlayer.Init(waveProvider);
-                    return;
+                    selectedDevice = n;
+                    break;
                 }
             }
 
-            _nativePlayer.DeviceNumber = -1;
+            _nativePlayer.DeviceNumber = selectedDevice;
             _nativePlayer.Init(waveProvider);
         }
 
@@ -70,7 +71,8 @@ namespace VoiceCraft.Client.Windows.Audio
             for (int n = 0; n < WaveOut.DeviceCount; n++)
             {
                 var caps = WaveOut.GetCapabilities(n);
-                devices.Add(caps.ProductName);
+                if (!devices.Contains(caps.ProductName))
+                    devices.Add(caps.ProductName);
             }
 
             return devices;
