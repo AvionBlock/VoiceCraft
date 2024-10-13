@@ -16,20 +16,19 @@ namespace VoiceCraft.Client.Android.Audio
             AudioDeviceType.AuxLine,
             AudioDeviceType.BluetoothA2dp,
             AudioDeviceType.BluetoothSco,
+            AudioDeviceType.BuiltinMic,
             AudioDeviceType.BuiltinEarpiece,
             AudioDeviceType.BuiltinSpeaker,
             AudioDeviceType.Dock,
-            AudioDeviceType.Fm,
             AudioDeviceType.Hdmi,
             AudioDeviceType.HdmiArc,
-            AudioDeviceType.Ip,
             AudioDeviceType.LineAnalog,
             AudioDeviceType.LineDigital,
             AudioDeviceType.UsbAccessory,
             AudioDeviceType.UsbDevice,
             AudioDeviceType.WiredHeadphones,
             AudioDeviceType.WiredHeadset
-    ];
+            ];
 
         private readonly SynchronizationContext? _synchronizationContext;
         private string? _selectedDevice;
@@ -74,10 +73,7 @@ namespace VoiceCraft.Client.Android.Audio
             }
 
             _captureState = CaptureState.Starting;
-
-            AudioDeviceInfo? selectedDevice = null;
-            var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Inputs)?.Where(x => _allowedDeviceTypes.Contains(x.Type))
-                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == _selectedDevice); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
+            var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Inputs)?.Where(x => _allowedDeviceTypes.Contains(x.Type)).FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == _selectedDevice); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
 
             _audioRecord?.SetPreferredDevice(selectedDevice);
             _audioRecord?.StartRecording();

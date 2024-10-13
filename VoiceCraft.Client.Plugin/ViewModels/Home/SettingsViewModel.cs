@@ -128,7 +128,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                     return;
 
                 IsRecording = true;
-                _player.SetDevice(AudioSettings.InputDevice);
+                _recorder.SetDevice(AudioSettings.InputDevice);
                 _recorder.StartRecording();
             }
         }
