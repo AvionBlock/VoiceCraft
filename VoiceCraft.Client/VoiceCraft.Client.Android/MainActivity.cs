@@ -9,7 +9,6 @@ using Microsoft.Maui.ApplicationModel;
 using System.Diagnostics;
 using System.IO;
 using VoiceCraft.Client.Android.Audio;
-using VoiceCraft.Client.PDK.Audio;
 using System;
 using VoiceCraft.Client.PDK.Services;
 using Android.Media.Audiofx;
@@ -75,6 +74,16 @@ namespace VoiceCraft.Client.Android
                 App.Services.AddTransient<NativeAEC>(x => new NativeAEC());
             else
                 throw new NotImplementedException("SPEEX AEC NOT IMPLEMENTED!");
+
+            if(AutomaticGainControl.IsAvailable)
+                App.Services.AddTransient<NativeAGC>(x => new NativeAGC());
+            else
+                throw new NotImplementedException("SPEEX AGC NOT IMPLEMENTED!");
+
+            if (NoiseSuppressor.IsAvailable)
+                App.Services.AddTransient<NativeNS>(x => new NativeNS());
+            else
+                throw new NotImplementedException("SPEEX NS NOT IMPLEMENTED!");
 
             Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
