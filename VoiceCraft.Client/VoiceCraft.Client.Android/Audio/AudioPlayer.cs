@@ -18,6 +18,7 @@ namespace VoiceCraft.Client.Android.Audio
         private float _volume;
 
         public PlaybackState PlaybackState { get; private set; }
+        public int? SessionId { get => _audioTrack?.AudioSessionId; }
 
         public float Volume
         {
@@ -30,15 +31,12 @@ namespace VoiceCraft.Client.Android.Audio
         }
 
         public int DesiredLatency { get; set; }
-
         public int NumberOfBuffers { get; set; }
-
         public AudioUsageKind Usage { get; set; }
-
         public AudioContentType ContentType { get; set; }
-
         public WaveFormat OutputWaveFormat { get; set; }
 
+        public event EventHandler? PlaybackStarted;
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
 
         public AudioPlayer(AudioManager audioManager)
@@ -223,6 +221,7 @@ namespace VoiceCraft.Client.Android.Audio
             Exception? exception = null;
             try
             {
+                RaisePlaybackStartedEvent();
                 PlaybackLogic();
             }
             catch (Exception e)
@@ -305,6 +304,22 @@ namespace VoiceCraft.Client.Android.Audio
                 }
 
                 _audioTrack.Flush();
+            }
+        }
+
+        private void RaisePlaybackStartedEvent()
+        {
+            var handler = PlaybackStarted;
+            if (handler != null)
+            {
+                if (_synchronizationContext == null)
+                {
+                    handler(this, new EventArgs());
+                }
+                else
+                {
+                    _synchronizationContext.Post(state => handler(this, new EventArgs()), null);
+                }
             }
         }
 

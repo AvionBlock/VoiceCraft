@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Windows.Audio;
 
@@ -19,6 +18,8 @@ namespace VoiceCraft.Client.Windows
 
             App.Services.AddSingleton<AudioService, NativeAudioService>();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
+
+            
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.

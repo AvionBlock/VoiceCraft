@@ -19,10 +19,12 @@ namespace VoiceCraft.Client.Android.Audio
 
         public WaveFormat WaveFormat { get; set; }
         public int BufferMilliseconds { get; set; }
-        public AudioSource audioSource { get; set; }
+        public AudioSource AudioSource { get; set; }
         public bool IsRecording => _captureState == CaptureState.Capturing;
+        public int? SessionId { get => _audioRecord?.AudioSessionId; }
 
         public event EventHandler<WaveInEventArgs>? DataAvailable;
+        public event EventHandler? RecordingStarted;
         public event EventHandler<StoppedEventArgs>? RecordingStopped;
 
         public AudioRecorder(AudioManager audioManager)
@@ -30,7 +32,7 @@ namespace VoiceCraft.Client.Android.Audio
             _audioManager = audioManager;
             _synchronizationContext = SynchronizationContext.Current;
 
-            audioSource = AudioSource.Mic;
+            AudioSource = AudioSource.Mic;
             WaveFormat = new WaveFormat(8000, 16, 1);
             BufferMilliseconds = 100;
             _captureState = CaptureState.Stopped;
@@ -146,7 +148,7 @@ namespace VoiceCraft.Client.Android.Audio
                 bufferSize = minBufferSize;
             }
             //Create the AudioRecord Object.
-            _audioRecord = new AudioRecord(audioSource, WaveFormat.SampleRate, channelMask, encoding, bufferSize);
+            _audioRecord = new AudioRecord(AudioSource, WaveFormat.SampleRate, channelMask, encoding, bufferSize);
         }
 
         private void CloseRecorder()
@@ -166,6 +168,7 @@ namespace VoiceCraft.Client.Android.Audio
             Exception? exception = null;
             try
             {
+                RaiseRecordingStartedEvent();
                 RecordingLogic();
             }
             catch (Exception ex)
@@ -177,6 +180,22 @@ namespace VoiceCraft.Client.Android.Audio
                 _captureState = CaptureState.Stopped;
                 CloseRecorder();
                 RaiseRecordingStoppedEvent(exception);
+            }
+        }
+
+        private void RaiseRecordingStartedEvent()
+        {
+            var handler = RecordingStarted;
+            if (handler != null)
+            {
+                if (_synchronizationContext == null)
+                {
+                    handler(this, new EventArgs());
+                }
+                else
+                {
+                    _synchronizationContext.Post(state => handler(this, new EventArgs()), null);
+                }
             }
         }
 

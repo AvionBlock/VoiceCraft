@@ -12,6 +12,7 @@ using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.PDK.Audio;
 using System;
 using VoiceCraft.Client.PDK.Services;
+using Android.Media.Audiofx;
 
 namespace VoiceCraft.Client.Android
 {
@@ -69,6 +70,11 @@ namespace VoiceCraft.Client.Android
             App.Services.AddSingleton<AudioService, NativeAudioService>(x => 
                 new NativeAudioService((AudioManager?)GetSystemService(MainActivity.AudioService) ?? 
                 throw new Exception($"Could not find {MainActivity.AudioService}. Cannot initialize audio service.")));
+
+            if (AcousticEchoCanceler.IsAvailable)
+                App.Services.AddTransient<NativeAEC>(x => new NativeAEC());
+            else
+                throw new NotImplementedException("SPEEX AEC NOT IMPLEMENTED!");
 
             Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
