@@ -11,6 +11,7 @@ using System.IO;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.PDK.Audio;
 using System;
+using VoiceCraft.Client.PDK.Services;
 
 namespace VoiceCraft.Client.Android
 {
@@ -65,8 +66,10 @@ namespace VoiceCraft.Client.Android
             }
 #endif
 
-            App.Services.AddSingleton<IAudioPlayer, AudioPlayer>(x => new AudioPlayer((AudioManager?)GetSystemService(MainActivity.AudioService) ?? throw new Exception("Could not find audio manager. Cannot initialize audio player.")));
-            App.Services.AddSingleton<IAudioRecorder, AudioRecorder>(x => new AudioRecorder((AudioManager?)GetSystemService(MainActivity.AudioService) ?? throw new Exception("Could not find audio manager. Cannot initialize audio recorder.")));
+            App.Services.AddSingleton<AudioService, NativeAudioService>(x => 
+                new NativeAudioService((AudioManager?)GetSystemService(MainActivity.AudioService) ?? 
+                throw new Exception($"Could not find {MainActivity.AudioService}. Cannot initialize audio service.")));
+
             Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
         }

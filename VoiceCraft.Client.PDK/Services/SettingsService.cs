@@ -6,7 +6,7 @@ namespace VoiceCraft.Client.PDK.Services
 {
     public class SettingsService
     {
-        private const int FILE_WRITING_DELAY = 2000;
+        public static int FILE_WRITING_DELAY = 2000;
 
         private bool _writing = false;
         private bool _queueWrite = false;

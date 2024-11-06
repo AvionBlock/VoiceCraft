@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform.Storage;
+﻿using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -15,10 +16,10 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         public ObservableCollection<PluginDisplay> _plugins;
 
-        public PluginsViewModel(IStorageProvider storageProvider)
+        public PluginsViewModel(TopLevel topLevel)
         {
             _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.Name, x.Description)));
-            _storageProvider = storageProvider;
+            _storageProvider = topLevel.StorageProvider;
         }
 
         [RelayCommand]

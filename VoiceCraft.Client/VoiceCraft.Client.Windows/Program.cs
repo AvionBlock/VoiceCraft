@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.PDK.Audio;
+using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Windows.Audio;
 
 namespace VoiceCraft.Client.Windows
@@ -16,9 +17,7 @@ namespace VoiceCraft.Client.Windows
         {
             var avaloniaApp = BuildAvaloniaApp();
 
-            App.Services.AddSingleton<IAudioPlayer, AudioPlayer>();
-            App.Services.AddSingleton<IAudioRecorder, AudioRecorder>();
-
+            App.Services.AddSingleton<AudioService, NativeAudioService>();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }
 

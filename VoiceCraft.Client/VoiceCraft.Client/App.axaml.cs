@@ -58,6 +58,7 @@ namespace VoiceCraft.Client
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
+                //This is stupid but this is the only way I can find out how to get top level on single view platform... Why is this not part of the interface...
                 var topLevel = (TopLevel?)ApplicationLifetime.GetType()?.GetProperty(nameof(TopLevel))?.GetValue(ApplicationLifetime, null);
                 IMainView mainView;
                 try
@@ -65,7 +66,7 @@ namespace VoiceCraft.Client
                     if (topLevel == null)
                         throw new Exception("Could not find visual root!");
 
-                    Services.AddSingleton(topLevel.StorageProvider);
+                    Services.AddSingleton(topLevel);
                     serviceProvider = Services.BuildServiceProvider();
 
                     mainView = serviceProvider.GetRequiredService<IMainView>();

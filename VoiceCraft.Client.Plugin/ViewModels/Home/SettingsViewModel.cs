@@ -1,12 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
@@ -25,8 +23,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         };
         private ThemesService _themesService;
         private SettingsService _settingsService;
-        private IAudioRecorder _recorder;
-        private IAudioPlayer _player;
+        private AudioService _audioService;
 
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
@@ -64,18 +61,17 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, IAudioRecorder recorder, IAudioPlayer player)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, AudioService audioService)
         {
             _settingsService = settings;
             _themesService = themes;
-            _recorder = recorder;
-            _player = player;
+            _audioService = audioService;
 
-            _recorder.BufferMilliseconds = 20;
+            _audioService.SharedRecorder.BufferMilliseconds = 20;
 
             _themes = new ObservableCollection<string>(themes.ThemeNames);
-            _inputDevices = new ObservableCollection<string>(recorder.GetDevices());
-            _outputDevices = new ObservableCollection<string>(player.GetDevices());
+            _inputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
+            _outputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
 
             _audioSettings = settings.Get<AudioSettings>(Plugin.PluginId);
             _themeSettings = settings.Get<ThemeSettings>(Plugin.PluginId);
@@ -85,13 +81,13 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             //Settings Validation.
             if (!_inputDevices.Contains(_audioSettings.InputDevice))
             {
-                _audioSettings.InputDevice = recorder.GetDefaultDevice();
+                _audioSettings.InputDevice = _audioService.GetDefaultInputDevice();
                 _ = _settingsService.SaveAsync();
             }
 
             if (!_outputDevices.Contains(_audioSettings.OutputDevice))
             {
-                _audioSettings.OutputDevice = player.GetDefaultDevice();
+                _audioSettings.OutputDevice = _audioService.GetDefaultOutputDevice();
                 _ = _settingsService.SaveAsync();
             }
         }
@@ -99,37 +95,37 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [RelayCommand]
         public void TestPlayer()
         {
-            if (_player.PlaybackState == PlaybackState.Playing)
+            if (_audioService.SharedPlayer.PlaybackState == PlaybackState.Playing)
             {
                 IsPlaying = false;
-                _player.Stop();
+                _audioService.SharedPlayer.Stop();
             }
             else
             {
                 IsPlaying = true;
-                _player.SetDevice(AudioSettings.OutputDevice);
-                _player.Init(_signal);
-                _player.Play();
+                _audioService.SharedPlayer.SetDevice(AudioSettings.OutputDevice);
+                _audioService.SharedPlayer.Init(_signal);
+                _audioService.SharedPlayer.Play();
             }
         }
 
         [RelayCommand]
         public async Task TestRecorder()
         {
-            if (_recorder.IsRecording)
+            if (_audioService.SharedRecorder.IsRecording)
             {
-                _recorder.StopRecording();
+                _audioService.SharedRecorder.StopRecording();
                 IsRecording = false;
                 MicrophoneValue = 0;
             }
             else
             {
-                if (await CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
+                if (await VoiceCraft.Client.PDK.Extensions.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
                     return;
 
                 IsRecording = true;
-                _recorder.SetDevice(AudioSettings.InputDevice);
-                _recorder.StartRecording();
+                _audioService.SharedRecorder.SetDevice(AudioSettings.InputDevice);
+                _audioService.SharedRecorder.StartRecording();
             }
         }
 
@@ -150,14 +146,14 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             if (e.PropertyName == nameof(AudioSettings.OutputDevice))
             {
-                if (_player.PlaybackState == PlaybackState.Playing)
+                if (_audioService.SharedPlayer.PlaybackState == PlaybackState.Playing)
                 {
                     TestPlayer(); //Stop player.
                 }
             }
             else if (e.PropertyName == nameof(AudioSettings.InputDevice))
             {
-                if (_recorder.IsRecording)
+                if (_audioService.SharedRecorder.IsRecording)
                 {
                     _ = TestRecorder();
                 }
@@ -192,16 +188,16 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override void OnAppearing(object? sender)
         {
             base.OnAppearing(sender);
-            InputDevices = new ObservableCollection<string>(_recorder.GetDevices());
-            OutputDevices = new ObservableCollection<string>(_player.GetDevices());
+            InputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
+            OutputDevices = new ObservableCollection<string>(_audioService.GetOutputDevices());
 
             if (!InputDevices.Contains(AudioSettings.InputDevice))
-                AudioSettings.InputDevice = _recorder.GetDefaultDevice();
+                AudioSettings.InputDevice = _audioService.GetDefaultInputDevice();
             if (!OutputDevices.Contains(AudioSettings.OutputDevice))
-                AudioSettings.OutputDevice = _player.GetDefaultDevice();
+                AudioSettings.OutputDevice = _audioService.GetDefaultOutputDevice();
 
-            _recorder.DataAvailable += RecordingData;
-            _recorder.RecordingStopped += RecordingStopped;
+            _audioService.SharedRecorder.DataAvailable += RecordingData;
+            _audioService.SharedRecorder.RecordingStopped += RecordingStopped;
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
@@ -213,8 +209,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override void OnDisappearing(object? sender)
         {
             base.OnDisappearing(sender);
-            _recorder.DataAvailable -= RecordingData;
-            _recorder.RecordingStopped -= RecordingStopped;
+            _audioService.SharedRecorder.DataAvailable -= RecordingData;
+            _audioService.SharedRecorder.RecordingStopped -= RecordingStopped;
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
@@ -222,35 +218,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ServersSettings.PropertyChanged -= SaveSettings;
             NotificationSettings.PropertyChanged -= SaveSettings;
 
-            if (_recorder.IsRecording)
+            if (_audioService.SharedRecorder.IsRecording)
                 _ = TestRecorder(); //Shutup
 
-            if (_player.PlaybackState == PlaybackState.Playing)
+            if (_audioService.SharedPlayer.PlaybackState == PlaybackState.Playing)
                 TestPlayer();
-        }
-
-        public async Task<PermissionStatus> CheckAndRequestPermission<TPermission>(string? rationalDescription = null) where TPermission : Permissions.BasePermission, new()
-        {
-            PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
-
-            if (status == PermissionStatus.Granted)
-                return status;
-
-            if (status == PermissionStatus.Denied && DeviceInfo.Platform == DevicePlatform.iOS)
-            {
-                // Prompt the user to turn on in settings
-                // On iOS once a permission has been denied it may not be requested again from the application
-                return status;
-            }
-
-            if (Permissions.ShouldShowRationale<TPermission>() && !string.IsNullOrWhiteSpace(rationalDescription))
-            {
-                // Prompt the user with additional information as to why the permission is needed
-            }
-
-            status = await Permissions.RequestAsync<TPermission>();
-
-            return status;
         }
     }
 }

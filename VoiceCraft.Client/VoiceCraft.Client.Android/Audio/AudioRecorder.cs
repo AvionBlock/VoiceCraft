@@ -2,7 +2,6 @@
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using VoiceCraft.Client.PDK.Audio;
@@ -12,25 +11,6 @@ namespace VoiceCraft.Client.Android.Audio
 {
     public class AudioRecorder : IAudioRecorder
     {
-        //This may or may not include bugged devices that can crash the application.
-        private static AudioDeviceType[] _allowedDeviceTypes = [
-            AudioDeviceType.AuxLine,
-            AudioDeviceType.BluetoothA2dp,
-            AudioDeviceType.BluetoothSco,
-            AudioDeviceType.BuiltinMic,
-            AudioDeviceType.BuiltinEarpiece,
-            AudioDeviceType.BuiltinSpeaker,
-            AudioDeviceType.Dock,
-            AudioDeviceType.Hdmi,
-            AudioDeviceType.HdmiArc,
-            AudioDeviceType.LineAnalog,
-            AudioDeviceType.LineDigital,
-            AudioDeviceType.UsbAccessory,
-            AudioDeviceType.UsbDevice,
-            AudioDeviceType.WiredHeadphones,
-            AudioDeviceType.WiredHeadset
-            ];
-
         private readonly SynchronizationContext? _synchronizationContext;
         private string? _selectedDevice;
         private AudioManager _audioManager;
@@ -74,7 +54,7 @@ namespace VoiceCraft.Client.Android.Audio
             }
 
             _captureState = CaptureState.Starting;
-            var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Inputs)?.Where(x => _allowedDeviceTypes.Contains(x.Type)).FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == _selectedDevice); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
+            var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Inputs)?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == _selectedDevice);
 
             _audioRecord?.SetPreferredDevice(selectedDevice);
             _audioRecord?.StartRecording();
@@ -99,27 +79,6 @@ namespace VoiceCraft.Client.Android.Audio
         public void SetDevice(string device)
         {
             _selectedDevice = device;
-        }
-
-        public string GetDefaultDevice()
-        {
-            return "Default";
-        }
-
-        public List<string> GetDevices()
-        {
-            var devices = new List<string>() { GetDefaultDevice() };
-
-            var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Inputs)?.Where(x => _allowedDeviceTypes.Contains(x.Type)); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
-            if (audioDevices == null) return devices;
-
-            foreach (var audioDevice in audioDevices)
-            {
-                var deviceName = $"{audioDevice.ProductName.Truncate(8)} - {audioDevice.Type}";
-                if (!devices.Contains(deviceName))
-                    devices.Add(deviceName);
-            }
-            return devices;
         }
 
         public void Dispose()

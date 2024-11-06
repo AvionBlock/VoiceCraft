@@ -53,24 +53,6 @@ namespace VoiceCraft.Client.Windows.Audio
             _selectedDevice = device;
         }
 
-        public string GetDefaultDevice()
-        {
-            return "Default";
-        }
-
-        public List<string> GetDevices()
-        {
-            var devices = new List<string>() { GetDefaultDevice() };
-            for (int n = 0; n < WaveIn.DeviceCount; n++)
-            {
-                var caps = WaveIn.GetCapabilities(n);
-                if(!devices.Contains(caps.ProductName))
-                    devices.Add(caps.ProductName);
-            }
-
-            return devices;
-        }
-
         public void Dispose()
         {
             GC.SuppressFinalize(this);

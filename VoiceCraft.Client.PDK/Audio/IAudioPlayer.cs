@@ -7,9 +7,5 @@ namespace VoiceCraft.Client.PDK.Audio
         int DesiredLatency { get; set; }
 
         void SetDevice(string device);
-
-        string GetDefaultDevice();
-
-        List<string> GetDevices();
     }
 }
