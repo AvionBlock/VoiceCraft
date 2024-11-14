@@ -11,21 +11,16 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Plugin
 {
+    
+    [Plugin("00000000-0000-0000-0000-000000000000", "VoiceCraft", "The main voicecraft plugin.", 0, [], ["00000000-0000-0000-0000-000000000000"])]
     public class Plugin : IPlugin
     {
         public static Guid PluginId => Guid.Empty;
-        public Guid Id => PluginId;
-        public string Name => "VoiceCraft";
-        public string Description => "The main voicecraft plugin.";
-
-        public int Priority => 0;
-        public IEnumerable<Guid> ClientDependencies => [];
-        public IEnumerable<Guid> ServerDependencies => [PluginId];
 
         public void Load(ServiceCollection serviceCollection)
         {
-            serviceCollection.AddScoped<IMainView, MainView>();
-            serviceCollection.AddScoped<IMainViewModel, MainViewModel>();
+            serviceCollection.AddSingleton<IMainView, MainView>();
+            serviceCollection.AddSingleton<IMainViewModel, MainViewModel>();
 
             //Pages
             serviceCollection.AddTransient<HomeViewModel>();

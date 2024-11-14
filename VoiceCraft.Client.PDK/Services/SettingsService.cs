@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace VoiceCraft.Client.PDK.Services
@@ -52,6 +53,23 @@ namespace VoiceCraft.Client.PDK.Services
             {
                 registeredSettings.TryRemove(typeof(T).Name, out _);
             }
+        }
+
+        public async Task SaveImmediate()
+        {
+#if DEBUG
+            Debug.WriteLine("Saving immediately. Only use this function if necessary!");
+#endif
+            foreach (var settings in _settings)
+            {
+                foreach (var setting in settings.Value)
+                {
+                    if (setting.Value is Setting settingValue)
+                        settingValue.OnSaving();
+                }
+            }
+
+            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         public async Task SaveAsync()

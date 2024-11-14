@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
         public PluginsViewModel(TopLevel topLevel)
         {
-            _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.Name, x.Description)));
+            _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.PluginInformation.Name, x.PluginInformation.Description)));
             _storageProvider = topLevel.StorageProvider;
         }
 

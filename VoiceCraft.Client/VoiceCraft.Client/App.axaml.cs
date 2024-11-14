@@ -6,7 +6,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Diagnostics;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.Views;
@@ -18,6 +17,7 @@ namespace VoiceCraft.Client
     public partial class App : Application
     {
         public static ServiceCollection Services { get; } = new ServiceCollection();
+        public static IServiceProvider? ServiceProvider { get; private set; }
         public static readonly string PluginDirectory = $"{AppContext.BaseDirectory}/Plugins";
         public override void Initialize()
         {
@@ -31,7 +31,6 @@ namespace VoiceCraft.Client
             Services.AddSingleton<SettingsService>();
             Services.AddSingleton<ThemesService>();
 
-            ServiceProvider? serviceProvider = null;
             PluginLoader.LoadPlugins(PluginDirectory, Services);
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -43,10 +42,10 @@ namespace VoiceCraft.Client
                 IMainView mainView;
                 try
                 {
-                    Services.AddSingleton(mainWindow.StorageProvider);
-                    serviceProvider = Services.BuildServiceProvider();
+                    Services.AddSingleton<TopLevel>(mainWindow);
+                    ServiceProvider = Services.BuildServiceProvider();
 
-                    mainView = serviceProvider.GetRequiredService<IMainView>();
+                    mainView = ServiceProvider.GetRequiredService<IMainView>();
                 }
                 catch (Exception ex)
                 {
@@ -55,6 +54,8 @@ namespace VoiceCraft.Client
 
                 mainWindow.Content = mainView;
                 desktop.MainWindow = mainWindow;
+
+                desktop.Exit += ApplicationExit;
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {
@@ -67,9 +68,9 @@ namespace VoiceCraft.Client
                         throw new Exception("Could not find visual root!");
 
                     Services.AddSingleton(topLevel);
-                    serviceProvider = Services.BuildServiceProvider();
+                    ServiceProvider = Services.BuildServiceProvider();
 
-                    mainView = serviceProvider.GetRequiredService<IMainView>();
+                    mainView = ServiceProvider.GetRequiredService<IMainView>();
                 }
                 catch (Exception ex)
                 {
@@ -79,10 +80,19 @@ namespace VoiceCraft.Client
                 singleViewPlatform.MainView = (Control)mainView;
             }
 
-            if (serviceProvider != null)
-                PluginLoader.InitializePlugins(serviceProvider);
+            if (ServiceProvider != null)
+                PluginLoader.InitializePlugins(ServiceProvider);
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private async void ApplicationExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+        {
+            var settings = ServiceProvider?.GetService<SettingsService>();
+            if (settings != null)
+            {
+                await settings.SaveImmediate();
+            }
         }
     }
 }
