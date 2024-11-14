@@ -44,6 +44,26 @@ namespace VoiceCraft.Client.Android.Audio
             return new AudioPlayer(_audioManager);
         }
 
+        public override object CreateEchoCanceller()
+        {
+            return new NativeAEC();
+        }
+
+        public override object CreateAutomaticGainController()
+        {
+            return new NativeAGC();
+        }
+
+        public override object CreateNoiseCanceller()
+        {
+            return new NativeNS();
+        }
+
+        public override object CreatePreprocessor()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public override string GetDefaultInputDevice()
         {
             return "Default";

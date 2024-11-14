@@ -1,54 +1,78 @@
 ﻿using Android.Media.Audiofx;
+using System;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Android.Audio
 {
     public class NativeAGC
     {
-        private AutomaticGainControl? _gainController;
-        private AudioRecorder? _attachedRecorder;
-
-        public void Attach(IAudioRecorder audioRecorder)
+        public bool Enabled
         {
-            if (audioRecorder is AudioRecorder recorder)
+            get => _automaticGainController?.Enabled ?? _enabled; set
             {
-                _attachedRecorder = recorder;
-                _attachedRecorder.RecordingStarted += AttachedRecorderStarted;
-                _attachedRecorder.RecordingStopped += AttachedRecorderStopped;
-                OpenAutomaticGainControl();
+                if (_automaticGainController != null)
+                    _automaticGainController.SetEnabled(value);
+                else
+                    _enabled = value;
+            }
+        }
+        private AutomaticGainControl? _automaticGainController;
+        private bool _enabled = true;
+        private bool _disposed;
+
+        ~NativeAGC()
+        {
+            Dispose(false);
+        }
+
+        public void Init(IAudioRecorder recorder)
+        {
+            ThrowIfDisposed();
+            if (recorder is AudioRecorder audioRecorder && audioRecorder.SessionId != null)
+            {
+                if (_automaticGainController != null)
+                {
+                    _automaticGainController.Release();
+                    _automaticGainController.Dispose();
+                    _automaticGainController = null;
+                }
+
+                _automaticGainController = AutomaticGainControl.Create((int)audioRecorder.SessionId);
+                _automaticGainController?.SetEnabled(_enabled); //Force setting of AGC.
+            }
+            else
+            {
+                throw new Exception($"{nameof(recorder)} must be type of {typeof(AudioRecorder)}.");
             }
         }
 
-        protected void OpenAutomaticGainControl()
+        public void Dispose()
         {
-            CloseAutomaticGainControl();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (_attachedRecorder == null) return;
-            if (_attachedRecorder.SessionId != null)
+        protected void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
             {
-                _gainController = AutomaticGainControl.Create((int)_attachedRecorder.SessionId);
-                _gainController?.SetEnabled(true); //Force enable the AGC.
+                if (_automaticGainController != null)
+                {
+                    _automaticGainController.Release();
+                    _automaticGainController.Dispose();
+                    _automaticGainController = null;
+                }
             }
+
+            _disposed = true;
         }
 
-        protected void CloseAutomaticGainControl()
+        private void ThrowIfDisposed()
         {
-            if (_gainController != null)
-            {
-                _gainController.Dispose();
-                _gainController.Release();
-                _gainController = null;
-            }
-        }
-
-        private void AttachedRecorderStarted(object? sender, System.EventArgs e)
-        {
-            OpenAutomaticGainControl();
-        }
-
-        private void AttachedRecorderStopped(object? sender, NAudio.Wave.StoppedEventArgs e)
-        {
-            CloseAutomaticGainControl();
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(NativeAEC));
         }
     }
 }

@@ -24,5 +24,13 @@ namespace VoiceCraft.Client.PDK.Services
         public abstract IAudioRecorder CreateAudioRecorder();
 
         public abstract IAudioPlayer CreateAudioPlayer();
+
+        public abstract object CreateEchoCanceller();
+
+        public abstract object CreateAutomaticGainController();
+
+        public abstract object CreateNoiseCanceller();
+
+        public abstract object CreatePreprocessor();
     }
 }

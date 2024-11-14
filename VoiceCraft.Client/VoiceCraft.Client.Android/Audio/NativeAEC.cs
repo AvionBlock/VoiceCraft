@@ -1,55 +1,100 @@
 ﻿using Android.Media.Audiofx;
+using System;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    //Should be disposable.
-    public class NativeAEC
+    public class NativeAEC : IAcousticEchoCanceller
     {
+        public bool Enabled { get => _echoCanceler?.Enabled ?? _enabled; set
+            {
+                if (_echoCanceler != null)
+                    _echoCanceler.SetEnabled(value);
+                else
+                    _enabled = value;
+            }
+        }
         private AcousticEchoCanceler? _echoCanceler;
-        private AudioRecorder? _attachedRecorder;
+        private bool _enabled = true;
+        private bool _disposed;
 
-        public void Attach(IAudioRecorder audioRecorder, IAudioPlayer audioPlayer)
+        ~NativeAEC()
         {
-            if (audioRecorder is AudioRecorder recorder)
+            Dispose(false);
+        }
+
+        public void Init(IAudioRecorder recorder)
+        {
+            ThrowIfDisposed();
+            if (recorder is AudioRecorder audioRecorder && audioRecorder.SessionId != null)
             {
-                _attachedRecorder = recorder;
-                _attachedRecorder.RecordingStarted += AttachedRecorderStarted;
-                _attachedRecorder.RecordingStopped += AttachedRecorderStopped;
-                OpenEchoCanceler();
+                if (_echoCanceler != null)
+                {
+                    _echoCanceler.Release();
+                    _echoCanceler.Dispose();
+                    _echoCanceler = null;
+                }
+
+                _echoCanceler = AcousticEchoCanceler.Create((int)audioRecorder.SessionId);
+                _echoCanceler?.SetEnabled(_enabled); //Force setting of AEC.
+            }
+            else
+            {
+                throw new Exception($"{nameof(recorder)} must be type of {typeof(AudioRecorder)}.");
             }
         }
 
-        protected void CloseEchoCanceler()
+        public void EchoPlayback(byte[] buffer)
         {
-            if (_echoCanceler != null)
+            ThrowIfDisposed();
+            return;
+        }
+
+        public void EchoPlayback(Span<byte> buffer)
+        {
+            ThrowIfDisposed();
+            return;
+        }
+
+        public void EchoCancel(byte[] buffer)
+        {
+            ThrowIfDisposed();
+            return;
+        }
+
+        public void EchoCancel(Span<byte> buffer)
+        {
+            ThrowIfDisposed();
+            return;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
             {
-                _echoCanceler.Dispose();
-                _echoCanceler.Release();
-                _echoCanceler = null;
+                if (_echoCanceler != null)
+                {
+                    _echoCanceler.Release();
+                    _echoCanceler.Dispose();
+                    _echoCanceler = null;
+                }
             }
+
+            _disposed = true;
         }
 
-        protected void OpenEchoCanceler()
+        private void ThrowIfDisposed()
         {
-            CloseEchoCanceler();
-
-            if (_attachedRecorder == null) return;
-            if (_attachedRecorder.SessionId != null)
-            {
-                _echoCanceler = AcousticEchoCanceler.Create((int)_attachedRecorder.SessionId);
-                _echoCanceler?.SetEnabled(true); //Force enable the AEC.
-            }
-        }
-
-        private void AttachedRecorderStarted(object? sender, System.EventArgs e)
-        {
-            OpenEchoCanceler();
-        }
-
-        private void AttachedRecorderStopped(object? sender, NAudio.Wave.StoppedEventArgs e)
-        {
-            CloseEchoCanceler();
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(NativeAEC));
         }
     }
 }

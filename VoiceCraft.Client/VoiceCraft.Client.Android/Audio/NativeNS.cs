@@ -1,54 +1,78 @@
 ﻿using Android.Media.Audiofx;
+using System;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Android.Audio
 {
     public class NativeNS
     {
-        private NoiseSuppressor? _noiseSupressor;
-        private AudioRecorder? _attachedRecorder;
-
-        public void Attach(IAudioRecorder audioRecorder)
+        public bool Enabled
         {
-            if (audioRecorder is AudioRecorder recorder)
+            get => _noiseSuppressor?.Enabled ?? _enabled; set
             {
-                _attachedRecorder = recorder;
-                _attachedRecorder.RecordingStarted += AttachedRecorderStarted;
-                _attachedRecorder.RecordingStopped += AttachedRecorderStopped;
-                OpenNoiseSupressor();
+                if (_noiseSuppressor != null)
+                    _noiseSuppressor.SetEnabled(value);
+                else
+                    _enabled = value;
+            }
+        }
+        private NoiseSuppressor? _noiseSuppressor;
+        private bool _enabled = true;
+        private bool _disposed;
+
+        ~NativeNS()
+        {
+            Dispose(false);
+        }
+
+        public void Init(IAudioRecorder recorder)
+        {
+            ThrowIfDisposed();
+            if (recorder is AudioRecorder audioRecorder && audioRecorder.SessionId != null)
+            {
+                if (_noiseSuppressor != null)
+                {
+                    _noiseSuppressor.Release();
+                    _noiseSuppressor.Dispose();
+                    _noiseSuppressor = null;
+                }
+
+                _noiseSuppressor = NoiseSuppressor.Create((int)audioRecorder.SessionId);
+                _noiseSuppressor?.SetEnabled(_enabled); //Force setting of NS.
+            }
+            else
+            {
+                throw new Exception($"{nameof(recorder)} must be type of {typeof(AudioRecorder)}.");
             }
         }
 
-        protected void OpenNoiseSupressor()
+        public void Dispose()
         {
-            CloseNoiseSupressor();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (_attachedRecorder == null) return;
-            if (_attachedRecorder.SessionId != null)
+        protected void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
             {
-                _noiseSupressor = NoiseSuppressor.Create((int)_attachedRecorder.SessionId);
-                _noiseSupressor?.SetEnabled(true); //Force enable the NS.
+                if (_noiseSuppressor != null)
+                {
+                    _noiseSuppressor.Release();
+                    _noiseSuppressor.Dispose();
+                    _noiseSuppressor = null;
+                }
             }
+
+            _disposed = true;
         }
 
-        protected void CloseNoiseSupressor()
+        private void ThrowIfDisposed()
         {
-            if (_noiseSupressor != null)
-            {
-                _noiseSupressor.Dispose();
-                _noiseSupressor.Release();
-                _noiseSupressor = null;
-            }
-        }
-
-        private void AttachedRecorderStarted(object? sender, System.EventArgs e)
-        {
-            OpenNoiseSupressor();
-        }
-
-        private void AttachedRecorderStopped(object? sender, NAudio.Wave.StoppedEventArgs e)
-        {
-            CloseNoiseSupressor();
+            if (_disposed)
+                throw new ObjectDisposedException(nameof(NativeAEC));
         }
     }
 }
