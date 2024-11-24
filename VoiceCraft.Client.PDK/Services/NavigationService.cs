@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using VoiceCraft.Client.PDK.ViewModels;
+﻿using VoiceCraft.Client.PDK.ViewModels;
 
 namespace VoiceCraft.Client.PDK.Services
 {
@@ -29,10 +28,6 @@ namespace VoiceCraft.Client.PDK.Services
             _historyMaxSize = historyMaxSize;
             _createViewModel = createViewModel;
         }
-
-        // pushState
-        // popState
-        // replaceState
 
         public void Push(ViewModelBase item)
         {
