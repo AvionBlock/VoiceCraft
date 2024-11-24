@@ -3,15 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Avalonia.Notification.Controls;assembly=Notification.Avalonia"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.Plugin.ViewModels"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:MainViewModel"
              mc:Ignorable="d">
-    <Grid>
-        <Image Classes="backgroundImage" />
-        <TransitioningContentControl Content="{Binding Content}" />
-        <controls:NotificationMessageContainer Manager="{Binding Manager}" />
-    </Grid>
+
+    <dialogHost:DialogHost CloseOnClickAway="True" Identifier="MessageBoxDialog">
+        <dialogHost:DialogHost.DialogContent>
+            <!--  put your dialog content here  -->
+        </dialogHost:DialogHost.DialogContent>
+        <Grid>
+            <Image Classes="backgroundImage" />
+            <TransitioningContentControl Content="{Binding Content}" />
+            <controls:NotificationMessageContainer Manager="{Binding Manager}" />
+        </Grid>
+    </dialogHost:DialogHost>
 </UserControl>

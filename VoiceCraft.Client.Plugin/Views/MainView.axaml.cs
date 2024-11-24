@@ -8,7 +8,6 @@ namespace VoiceCraft.Client.Plugin.Views
         public MainView(IMainViewModel mainViewModel)
         {
             InitializeComponent();
-
             DataContext = mainViewModel;
         }
     }

@@ -2,6 +2,8 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using DialogHostAvalonia;
 using System.Collections.ObjectModel;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.ViewModels.Home;
@@ -44,6 +46,12 @@ namespace VoiceCraft.Client.Plugin.ViewModels
 
             if (Content != null)
                 Content.OnAppearing(this);
+        }
+
+        [RelayCommand]
+        public void Test()
+        {
+            DialogHost.Show("test", "MessageBoxDialog");
         }
     }
 

@@ -25,6 +25,7 @@
                                                Mobile='*'}"
               RowDefinitions="{OnFormFactor '*',
                                             Mobile='*, Auto'}">
+            <Button Command="{Binding TestCommand}">Test</Button>
             <ListBox Grid.Row="{OnFormFactor '0',
                                              Mobile='1'}"
                      Grid.Column="0"

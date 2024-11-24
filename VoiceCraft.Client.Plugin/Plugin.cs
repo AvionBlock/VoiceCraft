@@ -1,9 +1,7 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Threading;
+using DialogHostAvalonia;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Plugin.Settings;
