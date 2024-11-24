@@ -1,9 +1,11 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Styling;
 using DialogHostAvalonia;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
+using VoiceCraft.Client.Plugin.Assets;
 using VoiceCraft.Client.Plugin.Settings;
 using VoiceCraft.Client.Plugin.ViewModels;
 using VoiceCraft.Client.Plugin.ViewModels.Home;
@@ -57,12 +59,12 @@ namespace VoiceCraft.Client.Plugin
             var themeSettings = settings.Get<ThemeSettings>(PluginId);
             themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light,
                 new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
-                new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Icons.axaml", UriKind.Relative) },
+                new Icons(),
                 new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) },
                 new StyleInclude(new Uri(@"avares://DialogHost.Avalonia")) { Source = new Uri(@"/Styles.xaml", UriKind.Relative) });
             themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark,
                 new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
-                new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Icons.axaml", UriKind.Relative) },
+                new Icons(),
                 new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) },
                 new StyleInclude(new Uri(@"avares://DialogHost.Avalonia")) { Source = new Uri(@"/Styles.xaml", UriKind.Relative) });
 

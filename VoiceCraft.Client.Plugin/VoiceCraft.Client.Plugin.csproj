@@ -13,7 +13,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<AvaloniaXaml Remove="Assets\Icons.axaml" />
 		<AvaloniaXaml Remove="Assets\Resources.axaml" />
 		<AvaloniaXaml Remove="Assets\Styles.axaml" />
 	</ItemGroup>
@@ -26,7 +25,6 @@
 	<ItemGroup>
 		<AvaloniaResource Include="Assets\bgdark.png" />
 		<AvaloniaResource Include="Assets\bglight.png" />
-		<AvaloniaResource Include="Assets\Icons.axaml" />
 		<AvaloniaResource Include="Assets\Resources.axaml" />
 		<AvaloniaResource Include="Assets\Styles.axaml" />
 	</ItemGroup>
