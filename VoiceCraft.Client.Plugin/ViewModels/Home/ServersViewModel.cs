@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
-using VoiceCraft.Client.Plugin.Views;
 
 namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
@@ -28,12 +27,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             if (value == null) return;
             var vm = _navigator.NavigateTo<ServerViewModel>();
             vm.SelectedServer = value;
-
-            //I don't know why this fixes it, it just does.
-            Task.Run(() =>
-            {
-                SelectedServer = null;
-            });
+            SelectedServer = null;
         }
 
         public ServersViewModel(NavigationService navigator, NotificationMessageManager manager, SettingsService settings)

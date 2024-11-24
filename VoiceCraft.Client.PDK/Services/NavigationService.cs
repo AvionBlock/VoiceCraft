@@ -1,4 +1,5 @@
-﻿using VoiceCraft.Client.PDK.ViewModels;
+﻿using System.Diagnostics;
+using VoiceCraft.Client.PDK.ViewModels;
 
 namespace VoiceCraft.Client.PDK.Services
 {
@@ -61,7 +62,7 @@ namespace VoiceCraft.Client.PDK.Services
             }
             _historyIndex = newIndex;
             var viewModel = _history.ElementAt(_historyIndex);
-            _currentViewModel = viewModel;
+            CurrentViewModel = viewModel;
             return viewModel;
         }
 

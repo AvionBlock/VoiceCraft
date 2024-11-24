@@ -13,7 +13,6 @@
         <ListBox Background="Transparent"
                  ItemsSource="{Binding Servers.Servers}"
                  SelectedItem="{Binding SelectedServer}"
-                 SelectedValue="{Binding SelectedServer}"
                  SelectionMode="Single">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
