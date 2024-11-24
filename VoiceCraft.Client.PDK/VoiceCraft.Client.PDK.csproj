@@ -7,14 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.1.4" />
+    <PackageReference Include="Avalonia" Version="11.2.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageReference Include="DialogHost.Avalonia" Version="0.8.1" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="8.0.91" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.10" />
     <PackageReference Include="NAudio.Core" Version="2.2.1" />
     <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
     <PackageReference Include="NWaves" Version="0.9.6" />
-    <PackageReference Include="OpusSharp.Core" Version="1.0.4" />
+    <PackageReference Include="OpusSharp.Core" Version="1.5.2" />
   </ItemGroup>
 
   <ItemGroup>

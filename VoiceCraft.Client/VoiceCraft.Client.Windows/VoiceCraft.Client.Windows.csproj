@@ -15,9 +15,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Avalonia.Desktop" Version="11.1.4" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.2.1" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.4" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.1" />
 		<PackageReference Include="NAudio.WinForms" Version="2.2.1" />
 		<PackageReference Include="NAudio.WinMM" Version="2.2.1" />
 		<PackageReference Include="OpusSharp.Windows" Version="1.0.4" />
