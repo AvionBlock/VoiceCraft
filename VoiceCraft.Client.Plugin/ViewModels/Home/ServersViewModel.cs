@@ -26,8 +26,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         partial void OnSelectedServerChanged(Server? value)
         {
             if (value == null) return;
-            var page = _navigator.NavigateTo<ServerView>();
-            page.ServerViewModel.SelectedServer = value;
+            var vm = _navigator.NavigateTo<ServerViewModel>();
+            vm.SelectedServer = value;
 
             //I don't know why this fixes it, it just does.
             Task.Run(() =>
@@ -68,8 +68,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public void EditServer(Server? server)
         {
             if (server == null) return; //Somehow can be null.
-            var page = _navigator.NavigateTo<EditServerView>();
-            page.EditServerViewModel.Server = server;
+            var vm = _navigator.NavigateTo<EditServerViewModel>();
+            vm.Server = server;
         }
     }
 }

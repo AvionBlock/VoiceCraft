@@ -1,9 +1,9 @@
 ﻿using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Diagnostics;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
-using VoiceCraft.Client.PDK.Views;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {
@@ -12,7 +12,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         public override string Title => "Main";
 
         [ObservableProperty]
-        private ViewBase? _content = default!;
+        private ViewModelBase? _content = default!;
 
         [ObservableProperty]
         private INotificationMessageManager _manager;
@@ -22,9 +22,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels
             Manager = manager;
             // register route changed event to set content to viewModel, whenever
             // a route changes
-            navigation.OnPageChanged += (s, p) =>
+            navigation.OnViewModelChanged += (vm) =>
             {
-                Content = p;
+                Content = vm;
             };
         }
     }

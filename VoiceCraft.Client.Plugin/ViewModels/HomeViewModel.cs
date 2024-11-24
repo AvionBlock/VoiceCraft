@@ -4,8 +4,7 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using VoiceCraft.Client.PDK.ViewModels;
-using VoiceCraft.Client.PDK.Views;
-using VoiceCraft.Client.Plugin.Views.Home;
+using VoiceCraft.Client.Plugin.ViewModels.Home;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {
@@ -14,7 +13,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         public override string Title => "Home";
 
         [ObservableProperty]
-        private ViewBase _content = default!;
+        private ViewModelBase _content = default!;
 
         [ObservableProperty]
         private ObservableCollection<ListItemTemplate> _items = new ObservableCollection<ListItemTemplate>();
@@ -22,7 +21,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         [ObservableProperty]
         private ListItemTemplate? _selectedListItem = null;
 
-        public HomeViewModel(ServersView servers, SettingsView settings, CreditsView credits, AddServerView addServer, PluginsView plugins)
+        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer, PluginsViewModel plugins)
         {
             _items.Add(new ListItemTemplate(servers, "home_regular"));
             _items.Add(new ListItemTemplate(settings, "mic_settings_regular"));
@@ -37,27 +36,27 @@ namespace VoiceCraft.Client.Plugin.ViewModels
 
         partial void OnSelectedListItemChanged(ListItemTemplate? value)
         {
-            if (value == null) return;
-            if (Content != null && Content.DataContext is ViewModelBase currentViewModel)
-                currentViewModel.OnDisappearing(this);
+            if (value == null) return; //I don't know why this is a thing...
+            if (Content != null)
+                Content.OnDisappearing(this);
 
             Content = value.Content;
 
-            if (Content != null && Content.DataContext is ViewModelBase newViewModel)
-                newViewModel.OnAppearing(this);
+            if (Content != null)
+                Content.OnAppearing(this);
         }
     }
 
     public class ListItemTemplate
     {
-        public ListItemTemplate(ViewBase control, string iconKey)
+        public ListItemTemplate(ViewModelBase control, string iconKey)
         {
             Content = control;
             Application.Current!.TryFindResource(iconKey, out var icon);
             Icon = (StreamGeometry)icon!;
         }
 
-        public ViewBase Content { get; }
+        public ViewModelBase Content { get; }
         public StreamGeometry? Icon { get; }
     }
 }

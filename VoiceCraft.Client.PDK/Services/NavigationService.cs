@@ -1,62 +1,85 @@
-﻿using VoiceCraft.Client.PDK.Views;
+﻿using VoiceCraft.Client.PDK.ViewModels;
 
 namespace VoiceCraft.Client.PDK.Services
 {
     public class NavigationService
     {
-        public ViewBase CurrentPage { get; private set; } = default!;
-        public int MaxHistory { get; }
-
-        public event EventHandler<ViewBase>? OnPageChanging;
-        public event EventHandler<ViewBase>? OnPageChanged;
-
-        private Func<Type, ViewBase> _createView;
-        private List<ViewBase> _history;
-
-        public NavigationService(Func<Type, ViewBase> createView, int maxHistory = 50)
+        private int _historyIndex = -1;
+        private List<ViewModelBase> _history = new List<ViewModelBase>();
+        private readonly uint _historyMaxSize;
+        private ViewModelBase _currentViewModel = default!;
+        private readonly Func<Type, ViewModelBase> _createViewModel;
+        public event Action<ViewModelBase>? OnViewModelChanged;
+        protected ViewModelBase CurrentViewModel
         {
-            _createView = createView;
-            _history = new List<ViewBase>();
-            MaxHistory = maxHistory;
-        }
-
-        public TPage NavigateTo<TPage>() where TPage : ViewBase
-        {
-            var page = InstantiatePage<TPage>();
-            OnPageChanging?.Invoke(this, page);
-
-            if (CurrentPage != null)
-                CurrentPage.ViewModel.OnDisappearing(this);
-
-            CurrentPage = page;
-            if (_history.Count >= MaxHistory)
-                _history.RemoveAt(0);
-            _history.Add(page);
-
-            CurrentPage.ViewModel.OnAppearing(this);
-            OnPageChanged?.Invoke(this, CurrentPage);
-            return page;
-        }
-
-        public void Back()
-        {
-            if (_history.Count > 1)
+            set
             {
-                _history.RemoveAt(_history.Count - 1);
-                var page = _history.Last();
-                OnPageChanging?.Invoke(this, page);
-                if (CurrentPage != null)
-                    CurrentPage.ViewModel.OnDisappearing(this);
-
-                CurrentPage = page;
-                CurrentPage.ViewModel.OnAppearing(this);
-                OnPageChanged?.Invoke(this, CurrentPage);
+                if (value == _currentViewModel) return;
+                _currentViewModel = value;
+                OnViewModelChanged?.Invoke(value);
             }
         }
 
-        private T InstantiatePage<T>()
+        public bool HasNext => _history.Count > 0 && _historyIndex < _history.Count - 1;
+        public bool HasPrev => _historyIndex > 0;
+
+        public NavigationService(Func<Type, ViewModelBase> createViewModel, uint historyMaxSize = 100)
         {
-            return (T)Convert.ChangeType(_createView(typeof(T)), typeof(T));
+            _historyMaxSize = historyMaxSize;
+            _createViewModel = createViewModel;
+        }
+
+        // pushState
+        // popState
+        // replaceState
+
+        public void Push(ViewModelBase item)
+        {
+            if (HasNext)
+            {
+                _history = _history.Take(_historyIndex + 1).ToList();
+            }
+            _history.Add(item);
+            _historyIndex = _history.Count - 1;
+            if (_history.Count > _historyMaxSize)
+            {
+                _history.RemoveAt(0);
+            }
+        }
+
+        public ViewModelBase? Go(int offset = 0)
+        {
+            if (offset == 0)
+            {
+                return default;
+            }
+
+            var newIndex = _historyIndex + offset;
+            if (newIndex < 0 || newIndex > _history.Count - 1)
+            {
+                return default;
+            }
+            _historyIndex = newIndex;
+            var viewModel = _history.ElementAt(_historyIndex);
+            _currentViewModel = viewModel;
+            return viewModel;
+        }
+
+        public ViewModelBase? Back() => HasPrev ? Go(-1) : default;
+
+        public ViewModelBase? Forward() => HasNext ? Go(1) : default;
+
+        public virtual T NavigateTo<T>() where T : ViewModelBase
+        {
+            var viewModel = InstantiateViewModel<T>();
+            CurrentViewModel = viewModel;
+            Push(viewModel);
+            return viewModel;
+        }
+
+        private T InstantiateViewModel<T>() where T : ViewModelBase
+        {
+            return (T)Convert.ChangeType(_createViewModel(typeof(T)), typeof(T));
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
-using VoiceCraft.Client.PDK.Views;
+using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.Views;
 
@@ -26,30 +26,31 @@ namespace VoiceCraft.Client
 
         public override void OnFrameworkInitializationCompleted()
         {
-            Services.AddSingleton<NavigationService>(s => new NavigationService(p => (ViewBase)s.GetRequiredService(p)));
+            Services.AddSingleton<NavigationService>(s => new NavigationService(p => (ViewModelBase)s.GetRequiredService(p)));
             Services.AddSingleton<NotificationMessageManager>();
             Services.AddSingleton<SettingsService>();
             Services.AddSingleton<ThemesService>();
 
             PluginLoader.LoadPlugins(PluginDirectory, Services);
 
+            IMainView mainView;
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 // Line below is needed to remove Avalonia data validation.
                 // Without this line you will get duplicate validations from both Avalonia and CT
                 BindingPlugins.DataValidators.RemoveAt(0);
                 var mainWindow = new MainWindow();
-                IMainView mainView;
                 try
                 {
                     Services.AddSingleton<TopLevel>(mainWindow);
                     ServiceProvider = Services.BuildServiceProvider();
 
+                    DataTemplates.Add(new ViewLocator(ServiceProvider));
                     mainView = ServiceProvider.GetRequiredService<IMainView>();
                 }
                 catch (Exception ex)
                 {
-                    mainView = new DefaultMainView(new DefaultMainViewModel() { Message = $"Error: {ex.Message}" });
+                    mainView = new DefaultMainView() { DataContext = new DefaultMainViewModel() { Message = $"Error: {ex.Message}" } };
                 }
 
                 mainWindow.Content = mainView;
@@ -61,7 +62,6 @@ namespace VoiceCraft.Client
             {
                 //This is stupid but this is the only way I can find out how to get top level on single view platform... Why is this not part of the interface...
                 var topLevel = (TopLevel?)ApplicationLifetime.GetType()?.GetProperty(nameof(TopLevel))?.GetValue(ApplicationLifetime, null);
-                IMainView mainView;
                 try
                 {
                     if (topLevel == null)
@@ -70,11 +70,12 @@ namespace VoiceCraft.Client
                     Services.AddSingleton(topLevel);
                     ServiceProvider = Services.BuildServiceProvider();
 
+                    DataTemplates.Add(new ViewLocator(ServiceProvider));
                     mainView = ServiceProvider.GetRequiredService<IMainView>();
                 }
                 catch (Exception ex)
                 {
-                    mainView = new DefaultMainView(new DefaultMainViewModel() { Message = $"Error: {ex.Message}" });
+                    mainView = new DefaultMainView() { DataContext = new DefaultMainViewModel() { Message = $"Error: {ex.Message}" } };
                 }
 
                 singleViewPlatform.MainView = (Control)mainView;

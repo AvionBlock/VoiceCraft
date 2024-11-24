@@ -1,5 +1,9 @@
-﻿using Avalonia.Markup.Xaml.Styling;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.Plugin.Settings;
@@ -32,14 +36,14 @@ namespace VoiceCraft.Client.Plugin
             serviceCollection.AddTransient<SettingsViewModel>();
             serviceCollection.AddTransient<CreditsViewModel>();
 
-            serviceCollection.AddTransient<HomeView>();
-            serviceCollection.AddTransient<ServersView>();
-            serviceCollection.AddTransient<ServerView>();
-            serviceCollection.AddTransient<AddServerView>();
-            serviceCollection.AddTransient<PluginsView>();
-            serviceCollection.AddTransient<EditServerView>();
-            serviceCollection.AddTransient<SettingsView>();
-            serviceCollection.AddTransient<CreditsView>();
+            serviceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
+            serviceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
+            serviceCollection.AddKeyedTransient<Control, ServerView>(typeof(ServerView).FullName);
+            serviceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
+            serviceCollection.AddKeyedTransient<Control, PluginsView>(typeof(PluginsView).FullName);
+            serviceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
+            serviceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
+            serviceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
         }
 
         public void Initialize(IServiceProvider serviceProvider)
@@ -67,7 +71,7 @@ namespace VoiceCraft.Client.Plugin
             themes.SwitchTheme(themeSettings.SelectedTheme);
 
             var navigation = serviceProvider.GetRequiredService<NavigationService>();
-            navigation.NavigateTo<HomeView>();
+            navigation.NavigateTo<HomeViewModel>();
         }
     }
 }

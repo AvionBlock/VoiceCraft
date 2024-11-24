@@ -1,21 +1,12 @@
-using VoiceCraft.Client.PDK.ViewModels;
-using VoiceCraft.Client.PDK.Views;
-using VoiceCraft.Client.Plugin.ViewModels.Home;
+using Avalonia.Controls;
 
 namespace VoiceCraft.Client.Plugin.Views.Home
 {
-    public partial class ServersView : ViewBase
+    public partial class ServersView : UserControl
     {
-        public override ViewModelBase ViewModel => ServersViewModel;
-
-        public readonly ServersViewModel ServersViewModel;
-
-        public ServersView(ServersViewModel viewModel)
+        public ServersView()
         {
             InitializeComponent();
-
-            DataContext = viewModel;
-            ServersViewModel = viewModel;
         }
     }
 }
