@@ -60,6 +60,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _initialized = false;
             }
 
+            throw new ArgumentException("Recorder must be an android native audio recorder!", nameof(recorder));
             //Initialize variable is still false because we haven't created the processors, we create them when we start using the preprocessor.
         }
 
