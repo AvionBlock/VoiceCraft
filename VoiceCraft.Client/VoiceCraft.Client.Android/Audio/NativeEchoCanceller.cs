@@ -8,10 +8,8 @@ namespace VoiceCraft.Client.Android.Audio
     {
         public bool Enabled { get => _echoCanceler?.Enabled ?? _enabled; set
             {
-                if (_echoCanceler != null)
-                    _echoCanceler.SetEnabled(value);
-                else
-                    _enabled = value;
+                if (_echoCanceler != null) _echoCanceler.SetEnabled(value);
+                _enabled = value;
             }
         }
         private AcousticEchoCanceler? _echoCanceler;
