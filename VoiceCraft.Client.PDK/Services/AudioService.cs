@@ -27,10 +27,6 @@ namespace VoiceCraft.Client.PDK.Services
 
         public abstract object CreateEchoCanceller();
 
-        public abstract object CreateAutomaticGainController();
-
-        public abstract object CreateNoiseCanceller();
-
         public abstract object CreatePreprocessor();
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace VoiceCraft.Client.PDK.Audio
 {
-    public interface IAcousticEchoCanceller : IDisposable
+    public interface IEchoCanceller : IDisposable
     {
         void Init(IAudioRecorder recorder);
 

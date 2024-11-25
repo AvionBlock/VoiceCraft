@@ -46,7 +46,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public override object CreateEchoCanceller()
         {
-            return new NativeAEC();
+            return new NativeEchoCanceller();
         }
 
         public override object CreateAutomaticGainController()

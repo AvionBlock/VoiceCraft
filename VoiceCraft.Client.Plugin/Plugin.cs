@@ -1,7 +1,5 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
-using DialogHostAvalonia;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
@@ -15,7 +13,7 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Plugin
 {
-    
+
     [Plugin("00000000-0000-0000-0000-000000000000", "VoiceCraft", "The main voicecraft plugin.", 0, [], ["00000000-0000-0000-0000-000000000000"])]
     public class Plugin : IPlugin
     {
@@ -57,16 +55,21 @@ namespace VoiceCraft.Client.Plugin
 
             var themes = serviceProvider.GetRequiredService<ThemesService>();
             var themeSettings = settings.Get<ThemeSettings>(PluginId);
-            themes.RegisterTheme("Light", Avalonia.Platform.PlatformThemeVariant.Light,
-                new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
-                new Icons(),
-                new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) },
-                new StyleInclude(new Uri(@"avares://DialogHost.Avalonia")) { Source = new Uri(@"/Styles.xaml", UriKind.Relative) });
-            themes.RegisterTheme("Dark", Avalonia.Platform.PlatformThemeVariant.Dark,
-                new StyleInclude(new Uri(@"avares://VoiceCraft.Client.Plugin")) { Source = new Uri(@"/Assets/Styles.axaml", UriKind.Relative) },
-                new Icons(),
-                new StyleInclude(new Uri(@"avares://Notification.Avalonia")) { Source = new Uri(@"/Themes/Generic.xaml", UriKind.Relative) },
-                new StyleInclude(new Uri(@"avares://DialogHost.Avalonia")) { Source = new Uri(@"/Styles.xaml", UriKind.Relative) });
+            themes.RegisterTheme("Light", 
+                [
+                    new VCStyles(),
+                    new VCIcons()
+                ],
+                Avalonia.Platform.PlatformThemeVariant.Light
+            );
+
+            themes.RegisterTheme("Dark",
+                [
+                    new VCStyles(),
+                    new VCIcons()
+                ],
+                Avalonia.Platform.PlatformThemeVariant.Dark
+            );
 
             themes.SwitchTheme(themeSettings.SelectedTheme);
 

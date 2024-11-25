@@ -1,12 +1,11 @@
 ﻿using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 
-namespace VoiceCraft.Client.PDK
+namespace VoiceCraft.Client.PDK.Services
 {
-    public static class Extensions
+    public class PermissionsService
     {
-        //Kindof an extension. I guess
-        public static async Task<PermissionStatus> CheckAndRequestPermission<TPermission>(string? rationalDescription = null) where TPermission : Permissions.BasePermission, new()
+        public async Task<PermissionStatus> CheckAndRequestPermission<TPermission>(string? rationalDescription = null) where TPermission : Permissions.BasePermission, new()
         {
             PermissionStatus status = await Permissions.CheckStatusAsync<TPermission>();
 

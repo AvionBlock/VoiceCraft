@@ -24,6 +24,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private ThemesService _themesService;
         private SettingsService _settingsService;
         private AudioService _audioService;
+        private PermissionsService _permissionsService;
 
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
@@ -61,8 +62,9 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [ObservableProperty]
         private float _microphoneValue;
 
-        public SettingsViewModel(SettingsService settings, ThemesService themes, AudioService audioService)
+        public SettingsViewModel(SettingsService settings, ThemesService themes, AudioService audioService, PermissionsService permissions)
         {
+            _permissionsService = permissions;
             _settingsService = settings;
             _themesService = themes;
             _audioService = audioService;
@@ -120,7 +122,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
             else
             {
-                if (await VoiceCraft.Client.PDK.Extensions.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
+                if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
                     return;
 
                 IsRecording = true;

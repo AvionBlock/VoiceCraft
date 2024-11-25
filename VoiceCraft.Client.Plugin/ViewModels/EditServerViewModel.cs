@@ -1,13 +1,14 @@
 ﻿using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {
-    public partial class EditServerViewModel : ViewModelBase
+    public partial class EditServerViewModel : ViewModelBase, IDisposable
     {
         public override string Title => "Edit Server";
 
@@ -84,6 +85,11 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         partial void OnServerChanged(Server value)
         {
             EditableServer = (Server)value.Clone();
+        }
+
+        public void Dispose()
+        {
+            Debug.WriteLine("Dispose Test");
         }
     }
 }

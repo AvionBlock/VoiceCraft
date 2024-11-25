@@ -33,12 +33,21 @@ namespace VoiceCraft.Client.PDK.Services
         {
             if (HasNext)
             {
+                for(var i = _historyIndex + 1; i < _history.Count; i++)
+                {
+                    if (_history.ElementAt(i) is IDisposable disposable)
+                        disposable.Dispose(); //Moving it off the stack, We dispose it if it implements IDisposable
+                }
+
                 _history = _history.Take(_historyIndex + 1).ToList();
             }
+
             _history.Add(item);
             _historyIndex = _history.Count - 1;
             if (_history.Count > _historyMaxSize)
             {
+                if(_history.ElementAt(0) is IDisposable disposable)
+                    disposable.Dispose(); //Moving off the stack. We dispose it if it implemented IDisposable.
                 _history.RemoveAt(0);
             }
         }
@@ -55,6 +64,7 @@ namespace VoiceCraft.Client.PDK.Services
             {
                 return default;
             }
+
             _historyIndex = newIndex;
             var viewModel = _history.ElementAt(_historyIndex);
             CurrentViewModel = viewModel;

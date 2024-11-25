@@ -58,16 +58,6 @@ namespace VoiceCraft.Client.Windows.Audio
             throw new System.NotImplementedException();
         }
 
-        public override object CreateAutomaticGainController()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override object CreateNoiseCanceller()
-        {
-            throw new System.NotImplementedException();
-        }
-
         public override object CreatePreprocessor()
         {
             throw new System.NotImplementedException();

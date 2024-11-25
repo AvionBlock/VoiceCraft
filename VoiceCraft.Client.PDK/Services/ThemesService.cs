@@ -13,7 +13,7 @@ namespace VoiceCraft.Client.PDK.Services
         private ConcurrentDictionary<string, Theme> _themes = new ConcurrentDictionary<string, Theme>();
         private Theme? _currentTheme;
 
-        public void RegisterTheme(string themeName, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light, params IStyle[] themeStyles)
+        public void RegisterTheme(string themeName, IStyle[] themeStyles, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light)
         {
             var theme = new Theme(themeVariant, themeStyles);
             _themes.AddOrUpdate(themeName, theme, (key, old) => old = theme);
@@ -63,7 +63,7 @@ namespace VoiceCraft.Client.PDK.Services
             public readonly PlatformThemeVariant Variant;
             public readonly IStyle[] ThemeStyles;
 
-            public Theme(PlatformThemeVariant variant, params IStyle[] themeStyles)
+            public Theme(PlatformThemeVariant variant, IStyle[] themeStyles)
             {
                 Variant = variant;
                 ThemeStyles = themeStyles;

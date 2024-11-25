@@ -4,7 +4,7 @@ using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    public class NativeAEC : IAcousticEchoCanceller
+    public class NativeEchoCanceller : IEchoCanceller
     {
         public bool Enabled { get => _echoCanceler?.Enabled ?? _enabled; set
             {
@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Android.Audio
         private bool _enabled = true;
         private bool _disposed;
 
-        ~NativeAEC()
+        ~NativeEchoCanceller()
         {
             Dispose(false);
         }
@@ -94,7 +94,7 @@ namespace VoiceCraft.Client.Android.Audio
         private void ThrowIfDisposed()
         {
             if (_disposed)
-                throw new ObjectDisposedException(nameof(NativeAEC));
+                throw new ObjectDisposedException(nameof(NativeEchoCanceller));
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using NAudio.Wave;
 using System;
-using System.Collections.Generic;
 using VoiceCraft.Client.PDK.Audio;
 
 namespace VoiceCraft.Client.Windows.Audio

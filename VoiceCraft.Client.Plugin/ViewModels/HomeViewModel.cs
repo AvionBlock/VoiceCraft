@@ -10,7 +10,7 @@ using VoiceCraft.Client.Plugin.ViewModels.Home;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {
-    public partial class HomeViewModel : ViewModelBase
+    public partial class HomeViewModel : ViewModelBase, IDisposable
     {
         public override string Title => "Home";
 
@@ -52,6 +52,15 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         public void Test()
         {
             DialogHost.Show("test", "MessageBoxDialog");
+        }
+
+        public void Dispose()
+        {
+            foreach(var vm in Items)
+            {
+                if(vm is IDisposable disposable)
+                    disposable.Dispose();
+            }
         }
     }
 
