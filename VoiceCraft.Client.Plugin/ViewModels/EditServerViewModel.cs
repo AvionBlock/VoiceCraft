@@ -8,7 +8,7 @@ using VoiceCraft.Client.Plugin.Settings;
 
 namespace VoiceCraft.Client.Plugin.ViewModels
 {
-    public partial class EditServerViewModel : ViewModelBase, IDisposable
+    public partial class EditServerViewModel : ViewModelBase
     {
         public override string Title => "Edit Server";
 
@@ -85,11 +85,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels
         partial void OnServerChanged(Server value)
         {
             EditableServer = (Server)value.Clone();
-        }
-
-        public void Dispose()
-        {
-            Debug.WriteLine("Dispose Test");
         }
     }
 }

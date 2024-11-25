@@ -5,13 +5,14 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
 
 namespace VoiceCraft.Client.Plugin.ViewModels.Home
 {
-    public partial class SettingsViewModel : ViewModelBase
+    public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         public override string Title => "Settings";
 
@@ -25,6 +26,8 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private SettingsService _settingsService;
         private AudioService _audioService;
         private PermissionsService _permissionsService;
+        private IAudioRecorder? _audioRecorder;
+        private IAudioPlayer? _audioPlayer;
 
         [ObservableProperty]
         private bool _audioSettingsExpanded = false;
@@ -69,8 +72,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             _themesService = themes;
             _audioService = audioService;
 
-            _audioService.SharedRecorder.BufferMilliseconds = 20;
-
             _themes = new ObservableCollection<string>(themes.ThemeNames);
             _inputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
             _outputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
@@ -97,27 +98,41 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         [RelayCommand]
         public void TestPlayer()
         {
-            if (_audioService.SharedPlayer.PlaybackState == PlaybackState.Playing)
+            if (_audioPlayer != null && _audioPlayer.PlaybackState == PlaybackState.Playing)
             {
                 IsPlaying = false;
-                _audioService.SharedPlayer.Stop();
+                _audioPlayer.Stop();
+                _audioPlayer.Dispose();
+                _audioPlayer = null;
             }
             else
             {
                 IsPlaying = true;
-                _audioService.SharedPlayer.SetDevice(AudioSettings.OutputDevice);
-                _audioService.SharedPlayer.Init(_signal);
-                _audioService.SharedPlayer.Play();
+                if (_audioPlayer != null)
+                {
+                    _audioPlayer.Dispose();
+                    _audioPlayer = null;
+                }
+
+                _audioPlayer = _audioService.CreateAudioPlayer();
+                _audioPlayer.SetDevice(AudioSettings.OutputDevice);
+                _audioPlayer.Init(_signal);
+                _audioPlayer.Play();
             }
         }
 
         [RelayCommand]
         public async Task TestRecorder()
         {
-            if (_audioService.SharedRecorder.IsRecording)
+
+            if (_audioRecorder != null && _audioRecorder.IsRecording)
             {
-                _audioService.SharedRecorder.StopRecording();
                 IsRecording = false;
+                _audioRecorder.StopRecording();
+                _audioRecorder.DataAvailable -= RecordingData;
+                _audioRecorder.RecordingStopped -= RecordingStopped;
+                _audioRecorder.Dispose();
+                _audioRecorder = null;
                 MicrophoneValue = 0;
             }
             else
@@ -125,9 +140,21 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                 if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
                     return;
 
+                if (_audioRecorder != null)
+                {
+                    _audioRecorder.DataAvailable -= RecordingData;
+                    _audioRecorder.RecordingStopped -= RecordingStopped;
+                    _audioRecorder.Dispose();
+                    _audioRecorder = null;
+                }
+
+                _audioRecorder = _audioService.CreateAudioRecorder();
                 IsRecording = true;
-                _audioService.SharedRecorder.SetDevice(AudioSettings.InputDevice);
-                _audioService.SharedRecorder.StartRecording();
+                _audioRecorder.BufferMilliseconds = 20;
+                _audioRecorder.SetDevice(AudioSettings.InputDevice);
+                _audioRecorder.DataAvailable += RecordingData;
+                _audioRecorder.RecordingStopped += RecordingStopped;
+                _audioRecorder.StartRecording();
             }
         }
 
@@ -148,14 +175,14 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         {
             if (e.PropertyName == nameof(AudioSettings.OutputDevice))
             {
-                if (_audioService.SharedPlayer.PlaybackState == PlaybackState.Playing)
+                if (_audioPlayer != null && _audioPlayer.PlaybackState == PlaybackState.Playing)
                 {
                     TestPlayer(); //Stop player.
                 }
             }
             else if (e.PropertyName == nameof(AudioSettings.InputDevice))
             {
-                if (_audioService.SharedRecorder.IsRecording)
+                if (_audioRecorder != null && _audioRecorder.IsRecording)
                 {
                     _ = TestRecorder();
                 }
@@ -198,8 +225,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             if (!OutputDevices.Contains(AudioSettings.OutputDevice))
                 AudioSettings.OutputDevice = _audioService.GetDefaultOutputDevice();
 
-            _audioService.SharedRecorder.DataAvailable += RecordingData;
-            _audioService.SharedRecorder.RecordingStopped += RecordingStopped;
+
             ThemeSettings.PropertyChanged += UpdateTheme;
             ThemeSettings.PropertyChanged += SaveSettings;
             AudioSettings.PropertyChanged += SaveSettings;
@@ -211,8 +237,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         public override void OnDisappearing(object? sender)
         {
             base.OnDisappearing(sender);
-            _audioService.SharedRecorder.DataAvailable -= RecordingData;
-            _audioService.SharedRecorder.RecordingStopped -= RecordingStopped;
             ThemeSettings.PropertyChanged -= UpdateTheme;
             ThemeSettings.PropertyChanged -= SaveSettings;
             AudioSettings.PropertyChanged -= SaveSettings;
@@ -220,11 +244,27 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             ServersSettings.PropertyChanged -= SaveSettings;
             NotificationSettings.PropertyChanged -= SaveSettings;
 
-            if (_audioService.SharedRecorder.IsRecording)
+            if (_audioRecorder != null && _audioRecorder.IsRecording)
                 _ = TestRecorder(); //Shutup
 
-            if (_audioService.SharedPlayer.PlaybackState == PlaybackState.Playing)
+            if (_audioPlayer != null && _audioPlayer.PlaybackState == PlaybackState.Playing)
                 TestPlayer();
+        }
+
+        public void Dispose()
+        {
+            if(_audioRecorder != null)
+            {
+                _audioRecorder.DataAvailable -= RecordingData;
+                _audioRecorder.RecordingStopped -= RecordingStopped;
+                _audioRecorder.Dispose();
+                _audioRecorder = null;
+            }
+            if(_audioPlayer != null)
+            {
+                _audioPlayer.Dispose();
+                _audioPlayer = null;
+            }
         }
     }
 }

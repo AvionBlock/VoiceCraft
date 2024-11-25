@@ -52,15 +52,5 @@ namespace VoiceCraft.Client.Windows.Audio
 
             return devices;
         }
-
-        public override object CreateEchoCanceller()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override object CreatePreprocessor()
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Android.Media;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using VoiceCraft.Client.PDK.Audio;
@@ -27,7 +28,7 @@ namespace VoiceCraft.Client.Android.Audio
             AudioDeviceType.WiredHeadphones,
             AudioDeviceType.WiredHeadset
             ];
-        protected AudioManager _audioManager;
+        private AudioManager _audioManager;
 
         public NativeAudioService(AudioManager audioManager)
         {
@@ -42,26 +43,6 @@ namespace VoiceCraft.Client.Android.Audio
         public override IAudioPlayer CreateAudioPlayer()
         {
             return new AudioPlayer(_audioManager);
-        }
-
-        public override object CreateEchoCanceller()
-        {
-            return new NativeEchoCanceller();
-        }
-
-        public override object CreateAutomaticGainController()
-        {
-            return new NativeAGC();
-        }
-
-        public override object CreateNoiseCanceller()
-        {
-            return new NativeNS();
-        }
-
-        public override object CreatePreprocessor()
-        {
-            throw new System.NotImplementedException();
         }
 
         public override string GetDefaultInputDevice()
