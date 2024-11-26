@@ -1,4 +1,6 @@
-﻿namespace VoiceCraft.Client.PDK.Audio
+﻿using NAudio.Wave;
+
+namespace VoiceCraft.Client.PDK.Audio
 {
     public class SpeexDSPPreprocessor : IPreprocessor
     {
@@ -62,9 +64,11 @@
         private bool _gainControllerEnabled;
         private bool _noiseSuppressorEnabled;
         private bool _voiceActivityDetectionEnabled;
+        private WaveFormat? _waveFormat;
+        private int _bytesPerFrame;
         private SpeexDSPSharp.Core.SpeexDSPPreprocessor[]? _preprocessors; //1 per channel apparently.
 
-        public void Init(IAudioRecorder recorder) //We don't actually need to do this.
+        public void Init(IAudioRecorder recorder)
         {
             if(_preprocessors != null)
             {
@@ -76,9 +80,11 @@
             }
 
             _preprocessors = new SpeexDSPSharp.Core.SpeexDSPPreprocessor[recorder.WaveFormat.Channels];
+            _waveFormat = recorder.WaveFormat;
+            _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
             for(int i = 0; i < _preprocessors.Length; i++)
             {
-                _preprocessors[i] = new SpeexDSPSharp.Core.SpeexDSPPreprocessor(recorder.BufferMilliseconds * recorder.WaveFormat.SampleRate / 1000, recorder.WaveFormat.SampleRate); //1 per channel
+                _preprocessors[i] = new SpeexDSPSharp.Core.SpeexDSPPreprocessor(recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate); //1 per channel
             }
 
             //I don't give a fuck, this is easier than having to add a whole bunch of new code.
@@ -89,29 +95,45 @@
 
         public bool Process(Span<byte> buffer)
         {
-            if(_preprocessors == null)
+            if(_preprocessors == null || _waveFormat == null)
             {
                 throw new InvalidOperationException("Speex preprocessor must be intialized with a recorder!");
             }
-
-            var vad = false;
-            for (int i = 0; i < _preprocessors.Length; i++) //1 per channel
+            if(buffer.Length < _bytesPerFrame)
             {
-                var frames = new byte[buffer.Length / _preprocessors.Length]; //Individual Channel
-                var frameIndex = 0;
-                //Take out the individual channel from the interleaved buffer.
-                for (int j = i; j < buffer.Length; j += _preprocessors.Length)
-                {
-                    frames[frameIndex] = buffer[j];
-                    frameIndex++;
-                }
-
-                //Run the associated preprocessor to the channel.
-                var preprocessor = _preprocessors[i];
-                vad = preprocessor.Run(frames) == 1;
+                throw new InvalidOperationException($"Input buffer must be {_bytesPerFrame} in length or higher!");
             }
 
-            return vad; //Will always be true according to speexdsp code.
+            var channelCount = _waveFormat.Channels;
+            var channelFrameSize = _bytesPerFrame / channelCount;
+
+            // Allocate a single reusable buffer for channel frames
+            Span<byte> channelFrames = new byte[channelFrameSize];
+
+            var vad = false;
+            for (int i = 0; i < channelCount; i++) // 1 preprocessor per channel
+            {
+                // Extract individual channel data from the interleaved buffer
+                for (int j = i, frameIndex = 0; j < buffer.Length; j += channelCount, frameIndex++)
+                {
+                    channelFrames[frameIndex] = buffer[j];
+                }
+
+                // Run the associated preprocessor for the channel
+                if (_preprocessors[i].Run(channelFrames) == 1)
+                {
+                    vad = true;
+                }
+
+                // Copy processed channel data back into the interleaved buffer
+                for (int j = i, frameIndex = 0; j < buffer.Length; j += channelCount, frameIndex++)
+                {
+                    buffer[j] = channelFrames[frameIndex];
+                }
+                channelFrames.Clear();
+            }
+
+            return vad; //Will always be true according to speexdsp code if VAD is disabled.
         }
 
         public bool Process(byte[] buffer) => Process(buffer.AsSpan());
