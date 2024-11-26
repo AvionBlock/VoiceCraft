@@ -75,7 +75,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _initialized = true;
             }
 
-            return false; //Native android preprocessors don't allow us to see if voice is detected I don't think.
+            return true; //Native android preprocessors don't allow us to see if voice is detected I don't think.
             //Usually we don't actually need to use this multiple times since the native android preprocessors attached to the recorder will automatically do it for us.
         }
 

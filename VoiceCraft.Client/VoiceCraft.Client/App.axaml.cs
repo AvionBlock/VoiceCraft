@@ -5,6 +5,7 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
+using SpeexDSPSharp.Core;
 using System;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
@@ -44,6 +45,7 @@ namespace VoiceCraft.Client
                 {
                     Services.AddSingleton<TopLevel>(mainWindow);
                     ServiceProvider = Services.BuildServiceProvider();
+                    SetupServices(ServiceProvider);
 
                     DataTemplates.Add(new ViewLocator(ServiceProvider));
                     mainView = ServiceProvider.GetRequiredService<IMainView>();
@@ -69,6 +71,7 @@ namespace VoiceCraft.Client
 
                     Services.AddSingleton(topLevel);
                     ServiceProvider = Services.BuildServiceProvider();
+                    SetupServices(ServiceProvider);
 
                     DataTemplates.Add(new ViewLocator(ServiceProvider));
                     mainView = ServiceProvider.GetRequiredService<IMainView>();
@@ -94,6 +97,11 @@ namespace VoiceCraft.Client
             {
                 await settings.SaveImmediate();
             }
+        }
+
+        private static void SetupServices(IServiceProvider serviceProvider)
+        {
+            serviceProvider.GetRequiredService<AudioService>().RegisterPreprocessor("Speex DSP Preprocessor", typeof(SpeexDSPPreprocessor));
         }
     }
 }

@@ -66,14 +66,11 @@ namespace VoiceCraft.Client.Android
             }
 #endif
 
-            App.Services.AddSingleton<AudioService, NativeAudioService>(x => 
-                new NativeAudioService((AudioManager?)GetSystemService(MainActivity.AudioService) ?? 
-                throw new Exception($"Could not find {MainActivity.AudioService}. Cannot initialize audio service.")));
-
-            if (AcousticEchoCanceler.IsAvailable)
-                App.Services.AddTransient<NativeEchoCanceller>(x => new NativeEchoCanceller());
-            else
-                throw new NotImplementedException("SPEEX AEC NOT IMPLEMENTED!");
+            App.Services.AddSingleton<AudioService, NativeAudioService>(x => {
+                var audioService = new NativeAudioService((AudioManager?)GetSystemService(MainActivity.AudioService) ?? throw new Exception($"Could not find {MainActivity.AudioService}. Cannot initialize audio service."));
+                audioService.RegisterPreprocessor("Native Preprocessor", typeof(NativePreprocessor));
+                return audioService;
+            });
 
             Platform.Init(this, Bundle.Empty);
             base.OnCreate(savedInstanceState);
