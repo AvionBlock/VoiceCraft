@@ -10,15 +10,21 @@ namespace VoiceCraft.Client.Plugin.Settings
         [ObservableProperty]
         private string _outputDevice = "Default";
         [ObservableProperty]
+        private string _preprocessor = "None";
+        [ObservableProperty]
+        private string _echoCanceller = "None";
+        [ObservableProperty]
         private float _microphoneSensitivity = 0.04f;
         [ObservableProperty]
         private float _microphoneGain = 1.0f;
         [ObservableProperty]
-        private bool _aec = true;
+        private bool _aec = false;
         [ObservableProperty]
-        private bool _agc = true;
+        private bool _agc = false;
         [ObservableProperty]
         private bool _denoiser = false;
+        [ObservableProperty]
+        private bool _vad = false;
 
         public override object Clone()
         {

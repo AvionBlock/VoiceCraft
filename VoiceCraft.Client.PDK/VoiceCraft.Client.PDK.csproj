@@ -15,7 +15,9 @@
     <PackageReference Include="Notification.Avalonia" Version="2.1.0" />
     <PackageReference Include="NWaves" Version="0.9.6" />
     <PackageReference Include="OpusSharp.Core" Version="1.5.2" />
+    <PackageReference Include="OpusSharp.Natives" Version="1.5.2" />
     <PackageReference Include="SpeexDSPSharp.Core" Version="1.2.1" />
+    <PackageReference Include="SpeexDSPSharp.Natives" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>

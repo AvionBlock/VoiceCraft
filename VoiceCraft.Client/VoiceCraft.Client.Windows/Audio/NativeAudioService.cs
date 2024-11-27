@@ -27,6 +27,16 @@ namespace VoiceCraft.Client.Windows.Audio
             return "Default";
         }
 
+        public override string GetDefaultPreprocessor()
+        {
+            return "None";
+        }
+
+        public override string GetDefaultEchoCanceller()
+        {
+            return "None";
+        }
+
         public override List<string> GetInputDevices()
         {
             var devices = new List<string>() { GetDefaultInputDevice() };
@@ -51,6 +61,20 @@ namespace VoiceCraft.Client.Windows.Audio
             }
 
             return devices;
+        }
+
+        public override List<string> GetPreprocessors()
+        {
+            var preprocessors = new List<string>() { GetDefaultPreprocessor() };
+            preprocessors.AddRange(_registeredPreprocessors.Keys);
+            return preprocessors;
+        }
+
+        public override List<string> GetEchoCancellers()
+        {
+            var echoCancellers = new List<string>() { GetDefaultEchoCanceller() };
+            echoCancellers.AddRange(_registeredEchoCancellers.Keys);
+            return echoCancellers;
         }
     }
 }

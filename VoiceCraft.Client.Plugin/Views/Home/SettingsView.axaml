@@ -66,6 +66,24 @@
                               ItemsSource="{Binding OutputDevices}"
                               SelectedItem="{Binding AudioSettings.OutputDevice}" />
 
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="Preprocessors" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Preprocessors}"
+                              SelectedItem="{Binding AudioSettings.Preprocessor}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="Echo Cancellers" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding EchoCancellers}"
+                              SelectedItem="{Binding AudioSettings.EchoCanceller}" />
+
                     <StackPanel>
                         <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneGain, StringFormat='Microphone Gain: {0:F1}'}" />
 
@@ -92,6 +110,10 @@
 
                     <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Denoiser}">
                         <TextBlock Text="Denoiser" />
+                    </ToggleButton>
+
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Vad}">
+                        <TextBlock Text="Voice Activity Detection" />
                     </ToggleButton>
 
                     <StackPanel>

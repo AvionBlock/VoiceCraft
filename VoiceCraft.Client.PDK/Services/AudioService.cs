@@ -5,11 +5,8 @@ namespace VoiceCraft.Client.PDK.Services
 {
     public abstract class AudioService
     {
-        public IEnumerable<string> RegisteredEchoCancellers { get => _registeredEchoCancellers.Keys; }
-        public IEnumerable<string> RegisteredPreprocessors { get => _registeredPreprocessors.Keys; }
-
-        private readonly ConcurrentDictionary<string, Type> _registeredEchoCancellers;
-        private readonly ConcurrentDictionary<string, Type> _registeredPreprocessors;
+        protected readonly ConcurrentDictionary<string, Type> _registeredEchoCancellers;
+        protected readonly ConcurrentDictionary<string, Type> _registeredPreprocessors;
 
         public AudioService()
         {
@@ -26,7 +23,7 @@ namespace VoiceCraft.Client.PDK.Services
         public void RegisterPreprocessor(string name, Type preprocessor)
         {
             if (!typeof(IPreprocessor).IsAssignableFrom(preprocessor)) throw new ArgumentException($"Echo canceller must implement {nameof(IPreprocessor)}.", nameof(preprocessor));
-            _registeredEchoCancellers.AddOrUpdate(name, preprocessor, (key, old) => old = preprocessor);
+            _registeredPreprocessors.AddOrUpdate(name, preprocessor, (key, old) => old = preprocessor);
         }
 
         public void UnregisterEchoCanceller(string name)
@@ -61,9 +58,17 @@ namespace VoiceCraft.Client.PDK.Services
 
         public abstract string GetDefaultOutputDevice();
 
+        public abstract string GetDefaultPreprocessor();
+
+        public abstract string GetDefaultEchoCanceller();
+
         public abstract List<string> GetInputDevices();
 
         public abstract List<string> GetOutputDevices();
+
+        public abstract List<string> GetPreprocessors();
+
+        public abstract List<string> GetEchoCancellers();
 
         public abstract IAudioRecorder CreateAudioRecorder();
 

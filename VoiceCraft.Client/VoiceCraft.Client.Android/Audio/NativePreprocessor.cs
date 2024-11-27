@@ -42,6 +42,8 @@ namespace VoiceCraft.Client.Android.Audio
 
         public bool VoiceActivityDetectionEnabled { get => false; set { } } //Set does absolutely nothing.
 
+        public bool Initialized => _recorder != null;
+
         private bool _disposed;
         private bool _initialized;
         private bool _gainControllerEnabled;

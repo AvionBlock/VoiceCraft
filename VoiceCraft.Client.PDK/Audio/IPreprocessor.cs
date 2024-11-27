@@ -16,6 +16,8 @@
 
         bool VoiceActivityDetectionEnabled { get; set; }
 
+        bool Initialized { get; }
+
         void Init(IAudioRecorder recorder);
 
         bool Process(Span<byte> buffer);

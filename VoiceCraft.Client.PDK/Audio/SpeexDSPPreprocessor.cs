@@ -4,17 +4,20 @@ namespace VoiceCraft.Client.PDK.Audio
 {
     public class SpeexDSPPreprocessor : IPreprocessor
     {
+        private const int TargetGain = 15000;
+
         public bool IsNative => false;
         public bool IsGainControllerAvailable => true;
         public bool IsNoiseSuppressorAvailable => true;
         public bool IsVoiceActivityDetectionAvailable => true;
 
-        public bool GainControllerEnabled {
+        public bool GainControllerEnabled
+        {
             get
             {
                 return _gainControllerEnabled;
             }
-            set 
+            set
             {
                 _gainControllerEnabled = value;
                 if (_preprocessors == null) return;
@@ -25,6 +28,7 @@ namespace VoiceCraft.Client.PDK.Audio
                 }
             }
         }
+
         public bool NoiseSuppressorEnabled
         {
             get
@@ -42,6 +46,7 @@ namespace VoiceCraft.Client.PDK.Audio
                 }
             }
         }
+
         public bool VoiceActivityDetectionEnabled
         {
             get
@@ -60,6 +65,8 @@ namespace VoiceCraft.Client.PDK.Audio
             }
         }
 
+        public bool Initialized => _preprocessors != null && _waveFormat != null;
+
         private bool _disposed;
         private bool _gainControllerEnabled;
         private bool _noiseSuppressorEnabled;
@@ -70,7 +77,7 @@ namespace VoiceCraft.Client.PDK.Audio
 
         public void Init(IAudioRecorder recorder)
         {
-            if(_preprocessors != null)
+            if (_preprocessors != null)
             {
                 for (int i = 0; i < _preprocessors.Length; i++)
                 {
@@ -79,27 +86,43 @@ namespace VoiceCraft.Client.PDK.Audio
                 _preprocessors = null;
             }
 
-            _preprocessors = new SpeexDSPSharp.Core.SpeexDSPPreprocessor[recorder.WaveFormat.Channels];
+            var preprocessors = new SpeexDSPSharp.Core.SpeexDSPPreprocessor[recorder.WaveFormat.Channels];
             _waveFormat = recorder.WaveFormat;
             _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
-            for(int i = 0; i < _preprocessors.Length; i++)
+            try
             {
-                _preprocessors[i] = new SpeexDSPSharp.Core.SpeexDSPPreprocessor(recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate); //1 per channel
-            }
+                for (int i = 0; i < preprocessors.Length; i++)
+                {
+                    preprocessors[i] = new SpeexDSPSharp.Core.SpeexDSPPreprocessor(recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate); //1 per channel
+                }
 
-            //I don't give a fuck, this is easier than having to add a whole bunch of new code.
-            GainControllerEnabled = _gainControllerEnabled;
-            NoiseSuppressorEnabled = _noiseSuppressorEnabled;
-            VoiceActivityDetectionEnabled = _voiceActivityDetectionEnabled;
+                foreach (var preprocessor in preprocessors)
+                {
+                    var gain = _gainControllerEnabled ? 1 : 0;
+                    var noise = _noiseSuppressorEnabled ? 1 : 0;
+                    var vad = _voiceActivityDetectionEnabled ? 1 : 0;
+                    var targetGain = TargetGain;
+                    preprocessor.Ctl(SpeexDSPSharp.Core.PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC, ref gain);
+                    preprocessor.Ctl(SpeexDSPSharp.Core.PreprocessorCtl.SPEEX_PREPROCESS_SET_DENOISE, ref noise);
+                    preprocessor.Ctl(SpeexDSPSharp.Core.PreprocessorCtl.SPEEX_PREPROCESS_SET_VAD, ref vad);
+                    preprocessor.Ctl(SpeexDSPSharp.Core.PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC_TARGET, ref targetGain);
+                }
+
+                _preprocessors = preprocessors;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to intialize {nameof(SpeexDSPPreprocessor)}.", ex);
+            }
         }
 
         public bool Process(Span<byte> buffer)
         {
-            if(_preprocessors == null || _waveFormat == null)
+            if (_preprocessors == null || _waveFormat == null)
             {
                 throw new InvalidOperationException("Speex preprocessor must be intialized with a recorder!");
             }
-            if(buffer.Length < _bytesPerFrame)
+            if (buffer.Length < _bytesPerFrame)
             {
                 throw new InvalidOperationException($"Input buffer must be {_bytesPerFrame} in length or higher!");
             }
@@ -120,7 +143,7 @@ namespace VoiceCraft.Client.PDK.Audio
                 }
 
                 // Run the associated preprocessor for the channel
-                if (_preprocessors[i].Run(channelFrames) == 1)
+                if (_preprocessors[i]?.Run(channelFrames) == 1)
                 {
                     vad = true;
                 }
