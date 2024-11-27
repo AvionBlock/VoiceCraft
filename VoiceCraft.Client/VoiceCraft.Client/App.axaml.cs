@@ -29,6 +29,7 @@ namespace VoiceCraft.Client
         {
             Services.AddSingleton<NavigationService>(s => new NavigationService(p => (ViewModelBase)s.GetRequiredService(p)));
             Services.AddSingleton<NotificationMessageManager>();
+            Services.AddSingleton<PermissionsService>();
             Services.AddSingleton<SettingsService>();
             Services.AddSingleton<ThemesService>();
 

@@ -55,6 +55,16 @@ namespace VoiceCraft.Client.Android.Audio
             return "Default";
         }
 
+        public override string GetDefaultPreprocessor()
+        {
+            return "None";
+        }
+
+        public override string GetDefaultEchoCanceler()
+        {
+            return "None";
+        }
+
         public override List<string> GetInputDevices()
         {
             var devices = new List<string>() { GetDefaultInputDevice() };
@@ -85,6 +95,20 @@ namespace VoiceCraft.Client.Android.Audio
                     devices.Add(deviceName);
             }
             return devices;
+        }
+
+        public override List<string> GetPreprocessors()
+        {
+            var preprocessors = new List<string>() { GetDefaultPreprocessor() };
+            preprocessors.AddRange(_registeredPreprocessors.Keys);
+            return preprocessors;
+        }
+
+        public override List<string> GetEchoCancelers()
+        {
+            var echoCancelers = new List<string>() { GetDefaultEchoCanceler() };
+            echoCancelers.AddRange(_registeredEchoCancelers.Keys);
+            return echoCancelers;
         }
     }
 }

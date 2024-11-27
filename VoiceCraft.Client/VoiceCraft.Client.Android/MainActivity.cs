@@ -71,7 +71,7 @@ namespace VoiceCraft.Client.Android
                 if (AutomaticGainControl.IsAvailable || NoiseSuppressor.IsAvailable) //If one of these are available, we can add the native preprocessor
                     audioService.RegisterPreprocessor("Native Preprocessor", typeof(NativePreprocessor));
                 if (AcousticEchoCanceler.IsAvailable)
-                    audioService.RegisterPreprocessor("Native Echo Canceler", typeof(NativeEchoCanceler));
+                    audioService.RegisterEchoCanceler("Native Echo Canceler", typeof(NativeEchoCanceler));
                 return audioService;
             });
 
