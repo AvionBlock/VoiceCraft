@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
         public PluginsViewModel(TopLevel topLevel)
         {
-            _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.PluginInformation.Name, x.PluginInformation.Description)));
+            _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.PluginInformation.Name, x.PluginInformation.Description, x.PluginInformation.Id)));
             _storageProvider = topLevel.StorageProvider;
         }
 
@@ -37,14 +37,34 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
     public partial class PluginDisplay : ObservableObject
     {
         [ObservableProperty]
-        public string _name;
+        private string _name;
         [ObservableProperty]
-        public string _description;
+        private string _description;
+        [ObservableProperty]
+        private Guid _id;
+        [ObservableProperty]
+        private bool _markedForDeletion;
 
-        public PluginDisplay(string name, string description)
+        public PluginDisplay(string name, string description, Guid id)
         {
             _name = name;
             _description = description;
+            _id = id;
+        }
+
+        [RelayCommand]
+        public void RemoveOrCancelPlugin()
+        {
+            if (!MarkedForDeletion)
+            {
+                PluginLoader.DeletePlugin(Id);
+                MarkedForDeletion = true;
+            }
+            else
+            {
+                PluginLoader.CancelPluginDeletion(Id);
+                MarkedForDeletion = false;
+            }
         }
     }
 }

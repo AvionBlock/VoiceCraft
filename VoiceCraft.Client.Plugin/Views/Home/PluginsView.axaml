@@ -23,8 +23,13 @@
                                            FontWeight="Bold"
                                            Text="{Binding Name}" />
 
-                                <Button Padding="5" HorizontalAlignment="Right">
-                                    <PathIcon Data="{DynamicResource delete_regular}" />
+                                <Button Padding="5"
+                                        HorizontalAlignment="Right"
+                                        Command="{Binding RemoveOrCancelPluginCommand}">
+                                    <Grid>
+                                        <PathIcon Data="{DynamicResource delete_regular}" IsVisible="{Binding !MarkedForDeletion}" />
+                                        <PathIcon Data="{DynamicResource add_regular}" IsVisible="{Binding MarkedForDeletion}" />
+                                    </Grid>
                                 </Button>
 
                                 <TextBlock Grid.Row="1"
