@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using VoiceCraft.Client.PDK.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using VoiceCraft.Client.PDK.Services;
 
 namespace VoiceCraft.Client
 {
@@ -23,7 +24,7 @@ namespace VoiceCraft.Client
 
             if (view != null)
             {
-                return view;
+                return _services.GetService<PageModifierService>()?.Get(view.GetType())?.Invoke(view) ?? view;
             }
             else
             {
