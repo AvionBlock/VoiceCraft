@@ -186,6 +186,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                     {
                         _preprocessor.GainControllerEnabled = AudioSettings.Agc;
                         _preprocessor.NoiseSuppressorEnabled = AudioSettings.Denoiser;
+                        _preprocessor.VoiceActivityDetectionEnabled = AudioSettings.Vad;
 
                         if (AudioSettings.Agc && !_preprocessor.IsGainControllerAvailable) SendWarningNotification($"{AudioSettings.Preprocessor} does not support Automatic Gain Control. No gain adjustment will be applied!");
                         if (AudioSettings.Denoiser && !_preprocessor.IsNoiseSuppressorAvailable) SendWarningNotification($"{AudioSettings.Preprocessor} does not support Noise Suppression. No denoising will be applied!");
