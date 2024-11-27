@@ -4,7 +4,7 @@ namespace VoiceCraft.Client.PDK.Audio
 {
     public class SpeexDSPPreprocessor : IPreprocessor
     {
-        private const int TargetGain = 15000;
+        public static int TargetGain = 15000; //can be changed by plugins using reflection or casting.
 
         public bool IsNative => false;
         public bool IsGainControllerAvailable => true;

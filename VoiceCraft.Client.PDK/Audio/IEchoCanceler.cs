@@ -10,7 +10,7 @@
 
         bool Initialized { get; }
 
-        void Init(IAudioRecorder recorder);
+        void Init(IAudioRecorder recorder, IAudioPlayer player);
 
         void EchoPlayback(byte[] buffer);
 

@@ -101,7 +101,9 @@ namespace VoiceCraft.Client
 
         private static void SetupServices(IServiceProvider serviceProvider)
         {
-            serviceProvider.GetRequiredService<AudioService>().RegisterPreprocessor("Speex DSP Preprocessor", typeof(SpeexDSPPreprocessor));
+            var audioService = serviceProvider.GetRequiredService<AudioService>();
+            audioService.RegisterPreprocessor("Speex DSP Preprocessor", typeof(SpeexDSPPreprocessor));
+            audioService.RegisterEchoCanceler("Speex DSP Echo Canceler", typeof(SpeexDSPEchoCanceler));
         }
     }
 }
