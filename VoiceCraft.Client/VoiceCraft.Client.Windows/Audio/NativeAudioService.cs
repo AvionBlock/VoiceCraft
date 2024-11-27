@@ -32,7 +32,7 @@ namespace VoiceCraft.Client.Windows.Audio
             return "None";
         }
 
-        public override string GetDefaultEchoCanceller()
+        public override string GetDefaultEchoCanceler()
         {
             return "None";
         }
@@ -70,11 +70,11 @@ namespace VoiceCraft.Client.Windows.Audio
             return preprocessors;
         }
 
-        public override List<string> GetEchoCancellers()
+        public override List<string> GetEchoCancelers()
         {
-            var echoCancellers = new List<string>() { GetDefaultEchoCanceller() };
-            echoCancellers.AddRange(_registeredEchoCancellers.Keys);
-            return echoCancellers;
+            var echoCancelers = new List<string>() { GetDefaultEchoCanceler() };
+            echoCancelers.AddRange(_registeredEchoCancelers.Keys);
+            return echoCancelers;
         }
     }
 }

@@ -5,30 +5,30 @@ namespace VoiceCraft.Client.PDK.Services
 {
     public abstract class AudioService
     {
-        protected readonly ConcurrentDictionary<string, Type> _registeredEchoCancellers;
+        protected readonly ConcurrentDictionary<string, Type> _registeredEchoCancelers;
         protected readonly ConcurrentDictionary<string, Type> _registeredPreprocessors;
 
         public AudioService()
         {
             _registeredPreprocessors = new ConcurrentDictionary<string, Type>();
-            _registeredEchoCancellers = new ConcurrentDictionary<string, Type>();
+            _registeredEchoCancelers = new ConcurrentDictionary<string, Type>();
         }
 
-        public void RegisterEchoCanceller(string name, Type echoCanceller)
+        public void RegisterEchoCanceler(string name, Type echoCanceler)
         {
-            if(!typeof(IEchoCanceller).IsAssignableFrom(echoCanceller)) throw new ArgumentException($"Echo canceller must implement {nameof(IEchoCanceller)}.", nameof(echoCanceller));
-            _registeredEchoCancellers.AddOrUpdate(name, echoCanceller, (key, old) => old = echoCanceller);
+            if(!typeof(IEchoCanceler).IsAssignableFrom(echoCanceler)) throw new ArgumentException($"Echo canceler must implement {nameof(IEchoCanceler)}.", nameof(echoCanceler));
+            _registeredEchoCancelers.AddOrUpdate(name, echoCanceler, (key, old) => old = echoCanceler);
         }
 
         public void RegisterPreprocessor(string name, Type preprocessor)
         {
-            if (!typeof(IPreprocessor).IsAssignableFrom(preprocessor)) throw new ArgumentException($"Echo canceller must implement {nameof(IPreprocessor)}.", nameof(preprocessor));
+            if (!typeof(IPreprocessor).IsAssignableFrom(preprocessor)) throw new ArgumentException($"Echo canceler must implement {nameof(IPreprocessor)}.", nameof(preprocessor));
             _registeredPreprocessors.AddOrUpdate(name, preprocessor, (key, old) => old = preprocessor);
         }
 
-        public void UnregisterEchoCanceller(string name)
+        public void UnregisterEchoCanceler(string name)
         {
-            _registeredEchoCancellers.TryRemove(name, out _);
+            _registeredEchoCancelers.TryRemove(name, out _);
         }
 
         public void UnregisterPreprocessor(string name)
@@ -36,11 +36,11 @@ namespace VoiceCraft.Client.PDK.Services
             _registeredPreprocessors.TryRemove(name, out _);
         }
 
-        public IEchoCanceller? CreateEchoCanceller(string name)
+        public IEchoCanceler? CreateEchoCanceler(string name)
         {
-            if (_registeredEchoCancellers.TryGetValue(name, out var echoCanceller))
+            if (_registeredEchoCancelers.TryGetValue(name, out var echoCanceler))
             {
-                return (IEchoCanceller?)Activator.CreateInstance(echoCanceller);
+                return (IEchoCanceler?)Activator.CreateInstance(echoCanceler);
             }
             return null;
         }
@@ -60,7 +60,7 @@ namespace VoiceCraft.Client.PDK.Services
 
         public abstract string GetDefaultPreprocessor();
 
-        public abstract string GetDefaultEchoCanceller();
+        public abstract string GetDefaultEchoCanceler();
 
         public abstract List<string> GetInputDevices();
 
@@ -68,7 +68,7 @@ namespace VoiceCraft.Client.PDK.Services
 
         public abstract List<string> GetPreprocessors();
 
-        public abstract List<string> GetEchoCancellers();
+        public abstract List<string> GetEchoCancelers();
 
         public abstract IAudioRecorder CreateAudioRecorder();
 

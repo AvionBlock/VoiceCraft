@@ -52,7 +52,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private ObservableCollection<string> _preprocessors;
 
         [ObservableProperty]
-        private ObservableCollection<string> _echoCancellers;
+        private ObservableCollection<string> _echoCancelers;
 
         [ObservableProperty]
         private AudioSettings _audioSettings;
@@ -87,7 +87,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             _inputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
             _outputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
             _preprocessors = new ObservableCollection<string>(_audioService.GetPreprocessors());
-            _echoCancellers = new ObservableCollection<string>(_audioService.GetEchoCancellers());
+            _echoCancelers = new ObservableCollection<string>(_audioService.GetEchoCancelers());
 
             _audioSettings = settings.Get<AudioSettings>(Plugin.PluginId);
             _themeSettings = settings.Get<ThemeSettings>(Plugin.PluginId);
@@ -253,7 +253,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                     _ = TestRecorder();
                 }
             }
-            else if (e.PropertyName == nameof(AudioSettings.EchoCanceller))
+            else if (e.PropertyName == nameof(AudioSettings.EchoCanceler))
             {
                 if (_audioRecorder != null && _audioRecorder.IsRecording)
                 {
@@ -293,7 +293,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                 return;
             }
 
-            //Can't really test echo canceller.
+            //Can't really test echo canceler.
             float max = 0;
             // interpret as 16 bit audio
             for (int index = 0; index < e.BytesRecorded; index += 2)
@@ -322,7 +322,7 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             InputDevices = new ObservableCollection<string>(_audioService.GetInputDevices());
             OutputDevices = new ObservableCollection<string>(_audioService.GetOutputDevices());
             Preprocessors = new ObservableCollection<string>(_audioService.GetPreprocessors());
-            EchoCancellers = new ObservableCollection<string>(_audioService.GetEchoCancellers());
+            EchoCancelers = new ObservableCollection<string>(_audioService.GetEchoCancelers());
 
             if (!InputDevices.Contains(AudioSettings.InputDevice))
                 AudioSettings.InputDevice = _audioService.GetDefaultInputDevice();

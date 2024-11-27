@@ -11,6 +11,7 @@ using System.IO;
 using VoiceCraft.Client.Android.Audio;
 using System;
 using VoiceCraft.Client.PDK.Services;
+using Android.Media.Audiofx;
 
 namespace VoiceCraft.Client.Android
 {
@@ -67,7 +68,10 @@ namespace VoiceCraft.Client.Android
 
             App.Services.AddSingleton<AudioService, NativeAudioService>(x => {
                 var audioService = new NativeAudioService((AudioManager?)GetSystemService(MainActivity.AudioService) ?? throw new Exception($"Could not find {MainActivity.AudioService}. Cannot initialize audio service."));
-                audioService.RegisterPreprocessor("Native Preprocessor", typeof(NativePreprocessor));
+                if (AutomaticGainControl.IsAvailable || NoiseSuppressor.IsAvailable) //If one of these are available, we can add the native preprocessor
+                    audioService.RegisterPreprocessor("Native Preprocessor", typeof(NativePreprocessor));
+                if (AcousticEchoCanceler.IsAvailable)
+                    audioService.RegisterPreprocessor("Native Echo Canceler", typeof(NativeEchoCanceler));
                 return audioService;
             });
 

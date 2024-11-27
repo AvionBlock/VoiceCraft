@@ -78,11 +78,11 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Echo Cancellers" />
+                               Text="Echo Cancelers" />
 
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding EchoCancellers}"
-                              SelectedItem="{Binding AudioSettings.EchoCanceller}" />
+                              ItemsSource="{Binding EchoCancelers}"
+                              SelectedItem="{Binding AudioSettings.EchoCanceler}" />
 
                     <StackPanel>
                         <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneGain, StringFormat='Microphone Gain: {0:F1}'}" />

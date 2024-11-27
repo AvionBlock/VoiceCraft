@@ -77,6 +77,8 @@ namespace VoiceCraft.Client.PDK.Audio
 
         public void Init(IAudioRecorder recorder)
         {
+            ThrowIfDisposed();
+
             if (_preprocessors != null)
             {
                 for (int i = 0; i < _preprocessors.Length; i++)
@@ -118,6 +120,8 @@ namespace VoiceCraft.Client.PDK.Audio
 
         public bool Process(Span<byte> buffer)
         {
+            ThrowIfDisposed();
+
             if (_preprocessors == null || _waveFormat == null)
             {
                 throw new InvalidOperationException("Speex preprocessor must be intialized with a recorder!");

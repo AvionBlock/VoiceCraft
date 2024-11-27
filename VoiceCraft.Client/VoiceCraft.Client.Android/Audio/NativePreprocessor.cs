@@ -58,8 +58,10 @@ namespace VoiceCraft.Client.Android.Audio
 
             if (recorder is AudioRecorder audioRecorder)
             {
+                CloseProcessors();
                 _recorder = audioRecorder;
                 _initialized = false;
+                return;
             }
 
             throw new ArgumentException("Recorder must be an android native audio recorder!", nameof(recorder));
@@ -137,7 +139,7 @@ namespace VoiceCraft.Client.Android.Audio
         private void ThrowIfDisposed()
         {
             if (_disposed)
-                throw new ObjectDisposedException(nameof(NativeEchoCanceller));
+                throw new ObjectDisposedException(nameof(NativeEchoCanceler));
         }
     }
 }

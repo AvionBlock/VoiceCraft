@@ -12,7 +12,7 @@ namespace VoiceCraft.Client.Plugin.Settings
         [ObservableProperty]
         private string _preprocessor = "None";
         [ObservableProperty]
-        private string _echoCanceller = "None";
+        private string _echoCanceler = "None";
         [ObservableProperty]
         private float _microphoneSensitivity = 0.04f;
         [ObservableProperty]
