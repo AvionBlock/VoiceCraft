@@ -51,7 +51,6 @@ namespace VoiceCraft.Client.Plugin
             settings.RegisterSetting<AudioSettings>(PluginId);
             settings.RegisterSetting<ThemeSettings>(PluginId);
             settings.RegisterSetting<NotificationSettings>(PluginId);
-            settings.Load();
 
             var themes = serviceProvider.GetRequiredService<ThemesService>();
             var themeSettings = settings.Get<ThemeSettings>(PluginId);

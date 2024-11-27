@@ -10,13 +10,14 @@
              mc:Ignorable="d">
     <ScrollViewer>
         <StackPanel Spacing="10">
-            <Border Padding="15"
-                    VerticalAlignment="Top"
-                    Classes="card">
-                <ItemsControl Background="Transparent" ItemsSource="{Binding Plugins}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:PluginDisplay}">
-                            <Grid RowDefinitions="Auto, Auto">
+            <ItemsControl Background="Transparent" ItemsSource="{Binding Plugins}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:PluginDisplay}">
+                        <Border Padding="15"
+                                VerticalAlignment="Top"
+                                Classes="card"
+                                Classes.IsDeleted="{Binding Deleted}">
+                            <Grid RowDefinitions="Auto, Auto, Auto">
                                 <TextBlock Grid.Row="0"
                                            HorizontalAlignment="Left"
                                            FontSize="16"
@@ -25,10 +26,10 @@
 
                                 <Button Padding="5"
                                         HorizontalAlignment="Right"
-                                        Command="{Binding RemoveOrCancelPluginCommand}">
+                                        Command="{Binding $parent[ItemsControl].((vm:PluginsViewModel)DataContext).RemovePluginCommand}"
+                                        CommandParameter="{Binding}">
                                     <Grid>
-                                        <PathIcon Data="{DynamicResource delete_regular}" IsVisible="{Binding !MarkedForDeletion}" />
-                                        <PathIcon Data="{DynamicResource add_regular}" IsVisible="{Binding MarkedForDeletion}" />
+                                        <PathIcon Data="{DynamicResource delete_regular}" />
                                     </Grid>
                                 </Button>
 
@@ -37,11 +38,25 @@
                                            VerticalAlignment="Center"
                                            FontSize="16"
                                            Text="{Binding Description}" />
+
+                                <TextBlock Grid.Row="2"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           FontSize="16"
+                                           Text="{Binding Version, StringFormat='v{0}'}" />
                             </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Border>
+
+                            <Border.Styles>
+                                <Style Selector="Border.IsDeleted">
+                                    <Style.Setters>
+                                        <Setter Property="Background" Value="#aaff0000" />
+                                    </Style.Setters>
+                                </Style>
+                            </Border.Styles>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <Button Padding="5"
                     HorizontalAlignment="Stretch"
                     Command="{Binding AddPluginCommand}">

@@ -46,14 +46,14 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             if (!_notificationSettings.DisableNotifications)
             {
                 _manager.CreateMessage()
-                .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
-                .Animates(true)
-                .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
-                .HasBadge("Server")
-                .HasMessage($"{server.Name} has been removed.")
-                .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
-                .Dismiss().WithButton("Dismiss", (button) => { })
-                .Queue();
+                    .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
+                    .Animates(true)
+                    .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
+                    .HasBadge("Server")
+                    .HasMessage($"{server.Name} has been removed.")
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
+                    .Dismiss().WithButton("Dismiss", (button) => { })
+                    .Queue();
             }
             _ = _settings.SaveAsync();
         }

@@ -107,6 +107,10 @@ namespace VoiceCraft.Client
             var audioService = serviceProvider.GetRequiredService<AudioService>();
             audioService.RegisterPreprocessor("Speex DSP Preprocessor", typeof(SpeexDSPPreprocessor));
             audioService.RegisterEchoCanceler("Speex DSP Echo Canceler", typeof(SpeexDSPEchoCanceler));
+
+            var settingsService = serviceProvider.GetRequiredService<SettingsService>();
+            settingsService.Load();
+            GlobalSettings.Load();
         }
     }
 }
