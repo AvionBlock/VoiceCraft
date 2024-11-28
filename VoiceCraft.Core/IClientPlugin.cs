@@ -10,6 +10,7 @@ namespace VoiceCraft.Core
         string Name { get; }
         string Description { get; }
         int Priority { get; }
+        IEnumerable<PluginDependency> ClientDependencies { get; }
         IEnumerable<PluginDependency> ServerDependencies { get; }
 
         void Initialize(ServiceCollection serviceCollection);

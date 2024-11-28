@@ -89,7 +89,10 @@ namespace VoiceCraft.Client
             }
 
             if (ServiceProvider != null)
+            {
                 pluginLoader.ExecutePlugins(ServiceProvider);
+                pluginLoader.FlushErrors(ServiceProvider.GetRequiredService<NotificationMessageManager>());
+            }
 
             base.OnFrameworkInitializationCompleted();
         }

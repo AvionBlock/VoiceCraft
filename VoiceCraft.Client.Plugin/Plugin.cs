@@ -21,6 +21,7 @@ namespace VoiceCraft.Client.Plugin
         public string Name => "VoiceCraft";
         public string Description => "The main voicecraft plugin.";
         public int Priority => 0;
+        public IEnumerable<PluginDependency> ClientDependencies { get; } = [];
         public IEnumerable<PluginDependency> ServerDependencies { get; } = [];
 
         public void Initialize(ServiceCollection serviceCollection)

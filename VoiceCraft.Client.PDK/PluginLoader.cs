@@ -22,8 +22,7 @@ namespace VoiceCraft.Client.PDK
                 Directory.CreateDirectory(PluginDirectory);
             }
 
-            var files = 
-                Directory.GetFiles(PluginDirectory, "*.dll")
+            var files = Directory.GetFiles(PluginDirectory, "*.dll")
                 .ToArray();
 
             foreach (var file in files)
@@ -53,6 +52,24 @@ namespace VoiceCraft.Client.PDK
                     _pluginErrors.Add(ex);
                 }
             }
+
+            for(int i = _plugins.Count - 1; i >= 0; i--)
+            {
+                var plugin = _plugins[i];
+                //Plugin Dependency Checking Here.
+                var dependencies = plugin.LoadedInstance.ClientDependencies;
+                foreach (var dependency in dependencies)
+                {
+                    var matchedPlugin = _plugins.FirstOrDefault(x => x.LoadedInstance.Id == dependency.Id);
+                    if (matchedPlugin != null && matchedPlugin.Version.Major == dependency.Version?.Major && matchedPlugin.Version.Minor == dependency.Version?.Minor) continue;
+
+                    _plugins.Remove(plugin);
+                    if(matchedPlugin == null)
+                        _pluginErrors.Add(new Exception($"Failed to load plugin {plugin.Assembly.FullName}! Expected plugin with id {dependency.Id} with version {dependency.Version}!"));
+                    else
+                        _pluginErrors.Add(new Exception($"Failed to load plugin {plugin.Assembly.FullName}! Expected plugin {matchedPlugin.LoadedInstance.Name} with version {dependency.Version}!"));
+                }
+            }
         }
 
         public void SetupPlugins(ServiceCollection serviceCollection)
@@ -61,13 +78,6 @@ namespace VoiceCraft.Client.PDK
             {
                 try
                 {
-                    //Plugin Dependency Checking Here.
-                    var dependencies = plugin.Assembly.GetReferencedAssemblies();
-                    foreach (var dependency in dependencies)
-                    {
-                        Debug.WriteLine(dependency.FullName);
-                    }
-
                     plugin.LoadedInstance.Initialize(serviceCollection);
                 }
                 catch (Exception ex)
@@ -126,21 +136,23 @@ namespace VoiceCraft.Client.PDK
 
         private LoadedPlugin LoadPlugin(string filePath)
         {
-            var pluginContext = new PluginLoadContext(filePath);
-            var pluginAssembly = pluginContext.LoadFromAssemblyPath(filePath);
-            return new LoadedPlugin(pluginAssembly);
+            var loadContext = new PluginLoadContext(filePath);
+            var pluginAssembly = loadContext.LoadFromAssemblyPath(filePath);
+            return new LoadedPlugin(pluginAssembly, loadContext);
         }
     }
 
     public class LoadedPlugin
     {
         public readonly IClientPlugin LoadedInstance;
+        public readonly PluginLoadContext Context;
         public readonly Assembly Assembly;
         public readonly Version Version;
 
-        public LoadedPlugin(Assembly assembly)
+        public LoadedPlugin(Assembly assembly, PluginLoadContext loadContext)
         {
             Assembly = assembly;
+            Context = loadContext;
             Version = Assembly.GetName().Version ?? new Version();
 
             var pluginEntryPoint = assembly.GetTypes().FirstOrDefault(x => typeof(IClientPlugin).IsAssignableFrom(x));
