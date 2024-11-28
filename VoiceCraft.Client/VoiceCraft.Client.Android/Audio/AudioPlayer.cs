@@ -1,6 +1,7 @@
 ﻿using Android.Media;
 using NAudio.Wave;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using VoiceCraft.Client.PDK.Audio;
@@ -52,6 +53,8 @@ namespace VoiceCraft.Client.Android.Audio
 
             Usage = AudioUsageKind.Media;
             ContentType = AudioContentType.Music;
+
+            Debug.WriteLine("Created!");
         }
 
         ~AudioPlayer()
@@ -207,12 +210,12 @@ namespace VoiceCraft.Client.Android.Audio
 
         private void ClosePlayer()
         {
-            if (_audioTrack != null)
+            if (_audioTrack != null && _audioTrack.State == AudioTrackState.Initialized)
             {
-                _audioTrack.Stop();
-                _audioTrack.Release();
-                _audioTrack.Dispose();
+                var audioTrack = _audioTrack;
                 _audioTrack = null;
+                audioTrack.Stop();
+                audioTrack.Dispose();
             }
         }
 
@@ -231,8 +234,10 @@ namespace VoiceCraft.Client.Android.Audio
             finally
             {
                 PlaybackState = PlaybackState.Stopped;
-                ClosePlayer();
                 // we're exiting our background thread
+                if (_audioTrack?.PlayState != PlayState.Stopped)
+                    _audioTrack?.Stop();
+
                 RaisePlaybackStoppedEvent(exception);
             }
         }

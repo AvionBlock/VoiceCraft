@@ -154,12 +154,12 @@ namespace VoiceCraft.Client.Android.Audio
         private void CloseRecorder()
         {
             //Make sure that the recorder was opened
-            if (_audioRecord != null && _audioRecord.RecordingState != RecordState.Stopped)
+            if (_audioRecord != null && _audioRecord.State == State.Initialized)
             {
-                _audioRecord.Stop();
-                _audioRecord.Release();
-                _audioRecord.Dispose();
+                var audioRecord = _audioRecord;
                 _audioRecord = null;
+                audioRecord.Stop();
+                audioRecord.Dispose();
             }
         }
 
@@ -178,7 +178,9 @@ namespace VoiceCraft.Client.Android.Audio
             finally
             {
                 _captureState = CaptureState.Stopped;
-                CloseRecorder();
+                if(_audioRecord?.RecordingState != RecordState.Stopped)
+                    _audioRecord?.Stop();
+
                 RaiseRecordingStoppedEvent(exception);
             }
         }
