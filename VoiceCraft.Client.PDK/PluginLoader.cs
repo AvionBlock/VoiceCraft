@@ -32,18 +32,18 @@ namespace VoiceCraft.Client.PDK
                 {
                     var plugin = LoadPlugin(file);
                     //Insert by priority
-                    for(int i = 0; i <= _plugins.Count; i++)
+                    for(int i = -1; i < _plugins.Count; i++)
                     {
-                        if(i >= _plugins.Count - 1) //Reached the end, add to end.
+                        if(i == _plugins.Count - 1) //Reached the end, add to end.
                         {
                             _plugins.Add(plugin);
                             break;
                         }
 
-                        var loadedPlugin = _plugins[i];
+                        var loadedPlugin = _plugins[i + 1];
                         if (loadedPlugin.LoadedInstance.Priority > plugin.LoadedInstance.Priority)
                         {
-                            _plugins.Insert(i, loadedPlugin);
+                            _plugins.Insert(i + 1, loadedPlugin);
                             break;
                         }
                     }
