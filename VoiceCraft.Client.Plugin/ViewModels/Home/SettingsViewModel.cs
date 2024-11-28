@@ -137,15 +137,18 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
             catch (Exception ex)
             {
-                _manager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
-                    .HasBadge("Error")
-                    .HasMessage(ex.Message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(NotificationSettings.DismissDelayMS))
-                    .Dismiss().WithButton("Dismiss", (button) => { })
-                    .Queue();
+                if (!NotificationSettings.DisableNotifications)
+                {
+                    _manager.CreateMessage()
+                        .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
+                        .Animates(true)
+                        .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
+                        .HasBadge("Error")
+                        .HasMessage(ex.Message)
+                        .Dismiss().WithDelay(TimeSpan.FromMilliseconds(NotificationSettings.DismissDelayMS))
+                        .Dismiss().WithButton("Dismiss", (button) => { })
+                        .Queue();
+                }
             }
         }
 
@@ -205,15 +208,18 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
             }
             catch (Exception ex)
             {
-                _manager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
-                    .HasBadge("Error")
-                    .HasMessage(ex.Message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(NotificationSettings.DismissDelayMS))
-                    .Dismiss().WithButton("Dismiss", (button) => { })
-                    .Queue();
+                if (!NotificationSettings.DisableNotifications)
+                {
+                    _manager.CreateMessage()
+                        .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
+                        .Animates(true)
+                        .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
+                        .HasBadge("Error")
+                        .HasMessage(ex.Message)
+                        .Dismiss().WithDelay(TimeSpan.FromMilliseconds(NotificationSettings.DismissDelayMS))
+                        .Dismiss().WithButton("Dismiss", (button) => { })
+                        .Queue();
+                }
             }
         }
 
@@ -378,15 +384,18 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
 
         private void SendWarningNotification(string message)
         {
-            _manager.CreateMessage()
-                .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
-                .Animates(true)
-                .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
-                .HasBadge("Warning")
-                .HasMessage(message)
-                .Dismiss().WithDelay(TimeSpan.FromMilliseconds(NotificationSettings.DismissDelayMS))
-                .Dismiss().WithButton("Dismiss", (button) => { })
-                .Queue();
+            if (!NotificationSettings.DisableNotifications)
+            {
+                _manager.CreateMessage()
+                    .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
+                    .Animates(true)
+                    .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
+                    .HasBadge("Warning")
+                    .HasMessage(message)
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(NotificationSettings.DismissDelayMS))
+                    .Dismiss().WithButton("Dismiss", (button) => { })
+                    .Queue();
+            }
         }
     }
 }

@@ -20,7 +20,6 @@ namespace VoiceCraft.Client
     {
         public static ServiceCollection Services { get; } = new ServiceCollection();
         public static IServiceProvider? ServiceProvider { get; private set; }
-        public static readonly string PluginDirectory = Path.Combine(AppContext.BaseDirectory, "Plugins");
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -28,13 +27,16 @@ namespace VoiceCraft.Client
 
         public override void OnFrameworkInitializationCompleted()
         {
+            var pluginLoader = new PluginLoader();
             Services.AddSingleton<NavigationService>(s => new NavigationService(p => (ViewModelBase)s.GetRequiredService(p)));
             Services.AddSingleton<NotificationMessageManager>();
             Services.AddSingleton<PermissionsService>();
             Services.AddSingleton<SettingsService>();
             Services.AddSingleton<ThemesService>();
+            Services.AddSingleton(pluginLoader);
 
-            PluginLoader.LoadPlugins(PluginDirectory, Services);
+            pluginLoader.LoadPlugins();
+            pluginLoader.SetupPlugins(Services);
 
             IMainView mainView;
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -87,7 +89,7 @@ namespace VoiceCraft.Client
             }
 
             if (ServiceProvider != null)
-                PluginLoader.InitializePlugins(ServiceProvider);
+                pluginLoader.ExecutePlugins(ServiceProvider);
 
             base.OnFrameworkInitializationCompleted();
         }

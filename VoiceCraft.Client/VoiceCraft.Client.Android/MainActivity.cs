@@ -12,6 +12,7 @@ using VoiceCraft.Client.Android.Audio;
 using System;
 using VoiceCraft.Client.PDK.Services;
 using Android.Media.Audiofx;
+using VoiceCraft.Client.PDK;
 
 namespace VoiceCraft.Client.Android
 {
@@ -33,9 +34,9 @@ namespace VoiceCraft.Client.Android
         protected override void OnCreate(Bundle? savedInstanceState)
         {
 #if DEBUG
-            if (!Directory.Exists(App.PluginDirectory))
+            if (!Directory.Exists(PluginLoader.PluginDirectory))
             {
-                Directory.CreateDirectory(App.PluginDirectory);
+                Directory.CreateDirectory(PluginLoader.PluginDirectory);
             }
 
             //Always copy DLL over so we don't need to manually uninstall the app.
@@ -43,21 +44,21 @@ namespace VoiceCraft.Client.Android
             {
                 if (fileAssetStream != null)
                 {
-                    using (var fileStream = File.Create($"{App.PluginDirectory}/VoiceCraft.Client.Plugin.dll"))
+                    using (var fileStream = File.Create($"{PluginLoader.PluginDirectory}/VoiceCraft.Client.Plugin.dll"))
                     {
                         fileAssetStream.CopyTo(fileStream);
                     }
                 }
             }
 #elif RELEASE
-            if (!Directory.Exists(App.PluginDirectory))
+            if (!Directory.Exists(PluginLoader.PluginDirectory))
             {
-                Directory.CreateDirectory(App.PluginDirectory);
+                Directory.CreateDirectory(PluginLoader.PluginDirectory);
                 using (var fileAssetStream = Assets?.Open("VoiceCraft.Client.Plugin.dll"))
                 {
                     if (fileAssetStream != null)
                     {
-                        using (var fileStream = File.Create($"{App.PluginDirectory}/VoiceCraft.Client.Plugin.dll"))
+                        using (var fileStream = File.Create($"{PluginLoader.PluginDirectory}/VoiceCraft.Client.Plugin.dll"))
                         {
                             fileAssetStream.CopyTo(fileStream);
                         }

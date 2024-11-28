@@ -24,10 +24,7 @@
                                            FontWeight="Bold"
                                            Text="{Binding Name}" />
 
-                                <Button Padding="5"
-                                        HorizontalAlignment="Right"
-                                        Command="{Binding $parent[ItemsControl].((vm:PluginsViewModel)DataContext).RemovePluginCommand}"
-                                        CommandParameter="{Binding}">
+                                <Button Padding="5" HorizontalAlignment="Right">
                                     <Grid>
                                         <PathIcon Data="{DynamicResource delete_regular}" />
                                     </Grid>
@@ -49,7 +46,7 @@
                             <Border.Styles>
                                 <Style Selector="Border.IsDeleted">
                                     <Style.Setters>
-                                        <Setter Property="Background" Value="#aaff0000" />
+                                        <Setter Property="Background" Value="#66FF0000" />
                                     </Style.Setters>
                                 </Style>
                             </Border.Styles>

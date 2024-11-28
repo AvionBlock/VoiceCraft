@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace VoiceCraft.Client.PDK
 {
@@ -11,42 +11,22 @@ namespace VoiceCraft.Client.PDK
         private static bool _writing = false;
         private static bool _queueWrite = false;
         private static string SettingsPath = $"{AppContext.BaseDirectory}/GlobalSettings.json";
-        private static ConcurrentDictionary<string, Type> _registeredSettings = new ConcurrentDictionary<string, Type>();
-        private static ConcurrentDictionary<string, object> _settings = new ConcurrentDictionary<string, object>();
+        private static JsonObject _settings = Load();
 
         public static void Set<T>(string key, T value) where T : notnull
         {
-            var settingType = typeof(T);
-            if (_registeredSettings.TryGetValue(key, out var registeredSetting) && registeredSetting == settingType)
+            _settings[key] = JsonValue.Create(value);
+        }
+
+        public static T Get<T>(string key, T? defaultValue = default) where T : notnull
+        {
+            try
             {
-                _settings.AddOrUpdate(key, value, (key, old) => old = value);
-                return;
+                var value = _settings[key];
+                if (value != null) return value.GetValue<T>();
             }
-
-            throw new Exception($"Could not find registered setting {key} of type {typeof(T)}.");
-        }
-
-        public static T Get<T>(string key) where T : notnull
-        {
-            var settingType = typeof(T);
-            if (_registeredSettings.TryGetValue(key, out var registeredSetting) && registeredSetting == settingType)
-            {
-                var setting = _settings.GetOrAdd(key, Activator.CreateInstance(settingType)!);
-                return (T)setting;
-            }
-
-            throw new Exception($"Could not find registered setting {key} of type {typeof(T)}.");
-        }
-
-        public static void RegisterSetting<T>(string key)
-        {
-            var settingType = typeof(T);
-            _registeredSettings.AddOrUpdate(key, settingType, (key, old) => old = settingType);
-        }
-
-        public static void UnregisterSetting(string key)
-        {
-            _registeredSettings.TryRemove(key, out _);
+            catch (FormatException) { }
+            return defaultValue != null ? defaultValue : (T)Activator.CreateInstance(typeof(T))!;
         }
 
         public static async Task SaveImmediate()
@@ -74,37 +54,20 @@ namespace VoiceCraft.Client.PDK
             }
         }
 
-        public static void Load()
+        public static JsonObject Load()
         {
             try
             {
-                if (!File.Exists(SettingsPath)) { return; }
+                if (!File.Exists(SettingsPath)) { return new JsonObject(); }
 
-                var result = File.ReadAllText(SettingsPath);
-                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object>>(result);
-                if (loadedSettings is null) { return; }
+                var loadedSettings = JsonObject.Parse(File.ReadAllText(SettingsPath));
+                if (loadedSettings == null) { return new JsonObject(); }
 
-                //Convert them to the actual objects.
-                foreach (var setting in loadedSettings)
-                {
-                    if (_registeredSettings.TryGetValue(setting.Key, out var registeredSetting) && setting.Value is JsonElement element)
-                    {
-                        var deserializedSetting = element.Deserialize(registeredSetting);
-                        if (deserializedSetting == null)
-                        {
-                            loadedSettings.TryRemove(setting.Key, out _);
-                            continue;
-                        }
-                        loadedSettings.TryUpdate(setting.Key, deserializedSetting, setting.Value);
-                        continue;
-                    }
-                    loadedSettings.TryRemove(setting.Key, out _);
-                }
-                _settings = loadedSettings;
+                return (JsonObject)loadedSettings;
             }
             catch (JsonException)
             {
-                //Do nothing.
+                return new JsonObject();
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.Diagnostics;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;

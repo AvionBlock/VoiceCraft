@@ -13,13 +13,17 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Plugin
 {
-
-    [Plugin("00000000-0000-0000-0000-000000000000", "VoiceCraft", "The main voicecraft plugin.", 0, [], ["00000000-0000-0000-0000-000000000000"])]
-    public class Plugin : IPlugin
+    public class Plugin : IClientPlugin
     {
-        public static Guid PluginId => Guid.Empty;
+        public static Guid PluginId => Guid.Empty; //For convenience through the entire plugin.
 
-        public void Load(ServiceCollection serviceCollection)
+        public Guid Id => PluginId;
+        public string Name => "VoiceCraft";
+        public string Description => "The main voicecraft plugin.";
+        public int Priority => 0;
+        public IEnumerable<PluginDependency> ServerDependencies { get; } = [];
+
+        public void Initialize(ServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IMainView, MainView>();
             serviceCollection.AddSingleton<IMainViewModel, MainViewModel>();
@@ -44,7 +48,7 @@ namespace VoiceCraft.Client.Plugin
             serviceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
         }
 
-        public void Initialize(IServiceProvider serviceProvider)
+        public void Execute(IServiceProvider serviceProvider)
         {
             var settings = serviceProvider.GetRequiredService<SettingsService>();
             settings.RegisterSetting<ServersSettings>(PluginId);

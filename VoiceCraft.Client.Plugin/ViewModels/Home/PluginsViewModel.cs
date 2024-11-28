@@ -17,17 +17,19 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private IStorageProvider _storageProvider;
         private INotificationMessageManager _manager;
         private NotificationSettings _notificationSettings;
+        private PluginLoader _pluginLoader;
 
         [ObservableProperty]
         public ObservableCollection<PluginDisplay> _plugins;
 
-        public PluginsViewModel(TopLevel topLevel, NotificationMessageManager manager, SettingsService settings)
+        public PluginsViewModel(TopLevel topLevel, NotificationMessageManager manager, SettingsService settings, PluginLoader pluginLoader)
         {
             _storageProvider = topLevel.StorageProvider;
             _manager = manager;
+            _pluginLoader = pluginLoader;
             _notificationSettings = settings.Get<NotificationSettings>(Plugin.PluginId);
 
-            _plugins = new ObservableCollection<PluginDisplay>(PluginLoader.Plugins.Select(x => new PluginDisplay(x.PluginInformation.Id, x.PluginInformation.Name, x.PluginInformation.Description, x.Assembly.Version.ProductVersion)));
+            _plugins = new ObservableCollection<PluginDisplay>(pluginLoader.Plugins.Select(x => new PluginDisplay(x.LoadedInstance.Id, x.LoadedInstance.Name, x.LoadedInstance.Description, x.Version.ToString())));
         }
 
         [RelayCommand]
@@ -39,35 +41,6 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
                 AllowMultiple = false
                 //TODO FOR FILE PICKING!
             });
-        }
-
-        [RelayCommand]
-        public void RemovePlugin(PluginDisplay plugin)
-        {
-            if(PluginLoader.DeletePlugin(plugin.Id))
-            {
-                plugin.Deleted = true;
-                _manager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
-                    .HasBadge("Plugin")
-                    .HasMessage($"{plugin.Name} plugin has been deleted. Restart the application for the changes to take effect!")
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
-                    .Dismiss().WithButton("Dismiss", (button) => { })
-                    .Queue();
-                return;
-            }
-
-            _manager.CreateMessage()
-                .Accent(ThemesService.GetBrushResource("notificationAccentBrush"))
-                .Animates(true)
-                .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
-                .HasBadge("Plugin")
-                .HasMessage($"{plugin.Name} plugin has already been removed or does not exist!")
-                .Dismiss().WithDelay(TimeSpan.FromMilliseconds(_notificationSettings.DismissDelayMS))
-                .Dismiss().WithButton("Dismiss", (button) => { })
-                .Queue();
         }
     }
 

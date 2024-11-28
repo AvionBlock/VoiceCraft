@@ -7,54 +7,91 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.PDK
 {
-    public static class PluginLoader
+    public class PluginLoader
     {
-        private static List<LoadedPlugin> _plugins = new List<LoadedPlugin>();
-        private static List<Exception> _pluginErrors = new List<Exception>();
-        public static IEnumerable<LoadedPlugin> Plugins { get => _plugins; }
-        public static IEnumerable<Exception> PluginErrors { get => _pluginErrors; }
+        public static readonly string PluginDirectory = Path.Combine(AppContext.BaseDirectory, "Plugins");
+        private List<LoadedPlugin> _plugins = new List<LoadedPlugin>();
+        private List<Exception> _pluginErrors = new List<Exception>();
+        public IEnumerable<LoadedPlugin> Plugins { get => _plugins; }
+        public IEnumerable<Exception> PluginErrors { get => _pluginErrors; }
 
-        public static void LoadPlugins(string pluginDirectory, ServiceCollection serviceCollection)
+        public void LoadPlugins()
         {
-            if (!Directory.Exists(pluginDirectory))
+            if (!Directory.Exists(PluginDirectory))
             {
-                Directory.CreateDirectory(pluginDirectory);
+                Directory.CreateDirectory(PluginDirectory);
             }
 
-            var assemblies = 
-                Directory.GetFiles(pluginDirectory, "*.dll")
-                .Select(x => new AssemblyInfo(x))
+            var files = 
+                Directory.GetFiles(PluginDirectory, "*.dll")
                 .ToArray();
 
-            foreach (var assembly in assemblies)
+            foreach (var file in files)
             {
-                AddPlugin(assembly);
-            }
+                try
+                {
+                    var plugin = LoadPlugin(file);
+                    //Insert by priority
+                    for(int i = 0; i <= _plugins.Count; i++)
+                    {
+                        if(i >= _plugins.Count - 1) //Reached the end, add to end.
+                        {
+                            _plugins.Add(plugin);
+                            break;
+                        }
 
-            //Order by priority.
-            _plugins = _plugins.OrderBy(x => x.PluginInformation.Priority).ToList();
-
-            foreach (var plugin in _plugins)
-            {
-                LoadPlugin(plugin, serviceCollection);
+                        var loadedPlugin = _plugins[i];
+                        if (loadedPlugin.LoadedInstance.Priority > plugin.LoadedInstance.Priority)
+                        {
+                            _plugins.Insert(i, loadedPlugin);
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _pluginErrors.Add(ex);
+                }
             }
         }
 
-        public static void InitializePlugins(IServiceProvider serviceProvider)
+        public void SetupPlugins(ServiceCollection serviceCollection)
+        {
+            foreach (var plugin in _plugins)
+            {
+                try
+                {
+                    //Plugin Dependency Checking Here.
+                    var dependencies = plugin.Assembly.GetReferencedAssemblies();
+                    foreach (var dependency in dependencies)
+                    {
+                        Debug.WriteLine(dependency.FullName);
+                    }
+
+                    plugin.LoadedInstance.Initialize(serviceCollection);
+                }
+                catch (Exception ex)
+                {
+                    _pluginErrors.Add(ex);
+                }
+            }
+        }
+
+        public void ExecutePlugins(IServiceProvider serviceProvider)
         {
             var notifications = serviceProvider.GetRequiredService<NotificationMessageManager>();
             foreach (var plugin in _plugins)
             {
                 try
                 {
-                    plugin.LoadedInstance.Initialize(serviceProvider);
+                    plugin.LoadedInstance.Execute(serviceProvider);
 
                     notifications.CreateMessage()
                         .Accent(ThemesService.GetBrushResource("notificationAccentSuccessBrush"))
                         .Animates(true)
                         .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
                         .HasBadge("Plugin")
-                        .HasMessage($"Loaded plugin: {plugin.PluginInformation.Name}")
+                        .HasMessage($"Loaded plugin: {plugin.LoadedInstance.Name}")
                         .Dismiss().WithDelay(TimeSpan.FromSeconds(2))
                         .Dismiss().WithButton("Dismiss", (button) => { })
                         .Queue();
@@ -64,13 +101,16 @@ namespace VoiceCraft.Client.PDK
                     _pluginErrors.Add(ex);
                 }
             }
+        }
 
+        public void FlushErrors(INotificationMessageManager manager)
+        {
             foreach (var error in _pluginErrors)
             {
 #if DEBUG
                 Debug.WriteLine(error);
 #endif
-                notifications.CreateMessage()
+                manager.CreateMessage()
                     .Accent(ThemesService.GetBrushResource("notificationAccentErrorBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
@@ -80,65 +120,34 @@ namespace VoiceCraft.Client.PDK
                     .Dismiss().WithButton("Dismiss", (button) => { })
                     .Queue();
             }
+
+            _pluginErrors.Clear();
         }
 
-        public static bool DeletePlugin(Guid pluginId)
+        private LoadedPlugin LoadPlugin(string filePath)
         {
-            var plugin = _plugins.FirstOrDefault(x => x.PluginInformation.Id == pluginId);
-            if (plugin != null && File.Exists(plugin.Assembly.FileLocation))
-            {
-                File.Delete(plugin.Assembly.FileLocation);
-                return true;
-            }
-
-            return false;
-        }
-
-        private static void AddPlugin(AssemblyInfo assembly)
-        {
-            //Find plugin.
-            var assemblyType = assembly.Assembly.GetTypes().FirstOrDefault(x => x.GetCustomAttribute<PluginAttribute>() != null); //Plugin attribute enforces to be a class.
-            if (assemblyType == null || !typeof(IPlugin).IsAssignableFrom(assemblyType))
-            {
-                _pluginErrors.Add(new Exception($"Failed to load plugin with assembly {assembly.Assembly.FullName}."));
-                return;
-            }
-
-            var pluginAttribute = assemblyType.GetCustomAttribute<PluginAttribute>()!;
-            var plugin = (IPlugin)Activator.CreateInstance(assemblyType)!;
-
-            //If conflicted with another plugin, don't add it. This order can be completely random.
-            if (_plugins.Exists(x => x.PluginInformation.Id == pluginAttribute.Id)) return;
-            _plugins.Add(new LoadedPlugin(pluginAttribute, assembly, plugin));
-        }
-
-        private static void LoadPlugin(LoadedPlugin loadedPlugin, ServiceCollection serviceCollection)
-        {
-            foreach (var dependency in loadedPlugin.PluginInformation.ClientDependencies)
-            {
-                //Cannot find dependency, don't load the plugin.
-                if (_plugins.Exists(x => x.PluginInformation.Id != dependency))
-                {
-                    _pluginErrors.Add(new Exception($"Failed to load plugin {loadedPlugin.PluginInformation.Name}, Missing client dependencies."));
-                    return;
-                }
-            }
-
-            loadedPlugin.LoadedInstance.Load(serviceCollection);
+            var pluginContext = new PluginLoadContext(filePath);
+            var pluginAssembly = pluginContext.LoadFromAssemblyPath(filePath);
+            return new LoadedPlugin(pluginAssembly);
         }
     }
 
-    public class AssemblyInfo(string fileLocation)
+    public class LoadedPlugin
     {
-        public readonly string FileLocation = fileLocation;
-        public readonly Assembly Assembly = Assembly.Load(File.ReadAllBytes(fileLocation));
-        public readonly FileVersionInfo Version = FileVersionInfo.GetVersionInfo(fileLocation);
-    }
+        public readonly IClientPlugin LoadedInstance;
+        public readonly Assembly Assembly;
+        public readonly Version Version;
 
-    public class LoadedPlugin(PluginAttribute pluginInformation, AssemblyInfo assemblyInfo, IPlugin loadedInstance)
-    {
-        public readonly PluginAttribute PluginInformation = pluginInformation;
-        public readonly IPlugin LoadedInstance = loadedInstance;
-        public readonly AssemblyInfo Assembly = assemblyInfo;
+        public LoadedPlugin(Assembly assembly)
+        {
+            Assembly = assembly;
+            Version = Assembly.GetName().Version ?? new Version();
+
+            var pluginEntryPoint = assembly.GetTypes().FirstOrDefault(x => typeof(IClientPlugin).IsAssignableFrom(x));
+            if(pluginEntryPoint == null) throw new ArgumentException("Input assembly cannot be loaded as a plugin!", nameof(assembly));
+            var loadedInstance = (IClientPlugin?)Activator.CreateInstance(pluginEntryPoint);
+            if (loadedInstance == null) throw new Exception("Failed to load assembly as a plugin!");
+            LoadedInstance = loadedInstance;
+        }
     }
 }
