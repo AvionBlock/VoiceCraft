@@ -4,7 +4,6 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Client.PDK.ViewModels;
 using VoiceCraft.Client.Plugin.Settings;
@@ -17,12 +16,12 @@ namespace VoiceCraft.Client.Plugin.ViewModels.Home
         private IStorageProvider _storageProvider;
         private INotificationMessageManager _manager;
         private NotificationSettings _notificationSettings;
-        private PluginLoader _pluginLoader;
+        private PluginsService _pluginLoader;
 
         [ObservableProperty]
         public ObservableCollection<PluginDisplay> _plugins;
 
-        public PluginsViewModel(TopLevel topLevel, NotificationMessageManager manager, SettingsService settings, PluginLoader pluginLoader)
+        public PluginsViewModel(TopLevel topLevel, NotificationMessageManager manager, SettingsService settings, PluginsService pluginLoader)
         {
             _storageProvider = topLevel.StorageProvider;
             _manager = manager;

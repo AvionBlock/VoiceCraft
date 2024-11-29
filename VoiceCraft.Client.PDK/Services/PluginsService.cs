@@ -2,12 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Reflection;
-using VoiceCraft.Client.PDK.Services;
 using VoiceCraft.Core;
 
-namespace VoiceCraft.Client.PDK
+namespace VoiceCraft.Client.PDK.Services
 {
-    public class PluginLoader
+    public class PluginsService
     {
         public static readonly string PluginDirectory = Path.Combine(AppContext.BaseDirectory, "Plugins");
         private List<LoadedPlugin> _plugins = new List<LoadedPlugin>();
@@ -15,7 +14,7 @@ namespace VoiceCraft.Client.PDK
         public IEnumerable<LoadedPlugin> Plugins { get => _plugins; }
         public IEnumerable<Exception> PluginErrors { get => _pluginErrors; }
 
-        public void LoadPlugins()
+        public void LoadPlugins(IEnumerable<string>? deletePlugins = null)
         {
             if (!Directory.Exists(PluginDirectory))
             {
@@ -29,11 +28,17 @@ namespace VoiceCraft.Client.PDK
             {
                 try
                 {
+                    if(deletePlugins?.Contains(file) ?? false)
+                    {
+                        File.Delete(file);
+                        continue;
+                    }
+
                     var plugin = LoadPlugin(file);
                     //Insert by priority
-                    for(int i = -1; i < _plugins.Count; i++)
+                    for (int i = -1; i < _plugins.Count; i++)
                     {
-                        if(i == _plugins.Count - 1) //Reached the end, add to end.
+                        if (i == _plugins.Count - 1) //Reached the end, add to end.
                         {
                             _plugins.Add(plugin);
                             break;
@@ -53,7 +58,7 @@ namespace VoiceCraft.Client.PDK
                 }
             }
 
-            for(int i = _plugins.Count - 1; i >= 0; i--)
+            for (int i = _plugins.Count - 1; i >= 0; i--)
             {
                 var plugin = _plugins[i];
                 //Plugin Dependency Checking Here.
@@ -64,7 +69,7 @@ namespace VoiceCraft.Client.PDK
                     if (matchedPlugin != null && matchedPlugin.Version.Major == dependency.Version?.Major && matchedPlugin.Version.Minor == dependency.Version?.Minor) continue;
 
                     _plugins.Remove(plugin);
-                    if(matchedPlugin == null)
+                    if (matchedPlugin == null)
                         _pluginErrors.Add(new Exception($"Failed to load plugin {plugin.Assembly.FullName}! Expected plugin with id {dependency.Id} with version {dependency.Version}!"));
                     else
                         _pluginErrors.Add(new Exception($"Failed to load plugin {plugin.Assembly.FullName}! Expected plugin {matchedPlugin.LoadedInstance.Name} with version {dependency.Version}!"));
@@ -156,7 +161,7 @@ namespace VoiceCraft.Client.PDK
             Version = Assembly.GetName().Version ?? new Version();
 
             var pluginEntryPoint = assembly.GetTypes().FirstOrDefault(x => typeof(IClientPlugin).IsAssignableFrom(x));
-            if(pluginEntryPoint == null) throw new ArgumentException("Input assembly cannot be loaded as a plugin!", nameof(assembly));
+            if (pluginEntryPoint == null) throw new ArgumentException("Input assembly cannot be loaded as a plugin!", nameof(assembly));
             var loadedInstance = (IClientPlugin?)Activator.CreateInstance(pluginEntryPoint);
             if (loadedInstance == null) throw new Exception("Failed to load assembly as a plugin!");
             LoadedInstance = loadedInstance;

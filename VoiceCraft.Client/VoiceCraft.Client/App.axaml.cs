@@ -6,7 +6,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.IO;
 using VoiceCraft.Client.PDK;
 using VoiceCraft.Client.PDK.Audio;
 using VoiceCraft.Client.PDK.Services;
@@ -20,6 +19,7 @@ namespace VoiceCraft.Client
     {
         public static ServiceCollection Services { get; } = new ServiceCollection();
         public static IServiceProvider? ServiceProvider { get; private set; }
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -27,7 +27,7 @@ namespace VoiceCraft.Client
 
         public override void OnFrameworkInitializationCompleted()
         {
-            var pluginLoader = new PluginLoader();
+            var pluginLoader = new PluginsService();
             Services.AddSingleton<NavigationService>(s => new NavigationService(p => (ViewModelBase)s.GetRequiredService(p)));
             Services.AddSingleton<NotificationMessageManager>();
             Services.AddSingleton<PermissionsService>();
@@ -35,7 +35,7 @@ namespace VoiceCraft.Client
             Services.AddSingleton<ThemesService>();
             Services.AddSingleton(pluginLoader);
 
-            pluginLoader.LoadPlugins();
+            pluginLoader.LoadPlugins(AppSettings.GetDeletedPlugins());
             pluginLoader.SetupPlugins(Services);
 
             IMainView mainView;
@@ -104,6 +104,7 @@ namespace VoiceCraft.Client
             {
                 await settings.SaveImmediate();
                 await GlobalSettings.SaveImmediate();
+                await AppSettings.SaveImmediate();
             }
         }
 

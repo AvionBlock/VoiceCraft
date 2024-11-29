@@ -12,7 +12,6 @@ using VoiceCraft.Client.Android.Audio;
 using System;
 using VoiceCraft.Client.PDK.Services;
 using Android.Media.Audiofx;
-using VoiceCraft.Client.PDK;
 
 namespace VoiceCraft.Client.Android
 {
@@ -34,9 +33,9 @@ namespace VoiceCraft.Client.Android
         protected override void OnCreate(Bundle? savedInstanceState)
         {
 #if DEBUG
-            if (!Directory.Exists(PluginLoader.PluginDirectory))
+            if (!Directory.Exists(PluginsService.PluginDirectory))
             {
-                Directory.CreateDirectory(PluginLoader.PluginDirectory);
+                Directory.CreateDirectory(PluginsService.PluginDirectory);
             }
 
             //Always copy DLL over so we don't need to manually uninstall the app.
@@ -44,7 +43,7 @@ namespace VoiceCraft.Client.Android
             {
                 if (fileAssetStream != null)
                 {
-                    using (var fileStream = File.Create($"{PluginLoader.PluginDirectory}/VoiceCraft.Client.Plugin.dll"))
+                    using (var fileStream = File.Create($"{PluginsService.PluginDirectory}/VoiceCraft.Client.Plugin.dll"))
                     {
                         fileAssetStream.CopyTo(fileStream);
                     }

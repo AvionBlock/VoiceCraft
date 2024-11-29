@@ -11,7 +11,7 @@ namespace VoiceCraft.Client.PDK.Services
 
         private bool _writing = false;
         private bool _queueWrite = false;
-        private static string SettingsPath = $"{AppContext.BaseDirectory}/Settings.json";
+        private static string SettingsPath = Path.Combine(AppContext.BaseDirectory, "Settings.json");
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>> _registeredSettings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, Type>>();
         private ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>> _settings = new ConcurrentDictionary<Guid, ConcurrentDictionary<string, object>>();
 
