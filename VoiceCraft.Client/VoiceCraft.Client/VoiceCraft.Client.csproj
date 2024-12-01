@@ -20,5 +20,15 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="DialogHost.Avalonia" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="NAudio.Core" />
+        <PackageReference Include="Notification.Avalonia" />
+        <PackageReference Include="OpusSharp" />
+        <PackageReference Include="Sandreas.Avalonia.SimpleRouter" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Models\" />
     </ItemGroup>
 </Project>
