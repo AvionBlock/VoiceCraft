@@ -5,7 +5,13 @@
              xmlns:local="using:VoiceCraft.Client"
              RequestedThemeVariant="Default">
     <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
     <Application.Styles>
+        <StyleInclude Source="avares://Notification.Avalonia/Themes/Generic.xaml" />
         <FluentTheme />
         <dialogHost:DialogHostStyles />
     </Application.Styles>

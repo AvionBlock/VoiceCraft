@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.PDK", "VoiceCraft.Client.PDK\VoiceCraft.Client.PDK.csproj", "{09EBEF44-00F1-4A11-9FCE-78D949766977}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client", "VoiceCraft.Client\VoiceCraft.Client\VoiceCraft.Client.csproj", "{24588161-0A9D-4116-801C-77ACBEC153E2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Android", "VoiceCraft.Client\VoiceCraft.Client.Android\VoiceCraft.Client.Android.csproj", "{867D5C5C-E949-48AD-827E-2E9710591905}"
@@ -12,8 +10,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Browser", "VoiceCraft.Client\VoiceCraft.Client.Browser\VoiceCraft.Client.Browser.csproj", "{6FAD367F-28F1-4A0B-9499-1A8FA682B986}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.iOS", "VoiceCraft.Client\VoiceCraft.Client.iOS\VoiceCraft.Client.iOS.csproj", "{E8BCAAF0-D249-4C1E-B9EF-A882BFC5F3DB}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Client.Plugin", "VoiceCraft.Client.Plugin\VoiceCraft.Client.Plugin.csproj", "{B6B7482B-DC5A-40B4-8231-C310372571A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{07BF798F-18E8-4B56-8FBA-B295CC0827AE}"
 EndProject
@@ -27,10 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{09EBEF44-00F1-4A11-9FCE-78D949766977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09EBEF44-00F1-4A11-9FCE-78D949766977}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09EBEF44-00F1-4A11-9FCE-78D949766977}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09EBEF44-00F1-4A11-9FCE-78D949766977}.Release|Any CPU.Build.0 = Release|Any CPU
 		{24588161-0A9D-4116-801C-77ACBEC153E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{24588161-0A9D-4116-801C-77ACBEC153E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24588161-0A9D-4116-801C-77ACBEC153E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,10 +43,6 @@ Global
 		{E8BCAAF0-D249-4C1E-B9EF-A882BFC5F3DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8BCAAF0-D249-4C1E-B9EF-A882BFC5F3DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E8BCAAF0-D249-4C1E-B9EF-A882BFC5F3DB}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B6B7482B-DC5A-40B4-8231-C310372571A6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07BF798F-18E8-4B56-8FBA-B295CC0827AE}.Release|Any CPU.ActiveCfg = Release|Any CPU

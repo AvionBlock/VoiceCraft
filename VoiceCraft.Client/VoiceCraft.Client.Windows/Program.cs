@@ -16,7 +16,7 @@ namespace VoiceCraft.Client.Windows
         {
             var avaloniaApp = BuildAvaloniaApp();
 
-            App.Services.AddSingleton<AudioService, NativeAudioService>();
+            App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             avaloniaApp.StartWithClassicDesktopLifetime(args);
         }
 

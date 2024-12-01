@@ -17,7 +17,6 @@
 
 	<ItemGroup>
 		<!-- This is so we can get auto completions for the axaml files. -->
-		<ProjectReference Include="..\..\VoiceCraft.Client.PDK\VoiceCraft.Client.PDK.csproj" />
 		<ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj" />
 	</ItemGroup>
 </Project>

@@ -1,0 +1,25 @@
+﻿using System;
+
+namespace VoiceCraft.Client.Audio.Interfaces
+{
+    public interface IEchoCanceler : IDisposable
+    {
+        bool IsNative { get; }
+
+        bool IsAvailable { get; }
+
+        bool Enabled { get; }
+
+        bool Initialized { get; }
+
+        void Init(IAudioRecorder recorder, IAudioPlayer player);
+
+        void EchoPlayback(byte[] buffer);
+
+        void EchoPlayback(Span<byte> buffer);
+
+        void EchoCancel(byte[] buffer);
+
+        void EchoCancel(Span<byte> buffer);
+    }
+}

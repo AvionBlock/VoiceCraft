@@ -1,0 +1,135 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace VoiceCraft.Client.Services
+{
+    public class SettingsService
+    {
+        public const int FILE_WRITING_DELAY = 2000;
+
+        private bool _writing = false;
+        private bool _queueWrite = false;
+        private static string SettingsPath = Path.Combine(AppContext.BaseDirectory, "Settings.json");
+        private ConcurrentDictionary<string, Type> _registeredSettings = new ConcurrentDictionary<string, Type>();
+        private ConcurrentDictionary<string, object?> _settings = new ConcurrentDictionary<string, object?>();
+
+        public void Set<T>(T value) where T : Setting
+        {
+            var settingType = typeof(T);
+            if (_registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
+            {
+                var setting = _settings.AddOrUpdate(settingType.Name, value, (key, old) => old = Activator.CreateInstance(settingType));
+                return;
+            }
+
+            throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)}.");
+        }
+
+        public T Get<T>() where T : Setting
+        {
+            var settingType = typeof(T);
+            if (_registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
+            {
+                return (T)_settings.GetOrAdd(settingType.Name, Activator.CreateInstance<T>())!;
+            }
+
+            throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)}.");
+        }
+
+        public void RegisterSetting<T>() where T : Setting
+        {
+            var settingType = typeof(T);
+            var registeredSetting = _registeredSettings.AddOrUpdate(settingType.Name, settingType, (key, old) => old = settingType);
+        }
+
+        public void UnregisterSetting<T>() where T : Setting
+        {
+            var settingType = typeof(T);
+            _registeredSettings.TryRemove(settingType.Name, out _);
+        }
+
+        public async Task SaveImmediate()
+        {
+#if DEBUG
+            Debug.WriteLine("Saving immediately. Only use this function if necessary!");
+#endif
+            foreach (var setting in _settings)
+            {
+                if (setting.Value is Setting settingValue)
+                    settingValue.OnSaving();
+            }
+
+            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
+        }
+
+        public async Task SaveAsync()
+        {
+            _queueWrite = true;
+            //Writing boolean is so we don't get multiple loop instances.
+            if (!_writing)
+            {
+                _writing = true;
+                while (_queueWrite)
+                {
+                    _queueWrite = false;
+                    await Task.Delay(FILE_WRITING_DELAY);
+                    foreach (var setting in _settings)
+                    {
+                        if (setting.Value is Setting settingValue)
+                            settingValue.OnSaving();
+                    }
+
+                    await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, new JsonSerializerOptions() { WriteIndented = true }));
+                }
+                _writing = false;
+            }
+        }
+
+        public void Load()
+        {
+            try
+            {
+                if (!File.Exists(SettingsPath)) { return; }
+
+                var result = File.ReadAllText(SettingsPath);
+                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object?>>(result);
+                if (loadedSettings is null) { return; }
+
+                //Convert them to the actual objects.
+                foreach (var setting in loadedSettings)
+                {
+                    if (_registeredSettings.TryGetValue(setting.Key, out var registeredSetting))
+                    {
+                        if (setting.Value is JsonElement element
+                        && element.Deserialize(registeredSetting) is Setting deserializedSetting
+                        && deserializedSetting.OnLoading())
+                        {
+                            loadedSettings.TryUpdate(setting.Key, deserializedSetting, setting.Value);
+                            continue;
+                        }
+                    }
+                    loadedSettings.TryRemove(setting.Key, out _);
+                }
+                _settings = loadedSettings;
+            }
+            catch (JsonException)
+            {
+                //Do nothing.
+            }
+        }
+    }
+
+    public abstract class Setting : ObservableObject, ICloneable
+    {
+        public virtual bool OnLoading() => true;
+
+        public virtual void OnSaving() { }
+
+        public abstract object Clone();
+    }
+}
