@@ -1,12 +1,11 @@
 using Avalonia.Controls;
 
-namespace VoiceCraft.Client.Views
+namespace VoiceCraft.Client.Views;
+
+public partial class MainView : UserControl
 {
-    public partial class MainView : UserControl
+    public MainView()
     {
-        public MainView()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }

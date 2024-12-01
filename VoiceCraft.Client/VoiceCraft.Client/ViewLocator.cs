@@ -1,33 +1,30 @@
-﻿using Avalonia.Controls.Templates;
-using Avalonia.Controls;
 using System;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using VoiceCraft.Client.ViewModels;
 
-namespace VoiceCraft.Client
+namespace VoiceCraft.Client;
+
+public class ViewLocator : IDataTemplate
 {
-    public class ViewLocator : IDataTemplate
+    public Control? Build(object? param)
     {
-        public bool SupportsRecycling => false;
+        if (param is null)
+            return null;
 
-        public Control? Build(object? data)
+        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+        var type = Type.GetType(name);
+
+        if (type != null)
         {
-            var name = data?.GetType()?.FullName?.Replace("ViewModel", "View");
-
-            if (name != null)
-            {
-                var type = Type.GetType(name);
-                if (type != null)
-                {
-                    return (Control?)Activator.CreateInstance(type);
-                }
-            }
-            
-            return new TextBlock { Text = "Not Found: " + name };
+            return (Control)Activator.CreateInstance(type)!;
         }
 
-        public bool Match(object? data)
-        {
-            return data is ViewModelBase;
-        }
+        return new TextBlock { Text = "Not Found: " + name };
+    }
+
+    public bool Match(object? data)
+    {
+        return data is ViewModelBase;
     }
 }
