@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace VoiceCraft.Client.Services
         private readonly ConcurrentDictionary<string, Type> _registeredSettings = new();
         private ConcurrentDictionary<string, object?> _settings = new();
         
-        public T Get<T>() where T : Setting
+        public T Get<T>() where T : Setting<T>
         {
             var settingType = typeof(T);
             if (_registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
@@ -30,13 +31,13 @@ namespace VoiceCraft.Client.Services
             throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)}.");
         }
 
-        public void RegisterSetting<T>() where T : Setting
+        public void RegisterSetting<T>() where T : Setting<T>
         {
             var settingType = typeof(T);
             _registeredSettings.AddOrUpdate(settingType.Name, settingType, (_, _) => settingType);
         }
 
-        public void UnregisterSetting<T>() where T : Setting
+        public void UnregisterSetting<T>() where T : Setting<T>
         {
             var settingType = typeof(T);
             _registeredSettings.TryRemove(settingType.Name, out _);
@@ -49,7 +50,7 @@ namespace VoiceCraft.Client.Services
 #endif
             foreach (var setting in _settings)
             {
-                if (setting.Value is Setting settingValue)
+                if (setting.Value is ISetting settingValue)
                     settingValue.OnSaving();
             }
 
@@ -69,7 +70,7 @@ namespace VoiceCraft.Client.Services
                     await Task.Delay(FILE_WRITING_DELAY);
                     foreach (var setting in _settings)
                     {
-                        if (setting.Value is Setting settingValue)
+                        if (setting.Value is ISetting settingValue)
                             settingValue.OnSaving();
                     }
 
@@ -95,7 +96,7 @@ namespace VoiceCraft.Client.Services
                     if (_registeredSettings.TryGetValue(setting.Key, out var registeredSetting))
                     {
                         if (setting.Value is JsonElement element
-                        && element.Deserialize(registeredSetting) is Setting deserializedSetting
+                        && element.Deserialize(registeredSetting) is ISetting deserializedSetting
                         && deserializedSetting.OnLoading())
                         {
                             loadedSettings.TryUpdate(setting.Key, deserializedSetting, setting.Value);
@@ -113,12 +114,18 @@ namespace VoiceCraft.Client.Services
         }
     }
 
-    public abstract class Setting : ICloneable
+    public abstract class Setting<T> : ISetting where T : Setting<T>
     {
+        public abstract event Action<T>? OnUpdated;
         public virtual bool OnLoading() => true;
-
         public virtual void OnSaving() { }
-
         public abstract object Clone();
+    }
+
+    public interface ISetting : ICloneable
+    {
+        bool OnLoading();
+
+        void OnSaving();
     }
 }

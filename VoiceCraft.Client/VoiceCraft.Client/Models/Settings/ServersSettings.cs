@@ -1,14 +1,26 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Models.Settings
 {
-    public class ServersSettings : Setting
+    public class ServersSettings : Setting<ServersSettings>
     {
-        public bool HideServerAddresses = false;
-        public ObservableCollection<Server> Servers = new ObservableCollection<Server>();
+        public override event Action<ServersSettings>? OnUpdated;
+
+        public bool HideServerAddresses
+        {
+            get => _hideServerAddresses;
+            set
+            {
+                _hideServerAddresses = value;
+                OnUpdated?.Invoke(this);
+            }
+        }
+        public IEnumerable<Server> Servers => _servers.ToArray();
+
+        private bool _hideServerAddresses;
+        private readonly List<Server> _servers = [];
 
         public void AddServer(Server server)
         {
@@ -21,12 +33,20 @@ namespace VoiceCraft.Client.Models.Settings
             if (server.Ip.Length > Server.IPLimit)
                 throw new Exception($"Server IP cannot be longer than {Server.IPLimit} characters!");
 
-            Servers.Insert(0, server);
+            _servers.Insert(0, server);
+            OnUpdated?.Invoke(this);
         }
 
         public void RemoveServer(Server server)
         {
-            Servers.Remove(server);
+            _servers.Remove(server);
+            OnUpdated?.Invoke(this);
+        }
+
+        public void ClearServers()
+        {
+            _servers.Clear();
+            OnUpdated?.Invoke(this);
         }
 
         public override object Clone()
@@ -35,17 +55,66 @@ namespace VoiceCraft.Client.Models.Settings
         }
     }
 
-    public class Server : ICloneable
+    public class Server : Setting<Server>
     {
+        public override event Action<Server>? OnUpdated;
+        
         public const int NameLimit = 12;
         public const int IPLimit = 30;
+        public const int KeyLimit = 10;
         
-        public string Name = string.Empty;
-        public string Ip = string.Empty;
-        public ushort Port = 9050;
-        public ushort Key = 0;
+        private string _name = string.Empty;
+        private string _ip = string.Empty;
+        private ushort _port;
+        private string _key = string.Empty;
+        
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if(value.Length > NameLimit)
+                    throw new ArgumentException("Name cannot be longer than {NameLimit} characters!");
+                _name = value;
+                OnUpdated?.Invoke(this);
+            }
+        }
 
-        public object Clone()
+        public string Ip
+        {
+            get => _ip;
+            set
+            {
+                if(value.Length > IPLimit)
+                    throw new ArgumentException("IP address cannot be longer than {IPLimit} characters!");
+                _ip = value;
+                OnUpdated?.Invoke(this);
+            }
+        }
+
+        public ushort Port
+        {
+            get => _port;
+            set
+            {
+                _port = value;
+                OnUpdated?.Invoke(this);   
+            }
+        }
+
+        public string Key
+        {
+            get => _key;
+            set
+            {
+                if(value.Length > KeyLimit)
+                    throw new ArgumentException("Key cannot be longer than {KeyLimit} characters!");
+                _key = value;
+                OnUpdated?.Invoke(this);   
+            }
+        }
+
+        public override object Clone()
         {
             return MemberwiseClone();
         }

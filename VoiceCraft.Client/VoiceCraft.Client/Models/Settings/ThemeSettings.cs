@@ -1,12 +1,25 @@
+using System;
 using Avalonia.Styling;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Models.Settings
 {
-    public class ThemeSettings : Setting
+    public class ThemeSettings : Setting<ThemeSettings>
     {
-        public string SelectedTheme = ThemeVariant.Dark.ToString();
+        public override event Action<ThemeSettings>? OnUpdated;
 
+        public string SelectedTheme
+        {
+            get => _selectedTheme;
+            set
+            {
+                _selectedTheme = value;
+                OnUpdated?.Invoke(this);
+            }
+        }
+
+        private string _selectedTheme = ThemeVariant.Dark.ToString();
+        
         public override object Clone()
         {
             return MemberwiseClone();

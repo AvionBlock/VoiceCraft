@@ -7,15 +7,15 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Settings;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
 
 namespace VoiceCraft.Client;
 
-public partial class App : Application
+public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
     
@@ -51,7 +51,7 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void DisableAvaloniaDataAnnotationValidation()
+    private static void DisableAvaloniaDataAnnotationValidation()
     {
         // Get an array of plugins to remove
         var dataValidationPluginsToRemove =
@@ -64,7 +64,7 @@ public partial class App : Application
         }
     }
 
-    private IServiceProvider BuildServiceProvider()
+    private static ServiceProvider BuildServiceProvider()
     {
         //Service Registry
         ServiceCollection.AddSingleton<HistoryRouter<ViewModelBase>>(x => new HistoryRouter<ViewModelBase>(y => (ViewModelBase)x.GetRequiredService(y)));
@@ -90,7 +90,7 @@ public partial class App : Application
         return ServiceCollection.BuildServiceProvider();
     }
 
-    private void SetupSettings(IServiceProvider services)
+    private static void SetupSettings(IServiceProvider services)
     {
         var settings = services.GetRequiredService<SettingsService>();
         settings.RegisterSetting<AudioSettings>();
