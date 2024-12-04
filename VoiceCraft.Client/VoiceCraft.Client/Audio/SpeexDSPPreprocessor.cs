@@ -1,5 +1,6 @@
 using System;
 using NAudio.Wave;
+using SpeexDSPSharp.Core;
 using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Audio
@@ -12,14 +13,14 @@ namespace VoiceCraft.Client.Audio
 
         public bool IsAvailable => true;
 
-        public bool Enabled => throw new NotImplementedException();
+        public bool Enabled { get; set; }
 
-        public bool Initialized => throw new NotImplementedException();
-
+        public bool Initialized => _echoCanceler != null && _waveFormat != null;
+        
         private bool _disposed;
         private WaveFormat? _waveFormat;
         private int _bytesPerFrame;
-        private SpeexDSPSharp.Core.SpeexDSPEchoCanceler? _echoCanceler;
+        private SpeexDSPEchoCanceler? _echoCanceler;
 
         public void Init(IAudioRecorder recorder, IAudioPlayer player)
         {
@@ -36,14 +37,14 @@ namespace VoiceCraft.Client.Audio
 
             try
             {
-                _echoCanceler = new SpeexDSPSharp.Core.SpeexDSPEchoCanceler(
+                _echoCanceler = new SpeexDSPEchoCanceler(
                     recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, 
                     FilterLengthMs * _waveFormat.SampleRate / 1000, 
                     _waveFormat.Channels, 
                     player.OutputWaveFormat.Channels);
 
                 var sampleRate = _waveFormat.SampleRate;
-                _echoCanceler.Ctl(SpeexDSPSharp.Core.EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
+                _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
             }
             catch (Exception ex)
             {
@@ -55,6 +56,7 @@ namespace VoiceCraft.Client.Audio
         {
             ThrowIfDisposed();
 
+            if (!Enabled) return;
             if (_echoCanceler == null || _waveFormat == null)
             {
                 throw new InvalidOperationException("Speex echo canceller must be intialized with a recorder!");
@@ -71,7 +73,7 @@ namespace VoiceCraft.Client.Audio
 
         public void EchoCancel(byte[] buffer) => EchoCancel(buffer.AsSpan());
 
-        public void EchoPlayback(Span<byte> buffer)
+        public void EchoPlayback(Span<byte> buffer) //Allow playback buffer to put in data regardless if enabled or not.
         {
             ThrowIfDisposed();
 
