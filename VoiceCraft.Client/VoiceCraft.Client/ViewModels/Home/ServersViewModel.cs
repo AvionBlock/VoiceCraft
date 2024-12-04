@@ -1,41 +1,50 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.ViewModels.Settings;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {
     public partial class ServersViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
-        : ViewModelBase
+        : ViewModelBase, IDisposable
     {
         [ObservableProperty]
-        private ServersSettings _servers = settings.Get<ServersSettings>();
+        private ServersSettingsViewModel _serversSettings = new(settings.Get<ServersSettings>(), settings);
 
         [ObservableProperty]
-        private Server? _selectedServer;
+        private ServerViewModel? _selectedServer;
 
-        partial void OnSelectedServerChanged(Server? value)
+        partial void OnSelectedServerChanged(ServerViewModel? value)
         {
             if (value == null) return;
             var vm = navigationService.NavigateTo<SelectedServerViewModel>();
-            vm.SelectedServer = value;
+            vm.SelectedServer = value.Server;
             SelectedServer = null;
         }
 
         [RelayCommand]
-        private void DeleteServer(Server server)
+        private void DeleteServer(ServerViewModel server)
         {
-            Servers.RemoveServer(server);
+            ServersSettings.ServersSettings.RemoveServer(server.Server);
             notificationService.SendSuccessNotification($"{server.Name} has been removed.");
             _ = settings.SaveAsync();
         }
 
         [RelayCommand]
-        private void EditServer(Server? server)
+        private void EditServer(ServerViewModel? server)
         {
-            if (server == null) return; //Somehow can be null.
+            if (server == null) return;
             var vm = navigationService.NavigateTo<EditServerViewModel>();
-            vm.Server = server;
+            vm.Server = server.Server;
+            vm.EditableServer = (Server)server.Server.Clone();
+        }
+
+        public void Dispose()
+        {
+            ServersSettings.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

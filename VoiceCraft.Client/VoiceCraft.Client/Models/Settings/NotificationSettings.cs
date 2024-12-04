@@ -7,12 +7,12 @@ namespace VoiceCraft.Client.Models.Settings
     {
         public override event Action<NotificationSettings>? OnUpdated;
 
-        public ushort DismissDelayMS
+        public ushort DismissDelayMs
         {
-            get => _dismissDelayMS;
+            get => _dismissDelayMs;
             set
             {
-                _dismissDelayMS = value;
+                _dismissDelayMs = value;
                 OnUpdated?.Invoke(this);
             }
         }
@@ -27,12 +27,14 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        private ushort _dismissDelayMS = 2000;
+        private ushort _dismissDelayMs = 2000;
         private bool _disableNotifications;
 
         public override object Clone()
         {
-            return MemberwiseClone();
+            var clone = (NotificationSettings)MemberwiseClone();
+            clone.OnUpdated = null;
+            return clone;
         }
     }
 }

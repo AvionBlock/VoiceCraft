@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Models.Settings
@@ -17,10 +18,19 @@ namespace VoiceCraft.Client.Models.Settings
                 OnUpdated?.Invoke(this);
             }
         }
-        public IEnumerable<Server> Servers => _servers.ToArray();
+
+        public IEnumerable<Server> Servers
+        {
+            get => _servers;
+            set
+            {
+                _servers = value.ToList();
+                OnUpdated?.Invoke(this);
+            }
+        }
 
         private bool _hideServerAddresses;
-        private readonly List<Server> _servers = [];
+        private List<Server> _servers = [];
 
         public void AddServer(Server server)
         {
@@ -51,7 +61,9 @@ namespace VoiceCraft.Client.Models.Settings
 
         public override object Clone()
         {
-            return MemberwiseClone();
+            var clone = (ServersSettings)MemberwiseClone();
+            clone.OnUpdated = null;
+            return clone;
         }
     }
 
@@ -113,7 +125,9 @@ namespace VoiceCraft.Client.Models.Settings
 
         public override object Clone()
         {
-            return MemberwiseClone();
+            var clone = (Server)MemberwiseClone();
+            clone.OnUpdated = null;
+            return clone;
         }
     }
 }

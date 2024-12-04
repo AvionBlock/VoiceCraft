@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:server="clr-namespace:VoiceCraft.Client.Models.Settings"
+             xmlns:server="clr-namespace:VoiceCraft.Client.ViewModels.Settings"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
              d:DesignHeight="450"
              d:DesignWidth="800"
@@ -11,7 +11,7 @@
              mc:Ignorable="d">
     <ScrollViewer>
         <ListBox Background="Transparent"
-                 ItemsSource="{Binding Servers}"
+                 ItemsSource="{Binding ServersSettings.Servers}"
                  SelectedItem="{Binding SelectedServer}"
                  SelectionMode="Single">
             <ListBox.Styles>
@@ -21,7 +21,7 @@
                 </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="{x:Type server:Server}">
+                <DataTemplate DataType="{x:Type server:ServerViewModel}">
                     <Grid RowDefinitions="Auto, Auto, Auto">
                         <TextBlock Grid.Row="0"
                                    HorizontalAlignment="Left"
@@ -51,13 +51,13 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="16"
-                                   Text="{Binding Ip}" />
+                                   Text="{Binding Ip, StringFormat='IP: {0}'}" />
 
                         <TextBlock Grid.Row="2"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="16"
-                                   Text="{Binding Port}" />
+                                   Text="{Binding Port, StringFormat='Port: {0}'}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

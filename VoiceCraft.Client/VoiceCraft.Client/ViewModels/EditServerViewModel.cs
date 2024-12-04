@@ -9,13 +9,9 @@ namespace VoiceCraft.Client.ViewModels
     public partial class EditServerViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
         : ViewModelBase
     {
-        [ObservableProperty]
-        private ServersSettings _servers = settings.Get<ServersSettings>();
-        [ObservableProperty]
-        private Server _server = new();
+        [ObservableProperty] private Server _server = new();
 
-        [ObservableProperty]
-        private Server _editableServer = new();
+        [ObservableProperty] private Server _editableServer = new();
 
         [RelayCommand]
         private void Cancel()
@@ -28,11 +24,12 @@ namespace VoiceCraft.Client.ViewModels
         {
             try
             {
-                Servers.AddServer(EditableServer);
-                Servers.RemoveServer(Server);
+                var serversSettings = settings.Get<ServersSettings>();
+                serversSettings.AddServer(EditableServer);
+                serversSettings.RemoveServer(Server);
 
                 notificationService.SendNotification($"{Server.Name} has been edited.");
-                Server = new Server();
+                EditableServer = new Server();
                 _ = settings.SaveAsync();
                 navigationService.Back();
             }
@@ -40,11 +37,6 @@ namespace VoiceCraft.Client.ViewModels
             {
                 notificationService.SendErrorNotification(ex.Message);
             }
-        }
-
-        partial void OnServerChanged(Server value)
-        {
-            EditableServer = (Server)value.Clone();
         }
     }
 }

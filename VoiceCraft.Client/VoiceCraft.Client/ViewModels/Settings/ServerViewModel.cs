@@ -9,8 +9,9 @@ namespace VoiceCraft.Client.ViewModels.Settings
     {
         private bool _updating;
         private bool _disposed;
-        private readonly Server _server;
         private readonly SettingsService _settingsService;
+        
+        public readonly Server Server;
 
         [ObservableProperty] private string _name;
         [ObservableProperty] private string _ip;
@@ -18,12 +19,12 @@ namespace VoiceCraft.Client.ViewModels.Settings
 
         public ServerViewModel(Server server, SettingsService settingsService)
         {
-            _server = server;
+            Server = server;
             _settingsService = settingsService;
-            _server.OnUpdated += Update;
-            _name = _server.Name;
-            _ip = _server.Ip;
-            _port = _server.Port;
+            Server.OnUpdated += Update;
+            _name = Server.Name;
+            _ip = Server.Ip;
+            _port = Server.Port;
         }
 
         partial void OnNameChanging(string value)
@@ -32,7 +33,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             
             if (_updating) return;
             _updating = true;
-            _server.Name = value;
+            Server.Name = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }
@@ -43,7 +44,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             
             if (_updating) return;
             _updating = true;
-            _server.Ip = value;
+            Server.Ip = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }
@@ -54,7 +55,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             
             if (_updating) return;
             _updating = true;
-            _server.Port = value;
+            Server.Port = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }
@@ -80,7 +81,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
         public void Dispose()
         {
             if(_disposed) return;
-            _server.OnUpdated -= Update;
+            Server.OnUpdated -= Update;
             
             _disposed = true;
             GC.SuppressFinalize(this);

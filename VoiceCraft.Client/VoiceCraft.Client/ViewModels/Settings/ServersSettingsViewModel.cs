@@ -11,19 +11,19 @@ namespace VoiceCraft.Client.ViewModels.Settings
     {
         private bool _updating;
         private bool _disposed;
-        private readonly ServersSettings _serversSettings;
         private readonly SettingsService _settingsService;
 
+        public readonly ServersSettings ServersSettings;
         [ObservableProperty] private bool _hideServerAddresses;
         [ObservableProperty] private ObservableCollection<ServerViewModel> _servers;
 
         public ServersSettingsViewModel(ServersSettings serversSettings, SettingsService settingsService)
         {
-            _serversSettings = serversSettings;
+            ServersSettings = serversSettings;
             _settingsService = settingsService;
-            _serversSettings.OnUpdated += Update;
-            _hideServerAddresses = _serversSettings.HideServerAddresses;
-            _servers = new ObservableCollection<ServerViewModel>(_serversSettings.Servers.Select(s => new ServerViewModel(s, _settingsService)));
+            ServersSettings.OnUpdated += Update;
+            _hideServerAddresses = ServersSettings.HideServerAddresses;
+            _servers = new ObservableCollection<ServerViewModel>(ServersSettings.Servers.Select(s => new ServerViewModel(s, _settingsService)));
         }
 
         partial void OnHideServerAddressesChanging(bool value)
@@ -32,7 +32,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             
             if (_updating) return;
             _updating = true;
-            _serversSettings.HideServerAddresses = value;
+            ServersSettings.HideServerAddresses = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }
@@ -43,6 +43,10 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _updating = true;
             
             HideServerAddresses = serversSettings.HideServerAddresses;
+            foreach (var server in Servers)
+            {
+                server.Dispose();
+            }
             Servers = new ObservableCollection<ServerViewModel>(serversSettings.Servers.Select(x => new ServerViewModel(x, _settingsService)));
             
             _updating = false;
@@ -57,7 +61,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
         public void Dispose()
         {
             if(_disposed) return;
-            _serversSettings.OnUpdated -= Update;
+            ServersSettings.OnUpdated -= Update;
             foreach (var server in Servers)
             {
                 server.Dispose();

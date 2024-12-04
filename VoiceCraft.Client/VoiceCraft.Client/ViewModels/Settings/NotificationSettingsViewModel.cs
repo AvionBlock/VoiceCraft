@@ -20,7 +20,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _notificationSettings = notificationSettings;
             _settingsService = settingsService;
             _notificationSettings.OnUpdated += Update;
-            _dismissDelayMs = _notificationSettings.DismissDelayMS;
+            _dismissDelayMs = _notificationSettings.DismissDelayMs;
             _disableNotifications = _notificationSettings.DisableNotifications;
         }
 
@@ -30,7 +30,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             
             if (_updating) return;
             _updating = true;
-            _notificationSettings.DismissDelayMS = value;
+            _notificationSettings.DismissDelayMs = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }
@@ -51,7 +51,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             if (_updating) return;
             _updating = true;
             
-            DismissDelayMs = notificationSettings.DismissDelayMS;
+            DismissDelayMs = notificationSettings.DismissDelayMs;
             DisableNotifications = notificationSettings.DisableNotifications;
             
             _updating = false;

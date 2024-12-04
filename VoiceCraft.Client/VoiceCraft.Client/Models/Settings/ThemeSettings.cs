@@ -22,7 +22,9 @@ namespace VoiceCraft.Client.Models.Settings
         
         public override object Clone()
         {
-            return MemberwiseClone();
+            var clone = (ThemeSettings)MemberwiseClone();
+            clone.OnUpdated = null;
+            return clone;
         }
     }
 }

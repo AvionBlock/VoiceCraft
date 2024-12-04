@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.Services
                     .Background(ThemesService.GetBrushResource("notificationBackgroundBrush"))
                     .HasBadge("Server")
                     .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMS))
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
                     .Dismiss().WithButton("Dismiss", OnDismiss ?? (_ => {}))
                     .Queue();
             }
@@ -34,7 +34,7 @@ namespace VoiceCraft.Client.Services
                     .Background(ThemesService.GetBrushResource("notificationBackgroundSuccessBrush"))
                     .HasBadge("Server")
                     .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMS))
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
                     .Dismiss().WithButton("Dismiss", OnDismiss ?? (_ => {}))
                     .Queue();
             }
@@ -51,7 +51,7 @@ namespace VoiceCraft.Client.Services
                     .Background(ThemesService.GetBrushResource("notificationBackgroundErrorBrush"))
                     .HasBadge("Error")
                     .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMS))
+                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
                     .Dismiss().WithButton("Dismiss", OnDismiss ?? (_ => {}))
                     .Queue();
             }

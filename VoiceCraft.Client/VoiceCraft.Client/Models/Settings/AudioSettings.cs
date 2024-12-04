@@ -111,7 +111,9 @@ namespace VoiceCraft.Client.Models.Settings
 
         public override object Clone()
         {
-            return MemberwiseClone();
+            var clone = (AudioSettings)MemberwiseClone();
+            clone.OnUpdated = null;
+            return clone;
         }
     }
 }
