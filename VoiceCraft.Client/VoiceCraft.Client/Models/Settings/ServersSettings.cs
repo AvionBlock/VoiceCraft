@@ -32,8 +32,6 @@ namespace VoiceCraft.Client.Models.Settings
                 throw new Exception($"Server name cannot be longer than {Server.NameLimit} characters!");
             if (server.Ip.Length > Server.IpLimit)
                 throw new Exception($"Server IP cannot be longer than {Server.IpLimit} characters!");
-            if(server.Key.Length > Server.KeyLimit)
-                throw new Exception($"Server key cannot be longer than {Server.KeyLimit} characters!");
 
             _servers.Insert(0, server);
             OnUpdated?.Invoke(this);
@@ -63,12 +61,11 @@ namespace VoiceCraft.Client.Models.Settings
         
         public const int NameLimit = 12;
         public const int IpLimit = 30;
-        public const int KeyLimit = 10;
         
         private string _name = string.Empty;
         private string _ip = string.Empty;
         private ushort _port;
-        private string _key = string.Empty;
+        private string _token = string.Empty;
         
         public string Name
         {
@@ -104,15 +101,13 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        public string Key
+        public string Token
         {
-            get => _key;
+            get => _token;
             set
             {
-                if(value.Length > KeyLimit)
-                    throw new ArgumentException("Key cannot be longer than {KeyLimit} characters!");
-                _key = value;
-                OnUpdated?.Invoke(this);   
+                _token = value;
+                OnUpdated?.Invoke(this);
             }
         }
 

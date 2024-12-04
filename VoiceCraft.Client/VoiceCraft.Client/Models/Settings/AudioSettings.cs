@@ -52,14 +52,14 @@ namespace VoiceCraft.Client.Models.Settings
             get => _microphoneSensitivity;
             set
             {
-                if(value > 1 || value < 0)
+                if(value is > 1 or < 0)
                     throw new ArgumentException("Microphone sensitivity must be between 0 and 1.");
                 _microphoneSensitivity = value;
                 OnUpdated?.Invoke(this);
             }
         }
 
-        public bool AEC
+        public bool Aec
         {
             get => _aec;
             set
@@ -69,7 +69,7 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        public bool AGC
+        public bool Agc
         {
             get => _agc;
             set
@@ -89,7 +89,7 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        public bool VAD
+        public bool Vad
         {
             get => _vad;
             set
@@ -99,15 +99,15 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        public string _inputDevice = "Default";
-        public string _outputDevice = "Default";
-        public Guid _preprocessor = Guid.Empty;
-        public Guid _echoCanceler = Guid.Empty;
-        public float _microphoneSensitivity = 0.04f;
-        public bool _aec;
-        public bool _agc;
-        public bool _denoiser;
-        public bool _vad;
+        private string _inputDevice = "Default";
+        private string _outputDevice = "Default";
+        private Guid _preprocessor = Guid.Empty;
+        private Guid _echoCanceler = Guid.Empty;
+        private float _microphoneSensitivity = 0.04f;
+        private bool _aec;
+        private bool _agc;
+        private bool _denoiser;
+        private bool _vad;
 
         public override object Clone()
         {

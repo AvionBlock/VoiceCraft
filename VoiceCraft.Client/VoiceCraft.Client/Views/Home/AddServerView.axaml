@@ -23,11 +23,6 @@
                                Maximum="65535"
                                Minimum="0"
                                Value="{Binding Server.Port}" />
-                <TextBlock Text="Key" />
-                <NumericUpDown Increment="1"
-                               Maximum="65535"
-                               Minimum="0"
-                               Value="{Binding Server.Key}" />
                 <Button HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
                         Command="{Binding AddServerCommand}">

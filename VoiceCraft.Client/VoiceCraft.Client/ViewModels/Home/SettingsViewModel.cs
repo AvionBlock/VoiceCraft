@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,7 +9,7 @@ using VoiceCraft.Client.ViewModels.Settings;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {
-    public partial class SettingsViewModel(ThemesService themesService, SettingsService settingsService, AudioService audioService) : ViewModelBase
+    public partial class SettingsViewModel(ThemesService themesService, SettingsService settingsService, AudioService audioService) : ViewModelBase, IDisposable
     {
         private SignalGenerator _signal = new(48000, 2)
         {
@@ -20,19 +21,19 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty] private bool _generalSettingsExpanded;
         //Theme Settings
         [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
-        [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService.Get<ThemeSettings>());
+        [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService.Get<ThemeSettings>(), settingsService);
         //Notification Settings
-        [ObservableProperty] private NotificationSettingsViewModel _notificationSettings = new(settingsService.Get<NotificationSettings>());
+        [ObservableProperty] private NotificationSettingsViewModel _notificationSettings = new(settingsService.Get<NotificationSettings>(), settingsService);
         //Server Settings
-        [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService.Get<ServersSettings>());
+        [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService.Get<ServersSettings>(), settingsService);
         
         //Audio Settings
         [ObservableProperty] private bool _audioSettingsExpanded;
-        [ObservableProperty] private AudioSettingsViewModel _audioSettings = new(settingsService.Get<AudioSettings>());
+        [ObservableProperty] private AudioSettingsViewModel _audioSettings = new(settingsService.Get<AudioSettings>(), settingsService);
         [ObservableProperty] private ObservableCollection<string> _inputDevices = new(audioService.GetInputDevices());
         [ObservableProperty] private ObservableCollection<string> _outputDevices = new(audioService.GetOutputDevices());
-        [ObservableProperty] private ObservableCollection<RegisteredPreprocessor> _preprocessors = [];
-        [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
+        [ObservableProperty] private ObservableCollection<RegisteredPreprocessor> _preprocessors = new(audioService.RegisteredPreprocessors);
+        [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = new(audioService.RegisteredEchoCancelers);
         
         //Testers
         [ObservableProperty] private bool _isRecording;
@@ -49,6 +50,15 @@ namespace VoiceCraft.Client.ViewModels.Home
         private void TestPlayer()
         {
             
+        }
+
+        public void Dispose()
+        {
+            ThemeSettings.Dispose();
+            NotificationSettings.Dispose();
+            ServersSettings.Dispose();
+            AudioSettings.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -25,9 +25,14 @@
         <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />
+        <PackageReference Include="SpeexDSPSharp" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Models\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
     </ItemGroup>
 </Project>

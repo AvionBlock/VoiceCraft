@@ -47,16 +47,6 @@
                         </TextBlock>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Text="Key: " />
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   Text="{Binding SelectedServer.Key}" />
-                    </StackPanel>
-
                     <TextBlock Margin="0,10,0,0"
                                VerticalAlignment="Center"
                                FontSize="17"

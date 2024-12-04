@@ -1,7 +1,7 @@
 using System;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Settings
 {
@@ -10,28 +10,29 @@ namespace VoiceCraft.Client.ViewModels.Settings
         private bool _updating;
         private bool _disposed;
         private readonly ThemeSettings _themeSettings;
+        private readonly SettingsService _settingsService;
 
         [ObservableProperty] private string _selectedTheme;
 
-        public ThemeSettingsViewModel(ThemeSettings themeSettings)
+        public ThemeSettingsViewModel(ThemeSettings themeSettings, SettingsService settingsService)
         {
             _themeSettings = themeSettings;
+            _settingsService = settingsService;
             _themeSettings.OnUpdated += Update;
             _selectedTheme = _themeSettings.SelectedTheme;
         }
-        protected override void OnPropertyChanging(PropertyChangingEventArgs e)
+
+        partial void OnSelectedThemeChanging(string value)
         {
             ThrowIfDisposed();
             
             if (_updating) return;
             _updating = true;
-            
-            _themeSettings.SelectedTheme = SelectedTheme;
-            
-            base.OnPropertyChanging(e);
+            _themeSettings.SelectedTheme = value;
+            _ = _settingsService.SaveAsync();
             _updating = false;
         }
-        
+
         private void Update(ThemeSettings themeSettings)
         {
             if (_updating) return;

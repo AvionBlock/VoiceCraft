@@ -72,10 +72,6 @@ namespace VoiceCraft.Client.Services
 
         public abstract List<string> GetOutputDevices();
 
-        public abstract List<string> GetPreprocessors();
-
-        public abstract List<string> GetEchoCancelers();
-
         public abstract IAudioRecorder CreateAudioRecorder();
 
         public abstract IAudioPlayer CreateAudioPlayer();
@@ -83,15 +79,15 @@ namespace VoiceCraft.Client.Services
 
     public class RegisteredEchoCanceler(Guid id, string name, Type? type)
     {
-        public readonly Guid Id = id;
-        public readonly string Name = name;
-        public readonly Type? Type = type;
+        public Guid Id { get; } = id;
+        public string Name { get; } = name;
+        public Type? Type { get; } = type;
     }
 
     public class RegisteredPreprocessor(Guid id, string name, Type? type)
     {
-        public readonly Guid Id = id;
-        public readonly string Name = name;
-        public readonly Type? Type = type;
+        public Guid Id { get; } = id;
+        public string Name { get; } = name;
+        public Type? Type { get; } = type;
     }
 }

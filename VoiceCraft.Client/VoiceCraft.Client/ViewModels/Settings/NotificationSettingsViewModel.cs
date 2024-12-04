@@ -1,7 +1,7 @@
 using System;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Settings
 {
@@ -10,32 +10,42 @@ namespace VoiceCraft.Client.ViewModels.Settings
         private bool _updating;
         private bool _disposed;
         private readonly NotificationSettings _notificationSettings;
+        private readonly SettingsService _settingsService;
 
         [ObservableProperty] private ushort _dismissDelayMs;
         [ObservableProperty] private bool _disableNotifications;
 
-        public NotificationSettingsViewModel(NotificationSettings notificationSettings)
+        public NotificationSettingsViewModel(NotificationSettings notificationSettings, SettingsService settingsService)
         {
             _notificationSettings = notificationSettings;
+            _settingsService = settingsService;
             _notificationSettings.OnUpdated += Update;
             _dismissDelayMs = _notificationSettings.DismissDelayMS;
             _disableNotifications = _notificationSettings.DisableNotifications;
         }
-        
-        protected override void OnPropertyChanging(PropertyChangingEventArgs e)
+
+        partial void OnDismissDelayMsChanging(ushort value)
         {
             ThrowIfDisposed();
             
             if (_updating) return;
             _updating = true;
-            
-            _notificationSettings.DismissDelayMS = DismissDelayMs;
-            _notificationSettings.DisableNotifications = DisableNotifications;
-            
-            base.OnPropertyChanging(e);
+            _notificationSettings.DismissDelayMS = value;
+            _ = _settingsService.SaveAsync();
             _updating = false;
         }
-        
+
+        partial void OnDisableNotificationsChanging(bool value)
+        {
+            ThrowIfDisposed();
+            
+            if (_updating) return;
+            _updating = true;
+            _notificationSettings.DisableNotifications = value;
+            _ = _settingsService.SaveAsync();
+            _updating = false;
+        }
+
         private void Update(NotificationSettings notificationSettings)
         {
             if (_updating) return;

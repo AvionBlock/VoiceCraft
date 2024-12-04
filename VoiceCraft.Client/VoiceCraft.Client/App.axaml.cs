@@ -6,6 +6,7 @@ using System.Linq;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels;
@@ -26,7 +27,7 @@ public class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         var serviceProvider = BuildServiceProvider();
-        SetupSettings(serviceProvider);
+        SetupServices(serviceProvider);
         
         switch (ApplicationLifetime)
         {
@@ -70,7 +71,7 @@ public class App : Application
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
         ServiceCollection.AddSingleton<ThemesService>();
-        ServiceCollection.AddSingleton<SettingsService>();
+        ServiceCollection.AddSingleton(SetupSettings());
         
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -89,12 +90,21 @@ public class App : Application
         return ServiceCollection.BuildServiceProvider();
     }
 
-    private static void SetupSettings(IServiceProvider services)
+    private static void SetupServices(IServiceProvider serviceProvider)
     {
-        var settings = services.GetRequiredService<SettingsService>();
+        var audioService = serviceProvider.GetRequiredService<AudioService>();
+        audioService.RegisterPreprocessor<SpeexDspPreprocessor>(Guid.Parse("6a9fba40-453d-4943-bebc-82963c8397ae"), "SpeexDSP Preprocessor");
+        audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed"), "SpeexDSP Echo Canceler");
+    }
+
+    private static SettingsService SetupSettings()
+    {
+        var settings = new SettingsService();
         settings.RegisterSetting<AudioSettings>();
         settings.RegisterSetting<NotificationSettings>();
         settings.RegisterSetting<ServersSettings>();
         settings.RegisterSetting<ThemeSettings>();
+        settings.Load();
+        return settings;
     }
 }

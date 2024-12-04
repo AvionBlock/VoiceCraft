@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             xmlns:registered="clr-namespace:VoiceCraft.Client.Services"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:SettingsViewModel"
@@ -73,7 +74,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Preprocessors}"
-                              SelectedItem="{Binding AudioSettings.Preprocessor}" />
+                              SelectedValue="{Binding AudioSettings.Preprocessor}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredPreprocessor}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -82,7 +90,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding EchoCancelers}"
-                              SelectedItem="{Binding AudioSettings.EchoCanceler}" />
+                              SelectedValue="{Binding AudioSettings.EchoCanceler}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredEchoCanceler}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <StackPanel>
                         <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='Microphone Sensitivity: {0:P0}'}" />

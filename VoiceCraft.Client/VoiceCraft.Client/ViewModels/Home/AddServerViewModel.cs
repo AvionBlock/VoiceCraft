@@ -15,7 +15,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         private Server _server = new();
 
         [RelayCommand]
-        public void AddServer()
+        private void AddServer()
         {
             try
             {

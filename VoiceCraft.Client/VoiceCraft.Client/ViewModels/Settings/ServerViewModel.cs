@@ -1,7 +1,7 @@
 using System;
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Settings
 {
@@ -10,35 +10,52 @@ namespace VoiceCraft.Client.ViewModels.Settings
         private bool _updating;
         private bool _disposed;
         private readonly Server _server;
+        private readonly SettingsService _settingsService;
 
         [ObservableProperty] private string _name;
         [ObservableProperty] private string _ip;
         [ObservableProperty] private ushort _port;
-        [ObservableProperty] private string _key;
 
-        public ServerViewModel(Server server)
+        public ServerViewModel(Server server, SettingsService settingsService)
         {
             _server = server;
+            _settingsService = settingsService;
             _server.OnUpdated += Update;
             _name = _server.Name;
             _ip = _server.Ip;
             _port = _server.Port;
-            _key = _server.Key;
         }
 
-        protected override void OnPropertyChanging(PropertyChangingEventArgs e)
+        partial void OnNameChanging(string value)
         {
             ThrowIfDisposed();
             
             if (_updating) return;
             _updating = true;
+            _server.Name = value;
+            _ = _settingsService.SaveAsync();
+            _updating = false;
+        }
+
+        partial void OnIpChanging(string value)
+        {
+            ThrowIfDisposed();
             
-            _server.Name = Name;
-            _server.Ip = Ip;
-            _server.Port = Port;
-            _server.Key = Key;
+            if (_updating) return;
+            _updating = true;
+            _server.Ip = value;
+            _ = _settingsService.SaveAsync();
+            _updating = false;
+        }
+
+        partial void OnPortChanging(ushort value)
+        {
+            ThrowIfDisposed();
             
-            base.OnPropertyChanging(e);
+            if (_updating) return;
+            _updating = true;
+            _server.Port = value;
+            _ = _settingsService.SaveAsync();
             _updating = false;
         }
 
@@ -50,7 +67,6 @@ namespace VoiceCraft.Client.ViewModels.Settings
             Name = server.Name;
             Ip = server.Ip;
             Port = server.Port;
-            Key = server.Key;
             
             _updating = false;
         }
