@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Android.Audio
             }
             set
             {
-                if (_echoCanceler != null) _echoCanceler.SetEnabled(value);
+                _echoCanceler?.SetEnabled(value);
                 _enabled = value;
             }
         }

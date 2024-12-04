@@ -3,8 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:controls="clr-namespace:Avalonia.Notification.Controls;assembly=Notification.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VoiceCraft.Client.Views.MainView"
              x:DataType="vm:MainViewModel">
-    <TransitioningContentControl Content="{Binding Content}"></TransitioningContentControl>
+    <Grid>
+        <TransitioningContentControl Content="{Binding Content}"></TransitioningContentControl>
+        <controls:NotificationMessageContainer Manager="{Binding Manager}" />
+    </Grid>
 </UserControl>
