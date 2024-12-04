@@ -6,6 +6,7 @@ using Avalonia.Styling;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
 
 namespace VoiceCraft.Client.Services
 {
@@ -16,9 +17,9 @@ namespace VoiceCraft.Client.Services
         private readonly ConcurrentDictionary<Guid, RegisteredTheme> _registeredThemes = new();
         private RegisteredTheme? _currentTheme;
 
-        public bool RegisterTheme(Guid id, string themeName, IStyle[] themeStyles, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light)
+        public bool RegisterTheme(Guid id, string name, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light)
         {
-            return _registeredThemes.TryAdd(id, new RegisteredTheme(id, themeVariant, themeStyles));
+            return _registeredThemes.TryAdd(id, new RegisteredTheme(id, name, themeVariant, themeStyles, resourceDictionaries));
         }
 
         public bool UnregisterTheme(Guid id)
@@ -38,12 +39,20 @@ namespace VoiceCraft.Client.Services
                 {
                     Application.Current.Styles.Remove(themeStyle);
                 }
+                foreach (var resource in _currentTheme.Resources)
+                {
+                    Application.Current.Resources.MergedDictionaries.Remove(resource);
+                }
             }
 
             _currentTheme = theme;
             foreach (var themeStyle in theme.ThemeStyles)
             {
                 Application.Current.Styles.Add(themeStyle);
+            }
+            foreach (var resource in _currentTheme.Resources)
+            {
+                Application.Current.Resources.MergedDictionaries.Add(resource);
             }
         }
 
@@ -59,10 +68,12 @@ namespace VoiceCraft.Client.Services
         }
     }
     
-    public class RegisteredTheme(Guid id, PlatformThemeVariant variant, IStyle[] themeStyles)
+    public class RegisteredTheme(Guid id, string name, PlatformThemeVariant variant, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries)
     {
+        public readonly string Name = name;
         public readonly Guid Id = id;
         public readonly PlatformThemeVariant Variant = variant;
         public readonly IStyle[] ThemeStyles = themeStyles;
+        public readonly IResourceDictionary[] Resources = resourceDictionaries;
     }
 }

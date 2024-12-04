@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Themes\Dark\VcColors.axaml.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -34,5 +35,18 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml" />
+      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml.cs" />
+      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCIcons.axaml" />
+      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCStyles.axaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Themes\Dark\VcIcons.axaml.cs">
+        <DependentUpon>VCIcons.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

@@ -5,10 +5,12 @@ using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
+using Avalonia.Platform;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
@@ -95,6 +97,11 @@ public class App : Application
         var audioService = serviceProvider.GetRequiredService<AudioService>();
         audioService.RegisterPreprocessor<SpeexDspPreprocessor>(Guid.Parse("6a9fba40-453d-4943-bebc-82963c8397ae"), "SpeexDSP Preprocessor");
         audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed"), "SpeexDSP Echo Canceler");
+        
+        var themesService = serviceProvider.GetRequiredService<ThemesService>();
+        themesService.RegisterTheme(Guid.Empty, "Dark", [new VcStyles(), new VcIcons()], [new VcColors(), new VcResources()], PlatformThemeVariant.Dark);
+        
+        themesService.SwitchTheme(Guid.Empty);
     }
 
     private static SettingsService SetupSettings()

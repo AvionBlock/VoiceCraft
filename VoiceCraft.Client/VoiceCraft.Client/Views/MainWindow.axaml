@@ -5,9 +5,10 @@
         xmlns:views="clr-namespace:VoiceCraft.Client.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         MinHeight="200" MinWidth="200"
+        Height="450" Width="800"
         x:Class="VoiceCraft.Client.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="VoiceCraft.Client">
-        <!-- MinHeight and MinWidth are set for making the window not completely disappear when resizing. -->
-        <views:MainView />
+    <!-- MinHeight and MinWidth are set for making the window not completely disappear when resizing. -->
+    <views:MainView />
 </Window>
