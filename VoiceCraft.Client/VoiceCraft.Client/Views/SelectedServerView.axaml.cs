@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace VoiceCraft.Client.Views;
 
-public partial class ServerView : UserControl
+public partial class SelectedServerView : UserControl
 {
-    public ServerView()
+    public SelectedServerView()
     {
         InitializeComponent();
     }

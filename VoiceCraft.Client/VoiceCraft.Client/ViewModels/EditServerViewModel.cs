@@ -1,4 +1,3 @@
-using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -7,7 +6,7 @@ using VoiceCraft.Client.Models.Settings;
 
 namespace VoiceCraft.Client.ViewModels
 {
-    public partial class EditServerViewModel(HistoryRouter<ViewModelBase> router, NotificationService notificationService, SettingsService settings)
+    public partial class EditServerViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
         : ViewModelBase
     {
         [ObservableProperty]
@@ -19,13 +18,13 @@ namespace VoiceCraft.Client.ViewModels
         private Server _editableServer = new();
 
         [RelayCommand]
-        public void Cancel()
+        private void Cancel()
         {
-            router.Back();
+            navigationService.Back();
         }
 
         [RelayCommand]
-        public void EditServer()
+        private void EditServer()
         {
             try
             {
@@ -35,7 +34,7 @@ namespace VoiceCraft.Client.ViewModels
                 notificationService.SendNotification($"{Server.Name} has been edited.");
                 Server = new Server();
                 _ = settings.SaveAsync();
-                router.Back();
+                navigationService.Back();
             }
             catch (Exception ex)
             {

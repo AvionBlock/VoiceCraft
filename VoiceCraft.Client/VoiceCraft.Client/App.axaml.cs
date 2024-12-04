@@ -5,7 +5,6 @@ using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
-using Avalonia.SimpleRouter;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -67,7 +66,7 @@ public class App : Application
     private static ServiceProvider BuildServiceProvider()
     {
         //Service Registry
-        ServiceCollection.AddSingleton<HistoryRouter<ViewModelBase>>(x => new HistoryRouter<ViewModelBase>(y => (ViewModelBase)x.GetRequiredService(y)));
+        ServiceCollection.AddSingleton<NavigationService>(x => new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
         ServiceCollection.AddSingleton<ThemesService>();
@@ -84,7 +83,7 @@ public class App : Application
         //Home Pages
         ServiceCollection.AddTransient<ServersViewModel>();
         ServiceCollection.AddTransient<SettingsViewModel>();
-        ServiceCollection.AddSingleton<ServerViewModel>();
+        ServiceCollection.AddSingleton<SelectedServerViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
         
         return ServiceCollection.BuildServiceProvider();

@@ -1,14 +1,12 @@
-using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels
 {
-    public partial class ServerViewModel : ViewModelBase
+    public partial class SelectedServerViewModel(NavigationService navigationService) : ViewModelBase
     {
-        private readonly HistoryRouter<ViewModelBase> _router;
-
         [ObservableProperty]
         private Server _selectedServer = new();
 
@@ -21,19 +19,14 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty]
         private string _connectedParticipants = "2";
 
-        public ServerViewModel(HistoryRouter<ViewModelBase> router)
+        [RelayCommand]
+        private void Cancel()
         {
-            _router = router;
+            navigationService.Back();
         }
 
         [RelayCommand]
-        public void Cancel()
-        {
-            _router.Back();
-        }
-
-        [RelayCommand]
-        public void Connect()
+        private void Connect()
         {
         }
     }

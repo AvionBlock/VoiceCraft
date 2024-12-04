@@ -17,7 +17,7 @@
                 <TextBlock Text="Name" />
                 <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding Server.Name}" />
                 <TextBlock Text="IP" />
-                <TextBox MaxLength="{x:Static server:Server.IPLimit}" Text="{Binding Server.Ip}" />
+                <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding Server.Ip}" />
                 <TextBlock Text="Port" />
                 <NumericUpDown Increment="1"
                                Maximum="65535"

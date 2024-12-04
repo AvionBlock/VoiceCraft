@@ -25,7 +25,6 @@
         <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />
-        <PackageReference Include="Sandreas.Avalonia.SimpleRouter" />
     </ItemGroup>
 
     <ItemGroup>

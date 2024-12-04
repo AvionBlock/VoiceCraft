@@ -1,16 +1,17 @@
-﻿using Avalonia.SimpleRouter;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using VoiceCraft.Client.Services;
+
 namespace VoiceCraft.Client.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         [ObservableProperty]
         private object _content = default!;
-        public MainViewModel(HistoryRouter<ViewModelBase> router)
+        public MainViewModel(NavigationService navigationService)
         {
             // register route changed event to set content to viewModel, whenever 
             // a route changes
-            router.CurrentViewModelChanged += viewModel =>
+            navigationService.OnViewModelChanged += viewModel =>
             {
                 if(Content is ViewModelBase previousViewModel)
                     previousViewModel.OnDisappearing();
@@ -18,7 +19,7 @@ namespace VoiceCraft.Client.ViewModels
                 viewModel.OnAppearing();
             };
             // change to HomeView 
-            router.GoTo<HomeViewModel>();
+            navigationService.NavigateTo<HomeViewModel>();
         }
     }
 }

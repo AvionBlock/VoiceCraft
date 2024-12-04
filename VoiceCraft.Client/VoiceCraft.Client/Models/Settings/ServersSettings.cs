@@ -30,8 +30,10 @@ namespace VoiceCraft.Client.Models.Settings
                 throw new Exception("Server IP cannot be empty or whitespace!");
             if (server.Name.Length > Server.NameLimit)
                 throw new Exception($"Server name cannot be longer than {Server.NameLimit} characters!");
-            if (server.Ip.Length > Server.IPLimit)
-                throw new Exception($"Server IP cannot be longer than {Server.IPLimit} characters!");
+            if (server.Ip.Length > Server.IpLimit)
+                throw new Exception($"Server IP cannot be longer than {Server.IpLimit} characters!");
+            if(server.Key.Length > Server.KeyLimit)
+                throw new Exception($"Server key cannot be longer than {Server.KeyLimit} characters!");
 
             _servers.Insert(0, server);
             OnUpdated?.Invoke(this);
@@ -60,7 +62,7 @@ namespace VoiceCraft.Client.Models.Settings
         public override event Action<Server>? OnUpdated;
         
         public const int NameLimit = 12;
-        public const int IPLimit = 30;
+        public const int IpLimit = 30;
         public const int KeyLimit = 10;
         
         private string _name = string.Empty;
@@ -85,7 +87,7 @@ namespace VoiceCraft.Client.Models.Settings
             get => _ip;
             set
             {
-                if(value.Length > IPLimit)
+                if(value.Length > IpLimit)
                     throw new ArgumentException("IP address cannot be longer than {IPLimit} characters!");
                 _ip = value;
                 OnUpdated?.Invoke(this);

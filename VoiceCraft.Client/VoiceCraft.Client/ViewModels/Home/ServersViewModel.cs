@@ -1,4 +1,3 @@
-using Avalonia.SimpleRouter;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
@@ -6,7 +5,7 @@ using VoiceCraft.Client.Models.Settings;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {
-    public partial class ServersViewModel(HistoryRouter<ViewModelBase> router, NotificationService notificationService, SettingsService settings)
+    public partial class ServersViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
         : ViewModelBase
     {
         [ObservableProperty]
@@ -18,13 +17,13 @@ namespace VoiceCraft.Client.ViewModels.Home
         partial void OnSelectedServerChanged(Server? value)
         {
             if (value == null) return;
-            var vm = router.GoTo<ServerViewModel>();
+            var vm = navigationService.NavigateTo<SelectedServerViewModel>();
             vm.SelectedServer = value;
             SelectedServer = null;
         }
 
         [RelayCommand]
-        public void DeleteServer(Server server)
+        private void DeleteServer(Server server)
         {
             Servers.RemoveServer(server);
             notificationService.SendSuccessNotification($"{server.Name} has been removed.");
@@ -32,10 +31,10 @@ namespace VoiceCraft.Client.ViewModels.Home
         }
 
         [RelayCommand]
-        public void EditServer(Server? server)
+        private void EditServer(Server? server)
         {
             if (server == null) return; //Somehow can be null.
-            var vm = router.GoTo<EditServerViewModel>();
+            var vm = navigationService.NavigateTo<EditServerViewModel>();
             vm.Server = server;
         }
     }
