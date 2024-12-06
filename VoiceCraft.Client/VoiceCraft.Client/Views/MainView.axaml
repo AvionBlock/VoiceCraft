@@ -8,7 +8,8 @@
              x:Class="VoiceCraft.Client.Views.MainView"
              x:DataType="vm:MainViewModel">
     <Grid>
-        <TransitioningContentControl Content="{Binding Content}"></TransitioningContentControl>
+        <Image Classes="background" Source="{Binding BackgroundImage}" Stretch="UniformToFill" />
+        <TransitioningContentControl Content="{Binding Content}" />
         <controls:NotificationMessageContainer Manager="{Binding Manager}" />
     </Grid>
 </UserControl>

@@ -5,12 +5,11 @@ using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
-using Avalonia.Platform;
+using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
@@ -99,9 +98,13 @@ public class App : Application
         audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed"), "SpeexDSP Echo Canceler");
         
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
-        themesService.RegisterTheme(Guid.Empty, "Dark", [new VcStyles(), new VcIcons()], [new VcColors(), new VcResources()], PlatformThemeVariant.Dark);
-        
-        themesService.SwitchTheme(Guid.Empty);
+        themesService.RegisterTheme(Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e"), "Dark", [new Themes.Dark.Styles()], [new Themes.Dark.VcColors(), new Themes.Dark.Resources()], ThemeVariant.Dark);
+        themesService.RegisterTheme(Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125"), "Light", [new Themes.Light.Styles()], [new Themes.Light.Colors(), new Themes.Light.Resources()], ThemeVariant.Light);
+        themesService.RegisterTheme(Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52a"), "Lavender Dark", [new Themes.Dark.Styles()], [new Themes.Lavender_Dark.Colors(), new Themes.Dark.Resources()], ThemeVariant.Dark);
+        themesService.RegisterBackgroundImage(Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87"), "Dock Night",
+            "avares://VoiceCraft.Client/Assets/bgdark.png");
+        themesService.RegisterBackgroundImage(Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1"), "Dock Day",
+            "avares://VoiceCraft.Client/Assets/bglight.png");
     }
 
     private static SettingsService SetupSettings()

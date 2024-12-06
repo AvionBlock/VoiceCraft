@@ -11,24 +11,41 @@ namespace VoiceCraft.Client.ViewModels.Settings
         private bool _disposed;
         private readonly ThemeSettings _themeSettings;
         private readonly SettingsService _settingsService;
+        private readonly ThemesService _themesService;
 
-        [ObservableProperty] private string _selectedTheme;
+        [ObservableProperty] private Guid _selectedTheme;
+        [ObservableProperty] private Guid _selectedBackgroundImage;
 
-        public ThemeSettingsViewModel(ThemeSettings themeSettings, SettingsService settingsService)
+        public ThemeSettingsViewModel(ThemeSettings themeSettings, SettingsService settingsService, ThemesService themesService)
         {
             _themeSettings = themeSettings;
             _settingsService = settingsService;
+            _themesService = themesService;
             _themeSettings.OnUpdated += Update;
             _selectedTheme = _themeSettings.SelectedTheme;
+            _selectedBackgroundImage = _themeSettings.SelectedBackgroundImage;
         }
 
-        partial void OnSelectedThemeChanging(string value)
+        partial void OnSelectedThemeChanging(Guid value)
         {
             ThrowIfDisposed();
+            _themesService.SwitchTheme(value);
             
             if (_updating) return;
             _updating = true;
             _themeSettings.SelectedTheme = value;
+            _ = _settingsService.SaveAsync();
+            _updating = false;
+        }
+        
+        partial void OnSelectedBackgroundImageChanging(Guid value)
+        {
+            ThrowIfDisposed();
+            _themesService.SwitchBackgroundImage(value);
+            
+            if (_updating) return;
+            _updating = true;
+            _themeSettings.SelectedBackgroundImage = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }

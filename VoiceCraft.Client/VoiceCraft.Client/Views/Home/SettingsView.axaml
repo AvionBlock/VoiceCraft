@@ -23,7 +23,30 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Themes}"
-                              SelectedItem="{Binding ThemeSettings.SelectedTheme}" />
+                              SelectedValue="{Binding ThemeSettings.SelectedTheme}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredTheme}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="Background Image" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding BackgroundImages}"
+                              SelectedValue="{Binding ThemeSettings.SelectedBackgroundImage}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredBackgroundImage}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"

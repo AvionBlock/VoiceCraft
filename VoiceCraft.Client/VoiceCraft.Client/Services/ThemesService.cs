@@ -1,37 +1,85 @@
 using System;
 using Avalonia;
 using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Styling;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using VoiceCraft.Client.Utils;
 
 namespace VoiceCraft.Client.Services
 {
     public class ThemesService
     {
         public IEnumerable<RegisteredTheme> RegisteredThemes => _registeredThemes.Values.ToArray();
+        public IEnumerable<RegisteredBackgroundImage> RegisteredBackgroundImages => _registeredBackgroundImages.Values.ToArray();
         
-        private readonly ConcurrentDictionary<Guid, RegisteredTheme> _registeredThemes = new();
-        private RegisteredTheme? _currentTheme;
+        public event Action<RegisteredTheme?>? OnThemeChanged;
+        public event Action<RegisteredBackgroundImage?>? OnBackgroundImageChanged;
 
-        public bool RegisterTheme(Guid id, string name, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries, PlatformThemeVariant themeVariant = PlatformThemeVariant.Light)
+        private readonly ConcurrentDictionary<Guid, RegisteredTheme> _registeredThemes = new();
+        private readonly ConcurrentDictionary<Guid, RegisteredBackgroundImage> _registeredBackgroundImages = new();
+        private RegisteredTheme? _currentTheme;
+        private RegisteredBackgroundImage? _currentBackgroundImage;
+
+        public ThemesService()
+        {
+            _registeredThemes.TryAdd(Guid.Empty, new RegisteredTheme(Guid.Empty, "Default", ThemeVariant.Default, [], []));
+            _registeredBackgroundImages.TryAdd(Guid.Empty,
+                new RegisteredBackgroundImage(Guid.Empty, "None", string.Empty));
+        }
+
+        public bool RegisterTheme(Guid id, string name, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries, ThemeVariant themeVariant)
         {
             return _registeredThemes.TryAdd(id, new RegisteredTheme(id, name, themeVariant, themeStyles, resourceDictionaries));
         }
 
         public bool UnregisterTheme(Guid id)
         {
-            return _registeredThemes.TryRemove(id, out _);
+            if (id == Guid.Empty) return false;
+            
+            var removed = _registeredThemes.TryRemove(id, out var theme);
+            if(theme == _currentTheme)
+                SwitchTheme(Guid.Empty);
+            return removed;
+        }
+
+        public bool RegisterBackgroundImage(Guid id, string name, string imagePath)
+        {
+            return _registeredBackgroundImages.TryAdd(id, new RegisteredBackgroundImage(id, name, imagePath));
+        }
+        
+        public bool UnregisterBackgroundImage(Guid id)
+        {
+            if (id == Guid.Empty) return false;
+            
+            var removed = _registeredBackgroundImages.TryRemove(id, out var backgroundImage);
+            if (backgroundImage == _currentBackgroundImage)
+                SwitchBackgroundImage(Guid.Empty);
+            backgroundImage?.UnloadBitmap();
+            return removed;
         }
 
         public void SwitchTheme(Guid id)
         {
-            if (!_registeredThemes.TryGetValue(id, out var theme) || Application.Current == null) return;
+            if (!_registeredThemes.TryGetValue(id, out var theme) || _currentTheme == theme || Application.Current == null) return;
             Application.Current.Resources.MergedDictionaries.Clear();
-            Application.Current.RequestedThemeVariant = theme.Variant == PlatformThemeVariant.Light ? ThemeVariant.Light : ThemeVariant.Dark;
+            if (id == Guid.Empty)
+            {
+                OnThemeChanged?.Invoke(null);
+                Application.Current.RequestedThemeVariant = ThemeVariant.Default;
+                if (_currentTheme == null) return;
+                foreach (var themeStyle in _currentTheme.ThemeStyles)
+                {
+                    Application.Current.Styles.Remove(themeStyle);
+                }
+                _currentTheme = null;
+                return;
+            }
 
             if (_currentTheme != null)
             {
@@ -39,13 +87,10 @@ namespace VoiceCraft.Client.Services
                 {
                     Application.Current.Styles.Remove(themeStyle);
                 }
-                foreach (var resource in _currentTheme.Resources)
-                {
-                    Application.Current.Resources.MergedDictionaries.Remove(resource);
-                }
             }
 
             _currentTheme = theme;
+            Application.Current.RequestedThemeVariant = theme.Variant;
             foreach (var themeStyle in theme.ThemeStyles)
             {
                 Application.Current.Styles.Add(themeStyle);
@@ -54,6 +99,24 @@ namespace VoiceCraft.Client.Services
             {
                 Application.Current.Resources.MergedDictionaries.Add(resource);
             }
+            
+            OnThemeChanged?.Invoke(_currentTheme);
+        }
+
+        public void SwitchBackgroundImage(Guid id)
+        {
+            if (!_registeredBackgroundImages.TryGetValue(id, out var backgroundImage) || _currentBackgroundImage == backgroundImage) return;
+            if (id == Guid.Empty)
+            {
+                OnBackgroundImageChanged?.Invoke(null);
+                _currentBackgroundImage = null;
+                return;
+            }
+            
+            backgroundImage.LoadBitmap();
+            _currentBackgroundImage?.UnloadBitmap();
+            _currentBackgroundImage = backgroundImage;
+            OnBackgroundImageChanged?.Invoke(_currentBackgroundImage);
         }
 
         /// <summary>
@@ -68,12 +131,46 @@ namespace VoiceCraft.Client.Services
         }
     }
     
-    public class RegisteredTheme(Guid id, string name, PlatformThemeVariant variant, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries)
+    public class RegisteredTheme(Guid id, string name, ThemeVariant variant, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries)
     {
-        public readonly string Name = name;
-        public readonly Guid Id = id;
-        public readonly PlatformThemeVariant Variant = variant;
-        public readonly IStyle[] ThemeStyles = themeStyles;
-        public readonly IResourceDictionary[] Resources = resourceDictionaries;
+        public string Name { get; } = name;
+        public Guid Id { get; } = id;
+        public ThemeVariant Variant { get; } = variant;
+        public IStyle[] ThemeStyles { get; } = themeStyles;
+        public IResourceDictionary[] Resources { get; } = resourceDictionaries;
+    }
+
+    public class RegisteredBackgroundImage(Guid id, string name, string path)
+    {
+        public Guid Id { get; } = id;
+        public string Name { get; } = name;
+        public string Path { get; } = path;
+        public Bitmap? BackgroundImageBitmap { get; private set; }
+
+        public Bitmap LoadBitmap()
+        {
+            UnloadBitmap();
+            if(File.Exists(Path))
+            {
+                using (var fileStream = File.OpenRead(Path))
+                {
+                    BackgroundImageBitmap = ImageHelper.LoadFromFileStream(fileStream);
+                }
+                return BackgroundImageBitmap;
+            }
+
+            if (AssetLoader.Exists(new Uri(Path)))
+            {
+                return BackgroundImageBitmap = ImageHelper.LoadFromResource(new Uri(Path));
+            }
+
+            throw new FileNotFoundException("Could not find image file.", Path);
+        }
+
+        public void UnloadBitmap()
+        {
+            BackgroundImageBitmap?.Dispose();
+            BackgroundImageBitmap = null;
+        }
     }
 }

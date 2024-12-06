@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Styling;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Models.Settings
@@ -8,7 +7,7 @@ namespace VoiceCraft.Client.Models.Settings
     {
         public override event Action<ThemeSettings>? OnUpdated;
 
-        public string SelectedTheme
+        public Guid SelectedTheme
         {
             get => _selectedTheme;
             set
@@ -18,7 +17,18 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        private string _selectedTheme = ThemeVariant.Dark.ToString();
+        public Guid SelectedBackgroundImage
+        {
+            get => _selectedBackgroundImage;
+            set
+            {
+                _selectedBackgroundImage = value;
+                OnUpdated?.Invoke(this);
+            }
+        }
+
+        private Guid _selectedTheme = Guid.Empty;
+        private Guid _selectedBackgroundImage = Guid.Empty;
         
         public override object Clone()
         {

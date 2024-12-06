@@ -21,7 +21,8 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty] private bool _generalSettingsExpanded;
         //Theme Settings
         [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
-        [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService.Get<ThemeSettings>(), settingsService);
+        [ObservableProperty] private ObservableCollection<RegisteredBackgroundImage> _backgroundImages = new (themesService.RegisteredBackgroundImages);
+        [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService.Get<ThemeSettings>(), settingsService, themesService);
         //Notification Settings
         [ObservableProperty] private NotificationSettingsViewModel _notificationSettings = new(settingsService.Get<NotificationSettings>(), settingsService);
         //Server Settings

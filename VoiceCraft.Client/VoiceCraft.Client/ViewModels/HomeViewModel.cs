@@ -25,10 +25,9 @@ namespace VoiceCraft.Client.ViewModels
         public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer)
         {
             _items.Add(new ListItemTemplate("Servers", servers, "HomeRegular"));
-            _items.Add(new ListItemTemplate("Settings", settings, "MicSettingsRegular"));
-            _items.Add(new ListItemTemplate("Credits", credits, "BookInformationRegular"));
+            _items.Add(new ListItemTemplate("Settings", settings, "SettingsRegular"));
+            _items.Add(new ListItemTemplate("Credits", credits, "InformationRegular"));
             _items.Add(new ListItemTemplate("Add Server", addServer, "AddRegular"));
-
 
             SelectedListItem = _items[0];
             _content = _items[0].Content;
