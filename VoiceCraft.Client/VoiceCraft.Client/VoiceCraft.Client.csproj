@@ -21,7 +21,6 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
-        <PackageReference Include="DialogHost.Avalonia" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
@@ -42,6 +41,7 @@
       <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml.cs" />
       <UpToDateCheckInput Remove="Assets\Themes\Dark\VCIcons.axaml" />
       <UpToDateCheckInput Remove="Assets\Themes\Dark\VCStyles.axaml" />
+      <UpToDateCheckInput Remove="Themes\Lavender Dark\Colors.axaml" />
     </ItemGroup>
 
     <ItemGroup>

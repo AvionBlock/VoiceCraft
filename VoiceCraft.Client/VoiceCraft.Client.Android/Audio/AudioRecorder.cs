@@ -23,7 +23,6 @@ namespace VoiceCraft.Client.Android.Audio
         public int? SessionId => _audioRecord?.AudioSessionId;
 
         public event EventHandler<WaveInEventArgs>? DataAvailable;
-        public event EventHandler? RecordingStarted;
         public event EventHandler<StoppedEventArgs>? RecordingStopped;
 
         ~AudioRecorder()
@@ -33,9 +32,6 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void StartRecording()
         {
-            //Starting capture procedure
-            OpenRecorder();
-
             //Check if we are already recording.
             if (_captureState == CaptureState.Capturing)
             {
@@ -47,6 +43,9 @@ namespace VoiceCraft.Client.Android.Audio
             {
                 throw new ArgumentNullException(nameof(WaveFormat));
             }
+            
+            //Starting capture procedure
+            OpenRecorder();
 
             _captureState = CaptureState.Starting;
             var selectedDevice = audioManager.GetDevices(GetDevicesTargets.Inputs)?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == _selectedDevice);
@@ -154,7 +153,6 @@ namespace VoiceCraft.Client.Android.Audio
             Exception? exception = null;
             try
             {
-                RaiseRecordingStartedEvent();
                 RecordingLogic();
             }
             catch (Exception ex)
@@ -168,20 +166,6 @@ namespace VoiceCraft.Client.Android.Audio
                     _audioRecord?.Stop();
 
                 RaiseRecordingStoppedEvent(exception);
-            }
-        }
-
-        private void RaiseRecordingStartedEvent()
-        {
-            var handler = RecordingStarted;
-            if (handler == null) return;
-            if (_synchronizationContext == null)
-            {
-                handler(this, EventArgs.Empty);
-            }
-            else
-            {
-                _synchronizationContext.Post(_ => handler(this, EventArgs.Empty), null);
             }
         }
 

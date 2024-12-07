@@ -15,10 +15,10 @@
     <PackageVersion Include="Avalonia.Browser" Version="11.2.1" />
     <PackageVersion Include="Avalonia.Android" Version="11.2.1" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    <PackageVersion Include="DialogHost.Avalonia" Version="0.8.1" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageVersion Include="NAudio.Core" Version="2.2.1" />
     <PackageVersion Include="Notification.Avalonia" Version="2.1.0" />
+    <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.1" />
     <PackageVersion Include="OpusSharp" Version="1.5.5" />
     <PackageVersion Include="SpeexDSPSharp" Version="1.2.1" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.1" />

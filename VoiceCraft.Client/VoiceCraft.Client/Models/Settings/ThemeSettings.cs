@@ -27,8 +27,8 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        private Guid _selectedTheme = Guid.Empty;
-        private Guid _selectedBackgroundImage = Guid.Empty;
+        private Guid _selectedTheme = App.DarkThemeGuid;
+        private Guid _selectedBackgroundImage = App.DockNightGuid;
         
         public override object Clone()
         {
