@@ -31,8 +31,7 @@ public class NativeAudioService : AudioService
     {
         var list = new List<string>() { GetDefaultInputDevice() };
 
-        var devicesString = ALC.GetString(ALDevice.Null, AlcGetString.CaptureDeviceSpecifier);
-        var devices = devicesString.Split("\u2400\n");
+        var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.CaptureDeviceSpecifier);
         list.AddRange(devices);
         
         return list;
@@ -42,8 +41,7 @@ public class NativeAudioService : AudioService
     {
         var list = new List<string>() { GetDefaultOutputDevice() };
         
-        var devicesString = ALC.GetString(ALDevice.Null, AlcGetString.AllDevicesSpecifier);
-        var devices = devicesString.Split("\u2400\n");
+        var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.AllDevicesSpecifier);
         list.AddRange(devices);
         
         return list;

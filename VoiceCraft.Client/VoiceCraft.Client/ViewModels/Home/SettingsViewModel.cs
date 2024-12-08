@@ -61,6 +61,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                     _recorder = audioService.CreateAudioRecorder();
                     _recorder.BufferMilliseconds = 20;
                     _recorder.WaveFormat = new WaveFormat(48000, 1);
+                    _recorder.SelectedDevice = AudioSettings.InputDevice;
                     _recorder.DataAvailable += (_, e) =>
                     {
                         float max = 0;

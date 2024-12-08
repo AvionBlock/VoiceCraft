@@ -1,6 +1,7 @@
 using NAudio.Wave;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using NAudio.CoreAudioApi;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Client.Audio.Interfaces;
@@ -10,13 +11,13 @@ namespace VoiceCraft.Client.Linux.Audio
     public unsafe class AudioRecorder : IAudioRecorder
     {
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private string? _selectedDevice;
-        private CaptureState _captureState = CaptureState.Stopped;
-        private ALCaptureDevice? _device;
+        private ALCaptureDevice _device = ALCaptureDevice.Null;
+        private bool _disposed;
         
         public WaveFormat WaveFormat { get; set; } = new(8000, 16, 1);
+        public CaptureState CaptureState { get; private set; } = CaptureState.Stopped;
         public int BufferMilliseconds { get; set; } = 100;
-        public bool IsRecording => _captureState == CaptureState.Capturing;
+        public string? SelectedDevice { get; set; }
         
         public event EventHandler<WaveInEventArgs>? DataAvailable;
         public event EventHandler<StoppedEventArgs>? RecordingStopped;
@@ -28,40 +29,32 @@ namespace VoiceCraft.Client.Linux.Audio
         
         public void StartRecording()
         {
-            //Check if we are already recording.
-            if (_captureState == CaptureState.Capturing)
-            {
-                return;
-            }
+            //Disposed? DIE!
+            ThrowIfDisposed();
             
-            //Make sure that we have some format to use.
-            if (WaveFormat == null)
-            {
-                throw new ArgumentNullException(nameof(WaveFormat));
-            }
+            //Check if we are already recording or starting to record.
+            if (CaptureState is CaptureState.Capturing or CaptureState.Starting) return;
+
+            while (CaptureState is CaptureState.Stopping) //If stopping, wait.
+                Task.Delay(1).GetAwaiter().GetResult();
             
             //Open Capture Device
-            OpenCaptureDevice();
-
-            if (_device == null) return;
-            _captureState = CaptureState.Starting;
-            ALC.CaptureStart((ALCaptureDevice)_device);
+            CaptureState = CaptureState.Starting;
+            _device = OpenCaptureDevice(WaveFormat, BufferMilliseconds, SelectedDevice);
             ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
         }
+        
         public void StopRecording()
         {
-            if (_device == null)
-                return;
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            
+            //Check if device is already closed/null.
+            if (_device == ALCaptureDevice.Null) return;
 
-            //Check if it has already been stopped
-            if (_captureState == CaptureState.Stopped) return;
-            _captureState = CaptureState.Stopped;
-            CloseCaptureDevice();
-        }
-
-        public void SetDevice(string device)
-        {
-            _selectedDevice = device;
+            //Check if it has already been stopped or is stopping.
+            if (CaptureState is CaptureState.Stopped or CaptureState.Stopping) return;
+            CaptureState = CaptureState.Stopping;
         }
         
         public void Dispose()
@@ -72,40 +65,19 @@ namespace VoiceCraft.Client.Linux.Audio
         
         private void Dispose(bool disposing)
         {
-            if (!disposing) return;
-            if (_captureState != CaptureState.Stopped)
+            if (_disposed || !disposing) return;
+            if (CaptureState != CaptureState.Stopped)
             {
                 StopRecording();
             }
+            
+            _disposed = true;
         }
-        
-        private void OpenCaptureDevice()
+
+        private void ThrowIfDisposed()
         {
-            CloseCaptureDevice();
-            var format = (WaveFormat.BitsPerSample, WaveFormat.Channels) switch
-            {
-                (8, 1) => ALFormat.Mono8,
-                (8, 2) => ALFormat.Stereo8,
-                (16, 1) => ALFormat.Mono16,
-                (16, 2) => ALFormat.Stereo16,
-                _ => throw new NotSupportedException()
-            };
-            var bufferSize = BufferMilliseconds * WaveFormat.SampleRate / 1000;
-            AL.GetError();
-            _device = ALC.CaptureOpenDevice(_selectedDevice, WaveFormat.SampleRate, format, bufferSize * 2);
-            if (_device == null)
-            {
-                throw new InvalidOperationException("Could not create device!");
-            }
-        }
-        
-        private void CloseCaptureDevice()
-        {
-            if (_device == null) return;
-            var recorder = (ALCaptureDevice)_device;
-            _device = null;
-            ALC.CaptureStop(recorder);
-            ALC.CaptureCloseDevice(recorder);
+            if (!_disposed) return;
+            throw new ObjectDisposedException(typeof(AudioRecorder).ToString());
         }
         
         private void RecordThread()
@@ -121,9 +93,9 @@ namespace VoiceCraft.Client.Linux.Audio
             }
             finally
             {
-                _captureState = CaptureState.Stopped;
-                CloseCaptureDevice();
-
+                CloseCaptureDevice(_device);
+                _device = ALCaptureDevice.Null;
+                CaptureState = CaptureState.Stopped;
                 RaiseRecordingStoppedEvent(exception);
             }
         }
@@ -151,29 +123,53 @@ namespace VoiceCraft.Client.Linux.Audio
                 bufferSize -= bufferSize % WaveFormat.BlockAlign;
             }
 
-            _captureState = CaptureState.Capturing;
+            CaptureState = CaptureState.Capturing;
             var capturedSamples = 0;
             var targetSamples = BufferMilliseconds * WaveFormat.SampleRate / 1000;
 
             //Run the record loop
-            while (_captureState != CaptureState.Stopped && _device != null)
+            while (CaptureState == CaptureState.Capturing && _device != ALCaptureDevice.Null)
             {
-                var device = (ALCaptureDevice)_device;
-                if (_captureState != CaptureState.Capturing)
-                {
-                    Thread.Sleep(10);
-                    continue;
-                }
                 // Query the number of captured samples
-                ALC.GetInteger(device, AlcGetInteger.CaptureSamples, sizeof(int), &capturedSamples);
+                ALC.GetInteger(_device, AlcGetInteger.CaptureSamples, sizeof(int), &capturedSamples);
 
                 if (capturedSamples < targetSamples) continue;
                 var buffer = new byte[bufferSize];
                 fixed (void* bufferPtr = buffer)
-                    ALC.CaptureSamples(device, bufferPtr, targetSamples);
+                    ALC.CaptureSamples(_device, bufferPtr, targetSamples);
                 
                 DataAvailable?.Invoke(this, new WaveInEventArgs(buffer, bufferSize));
             }
+        }
+        
+        private static ALCaptureDevice OpenCaptureDevice(WaveFormat waveFormat, int bufferSizeMs, string? selectedDevice = null)
+        {
+            var format = (waveFormat.BitsPerSample, waveFormat.Channels) switch
+            {
+                (8, 1) => ALFormat.Mono8,
+                (8, 2) => ALFormat.Stereo8,
+                (16, 1) => ALFormat.Mono16,
+                (16, 2) => ALFormat.Stereo16,
+                _ => throw new NotSupportedException()
+            };
+            var bufferSize = bufferSizeMs * waveFormat.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
+            AL.GetError(); //Clear any previous errors.
+            //Multiply buffer size by 2 because OpenAL can't handle exact buffer sizes that well.
+            var device = ALC.CaptureOpenDevice(selectedDevice, waveFormat.SampleRate, format, bufferSize * 2);
+            if (device == ALCaptureDevice.Null)
+            {
+                throw new InvalidOperationException("Could not create device!");
+            }
+            
+            ALC.CaptureStart(device);
+            return device;
+        }
+        
+        private static void CloseCaptureDevice(ALCaptureDevice device)
+        {
+            if (device == ALCaptureDevice.Null) return;
+            ALC.CaptureStop(device);
+            ALC.CaptureCloseDevice(device);
         }
     }
 }
