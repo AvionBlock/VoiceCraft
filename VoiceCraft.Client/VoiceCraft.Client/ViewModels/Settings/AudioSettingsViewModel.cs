@@ -1,4 +1,6 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -11,6 +13,12 @@ namespace VoiceCraft.Client.ViewModels.Settings
         private bool _disposed;
         private readonly AudioSettings _audioSettings;
         private readonly SettingsService _settingsService;
+        private readonly AudioService _audioService;
+
+        [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
+        [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
+        [ObservableProperty] private ObservableCollection<RegisteredPreprocessor> _preprocessors = [];
+        [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
 
         [ObservableProperty] private string _inputDevice;
         [ObservableProperty] private string _outputDevice;
@@ -22,10 +30,12 @@ namespace VoiceCraft.Client.ViewModels.Settings
         [ObservableProperty] private bool _denoiser;
         [ObservableProperty] private bool _vad;
 
-        public AudioSettingsViewModel(AudioSettings audioSettings, SettingsService settingsService)
+        public AudioSettingsViewModel(AudioSettings audioSettings, SettingsService settingsService, AudioService audioService)
         {
             _audioSettings = audioSettings;
             _settingsService = settingsService;
+            _audioService = audioService;
+            
             _audioSettings.OnUpdated += Update;
             _inputDevice = _audioSettings.InputDevice;
             _outputDevice = _audioSettings.OutputDevice;
@@ -36,6 +46,25 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _agc = _audioSettings.Agc;
             _denoiser = _audioSettings.Denoiser;
             _vad = _audioSettings.Vad;
+            
+            ReloadAvailableDevices();
+        }
+
+        public void ReloadAvailableDevices()
+        {
+            InputDevices = ["Default", .._audioService.GetInputDevices()];
+            OutputDevices = ["Default", .._audioService.GetOutputDevices()];
+            Preprocessors = new ObservableCollection<RegisteredPreprocessor>(_audioService.RegisteredPreprocessors);
+            EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);
+            
+            if(!InputDevices.Contains(InputDevice))
+                InputDevice = "Default";
+            if(!OutputDevices.Contains(OutputDevice))
+                OutputDevice = "Default";
+            if(Preprocessors.FirstOrDefault(x => x.Id == Preprocessor) == null)
+                Preprocessor = Guid.Empty;
+            if(EchoCancelers.FirstOrDefault(x => x.Id == EchoCanceler) == null)
+                EchoCanceler = Guid.Empty;
         }
 
         partial void OnInputDeviceChanging(string value)

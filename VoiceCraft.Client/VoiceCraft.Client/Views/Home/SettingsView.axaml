@@ -78,7 +78,7 @@
                                FontSize="15"
                                Text="Input Devices" />
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding InputDevices}"
+                              ItemsSource="{Binding AudioSettings.InputDevices}"
                               SelectedItem="{Binding AudioSettings.InputDevice}" />
 
                     <TextBlock HorizontalAlignment="Left"
@@ -87,7 +87,7 @@
                                Text="Output Devices" />
 
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding OutputDevices}"
+                              ItemsSource="{Binding AudioSettings.OutputDevices}"
                               SelectedItem="{Binding AudioSettings.OutputDevice}" />
 
                     <TextBlock HorizontalAlignment="Left"
@@ -96,7 +96,7 @@
                                Text="Preprocessors" />
 
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding Preprocessors}"
+                              ItemsSource="{Binding AudioSettings.Preprocessors}"
                               SelectedValue="{Binding AudioSettings.Preprocessor}"
                               SelectedValueBinding="{Binding Id}">
                         <ComboBox.ItemTemplate>
@@ -112,7 +112,7 @@
                                Text="Echo Cancelers" />
 
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding EchoCancelers}"
+                              ItemsSource="{Binding AudioSettings.EchoCancelers}"
                               SelectedValue="{Binding AudioSettings.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}">
                         <ComboBox.ItemTemplate>

@@ -82,6 +82,7 @@ public class App : Application
         ServiceCollection.AddSingleton<NavigationService>(x => new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
+        ServiceCollection.AddSingleton<PermissionsService>();
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton(SetupSettings());
         

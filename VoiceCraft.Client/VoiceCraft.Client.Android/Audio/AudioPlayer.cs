@@ -26,7 +26,7 @@ namespace VoiceCraft.Client.Android.Audio
             get => _volume;
             set
             {
-                _volume = (value < 0.0f) ? 0.0f : (value > 1.0f) ? 1.0f : value;
+                _volume = value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
                 _audioTrack?.SetVolume(_volume);
             }
         }
@@ -140,16 +140,17 @@ namespace VoiceCraft.Client.Android.Audio
                 throw new InvalidOperationException("Must call Init first");
             }
 
-            //Start the wave player
-            if (PlaybackState == PlaybackState.Stopped)
+            switch (PlaybackState)
             {
-                PlaybackState = PlaybackState.Playing;
-                _audioTrack.Play();
-                ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
-            }
-            else if (PlaybackState == PlaybackState.Paused)
-            {
-                Resume();
+                //Start the wave player
+                case PlaybackState.Stopped:
+                    PlaybackState = PlaybackState.Playing;
+                    _audioTrack.Play();
+                    ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
+                    break;
+                case PlaybackState.Paused:
+                    Resume();
+                    break;
             }
         }
 

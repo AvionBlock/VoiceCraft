@@ -22,6 +22,7 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Maui.Essentials" />
         <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />

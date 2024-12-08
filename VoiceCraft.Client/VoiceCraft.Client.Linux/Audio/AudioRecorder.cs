@@ -55,6 +55,10 @@ namespace VoiceCraft.Client.Linux.Audio
             //Check if it has already been stopped or is stopping.
             if (CaptureState is CaptureState.Stopped or CaptureState.Stopping) return;
             CaptureState = CaptureState.Stopping;
+            
+            //Block thread until it's fully stopped.
+            while(CaptureState is CaptureState.Stopping)
+                Task.Delay(1).GetAwaiter().GetResult();
         }
         
         public void Dispose()
@@ -152,6 +156,7 @@ namespace VoiceCraft.Client.Linux.Audio
                 (16, 2) => ALFormat.Stereo16,
                 _ => throw new NotSupportedException()
             };
+            
             var bufferSize = bufferSizeMs * waveFormat.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
             AL.GetError(); //Clear any previous errors.
             //Multiply buffer size by 2 because OpenAL can't handle exact buffer sizes that well.

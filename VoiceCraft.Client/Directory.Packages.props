@@ -16,6 +16,7 @@
     <PackageVersion Include="Avalonia.Android" Version="11.2.1" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Maui.Essentials" Version="9.0.12" />
     <PackageVersion Include="NAudio.Core" Version="2.2.1" />
     <PackageVersion Include="Notification.Avalonia" Version="2.1.0" />
     <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.1" />

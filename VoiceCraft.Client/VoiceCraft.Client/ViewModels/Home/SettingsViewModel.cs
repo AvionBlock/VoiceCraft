@@ -1,7 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.ApplicationModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using VoiceCraft.Client.Audio.Interfaces;
@@ -11,7 +13,12 @@ using VoiceCraft.Client.ViewModels.Settings;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {
-    public partial class SettingsViewModel(ThemesService themesService, SettingsService settingsService, AudioService audioService, NotificationService notificationService) : ViewModelBase, IDisposable
+    public partial class SettingsViewModel(
+        ThemesService themesService,
+        SettingsService settingsService,
+        AudioService audioService,
+        NotificationService notificationService,
+        PermissionsService permissionsService) : ViewModelBase, IDisposable
     {
         private SignalGenerator _signal = new(48000, 2)
         {
@@ -19,33 +26,44 @@ namespace VoiceCraft.Client.ViewModels.Home
             Frequency = 500,
             Type = SignalGeneratorType.Sin
         };
+
         private IAudioRecorder? _recorder;
 
         [ObservableProperty] private bool _generalSettingsExpanded;
+
         //Theme Settings
-        [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
-        [ObservableProperty] private ObservableCollection<RegisteredBackgroundImage> _backgroundImages = new (themesService.RegisteredBackgroundImages);
-        [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService.Get<ThemeSettings>(), settingsService, themesService);
+        [ObservableProperty]
+        private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
+
+        [ObservableProperty]
+        private ObservableCollection<RegisteredBackgroundImage> _backgroundImages =
+            new(themesService.RegisteredBackgroundImages);
+
+        [ObservableProperty] private ThemeSettingsViewModel _themeSettings =
+            new(settingsService.Get<ThemeSettings>(), settingsService, themesService);
+
         //Notification Settings
-        [ObservableProperty] private NotificationSettingsViewModel _notificationSettings = new(settingsService.Get<NotificationSettings>(), settingsService);
+        [ObservableProperty] private NotificationSettingsViewModel _notificationSettings =
+            new(settingsService.Get<NotificationSettings>(), settingsService);
+
         //Server Settings
-        [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService.Get<ServersSettings>(), settingsService);
-        
+        [ObservableProperty]
+        private ServersSettingsViewModel
+            _serversSettings = new(settingsService.Get<ServersSettings>(), settingsService);
+
         //Audio Settings
         [ObservableProperty] private bool _audioSettingsExpanded;
-        [ObservableProperty] private AudioSettingsViewModel _audioSettings = new(settingsService.Get<AudioSettings>(), settingsService);
-        [ObservableProperty] private ObservableCollection<string> _inputDevices = new(audioService.GetInputDevices());
-        [ObservableProperty] private ObservableCollection<string> _outputDevices = new(audioService.GetOutputDevices());
-        [ObservableProperty] private ObservableCollection<RegisteredPreprocessor> _preprocessors = new(audioService.RegisteredPreprocessors);
-        [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = new(audioService.RegisteredEchoCancelers);
-        
+
+        [ObservableProperty] private AudioSettingsViewModel _audioSettings =
+            new(settingsService.Get<AudioSettings>(), settingsService, audioService);
+
         //Testers
         [ObservableProperty] private bool _isRecording;
         [ObservableProperty] private bool _isPlaying;
         [ObservableProperty] private float _microphoneValue;
 
         [RelayCommand]
-        private void TestRecorder()
+        private async Task TestRecorder()
         {
             try
             {
@@ -58,6 +76,10 @@ namespace VoiceCraft.Client.ViewModels.Home
                 }
                 else
                 {
+                    if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
+                            "VoiceCraft requires the microphone to be granted in order to test recording!") !=
+                        PermissionStatus.Granted) return;
+                    
                     _recorder = audioService.CreateAudioRecorder();
                     _recorder.BufferMilliseconds = 20;
                     _recorder.WaveFormat = new WaveFormat(48000, 1);
@@ -89,11 +111,16 @@ namespace VoiceCraft.Client.ViewModels.Home
                 notificationService.SendErrorNotification(ex.Message);
             }
         }
-        
+
         [RelayCommand]
         private void TestPlayer()
         {
-            
+        }
+
+        public override void OnAppearing()
+        {
+            base.OnAppearing();
+            AudioSettings.ReloadAvailableDevices();
         }
 
         public void Dispose()

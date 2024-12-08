@@ -38,19 +38,9 @@ namespace VoiceCraft.Client.Android.Audio
             return new AudioPlayer(audioManager);
         }
 
-        public override string GetDefaultInputDevice()
-        {
-            return "Default";
-        }
-
-        public override string GetDefaultOutputDevice()
-        {
-            return "Default";
-        }
-
         public override List<string> GetInputDevices()
         {
-            var devices = new List<string>() { GetDefaultInputDevice() };
+            var devices = new List<string>();
 
             var audioDevices = audioManager.GetDevices(GetDevicesTargets.Inputs)?.Where(x => AllowedDeviceTypes.Contains(x.Type)); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
             if (audioDevices == null) return devices;
@@ -66,7 +56,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public override List<string> GetOutputDevices()
         {
-            var devices = new List<string>() { GetDefaultOutputDevice() };
+            var devices = new List<string>();
 
             var audioDevices = audioManager.GetDevices(GetDevicesTargets.Outputs)?.Where(x => AllowedDeviceTypes.Contains(x.Type)); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
             if (audioDevices == null) return devices;

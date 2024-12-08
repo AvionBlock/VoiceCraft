@@ -1,10 +1,9 @@
 using NAudio.Wave;
-using System;
 using NAudio.CoreAudioApi;
 
 namespace VoiceCraft.Client.Audio.Interfaces
 {
-    public interface IAudioRecorder : IDisposable, IWaveIn
+    public interface IAudioRecorder : IWaveIn
     {
         int BufferMilliseconds { get; set; }
         

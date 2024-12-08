@@ -64,10 +64,6 @@ namespace VoiceCraft.Client.Services
             return _registeredEchoCancelers[Guid.Empty];
         }
 
-        public abstract string GetDefaultInputDevice();
-        
-        public abstract string GetDefaultOutputDevice();
-
         public abstract List<string> GetInputDevices();
 
         public abstract List<string> GetOutputDevices();
