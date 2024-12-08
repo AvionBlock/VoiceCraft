@@ -53,8 +53,6 @@ namespace VoiceCraft.Client.Android.Audio
 
             Usage = AudioUsageKind.Media;
             ContentType = AudioContentType.Music;
-
-            Debug.WriteLine("Created!");
         }
 
         ~AudioPlayer()
