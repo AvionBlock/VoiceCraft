@@ -4,7 +4,6 @@ using NAudio.Wave;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 
@@ -40,7 +39,7 @@ namespace VoiceCraft.Client.Android.Audio
             if (CaptureState is CaptureState.Capturing or CaptureState.Starting) return;
 
             while (CaptureState is CaptureState.Stopping) //If stopping, wait.
-                Task.Delay(1).GetAwaiter().GetResult();
+                Thread.Sleep(1);
 
             //Open Capture Device
             CaptureState = CaptureState.Starting;
@@ -62,7 +61,7 @@ namespace VoiceCraft.Client.Android.Audio
             
             //Block thread until it's fully stopped.
             while(CaptureState is CaptureState.Stopping)
-                Task.Delay(1).GetAwaiter().GetResult();
+                Thread.Sleep(1);
         }
 
         public void Dispose()

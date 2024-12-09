@@ -33,6 +33,12 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
 
+        ~AudioPlayer()
+        {
+            //Dispose of this object, kindof.
+            Dispose(false);
+        }
+
         public void Init(IWaveProvider waveProvider)
         {
             //Disposed? DIE!
@@ -44,6 +50,7 @@ namespace VoiceCraft.Client.Linux.Audio
             
             //Create/Open new audio device.
             _audioDevice = new AudioDevice(waveProvider, DesiredLatency, NumberOfBuffers, SelectedDevice);
+            _audioDevice.Volume = _volume; //Force set volume
             
             //Set output wave format.
             OutputWaveFormat = waveProvider.WaveFormat;
@@ -121,14 +128,14 @@ namespace VoiceCraft.Client.Linux.Audio
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(AudioDevice).ToString());
+            throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
         }
         
         private void Resume()
         {
             if (PlaybackState != PlaybackState.Paused) return;
-            PlaybackState = PlaybackState.Playing;
             _audioDevice?.Play();
+            PlaybackState = PlaybackState.Playing;
         }
         
         private void RaisePlaybackStoppedEvent(Exception? e)
@@ -239,7 +246,7 @@ namespace VoiceCraft.Client.Linux.Audio
                 try
                 {
                     _waveProvider = waveProvider;
-                    _bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize(desiredLatency);
+                    _bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize((desiredLatency + numberOfBuffers - 1) / numberOfBuffers);
                     _device = OpenDevice(deviceName);
                     _deviceContext = CreateContext();
                     _buffers = AL.GenBuffers(numberOfBuffers);
