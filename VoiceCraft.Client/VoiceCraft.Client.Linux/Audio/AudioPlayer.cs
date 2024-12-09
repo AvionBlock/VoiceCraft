@@ -17,12 +17,17 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public float Volume
         {
-            get => _volume;
-            set => _volume = Math.Clamp(value, 0, 1);
+            get => _audioDevice?.Volume ?? _volume;
+            set
+            {
+                if(_audioDevice != null)
+                    _audioDevice.Volume = value;
+                _volume = Math.Clamp(value, 0, 1);
+            }
         }
 
         public int DesiredLatency { get; set; } = 300;
-        public string? Device { get; set; }
+        public string? SelectedDevice { get; set; }
         public int NumberOfBuffers { get; set; } = 2;
         public WaveFormat OutputWaveFormat { get; private set; } = new();
 
@@ -30,27 +35,37 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public void Init(IWaveProvider waveProvider)
         {
+            //Disposed? DIE!
             ThrowIfDisposed();
             
+            //Check if already playing.
             if (PlaybackState != PlaybackState.Stopped)
                 throw new InvalidOperationException("Can't re-initialize during playback");
             
-            _audioDevice = new AudioDevice(waveProvider, DesiredLatency, NumberOfBuffers, Device);
+            //Create/Open new audio device.
+            _audioDevice = new AudioDevice(waveProvider, DesiredLatency, NumberOfBuffers, SelectedDevice);
+            
+            //Set output wave format.
             OutputWaveFormat = waveProvider.WaveFormat;
         }
 
         public void Play()
         {
+            //Disposed? DIE!
             ThrowIfDisposed();
             
+            //Check if device is already closed/null.
             if (_audioDevice == null)
                 throw new InvalidOperationException("Must call Init first");
             
+            //Resume or start playback.
             switch (PlaybackState)
             {
                 case PlaybackState.Stopped:
-                    PlaybackState = PlaybackState.Playing;
                     ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
+                    //Block thread until it's fully started.
+                    while(PlaybackState == PlaybackState.Stopped)
+                        Thread.Sleep(1);
                     break;
                 case PlaybackState.Paused:
                     Resume();
@@ -63,26 +78,37 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public void Stop()
         {
+            //Disposed? DIE!
             ThrowIfDisposed();
             
+            //Check if device is already closed/null.
             if(_audioDevice == null) throw new InvalidOperationException("Must call Init first");
+            
+            //Check if it has already been stopped.
             if (PlaybackState == PlaybackState.Stopped) return;
             
             //Stop the wave player
             PlaybackState = PlaybackState.Stopped;
-            _audioDevice.Stop();
+            
+            //Block thread until it's fully stopped.
+            while(_audioDevice != null)
+                Thread.Sleep(1);
         }
 
         public void Pause()
         {
+            //Disposed? DIE!
             ThrowIfDisposed();
             
+            //Check if device is already closed/null.
             if(_audioDevice == null) throw new InvalidOperationException("Must call Init first");
-            if (PlaybackState == PlaybackState.Paused) return;
             
-            //Stop the wave player
-            PlaybackState = PlaybackState.Paused;
+            //Check if it has already been paused or is not playing.
+            if (PlaybackState != PlaybackState.Playing) return;
+            
+            //Pause the wave player.
             _audioDevice.Pause();
+            PlaybackState = PlaybackState.Paused;
         }
 
         public void Dispose()
@@ -132,6 +158,7 @@ namespace VoiceCraft.Client.Linux.Audio
             }
             finally
             {
+                _audioDevice?.Stop();
                 _audioDevice?.Dispose();
                 _audioDevice = null;
                 PlaybackState = PlaybackState.Stopped;
@@ -144,6 +171,7 @@ namespace VoiceCraft.Client.Linux.Audio
             if(_audioDevice == null) throw new InvalidOperationException("Must call Init first");
             
             _audioDevice.Play();
+            PlaybackState = PlaybackState.Playing;
             while (PlaybackState != PlaybackState.Stopped && _audioDevice != null)
             {
                 if (PlaybackState != PlaybackState.Playing)
@@ -151,9 +179,8 @@ namespace VoiceCraft.Client.Linux.Audio
                     Thread.Sleep(1);
                     continue;
                 }
-
-                var state = _audioDevice.GetState();
-                if (state == ALSourceState.Stopped)
+                
+                if (_audioDevice.State == ALSourceState.Stopped)
                     break; //Reached the end of the playback buffer or the audio player has stopped.
                 _audioDevice.UpdateStream();
             }
@@ -171,6 +198,21 @@ namespace VoiceCraft.Client.Linux.Audio
 
         private sealed class AudioDevice : IDisposable
         {
+            public float Volume
+            {
+                get => AL.GetSource(_source, ALSourcef.Gain);
+                set => AL.Source(_source, ALSourcef.Gain, Math.Clamp(value, 0, 1));
+            }
+
+            public ALSourceState State
+            {
+                get
+                {
+                    ThrowIfDisposed();
+                    return (ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState);       
+                }
+            }
+
             private readonly IWaveProvider _waveProvider;
             private readonly ALDevice _device;
             private readonly ALContext _deviceContext;
@@ -183,23 +225,31 @@ namespace VoiceCraft.Client.Linux.Audio
             {
                 switch (waveProvider.WaveFormat.BitsPerSample, waveProvider.WaveFormat.Channels)
                 {
-                    case (8, 1) :
-                    case (8, 2) :
-                    case (16, 1) :
-                    case (16, 2) :
-                    case (32, 1) :
-                    case (32, 2) :
+                    case (8, 1):
+                    case (8, 2):
+                    case (16, 1):
+                    case (16, 2):
+                    case (32, 1):
+                    case (32, 2):
                         break;
                     default:
                         throw new NotSupportedException();
                 }
                 
-                _waveProvider = waveProvider;
-                _bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize(desiredLatency);
-                _device = OpenDevice(deviceName);
-                _deviceContext = CreateContext();
-                _buffers = AL.GenBuffers(numberOfBuffers);
-                _source = CreateSource();
+                try
+                {
+                    _waveProvider = waveProvider;
+                    _bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize(desiredLatency);
+                    _device = OpenDevice(deviceName);
+                    _deviceContext = CreateContext();
+                    _buffers = AL.GenBuffers(numberOfBuffers);
+                    _source = CreateSource();
+                }
+                catch
+                {
+                    Dispose();
+                    throw;
+                }
             }
             
             ~AudioDevice()
@@ -209,43 +259,54 @@ namespace VoiceCraft.Client.Linux.Audio
 
             public void Play()
             {
+                //Disposed? DIE!
                 ThrowIfDisposed();
                 
-                if (GetState() is ALSourceState.Initial or ALSourceState.Stopped)
+                //If state is newly created or has been stopped. Fill buffers and queue them.
+                if (State is ALSourceState.Initial or ALSourceState.Stopped)
                 {
                     FillBuffers();
                     AL.SourceQueueBuffers(_source, _buffers); //Queue buffers.
                 }
 
+                //Play or resume source.
                 AL.SourcePlay(_source);
             }
 
             public void Pause()
             {
+                //Disposed? DIE!
                 ThrowIfDisposed();
+
+                //If not playing, we can't pause the source.
+                if (State != ALSourceState.Playing) return;
                 
+                //Pause Source.
                 AL.SourcePause(_source);
             }
 
             public void Stop()
             {
+                //Disposed? DIE!
                 ThrowIfDisposed();
                 
+                //If not playing or paused, we can't stop the source.
+                if (State is not (ALSourceState.Playing or ALSourceState.Paused)) return;
+                
+                //Stop the source.
                 AL.SourceStop(_source);
-            }
-
-            public ALSourceState GetState()
-            {
-                ThrowIfDisposed();
-                
-                return (ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState);
             }
 
             public unsafe void UpdateStream()
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                
+                //Get all buffers that have been processed.
                 var processedBuffers = AL.GetSource(_source, ALGetSourcei.BuffersProcessed);
                 if(processedBuffers <= 0) return;
                 
+                //Unqueue the processed buffers.
                 var buffers = AL.SourceUnqueueBuffers(_source, processedBuffers);
                 foreach (var buffer in buffers)
                 {
@@ -259,13 +320,16 @@ namespace VoiceCraft.Client.Linux.Audio
                         (32, 2) => ALFormat.StereoFloat32Ext,
                         _ => throw new NotSupportedException()
                     };
+                    
+                    //Fill buffers with more data
                     var byteBuffer = GC.AllocateArray<byte>(_bufferSize, true);
                     var read = _waveProvider.Read(byteBuffer, 0, _bufferSize);
-                    if (read > 0)
-                    {
-                        fixed (byte* byteBufferPtr = byteBuffer)
-                            AL.BufferData(buffer, format, byteBufferPtr, read, _waveProvider.WaveFormat.SampleRate);
-                    }
+                    if (read <= 0) continue;
+                    
+                    fixed (byte* byteBufferPtr = byteBuffer)
+                        AL.BufferData(buffer, format, byteBufferPtr, read, _waveProvider.WaveFormat.SampleRate);
+                    
+                    AL.SourceQueueBuffer(_source, buffer); //Queue buffer back into player.
                 }
             }
             
@@ -319,7 +383,7 @@ namespace VoiceCraft.Client.Linux.Audio
                 var source = AL.GenSource();
                 AL.Source(source, ALSourcef.Pitch, 1);
                 AL.Source(source, ALSourcef.Gain, 1);
-                AL.Source(source, ALSourceb.Looping, true);
+                AL.Source(source, ALSourceb.Looping, false);
                 AL.Source(source, ALSource3f.Position, 0, 0, 0);
                 AL.Source(source, ALSource3f.Velocity, 0, 0, 0);
                 return source;

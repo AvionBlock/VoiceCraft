@@ -6,6 +6,6 @@ namespace VoiceCraft.Client.Audio.Interfaces
     {
         int DesiredLatency { get; set; }
         
-        public string? Device { get; set; }
+        public string? SelectedDevice { get; set; }
     }
 }
