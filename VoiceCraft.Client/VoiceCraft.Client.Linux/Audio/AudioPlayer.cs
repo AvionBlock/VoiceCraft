@@ -9,12 +9,7 @@ namespace VoiceCraft.Client.Linux.Audio
     public class AudioPlayer : IAudioPlayer
     {
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private IWaveProvider? _waveProvider;
-        private ALDevice _device = ALDevice.Null;
-        private ALContext _deviceContext = ALContext.Null;
-        private ALFormat _format;
-        private int[]? _buffers;
-        private int _bufferSize;
+        private AudioDevice? _audioDevice;
         private bool _disposed;
         private float _volume = 1.0f;
 
@@ -35,36 +30,27 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public void Init(IWaveProvider waveProvider)
         {
+            ThrowIfDisposed();
+            
             if (PlaybackState != PlaybackState.Stopped)
                 throw new InvalidOperationException("Can't re-initialize during playback");
             
-            _waveProvider = waveProvider;
+            _audioDevice = new AudioDevice(waveProvider, DesiredLatency, NumberOfBuffers, Device);
             OutputWaveFormat = waveProvider.WaveFormat;
-            _device = OpenDevice(Device);
-            _deviceContext = CreateContext(_device);
-            _buffers = CreateBuffers(NumberOfBuffers);
-            _bufferSize = OutputWaveFormat.ConvertLatencyToByteSize(DesiredLatency);
-
-            _format = (OutputWaveFormat.BitsPerSample, OutputWaveFormat.Channels) switch
-            {
-                (8, 1) => ALFormat.Mono8,
-                (8, 2) => ALFormat.Stereo8,
-                (16, 1) => ALFormat.Mono16,
-                (16, 2) => ALFormat.Stereo16,
-                _ => throw new NotSupportedException()
-            };
         }
 
         public void Play()
         {
-            if (_waveProvider == null || _buffers == null)
+            ThrowIfDisposed();
+            
+            if (_audioDevice == null)
                 throw new InvalidOperationException("Must call Init first");
             
             switch (PlaybackState)
             {
                 case PlaybackState.Stopped:
                     PlaybackState = PlaybackState.Playing;
-                    ThreadPool.QueueUserWorkItem(_ => PlaybackThread(_waveProvider, _buffers), null);
+                    ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
                     break;
                 case PlaybackState.Paused:
                     Resume();
@@ -77,17 +63,46 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+            
+            if(_audioDevice == null) throw new InvalidOperationException("Must call Init first");
+            if (PlaybackState == PlaybackState.Stopped) return;
+            
+            //Stop the wave player
+            PlaybackState = PlaybackState.Stopped;
+            _audioDevice.Stop();
         }
 
         public void Pause()
         {
-            throw new NotImplementedException();
+            ThrowIfDisposed();
+            
+            if(_audioDevice == null) throw new InvalidOperationException("Must call Init first");
+            if (PlaybackState == PlaybackState.Paused) return;
+            
+            //Stop the wave player
+            PlaybackState = PlaybackState.Paused;
+            _audioDevice.Pause();
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            //Dispose of this object
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        
+        private void ThrowIfDisposed()
+        {
+            if (!_disposed) return;
+            throw new ObjectDisposedException(typeof(AudioDevice).ToString());
+        }
+        
+        private void Resume()
+        {
+            if (PlaybackState != PlaybackState.Paused) return;
+            PlaybackState = PlaybackState.Playing;
+            _audioDevice?.Play();
         }
         
         private void RaisePlaybackStoppedEvent(Exception? e)
@@ -104,26 +119,12 @@ namespace VoiceCraft.Client.Linux.Audio
             }
         }
         
-        private unsafe void PlaybackThread(IWaveProvider waveProvider, int[] buffers)
+        private void PlaybackThread()
         {
             Exception? exception = null;
-            var source = -1;
             try
             {
-                var byteBuffer = GC.AllocateArray<byte>(_bufferSize, true);
-                fixed (void* byteBufferPtr = byteBuffer)
-                    foreach (var buffer in buffers)
-                    {
-                        //Write audio data into the buffers.
-                        var read = waveProvider.Read(byteBuffer, 0, _bufferSize);
-                        if (read > 0)
-                        {
-                            AL.BufferData(buffer, _format, byteBufferPtr, read, OutputWaveFormat.SampleRate);
-                        }
-                    }
-                source = CreateSource(_volume, buffers);
-                
-                PlaybackLogic(source);
+                PlaybackLogic();
             }
             catch (Exception e)
             {
@@ -131,93 +132,230 @@ namespace VoiceCraft.Client.Linux.Audio
             }
             finally
             {
+                _audioDevice?.Dispose();
+                _audioDevice = null;
                 PlaybackState = PlaybackState.Stopped;
-                CloseDevice(source, buffers, _deviceContext, _device);
-                // we're exiting our background thread
                 RaisePlaybackStoppedEvent(exception);
             }
         }
 
-        private unsafe void PlaybackLogic(int source)
+        private void PlaybackLogic()
         {
-            if(_waveProvider == null)
-                throw new InvalidOperationException("Could not resolve wave provider!");
+            if(_audioDevice == null) throw new InvalidOperationException("Must call Init first");
             
-            while (PlaybackState != PlaybackState.Stopped)
+            _audioDevice.Play();
+            while (PlaybackState != PlaybackState.Stopped && _audioDevice != null)
             {
-                var processed = AL.GetSource(source, ALGetSourcei.BuffersProcessed);
-                if(processed <= 0) continue;
-                var bufferIds = AL.SourceUnqueueBuffers(source, processed);
-                foreach (var bufferId in bufferIds)
+                if (PlaybackState != PlaybackState.Playing)
                 {
-                    var data = GC.AllocateArray<byte>(_bufferSize, true);
-                    var read = _waveProvider.Read(data, 0, _bufferSize);
-                    fixed (void* dataPtr = data)
+                    Thread.Sleep(1);
+                    continue;
+                }
+
+                var state = _audioDevice.GetState();
+                if (state == ALSourceState.Stopped)
+                    break; //Reached the end of the playback buffer or the audio player has stopped.
+                _audioDevice.UpdateStream();
+            }
+        }
+        
+        private void Dispose(bool disposing)
+        {
+            if (!disposing || _disposed) return;
+            if (PlaybackState != PlaybackState.Stopped)
+            {
+                Stop();
+            }
+            _disposed = true;
+        }
+
+        private sealed class AudioDevice : IDisposable
+        {
+            private readonly IWaveProvider _waveProvider;
+            private readonly ALDevice _device;
+            private readonly ALContext _deviceContext;
+            private readonly int _source;
+            private readonly int _bufferSize;
+            private readonly int[] _buffers;
+            private bool _disposed;
+
+            public AudioDevice(IWaveProvider waveProvider, int desiredLatency, int numberOfBuffers, string? deviceName = null)
+            {
+                switch (waveProvider.WaveFormat.BitsPerSample, waveProvider.WaveFormat.Channels)
+                {
+                    case (8, 1) :
+                    case (8, 2) :
+                    case (16, 1) :
+                    case (16, 2) :
+                    case (32, 1) :
+                    case (32, 2) :
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+                
+                _waveProvider = waveProvider;
+                _bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize(desiredLatency);
+                _device = OpenDevice(deviceName);
+                _deviceContext = CreateContext();
+                _buffers = AL.GenBuffers(numberOfBuffers);
+                _source = CreateSource();
+            }
+            
+            ~AudioDevice()
+            {
+                Dispose(false);
+            }
+
+            public void Play()
+            {
+                ThrowIfDisposed();
+                
+                if (GetState() is ALSourceState.Initial or ALSourceState.Stopped)
+                {
+                    FillBuffers();
+                    AL.SourceQueueBuffers(_source, _buffers); //Queue buffers.
+                }
+
+                AL.SourcePlay(_source);
+            }
+
+            public void Pause()
+            {
+                ThrowIfDisposed();
+                
+                AL.SourcePause(_source);
+            }
+
+            public void Stop()
+            {
+                ThrowIfDisposed();
+                
+                AL.SourceStop(_source);
+            }
+
+            public ALSourceState GetState()
+            {
+                ThrowIfDisposed();
+                
+                return (ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState);
+            }
+
+            public unsafe void UpdateStream()
+            {
+                var processedBuffers = AL.GetSource(_source, ALGetSourcei.BuffersProcessed);
+                if(processedBuffers <= 0) return;
+                
+                var buffers = AL.SourceUnqueueBuffers(_source, processedBuffers);
+                foreach (var buffer in buffers)
+                {
+                    var format = (_waveProvider.WaveFormat.BitsPerSample, _waveProvider.WaveFormat.Channels) switch
                     {
-                        if (read > 0)
-                            AL.BufferData(bufferId, _format, dataPtr, read, OutputWaveFormat.SampleRate);
+                        (8, 1) => ALFormat.Mono8,
+                        (8, 2) => ALFormat.Stereo8,
+                        (16, 1) => ALFormat.Mono16,
+                        (16, 2) => ALFormat.Stereo16,
+                        (32, 1) => ALFormat.MonoFloat32Ext,
+                        (32, 2) => ALFormat.StereoFloat32Ext,
+                        _ => throw new NotSupportedException()
+                    };
+                    var byteBuffer = GC.AllocateArray<byte>(_bufferSize, true);
+                    var read = _waveProvider.Read(byteBuffer, 0, _bufferSize);
+                    if (read > 0)
+                    {
+                        fixed (byte* byteBufferPtr = byteBuffer)
+                            AL.BufferData(buffer, format, byteBufferPtr, read, _waveProvider.WaveFormat.SampleRate);
                     }
                 }
-                AL.SourceQueueBuffers(source, bufferIds);
             }
-        }
-
-        private static int CreateSource(float volume, int[] buffersIds)
-        {
-            var source = AL.GenSource();
-            AL.Source(source, ALSourcef.Pitch, 1);
-            AL.Source(source, ALSourcef.Gain, volume);
-            AL.Source(source, ALSourceb.Looping, true);
-            AL.Source(source, ALSource3f.Position, 0, 0, 0);
-            AL.Source(source, ALSource3f.Velocity, 0, 0, 0);
-            AL.SourceQueueBuffers(source, buffersIds);
-            return source;
-        }
-
-        private static int[] CreateBuffers(int numberOfBuffers)
-        {
-            return AL.GenBuffers(numberOfBuffers);
-        }
-
-        private static ALDevice OpenDevice(string? deviceName = null)
-        {
-            var device = ALC.OpenDevice(deviceName);
-            if (device == ALDevice.Null)
-            {
-                throw new InvalidOperationException("Could not create device!");
-            }
-
-            return device;
-        }
-
-        private static ALContext CreateContext(ALDevice device)
-        {
-            var context = ALC.CreateContext(device, []);
-            if (context == ALContext.Null)
-            {
-                throw new InvalidOperationException("Could not create device context!");
-            }
-
-            ALC.MakeContextCurrent(context);
-            ALC.ProcessContext(context);
-
-            return context;
-        }
-
-        private static void CloseDevice(int source, int[] buffers, ALContext context, ALDevice device)
-        {
-            if(source >= 0)
-                AL.DeleteSource(source);
             
-            AL.DeleteBuffers(buffers);
-            if (context != ALContext.Null)
+            public void Dispose()
             {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            private unsafe void FillBuffers()
+            {
+                var format = (_waveProvider.WaveFormat.BitsPerSample, _waveProvider.WaveFormat.Channels) switch
+                {
+                    (8, 1) => ALFormat.Mono8,
+                    (8, 2) => ALFormat.Stereo8,
+                    (16, 1) => ALFormat.Mono16,
+                    (16, 2) => ALFormat.Stereo16,
+                    (32, 1) => ALFormat.MonoFloat32Ext,
+                    (32, 2) => ALFormat.StereoFloat32Ext,
+                    _ => throw new NotSupportedException()
+                };
+                    
+                foreach (var buffer in _buffers)
+                {
+                    var byteBuffer = GC.AllocateArray<byte>(_bufferSize, true);
+                    var read = _waveProvider.Read(byteBuffer, 0, _bufferSize);
+                    if (read > 0)
+                    {
+                        fixed (byte* byteBufferPtr = byteBuffer)
+                            AL.BufferData(buffer, format, byteBufferPtr, read, _waveProvider.WaveFormat.SampleRate);
+                    }
+                }
+            }
+            
+            private ALContext CreateContext()
+            {
+                var context = ALC.CreateContext(_device, (int[]?)null);
+                if (context == ALContext.Null)
+                {
+                    throw new InvalidOperationException("Could not create device context!");
+                }
+
                 ALC.MakeContextCurrent(context);
-                ALC.DestroyContext(context);
+                ALC.ProcessContext(context);
+
+                return context;
             }
-            if (device == ALDevice.Null) return;
             
-            ALC.CloseDevice(device);
+            private static int CreateSource()
+            {
+                var source = AL.GenSource();
+                AL.Source(source, ALSourcef.Pitch, 1);
+                AL.Source(source, ALSourcef.Gain, 1);
+                AL.Source(source, ALSourceb.Looping, true);
+                AL.Source(source, ALSource3f.Position, 0, 0, 0);
+                AL.Source(source, ALSource3f.Velocity, 0, 0, 0);
+                return source;
+            }
+
+            private static ALDevice OpenDevice(string? deviceName = null)
+            {
+                var device = ALC.OpenDevice(deviceName);
+                if (device == ALDevice.Null)
+                {
+                    throw new InvalidOperationException("Could not create device!");
+                }
+
+                return device;
+            }
+
+            private void Dispose(bool disposing)
+            {
+                if (_disposed) return;
+                if (disposing)
+                {
+                    AL.DeleteSource(_source);
+                    AL.DeleteBuffers(_buffers);
+                    ALC.MakeContextCurrent(_deviceContext);
+                    ALC.DestroyContext(_deviceContext);
+                    ALC.CloseDevice(_device);
+                }
+
+                _disposed = true;
+            }
+            
+            private void ThrowIfDisposed()
+            {
+                if (!_disposed) return;
+                throw new ObjectDisposedException(typeof(AudioDevice).ToString());
+            }
         }
     }
 }

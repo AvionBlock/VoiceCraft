@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -28,6 +29,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         };
 
         private IAudioRecorder? _recorder;
+        private IAudioPlayer? _player;
 
         [ObservableProperty] private bool _generalSettingsExpanded;
 
@@ -73,6 +75,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                     _recorder.Dispose();
                     _recorder = null;
                     MicrophoneValue = 0;
+                    IsRecording = false;
                 }
                 else
                 {
@@ -104,17 +107,44 @@ namespace VoiceCraft.Client.ViewModels.Home
                     };
 
                     _recorder.StartRecording();
+                    IsRecording = true;
                 }
             }
             catch (Exception ex)
             {
                 notificationService.SendErrorNotification(ex.Message);
+                IsRecording = false;
             }
         }
 
         [RelayCommand]
         private void TestPlayer()
         {
+            try
+            {
+                if (_player != null)
+                {
+                    _player.Stop();
+                    _player.Dispose();
+                    _player = null;
+                    IsPlaying = false;
+                }
+                else
+                {
+                    _player = audioService.CreateAudioPlayer();
+                    //_player.Device = AudioSettings.OutputDevice;
+                    _player.Init(_signal);
+                    _player.Play();
+                    IsPlaying = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _player?.Dispose();
+                _player = null;
+                notificationService.SendErrorNotification(ex.Message);
+                IsPlaying = false;
+            }
         }
 
         public override void OnAppearing()

@@ -15,7 +15,7 @@ public class NativeAudioService : AudioService
 
     public override IAudioPlayer CreateAudioPlayer()
     {
-        throw new System.NotImplementedException();
+        return new AudioPlayer();
     }
 
     public override List<string> GetInputDevices()
