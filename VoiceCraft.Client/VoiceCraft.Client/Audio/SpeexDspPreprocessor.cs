@@ -68,6 +68,7 @@ using System;
         private WaveFormat? _waveFormat;
         private int _bytesPerFrame;
         private SpeexDSPPreprocessor[]? _preprocessors; //1 per channel apparently.
+        private IAudioRecorder? _recorder;
 
         public void Init(IAudioRecorder recorder)
         {
@@ -84,15 +85,20 @@ using System;
 
                 _preprocessors = null;
             }
-
-            var preprocessors = new SpeexDSPPreprocessor[recorder.WaveFormat.Channels];
-            _waveFormat = recorder.WaveFormat;
-            _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
+            if (_recorder != null)
+            {
+                _recorder.DataAvailable -= OnDataAvailable;
+            }
+            
+            _recorder = recorder;
+            var preprocessors = new SpeexDSPPreprocessor[_recorder.WaveFormat.Channels];
+            _waveFormat = _recorder.WaveFormat;
+            _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(_recorder.BufferMilliseconds);
             try
             {
-                for (int i = 0; i < preprocessors.Length; i++)
+                for (var i = 0; i < preprocessors.Length; i++)
                 {
-                    preprocessors[i] = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate); //1 per channel
+                    preprocessors[i] = new SpeexDSPPreprocessor(_recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate); //1 per channel
                 }
 
                 foreach (var preprocessor in preprocessors)
@@ -108,6 +114,7 @@ using System;
                 }
 
                 _preprocessors = preprocessors;
+                _recorder.DataAvailable += OnDataAvailable;
             }
             catch (Exception ex)
             {
@@ -161,6 +168,12 @@ using System;
         }
 
         public bool Process(byte[] buffer) => Process(buffer.AsSpan());
+        
+        private void OnDataAvailable(object? sender, WaveInEventArgs e)
+        {
+            if (_preprocessors == null || _waveFormat == null) return;
+            Process(e.Buffer);
+        }
 
         public void Dispose()
         {
@@ -182,6 +195,10 @@ using System;
                     }
 
                     _preprocessors = null;
+                }
+                if (_recorder != null)
+                {
+                    _recorder.DataAvailable -= OnDataAvailable;
                 }
             }
 

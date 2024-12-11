@@ -130,19 +130,19 @@
                                 Value="{Binding AudioSettings.MicrophoneSensitivity}" />
                     </StackPanel>
 
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Aec}">
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Aec}" IsEnabled="{Binding EchoCancelerAvailable}">
                         <TextBlock Text="Echo Cancellation" />
                     </ToggleButton>
 
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Agc}">
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Agc}" IsEnabled="{Binding GainControllerAvailable}">
                         <TextBlock Text="Automatic Gain Control" />
                     </ToggleButton>
 
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Denoiser}">
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Denoiser}" IsEnabled="{Binding DenoiserAvailable}">
                         <TextBlock Text="Denoiser" />
                     </ToggleButton>
 
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Vad}">
+                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Vad}" IsEnabled="{Binding VoiceActivityAvailable}">
                         <TextBlock Text="Voice Activity Detection" />
                     </ToggleButton>
 

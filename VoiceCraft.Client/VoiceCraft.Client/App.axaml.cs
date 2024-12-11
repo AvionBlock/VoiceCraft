@@ -14,6 +14,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
+using VoiceCraft.Client.Views.Error;
 
 namespace VoiceCraft.Client;
 
@@ -22,6 +23,8 @@ public class App : Application
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
     public static readonly Guid SpeexDspPreprocessorGuid = Guid.Parse("6a9fba40-453d-4943-bebc-82963c8397ae");
     public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
+    public static readonly Guid NativePreprocessorGuid = Guid.Parse("6e5839db-be0f-4609-a4bd-85d193689c05");
+    public static readonly Guid NativeEchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
     public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
     public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
     public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");
@@ -34,31 +37,55 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var serviceProvider = BuildServiceProvider();
-        SetupServices(serviceProvider);
-
-        switch (ApplicationLifetime)
+        try
         {
-            case IClassicDesktopStyleApplicationLifetime desktop:
-                // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-                // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-                DisableAvaloniaDataAnnotationValidation();
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = serviceProvider.GetRequiredService<MainViewModel>()
-                };
+            var serviceProvider = BuildServiceProvider();
+            SetupServices(serviceProvider);
 
-                desktop.MainWindow.Closing += (__, ___) =>
-                {
-                    _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
-                };
-                break;
-            case ISingleViewApplicationLifetime singleViewPlatform:
-                singleViewPlatform.MainView = new MainView
-                {
-                    DataContext = serviceProvider.GetRequiredService<MainViewModel>()
-                };
-                break;
+            switch (ApplicationLifetime)
+            {
+                case IClassicDesktopStyleApplicationLifetime desktop:
+                    // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
+                    // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
+                    DisableAvaloniaDataAnnotationValidation();
+                    desktop.MainWindow = new MainWindow
+                    {
+                        DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                    };
+
+                    desktop.MainWindow.Closing += (__, ___) =>
+                    {
+                        _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
+                    };
+                    break;
+                case ISingleViewApplicationLifetime singleViewPlatform:
+                    singleViewPlatform.MainView = new MainView
+                    {
+                        DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                    };
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            switch (ApplicationLifetime)
+            {
+                case IClassicDesktopStyleApplicationLifetime desktop:
+                    // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
+                    // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
+                    DisableAvaloniaDataAnnotationValidation();
+                    desktop.MainWindow = new ErrorMainWindow
+                    {
+                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                    };
+                    break;
+                case ISingleViewApplicationLifetime singleViewPlatform:
+                    singleViewPlatform.MainView = new ErrorView
+                    {
+                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                    };
+                    break;
+            }
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -110,8 +137,9 @@ public class App : Application
     private static void SetupServices(IServiceProvider serviceProvider)
     {
         var audioService = serviceProvider.GetRequiredService<AudioService>();
-        audioService.RegisterPreprocessor<SpeexDspPreprocessor>(SpeexDspPreprocessorGuid, "SpeexDSP Preprocessor");
-        audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler");
+        audioService.RegisterPreprocessor<SpeexDspPreprocessor>(SpeexDspPreprocessorGuid, "SpeexDSP Preprocessor", true,
+            true, true);
+        audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler", true);
 
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
         themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()],
