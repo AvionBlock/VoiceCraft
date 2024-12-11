@@ -7,6 +7,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -25,7 +26,7 @@ public class App : Application
     public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
     public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");
     public static readonly Guid DockDayGuid = Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1");
-    
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -35,7 +36,7 @@ public class App : Application
     {
         var serviceProvider = BuildServiceProvider();
         SetupServices(serviceProvider);
-        
+
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime desktop:
@@ -79,27 +80,30 @@ public class App : Application
     private static ServiceProvider BuildServiceProvider()
     {
         //Service Registry
-        ServiceCollection.AddSingleton<NavigationService>(x => new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
+        ServiceCollection.AddSingleton<NavigationService>(x =>
+            new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
-        ServiceCollection.AddSingleton<PermissionsService>();
+        ServiceCollection.AddSingleton<PermissionsService>(x =>
+            new PermissionsService(x.GetRequiredService<NotificationService>(),
+                y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton(SetupSettings());
-        
+
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
-        
+
         //Main Pages
         ServiceCollection.AddTransient<HomeViewModel>();
         ServiceCollection.AddSingleton<EditServerViewModel>();
         ServiceCollection.AddSingleton<AddServerViewModel>();
-        
+
         //Home Pages
         ServiceCollection.AddTransient<ServersViewModel>();
         ServiceCollection.AddTransient<SettingsViewModel>();
         ServiceCollection.AddTransient<SelectedServerViewModel>();
         ServiceCollection.AddTransient<CreditsViewModel>();
-        
+
         return ServiceCollection.BuildServiceProvider();
     }
 
@@ -108,11 +112,14 @@ public class App : Application
         var audioService = serviceProvider.GetRequiredService<AudioService>();
         audioService.RegisterPreprocessor<SpeexDspPreprocessor>(SpeexDspPreprocessorGuid, "SpeexDSP Preprocessor");
         audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler");
-        
+
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
-        themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()], [new Themes.Dark.VcColors(), new Themes.Dark.Resources()], ThemeVariant.Dark);
-        themesService.RegisterTheme(LightThemeGuid, "Light", [new Themes.Light.Styles()], [new Themes.Light.Colors(), new Themes.Light.Resources()], ThemeVariant.Light);
-        themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
+        themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()],
+            [new Themes.Dark.VcColors(), new Themes.Dark.Resources()], ThemeVariant.Dark);
+        themesService.RegisterTheme(LightThemeGuid, "Light", [new Themes.Light.Styles()],
+            [new Themes.Light.Colors(), new Themes.Light.Resources()], ThemeVariant.Light);
+        themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night",
+            "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
     }
 

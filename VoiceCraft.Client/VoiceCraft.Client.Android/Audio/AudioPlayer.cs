@@ -53,6 +53,13 @@ namespace VoiceCraft.Client.Android.Audio
             if (PlaybackState != PlaybackState.Stopped)
                 throw new InvalidOperationException("Can't re-initialize during playback");
 
+            //Close previous audio track if it's not closed.
+            if (_audioTrack != null)
+            {
+                CloseAudioTrack(_audioTrack);
+                _audioTrack = null;
+            }
+
             //Create/Open new audio track.
             var audioTrack = CreateAudioTrack(audioManager, waveProvider, DesiredLatency, Usage, ContentType,
                 SelectedDevice);
@@ -178,7 +185,6 @@ namespace VoiceCraft.Client.Android.Audio
             {
                 if (_audioTrack != null)
                 {
-                    _audioTrack.Stop();
                     CloseAudioTrack(_audioTrack);
                     _audioTrack = null;
                 }
@@ -251,6 +257,13 @@ namespace VoiceCraft.Client.Android.Audio
             if (PlaybackState != PlaybackState.Stopped)
             {
                 Stop();
+            }
+            
+            //Close previous audio track if it was not closed by the player thread.
+            if (_audioTrack != null)
+            {
+                CloseAudioTrack(_audioTrack);
+                _audioTrack = null;
             }
 
             _disposed = true;

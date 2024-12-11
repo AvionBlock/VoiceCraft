@@ -1,9 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -11,7 +9,7 @@ namespace VoiceCraft.Client.Services
 {
     public class SettingsService
     {
-        public const int FILE_WRITING_DELAY = 2000;
+        private const int FILE_WRITING_DELAY = 2000;
 
         private bool _writing;
         private bool _queueWrite;

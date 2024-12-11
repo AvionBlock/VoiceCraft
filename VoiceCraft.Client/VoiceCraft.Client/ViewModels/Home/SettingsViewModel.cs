@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,7 +20,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         NotificationService notificationService,
         PermissionsService permissionsService) : ViewModelBase, IDisposable
     {
-        private SignalGenerator _signal = new(48000, 2)
+        private readonly SignalGenerator _signal = new(48000, 2)
         {
             Gain = 0.2,
             Frequency = 500,
@@ -37,8 +36,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty]
         private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
 
-        [ObservableProperty]
-        private ObservableCollection<RegisteredBackgroundImage> _backgroundImages =
+        [ObservableProperty] private ObservableCollection<RegisteredBackgroundImage> _backgroundImages =
             new(themesService.RegisteredBackgroundImages);
 
         [ObservableProperty] private ThemeSettingsViewModel _themeSettings =
@@ -49,8 +47,7 @@ namespace VoiceCraft.Client.ViewModels.Home
             new(settingsService.Get<NotificationSettings>(), settingsService);
 
         //Server Settings
-        [ObservableProperty]
-        private ServersSettingsViewModel
+        [ObservableProperty] private ServersSettingsViewModel
             _serversSettings = new(settingsService.Get<ServersSettings>(), settingsService);
 
         //Audio Settings
@@ -80,13 +77,14 @@ namespace VoiceCraft.Client.ViewModels.Home
                 else
                 {
                     if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
-                            "VoiceCraft requires the microphone to be granted in order to test recording!") !=
+                            "VoiceCraft requires the microphone permission to be granted in order to test recording!") !=
                         PermissionStatus.Granted) return;
-                    
+
                     _recorder = audioService.CreateAudioRecorder();
                     _recorder.BufferMilliseconds = 20;
                     _recorder.WaveFormat = new WaveFormat(48000, 1);
-                    _recorder.SelectedDevice = AudioSettings.InputDevice;
+                    _recorder.SelectedDevice =
+                        AudioSettings.InputDevice == "Default" ? null : AudioSettings.InputDevice;
                     _recorder.DataAvailable += (_, e) =>
                     {
                         float max = 0;
@@ -132,7 +130,8 @@ namespace VoiceCraft.Client.ViewModels.Home
                 else
                 {
                     _player = audioService.CreateAudioPlayer();
-                    //_player.Device = AudioSettings.OutputDevice;
+                    _player.SelectedDevice =
+                        AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
                     _player.Init(_signal);
                     _player.Play();
                     IsPlaying = true;

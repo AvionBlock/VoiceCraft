@@ -19,7 +19,7 @@
     <PackageVersion Include="Microsoft.Maui.Essentials" Version="9.0.12" />
     <PackageVersion Include="NAudio.Core" Version="2.2.1" />
     <PackageVersion Include="Notification.Avalonia" Version="2.1.0" />
-    <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.1" />
+    <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.3" />
     <PackageVersion Include="OpusSharp" Version="1.5.5" />
     <PackageVersion Include="SpeexDSPSharp" Version="1.2.1" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.1" />

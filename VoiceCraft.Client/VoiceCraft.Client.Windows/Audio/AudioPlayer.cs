@@ -4,7 +4,7 @@ using NAudio.Wave;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Client.Audio.Interfaces;
 
-namespace VoiceCraft.Client.Linux.Audio
+namespace VoiceCraft.Client.Windows.Audio
 {
     public class AudioPlayer : IAudioPlayer
     {

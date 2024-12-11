@@ -6,6 +6,7 @@
         <TargetFramework>net9.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -19,6 +20,7 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="OpenTK.Audio.OpenAL" />
     </ItemGroup>
 
     <ItemGroup>

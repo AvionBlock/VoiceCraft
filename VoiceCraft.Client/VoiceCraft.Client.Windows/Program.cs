@@ -1,5 +1,9 @@
 ﻿using System;
 using Avalonia;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
+using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Windows.Audio;
 
 namespace VoiceCraft.Client.Windows
 {
@@ -9,8 +13,14 @@ namespace VoiceCraft.Client.Windows
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
         [STAThread]
-        public static void Main(string[] args) => BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        public static void Main(string[] args)
+        {
+            App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+            App.ServiceCollection.AddTransient<Permissions.Microphone>();
+
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
 
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
