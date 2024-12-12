@@ -69,12 +69,16 @@ namespace VoiceCraft.Client.Windows.Audio
         
         private void Dispose(bool disposing)
         {
-            if (_disposed || !disposing) return;
-            if (CaptureState != CaptureState.Stopped)
-            {
-                StopRecording();
-            }
+            if (_disposed) return;
             
+            if (disposing)
+            {
+                if (CaptureState != CaptureState.Stopped)
+                {
+                    StopRecording();
+                }
+            }
+
             _disposed = true;
         }
 

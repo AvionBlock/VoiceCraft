@@ -55,6 +55,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty] private bool _gainControllerAvailable;
         [ObservableProperty] private bool _denoiserAvailable;
         [ObservableProperty] private bool _voiceActivityAvailable;
+        [ObservableProperty] private bool _detectingVoiceActivity;
 
         public SettingsViewModel(ThemesService themesService,
             SettingsService settingsService,
@@ -130,6 +131,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                         _preprocessor.VoiceActivityDetectionEnabled = AudioSettings.Vad;
                     }
                     
+                    //Can't really test echo cancellation.
                     _recorder.DataAvailable += OnDataAvailable;
                     _recorder.RecordingStopped += OnRecordingStopped;
                     _recorder.StartRecording();
@@ -144,6 +146,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                 _preprocessor?.Dispose();
                 _preprocessor = null;
                 MicrophoneValue = 0;
+                DetectingVoiceActivity = false;
                 IsRecording = false;
             }
         }
@@ -188,6 +191,7 @@ namespace VoiceCraft.Client.ViewModels.Home
             _preprocessor?.Dispose();
             _preprocessor = null;
             MicrophoneValue = 0;
+            DetectingVoiceActivity = false;
             IsRecording = false;
         }
 
@@ -203,6 +207,8 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private void OnDataAvailable(object? sender, WaveInEventArgs e)
         {
+            DetectingVoiceActivity = _preprocessor?.Process(e.Buffer) ?? true;
+            
             float max = 0;
             // interpret as 16-bit audio
             for (var index = 0; index < e.BytesRecorded; index += 2)

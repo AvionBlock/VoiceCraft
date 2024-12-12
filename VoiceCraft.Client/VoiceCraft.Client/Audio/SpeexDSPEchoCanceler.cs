@@ -7,15 +7,13 @@ namespace VoiceCraft.Client.Audio
 {
     public class SpeexDspEchoCanceler : IEchoCanceler
     {
-        private const int FilterLengthMs = 100; //100ms filter length, can be changed by plugins using reflection or casting.
+        private const int FilterLengthMs = 100;
 
         public bool IsNative => false;
 
         public bool IsAvailable => true;
 
         public bool Enabled { get; set; }
-
-        public bool Initialized => _echoCanceler != null && _waveFormat != null;
         
         private bool _disposed;
         private WaveFormat? _waveFormat;
@@ -31,7 +29,7 @@ namespace VoiceCraft.Client.Audio
                 _echoCanceler.Dispose();
                 _echoCanceler = null;
             }
-
+            
             _waveFormat = recorder.WaveFormat;
             _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
 

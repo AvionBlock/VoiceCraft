@@ -9,9 +9,7 @@ namespace VoiceCraft.Client.Audio.Interfaces
         bool IsAvailable { get; }
 
         bool Enabled { get; }
-
-        bool Initialized { get; }
-
+        
         void Init(IAudioRecorder recorder, IAudioPlayer player);
 
         void EchoPlayback(byte[] buffer);

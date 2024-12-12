@@ -53,10 +53,7 @@ public class App : Application
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
 
-                    desktop.MainWindow.Closing += (__, ___) =>
-                    {
-                        _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
-                    };
+                    desktop.MainWindow.Closing += (__, ___) => { _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate(); };
                     break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
                     singleViewPlatform.MainView = new MainView
@@ -142,12 +139,11 @@ public class App : Application
         audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler", true);
 
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
-        themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()],
-            [new Themes.Dark.VcColors(), new Themes.Dark.Resources()], ThemeVariant.Dark);
-        themesService.RegisterTheme(LightThemeGuid, "Light", [new Themes.Light.Styles()],
-            [new Themes.Light.Colors(), new Themes.Light.Resources()], ThemeVariant.Light);
-        themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night",
-            "avares://VoiceCraft.Client/Assets/bgdark.png");
+        themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()], [new Themes.Dark.VcColors(), new Themes.Dark.Resources()],
+            ThemeVariant.Dark);
+        themesService.RegisterTheme(LightThemeGuid, "Light", [new Themes.Light.Styles()], [new Themes.Light.Colors(), new Themes.Light.Resources()],
+            ThemeVariant.Light);
+        themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
     }
 

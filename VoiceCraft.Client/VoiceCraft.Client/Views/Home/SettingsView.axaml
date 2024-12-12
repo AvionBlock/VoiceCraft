@@ -167,7 +167,16 @@
                                          Maximum="1"
                                          Minimum="0"
                                          ShowProgressText="True"
-                                         Value="{Binding MicrophoneValue}" />
+                                         Value="{Binding MicrophoneValue}"
+                                         Classes.IsDetectingVoice="{Binding DetectingVoiceActivity}">
+                                <ProgressBar.Styles>
+                                    <Style Selector="ProgressBar.IsDetectingVoice">
+                                        <Style.Setters>
+                                            <Setter Property="Background" Value="#AA008800" />
+                                        </Style.Setters>
+                                    </Style>
+                                </ProgressBar.Styles>
+                            </ProgressBar>
                         </Grid>
                     </StackPanel>
 

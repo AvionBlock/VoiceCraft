@@ -205,19 +205,23 @@ namespace VoiceCraft.Client.Windows.Audio
         
         private void Dispose(bool disposing)
         {
-            if (!disposing || _disposed) return;
-            if (PlaybackState != PlaybackState.Stopped)
+            if (_disposed) return;
+
+            if (disposing)
             {
-                Stop();
+                if (PlaybackState != PlaybackState.Stopped)
+                {
+                    Stop();
+                }
+
+                //Close audio device if it hasn't been closed by the player thread.
+                if (_audioDevice != null)
+                {
+                    _audioDevice.Dispose();
+                    _audioDevice = null;
+                }
             }
-            
-            //Close audio device if it hasn't been closed by the player thread.
-            if (_audioDevice != null)
-            {
-                _audioDevice.Dispose();
-                _audioDevice = null;
-            }
-            
+
             _disposed = true;
         }
 
@@ -428,6 +432,7 @@ namespace VoiceCraft.Client.Windows.Audio
             private void Dispose(bool disposing)
             {
                 if (_disposed) return;
+                
                 if (disposing)
                 {
                     AL.DeleteSource(_source);

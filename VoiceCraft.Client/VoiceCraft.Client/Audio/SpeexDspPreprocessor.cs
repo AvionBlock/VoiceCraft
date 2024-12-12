@@ -7,7 +7,7 @@ using System;
 {
     public class SpeexDspPreprocessor : IPreprocessor
     {
-        private const int TargetGain = 15000;
+        private const int TargetGain = 24000;
 
         public bool IsNative => false;
         public bool IsGainControllerAvailable => true;
@@ -20,12 +20,9 @@ using System;
             set
             {
                 _gainControllerEnabled = value;
-                if (_preprocessors == null) return;
-                foreach (var preprocessor in _preprocessors)
-                {
-                    var state = value ? 1 : 0;
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC, ref state);
-                }
+                if (_preprocessor == null) return;
+                var state = value ? 1 : 0;
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC, ref state);
             }
         }
 
@@ -35,12 +32,9 @@ using System;
             set
             {
                 _noiseSuppressorEnabled = value;
-                if (_preprocessors == null) return;
-                foreach (var preprocessor in _preprocessors)
-                {
-                    var state = value ? 1 : 0;
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_DENOISE, ref state);
-                }
+                if (_preprocessor == null) return;
+                var state = value ? 1 : 0;
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_DENOISE, ref state);
             }
         }
 
@@ -50,16 +44,11 @@ using System;
             set
             {
                 _voiceActivityDetectionEnabled = value;
-                if (_preprocessors == null) return;
-                foreach (var preprocessor in _preprocessors)
-                {
-                    var state = value ? 1 : 0;
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_VAD, ref state);
-                }
+                if (_preprocessor == null) return;
+                var state = value ? 1 : 0;
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_VAD, ref state);
             }
         }
-
-        public bool Initialized => _preprocessors != null && _waveFormat != null;
 
         private bool _disposed;
         private bool _gainControllerEnabled;
@@ -67,54 +56,36 @@ using System;
         private bool _voiceActivityDetectionEnabled;
         private WaveFormat? _waveFormat;
         private int _bytesPerFrame;
-        private SpeexDSPPreprocessor[]? _preprocessors; //1 per channel apparently.
-        private IAudioRecorder? _recorder;
+        private SpeexDSPPreprocessor? _preprocessor;
 
         public void Init(IAudioRecorder recorder)
         {
             ThrowIfDisposed();
 
-            if (_preprocessors != null)
+            if (_preprocessor != null)
             {
-                var index = 0;
-                for (; index < _preprocessors.Length; index++)
-                {
-                    var t = _preprocessors[index];
-                    t.Dispose();
-                }
-
-                _preprocessors = null;
+                _preprocessor.Dispose();
+                _preprocessor = null;
             }
-            if (_recorder != null)
+
+            if (recorder.WaveFormat.Channels != 1)
             {
-                _recorder.DataAvailable -= OnDataAvailable;
+                throw new NotSupportedException("Only a single channel is supported");
             }
             
-            _recorder = recorder;
-            var preprocessors = new SpeexDSPPreprocessor[_recorder.WaveFormat.Channels];
-            _waveFormat = _recorder.WaveFormat;
-            _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(_recorder.BufferMilliseconds);
+            _waveFormat = recorder.WaveFormat;
+            _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
             try
             {
-                for (var i = 0; i < preprocessors.Length; i++)
-                {
-                    preprocessors[i] = new SpeexDSPPreprocessor(_recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate); //1 per channel
-                }
-
-                foreach (var preprocessor in preprocessors)
-                {
-                    var gain = _gainControllerEnabled ? 1 : 0;
-                    var noise = _noiseSuppressorEnabled ? 1 : 0;
-                    var vad = _voiceActivityDetectionEnabled ? 1 : 0;
-                    var targetGain = TargetGain;
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC, ref gain);
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_DENOISE, ref noise);
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_VAD, ref vad);
-                    preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC_TARGET, ref targetGain);
-                }
-
-                _preprocessors = preprocessors;
-                _recorder.DataAvailable += OnDataAvailable;
+                _preprocessor = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate);
+                var gain = _gainControllerEnabled ? 1 : 0;
+                var noise = _noiseSuppressorEnabled ? 1 : 0;
+                var vad = _voiceActivityDetectionEnabled ? 1 : 0;
+                var targetGain = TargetGain;
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC, ref gain);
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_DENOISE, ref noise);
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_VAD, ref vad);
+                _preprocessor.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC_TARGET, ref targetGain);
             }
             catch (Exception ex)
             {
@@ -126,7 +97,7 @@ using System;
         {
             ThrowIfDisposed();
 
-            if (_preprocessors == null || _waveFormat == null)
+            if (_preprocessor == null || _waveFormat == null)
             {
                 throw new InvalidOperationException("Speex preprocessor must be intialized with a recorder!");
             }
@@ -135,45 +106,12 @@ using System;
                 throw new InvalidOperationException($"Input buffer must be {_bytesPerFrame} in length or higher!");
             }
 
-            var channelCount = _waveFormat.Channels;
-            var channelFrameSize = _bytesPerFrame / channelCount;
-
-            // Allocate a single reusable buffer for channel frames
-            Span<byte> channelFrames = new byte[channelFrameSize];
-
-            var vad = false;
-            for (var i = 0; i < channelCount; i++) // 1 preprocessor per channel
-            {
-                // Extract individual channel data from the interleaved buffer
-                for (int j = i, frameIndex = 0; j < buffer.Length; j += channelCount, frameIndex++)
-                {
-                    channelFrames[frameIndex] = buffer[j];
-                }
-
-                // Run the associated preprocessor for the channel
-                if (_preprocessors[i].Run(channelFrames) == 1)
-                {
-                    vad = true;
-                }
-
-                // Copy processed channel data back into the interleaved buffer
-                for (int j = i, frameIndex = 0; j < buffer.Length; j += channelCount, frameIndex++)
-                {
-                    buffer[j] = channelFrames[frameIndex];
-                }
-                channelFrames.Clear();
-            }
+            var vad = _preprocessor.Run(buffer) == 1;
 
             return vad; //Will always be true according to speexdsp code if VAD is disabled.
         }
 
         public bool Process(byte[] buffer) => Process(buffer.AsSpan());
-        
-        private void OnDataAvailable(object? sender, WaveInEventArgs e)
-        {
-            if (_preprocessors == null || _waveFormat == null) return;
-            Process(e.Buffer);
-        }
 
         public void Dispose()
         {
@@ -187,18 +125,10 @@ using System;
 
             if (disposing)
             {
-                if (_preprocessors != null)
+                if (_preprocessor != null)
                 {
-                    foreach (var t in _preprocessors)
-                    {
-                        t.Dispose();
-                    }
-
-                    _preprocessors = null;
-                }
-                if (_recorder != null)
-                {
-                    _recorder.DataAvailable -= OnDataAvailable;
+                    _preprocessor.Dispose();
+                    _preprocessor = null;
                 }
             }
 
