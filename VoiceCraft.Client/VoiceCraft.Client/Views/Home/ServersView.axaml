@@ -51,13 +51,33 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="16"
-                                   Text="{Binding Ip, StringFormat='IP: {0}'}" />
+                                   Classes.ShowAddress="{Binding !$parent[ListBox].((vm:ServersViewModel)DataContext).ServersSettings.HideServerAddresses}"
+                                   Classes.HideAddress="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).ServersSettings.HideServerAddresses}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.ShowAddress">
+                                    <Setter Property="Text" Value="{Binding Ip, StringFormat='IP: {0}'}" />
+                                </Style>
+                                <Style Selector="TextBlock.HideAddress">
+                                    <Setter Property="Text" Value="IP: ****" />
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
 
                         <TextBlock Grid.Row="2"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="16"
-                                   Text="{Binding Port, StringFormat='Port: {0}'}" />
+                                   Classes.ShowAddress="{Binding !$parent[ListBox].((vm:ServersViewModel)DataContext).ServersSettings.HideServerAddresses}"
+                                   Classes.HideAddress="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).ServersSettings.HideServerAddresses}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.ShowAddress">
+                                    <Setter Property="Text" Value="{Binding Port, StringFormat='Port: {0}'}" />
+                                </Style>
+                                <Style Selector="TextBlock.HideAddress">
+                                    <Setter Property="Text" Value="Port: ****" />
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

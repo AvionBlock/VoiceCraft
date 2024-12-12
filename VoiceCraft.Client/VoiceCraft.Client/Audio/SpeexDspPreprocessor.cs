@@ -7,7 +7,7 @@ using System;
 {
     public class SpeexDspPreprocessor : IPreprocessor
     {
-        private const int TargetGain = 24000;
+        private const int TargetGain = 16000;
 
         public bool IsNative => false;
         public bool IsGainControllerAvailable => true;

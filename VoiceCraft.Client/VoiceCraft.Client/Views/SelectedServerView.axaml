@@ -37,13 +37,25 @@
                                    FontSize="15"
                                    FontWeight="Bold"
                                    Text="Address: " />
-                        <TextBlock VerticalAlignment="Center" FontSize="15">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}:{1}">
-                                    <Binding Path="SelectedServer.Ip" />
-                                    <Binding Path="SelectedServer.Port" />
-                                </MultiBinding>
-                            </TextBlock.Text>
+                        <TextBlock VerticalAlignment="Center" FontSize="15"
+                                   Classes.ShowAddress="{Binding !ServersSettings.HideServerAddresses}"
+                                   Classes.HideAddress="{Binding ServersSettings.HideServerAddresses}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.ShowAddress">
+                                    <Setter Property="Text">
+                                        <Setter.Value>
+                                            <MultiBinding StringFormat="{}{0}:{1}">
+                                                <Binding Path="SelectedServer.Ip" />
+                                                <Binding Path="SelectedServer.Port" />
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                                
+                                <Style Selector="TextBlock.HideAddress">
+                                    <Setter Property="Text" Value="****:****" />
+                                </Style>
+                            </TextBlock.Styles>
                         </TextBlock>
                     </StackPanel>
 
