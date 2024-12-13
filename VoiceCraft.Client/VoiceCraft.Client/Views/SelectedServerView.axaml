@@ -64,35 +64,25 @@
                                FontSize="17"
                                FontWeight="Bold"
                                Text="Ping Information" />
-
+                    
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"
                                    FontWeight="Bold"
-                                   Text="Ping Time: " />
+                                   Text="Latency: " />
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"
-                                   Text="{Binding PingTime}" />
+                                   Text="{Binding Latency}" />
                     </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
+                    
+                    <StackPanel Orientation="Vertical">
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"
                                    FontWeight="Bold"
-                                   Text="MOTD: " />
+                                   Text="Server Info: " />
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"
-                                   Text="{Binding Motd}" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Text="Connected Participants: " />
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   Text="{Binding ConnectedParticipants}" />
+                                   Text="{Binding StatusInfo}" />
                     </StackPanel>
 
                     <Button Background="#AA008800" Command="{Binding ConnectCommand}">

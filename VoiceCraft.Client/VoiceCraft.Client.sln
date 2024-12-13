@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Linux", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Core", "..\VoiceCraft.Core\VoiceCraft.Core.csproj", "{AE63E029-647B-4832-98D5-A7F4E06E483F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Server", "..\VoiceCraft.Server\VoiceCraft.Server.csproj", "{5C3EA6DD-AF4F-43DA-9B33-7F8845A88B9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,11 +64,17 @@ Global
 		{AE63E029-647B-4832-98D5-A7F4E06E483F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE63E029-647B-4832-98D5-A7F4E06E483F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE63E029-647B-4832-98D5-A7F4E06E483F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C3EA6DD-AF4F-43DA-9B33-7F8845A88B9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C3EA6DD-AF4F-43DA-9B33-7F8845A88B9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C3EA6DD-AF4F-43DA-9B33-7F8845A88B9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C3EA6DD-AF4F-43DA-9B33-7F8845A88B9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83CB65B8-011F-4ED7-BCD3-A6CFA935EF7E}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal
