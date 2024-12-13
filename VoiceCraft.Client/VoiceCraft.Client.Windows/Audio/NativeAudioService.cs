@@ -20,8 +20,6 @@ public class NativeAudioService : AudioService
 
     public override List<string> GetInputDevices()
     {
-        Debug.WriteLine(ALC.IsExtensionPresent(ALCaptureDevice.Null, "ALC_SOFT_loopback"));
-        
         var list = new List<string>();
 
         var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.CaptureDeviceSpecifier);

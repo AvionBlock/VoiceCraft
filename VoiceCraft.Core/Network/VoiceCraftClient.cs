@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Core.Network
 {
@@ -11,20 +12,24 @@ namespace VoiceCraft.Core.Network
         public int Ping { get; private set; }
         public ConnectionStatus Status { get; private set; }
 
+        //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
         public event Action<int>? OnLatencyUpdated;
         
+        //Packet Events
+        public event Action<ServerInfoPacket>? OnServerInfoPacketReceived;
+        
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
-        private readonly NetPacketProcessor _packetProcessor;
+        private readonly NetDataWriter _dataWriter;
         private readonly CancellationTokenSource _cts;
         private NetPeer? _serverPeer;
         private bool _isDisposed;
 
         public VoiceCraftClient()
         {
-            _packetProcessor = new NetPacketProcessor();
+            _dataWriter = new NetDataWriter();
             _cts = new CancellationTokenSource();
             _listener = new EventBasedNetListener();
             _netManager = new NetManager(_listener)
@@ -65,7 +70,9 @@ namespace VoiceCraft.Core.Network
                 _netManager.Start();
             
             Status = ConnectionStatus.Connecting;
-            _netManager.Connect(ip, port, "VoiceCraft");
+            var writer = new NetDataWriter();
+            writer.Put((int)connectionType);
+            _netManager.Connect(ip, port, writer);
         }
 
         public void Disconnect()
@@ -75,6 +82,17 @@ namespace VoiceCraft.Core.Network
                 throw new InvalidOperationException("Must be connecting or connected before disconnecting!");
             
             _netManager.DisconnectPeer(_serverPeer);
+        }
+        
+        public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        {
+            if(peer.ConnectionState != ConnectionState.Connected) return false;
+            
+            _dataWriter.Reset();
+            _dataWriter.Put((byte)packet.PacketType);
+            packet.Serialize(_dataWriter);
+            peer.Send(_dataWriter, deliveryMethod);
+            return true;
         }
 
         //Events
@@ -94,7 +112,18 @@ namespace VoiceCraft.Core.Network
         
         private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
         {
-            reader.Recycle(); //Temporary
+            var packetType = reader.GetByte();
+            var pt = (PacketType)packetType;
+            switch (pt)
+            {
+                case PacketType.ServerInfo:
+                    var serverInfoPacket = new ServerInfoPacket();
+                    serverInfoPacket.Deserialize(reader);
+                    OnServerInfoPacketReceive(serverInfoPacket, peer);
+                    break;
+                default:
+                    break;
+            }
         }
         
         private void OnNetworkLatencyUpdateEvent(NetPeer peer, int latency)
@@ -106,6 +135,12 @@ namespace VoiceCraft.Core.Network
         private static void OnConnectionRequestEvent(ConnectionRequest request)
         {
             request.Reject();
+        }
+        
+        //Packet Events
+        private void OnServerInfoPacketReceive(ServerInfoPacket packet, NetPeer peer)
+        {
+            OnServerInfoPacketReceived?.Invoke(packet);
         }
 
         private void ThrowIfDisposed()

@@ -13,4 +13,17 @@ namespace VoiceCraft.Core.Network
         Connecting,
         Connected
     }
+
+    public enum PacketType : byte
+    {
+        ServerInfo
+    }
+
+    public enum PositioningMode : byte
+    {
+        Server,
+        Client,
+        ServerAndClient,
+        Unknown
+    }
 }

@@ -6,6 +6,7 @@ using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
 using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -31,8 +32,9 @@ namespace VoiceCraft.Client.ViewModels
             _selectedServer = new ServerViewModel(new Server(), _settingsService);
             _voiceCraftClient = new VoiceCraftClient();
             
-            _voiceCraftClient.OnDisconnected += OnDisconnected;
             _voiceCraftClient.OnLatencyUpdated += OnLatencyUpdated;
+            _voiceCraftClient.OnServerInfoPacketReceived += OnServerInfoPacketReceived;
+            _voiceCraftClient.OnDisconnected += OnDisconnected;
         }
 
         public void SetServer(Server server)
@@ -62,6 +64,11 @@ namespace VoiceCraft.Client.ViewModels
         private void OnLatencyUpdated(int latency)
         {
             Latency = latency;
+        }
+        
+        private void OnServerInfoPacketReceived(ServerInfoPacket packet)
+        {
+            StatusInfo = $"Motd: {packet.Motd}\nConnected Players: {packet.ConnectedPlayers}\nAllows Discovery: {packet.DiscoveryEnabled}\nPositioning Mode: {packet.PositioningMode}";
         }
         
         private void OnDisconnected(DisconnectInfo disconnectInfo)
