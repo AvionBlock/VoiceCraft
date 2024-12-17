@@ -81,7 +81,8 @@ namespace VoiceCraft.Core.Network
             if(Status == ConnectionStatus.Disconnected)
                 throw new InvalidOperationException("Must be connecting or connected before disconnecting!");
             
-            _netManager.DisconnectPeer(_serverPeer);
+            if(_serverPeer != null)
+                _netManager.DisconnectPeer(_serverPeer);
         }
         
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket

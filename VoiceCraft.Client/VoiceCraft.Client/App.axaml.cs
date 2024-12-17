@@ -29,6 +29,7 @@ public class App : Application
     public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
     public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");
     public static readonly Guid DockDayGuid = Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1");
+    public static readonly Guid LethalCraftGuid = Guid.Parse("8d7616ce-cc2e-45af-a1c0-0456c09b998c");
 
     public override void Initialize()
     {
@@ -145,6 +146,7 @@ public class App : Application
             ThemeVariant.Light);
         themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
+        themesService.RegisterBackgroundImage(LethalCraftGuid, "Lethal Craft", "avares://VoiceCraft.Client/Assets/lethalCraft.png");
     }
 
     private static SettingsService SetupSettings()
