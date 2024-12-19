@@ -1,4 +1,5 @@
 using System.Reflection;
+using Arch.Core;
 using LiteNetLib;
 using VoiceCraft.Core.Network;
 
@@ -6,18 +7,22 @@ namespace VoiceCraft.Server
 {
     public class App
     {
-        private VoiceCraftServer _server;
+        private readonly VoiceCraftServer _server;
+        private readonly Properties _serverProperties;
+        private readonly World _world;
 
         public App()
         {
             _server = new VoiceCraftServer();
+            _serverProperties = new Properties();
+            _world = World.Create();
             _server.OnStarted += OnStarted;
             _server.OnStopped += OnStopped;
             _server.OnClientConnected += OnClientConnected;
             _server.OnClientDisconnected += OnClientDisconnected;
         }
 
-        public void Start()
+        public async Task Start()
         {
             // ReSharper disable once InconsistentNaming
             var Version =  Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.";
@@ -36,7 +41,12 @@ namespace VoiceCraft.Server
 #endif
             Console.WriteLine("Starting VoiceCraft server...");
             _server.Start(9050);
-            Console.ReadLine();
+            while (true)
+            {
+                if(_serverProperties.UpdateIntervalMs > 0)
+                    await Task.Delay(TimeSpan.FromMilliseconds(_serverProperties.UpdateIntervalMs));
+                _server.Update();
+            }
         }
         
         private void OnStarted()

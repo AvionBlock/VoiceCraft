@@ -18,12 +18,4 @@ namespace VoiceCraft.Core.Network
     {
         ServerInfo
     }
-
-    public enum PositioningMode : byte
-    {
-        Server,
-        Client,
-        ServerAndClient,
-        Unknown
-    }
 }

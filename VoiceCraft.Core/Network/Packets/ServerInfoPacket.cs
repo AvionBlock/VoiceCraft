@@ -7,7 +7,6 @@ namespace VoiceCraft.Core.Network.Packets
         public override PacketType PacketType => PacketType.ServerInfo;
         public string Motd { get; set; } = string.Empty;
         public uint ConnectedPlayers { get; set; }
-        public PositioningMode PositioningMode { get; set; }
         public bool DiscoveryEnabled  { get; set; }
         
         
@@ -15,7 +14,6 @@ namespace VoiceCraft.Core.Network.Packets
         {
             writer.Put(Motd);
             writer.Put(ConnectedPlayers);
-            writer.Put((byte)PositioningMode);
             writer.Put(DiscoveryEnabled);
         }
 
@@ -23,7 +21,6 @@ namespace VoiceCraft.Core.Network.Packets
         {
             Motd = reader.GetString();
             ConnectedPlayers = reader.GetUInt();
-            PositioningMode = (PositioningMode)reader.GetByte();
             DiscoveryEnabled = reader.GetBool();
         }
     }

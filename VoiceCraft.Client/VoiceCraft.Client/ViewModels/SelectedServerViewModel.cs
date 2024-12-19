@@ -68,7 +68,7 @@ namespace VoiceCraft.Client.ViewModels
         
         private void OnServerInfoPacketReceived(ServerInfoPacket packet)
         {
-            StatusInfo = $"Motd: {packet.Motd}\nConnected Players: {packet.ConnectedPlayers}\nAllows Discovery: {packet.DiscoveryEnabled}\nPositioning Mode: {packet.PositioningMode}";
+            StatusInfo = $"Motd: {packet.Motd}\nConnected Players: {packet.ConnectedPlayers}\nAllows Discovery: {packet.DiscoveryEnabled}";
         }
         
         private void OnDisconnected(DisconnectInfo disconnectInfo)
