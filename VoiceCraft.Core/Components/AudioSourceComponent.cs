@@ -5,41 +5,76 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Components
 {
-    public abstract class AudioSourceComponent : IUpdateable<AudioSourceComponent>
+    public abstract class AudioSourceComponent : IAudioSource
     {
-        private readonly World _world;
-        private readonly List<IAudioEffect> _audioEffects = new List<IAudioEffect>();
-        private string _name = string.Empty;
-        public event Action<AudioSourceComponent>? OnUpdate;
+        protected readonly World World;
+        protected readonly Entity Entity;
+        protected string Name = string.Empty;
+        protected uint MinRange = 0;
+        protected uint MaxRange = 0;
+        protected IAudioSource? AudioInput;
+        public event Action<AudioSourceComponent>? OnUpdated;
 
-        public string Name
+        public string SourceName
         {
-            get => _name;
+            get => Name;
             set
             {
-                _name = value;
-                OnUpdate?.Invoke(this);
+                if (value == Name) return;
+                Name = value;
+                OnUpdated?.Invoke(this);
             }
         }
 
-        public uint MinRange { get; set; } = 0;
-        public uint MaxRange { get; set; } = 30;
-        public IAudioInput? AudioInput { get; set; }
-        public IAudioEffect[] AudioEffects => _audioEffects.ToArray();
-
-        protected AudioSourceComponent(World world)
+        public IAudioSource? SourceAudioInput
         {
-            _world = world;
+            get => AudioInput;
+            set
+            {
+                if(value == AudioInput) return;
+                AudioInput = value;
+                OnUpdated?.Invoke(this);
+            }
         }
 
-        public void AddAudioEffect(IAudioEffect audioEffect)
+        public uint SourceMinRange
         {
-            _audioEffects.Add(audioEffect);
+            get => MinRange;
+            set
+            {
+                if (value == MinRange) return;
+                MinRange = value;
+                OnUpdated?.Invoke(this);
+            }
         }
 
-        public void RemoveAudioEffect(int index)
+        public uint SourceMaxRange
         {
-            _audioEffects.RemoveAt(index);
+            get => MaxRange;
+            set
+            {
+                if (value == MaxRange) return;
+                MaxRange = value;
+                OnUpdated?.Invoke(this);
+            }
+        }
+
+        protected AudioSourceComponent(World world, ref Entity entity)
+        {
+            World = world;
+            Entity = entity;
+        }
+        
+        public virtual int Read(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void GetTrackableEntities(List<Entity> entities)
+        {
+            if (entities.Contains(Entity)) return;
+            entities.Add(Entity);
+            AudioInput?.GetTrackableEntities(entities);
         }
     }
 }
