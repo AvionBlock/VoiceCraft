@@ -4,6 +4,10 @@ namespace VoiceCraft.Core.Interfaces
 {
     public interface IAudioEffect
     {
-        public void Process(byte[] buffer, int offset, int count, ref Entity entity);
+        EffectBitmask Bitmask { get; }
+        
+        bool CanSeeEntity(Entity entity);
+
+        void Process(byte[] buffer);
     }
 }

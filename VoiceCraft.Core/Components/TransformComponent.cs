@@ -1,18 +1,21 @@
 using System;
 using System.Numerics;
 using Arch.Core;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Components
 {
-    public class TransformComponent
+    public class TransformComponent : IComponent<TransformComponent>
     {
-        protected readonly World World;
-        public event Action<TransformComponent>? OnUpdated;
-        
         private Vector3 _position = Vector3.Zero;
         private Quaternion _rotation = Quaternion.Identity;
         private Vector3 _scale = Vector3.One;
-
+        
+        public event Action<TransformComponent>? OnUpdate;
+        public event Action<TransformComponent>? OnDestroy;
+        public Guid Id { get; } = Guid.NewGuid();
+        public World World { get; }
+        public Entity Entity { get; }
         public Vector3 Position
         {
             get => _position;
@@ -20,7 +23,7 @@ namespace VoiceCraft.Core.Components
             {
                 if (value == _position) return;
                 _position = value;
-                OnUpdated?.Invoke(this);
+                OnUpdate?.Invoke(this);
             }
         }
 
@@ -31,7 +34,7 @@ namespace VoiceCraft.Core.Components
             {
                 if (value == _rotation) return;
                 _rotation = value;
-                OnUpdated?.Invoke(this);
+                OnUpdate?.Invoke(this);
             }
         }
 
@@ -42,13 +45,21 @@ namespace VoiceCraft.Core.Components
             {
                 if (value == _scale) return;
                 _scale = value;
-                OnUpdated?.Invoke(this);
+                OnUpdate?.Invoke(this);
             }
         }
 
-        public TransformComponent(World world)
+        public TransformComponent(World world, Entity entity)
         {
             World = world;
+            Entity = entity;
+        }
+        
+        public void Destroy()
+        {
+            OnUpdate = null;
+            OnDestroy?.Invoke(this);
+            OnDestroy = null;
         }
     }
 }

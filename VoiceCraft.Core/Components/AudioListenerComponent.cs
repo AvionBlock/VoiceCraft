@@ -1,70 +1,57 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Arch.Core;
 using Arch.Core.Extensions;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Components
 {
-    public abstract class AudioListenerComponent : IAudioSource
+    public class AudioListenerComponent : IAudioInput, IComponent<AudioListenerComponent>
     {
-        protected readonly World World;
-        protected readonly Entity Entity;
-        private readonly List<IAudioEffect> _effects = new List<IAudioEffect>();
-        public event Action<AudioListenerComponent, IAudioEffect>? OnEffectAdded;
-        public event Action<AudioListenerComponent, IAudioEffect>? OnEffectRemoved;
+        public event Action<AudioListenerComponent>? OnUpdate;
+        public event Action<AudioListenerComponent>? OnDestroy;
+        public Guid Id { get; } = Guid.NewGuid();
+        public World World { get; }
+        public Entity Entity { get; }
 
-        public IAudioEffect[] AudioEffects => _effects.ToArray();
-
-        protected AudioListenerComponent(World world, ref Entity entity)
+        public AudioListenerComponent(World world, Entity entity)
         {
             World = world;
             Entity = entity;
         }
-
-        public virtual bool AddAudioEffect(IAudioEffect audioEffect)
-        {
-            if (_effects.Exists(e => e.GetType() == audioEffect.GetType())) return false;
-            _effects.Add(audioEffect);
-            OnEffectAdded?.Invoke(this, audioEffect);
-            return true;
-        }
-
-        public virtual bool RemoveAudioEffect(int index)
-        {
-            var audioEffect = _effects.ElementAtOrDefault(index);
-            if (audioEffect == null) return false;
-            _effects.Remove(audioEffect);
-            OnEffectRemoved?.Invoke(this, audioEffect);
-            return true;
-        }
-
-        public virtual int Read(byte[] buffer, int offset, int count)
+        
+        public int Read(byte[] buffer, int offset, int count)
         {
             throw new NotSupportedException();
         }
 
-        public virtual void GetTrackableEntities(List<Entity> entities)
+        public void GetVisibleEntities(List<Entity> entities)
         {
             if (entities.Contains(Entity)) return;
-            entities.Add(Entity);
             var query = new QueryDescription()
                 .WithAll<TransformComponent>();
-
-            var currentPosition = Entity.Get<TransformComponent>().Position;
+            var selfEffects = Entity.GetAllComponents().OfType<IAudioEffect>();
             World.Query(in query, (Entity entity, ref TransformComponent transform) =>
             {
-                var components = entity.GetAllComponents();
-                foreach (var component in components)
-                {
-                    if (entities.Contains(entity) || !(component is AudioSourceComponent audioComponent) ||
-                        Vector3.Distance(currentPosition, transform.Position) > audioComponent.SourceMaxRange) continue;
-                    audioComponent.GetTrackableEntities(entities); //This adds itself.
-                    break;
-                }
+                var entityComponents = entity.GetAllComponents();
+                
+                //Loop through all the audio effects first.
+                if (selfEffects.Any(effectComponent => !effectComponent.CanSeeEntity(entity)))
+                    return; //Cannot see entity, return.
+                
+                //Can see entity, Get audio outputs and get the visible entities of that audio output.
+                foreach (var sourceComponent in entityComponents)
+                    if (sourceComponent is IAudioOutput audioOutput)
+                        audioOutput.GetVisibleEntities(entities);
             });
+
+        }
+        public void Destroy()
+        {
+            OnUpdate = null;
+            OnDestroy?.Invoke(this);
+            OnDestroy = null;
         }
     }
 }
