@@ -8,7 +8,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Windows.Audio
 {
-    public unsafe class AudioRecorder : IAudioRecorder
+    public class AudioRecorder : IAudioRecorder
     {
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private ALCaptureDevice _device = ALCaptureDevice.Null;
@@ -122,7 +122,7 @@ namespace VoiceCraft.Client.Windows.Audio
             }
         }
         
-        private void RecordingLogic()
+        private unsafe void RecordingLogic()
         {
             //Initialize the wave buffer
             var bufferSize = BufferMilliseconds * WaveFormat.AverageBytesPerSecond / 1000;
@@ -162,7 +162,6 @@ namespace VoiceCraft.Client.Windows.Audio
             };
             
             var bufferSize = bufferSizeMs * waveFormat.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
-            AL.GetError(); //Clear any previous errors.
             //Multiply buffer size by 2 because OpenAL can't handle exact buffer sizes that well.
             var device = ALC.CaptureOpenDevice(selectedDevice, waveFormat.SampleRate, format, bufferSize * 2);
             if (device == ALCaptureDevice.Null)
