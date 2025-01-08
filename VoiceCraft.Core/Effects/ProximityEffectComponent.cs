@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Numerics;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -7,14 +8,14 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Effects
 {
-    public class ProximityEffectComponent : IAudioEffect, IComponent<ProximityEffectComponent>
+    public class ProximityEffectComponent : IAudioEffect, IComponent
     {
         private string? _environmentId;
         private uint _minRange;
         private uint _maxRange;
 
-        public event Action<ProximityEffectComponent>? OnUpdate;
-        public event Action<ProximityEffectComponent>? OnDestroy;
+        public event Action<IComponent>? OnUpdate;
+        public event Action<IComponent>? OnDestroy;
         public Guid Id { get; } = Guid.NewGuid();
         public World World { get; }
         public Entity Entity { get; }
@@ -52,7 +53,7 @@ namespace VoiceCraft.Core.Effects
             }
         }
 
-        public EffectBitmask Bitmask => EffectBitmask.ProximityVolume;
+        public EffectBitmask Bitmask => EffectBitmask.ProximityEffect;
 
         public ProximityEffectComponent(World world, Entity entity)
         {
@@ -60,25 +61,17 @@ namespace VoiceCraft.Core.Effects
             Entity = entity;
         }
 
-        public bool CanSeeEntity(Entity entity)
+        public bool IsVisibleToEntity(Entity otherEntity)
         {
             //Is the same entity or doesn't have any transform component on either entity, should see it.
-            if (entity == Entity || !entity.Has<TransformComponent>() || !Entity.Has<TransformComponent>())
+            if (otherEntity == Entity || !otherEntity.Has<TransformComponent>() || !Entity.Has<TransformComponent>() || !IsBitmaskEnabled(otherEntity))
                 return true;
-
-            entity.TryGet<AudioBitmaskComponent>(out var bitmaskComponent);
-            Entity.TryGet<AudioBitmaskComponent>(out var selfBitmaskComponent);
-            var combinedBitmask = bitmaskComponent?.Bitmask ?? 0 | selfBitmaskComponent?.Bitmask ?? 0;
-            var enabledEffects = bitmaskComponent?.GetEnabledBitmaskEffects(combinedBitmask) ??
-                                 0 | selfBitmaskComponent?.GetEnabledBitmaskEffects(combinedBitmask) ?? 0;
-            if ((enabledEffects & (ulong)Bitmask) == 0) return true; //Effect not enabled via bitmask, can see entity/true.
-
-            entity.TryGet<ProximityEffectComponent>(out var proximityEffectComponent); //Proximity effect on other entity.
-            //Get distance between entities.
-            var distance = Vector3.Distance(entity.Get<TransformComponent>().Position, Entity.Get<TransformComponent>().Position);
-
-            //If distance of entities is lower than or equal to max range and environment ID is equal and not null or whitespace, then true. else false.
-            return distance <= _maxRange && !string.IsNullOrWhiteSpace(_environmentId) && proximityEffectComponent?.EnvironmentId == _environmentId;
+            
+            otherEntity.TryGet<ProximityEffectComponent>(out var otherEntityProximityEffectComponent);
+            var entityTransformComponent = Entity.Get<TransformComponent>();
+            var otherEntityTransformComponent = otherEntity.Get<TransformComponent>();
+            var maxRange = Math.Max(_maxRange, otherEntityProximityEffectComponent?.MaxRange ?? 0);
+            return Vector3.Distance(entityTransformComponent.Position, otherEntityTransformComponent.Position) <= maxRange;
         }
 
         public void Process(byte[] buffer)
@@ -91,6 +84,24 @@ namespace VoiceCraft.Core.Effects
             OnUpdate = null;
             OnDestroy?.Invoke(this);
             OnDestroy = null;
+        }
+
+        private bool IsBitmaskEnabled(Entity otherEntity)
+        {
+            if (!otherEntity.Has<AudioBitmaskComponent>() && !Entity.Has<AudioBitmaskComponent>())
+                return false;
+
+            Entity.TryGet<AudioBitmaskComponent>(out var entityBitmaskComponent);
+            otherEntity.TryGet<AudioBitmaskComponent>(out var otherEntityBitmaskComponent);
+            var combinedBitmask = ulong.MinValue;
+            combinedBitmask |= entityBitmaskComponent?.Bitmask ?? ulong.MinValue | otherEntityBitmaskComponent?.Bitmask ?? ulong.MinValue;
+            
+            var combinedBitmaskEffects =
+                entityBitmaskComponent?.Bitmasks.Where(x => (x.Key & combinedBitmask) != 0)
+                    .Aggregate((ulong)0, (current, bitmask) => current | bitmask.Value) ?? ulong.MinValue |
+                otherEntityBitmaskComponent?.Bitmasks.Where(x => (x.Key & combinedBitmask) != 0)
+                    .Aggregate((ulong)0, (current, bitmask) => current | bitmask.Value) ?? ulong.MinValue;
+            return (combinedBitmaskEffects & (ulong)Bitmask) != 0;
         }
     }
 }

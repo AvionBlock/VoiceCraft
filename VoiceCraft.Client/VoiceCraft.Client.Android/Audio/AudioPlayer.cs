@@ -79,16 +79,13 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Check if device is already closed/null.
             if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException("Must call Init first");
+                throw new InvalidOperationException("Must call Init first!");
 
             //Resume or start playback.
             switch (PlaybackState)
             {
                 case PlaybackState.Stopped:
                     ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
-                    //Block thread until it's fully started.
-                    while (PlaybackState == PlaybackState.Stopped)
-                        Thread.Sleep(1);
                     break;
                 case PlaybackState.Paused:
                     Resume();

@@ -5,11 +5,11 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioSourceComponent : IAudioOutput, IComponent<AudioSourceComponent>
+    public class AudioSourceComponent : IAudioOutput, IComponent
     {
         private IAudioInput? _audioInput;
-        public event Action<AudioSourceComponent>? OnUpdate;
-        public event Action<AudioSourceComponent>? OnDestroy;
+        public event Action<IComponent>? OnUpdate;
+        public event Action<IComponent>? OnDestroy;
         public Guid Id { get; } = Guid.NewGuid();
         public World World { get; }
         public Entity Entity { get; }
@@ -29,6 +29,8 @@ namespace VoiceCraft.Core.Components
             World = world;
             Entity = entity;
         }
+        
+        public bool IsVisibleToEntity(Entity otherEntity) => true; //Don't care
         
         public int Read(byte[] buffer, int offset, int count)
         {

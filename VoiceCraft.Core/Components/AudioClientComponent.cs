@@ -6,13 +6,13 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioClientComponent : IAudioInput, IAudioOutput, IComponent<AudioClientComponent>
+    public class AudioClientComponent : IAudioInput, IAudioOutput, IComponent
     {
         private readonly VoiceCraftServerClient _client;
         private IAudioInput? _audioInput;
         
-        public event Action<AudioClientComponent>? OnUpdate;
-        public event Action<AudioClientComponent>? OnDestroy;
+        public event Action<IComponent>? OnUpdate;
+        public event Action<IComponent>? OnDestroy;
         public Guid Id { get; } = Guid.NewGuid();
         public World World { get; }
         public Entity Entity { get; }
@@ -34,6 +34,8 @@ namespace VoiceCraft.Core.Components
             Entity = entity;
             _client.OnDisconnected += OnDisconnected;
         }
+        
+        public bool IsVisibleToEntity(Entity otherEntity) => true; //Don't care
 
         public int Read(byte[] buffer, int offset, int count)
         {

@@ -6,12 +6,13 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioBitmaskComponent : IComponent<AudioBitmaskComponent>
+    public class AudioBitmaskComponent : IComponent
     {
         private readonly Dictionary<ulong, ulong> _bitmasks = new Dictionary<ulong, ulong>();
         private ulong _bitmask;
-        public event Action<AudioBitmaskComponent>? OnUpdate;
-        public event Action<AudioBitmaskComponent>? OnDestroy;
+        
+        public event Action<IComponent>? OnUpdate;
+        public event Action<IComponent>? OnDestroy;
         public Guid Id { get; } = Guid.NewGuid();
         public World World { get; }
         public Entity Entity { get; }
@@ -26,12 +27,16 @@ namespace VoiceCraft.Core.Components
                 OnUpdate?.Invoke(this);
             }
         }
+        
+        public IEnumerable<KeyValuePair<ulong, ulong>> Bitmasks => _bitmasks;
 
         public AudioBitmaskComponent(World world, Entity entity)
         {
             World = world;
             Entity = entity;
         }
+        
+        public bool IsVisibleToEntity(Entity otherEntity) => true; //Don't care
 
         public void AddBitmask(ulong bitmask, ulong effectBitmask)
         {
@@ -40,24 +45,22 @@ namespace VoiceCraft.Core.Components
                 throw new InvalidOperationException($"Bitmask conflicts with another existing bitmask of value {existingBitmasks[0].Key}.");
 
             _bitmasks.Add(bitmask, effectBitmask);
+            OnUpdate?.Invoke(this);
         }
 
         public bool UpdateBitmask(ulong bitmask, ulong effectBitmask)
         {
             if (!_bitmasks.ContainsKey(bitmask)) return false;
             _bitmasks[bitmask] = effectBitmask;
+            OnUpdate?.Invoke(this);
             return true;
         }
 
         public bool RemoveBitmask(ulong bitmask)
         {
-            return _bitmasks.Remove(bitmask);
-        }
-
-        public ulong GetEnabledBitmaskEffects(ulong comparisonBitmask)
-        {
-            return _bitmasks.Where(bitmask => (bitmask.Key & comparisonBitmask) != 0)
-                .Aggregate((ulong)0, (current, bitmask) => current | bitmask.Value);
+            if (!_bitmasks.Remove(bitmask)) return false;
+            OnUpdate?.Invoke(this);
+            return true;
         }
         
         public void Destroy()

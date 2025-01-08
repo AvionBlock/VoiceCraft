@@ -4,25 +4,22 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Effects
 {
-    public class DirectionalAudioComponent : IAudioEffect, IComponent<DirectionalAudioComponent>
+    public class DirectionalEffectComponent : IAudioEffect, IComponent
     {
-        public event Action<DirectionalAudioComponent>? OnUpdate;
-        public event Action<DirectionalAudioComponent>? OnDestroy;
+        public event Action<IComponent>? OnUpdate;
+        public event Action<IComponent>? OnDestroy;
         public Guid Id { get; } = Guid.NewGuid();
         public World World { get; }
         public Entity Entity { get; }
-        public EffectBitmask Bitmask => EffectBitmask.DirectionAudio;
+        public EffectBitmask Bitmask => EffectBitmask.DirectionalEffect;
 
-        public DirectionalAudioComponent(World world, Entity entity)
+        public DirectionalEffectComponent(World world, Entity entity)
         {
             World = world;
             Entity = entity;
         }
         
-        public bool CanSeeEntity(Entity entity)
-        {
-            return true; //True no matter what. This doesn't affect the range at which entities will be able to hear each other.
-        }
+        public bool IsVisibleToEntity(Entity otherEntity) => true; //Don't care
 
         public void Process(byte[] buffer)
         {

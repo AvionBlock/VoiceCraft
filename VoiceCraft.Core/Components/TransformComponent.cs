@@ -5,14 +5,14 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Components
 {
-    public class TransformComponent : IComponent<TransformComponent>
+    public class TransformComponent : IComponent
     {
         private Vector3 _position = Vector3.Zero;
         private Quaternion _rotation = Quaternion.Identity;
         private Vector3 _scale = Vector3.One;
         
-        public event Action<TransformComponent>? OnUpdate;
-        public event Action<TransformComponent>? OnDestroy;
+        public event Action<IComponent>? OnUpdate;
+        public event Action<IComponent>? OnDestroy;
         public Guid Id { get; } = Guid.NewGuid();
         public World World { get; }
         public Entity Entity { get; }
@@ -54,6 +54,8 @@ namespace VoiceCraft.Core.Components
             World = world;
             Entity = entity;
         }
+        
+        public bool IsVisibleToEntity(Entity otherEntity) => true; //Don't care
         
         public void Destroy()
         {

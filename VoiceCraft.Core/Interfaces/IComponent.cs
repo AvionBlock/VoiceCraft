@@ -3,13 +3,14 @@ using Arch.Core;
 
 namespace VoiceCraft.Core.Interfaces
 {
-    public interface IComponent<out T> where T : class
+    public interface IComponent
     {
-        event Action<T> OnUpdate;
-        event Action<T> OnDestroy;
+        event Action<IComponent> OnUpdate;
+        event Action<IComponent> OnDestroy;
         Guid Id { get; }
         World World { get; }
         Entity Entity { get; }
+        bool IsVisibleToEntity(Entity otherEntity);
         
         void Destroy();
     }
