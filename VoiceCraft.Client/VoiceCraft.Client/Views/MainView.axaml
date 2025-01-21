@@ -7,7 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VoiceCraft.Client.Views.MainView"
              x:DataType="vm:MainViewModel">
-    <Grid>
+    <Grid Background="{DynamicResource ApplicationBackgroundBrush}">
         <Image Classes="background" Source="{Binding BackgroundImage}" Stretch="UniformToFill" />
         <TransitioningContentControl Content="{Binding Content}" />
         <controls:NotificationMessageContainer Manager="{Binding Manager}" />

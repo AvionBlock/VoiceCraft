@@ -17,6 +17,7 @@
             <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource BackgroundColor}" />
             <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="{DynamicResource ErrorBackgroundColor}" />
             <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="{DynamicResource SuccessBackgroundColor}" />
+            <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="{DynamicResource ApplicationBackgroundColor}" />
 
             <!--  Notification Background Brushes  -->
             <SolidColorBrush x:Key="NotificationBackgroundBrush" Color="{DynamicResource NotificationBackgroundColor}" />

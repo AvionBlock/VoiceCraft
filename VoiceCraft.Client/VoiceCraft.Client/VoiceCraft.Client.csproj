@@ -62,5 +62,17 @@
         <DependentUpon>ErrorMainWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Themes\DarkPurple\Colors.axaml.cs">
+        <DependentUpon>Colors.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkPurple\Resources.axaml.cs">
+        <DependentUpon>Resources.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkPurple\Styles.axaml.cs">
+        <DependentUpon>Styles.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 </Project>

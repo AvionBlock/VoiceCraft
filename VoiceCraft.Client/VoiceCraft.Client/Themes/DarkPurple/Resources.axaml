@@ -1,8 +1,8 @@
-<ResourceDictionary x:Class="VoiceCraft.Client.Themes.Light.Resources" xmlns="https://github.com/avaloniaui"
+<ResourceDictionary x:Class="VoiceCraft.Client.Themes.DarkPurple.Resources" xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <!--  Dark  -->
-        <ResourceDictionary x:Key="Light">
+        <ResourceDictionary x:Key="Dark">
             <!--  Accent Brushes  -->
             <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}" />
             <SolidColorBrush x:Key="ErrorAccentBrush" Color="{DynamicResource ErrorAccentColor}" />

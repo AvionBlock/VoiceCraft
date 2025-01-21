@@ -22,10 +22,10 @@ public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
     public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
-    public static readonly Guid NativePreprocessorGuid = Guid.Parse("6e5839db-be0f-4609-a4bd-85d193689c05");
     public static readonly Guid NativeEchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
     public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
     public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
+    public static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
     public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");
     public static readonly Guid DockDayGuid = Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1");
     public static readonly Guid LethalCraftGuid = Guid.Parse("8d7616ce-cc2e-45af-a1c0-0456c09b998c");
@@ -108,8 +108,7 @@ public class App : Application
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
-        ServiceCollection.AddSingleton<PermissionsService>(x =>
-            new PermissionsService(x.GetRequiredService<NotificationService>(),
+        ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(x.GetRequiredService<NotificationService>(),
                 y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton(SetupSettings());
@@ -141,6 +140,8 @@ public class App : Application
             ThemeVariant.Dark);
         themesService.RegisterTheme(LightThemeGuid, "Light", [new Themes.Light.Styles()], [new Themes.Light.Colors(), new Themes.Light.Resources()],
             ThemeVariant.Light);
+        themesService.RegisterTheme(DarkPurpleThemeGuid, "Dark Purple", [new Themes.DarkPurple.Styles()],
+            [new Themes.DarkPurple.Colors(), new Themes.DarkPurple.Resources()], ThemeVariant.Dark);
         themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
         themesService.RegisterBackgroundImage(LethalCraftGuid, "Lethal Craft", "avares://VoiceCraft.Client/Assets/lethalCraft.png");
