@@ -17,18 +17,16 @@ namespace VoiceCraft.Client.ViewModels.Settings
 
         [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
         [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
-        [ObservableProperty] private ObservableCollection<RegisteredPreprocessor> _preprocessors = [];
         [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
+        [ObservableProperty] private ObservableCollection<RegisteredAutomaticGainController> _automaticGainControllers = [];
+        [ObservableProperty] private ObservableCollection<RegisteredDenoiser> _denoisers = [];
 
         [ObservableProperty] private string _inputDevice;
         [ObservableProperty] private string _outputDevice;
-        [ObservableProperty] private Guid _preprocessor;
+        [ObservableProperty] private Guid _denoiser;
         [ObservableProperty] private Guid _echoCanceler;
+        [ObservableProperty] private Guid _automaticGainController;
         [ObservableProperty] private float _microphoneSensitivity;
-        [ObservableProperty] private bool _aec;
-        [ObservableProperty] private bool _agc;
-        [ObservableProperty] private bool _denoiser;
-        [ObservableProperty] private bool _vad;
 
         public AudioSettingsViewModel(AudioSettings audioSettings, SettingsService settingsService, AudioService audioService)
         {
@@ -39,13 +37,10 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _audioSettings.OnUpdated += Update;
             _inputDevice = _audioSettings.InputDevice;
             _outputDevice = _audioSettings.OutputDevice;
-            _preprocessor = _audioSettings.Preprocessor;
+            _denoiser = _audioSettings.Denoiser;
+            _automaticGainController = _audioSettings.AutomaticGainController;
             _echoCanceler = _audioSettings.EchoCanceler;
             _microphoneSensitivity = _audioSettings.MicrophoneSensitivity;
-            _aec = _audioSettings.Aec;
-            _agc = _audioSettings.Agc;
-            _denoiser = _audioSettings.Denoiser;
-            _vad = _audioSettings.Vad;
             
             ReloadAvailableDevices();
         }
@@ -54,15 +49,18 @@ namespace VoiceCraft.Client.ViewModels.Settings
         {
             InputDevices = ["Default", .._audioService.GetInputDevices()];
             OutputDevices = ["Default", .._audioService.GetOutputDevices()];
-            Preprocessors = new ObservableCollection<RegisteredPreprocessor>(_audioService.RegisteredPreprocessors);
+            Denoisers = new ObservableCollection<RegisteredDenoiser>(_audioService.RegisteredDenoisers);
+            AutomaticGainControllers = new ObservableCollection<RegisteredAutomaticGainController>(_audioService.RegisteredAutomaticGainControllers);
             EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);
             
             if(!InputDevices.Contains(InputDevice))
                 InputDevice = "Default";
             if(!OutputDevices.Contains(OutputDevice))
                 OutputDevice = "Default";
-            if(Preprocessors.FirstOrDefault(x => x.Id == Preprocessor) == null)
-                Preprocessor = Guid.Empty;
+            if(Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
+                Denoiser = Guid.Empty;
+            if(AutomaticGainControllers.FirstOrDefault(x => x.Id == AutomaticGainController) == null)
+                AutomaticGainController = Guid.Empty;
             if(EchoCancelers.FirstOrDefault(x => x.Id == EchoCanceler) == null)
                 EchoCanceler = Guid.Empty;
         }
@@ -89,17 +87,28 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _updating = false;
         }
 
-        partial void OnPreprocessorChanging(Guid value)
+        partial void OnDenoiserChanging(Guid value)
         {
             ThrowIfDisposed();
             
             if (_updating) return;
             _updating = true;
-            _audioSettings.Preprocessor = value;
+            _audioSettings.Denoiser = value;
             _ = _settingsService.SaveAsync();
             _updating = false;
         }
 
+        partial void OnAutomaticGainControllerChanging(Guid value)
+        {
+            ThrowIfDisposed();
+            
+            if(_updating) return;
+            _updating = true;
+            _audioSettings.AutomaticGainController = value;
+            _ = _settingsService.SaveAsync();
+            _updating = false;
+        }
+        
         partial void OnEchoCancelerChanging(Guid value)
         {
             ThrowIfDisposed();
@@ -122,50 +131,6 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _updating = false;
         }
 
-        partial void OnAecChanging(bool value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.Aec = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
-        partial void OnAgcChanging(bool value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.Agc = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
-        partial void OnDenoiserChanging(bool value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.Denoiser = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
-        partial void OnVadChanging(bool value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.Vad = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
         private void Update(AudioSettings audioSettings)
         {
             if (_updating) return;
@@ -173,13 +138,10 @@ namespace VoiceCraft.Client.ViewModels.Settings
             
             InputDevice = audioSettings.InputDevice;
             OutputDevice = audioSettings.OutputDevice;
-            Preprocessor = audioSettings.Preprocessor;
+            Denoiser = audioSettings.Denoiser;
+            AutomaticGainController = audioSettings.AutomaticGainController;
             EchoCanceler = audioSettings.EchoCanceler;
             MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
-            Aec = audioSettings.Aec;
-            Agc = audioSettings.Agc;
-            Denoiser = audioSettings.Denoiser;
-            Vad = audioSettings.Vad;
             
             _updating = false;
         }

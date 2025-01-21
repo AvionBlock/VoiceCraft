@@ -21,7 +21,6 @@ namespace VoiceCraft.Client;
 public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
-    public static readonly Guid SpeexDspPreprocessorGuid = Guid.Parse("6a9fba40-453d-4943-bebc-82963c8397ae");
     public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
     public static readonly Guid NativePreprocessorGuid = Guid.Parse("6e5839db-be0f-4609-a4bd-85d193689c05");
     public static readonly Guid NativeEchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
@@ -135,9 +134,7 @@ public class App : Application
     private static void SetupServices(IServiceProvider serviceProvider)
     {
         var audioService = serviceProvider.GetRequiredService<AudioService>();
-        audioService.RegisterPreprocessor<SpeexDspPreprocessor>(SpeexDspPreprocessorGuid, "SpeexDSP Preprocessor", true,
-            true, true);
-        audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler", true);
+        audioService.RegisterEchoCanceler<SpeexDSPEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler");
 
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
         themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()], [new Themes.Dark.VcColors(), new Themes.Dark.Resources()],

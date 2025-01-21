@@ -8,26 +8,8 @@ namespace VoiceCraft.Client.Android.Audio
     {
         public bool IsNative => true;
 
-        public bool IsAvailable => AcousticEchoCanceler.IsAvailable;
-
-        public bool Enabled {
-            get
-            {
-                if (!IsAvailable) return false; //Will always be false regardless if not available.
-                return _echoCanceler?.Enabled ?? _enabled;
-            }
-            set
-            {
-                _echoCanceler?.SetEnabled(value);
-                _enabled = value;
-            }
-        }
-
-        public bool Initialized => _recorder != null;
-
         private AcousticEchoCanceler? _echoCanceler;
         private AudioRecorder? _recorder;
-        private bool _enabled = true;
         private bool _initialized;
         private bool _disposed;
 
@@ -66,10 +48,8 @@ namespace VoiceCraft.Client.Android.Audio
                 _echoCanceler.Dispose();
                 _echoCanceler = null;
             }
-
-            if (IsAvailable)
-                _echoCanceler = AcousticEchoCanceler.Create((int)_recorder.SessionId);
-
+            
+            _echoCanceler = AcousticEchoCanceler.Create((int)_recorder.SessionId);
             _initialized = true;
         }
 
@@ -87,10 +67,8 @@ namespace VoiceCraft.Client.Android.Audio
                 _echoCanceler.Dispose();
                 _echoCanceler = null;
             }
-
-            if (IsAvailable)
-                _echoCanceler = AcousticEchoCanceler.Create((int)_recorder.SessionId);
-
+            
+            _echoCanceler = AcousticEchoCanceler.Create((int)_recorder.SessionId);
             _initialized = true;
         }
 

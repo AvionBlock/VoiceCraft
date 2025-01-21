@@ -93,14 +93,30 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Preprocessors" />
-
+                               Text="Denoisers" />
+                    
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding AudioSettings.Preprocessors}"
-                              SelectedValue="{Binding AudioSettings.Preprocessor}"
+                              ItemsSource="{Binding AudioSettings.Denoisers}"
+                              SelectedValue="{Binding AudioSettings.Denoiser}"
                               SelectedValueBinding="{Binding Id}">
                         <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type registered:RegisteredPreprocessor}">
+                            <DataTemplate DataType="{x:Type registered:RegisteredDenoiser}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="Automatic Gain Control" />
+                    
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding AudioSettings.AutomaticGainControllers}"
+                              SelectedValue="{Binding AudioSettings.AutomaticGainController}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredAutomaticGainController}">
                                 <TextBlock Text="{Binding Name}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -129,22 +145,6 @@
                                 Minimum="0.0"
                                 Value="{Binding AudioSettings.MicrophoneSensitivity}" />
                     </StackPanel>
-
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Aec}" IsEnabled="{Binding EchoCancelerAvailable}">
-                        <TextBlock Text="Echo Cancellation" />
-                    </ToggleButton>
-
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Agc}" IsEnabled="{Binding GainControllerAvailable}">
-                        <TextBlock Text="Automatic Gain Control" />
-                    </ToggleButton>
-
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Denoiser}" IsEnabled="{Binding DenoiserAvailable}">
-                        <TextBlock Text="Denoiser" />
-                    </ToggleButton>
-
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding AudioSettings.Vad}" IsEnabled="{Binding VoiceActivityAvailable}">
-                        <TextBlock Text="Voice Activity Detection" />
-                    </ToggleButton>
 
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left"

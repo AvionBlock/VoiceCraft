@@ -5,10 +5,6 @@ namespace VoiceCraft.Client.Audio.Interfaces
     public interface IEchoCanceler : IDisposable
     {
         bool IsNative { get; }
-
-        bool IsAvailable { get; }
-
-        bool Enabled { get; }
         
         void Init(IAudioRecorder recorder, IAudioPlayer player);
 

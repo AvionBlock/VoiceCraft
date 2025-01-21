@@ -4,6 +4,7 @@ using NAudio.Wave;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 
@@ -19,7 +20,7 @@ namespace VoiceCraft.Client.Android.Audio
         public CaptureState CaptureState { get; private set; } = CaptureState.Stopped;
         public int BufferMilliseconds { get; set; } = 100;
         public string? SelectedDevice { get; set; }
-        public AudioSource AudioSource { get; set; } = AudioSource.Mic;
+        public AudioSource AudioSource { get; set; }
         public int? SessionId => _audioRecord?.AudioSessionId;
 
         public event EventHandler<WaveInEventArgs>? DataAvailable;
@@ -43,7 +44,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Open Capture Device
             CaptureState = CaptureState.Starting;
-            _audioRecord = OpenAudioRecorder(WaveFormat, BufferMilliseconds, audioManager, AudioSource, SelectedDevice);
+            _audioRecord = OpenCaptureDevice(WaveFormat, BufferMilliseconds, audioManager, AudioSource, SelectedDevice);
             ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
         }
 
@@ -61,7 +62,7 @@ namespace VoiceCraft.Client.Android.Audio
             
             //Block thread until it's fully stopped.
             while(CaptureState is CaptureState.Stopping)
-                Thread.Sleep(1);
+                Task.Delay(1).GetAwaiter().GetResult();
         }
 
         public void Dispose()
@@ -100,7 +101,7 @@ namespace VoiceCraft.Client.Android.Audio
             }
             finally
             {
-                CloseAudioRecorder(_audioRecord);
+                CloseCaptureDevice(_audioRecord);
                 _audioRecord = null;
                 CaptureState = CaptureState.Stopped;
                 RaiseRecordingStoppedEvent(exception);
@@ -175,7 +176,7 @@ namespace VoiceCraft.Client.Android.Audio
             }
         }
 
-        private static AudioRecord OpenAudioRecorder(WaveFormat waveFormat, int bufferSizeMs, AudioManager audioManager, AudioSource audioSource = AudioSource.Mic, string? selectedDevice = null)
+        private static AudioRecord OpenCaptureDevice(WaveFormat waveFormat, int bufferSizeMs, AudioManager audioManager, AudioSource audioSource = AudioSource.Mic, string? selectedDevice = null)
         {
             //Set the encoding
             var encoding = (waveFormat.BitsPerSample, waveFormat.Encoding) switch
@@ -226,7 +227,7 @@ namespace VoiceCraft.Client.Android.Audio
             return audioRecord;
         }
         
-        private static void CloseAudioRecorder(AudioRecord? audioRecord)
+        private static void CloseCaptureDevice(AudioRecord? audioRecord)
         {
             //Make sure that the recorder was opened
             if (audioRecord is not { State: State.Initialized }) return;

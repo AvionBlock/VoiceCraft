@@ -42,13 +42,8 @@ namespace VoiceCraft.Client.Android
                 var audioService = new NativeAudioService((AudioManager?)GetSystemService(AudioService) ??
                                                           throw new Exception(
                                                               $"Could not find {AudioService}. Cannot initialize audio service."));
-                if (AutomaticGainControl.IsAvailable ||
-                    NoiseSuppressor.IsAvailable) //If one of these are available, we can add the native preprocessor
-                    audioService.RegisterPreprocessor<NativePreprocessor>(App.NativePreprocessorGuid,
-                        "Native Preprocessor", true, true, false);
                 if (AcousticEchoCanceler.IsAvailable)
-                    audioService.RegisterEchoCanceler<NativeEchoCanceler>(App.NativeEchoCancelerGuid,
-                        "Native Echo Canceler", true);
+                    audioService.RegisterEchoCanceler<NativeEchoCanceler>(App.NativeEchoCancelerGuid, "Native Echo Canceler");
                 return audioService;
             });
             App.ServiceCollection.AddTransient<Permissions.Microphone>();

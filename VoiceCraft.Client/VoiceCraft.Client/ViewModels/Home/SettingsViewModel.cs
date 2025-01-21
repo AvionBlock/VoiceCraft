@@ -28,7 +28,6 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private IAudioRecorder? _recorder;
         private IAudioPlayer? _player;
-        private IPreprocessor? _preprocessor;
 
         [ObservableProperty] private bool _generalSettingsExpanded;
 
@@ -51,10 +50,6 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty] private bool _isRecording;
         [ObservableProperty] private bool _isPlaying;
         [ObservableProperty] private float _microphoneValue;
-        [ObservableProperty] private bool _echoCancelerAvailable;
-        [ObservableProperty] private bool _gainControllerAvailable;
-        [ObservableProperty] private bool _denoiserAvailable;
-        [ObservableProperty] private bool _voiceActivityAvailable;
         [ObservableProperty] private bool _detectingVoiceActivity;
 
         public SettingsViewModel(ThemesService themesService,
@@ -74,28 +69,14 @@ namespace VoiceCraft.Client.ViewModels.Home
             _serversSettings = new ServersSettingsViewModel(settingsService.Get<ServersSettings>(), settingsService);
             _audioSettings = new AudioSettingsViewModel(settingsService.Get<AudioSettings>(), settingsService, _audioService);
             
-            UpdatePreprocessorAvailability();
             UpdateEchoCancelerAvailability();
 
             _audioSettings.PropertyChanged += (_, args) =>
             {
                 switch (args.PropertyName)
                 {
-                    case nameof(AudioSettingsViewModel.Preprocessor):
-                        UpdatePreprocessorAvailability();
-                        break;
                     case nameof(AudioSettingsViewModel.EchoCanceler):
                         UpdateEchoCancelerAvailability();
-                        break;
-                    case nameof(AudioSettingsViewModel.Agc):
-                    case nameof(AudioSettingsViewModel.Denoiser):
-                    case nameof(AudioSettingsViewModel.Vad):
-                        if (_preprocessor != null)
-                        {
-                            _preprocessor.GainControllerEnabled = AudioSettings.Agc;
-                            _preprocessor.NoiseSuppressorEnabled = AudioSettings.Denoiser;
-                            _preprocessor.VoiceActivityDetectionEnabled = AudioSettings.Vad;
-                        }
                         break;
                 }
             };
@@ -122,15 +103,6 @@ namespace VoiceCraft.Client.ViewModels.Home
                     _recorder.SelectedDevice =
                         AudioSettings.InputDevice == "Default" ? null : AudioSettings.InputDevice;
                     
-                    _preprocessor = _audioService.CreatePreprocessor(AudioSettings.Preprocessor);
-                    if (_preprocessor != null)
-                    {
-                        _preprocessor.Init(_recorder);
-                        _preprocessor.GainControllerEnabled = AudioSettings.Agc;
-                        _preprocessor.NoiseSuppressorEnabled = AudioSettings.Denoiser;
-                        _preprocessor.VoiceActivityDetectionEnabled = AudioSettings.Vad;
-                    }
-                    
                     //Can't really test echo cancellation.
                     _recorder.DataAvailable += OnDataAvailable;
                     _recorder.RecordingStopped += OnRecordingStopped;
@@ -143,8 +115,6 @@ namespace VoiceCraft.Client.ViewModels.Home
                 _notificationService.SendErrorNotification(ex.Message);
                 _recorder?.Dispose();
                 _recorder = null;
-                _preprocessor?.Dispose();
-                _preprocessor = null;
                 MicrophoneValue = 0;
                 DetectingVoiceActivity = false;
                 IsRecording = false;
@@ -188,8 +158,6 @@ namespace VoiceCraft.Client.ViewModels.Home
 
             _recorder?.Dispose();
             _recorder = null;
-            _preprocessor?.Dispose();
-            _preprocessor = null;
             MicrophoneValue = 0;
             DetectingVoiceActivity = false;
             IsRecording = false;
@@ -207,8 +175,6 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private void OnDataAvailable(object? sender, WaveInEventArgs e)
         {
-            DetectingVoiceActivity = _preprocessor?.Process(e.Buffer) ?? true;
-            
             float max = 0;
             // interpret as 16-bit audio
             for (var index = 0; index < e.BytesRecorded; index += 2)
@@ -224,20 +190,12 @@ namespace VoiceCraft.Client.ViewModels.Home
             }
 
             MicrophoneValue = max;
-        }
-
-        private void UpdatePreprocessorAvailability()
-        {
-            var preprocessor = _audioService.GetPreprocessor(AudioSettings.Preprocessor);
-            GainControllerAvailable = preprocessor.IsGainControllerAvailable;
-            DenoiserAvailable = preprocessor.IsNoiseSuppressorAvailable;
-            VoiceActivityAvailable = preprocessor.IsVoiceActivityDetectionAvailable;
+            DetectingVoiceActivity = MicrophoneValue > AudioSettings.MicrophoneSensitivity;
         }
 
         private void UpdateEchoCancelerAvailability()
         {
             var echoCanceler = _audioService.GetEchoCanceler(AudioSettings.EchoCanceler);
-            EchoCancelerAvailable = echoCanceler.IsAvailable;
         }
 
         public override void OnAppearing()
@@ -253,8 +211,6 @@ namespace VoiceCraft.Client.ViewModels.Home
             _recorder = null;
             _player?.Dispose();
             _player = null;
-            _preprocessor?.Dispose();
-            _preprocessor = null;
         }
 
         public void Dispose()
@@ -267,8 +223,6 @@ namespace VoiceCraft.Client.ViewModels.Home
             _recorder = null;
             _player?.Dispose();
             _player = null;
-            _preprocessor?.Dispose();
-            _preprocessor = null;
             GC.SuppressFinalize(this);
         }
     }

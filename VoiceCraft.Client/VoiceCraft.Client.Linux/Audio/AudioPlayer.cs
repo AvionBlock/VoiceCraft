@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using NAudio.Wave;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Client.Audio.Interfaces;
@@ -120,7 +121,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
             //Block thread until it's fully stopped.
             while (_device != ALDevice.Null)
-                Thread.Sleep(1);
+                Task.Delay(1).GetAwaiter().GetResult();
         }
 
         public void Pause()
@@ -276,6 +277,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
         private static (ALDevice, ALContext) OpenDevice(string? deviceName = null)
         {
+            AL.GetError(); //Clear possible previous error
             var device = ALC.OpenDevice(deviceName);
             if (device == ALDevice.Null)
             {

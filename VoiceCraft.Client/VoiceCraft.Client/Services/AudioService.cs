@@ -8,71 +8,34 @@ namespace VoiceCraft.Client.Services
 {
     public abstract class AudioService
     {
-        public IEnumerable<RegisteredPreprocessor> RegisteredPreprocessors => _registeredPreprocessors.Values.ToArray();
+        public IEnumerable<RegisteredDenoiser> RegisteredDenoisers => _registeredDenoisers.Values.ToArray();
+        public IEnumerable<RegisteredAutomaticGainController> RegisteredAutomaticGainControllers => _registeredAutomaticGainControllers.Values.ToArray();
         public IEnumerable<RegisteredEchoCanceler> RegisteredEchoCancelers => _registeredEchoCancelers.Values.ToArray();
-
+        
         private readonly ConcurrentDictionary<Guid, RegisteredEchoCanceler> _registeredEchoCancelers = new();
-        private readonly ConcurrentDictionary<Guid, RegisteredPreprocessor> _registeredPreprocessors = new();
+        private readonly ConcurrentDictionary<Guid, RegisteredAutomaticGainController> _registeredAutomaticGainControllers = new();
+        private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
 
         protected AudioService()
         {
-            _registeredEchoCancelers.TryAdd(Guid.Empty, new RegisteredEchoCanceler(Guid.Empty, "None", null, false));
-            _registeredPreprocessors.TryAdd(Guid.Empty,
-                new RegisteredPreprocessor(Guid.Empty, "None", null, false, false, false));
-        }
-        
-        public bool RegisterPreprocessor<T>(Guid id, string name, bool supportsGainController,
-            bool supportsNoiseSuppressor,
-            bool supportsVoiceActivity) where T : IPreprocessor
-        {
-            return _registeredPreprocessors.TryAdd(id,
-                new RegisteredPreprocessor(id, name, typeof(T), supportsGainController, supportsNoiseSuppressor,
-                    supportsVoiceActivity));
+            _registeredDenoisers.TryAdd(Guid.Empty, new RegisteredDenoiser(Guid.Empty, "None", null));
+            _registeredAutomaticGainControllers.TryAdd(Guid.Empty, new RegisteredAutomaticGainController(Guid.Empty, "None", null));
+            _registeredEchoCancelers.TryAdd(Guid.Empty, new RegisteredEchoCanceler(Guid.Empty, "None", null));
         }
 
-        public bool RegisterEchoCanceler<T>(Guid id, string name, bool available) where T : IEchoCanceler
+        public bool RegisterEchoCanceler<T>(Guid id, string name) where T : IEchoCanceler
         {
-            return _registeredEchoCancelers.TryAdd(id, new RegisteredEchoCanceler(id, name, typeof(T), available));
-        }
-        
-        public bool UnregisterPreprocessor(Guid id)
-        {
-            return _registeredPreprocessors.TryRemove(id, out _);
+            return _registeredEchoCancelers.TryAdd(id, new RegisteredEchoCanceler(id, name, typeof(T)));
         }
 
         public bool UnregisterEchoCanceler(Guid id)
         {
             return _registeredEchoCancelers.TryRemove(id, out _);
         }
-
-        public RegisteredPreprocessor GetPreprocessor(Guid id)
-        {
-            return !_registeredPreprocessors.TryGetValue(id, out var preprocessor) ? GetDefaultPreprocessor() : preprocessor;
-        }
         
         public RegisteredEchoCanceler GetEchoCanceler(Guid id)
         {
             return !_registeredEchoCancelers.TryGetValue(id, out var echoCanceler) ? GetDefaultEchoCanceler() : echoCanceler;
-        }
-        
-        public IPreprocessor? CreatePreprocessor(Guid id)
-        {
-            if (!_registeredPreprocessors.TryGetValue(id, out var preprocessor)) return null;
-            if (preprocessor.Type == null) return null;
-            return (IPreprocessor?)Activator.CreateInstance(preprocessor.Type);
-        }
-
-        public IEchoCanceler? CreateEchoCanceler(Guid id)
-        {
-            if (!_registeredEchoCancelers.TryGetValue(id, out var echoCanceler)) return null;
-            if (echoCanceler.Type == null) return null;
-            return (IEchoCanceler?)Activator.CreateInstance(echoCanceler.Type);
-        }
-
-        // ReSharper disable once MemberCanBePrivate.Global
-        public RegisteredPreprocessor GetDefaultPreprocessor()
-        {
-            return _registeredPreprocessors[Guid.Empty];
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -90,27 +53,24 @@ namespace VoiceCraft.Client.Services
         public abstract IAudioPlayer CreateAudioPlayer();
     }
 
-    public class RegisteredEchoCanceler(Guid id, string name, Type? type, bool isAvailable)
+    public class RegisteredEchoCanceler(Guid id, string name, Type? type)
     {
         public Guid Id { get; } = id;
         public string Name { get; } = name;
         public Type? Type { get; } = type;
-        public bool IsAvailable { get; } = isAvailable;
+    }
+    
+    public class RegisteredAutomaticGainController(Guid id, string name, Type? type)
+    {
+        public Guid Id { get; } = id;
+        public string Name { get; } = name;
+        public Type? Type { get; } = type;
     }
 
-    public class RegisteredPreprocessor(
-        Guid id,
-        string name,
-        Type? type,
-        bool supportsGainController,
-        bool supportsNoiseSuppressor,
-        bool supportsVoiceActivity)
+    public class RegisteredDenoiser(Guid id, string name, Type? type)
     {
         public Guid Id { get; } = id;
         public string Name { get; } = name;
         public Type? Type { get; } = type;
-        public bool IsGainControllerAvailable { get; } = supportsGainController;
-        public bool IsNoiseSuppressorAvailable { get; } = supportsNoiseSuppressor;
-        public bool IsVoiceActivityDetectionAvailable { get; } = supportsVoiceActivity;
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Network.Packets;
@@ -13,7 +12,7 @@ namespace VoiceCraft.Core.Network
         // ReSharper disable once InconsistentNaming
         private const int PINGER_BROADCAST_INTERVAL_MS = 5000;
 
-        public static readonly Version Version = Version.Parse("1.2.0.0");
+        public static readonly Version Version = Version.Parse("1.1.0.0");
 
         public event Action? OnStarted;
         public event Action? OnStopped;

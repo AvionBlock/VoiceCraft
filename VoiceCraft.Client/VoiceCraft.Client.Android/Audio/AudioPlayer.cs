@@ -3,22 +3,19 @@ using NAudio.Wave;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    public sealed class AudioPlayer(AudioManager audioManager) : IAudioPlayer
+    public class AudioPlayer(AudioManager audioManager) : IAudioPlayer
     {
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private IWaveProvider? _waveProvider;
         private AudioTrack? _audioTrack;
-        private bool _disposed;
         private float _volume = 1.0f;
-        private int _bufferSize;
-
-        public PlaybackState PlaybackState { get; private set; } = PlaybackState.Stopped;
-        public int? SessionId => _audioTrack?.AudioSessionId;
+        private bool _disposed;
 
         public float Volume
         {
@@ -30,8 +27,10 @@ namespace VoiceCraft.Client.Android.Audio
             }
         }
 
-        public int DesiredLatency { get; set; } = 300;
+        public int DesiredLatency { get; set; } = 100;
         public string? SelectedDevice { get; set; }
+        public int NumberOfBuffers { get; set; } = 2;
+        public PlaybackState PlaybackState { get; private set; } = PlaybackState.Stopped;
         public WaveFormat OutputWaveFormat { get; private set; } = new();
         public AudioUsageKind Usage { get; set; } = AudioUsageKind.Media;
         public AudioContentType ContentType { get; set; } = AudioContentType.Music;
@@ -55,21 +54,17 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Close previous audio track if it's not closed.
             if (_audioTrack != null)
-            {
-                CloseAudioTrack(_audioTrack);
-                _audioTrack = null;
-            }
+                CloseDevice();
 
             //Create/Open new audio track.
             var audioTrack = CreateAudioTrack(audioManager, waveProvider, DesiredLatency, Usage, ContentType,
                 SelectedDevice);
-            _audioTrack = audioTrack.Item1;
-            _bufferSize = audioTrack.Item2;
+            _waveProvider = waveProvider;
+            _audioTrack = audioTrack;
             _audioTrack.SetVolume(_volume); //Force set volume.
 
             //Set output wave format.
             OutputWaveFormat = waveProvider.WaveFormat;
-            _waveProvider = waveProvider;
         }
 
         public void Play()
@@ -103,7 +98,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Check if device is already closed/null.
             if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException("Must call Init first");
+                throw new InvalidOperationException("Must call Init first!");
 
             //Check if it has already been stopped.
             if (PlaybackState == PlaybackState.Stopped) return;
@@ -113,7 +108,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Block thread until it's fully stopped.
             while (_audioTrack != null)
-                Thread.Sleep(1);
+                Task.Delay(1).GetAwaiter().GetResult();
         }
 
         public void Pause()
@@ -181,10 +176,7 @@ namespace VoiceCraft.Client.Android.Audio
             finally
             {
                 if (_audioTrack != null)
-                {
-                    CloseAudioTrack(_audioTrack);
-                    _audioTrack = null;
-                }
+                    CloseDevice();
 
                 PlaybackState = PlaybackState.Stopped;
                 RaisePlaybackStoppedEvent(exception);
@@ -194,7 +186,11 @@ namespace VoiceCraft.Client.Android.Audio
         private void PlaybackLogic()
         {
             if (_waveProvider == null || _audioTrack == null)
-                throw new InvalidOperationException("Must call Init first");
+                throw new InvalidOperationException("Must call Init first!");
+            
+            //Calculate buffer size.
+            var waveBufferSize = (_audioTrack.BufferSizeInFrames + NumberOfBuffers - 1) / NumberOfBuffers * _waveProvider.WaveFormat.BlockAlign;
+            waveBufferSize = (waveBufferSize + 3) & ~3;
 
             //Run the playback loop
             _audioTrack.Play();
@@ -212,8 +208,8 @@ namespace VoiceCraft.Client.Android.Audio
                     break;
 
                 //Fill the wave buffer with new samples
-                var byteBuffer = GC.AllocateArray<byte>(_bufferSize, true);
-                var read = _waveProvider.Read(byteBuffer, 0, _bufferSize);
+                var byteBuffer = GC.AllocateArray<byte>(waveBufferSize, true);
+                var read = _waveProvider.Read(byteBuffer, 0, waveBufferSize);
                 if (read <= 0) break;
                 switch (_waveProvider.WaveFormat.Encoding)
                 {
@@ -230,7 +226,7 @@ namespace VoiceCraft.Client.Android.Audio
                     }
                     case WaveFormatEncoding.IeeeFloat:
                     {
-                        var floatBuffer = new float[_bufferSize / sizeof(float)];
+                        var floatBuffer = new float[waveBufferSize / sizeof(float)];
                         Buffer.BlockCopy(byteBuffer, 0, floatBuffer, 0, read);
                         var floatsWritten = _audioTrack.Write(floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
                         if (floatsWritten < 0 && _audioTrack.PlayState is not (PlayState.Playing or PlayState.Paused))
@@ -258,22 +254,12 @@ namespace VoiceCraft.Client.Android.Audio
             
             //Close previous audio track if it was not closed by the player thread.
             if (_audioTrack != null)
-            {
-                CloseAudioTrack(_audioTrack);
-                _audioTrack = null;
-            }
+                CloseDevice();
 
             _disposed = true;
         }
 
-        private static void CloseAudioTrack(AudioTrack audioTrack)
-        {
-            if (audioTrack is not { State: AudioTrackState.Initialized }) return;
-            audioTrack.Stop();
-            audioTrack.Dispose();
-        }
-
-        private static (AudioTrack, int) CreateAudioTrack(AudioManager audioManager, IWaveProvider waveProvider,
+        private static AudioTrack CreateAudioTrack(AudioManager audioManager, IWaveProvider waveProvider,
             int desiredLatency, AudioUsageKind usage, AudioContentType content, string? deviceName)
         {
             //Initialize the wave provider
@@ -325,7 +311,15 @@ namespace VoiceCraft.Client.Android.Audio
                 ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == deviceName);
             audioTrack.SetPreferredDevice(selectedDevice);
 
-            return (audioTrack, minBufferSize);
+            return audioTrack;
+        }
+        
+        private void CloseDevice()
+        {
+            if (_audioTrack is not { State: AudioTrackState.Initialized }) return;
+            _audioTrack.Stop();
+            _audioTrack.Dispose();
+            _audioTrack = null;
         }
     }
 }
