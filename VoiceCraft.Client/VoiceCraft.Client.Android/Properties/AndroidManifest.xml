@@ -2,5 +2,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
-	<application android:label="VoiceCraft.Client" android:icon="@drawable/Icon" />
+	<application android:label="VoiceCraft.Client" android:icon="@drawable/vc" />
 </manifest>

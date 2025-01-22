@@ -11,25 +11,40 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="VoiceCraft" xml:space="preserve">
-        <value>VoiceCraft</value>
-    </data>
     <data name="Settings.General" xml:space="preserve">
         <value>General Settings</value>
-    </data>
-    <data name="Settings.General.Language" xml:space="preserve">
-        <value>Language</value>
-    </data>
-    <data name="Home.Servers" xml:space="preserve">
-        <value>Servers</value>
     </data>
     <data name="Home.Settings" xml:space="preserve">
         <value>Settings</value>
     </data>
-    <data name="Home.AddServer" xml:space="preserve">
-        <value> Add Server</value>
+    <data name="Home.Servers" xml:space="preserve">
+        <value>Servers</value>
     </data>
     <data name="Home.Credits" xml:space="preserve">
         <value>Credits</value>
+    </data>
+    <data name="Home.AddServer" xml:space="preserve">
+        <value>Add Server</value>
+    </data>
+    <data name="Settings.General.Language" xml:space="preserve">
+        <value>Language</value>
+    </data>
+    <data name="Settings.General.Theme" xml:space="preserve">
+        <value>Theme</value>
+    </data>
+    <data name="Settings.General.BackgroundImage" xml:space="preserve">
+        <value>Background Image</value>
+    </data>
+    <data name="Settings.General.NotificationDismiss" xml:space="preserve">
+        <value>Notification Dismiss(ms)</value>
+    </data>
+    <data name="Settings.General.HideServerAddresses" xml:space="preserve">
+        <value>Hide Server Addresses</value>
+    </data>
+    <data name="Settings.General.DisableNotifications" xml:space="preserve">
+        <value>Disable Notifications</value>
+    </data>
+    <data name="Settings.Audio" xml:space="preserve">
+        <value>Audio Settings</value>
     </data>
 </root>

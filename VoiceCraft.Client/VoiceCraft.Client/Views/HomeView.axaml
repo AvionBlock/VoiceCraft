@@ -21,19 +21,13 @@
                        TextAlignment="Center" />
         </Grid>
         <Grid Grid.Row="1"
-              ColumnDefinitions="{OnFormFactor 'Auto, *',
-                                               Mobile='*'}"
-              RowDefinitions="{OnFormFactor '*',
-                                            Mobile='*, Auto'}">
-            <ListBox Grid.Row="{OnFormFactor '0',
-                                             Mobile='1'}"
+              ColumnDefinitions="{OnFormFactor 'Auto, *', Mobile='*'}"
+              RowDefinitions="{OnFormFactor '*', Mobile='*, Auto'}">
+            <ListBox Grid.Row="{OnFormFactor '0', Mobile='1'}"
                      Grid.Column="0"
-                     HorizontalAlignment="{OnFormFactor 'Left',
-                                                        Mobile='Center'}"
-                     VerticalAlignment="{OnFormFactor 'Top',
-                                                      Mobile='Stretch'}"
-                     CornerRadius="{OnFormFactor '0,5,5,0',
-                                                 Mobile='5,0,5,0'}"
+                     HorizontalAlignment="{OnFormFactor 'Stretch', Mobile='Center'}"
+                     VerticalAlignment="{OnFormFactor 'Top', Mobile='Bottom'}"
+                     CornerRadius="{OnFormFactor '0,5,5,0', Mobile='5,5,0,0'}"
                      ItemsSource="{Binding Items}"
                      SelectedItem="{Binding SelectedListItem}">
                 <ListBox.ItemsPanel>
@@ -43,17 +37,14 @@
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:ListItemTemplate}">
-                        <PathIcon Data="{Binding Icon}" />
+                        <PathIcon Data="{Binding Icon}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
             <TransitioningContentControl Grid.Row="0"
-                                         Grid.Column="{OnFormFactor '1',
-                                                                    Mobile='0'}"
+                                         Grid.Column="{OnFormFactor '1', Mobile='0'}"
                                          Margin="10,0,10,0"
                                          Content="{Binding Content}" />
-
-
         </Grid>
     </Grid>
 </UserControl>

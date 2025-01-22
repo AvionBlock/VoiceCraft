@@ -10,11 +10,15 @@
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+        <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     </PropertyGroup>
 
     <ItemGroup>
         <AndroidResource Include="Icon.png">
             <Link>Resources\drawable\Icon.png</Link>
+        </AndroidResource>
+        <AndroidResource Include="vc.png">
+            <Link>Resources\drawable\vc.png</Link>
         </AndroidResource>
     </ItemGroup>
 

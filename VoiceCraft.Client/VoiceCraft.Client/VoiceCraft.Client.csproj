@@ -80,17 +80,26 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
       </Compile>
+      <Compile Update="Assets\Locals\Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Update="Assets\Locals\Resources.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
+        <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       </EmbeddedResource>
-      <EmbeddedResource Update="Assets\Locals\Resources.ja-JP.resx">
+      <EmbeddedResource Update="Assets\Locals\Resources.ja-jp.resx">
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>Resources.ja-JP.Designer.cs</LastGenOutput>
         <DependentUpon>Resources.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Assets\Locals\Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       </EmbeddedResource>
     </ItemGroup>
 </Project>

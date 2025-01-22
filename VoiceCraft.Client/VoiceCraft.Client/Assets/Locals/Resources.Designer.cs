@@ -14,7 +14,7 @@ namespace VoiceCraft.Client.Assets.Locals {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static System.Resources.ResourceManager resourceMan;
         
@@ -25,7 +25,7 @@ namespace VoiceCraft.Client.Assets.Locals {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static System.Resources.ResourceManager ResourceManager {
+        public static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
                     System.Resources.ResourceManager temp = new System.Resources.ResourceManager("VoiceCraft.Client.Assets.Locals.Resources", typeof(Resources).Assembly);
@@ -36,7 +36,7 @@ namespace VoiceCraft.Client.Assets.Locals {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static System.Globalization.CultureInfo Culture {
+        public static System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -45,45 +45,75 @@ namespace VoiceCraft.Client.Assets.Locals {
             }
         }
         
-        internal static string VoiceCraft {
-            get {
-                return ResourceManager.GetString("VoiceCraft", resourceCulture);
-            }
-        }
-        
-        internal static string Settings_General {
+        public static string Settings_General {
             get {
                 return ResourceManager.GetString("Settings.General", resourceCulture);
             }
         }
         
-        internal static string Settings_General_Language {
-            get {
-                return ResourceManager.GetString("Settings.General.Language", resourceCulture);
-            }
-        }
-        
-        internal static string Home_Servers {
-            get {
-                return ResourceManager.GetString("Home.Servers", resourceCulture);
-            }
-        }
-        
-        internal static string Home_Settings {
+        public static string Home_Settings {
             get {
                 return ResourceManager.GetString("Home.Settings", resourceCulture);
             }
         }
         
-        internal static string Home_Credits {
+        public static string Home_Servers {
+            get {
+                return ResourceManager.GetString("Home.Servers", resourceCulture);
+            }
+        }
+        
+        public static string Home_Credits {
             get {
                 return ResourceManager.GetString("Home.Credits", resourceCulture);
             }
         }
         
-        internal static string Home_AddServer {
+        public static string Home_AddServer {
             get {
                 return ResourceManager.GetString("Home.AddServer", resourceCulture);
+            }
+        }
+        
+        public static string Settings_General_Language {
+            get {
+                return ResourceManager.GetString("Settings.General.Language", resourceCulture);
+            }
+        }
+        
+        public static string Settings_General_Theme {
+            get {
+                return ResourceManager.GetString("Settings.General.Theme", resourceCulture);
+            }
+        }
+        
+        public static string Settings_General_BackgroundImage {
+            get {
+                return ResourceManager.GetString("Settings.General.BackgroundImage", resourceCulture);
+            }
+        }
+        
+        public static string Settings_General_NotificationDismiss {
+            get {
+                return ResourceManager.GetString("Settings.General.NotificationDismiss", resourceCulture);
+            }
+        }
+        
+        public static string Settings_General_HideServerAddresses {
+            get {
+                return ResourceManager.GetString("Settings.General.HideServerAddresses", resourceCulture);
+            }
+        }
+        
+        public static string Settings_General_DisableNotifications {
+            get {
+                return ResourceManager.GetString("Settings.General.DisableNotifications", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio {
+            get {
+                return ResourceManager.GetString("Settings.Audio", resourceCulture);
             }
         }
     }

@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -34,6 +33,8 @@ public class App : Application
     public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");
     private static readonly Guid DockDayGuid = Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1");
     private static readonly Guid LethalCraftGuid = Guid.Parse("8d7616ce-cc2e-45af-a1c0-0456c09b998c");
+    private static readonly Guid BlockSenseSpawnGuid = Guid.Parse("EDC317D4-687D-4607-ABE6-9C14C29054E9");
+    private static readonly Guid SineSmpBaseGuid = Guid.Parse("3FAD5542-64F2-4A00-A4C2-534A517CCDE1");
 
     //Themes
     public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
@@ -160,6 +161,8 @@ public class App : Application
         themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
         themesService.RegisterBackgroundImage(LethalCraftGuid, "Lethal Craft", "avares://VoiceCraft.Client/Assets/lethalCraft.png");
+        themesService.RegisterBackgroundImage(BlockSenseSpawnGuid, "BlockSense Spawn", "avares://VoiceCraft.Client/Assets/blocksensespawn.jpg");
+        themesService.RegisterBackgroundImage(SineSmpBaseGuid, "SineSMP Base", "avares://VoiceCraft.Client/Assets/sinesmpbase.png");
     }
 
     private static SettingsService SetupSettings()

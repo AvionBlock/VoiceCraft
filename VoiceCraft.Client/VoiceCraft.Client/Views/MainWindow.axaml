@@ -7,7 +7,7 @@
         MinHeight="200" MinWidth="200"
         Height="850" Width="1600"
         x:Class="VoiceCraft.Client.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/vc.png"
         Title="VoiceCraft">
     <!-- MinHeight and MinWidth are set for making the window not completely disappear when resizing. -->
     <views:MainView />
