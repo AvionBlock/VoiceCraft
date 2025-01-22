@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Models.Settings
@@ -18,7 +17,7 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        private string _culture = CultureInfo.CurrentUICulture.Name;
+        private string _culture = "en-US";
 
         public override object Clone()
         {
