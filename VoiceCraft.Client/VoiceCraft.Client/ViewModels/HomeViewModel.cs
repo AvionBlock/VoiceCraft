@@ -1,8 +1,10 @@
+using System;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
+using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.ViewModels.Home;
 
 namespace VoiceCraft.Client.ViewModels
@@ -22,14 +24,15 @@ namespace VoiceCraft.Client.ViewModels
 
         public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer)
         {
-            _items.Add(new ListItemTemplate("Servers", servers, "HomeRegular"));
-            _items.Add(new ListItemTemplate("Settings", settings, "SettingsRegular"));
-            _items.Add(new ListItemTemplate("Credits", credits, "InformationRegular"));
-            _items.Add(new ListItemTemplate("Add Server", addServer, "AddRegular"));
+            Localizer.LanguageChanged += LanguageChanged;
+            _items.Add(new ListItemTemplate("Home.Servers", servers, "HomeRegular"));
+            _items.Add(new ListItemTemplate("Home.Settings", settings, "SettingsRegular"));
+            _items.Add(new ListItemTemplate("Home.Credits", credits, "InformationRegular"));
+            _items.Add(new ListItemTemplate("Home.AddServer", addServer, "AddRegular"));
 
             SelectedListItem = _items[0];
             _content = _items[0].Content;
-            _title = _items[0].Title;
+            _title = Localizer.Get(_items[0].Title);
         }
 
         partial void OnSelectedListItemChanged(ListItemTemplate? value)
@@ -39,8 +42,13 @@ namespace VoiceCraft.Client.ViewModels
                 viewModel.OnDisappearing();
             
             Content = value.Content;
-            Title = value.Title;
+            Title = Localizer.Get(value.Title);
             Content.OnAppearing();
+        }
+        
+        private void LanguageChanged(object? sender, EventArgs e)
+        {
+            Title = Localizer.Get(SelectedListItem?.Title ?? "N.A.");
         }
     }
 

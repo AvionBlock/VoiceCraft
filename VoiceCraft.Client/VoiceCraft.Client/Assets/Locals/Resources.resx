@@ -24,4 +24,19 @@
     <data name="Settings.General" xml:space="preserve">
         <value>en-US</value>
     </data>
+    <data name="Settings.General.Language" xml:space="preserve">
+        <value>en-US</value>
+    </data>
+    <data name="Home.Servers" xml:space="preserve">
+        <value>en-US</value>
+    </data>
+    <data name="Home.Settings" xml:space="preserve">
+        <value>en-US</value>
+    </data>
+    <data name="Home.Credits" xml:space="preserve">
+        <value>en-US</value>
+    </data>
+    <data name="Home.AddServer" xml:space="preserve">
+        <value>en-US</value>
+    </data>
 </root>

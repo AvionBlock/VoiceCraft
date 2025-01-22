@@ -56,5 +56,35 @@ namespace VoiceCraft.Client.Assets.Locals {
                 return ResourceManager.GetString("Settings.General", resourceCulture);
             }
         }
+        
+        internal static string Settings_General_Language {
+            get {
+                return ResourceManager.GetString("Settings.General.Language", resourceCulture);
+            }
+        }
+        
+        internal static string Home_Servers {
+            get {
+                return ResourceManager.GetString("Home.Servers", resourceCulture);
+            }
+        }
+        
+        internal static string Home_Settings {
+            get {
+                return ResourceManager.GetString("Home.Settings", resourceCulture);
+            }
+        }
+        
+        internal static string Home_Credits {
+            get {
+                return ResourceManager.GetString("Home.Credits", resourceCulture);
+            }
+        }
+        
+        internal static string Home_AddServer {
+            get {
+                return ResourceManager.GetString("Home.AddServer", resourceCulture);
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Language" />
+                               Text="{locale:Localize Settings.General.Language}" />
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Locales}"
