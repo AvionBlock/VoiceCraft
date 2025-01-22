@@ -5,7 +5,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Audio
 {
-    public class SpeexDSPEchoCanceler : IEchoCanceler
+    public class SpeexDspEchoCanceler : IEchoCanceler
     {
         private const int FilterLengthMs = 100;
 
@@ -13,7 +13,7 @@ namespace VoiceCraft.Client.Audio
         private bool _disposed;
         private WaveFormat? _waveFormat;
         private int _bytesPerFrame;
-        private SpeexDSPSharp.Core.SpeexDSPEchoCanceler? _echoCanceler;
+        private SpeexDSPEchoCanceler? _echoCanceler;
 
         public void Init(IAudioRecorder recorder, IAudioPlayer player)
         {
@@ -28,7 +28,7 @@ namespace VoiceCraft.Client.Audio
             _waveFormat = recorder.WaveFormat;
             _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
 
-            _echoCanceler = new SpeexDSPSharp.Core.SpeexDSPEchoCanceler(
+            _echoCanceler = new SpeexDSPEchoCanceler(
                 recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000,
                 FilterLengthMs * _waveFormat.SampleRate / 1000,
                 _waveFormat.Channels,
@@ -96,7 +96,7 @@ namespace VoiceCraft.Client.Audio
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(SpeexDSPEchoCanceler));
+            throw new ObjectDisposedException(nameof(SpeexDspEchoCanceler));
         }
     }
 }

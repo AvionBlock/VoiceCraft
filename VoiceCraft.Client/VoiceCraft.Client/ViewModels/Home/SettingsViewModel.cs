@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Jeek.Avalonia.Localization;
 using Microsoft.Maui.ApplicationModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -30,8 +31,12 @@ namespace VoiceCraft.Client.ViewModels.Home
         private IAudioPlayer? _player;
 
         [ObservableProperty] private bool _generalSettingsExpanded;
+        
+        //Language Settings
+        [ObservableProperty] private LocaleSettingsViewModel _localeSettings;
 
         //Theme Settings
+        [ObservableProperty] private ObservableCollection<string> _locales;
         [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes;
         [ObservableProperty] private ObservableCollection<RegisteredBackgroundImage> _backgroundImages;
         [ObservableProperty] private ThemeSettingsViewModel _themeSettings;
@@ -52,7 +57,8 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty] private float _microphoneValue;
         [ObservableProperty] private bool _detectingVoiceActivity;
 
-        public SettingsViewModel(ThemesService themesService,
+        public SettingsViewModel(
+            ThemesService themesService,
             SettingsService settingsService,
             AudioService audioService,
             NotificationService notificationService,
@@ -62,24 +68,14 @@ namespace VoiceCraft.Client.ViewModels.Home
             _notificationService = notificationService;
             _permissionsService = permissionsService;
 
+            _locales = new ObservableCollection<string>(Localizer.Languages);
             _themes = new ObservableCollection<RegisteredTheme>(themesService.RegisteredThemes);
             _backgroundImages = new ObservableCollection<RegisteredBackgroundImage>(themesService.RegisteredBackgroundImages);
+            _localeSettings = new LocaleSettingsViewModel(settingsService.Get<LocaleSettings>(), settingsService);
             _themeSettings = new ThemeSettingsViewModel(settingsService.Get<ThemeSettings>(), settingsService, themesService);
             _notificationSettings = new NotificationSettingsViewModel(settingsService.Get<NotificationSettings>(), settingsService);
             _serversSettings = new ServersSettingsViewModel(settingsService.Get<ServersSettings>(), settingsService);
             _audioSettings = new AudioSettingsViewModel(settingsService.Get<AudioSettings>(), settingsService, _audioService);
-            
-            UpdateEchoCancelerAvailability();
-
-            _audioSettings.PropertyChanged += (_, args) =>
-            {
-                switch (args.PropertyName)
-                {
-                    case nameof(AudioSettingsViewModel.EchoCanceler):
-                        UpdateEchoCancelerAvailability();
-                        break;
-                }
-            };
         }
 
         [RelayCommand]
@@ -191,11 +187,6 @@ namespace VoiceCraft.Client.ViewModels.Home
 
             MicrophoneValue = max;
             DetectingVoiceActivity = MicrophoneValue > AudioSettings.MicrophoneSensitivity;
-        }
-
-        private void UpdateEchoCancelerAvailability()
-        {
-            var echoCanceler = _audioService.GetEchoCanceler(AudioSettings.EchoCanceler);
         }
 
         public override void OnAppearing()

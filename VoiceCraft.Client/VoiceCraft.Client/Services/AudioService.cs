@@ -28,20 +28,29 @@ namespace VoiceCraft.Client.Services
             return _registeredEchoCancelers.TryAdd(id, new RegisteredEchoCanceler(id, name, typeof(T)));
         }
 
+        public bool RegisterAutomaticGainController<T>(Guid id, string name) where T : IAutomaticGainController
+        {
+            return _registeredAutomaticGainControllers.TryAdd(id, new RegisteredAutomaticGainController(id, name, typeof(T)));
+        }
+        
+        public bool RegisterDenoiser<T>(Guid id, string name) where T : IDenoiser
+        {
+            return _registeredDenoisers.TryAdd(id, new RegisteredDenoiser(id, name, typeof(T)));
+        }
+
         public bool UnregisterEchoCanceler(Guid id)
         {
             return _registeredEchoCancelers.TryRemove(id, out _);
         }
-        
-        public RegisteredEchoCanceler GetEchoCanceler(Guid id)
-        {
-            return !_registeredEchoCancelers.TryGetValue(id, out var echoCanceler) ? GetDefaultEchoCanceler() : echoCanceler;
-        }
 
-        // ReSharper disable once MemberCanBePrivate.Global
-        public RegisteredEchoCanceler GetDefaultEchoCanceler()
+        public bool UnregisterAutomaticGainController(Guid id)
         {
-            return _registeredEchoCancelers[Guid.Empty];
+            return _registeredAutomaticGainControllers.TryRemove(id, out _);
+        }
+        
+        public bool UnregisterDenoiser(Guid id)
+        {
+            return _registeredDenoisers.TryRemove(id, out _);
         }
 
         public abstract List<string> GetInputDevices();
@@ -58,6 +67,13 @@ namespace VoiceCraft.Client.Services
         public Guid Id { get; } = id;
         public string Name { get; } = name;
         public Type? Type { get; } = type;
+
+        public IEchoCanceler Instantiate()
+        {
+            if(Type != null)
+                return Activator.CreateInstance(Type) as IEchoCanceler ?? throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+            throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+        }
     }
     
     public class RegisteredAutomaticGainController(Guid id, string name, Type? type)
@@ -65,6 +81,13 @@ namespace VoiceCraft.Client.Services
         public Guid Id { get; } = id;
         public string Name { get; } = name;
         public Type? Type { get; } = type;
+        
+        public IEchoCanceler Instantiate()
+        {
+            if(Type != null)
+                return Activator.CreateInstance(Type) as IEchoCanceler ?? throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+            throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+        }
     }
 
     public class RegisteredDenoiser(Guid id, string name, Type? type)
@@ -72,5 +95,12 @@ namespace VoiceCraft.Client.Services
         public Guid Id { get; } = id;
         public string Name { get; } = name;
         public Type? Type { get; } = type;
+        
+        public IEchoCanceler Instantiate()
+        {
+            if(Type != null)
+                return Activator.CreateInstance(Type) as IEchoCanceler ?? throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+            throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+        }
     }
 }

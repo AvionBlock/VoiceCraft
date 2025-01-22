@@ -5,7 +5,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Audio
 {
-    public class SpeexDSPDenoiser : IDenoiser
+    public class SpeexDspDenoiser : IDenoiser
     {
         public bool IsNative => false;
         private WaveFormat? _waveFormat;
@@ -79,7 +79,7 @@ namespace VoiceCraft.Client.Audio
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(SpeexDSPDenoiser));
+            throw new ObjectDisposedException(nameof(SpeexDspDenoiser));
         }
     }
 }

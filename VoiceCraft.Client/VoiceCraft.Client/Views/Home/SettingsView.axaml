@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
              xmlns:registered="clr-namespace:VoiceCraft.Client.Services"
+             xmlns:locale="using:Jeek.Avalonia.Localization"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:SettingsViewModel"
@@ -13,9 +14,19 @@
         <StackPanel Spacing="10">
             <Expander HorizontalAlignment="Stretch" IsExpanded="{Binding GeneralSettingsExpanded}">
                 <Expander.Header>
-                    <TextBlock FontWeight="Bold" Text="General Settings" />
+                    <TextBlock FontWeight="Bold" Text="{locale:Localize Settings.General}" />
                 </Expander.Header>
                 <StackPanel Spacing="10">
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="Language" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Locales}"
+                              SelectedValue="{Binding LocaleSettings.Culture}">
+                    </ComboBox>
+                    
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"

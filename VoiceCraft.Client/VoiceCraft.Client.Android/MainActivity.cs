@@ -21,6 +21,8 @@ namespace VoiceCraft.Client.Android
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
     public class MainActivity : AvaloniaMainActivity<App>
     {
+        private static readonly Guid EchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
+        
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
             Permission[] grantResults)
         {
@@ -43,7 +45,7 @@ namespace VoiceCraft.Client.Android
                                                           throw new Exception(
                                                               $"Could not find {AudioService}. Cannot initialize audio service."));
                 if (AcousticEchoCanceler.IsAvailable)
-                    audioService.RegisterEchoCanceler<NativeEchoCanceler>(App.NativeEchoCancelerGuid, "Native Echo Canceler");
+                    audioService.RegisterEchoCanceler<NativeEchoCanceler>(EchoCancelerGuid, "Native Echo Canceler");
                 return audioService;
             });
             App.ServiceCollection.AddTransient<Permissions.Microphone>();

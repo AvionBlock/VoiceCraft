@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -6,11 +7,13 @@ using System.Linq;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.Styling;
+using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Utils;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
@@ -21,14 +24,21 @@ namespace VoiceCraft.Client;
 public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
-    public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
-    public static readonly Guid NativeEchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
-    public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
-    public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
-    public static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
+
+    //Speex DSP
+    private static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
+    private static readonly Guid SpeexDspAutomaticGainControllerGuid = Guid.Parse("AE3F02FF-41A7-41FD-87A0-8EB0DA82B21C");
+    private static readonly Guid SpeexDspDenoiserGuid = Guid.Parse("6E911874-5D10-4C8C-8E0A-6B30DF16EF78");
+
+    //Background Images
     public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");
-    public static readonly Guid DockDayGuid = Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1");
-    public static readonly Guid LethalCraftGuid = Guid.Parse("8d7616ce-cc2e-45af-a1c0-0456c09b998c");
+    private static readonly Guid DockDayGuid = Guid.Parse("7c615c28-33b7-4d1d-b530-f8d988b00ea1");
+    private static readonly Guid LethalCraftGuid = Guid.Parse("8d7616ce-cc2e-45af-a1c0-0456c09b998c");
+
+    //Themes
+    public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
+    private static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
+    private static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
 
     public override void Initialize()
     {
@@ -109,7 +119,7 @@ public class App : Application
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
         ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(x.GetRequiredService<NotificationService>(),
-                y => (Permissions.BasePermission)x.GetRequiredService(y)));
+            y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton(SetupSettings());
 
@@ -132,8 +142,13 @@ public class App : Application
 
     private static void SetupServices(IServiceProvider serviceProvider)
     {
+        Localizer.SetLocalizer(new ResXLocalizer());
+        
         var audioService = serviceProvider.GetRequiredService<AudioService>();
-        audioService.RegisterEchoCanceler<SpeexDSPEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDSP Echo Canceler");
+        audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
+        audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(SpeexDspAutomaticGainControllerGuid,
+            "SpeexDsp Automatic Gain Controller");
+        audioService.RegisterDenoiser<SpeexDspDenoiser>(SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
 
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
         themesService.RegisterTheme(DarkThemeGuid, "Dark", [new Themes.Dark.Styles()], [new Themes.Dark.VcColors(), new Themes.Dark.Resources()],
@@ -154,6 +169,7 @@ public class App : Application
         settings.RegisterSetting<NotificationSettings>();
         settings.RegisterSetting<ServersSettings>();
         settings.RegisterSetting<ThemeSettings>();
+        settings.RegisterSetting<LocaleSettings>();
         settings.Load();
         return settings;
     }
