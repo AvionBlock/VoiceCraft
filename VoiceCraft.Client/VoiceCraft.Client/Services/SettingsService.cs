@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ namespace VoiceCraft.Client.Services
 {
     public class SettingsService
     {
+        // ReSharper disable once InconsistentNaming
         private const int FILE_WRITING_DELAY = 2000;
 
         private bool _writing;

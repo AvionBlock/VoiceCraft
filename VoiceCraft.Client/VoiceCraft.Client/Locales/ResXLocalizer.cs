@@ -1,6 +1,5 @@
 using System.Globalization;
 using Jeek.Avalonia.Localization;
-using VoiceCraft.Client.Locales;
 
 namespace VoiceCraft.Client.Locales
 {

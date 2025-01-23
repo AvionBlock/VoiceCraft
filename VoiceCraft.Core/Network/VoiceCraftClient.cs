@@ -122,8 +122,6 @@ namespace VoiceCraft.Core.Network
                     serverInfoPacket.Deserialize(reader);
                     OnServerInfoPacketReceive(serverInfoPacket, peer);
                     break;
-                default:
-                    break;
             }
         }
         
