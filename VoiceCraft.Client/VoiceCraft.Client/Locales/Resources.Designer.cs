@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VoiceCraft.Client.Assets.Locals {
+namespace VoiceCraft.Client.Locales {
     using System;
     
     
@@ -156,6 +156,156 @@ namespace VoiceCraft.Client.Assets.Locals {
         public static string Android_AudioPlayer_Exception_Reinit {
             get {
                 return ResourceManager.GetString("Android.AudioPlayer.Exception.Reinit", resourceCulture);
+            }
+        }
+        
+        public static string Android_NativeAGC_Exception_AndroidRecorder {
+            get {
+                return ResourceManager.GetString("Android.NativeAGC.Exception.AndroidRecorder", resourceCulture);
+            }
+        }
+        
+        public static string Android_NativeAGC_Exception_Init {
+            get {
+                return ResourceManager.GetString("Android.NativeAGC.Exception.Init", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioRecorder_Exception_Capture {
+            get {
+                return ResourceManager.GetString("Android.AudioRecorder.Exception.Capture", resourceCulture);
+            }
+        }
+        
+        public static string Android_NativeDN_Exception_AndroidRecorder {
+            get {
+                return ResourceManager.GetString("Android.NativeDN.Exception.AndroidRecorder", resourceCulture);
+            }
+        }
+        
+        public static string Android_NativeDN_Exception_Init {
+            get {
+                return ResourceManager.GetString("Android.NativeDN.Exception.Init", resourceCulture);
+            }
+        }
+        
+        public static string Android_NativeAEC_Exception_AndroidRecorder {
+            get {
+                return ResourceManager.GetString("Android.NativeAEC.Exception.AndroidRecorder", resourceCulture);
+            }
+        }
+        
+        public static string Android_NativeAEC_Exception_Init {
+            get {
+                return ResourceManager.GetString("Android.NativeAEC.Exception.Init", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_InputDevices {
+            get {
+                return ResourceManager.GetString("Settings.Audio.InputDevices", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_OutputDevices {
+            get {
+                return ResourceManager.GetString("Settings.Audio.OutputDevices", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_Denoisers {
+            get {
+                return ResourceManager.GetString("Settings.Audio.Denoisers", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_AutomaticGainControllers {
+            get {
+                return ResourceManager.GetString("Settings.Audio.AutomaticGainControllers", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_EchoCancelers {
+            get {
+                return ResourceManager.GetString("Settings.Audio.EchoCancelers", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_MicrophoneTest {
+            get {
+                return ResourceManager.GetString("Settings.Audio.MicrophoneTest", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_MicrophoneTest_Test {
+            get {
+                return ResourceManager.GetString("Settings.Audio.MicrophoneTest.Test", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_TestOutput {
+            get {
+                return ResourceManager.GetString("Settings.Audio.TestOutput", resourceCulture);
+            }
+        }
+        
+        public static string AddServer_AddServer {
+            get {
+                return ResourceManager.GetString("AddServer.AddServer", resourceCulture);
+            }
+        }
+        
+        public static string AddServer_Name {
+            get {
+                return ResourceManager.GetString("AddServer.Name", resourceCulture);
+            }
+        }
+        
+        public static string AddServer_IP {
+            get {
+                return ResourceManager.GetString("AddServer.IP", resourceCulture);
+            }
+        }
+        
+        public static string AddServer_Port {
+            get {
+                return ResourceManager.GetString("AddServer.Port", resourceCulture);
+            }
+        }
+        
+        public static string Credits_Author {
+            get {
+                return ResourceManager.GetString("Credits.Author", resourceCulture);
+            }
+        }
+        
+        public static string Credits_Contributors {
+            get {
+                return ResourceManager.GetString("Credits.Contributors", resourceCulture);
+            }
+        }
+        
+        public static string Credits_Version {
+            get {
+                return ResourceManager.GetString("Credits.Version", resourceCulture);
+            }
+        }
+        
+        public static string Credits_AppVersion {
+            get {
+                return ResourceManager.GetString("Credits.AppVersion", resourceCulture);
+            }
+        }
+        
+        public static string Credits_Codec {
+            get {
+                return ResourceManager.GetString("Credits.Codec", resourceCulture);
+            }
+        }
+        
+        public static string Settings_Audio_MicrophoneSensitivity {
+            get {
+                return ResourceManager.GetString("Settings.Audio.MicrophoneSensitivity", resourceCulture);
             }
         }
     }

@@ -30,7 +30,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Theme" />
+                               Text="{locale:Localize Settings.General.Theme}" />
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Themes}"
@@ -46,7 +46,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Background Image" />
+                               Text="{locale:Localize Settings.General.BackgroundImage}" />
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding BackgroundImages}"
@@ -62,7 +62,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Notification Dismiss(ms)" />
+                               Text="{locale:Localize Settings.General.NotificationDismiss}" />
 
                     <NumericUpDown Increment="1"
                                    Maximum="65535"
@@ -70,24 +70,24 @@
                                    Value="{Binding NotificationSettings.DismissDelayMs}" />
 
                     <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding ServersSettings.HideServerAddresses}">
-                        <TextBlock Text="Hide Server Addresses" />
+                        <TextBlock Text="{locale:Localize Settings.General.HideServerAddresses}" />
                     </ToggleButton>
 
                     <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding NotificationSettings.DisableNotifications}">
-                        <TextBlock Text="Disable Notifications" />
+                        <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
                     </ToggleButton>
                 </StackPanel>
             </Expander>
 
             <Expander HorizontalAlignment="Stretch" IsExpanded="{Binding AudioSettingsExpanded}">
                 <Expander.Header>
-                    <TextBlock FontWeight="Bold" Text="Audio Settings" />
+                    <TextBlock FontWeight="Bold" Text="{locale:Localize Settings.Audio}" />
                 </Expander.Header>
                 <StackPanel Spacing="10">
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Input Devices" />
+                               Text="{locale:Localize Settings.Audio.InputDevices}" />
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.InputDevices}"
                               SelectedItem="{Binding AudioSettings.InputDevice}" />
@@ -95,7 +95,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Output Devices" />
+                               Text="{locale:Localize Settings.Audio.OutputDevices}" />
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.OutputDevices}"
@@ -104,7 +104,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Denoisers" />
+                               Text="{locale:Localize Settings.Audio.Denoisers}" />
                     
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.Denoisers}"
@@ -120,7 +120,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Automatic Gain Control" />
+                               Text="{locale:Localize Settings.Audio.AutomaticGainControllers}" />
                     
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.AutomaticGainControllers}"
@@ -136,7 +136,7 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="Echo Cancelers" />
+                               Text="{locale:Localize Settings.Audio.EchoCancelers}" />
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.EchoCancelers}"
@@ -150,7 +150,11 @@
                     </ComboBox>
 
                     <StackPanel>
-                        <TextBlock VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='Microphone Sensitivity: {0:P0}'}" />
+                        <!-- I know this is shit, but it works, There might be a better way but idgaf! -->
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{locale:Localize Settings.Audio.MicrophoneSensitivity}"/>
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='{} {0:P0}'}"/>
+                        </Grid>
 
                         <Slider Maximum="1.0"
                                 Minimum="0.0"
@@ -161,14 +165,14 @@
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="15"
-                                   Text="Microphone Test" />
+                                   Text="{locale:Localize Settings.Audio.MicrophoneTest}" />
 
                         <Grid Margin="0,10,0,0" ColumnDefinitions="Auto, *">
                             <ToggleButton Grid.Column="0"
                                           HorizontalAlignment="Stretch"
                                           Command="{Binding TestRecorderCommand}"
                                           IsChecked="{Binding IsRecording}">
-                                <TextBlock Text="Test" />
+                                <TextBlock Text="{locale:Localize Settings.Audio.MicrophoneTest.Test}" />
                             </ToggleButton>
                             <ProgressBar Grid.Column="1"
                                          MinWidth="10"
@@ -194,7 +198,7 @@
                     <ToggleButton HorizontalAlignment="Stretch"
                                   Command="{Binding TestPlayerCommand}"
                                   IsChecked="{Binding IsPlaying}">
-                        <TextBlock Text="Test Output" />
+                        <TextBlock Text="{locale:Localize Settings.Audio.TestOutput}" />
                     </ToggleButton>
                 </StackPanel>
             </Expander>

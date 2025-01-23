@@ -23,7 +23,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (recorder is not AudioRecorder audioRecorder)
-                throw new ArgumentException("Recorder must be an android native audio recorder!", nameof(recorder));
+                throw new ArgumentException(Locales.Resources.Android_NativeAEC_Exception_AndroidRecorder, nameof(recorder));
             if (_echoCanceler != null)
             {
                 _echoCanceler.Release();
@@ -40,7 +40,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException("Native preprocessor must be intialized with a recorder!");
+            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Resources.Android_NativeAEC_Exception_Init);
 
             if (_echoCanceler != null)
             {
@@ -60,7 +60,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException("Native echo canceler must be intialized with a recorder!");
+            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Resources.Android_NativeAEC_Exception_Init);
             if (_echoCanceler != null)
             {
                 _echoCanceler.Release();

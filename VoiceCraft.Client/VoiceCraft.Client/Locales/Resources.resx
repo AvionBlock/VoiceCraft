@@ -75,4 +75,79 @@
     <data name="Android.AudioPlayer.Exception.Reinit" xml:space="preserve">
         <value>Can't re-initialize during playback!</value>
     </data>
+    <data name="Android.NativeAGC.Exception.AndroidRecorder" xml:space="preserve">
+        <value>Recorder must be an android native audio recorder!</value>
+    </data>
+    <data name="Android.NativeAGC.Exception.Init" xml:space="preserve">
+        <value>Native automatic gain controller must be intialized with a recorder!</value>
+    </data>
+    <data name="Android.AudioRecorder.Exception.Capture" xml:space="preserve">
+        <value>An error occured while trying to capture data!</value>
+    </data>
+    <data name="Android.NativeDN.Exception.AndroidRecorder" xml:space="preserve">
+        <value>Recorder must be an android native audio recorder!</value>
+    </data>
+    <data name="Android.NativeDN.Exception.Init" xml:space="preserve">
+        <value>Native denoiser must be intialized with a recorder!</value>
+    </data>
+    <data name="Android.NativeAEC.Exception.AndroidRecorder" xml:space="preserve">
+        <value>Recorder must be an android native audio recorder!</value>
+    </data>
+    <data name="Android.NativeAEC.Exception.Init" xml:space="preserve">
+        <value>Native echo canceler must be intialized with a recorder!</value>
+    </data>
+    <data name="Settings.Audio.InputDevices" xml:space="preserve">
+        <value>Input Devices</value>
+    </data>
+    <data name="Settings.Audio.OutputDevices" xml:space="preserve">
+        <value>Output Devices</value>
+    </data>
+    <data name="Settings.Audio.Denoisers" xml:space="preserve">
+        <value>Denoisers</value>
+    </data>
+    <data name="Settings.Audio.AutomaticGainControllers" xml:space="preserve">
+        <value>Automatic Gain Controllers</value>
+    </data>
+    <data name="Settings.Audio.EchoCancelers" xml:space="preserve">
+        <value>Echo Cancelers</value>
+    </data>
+    <data name="Settings.Audio.MicrophoneTest" xml:space="preserve">
+        <value>Microphone Test</value>
+    </data>
+    <data name="Settings.Audio.MicrophoneTest.Test" xml:space="preserve">
+        <value>Test</value>
+    </data>
+    <data name="Settings.Audio.TestOutput" xml:space="preserve">
+        <value>Test Output</value>
+    </data>
+    <data name="AddServer.AddServer" xml:space="preserve">
+        <value>Add Server</value>
+    </data>
+    <data name="AddServer.Name" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="AddServer.IP" xml:space="preserve">
+        <value>IP</value>
+    </data>
+    <data name="AddServer.Port" xml:space="preserve">
+        <value>Port</value>
+    </data>
+    <data name="Credits.Author" xml:space="preserve">
+        <value>Author</value>
+    </data>
+    <data name="Credits.Contributors" xml:space="preserve">
+        <value>Contributors</value>
+    </data>
+    <data name="Credits.Version" xml:space="preserve">
+        <value>Version</value>
+    </data>
+    <data name="Credits.AppVersion" xml:space="preserve">
+        <value>App Version</value>
+    </data>
+    <data name="Credits.Codec" xml:space="preserve">
+        <value>Codec</value>
+    </data>
+    <data name="Settings.Audio.MicrophoneSensitivity" xml:space="preserve">
+        <value>Microphone Sensitivity</value>
+    </data>
 </root>

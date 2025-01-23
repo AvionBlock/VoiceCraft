@@ -148,7 +148,7 @@ namespace VoiceCraft.Client.Android.Audio
                                 DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, bytesRead));
                                 break;
                             case < 0:
-                                throw new InvalidOperationException("An error occured while trying to capture data.");
+                                throw new InvalidOperationException(Locales.Resources.Android_AudioRecorder_Exception_Capture);
                         }
 
                         break;
@@ -165,7 +165,7 @@ namespace VoiceCraft.Client.Android.Audio
                                 DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, floatsRead * sizeof(float)));
                                 break;
                             case < 0:
-                                throw new InvalidOperationException("An error occured while trying to capture data.");
+                                throw new InvalidOperationException(Locales.Resources.Android_AudioRecorder_Exception_Capture);
                         }
 
                         break;

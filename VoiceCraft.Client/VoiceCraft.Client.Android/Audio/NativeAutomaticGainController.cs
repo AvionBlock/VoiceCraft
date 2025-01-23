@@ -23,7 +23,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (recorder is not AudioRecorder audioRecorder)
-                throw new ArgumentException("Recorder must be an android native audio recorder!", nameof(recorder));
+                throw new ArgumentException(Locales.Resources.Android_NativeAGC_Exception_AndroidRecorder, nameof(recorder));
             if (_automaticGainControl != null)
             {
                 _automaticGainControl.Release();
@@ -42,7 +42,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException("Native automatic gain controller must be intialized with a recorder!");
+            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Resources.Android_NativeAGC_Exception_Init);
             if (_automaticGainControl != null)
             {
                 _automaticGainControl.Release();

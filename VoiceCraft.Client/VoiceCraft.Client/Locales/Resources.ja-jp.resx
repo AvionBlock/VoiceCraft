@@ -14,4 +14,7 @@
     <data name="Settings.General" xml:space="preserve">
         <value>Jap Version</value>
     </data>
+    <data name="Settings.General.BackgroundImage" xml:space="preserve">
+        <value>Holy Fuck</value>
+    </data>
 </root>

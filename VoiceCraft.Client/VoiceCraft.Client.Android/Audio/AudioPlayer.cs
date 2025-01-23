@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 
@@ -51,7 +50,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Check if already playing.
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Localizer.Get("Android.AudioPlayer.Exception.Reinit"));
+                throw new InvalidOperationException(Locales.Resources.Android_AudioPlayer_Exception_Reinit);
 
             //Close previous audio track if it's not closed.
             if (_audioTrack != null)
@@ -75,7 +74,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Check if device is already closed/null.
             if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException(Localizer.Get("Android.AudioPlayer.Exception.Init"));
+                throw new InvalidOperationException(Locales.Resources.Android_AudioPlayer_Exception_Init);
 
             //Resume or start playback.
             switch (PlaybackState)
@@ -99,7 +98,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Check if device is already closed/null.
             if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException(Localizer.Get("Android.AudioPlayer.Exception.Init"));
+                throw new InvalidOperationException(Locales.Resources.Android_AudioPlayer_Exception_Init);
 
             //Check if it has already been stopped.
             if (PlaybackState == PlaybackState.Stopped) return;
@@ -119,7 +118,7 @@ namespace VoiceCraft.Client.Android.Audio
 
             //Check if device is already closed/null.
             if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException(Localizer.Get("Android.AudioPlayer.Exception.Init"));
+                throw new InvalidOperationException(Locales.Resources.Android_AudioPlayer_Exception_Init);
 
             //Check if it has already been paused or is not playing.
             if (PlaybackState != PlaybackState.Playing) return;
@@ -187,7 +186,7 @@ namespace VoiceCraft.Client.Android.Audio
         private void PlaybackLogic()
         {
             if (_waveProvider == null || _audioTrack == null)
-                throw new InvalidOperationException(Localizer.Get("Android.AudioPlayer.Exception.Init"));
+                throw new InvalidOperationException(Locales.Resources.Android_AudioPlayer_Exception_Init);
             
             //Calculate buffer size.
             var waveBufferSize = (_audioTrack.BufferSizeInFrames + NumberOfBuffers - 1) / NumberOfBuffers * _waveProvider.WaveFormat.BlockAlign;
@@ -220,7 +219,7 @@ namespace VoiceCraft.Client.Android.Audio
                         var bytesWritten = _audioTrack.Write(byteBuffer, 0, read);
                         if (bytesWritten < 0 && _audioTrack.PlayState is not (PlayState.Playing or PlayState.Paused))
                         {
-                            throw new Exception(Localizer.Get("Android.AudioPlayer.Exception.Write"));
+                            throw new Exception(Locales.Resources.Android_AudioPlayer_Exception_Write);
                         }
 
                         break;
@@ -232,7 +231,7 @@ namespace VoiceCraft.Client.Android.Audio
                         var floatsWritten = _audioTrack.Write(floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
                         if (floatsWritten < 0 && _audioTrack.PlayState is not (PlayState.Playing or PlayState.Paused))
                         {
-                            throw new Exception(Localizer.Get("Android.AudioPlayer.Exception.Write"));
+                            throw new Exception(Locales.Resources.Android_AudioPlayer_Exception_Write);
                         }
 
                         break;
@@ -272,13 +271,13 @@ namespace VoiceCraft.Client.Android.Audio
                     8 => Encoding.Pcm8bit,
                     16 => Encoding.Pcm16bit,
                     32 => Encoding.PcmFloat,
-                    _ => throw new ArgumentException(Localizer.Get("Android.AudioPlayer.Exception.Encoding"),
+                    _ => throw new ArgumentException(Locales.Resources.Android_AudioPlayer_Exception_Encoding,
                         nameof(waveProvider))
                 };
             }
             else
             {
-                throw new ArgumentException(Localizer.Get("Android.AudioPlayer.Exception.Format"), nameof(waveProvider));
+                throw new ArgumentException(Locales.Resources.Android_AudioPlayer_Exception_Format, nameof(waveProvider));
             }
 
             //Determine the channel mask
@@ -286,7 +285,7 @@ namespace VoiceCraft.Client.Android.Audio
             {
                 1 => ChannelOut.Mono,
                 2 => ChannelOut.Stereo,
-                _ => throw new ArgumentException(Localizer.Get("Android.AudioPlayer.Exception.ChannelMask"), nameof(waveProvider))
+                _ => throw new ArgumentException(Locales.Resources.Android_AudioPlayer_Exception_ChannelMask, nameof(waveProvider))
             };
 
             //Determine the buffer size
@@ -302,7 +301,7 @@ namespace VoiceCraft.Client.Android.Audio
                 ?.SetSampleRate(waveProvider.WaveFormat.SampleRate)?.SetChannelMask(channelMask).Build();
 
             if (audioAttributes == null || audioFormat == null)
-                throw new InvalidOperationException(Localizer.Get("Android.AudioPlayer.Exception.CreateAudioTrack"));
+                throw new InvalidOperationException(Locales.Resources.Android_AudioPlayer_Exception_CreateAudioTrack);
 
             var audioTrack = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
                 .SetBufferSizeInBytes(bufferSize).SetTransferMode(AudioTrackMode.Stream).Build();

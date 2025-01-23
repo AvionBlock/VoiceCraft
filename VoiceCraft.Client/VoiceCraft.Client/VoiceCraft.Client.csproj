@@ -99,5 +99,14 @@
       <EmbeddedResource Update="Locales\Resources.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
       </EmbeddedResource>
+      <EmbeddedResource Update="Locales\Resources.en-us.resx">
+        <DependentUpon>Resources.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Locales\Resources.ja-jp.resx">
+        <DependentUpon>Resources.resx</DependentUpon>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Locales\Resources.nl-nl.resx">
+        <DependentUpon>Resources.resx</DependentUpon>
+      </EmbeddedResource>
     </ItemGroup>
 </Project>

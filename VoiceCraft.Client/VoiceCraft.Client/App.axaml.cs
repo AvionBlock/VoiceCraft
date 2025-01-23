@@ -12,7 +12,7 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Utils;
+using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;

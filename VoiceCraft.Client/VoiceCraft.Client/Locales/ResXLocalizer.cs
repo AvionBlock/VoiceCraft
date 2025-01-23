@@ -1,8 +1,8 @@
 using System.Globalization;
 using Jeek.Avalonia.Localization;
-using VoiceCraft.Client.Assets.Locals;
+using VoiceCraft.Client.Locales;
 
-namespace VoiceCraft.Client.Utils
+namespace VoiceCraft.Client.Locales
 {
     //Credits https://github.com/tifish/Jeek.Avalonia.Localization/blob/main/Jeek.Avalonia.Localization.Example/ResXLocalizer.cs
     public class ResXLocalizer : BaseLocalizer
@@ -13,6 +13,7 @@ namespace VoiceCraft.Client.Utils
             {
                 _languages.Add("en-US");
                 _languages.Add("ja-JP");
+                _languages.Add("nl-nl");
             }
 
             ValidateLanguage();
