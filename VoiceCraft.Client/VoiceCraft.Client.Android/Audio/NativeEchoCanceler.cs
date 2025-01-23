@@ -4,7 +4,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    public abstract class NativeEchoCanceler : IEchoCanceler
+    public class NativeEchoCanceler : IEchoCanceler
     {
         public bool IsNative => true;
 
@@ -60,7 +60,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException("Native preprocessor must be intialized with a recorder!");
+            if (_recorder?.SessionId == null) throw new InvalidOperationException("Native echo canceler must be intialized with a recorder!");
             if (_echoCanceler != null)
             {
                 _echoCanceler.Release();

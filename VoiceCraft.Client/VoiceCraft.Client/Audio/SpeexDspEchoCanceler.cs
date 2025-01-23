@@ -14,6 +14,11 @@ namespace VoiceCraft.Client.Audio
         private WaveFormat? _waveFormat;
         private int _bytesPerFrame;
         private SpeexDSPEchoCanceler? _echoCanceler;
+        
+        ~SpeexDspEchoCanceler()
+        {
+            Dispose(false);
+        }
 
         public void Init(IAudioRecorder recorder, IAudioPlayer player)
         {

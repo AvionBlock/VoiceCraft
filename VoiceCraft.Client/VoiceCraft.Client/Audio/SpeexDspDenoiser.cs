@@ -12,6 +12,11 @@ namespace VoiceCraft.Client.Audio
         private SpeexDSPPreprocessor? _denoisePreprocessor;
         private bool _disposed;
 
+        ~SpeexDspDenoiser()
+        {
+            Dispose(false);
+        }
+
         public void Init(IAudioRecorder recorder)
         {
             //Disposed? DIE!!

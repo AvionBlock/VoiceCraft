@@ -54,4 +54,25 @@
     <data name="Settings.Audio" xml:space="preserve">
         <value>Audio Settings</value>
     </data>
+    <data name="Android.AudioPlayer.Exception.Encoding" xml:space="preserve">
+        <value>Input wave provider must be 8-bit, 16-bit, or 32-bit!</value>
+    </data>
+    <data name="Android.AudioPlayer.Exception.Format" xml:space="preserve">
+        <value>Input wave provider must be PCM or IEEE float!</value>
+    </data>
+    <data name="Android.AudioPlayer.Exception.ChannelMask" xml:space="preserve">
+        <value>Input wave provider must be mono or stereo!</value>
+    </data>
+    <data name="Android.AudioPlayer.Exception.CreateAudioTrack" xml:space="preserve">
+        <value>Could not create audio track!</value>
+    </data>
+    <data name="Android.AudioPlayer.Exception.Write" xml:space="preserve">
+        <value>An error occurred while trying to write to the audio player!</value>
+    </data>
+    <data name="Android.AudioPlayer.Exception.Init" xml:space="preserve">
+        <value>Must call Init first!</value>
+    </data>
+    <data name="Android.AudioPlayer.Exception.Reinit" xml:space="preserve">
+        <value>Can't re-initialize during playback!</value>
+    </data>
 </root>

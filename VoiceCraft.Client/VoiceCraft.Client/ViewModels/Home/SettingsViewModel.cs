@@ -29,6 +29,8 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private IAudioRecorder? _recorder;
         private IAudioPlayer? _player;
+        private IDenoiser? _denoiser;
+        private IAutomaticGainController? _automaticGainController;
 
         [ObservableProperty] private bool _generalSettingsExpanded;
         
@@ -91,18 +93,29 @@ namespace VoiceCraft.Client.ViewModels.Home
                 {
                     if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
                             "VoiceCraft requires the microphone permission to be granted in order to test recording!") !=
-                        PermissionStatus.Granted) return;
+                        PermissionStatus.Granted)
+                    {
+                        IsRecording = false;
+                        return;
+                    }
 
                     _recorder = _audioService.CreateAudioRecorder();
                     _recorder.BufferMilliseconds = 20;
                     _recorder.WaveFormat = new WaveFormat(48000, 1);
                     _recorder.SelectedDevice =
                         AudioSettings.InputDevice == "Default" ? null : AudioSettings.InputDevice;
+
+                    var denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser);
+                    _denoiser = denoiser?.Type == null? null : denoiser.Instantiate();
+                    var automaticGainController = _audioService.GetAutomaticGainController(AudioSettings.AutomaticGainController);
+                    _automaticGainController = automaticGainController?.Type == null? null : automaticGainController.Instantiate();
                     
                     //Can't really test echo cancellation.
                     _recorder.DataAvailable += OnDataAvailable;
                     _recorder.RecordingStopped += OnRecordingStopped;
                     _recorder.StartRecording();
+                    _denoiser?.Init(_recorder);
+                    _automaticGainController?.Init(_recorder);
                     IsRecording = true;
                 }
             }
@@ -110,7 +123,11 @@ namespace VoiceCraft.Client.ViewModels.Home
             {
                 _notificationService.SendErrorNotification(ex.Message);
                 _recorder?.Dispose();
+                _denoiser?.Dispose();
+                _automaticGainController?.Dispose();
                 _recorder = null;
+                _denoiser = null;
+                _automaticGainController = null;
                 MicrophoneValue = 0;
                 DetectingVoiceActivity = false;
                 IsRecording = false;
@@ -153,7 +170,11 @@ namespace VoiceCraft.Client.ViewModels.Home
                 _notificationService.SendErrorNotification(e.Exception.Message);
 
             _recorder?.Dispose();
+            _denoiser?.Dispose();
+            _automaticGainController?.Dispose();
             _recorder = null;
+            _denoiser = null;
+            _automaticGainController = null;
             MicrophoneValue = 0;
             DetectingVoiceActivity = false;
             IsRecording = false;
@@ -171,6 +192,8 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private void OnDataAvailable(object? sender, WaveInEventArgs e)
         {
+            _denoiser?.Denoise(e.Buffer);
+            _automaticGainController?.Process(e.Buffer);
             float max = 0;
             // interpret as 16-bit audio
             for (var index = 0; index < e.BytesRecorded; index += 2)
@@ -211,9 +234,13 @@ namespace VoiceCraft.Client.ViewModels.Home
             ServersSettings.Dispose();
             AudioSettings.Dispose();
             _recorder?.Dispose();
-            _recorder = null;
             _player?.Dispose();
+            _denoiser?.Dispose();
+            _automaticGainController?.Dispose();
+            _recorder = null;
             _player = null;
+            _denoiser = null;
+            _automaticGainController = null;
             GC.SuppressFinalize(this);
         }
     }

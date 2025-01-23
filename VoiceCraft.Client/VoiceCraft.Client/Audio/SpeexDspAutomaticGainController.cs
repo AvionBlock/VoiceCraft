@@ -11,6 +11,11 @@ namespace VoiceCraft.Client.Audio
         private WaveFormat? _waveFormat;
         private SpeexDSPPreprocessor? _automaticGainControllerPreprocessor;
         private bool _disposed;
+        
+        ~SpeexDspAutomaticGainController()
+        {
+            Dispose(false);
+        }
 
         public void Init(IAudioRecorder recorder)
         {
