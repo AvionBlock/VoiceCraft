@@ -28,7 +28,7 @@ namespace VoiceCraft.Client.Assets.Locals {
         public static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
-                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("VoiceCraft.Client.Assets.Locals.Resources", typeof(Resources).Assembly);
+                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("VoiceCraft.Client.Locales.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -114,6 +114,48 @@ namespace VoiceCraft.Client.Assets.Locals {
         public static string Settings_Audio {
             get {
                 return ResourceManager.GetString("Settings.Audio", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_Encoding {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.Encoding", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_Format {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.Format", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_ChannelMask {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.ChannelMask", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_CreateAudioTrack {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.CreateAudioTrack", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_Write {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.Write", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_Init {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.Init", resourceCulture);
+            }
+        }
+        
+        public static string Android_AudioPlayer_Exception_Reinit {
+            get {
+                return ResourceManager.GetString("Android.AudioPlayer.Exception.Reinit", resourceCulture);
             }
         }
     }
