@@ -10,8 +10,8 @@ namespace VoiceCraft.Client.Locales
         {
             if (_languages.Count == 0)
             {
-                _languages.Add("en-US");
-                _languages.Add("ja-JP");
+                _languages.Add("en-us");
+                _languages.Add("ja-jp");
                 _languages.Add("nl-nl");
             }
 
