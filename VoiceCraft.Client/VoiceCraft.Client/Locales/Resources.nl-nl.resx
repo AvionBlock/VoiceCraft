@@ -14,4 +14,7 @@
     <data name="Home.AddServer" xml:space="preserve">
         <value>Test</value>
     </data>
+    <data name="Test" xml:space="preserve">
+        <value>TestNL</value>
+    </data>
 </root>
