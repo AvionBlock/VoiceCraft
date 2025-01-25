@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Threading;
 using Jeek.Avalonia.Localization;
 
 namespace VoiceCraft.Client.Locales
@@ -18,6 +19,8 @@ namespace VoiceCraft.Client.Locales
             ValidateLanguage();
 
             Resources.Culture = new CultureInfo(_language);
+            Thread.CurrentThread.CurrentCulture = Resources.Culture;
+            Thread.CurrentThread.CurrentUICulture = Resources.Culture;
 
             _hasLoaded = true;
 

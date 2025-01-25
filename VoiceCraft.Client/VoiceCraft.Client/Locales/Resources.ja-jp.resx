@@ -17,4 +17,7 @@
     <data name="Settings.General.BackgroundImage" xml:space="preserve">
         <value>Holy Fuck</value>
     </data>
+    <data name="Test" xml:space="preserve">
+        <value>TestJP</value>
+    </data>
 </root>

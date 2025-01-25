@@ -12,15 +12,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia"/>
-        <PackageReference Include="Avalonia.Themes.Fluent"/>
-        <PackageReference Include="Avalonia.Fonts.Inter"/>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Include="Avalonia.Diagnostics">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="Jeek.Avalonia.Localization" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Maui.Essentials" />
@@ -75,7 +75,7 @@
         <DependentUpon>Styles.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Assets\Locals\Resources.Designer.cs">
+      <Compile Update="Locales\Resources.Designer.cs">
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
@@ -83,30 +83,24 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Assets\Locals\Resources.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locals\Resources.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locals\Resources.ja-jp.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.ja-JP.Designer.cs</LastGenOutput>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </EmbeddedResource>
       <EmbeddedResource Update="Locales\Resources.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
+        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
       </EmbeddedResource>
       <EmbeddedResource Update="Locales\Resources.en-us.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
         <DependentUpon>Resources.resx</DependentUpon>
+        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
       </EmbeddedResource>
       <EmbeddedResource Update="Locales\Resources.ja-jp.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
         <DependentUpon>Resources.resx</DependentUpon>
+        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
       </EmbeddedResource>
       <EmbeddedResource Update="Locales\Resources.nl-nl.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
         <DependentUpon>Resources.resx</DependentUpon>
+        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
       </EmbeddedResource>
     </ItemGroup>
 </Project>

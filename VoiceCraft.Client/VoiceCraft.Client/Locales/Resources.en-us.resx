@@ -143,4 +143,7 @@
     <data name="Settings.Audio.MicrophoneSensitivity" xml:space="preserve">
         <value>Microphone Sensitivity</value>
     </data>
+    <data name="Test" xml:space="preserve">
+        <value>TestEN</value>
+    </data>
 </root>

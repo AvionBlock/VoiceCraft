@@ -308,5 +308,11 @@ namespace VoiceCraft.Client.Locales {
                 return ResourceManager.GetString("Settings.Audio.MicrophoneSensitivity", resourceCulture);
             }
         }
+        
+        public static string Test {
+            get {
+                return ResourceManager.GetString("Test", resourceCulture);
+            }
+        }
     }
 }

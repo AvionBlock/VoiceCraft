@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using Android.App;
 using Android.Content.PM;
 using Android.Media;
@@ -11,11 +14,12 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
+using Debug = System.Diagnostics.Debug;
 
 namespace VoiceCraft.Client.Android
 {
     [Activity(
-        Label = "VoiceCraft.Client.Android",
+        Label = "VoiceCraft",
         Theme = "@style/MyTheme.NoActionBar",
         Icon = "@drawable/icon",
         MainLauncher = true,
@@ -57,7 +61,7 @@ namespace VoiceCraft.Client.Android
             });
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
-
+            
             Platform.Init(this, app);
             base.OnCreate(app);
         }

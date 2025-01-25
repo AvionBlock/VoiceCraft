@@ -8,6 +8,7 @@ using Microsoft.Maui.ApplicationModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.ViewModels.Settings;
@@ -65,13 +66,12 @@ namespace VoiceCraft.Client.ViewModels.Home
             SettingsService settingsService,
             AudioService audioService,
             NotificationService notificationService,
-            PermissionsService permissionsService,
-            BackgroundService backgroundService)
+            PermissionsService permissionsService)
         {
             _audioService = audioService;
             _notificationService = notificationService;
             _permissionsService = permissionsService;
-            _backgroundService = backgroundService;
+            //_backgroundService = backgroundService;
 
             _locales = new ObservableCollection<string>(Localizer.Languages);
             _themes = new ObservableCollection<RegisteredTheme>(themesService.RegisteredThemes);
@@ -170,7 +170,8 @@ namespace VoiceCraft.Client.ViewModels.Home
         [RelayCommand]
         private void Test()
         {
-            _backgroundService.Test();
+            _notificationService.SendNotification(Resources.Test);
+            //_backgroundService?.Test();
         }
 
         private void OnRecordingStopped(object? sender, StoppedEventArgs e)
