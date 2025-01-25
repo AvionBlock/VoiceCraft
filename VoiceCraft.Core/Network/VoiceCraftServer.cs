@@ -12,7 +12,7 @@ namespace VoiceCraft.Core.Network
         // ReSharper disable once InconsistentNaming
         private const int PINGER_BROADCAST_INTERVAL_MS = 5000;
 
-        public static readonly Version Version = Version.Parse("1.1.0.0");
+        public static readonly Version Version = new Version(1, 1, 0);
 
         public event Action? OnStarted;
         public event Action? OnStopped;
@@ -20,6 +20,8 @@ namespace VoiceCraft.Core.Network
         public event Action<NetPeer, DisconnectInfo>? OnClientDisconnected;
 
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
+        public bool DiscoveryEnabled { get; set; }
+        public PositioningType PositioningType { get; set; }
 
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
@@ -67,12 +69,14 @@ namespace VoiceCraft.Core.Network
             _lastPingBroadcast = Environment.TickCount;
             var serverInfoPacket = new ServerInfoPacket()
             {
-                Motd = Motd
+                Motd = Motd,
+                Discovery = DiscoveryEnabled,
+                PositioningType = PositioningType,
             };
 
             SendPacket(
                 _netManager.ConnectedPeerList
-                    .Where(peer => peer.ConnectionState == ConnectionState.Connected && (ConnectionType?)peer.Tag == ConnectionType.Pinger).ToArray(),
+                    .Where(peer => peer.ConnectionState == ConnectionState.Connected && (LoginType?)peer.Tag == LoginType.Pinger).ToArray(),
                 serverInfoPacket);
         }
 
@@ -114,26 +118,49 @@ namespace VoiceCraft.Core.Network
                 return;
             }
 
-            var connectionType = (ConnectionType)request.Data.GetInt();
-            switch (connectionType)
+            try
             {
-                case ConnectionType.Pinger:
-                case ConnectionType.Login:
-                case ConnectionType.Discovery:
-                    var peer = request.Accept();
-                    peer.Tag = connectionType;
-                    break;
-                default:
+                var loginPacket = new LoginPacket();
+                loginPacket.Deserialize(request.Data);
+
+                if (Version.Parse(loginPacket.Version).Major != Version.Major)
+                {
                     request.Reject();
-                    break;
+                    return;
+                }
+                
+                switch (loginPacket.LoginType)
+                {
+                    case LoginType.Pinger:
+                    case LoginType.Login:
+                    case LoginType.Discovery:
+                        var peer = request.Accept();
+                        peer.Tag = loginPacket.LoginType;
+                        break;
+                    default:
+                        request.Reject();
+                        break;
+                }
+            }
+            catch
+            {
+                request.Reject();
             }
         }
 
         private void ListenerOnPeerConnectedEvent(NetPeer peer)
         {
             OnClientConnected?.Invoke(peer);
-            if ((ConnectionType?)peer.Tag == ConnectionType.Pinger)
-                SendPacket(peer, new ServerInfoPacket { Motd = Motd });
+            if ((LoginType?)peer.Tag == LoginType.Pinger)
+            {
+                var serverInfoPacket = new ServerInfoPacket()
+                {
+                    Motd = Motd,
+                    Discovery = DiscoveryEnabled,
+                    PositioningType = PositioningType,
+                };
+                SendPacket(peer, serverInfoPacket);
+            }
         }
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)

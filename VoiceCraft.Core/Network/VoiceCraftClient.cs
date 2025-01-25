@@ -7,6 +7,8 @@ namespace VoiceCraft.Core.Network
 {
     public class VoiceCraftClient : IDisposable
     {
+        public static readonly Version Version = new Version(1, 1, 0);
+        
         public int Ping { get; private set; }
         public ConnectionStatus Status { get; private set; }
 
@@ -46,7 +48,7 @@ namespace VoiceCraft.Core.Network
             Dispose(false);
         }
 
-        public void Connect(string ip, int port, ConnectionType connectionType)
+        public void Connect(string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
             if(Status != ConnectionStatus.Disconnected)
@@ -56,9 +58,15 @@ namespace VoiceCraft.Core.Network
                 _netManager.Start();
             
             Status = ConnectionStatus.Connecting;
-            var writer = new NetDataWriter();
-            writer.Put((int)connectionType);
-            _netManager.Connect(ip, port, writer);
+            var loginPacket = new LoginPacket()
+            {
+                Version = Version.ToString(),
+                LoginType = loginType,
+                PositioningType = PositioningType.Server
+            };
+            _dataWriter.Reset();
+            loginPacket.Serialize(_dataWriter);
+            _netManager.Connect(ip, port, _dataWriter);
         }
 
         public void Update()

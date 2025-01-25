@@ -137,6 +137,9 @@ public class App : Application
         ServiceCollection.AddTransient<SettingsViewModel>();
         ServiceCollection.AddTransient<SelectedServerViewModel>();
         ServiceCollection.AddTransient<CreditsViewModel>();
+        
+        //Add Available Permissions
+        ServiceCollection.AddTransient<Permissions.PostNotifications>();
 
         return ServiceCollection.BuildServiceProvider();
     }

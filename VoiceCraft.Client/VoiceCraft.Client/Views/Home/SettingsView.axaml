@@ -200,6 +200,10 @@
                                   IsChecked="{Binding IsPlaying}">
                         <TextBlock Text="{locale:Localize Settings.Audio.TestOutput}" />
                     </ToggleButton>
+                    
+                    <Button HorizontalAlignment="Stretch"
+                            Command="{Binding TestCommand}"
+                            Content="Test"/>
                 </StackPanel>
             </Expander>
         </StackPanel>

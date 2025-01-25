@@ -1,6 +1,7 @@
 using System.Reflection;
 using Arch.Core;
 using LiteNetLib;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Server
@@ -8,13 +9,13 @@ namespace VoiceCraft.Server
     public class App
     {
         private readonly VoiceCraftServer _server;
-        private readonly Properties _serverProperties;
+        private readonly ServerProperties _serverProperties;
         private readonly World _world;
 
         public App()
         {
             _server = new VoiceCraftServer();
-            _serverProperties = new Properties();
+            _serverProperties = new ServerProperties();
             _world = World.Create();
             _server.OnStarted += OnStarted;
             _server.OnStopped += OnStopped;
@@ -24,9 +25,6 @@ namespace VoiceCraft.Server
 
         public async Task Start()
         {
-            // ReSharper disable once InconsistentNaming
-            var Version =  Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.";
-
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Loading...";
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(@"__     __    _           ____            __ _");
@@ -35,9 +33,9 @@ namespace VoiceCraft.Server
             Console.WriteLine(@"  \ V / (_) | | (_|  __/ |___| | | (_| |  _| |_");
             Console.WriteLine(@"   \_/ \___/|_|\___\___|\____|_|  \__,_|_|  \__|");
 #if DEBUG
-            Console.WriteLine($"[App: {Version}][Server: {VoiceCraftServer.Version}]==========[DEBUG]\n");
+            Console.WriteLine($"[Server: {VoiceCraftServer.Version}]===============[DEBUG]\n");
 #else
-            Console.WriteLine($"[App: {Version}][Server: {VoiceCraftServer.Version}]============[RELEASE]\n");
+            Console.WriteLine($"[Server: {VoiceCraftServer.Version}]================[RELEASE]\n");
 #endif
             Console.WriteLine("Starting VoiceCraft server...");
             _server.Start(9050);

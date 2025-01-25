@@ -47,7 +47,7 @@ namespace VoiceCraft.Client.ViewModels
             
             if(_voiceCraftClient.Status != ConnectionStatus.Disconnected)
                 _voiceCraftClient.Disconnect();
-            _voiceCraftClient.Connect(SelectedServer.Ip, SelectedServer.Port, ConnectionType.Pinger);
+            _voiceCraftClient.Connect(SelectedServer.Ip, SelectedServer.Port, LoginType.Pinger);
             StatusInfo = "Pinging...";
 
             if (_clientPingCancellation != null)
@@ -90,7 +90,7 @@ namespace VoiceCraft.Client.ViewModels
         
         private void OnServerInfoPacketReceived(ServerInfoPacket packet)
         {
-            StatusInfo = $"Motd: {packet.Motd}\nConnected Players: {packet.ConnectedPlayers}\nAllows Discovery: {packet.DiscoveryEnabled}";
+            StatusInfo = $"{packet.Motd}\nConnected Clients: {packet.Clients}\nDiscovery: {packet.Discovery}\nPositioning Type: {packet.PositioningType}";
         }
         
         private void OnDisconnected(DisconnectInfo disconnectInfo)

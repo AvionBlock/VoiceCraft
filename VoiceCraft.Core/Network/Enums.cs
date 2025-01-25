@@ -1,6 +1,12 @@
 namespace VoiceCraft.Core.Network
 {
-    public enum ConnectionType
+    public enum PositioningType : byte
+    {
+        Server,
+        Client
+    }
+    
+    public enum LoginType : byte
     {
         Pinger,
         Login,
@@ -16,6 +22,7 @@ namespace VoiceCraft.Core.Network
 
     public enum PacketType : byte
     {
+        Login,
         ServerInfo
     }
 }

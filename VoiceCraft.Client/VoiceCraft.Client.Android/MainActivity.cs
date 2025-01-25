@@ -9,6 +9,7 @@ using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
+using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Android
@@ -54,6 +55,7 @@ namespace VoiceCraft.Client.Android
                         "Native Automatic Gain Controller");
                 return audioService;
             });
+            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
 
             Platform.Init(this, app);

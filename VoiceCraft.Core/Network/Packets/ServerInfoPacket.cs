@@ -6,22 +6,25 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.ServerInfo;
         public string Motd { get; set; } = string.Empty;
-        public uint ConnectedPlayers { get; set; }
-        public bool DiscoveryEnabled  { get; set; }
+        public uint Clients { get; set; }
+        public bool Discovery  { get; set; }
+        public PositioningType PositioningType { get; set; }
         
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Motd);
-            writer.Put(ConnectedPlayers);
-            writer.Put(DiscoveryEnabled);
+            writer.Put(Clients);
+            writer.Put(Discovery);
+            writer.Put((byte)PositioningType);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Motd = reader.GetString();
-            ConnectedPlayers = reader.GetUInt();
-            DiscoveryEnabled = reader.GetBool();
+            Clients = reader.GetUInt();
+            Discovery = reader.GetBool();
+            PositioningType = (PositioningType)reader.GetByte();
         }
     }
 }
