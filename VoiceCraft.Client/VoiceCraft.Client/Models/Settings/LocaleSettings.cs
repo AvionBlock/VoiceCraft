@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        private string _culture = "en-US";
+        private string _culture = "en-us";
 
         public override object Clone()
         {

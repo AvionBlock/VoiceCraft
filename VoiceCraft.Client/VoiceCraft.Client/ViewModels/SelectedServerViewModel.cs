@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiteNetLib;
@@ -15,6 +17,7 @@ namespace VoiceCraft.Client.ViewModels
         private readonly NavigationService _navigationService;
         private readonly SettingsService _settingsService;
         private readonly VoiceCraftClient _voiceCraftClient;
+        private CancellationTokenSource? _clientPingCancellation;
         
         [ObservableProperty] private ServersSettingsViewModel _serversSettings;
 
@@ -46,6 +49,25 @@ namespace VoiceCraft.Client.ViewModels
                 _voiceCraftClient.Disconnect();
             _voiceCraftClient.Connect(SelectedServer.Ip, SelectedServer.Port, ConnectionType.Pinger);
             StatusInfo = "Pinging...";
+
+            if (_clientPingCancellation != null)
+            {
+                _clientPingCancellation.Cancel();
+                _clientPingCancellation.Dispose();
+            }
+
+            _clientPingCancellation = new CancellationTokenSource();
+            Task.Run(async () =>
+            {
+                while (!_clientPingCancellation.IsCancellationRequested)
+                {
+                    _voiceCraftClient.Update();
+                    await Task.Delay(50);
+                }
+                await _clientPingCancellation.CancelAsync();
+                _clientPingCancellation.Dispose();
+                _clientPingCancellation = null;
+            }, _clientPingCancellation.Token);
         }
 
         [RelayCommand]

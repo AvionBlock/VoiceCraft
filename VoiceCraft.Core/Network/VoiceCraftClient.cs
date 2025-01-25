@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Network.Packets;
@@ -23,30 +21,18 @@ namespace VoiceCraft.Core.Network
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter;
-        private readonly CancellationTokenSource _cts;
         private NetPeer? _serverPeer;
         private bool _isDisposed;
 
         public VoiceCraftClient()
         {
             _dataWriter = new NetDataWriter();
-            _cts = new CancellationTokenSource();
             _listener = new EventBasedNetListener();
             _netManager = new NetManager(_listener)
             {
                 AutoRecycle = true,
                 IPv6Enabled = false
             };
-            
-            var token = _cts.Token;
-            Task.Run(() =>
-            {
-                while (!token.IsCancellationRequested)
-                {
-                    _netManager.PollEvents();
-                    Task.Delay(1).Wait();
-                }
-            }, _cts.Token);
             
             _listener.PeerConnectedEvent += OnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
@@ -73,6 +59,11 @@ namespace VoiceCraft.Core.Network
             var writer = new NetDataWriter();
             writer.Put((int)connectionType);
             _netManager.Connect(ip, port, writer);
+        }
+
+        public void Update()
+        {
+            _netManager.PollEvents();
         }
 
         public void Disconnect()
@@ -154,8 +145,6 @@ namespace VoiceCraft.Core.Network
             if (disposing)
             {
                 _netManager.Stop();
-                _cts.Cancel();
-                _cts.Dispose();
             }
             _isDisposed = true;
         }

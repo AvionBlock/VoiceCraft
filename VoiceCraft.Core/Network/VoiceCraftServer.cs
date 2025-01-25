@@ -61,7 +61,6 @@ namespace VoiceCraft.Core.Network
 
         public void Update()
         {
-            var token = _cts.Token;
             _netManager.PollEvents();
 
             if (Environment.TickCount - _lastPingBroadcast < PINGER_BROADCAST_INTERVAL_MS) return;
