@@ -103,6 +103,8 @@ namespace VoiceCraft.Client.ViewModels
             SelectedServer.Dispose();
             ServersSettings.Dispose();
             _voiceCraftClient.Dispose();
+            _clientPingCancellation?.Cancel();
+            _clientPingCancellation?.Dispose();
             _voiceCraftClient.OnDisconnected -= OnDisconnected;
             GC.SuppressFinalize(this);
         }
