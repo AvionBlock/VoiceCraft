@@ -14,7 +14,6 @@
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>VoiceCraft.snk</AssemblyOriginatorKeyFile>
         <PublicSign>true</PublicSign>
-        <AndroidSdkDirectory>/home/asuka/Android/Sdk</AndroidSdkDirectory>
     </PropertyGroup>
 
     <ItemGroup>
