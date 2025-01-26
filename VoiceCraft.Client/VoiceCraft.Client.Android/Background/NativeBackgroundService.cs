@@ -16,7 +16,10 @@ namespace VoiceCraft.Client.Android.Background
         {
             //Don't care if it's granted or not.
             await permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
-                "Notifications are required to show running background processes.");
+                "Notifications are required to show running background processes and errors.");
+            
+            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
+                    "Microphone access is required to properly run the background worker.") != PermissionStatus.Granted) return;
 
             var context = Application.Context;
             var intent = new Intent(context, typeof(AndroidBackgroundService));

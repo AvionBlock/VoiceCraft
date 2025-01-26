@@ -11,6 +11,10 @@
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>VoiceCraft.snk</AssemblyOriginatorKeyFile>
+        <PublicSign>true</PublicSign>
+        <AndroidSdkDirectory>/home/asuka/Android/Sdk</AndroidSdkDirectory>
     </PropertyGroup>
 
     <ItemGroup>

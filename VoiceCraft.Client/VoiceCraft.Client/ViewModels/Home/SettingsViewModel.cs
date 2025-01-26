@@ -66,12 +66,13 @@ namespace VoiceCraft.Client.ViewModels.Home
             SettingsService settingsService,
             AudioService audioService,
             NotificationService notificationService,
-            PermissionsService permissionsService)
+            PermissionsService permissionsService,
+            BackgroundService backgroundService)
         {
             _audioService = audioService;
             _notificationService = notificationService;
             _permissionsService = permissionsService;
-            //_backgroundService = backgroundService;
+            _backgroundService = backgroundService;
 
             _locales = new ObservableCollection<string>(Localizer.Languages);
             _themes = new ObservableCollection<RegisteredTheme>(themesService.RegisteredThemes);
@@ -170,8 +171,8 @@ namespace VoiceCraft.Client.ViewModels.Home
         [RelayCommand]
         private void Test()
         {
-            _notificationService.SendNotification(Resources.Test);
-            //_backgroundService?.Test();
+            //_notificationService.SendNotification(Resources.Test);
+            _backgroundService.Test();
         }
 
         private void OnRecordingStopped(object? sender, StoppedEventArgs e)

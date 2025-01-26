@@ -10,13 +10,14 @@ using Android.OS;
 using AndroidX.Core.App;
 using CommunityToolkit.Mvvm.Messaging;
 using VoiceCraft.Client.Services.Interfaces;
-using Environment = System.Environment;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Android.Background
 {
     [Service(ForegroundServiceType = ForegroundService.TypeMicrophone)]
     public class AndroidBackgroundService : Service
     {
+        private const int ErrorNotificationId = 999;
         private const int NotificationId = 1000;
         private const string ChannelId = "1001";
         private static bool _isStarted;
@@ -42,9 +43,9 @@ namespace VoiceCraft.Client.Android.Background
             {
                 try
                 {
-                    var startTime = Environment.TickCount64;
+                    var startTime = System.Environment.TickCount64;
                     while (!BackgroundProcesses.IsEmpty || !BackgroundProcesses.IsEmpty ||
-                           Environment.TickCount64 - startTime < 10000) //10 second wait time before self stopping activates (kinda).
+                           System.Environment.TickCount64 - startTime < 10000) //10 second wait time before self stopping activates (kinda).
                     {
                         RunningBackgroundProcesses.RemoveAll(x => x.IsCompleted); //Remove completed processes
 
@@ -56,7 +57,8 @@ namespace VoiceCraft.Client.Android.Background
                         //Update Notification.
                         var notificationManager = GetSystemService(NotificationService) as NotificationManager;
                         notificationManager?.Notify(NotificationId,
-                            CreateNotification().SetSmallIcon(ResourceConstant.Drawable.Icon).SetContentTitle("Running Background Processes")
+                            CreateNotification()
+                                .SetSmallIcon(ResourceConstant.Drawable.Icon).SetContentTitle("Running Background Processes")
                                 .SetContentText($"Background Processes: {RunningBackgroundProcesses.Count}").Build());
 
                         //Delay
@@ -67,6 +69,15 @@ namespace VoiceCraft.Client.Android.Background
                 }
                 catch (Exception ex)
                 {
+                    var notificationManager = GetSystemService(NotificationService) as NotificationManager;
+                    notificationManager?.Notify(ErrorNotificationId,
+                        CreateNotification()
+                            .SetPriority((int)NotificationPriority.High)
+                            .SetSmallIcon(ResourceConstant.Drawable.Icon)
+                            .SetContentTitle("Background Process Error")
+                            .SetStyle(new NotificationCompat.BigTextStyle().BigText(ex.ToString()
+                                .Truncate(10000))) //10000 characters so we don't annihilate the phone.
+                            .SetContentText(ex.GetType().ToString()).Build());
                     StopSelf();
                 }
             });
