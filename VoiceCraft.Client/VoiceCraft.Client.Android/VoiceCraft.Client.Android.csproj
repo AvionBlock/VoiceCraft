@@ -30,22 +30,4 @@
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
     </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Update="Locales\Resources.en-us.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <DependentUpon>Resources.resx</DependentUpon>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locales\Resources.ja-jp.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <DependentUpon>Resources.resx</DependentUpon>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locales\Resources.nl-nl.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <DependentUpon>Resources.resx</DependentUpon>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
-    </ItemGroup>
 </Project>
