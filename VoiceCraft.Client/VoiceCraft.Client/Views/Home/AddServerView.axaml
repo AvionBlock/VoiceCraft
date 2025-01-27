@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:server="clr-namespace:VoiceCraft.Client.Models.Settings"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             xmlns:locale="using:Jeek.Avalonia.Localization"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:AddServerViewModel"
@@ -14,11 +15,11 @@
                 VerticalAlignment="Top"
                 Classes="card">
             <StackPanel Spacing="10">
-                <TextBlock Text="Name" />
+                <TextBlock Text="{locale:Localize AddServer.Name}" />
                 <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding Server.Name}" />
-                <TextBlock Text="IP" />
+                <TextBlock Text="{locale:Localize AddServer.IP}" />
                 <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding Server.Ip}" />
-                <TextBlock Text="Port" />
+                <TextBlock Text="{locale:Localize AddServer.Port}" />
                 <NumericUpDown Increment="1"
                                Maximum="65535"
                                Minimum="0"
@@ -26,7 +27,7 @@
                 <Button HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
                         Command="{Binding AddServerCommand}">
-                    <TextBlock Text="Add Server" TextAlignment="Center" />
+                    <TextBlock Text="{locale:Localize AddServer.AddServer}" TextAlignment="Center" />
                 </Button>
             </StackPanel>
         </Border>

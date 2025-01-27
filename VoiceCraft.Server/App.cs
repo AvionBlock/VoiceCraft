@@ -1,5 +1,3 @@
-using System.Reflection;
-using Arch.Core;
 using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
@@ -10,13 +8,11 @@ namespace VoiceCraft.Server
     {
         private readonly VoiceCraftServer _server;
         private readonly ServerProperties _serverProperties;
-        private readonly World _world;
 
         public App()
         {
             _server = new VoiceCraftServer();
             _serverProperties = new ServerProperties();
-            _world = World.Create();
             _server.OnStarted += OnStarted;
             _server.OnStopped += OnStopped;
             _server.OnClientConnected += OnClientConnected;

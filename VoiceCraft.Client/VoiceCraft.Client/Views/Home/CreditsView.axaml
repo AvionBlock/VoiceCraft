@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             xmlns:locale="using:Jeek.Avalonia.Localization"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:CreditsViewModel"

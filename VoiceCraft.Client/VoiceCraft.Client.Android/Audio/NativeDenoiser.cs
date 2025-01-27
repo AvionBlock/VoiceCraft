@@ -1,5 +1,6 @@
 using Android.Media.Audiofx;
 using System;
+using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Android.Audio
@@ -23,7 +24,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (recorder is not AudioRecorder audioRecorder)
-                throw new ArgumentException(Locales.Resources.Android_NativeDN_Exception_AndroidRecorder, nameof(recorder));
+                throw new ArgumentException(Localizer.Get("Android.NativeDN.Exception.AndroidRecorder"), nameof(recorder));
             if (_noiseSuppressor != null)
             {
                 _noiseSuppressor.Release();
@@ -42,7 +43,7 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Resources.Android_NativeDN_Exception_Init);
+            if (_recorder?.SessionId == null) throw new InvalidOperationException(Localizer.Get("Android.NativeDN.Exception.Init"));
             if (_noiseSuppressor != null)
             {
                 _noiseSuppressor.Release();

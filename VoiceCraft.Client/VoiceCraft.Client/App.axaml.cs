@@ -146,7 +146,7 @@ public class App : Application
 
     private static void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.SetLocalizer(new ResXLocalizer());
+        Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
         
         var audioService = serviceProvider.GetRequiredService<AudioService>();
         audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");

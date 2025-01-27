@@ -24,7 +24,7 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Locales}"
-                              SelectedValue="{Binding LocaleSettings.Culture}">
+                              SelectedItem="{Binding LocaleSettings.Culture}">
                     </ComboBox>
                     
                     <TextBlock HorizontalAlignment="Left"

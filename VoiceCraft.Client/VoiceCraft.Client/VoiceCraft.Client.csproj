@@ -75,32 +75,11 @@
         <DependentUpon>Styles.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="Locales\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Locales\Resources.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locales\Resources.en-us.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <DependentUpon>Resources.resx</DependentUpon>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locales\Resources.ja-jp.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <DependentUpon>Resources.resx</DependentUpon>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
-      <EmbeddedResource Update="Locales\Resources.nl-nl.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <DependentUpon>Resources.resx</DependentUpon>
-        <CustomToolNamespace>VoiceCraft.Client.Locales</CustomToolNamespace>
-      </EmbeddedResource>
+      <EmbeddedResource Include="Locales\nl-nl.json" />
+      <None Remove="Locales\Resources.json" />
+      <EmbeddedResource Include="Locales\en-us.json" />
     </ItemGroup>
 </Project>

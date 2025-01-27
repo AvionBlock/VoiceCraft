@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 
@@ -148,7 +149,7 @@ namespace VoiceCraft.Client.Android.Audio
                                 DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, bytesRead));
                                 break;
                             case < 0:
-                                throw new InvalidOperationException(Locales.Resources.Android_AudioRecorder_Exception_Capture);
+                                throw new InvalidOperationException(Localizer.Get("Android.AudioRecorder.Exception.Capture"));
                         }
 
                         break;
@@ -165,7 +166,7 @@ namespace VoiceCraft.Client.Android.Audio
                                 DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, floatsRead * sizeof(float)));
                                 break;
                             case < 0:
-                                throw new InvalidOperationException(Locales.Resources.Android_AudioRecorder_Exception_Capture);
+                                throw new InvalidOperationException(Localizer.Get("Android.AudioRecorder.Exception.Capture"));
                         }
 
                         break;

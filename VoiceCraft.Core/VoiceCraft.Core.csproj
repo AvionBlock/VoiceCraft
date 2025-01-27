@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Folder Include="Effects\" />
+    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>
