@@ -11,6 +11,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.ViewModels.Settings;
 
 namespace VoiceCraft.Client.ViewModels.Home
@@ -171,8 +172,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         [RelayCommand]
         private void Test()
         {
-            //_notificationService.SendNotification(Resources.Test);
-            _backgroundService.Test();
+            _backgroundService.StartBackgroundProcess(new TestBackgroundProcess());
         }
 
         private void OnRecordingStopped(object? sender, StoppedEventArgs e)
