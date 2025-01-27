@@ -1,7 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Android.App;
 using Android.Content.PM;
 using Android.Media;
@@ -14,7 +11,6 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
-using Debug = System.Diagnostics.Debug;
 
 namespace VoiceCraft.Client.Android
 {

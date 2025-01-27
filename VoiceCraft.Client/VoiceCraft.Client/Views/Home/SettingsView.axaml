@@ -26,7 +26,7 @@
                               ItemsSource="{Binding Locales}"
                               SelectedItem="{Binding LocaleSettings.Culture}">
                     </ComboBox>
-                    
+
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
@@ -42,7 +42,7 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    
+
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
@@ -69,11 +69,13 @@
                                    Minimum="0"
                                    Value="{Binding NotificationSettings.DismissDelayMs}" />
 
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding ServersSettings.HideServerAddresses}">
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding ServersSettings.HideServerAddresses}">
                         <TextBlock Text="{locale:Localize Settings.General.HideServerAddresses}" />
                     </ToggleButton>
 
-                    <ToggleButton HorizontalAlignment="Stretch" IsChecked="{Binding NotificationSettings.DisableNotifications}">
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding NotificationSettings.DisableNotifications}">
                         <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
                     </ToggleButton>
                 </StackPanel>
@@ -105,7 +107,7 @@
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Audio.Denoisers}" />
-                    
+
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.Denoisers}"
                               SelectedValue="{Binding AudioSettings.Denoiser}"
@@ -116,12 +118,12 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    
+
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Audio.AutomaticGainControllers}" />
-                    
+
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.AutomaticGainControllers}"
                               SelectedValue="{Binding AudioSettings.AutomaticGainController}"
@@ -152,8 +154,10 @@
                     <StackPanel>
                         <!-- I know this is shit, but it works, There might be a better way but idgaf! -->
                         <Grid ColumnDefinitions="Auto, Auto">
-                            <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{locale:Localize Settings.Audio.MicrophoneSensitivity}"/>
-                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='{} {0:P0}'}"/>
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                       Text="{locale:Localize Settings.Audio.MicrophoneSensitivity}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='{} {0:P0}'}" />
                         </Grid>
 
                         <Slider Maximum="1.0"
@@ -200,10 +204,10 @@
                                   IsChecked="{Binding IsPlaying}">
                         <TextBlock Text="{locale:Localize Settings.Audio.TestOutput}" />
                     </ToggleButton>
-                    
+
                     <Button HorizontalAlignment="Stretch"
                             Command="{Binding TestCommand}"
-                            Content="Test"/>
+                            Content="Test" />
                 </StackPanel>
             </Expander>
         </StackPanel>

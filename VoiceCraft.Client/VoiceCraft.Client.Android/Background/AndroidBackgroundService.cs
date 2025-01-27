@@ -40,7 +40,7 @@ namespace VoiceCraft.Client.Android.Background
 
             var notification = CreateNotification();
             StartForeground(NotificationId, notification.Build());
-            WeakReferenceMessenger.Default.Register<GetBackgroundProcesses>(this, (r, m) =>
+            WeakReferenceMessenger.Default.Register<GetBackgroundProcesses>(this, (_, m) =>
             {
                 var backroundProcesses = RunningBackgroundProcesses.Select(x => x.Key);
                 m.Reply(backroundProcesses);

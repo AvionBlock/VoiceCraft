@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.Linux.Audio;

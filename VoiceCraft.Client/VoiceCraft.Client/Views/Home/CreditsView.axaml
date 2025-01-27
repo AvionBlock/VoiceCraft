@@ -14,35 +14,33 @@
                 VerticalAlignment="Top"
                 Classes="card">
             <StackPanel Spacing="10">
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Text="Author: SineVector241" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text="{locale:Localize Credits.Author}" />
+                    <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text=": SineVector241" />
+                </Grid>
 
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Text="Contributors: N.A." />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text="{locale:Localize Credits.Contributors}" />
+                    <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text=": Miniontoby" />
+                </Grid>
 
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Text="{Binding VoicecraftVersion, StringFormat='Version: {0}'}" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text="{locale:Localize Credits.Version}" />
+                    <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text="{Binding VoicecraftVersion, StringFormat=': {0}'}" />
+                </Grid>
 
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Text="{Binding AppVersion, StringFormat='App Version: {0}'}" />
-
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Text="{Binding OpusVersion, StringFormat='Codec: Opus - {0}'}" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text="{locale:Localize Credits.Codec}" />
+                    <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                               Text="{Binding OpusVersion, StringFormat=': {0}'}" />
+                </Grid>
             </StackPanel>
         </Border>
     </ScrollViewer>
