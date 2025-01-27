@@ -16,6 +16,7 @@ namespace VoiceCraft.Client.Linux
         public static void Main(string[] args)
         {
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             
             BuildAvaloniaApp()

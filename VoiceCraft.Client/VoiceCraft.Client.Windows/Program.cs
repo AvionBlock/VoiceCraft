@@ -16,6 +16,7 @@ namespace VoiceCraft.Client.Windows
         public static void Main(string[] args)
         {
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
 
             BuildAvaloniaApp()

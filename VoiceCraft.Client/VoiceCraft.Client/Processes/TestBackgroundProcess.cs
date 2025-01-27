@@ -15,7 +15,7 @@ public class TestBackgroundProcess : IBackgroundProcess
         OnUpdateTitle?.Invoke("Test Title");
         OnUpdateDescription?.Invoke("Test Description");
         
-        Task.Delay(20000, TokenSource.Token).Wait();
+        Task.Delay(1000, TokenSource.Token).Wait();
     }
     
     public void Dispose()
