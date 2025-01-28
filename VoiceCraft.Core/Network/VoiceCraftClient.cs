@@ -10,7 +10,7 @@ namespace VoiceCraft.Core.Network
         public static readonly Version Version = new Version(1, 1, 0);
         
         public int Ping { get; private set; }
-        public ConnectionStatus Status { get; private set; }
+        public ConnectionStatus ConnectionStatus { get; private set; }
 
         //Network Events
         public event Action? OnConnected;
@@ -51,13 +51,13 @@ namespace VoiceCraft.Core.Network
         public void Connect(string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
-            if(Status != ConnectionStatus.Disconnected)
+            if(ConnectionStatus != ConnectionStatus.Disconnected)
                 throw new InvalidOperationException("You must disconnect before connecting!");
             
             if(!_netManager.IsRunning)
                 _netManager.Start();
             
-            Status = ConnectionStatus.Connecting;
+            ConnectionStatus = ConnectionStatus.Connecting;
             var loginPacket = new LoginPacket()
             {
                 Version = Version.ToString(),
@@ -77,7 +77,7 @@ namespace VoiceCraft.Core.Network
         public void Disconnect()
         {
             ThrowIfDisposed();
-            if(Status == ConnectionStatus.Disconnected)
+            if(ConnectionStatus == ConnectionStatus.Disconnected)
                 throw new InvalidOperationException("Must be connecting or connected before disconnecting!");
             
             if(_serverPeer != null)
@@ -98,14 +98,14 @@ namespace VoiceCraft.Core.Network
         //Events
         private void OnPeerConnectedEvent(NetPeer peer)
         {
-            Status = ConnectionStatus.Connected;
+            ConnectionStatus = ConnectionStatus.Connected;
             _serverPeer = peer;
             OnConnected?.Invoke();
         }
         
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
-            Status = ConnectionStatus.Disconnected;
+            ConnectionStatus = ConnectionStatus.Disconnected;
             _serverPeer = null;
             OnDisconnected?.Invoke(disconnectInfo);
         }

@@ -128,15 +128,16 @@ public class App : Application
         ServiceCollection.AddSingleton<MainViewModel>();
 
         //Main Pages
-        ServiceCollection.AddTransient<HomeViewModel>();
-        ServiceCollection.AddSingleton<EditServerViewModel>();
-        ServiceCollection.AddSingleton<AddServerViewModel>();
+        ServiceCollection.AddSingleton<HomeViewModel>();
+        ServiceCollection.AddTransient<EditServerViewModel>();
+        ServiceCollection.AddTransient<SelectedServerViewModel>();
+        ServiceCollection.AddTransient<VoiceViewModel>();
 
         //Home Pages
-        ServiceCollection.AddTransient<ServersViewModel>();
-        ServiceCollection.AddTransient<SettingsViewModel>();
-        ServiceCollection.AddTransient<SelectedServerViewModel>();
-        ServiceCollection.AddTransient<CreditsViewModel>();
+        ServiceCollection.AddSingleton<AddServerViewModel>();
+        ServiceCollection.AddSingleton<ServersViewModel>();
+        ServiceCollection.AddSingleton<SettingsViewModel>();
+        ServiceCollection.AddSingleton<CreditsViewModel>();
         
         //Add Available Permissions
         ServiceCollection.AddTransient<Permissions.PostNotifications>();

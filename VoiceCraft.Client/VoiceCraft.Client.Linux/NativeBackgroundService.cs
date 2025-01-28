@@ -44,10 +44,20 @@ namespace VoiceCraft.Client.Linux
             });
         }
         
-        public override void StartBackgroundProcess(IBackgroundProcess process)
+        public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000)
         {
             StartService();
             _queuedProcesses.Enqueue(process);
+            var startTime = Environment.TickCount64;
+            while (_queuedProcesses.Contains(process))
+            {
+                if (Environment.TickCount64 - startTime >= timeout)
+                    return false;
+                
+                await Task.Delay(50);
+            }
+
+            return true;
         }
 
         public override T? GetBackgroundProcess<T>() where T : default

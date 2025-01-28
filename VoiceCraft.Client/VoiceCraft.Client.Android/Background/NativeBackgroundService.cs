@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -56,10 +57,20 @@ namespace VoiceCraft.Client.Android.Background
                 context.StartService(intent);
         }
 
-        public override void StartBackgroundProcess(IBackgroundProcess process)
+        public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000) //5 second timeout.
         {
             _ = StartService();
             _queuedProcesses.Enqueue(process);
+            var startTime = System.Environment.TickCount64;
+            while (_queuedProcesses.Contains(process))
+            {
+                if (System.Environment.TickCount64 - startTime >= timeout)
+                    return false;
+                
+                await Task.Delay(50);
+            }
+
+            return true;
         }
 
         public override T? GetBackgroundProcess<T>() where T : default

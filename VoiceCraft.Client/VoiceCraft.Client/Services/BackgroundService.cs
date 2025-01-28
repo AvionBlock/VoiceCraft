@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using VoiceCraft.Client.Services.Interfaces;
 
 namespace VoiceCraft.Client.Services
@@ -10,7 +11,7 @@ namespace VoiceCraft.Client.Services
         
         public abstract event Action<IBackgroundProcess>? OnProcessStopped;
 
-        public abstract void StartBackgroundProcess(IBackgroundProcess process);
+        public abstract Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000);
 
         public abstract T? GetBackgroundProcess<T>() where T : IBackgroundProcess;
         

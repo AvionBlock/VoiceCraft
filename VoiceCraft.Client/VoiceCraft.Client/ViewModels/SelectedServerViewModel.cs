@@ -1,10 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiteNetLib;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
 using VoiceCraft.Core.Network;
@@ -17,24 +19,28 @@ namespace VoiceCraft.Client.ViewModels
         private readonly NavigationService _navigationService;
         private readonly SettingsService _settingsService;
         private readonly VoiceCraftClient _voiceCraftClient;
+        private readonly BackgroundService _backgroundService;
+        private readonly NotificationService _notificationService;
         private CancellationTokenSource? _clientPingCancellation;
-        
+
         [ObservableProperty] private ServersSettingsViewModel _serversSettings;
 
-        [ObservableProperty] private ServerViewModel _selectedServer;
+        [ObservableProperty] private ServerViewModel? _selectedServer;
 
         [ObservableProperty] private string _statusInfo = string.Empty;
 
         [ObservableProperty] private int _latency;
 
-        public SelectedServerViewModel(NavigationService navigationService, SettingsService settingsService)
+        public SelectedServerViewModel(NavigationService navigationService, SettingsService settingsService, BackgroundService backgroundService,
+            NotificationService notificationService)
         {
             _navigationService = navigationService;
             _settingsService = settingsService;
+            _backgroundService = backgroundService;
+            _notificationService = notificationService;
             _serversSettings = new ServersSettingsViewModel(_settingsService.Get<ServersSettings>(), _settingsService);
-            _selectedServer = new ServerViewModel(new Server(), _settingsService);
             _voiceCraftClient = new VoiceCraftClient();
-            
+
             _voiceCraftClient.OnLatencyUpdated += OnLatencyUpdated;
             _voiceCraftClient.OnServerInfoPacketReceived += OnServerInfoPacketReceived;
             _voiceCraftClient.OnDisconnected += OnDisconnected;
@@ -42,11 +48,81 @@ namespace VoiceCraft.Client.ViewModels
 
         public void SetServer(Server server)
         {
-            SelectedServer.Dispose();
+            SelectedServer?.Dispose();
             SelectedServer = new ServerViewModel(server, _settingsService);
-            
-            if(_voiceCraftClient.Status != ConnectionStatus.Disconnected)
+            StartPinger();
+        }
+
+        public override void OnAppearing()
+        {
+            StartPinger();
+        }
+
+        public override void OnDisappearing()
+        {
+            if (_clientPingCancellation == null) return;
+            _clientPingCancellation.Cancel();
+            _clientPingCancellation.Dispose();
+            _clientPingCancellation = null;
+        }
+
+        public void Dispose()
+        {
+            SelectedServer?.Dispose();
+            ServersSettings.Dispose();
+            _voiceCraftClient.Dispose();
+            _clientPingCancellation?.Cancel();
+            _clientPingCancellation?.Dispose();
+            _voiceCraftClient.OnDisconnected -= OnDisconnected;
+            GC.SuppressFinalize(this);
+        }
+
+        [RelayCommand]
+        private void Cancel()
+        {
+            _navigationService.Back();
+            if (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
                 _voiceCraftClient.Disconnect();
+        }
+
+        [RelayCommand]
+        private void Connect()
+        {
+            if (SelectedServer == null) return;
+            _backgroundService.StartBackgroundProcess(new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, _notificationService))
+                .ContinueWith(success =>
+                {
+                    if (success.Result == false)
+                    {
+                        Dispatcher.UIThread.Invoke(() => _notificationService.SendNotification("Background worker failed to start VOIP process!"));
+                        return;
+                    }
+
+                    _navigationService.NavigateTo<VoiceViewModel>();
+                });
+        }
+
+        private void OnLatencyUpdated(int latency)
+        {
+            Latency = latency;
+        }
+
+        private void OnServerInfoPacketReceived(ServerInfoPacket packet)
+        {
+            StatusInfo = $"{packet.Motd}\nConnected Clients: {packet.Clients}\nDiscovery: {packet.Discovery}\nPositioning Type: {packet.PositioningType}";
+        }
+
+        private void OnDisconnected(DisconnectInfo disconnectInfo)
+        {
+            StatusInfo = $"Failed to ping server.\nReason: {disconnectInfo.Reason}"; //We'll have to do more disconnection testing but this works.
+        }
+
+        private void StartPinger()
+        {
+            if (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
+                _voiceCraftClient.Disconnect();
+
+            if (SelectedServer == null) return;
             _voiceCraftClient.Connect(SelectedServer.Ip, SelectedServer.Port, LoginType.Pinger);
             StatusInfo = "Pinging...";
 
@@ -64,49 +140,10 @@ namespace VoiceCraft.Client.ViewModels
                     _voiceCraftClient.Update();
                     await Task.Delay(50);
                 }
-                await _clientPingCancellation.CancelAsync();
+                
                 _clientPingCancellation.Dispose();
                 _clientPingCancellation = null;
             }, _clientPingCancellation.Token);
-        }
-
-        [RelayCommand]
-        private void Cancel()
-        {
-            _navigationService.Back();
-            if(_voiceCraftClient.Status != ConnectionStatus.Disconnected)
-                _voiceCraftClient.Disconnect();
-        }
-
-        [RelayCommand]
-        private void Connect()
-        {
-        }
-        
-        private void OnLatencyUpdated(int latency)
-        {
-            Latency = latency;
-        }
-        
-        private void OnServerInfoPacketReceived(ServerInfoPacket packet)
-        {
-            StatusInfo = $"{packet.Motd}\nConnected Clients: {packet.Clients}\nDiscovery: {packet.Discovery}\nPositioning Type: {packet.PositioningType}";
-        }
-        
-        private void OnDisconnected(DisconnectInfo disconnectInfo)
-        {
-            StatusInfo = $"Failed to ping server.\nReason: {disconnectInfo.Reason}"; //We'll have to do more disconnection testing but this works.
-        }
-        
-        public void Dispose()
-        {
-            SelectedServer.Dispose();
-            ServersSettings.Dispose();
-            _voiceCraftClient.Dispose();
-            _clientPingCancellation?.Cancel();
-            _clientPingCancellation?.Dispose();
-            _voiceCraftClient.OnDisconnected -= OnDisconnected;
-            GC.SuppressFinalize(this);
         }
     }
 }
