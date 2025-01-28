@@ -121,6 +121,10 @@ namespace VoiceCraft.Core.Network
                     serverInfoPacket.Deserialize(reader);
                     OnServerInfoPacketReceive(serverInfoPacket, peer);
                     break;
+                case PacketType.Login:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
         
