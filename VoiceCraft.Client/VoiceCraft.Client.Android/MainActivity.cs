@@ -11,6 +11,7 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
+using Exception = System.Exception;
 
 namespace VoiceCraft.Client.Android
 {
@@ -42,24 +43,54 @@ namespace VoiceCraft.Client.Android
 
         protected override void OnCreate(Bundle? app)
         {
-            App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>(_ =>
+            try
             {
-                var audioService = new NativeAudioService((AudioManager?)GetSystemService(AudioService) ?? throw new Exception(
-                    $"Could not find {AudioService}. Cannot initialize audio service."));
-                if (AcousticEchoCanceler.IsAvailable)
-                    audioService.RegisterEchoCanceler<NativeEchoCanceler>(EchoCancelerGuid, "Native Echo Canceler");
-                if (NoiseSuppressor.IsAvailable)
-                    audioService.RegisterDenoiser<NativeDenoiser>(NativeDenoiserGuid, "Native Denoiser");
-                if (AutomaticGainControl.IsAvailable)
-                    audioService.RegisterAutomaticGainController<NativeAutomaticGainController>(NativeAutomaticGainControllerGuid,
-                        "Native Automatic Gain Controller");
-                return audioService;
-            });
-            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
-            App.ServiceCollection.AddTransient<Permissions.Microphone>();
-            
-            Platform.Init(this, app);
-            base.OnCreate(app);
+                App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>(_ =>
+                {
+                    var audioService = new NativeAudioService((AudioManager?)GetSystemService(AudioService) ?? throw new Exception(
+                        $"Could not find {AudioService}. Cannot initialize audio service."));
+                    if (AcousticEchoCanceler.IsAvailable)
+                        audioService.RegisterEchoCanceler<NativeEchoCanceler>(EchoCancelerGuid, "Native Echo Canceler");
+                    if (NoiseSuppressor.IsAvailable)
+                        audioService.RegisterDenoiser<NativeDenoiser>(NativeDenoiserGuid, "Native Denoiser");
+                    if (AutomaticGainControl.IsAvailable)
+                        audioService.RegisterAutomaticGainController<NativeAutomaticGainController>(NativeAutomaticGainControllerGuid,
+                            "Native Automatic Gain Controller");
+                    return audioService;
+                });
+                App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+                App.ServiceCollection.AddTransient<Permissions.Microphone>();
+
+                Platform.Init(this, app);
+                base.OnCreate(app);
+                
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    CrashLogService.Log(ex); //Log it
+                }
+                catch (Exception writeEx)
+                {
+                    System.Diagnostics.Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
+                }
+                throw; //rethrow so if logging fails, the system event handler should catch it.
+            }
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                if(e.ExceptionObject is Exception ex)
+                    CrashLogService.Log(ex); //Log it
+            }
+            catch (Exception writeEx)
+            {
+                System.Diagnostics.Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
+            }
         }
     }
 }

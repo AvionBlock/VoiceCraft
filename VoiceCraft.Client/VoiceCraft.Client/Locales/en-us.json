@@ -3,6 +3,7 @@
   "Home.Credits" : "Credits",
   "Home.Servers" : "Servers",
   "Home.Settings" : "Settings",
+  "Home.CrashLogs" : "Crash Logs",
   
   "AddServer.AddServer" : "Add Server",
   "AddServer.IP" : "IP",

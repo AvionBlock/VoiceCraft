@@ -167,11 +167,6 @@ namespace VoiceCraft.Client.ViewModels.Home
             }
         }
 
-        [RelayCommand]
-        private void Test()
-        {
-        }
-
         private void OnRecordingStopped(object? sender, StoppedEventArgs e)
         {
             if (e.Exception != null)

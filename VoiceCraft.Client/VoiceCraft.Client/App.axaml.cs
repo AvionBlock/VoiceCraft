@@ -138,6 +138,7 @@ public class App : Application
         ServiceCollection.AddSingleton<ServersViewModel>();
         ServiceCollection.AddSingleton<SettingsViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
+        ServiceCollection.AddSingleton<CrashLogViewModel>();
         
         //Add Available Permissions
         ServiceCollection.AddTransient<Permissions.PostNotifications>();

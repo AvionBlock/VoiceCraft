@@ -12,23 +12,22 @@ namespace VoiceCraft.Client.ViewModels
     public partial class HomeViewModel : ViewModelBase
     {
         [ObservableProperty] private string _title;
-        
-        [ObservableProperty]
-        private ViewModelBase _content;
 
-        [ObservableProperty]
-        private ObservableCollection<ListItemTemplate> _items = [];
+        [ObservableProperty] private ViewModelBase _content;
 
-        [ObservableProperty]
-        private ListItemTemplate? _selectedListItem;
+        [ObservableProperty] private ObservableCollection<ListItemTemplate> _items = [];
 
-        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer)
+        [ObservableProperty] private ListItemTemplate? _selectedListItem;
+
+        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer,
+            CrashLogViewModel crashLog)
         {
             Localizer.LanguageChanged += LanguageChanged;
             _items.Add(new ListItemTemplate("Home.Servers", servers, "HomeRegular"));
             _items.Add(new ListItemTemplate("Home.Settings", settings, "SettingsRegular"));
             _items.Add(new ListItemTemplate("Home.Credits", credits, "InformationRegular"));
             _items.Add(new ListItemTemplate("Home.AddServer", addServer, "AddRegular"));
+            _items.Add(new ListItemTemplate("Home.CrashLogs", crashLog, "NotebookErrorRegular"));
 
             SelectedListItem = _items[0];
             _content = _items[0].Content;
@@ -38,14 +37,14 @@ namespace VoiceCraft.Client.ViewModels
         partial void OnSelectedListItemChanged(ListItemTemplate? value)
         {
             if (value == null) return;
-            if(Content is { } viewModel)
+            if (Content is { } viewModel)
                 viewModel.OnDisappearing();
-            
+
             Content = value.Content;
             Title = Localizer.Get(value.Title);
             Content.OnAppearing();
         }
-        
+
         private void LanguageChanged(object? sender, EventArgs e)
         {
             Title = Localizer.Get(SelectedListItem?.Title ?? "N.A.");
