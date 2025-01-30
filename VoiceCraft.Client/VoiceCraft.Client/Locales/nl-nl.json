@@ -16,11 +16,11 @@
   "Credits.Version": "Versie",
 
   "Settings.General": "Algemene Instellingen",
-  "Settings.General.BackgroundImage": "Achtergrond afbeelding",
-  "Settings.General.DisableNotifications": "Notificaties uitschakelen",
-  "Settings.General.HideServerAddresses": "Verberg server adressen",
+  "Settings.General.BackgroundImage": "Achtergrondafbeelding",
+  "Settings.General.DisableNotifications": "Notificaties Uitschakelen",
+  "Settings.General.HideServerAddresses": "Serveradressen verbergen",
   "Settings.General.Language": "Taal",
-  "Settings.General.NotificationDismiss": "Melding afwijzen(ms)",
+  "Settings.General.NotificationDismiss": "Meldingen Afwijzen(ms)",
   "Settings.General.Theme": "Thema",
 
   "Settings.Audio": "Audio Instellingen",

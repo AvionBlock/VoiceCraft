@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.Windows
         {
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
-            App.ServiceCollection.AddTransient<Permissions.Microphone>();
+            App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Permissions.Microphone>();
 
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
