@@ -20,6 +20,8 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="NAudio.WinForms" />
+        <PackageReference Include="NAudio.WinMM" />
         <PackageReference Include="OpenTK.Audio.OpenAL" />
     </ItemGroup>
 

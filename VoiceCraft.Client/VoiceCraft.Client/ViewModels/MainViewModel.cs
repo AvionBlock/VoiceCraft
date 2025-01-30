@@ -3,6 +3,7 @@ using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels
@@ -15,7 +16,7 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private INotificationMessageManager _manager;
 
         public MainViewModel(NavigationService navigationService, INotificationMessageManager manager, ThemesService themesService,
-            SettingsService settingsService)
+            SettingsService settingsService, BackgroundService backgroundService)
         {
             _manager = manager;
             themesService.OnBackgroundImageChanged += (backgroundImage) => { BackgroundImage = backgroundImage?.BackgroundImageBitmap; };
@@ -43,6 +44,11 @@ namespace VoiceCraft.Client.ViewModels
 
             // change to HomeView 
             navigationService.NavigateTo<HomeViewModel>();
+
+            if (backgroundService.GetBackgroundProcess<VoipBackgroundProcess>() != null)
+            {
+                navigationService.NavigateTo<VoiceViewModel>();
+            }
         }
     }
 }

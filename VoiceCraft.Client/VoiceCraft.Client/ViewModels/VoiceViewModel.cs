@@ -1,17 +1,23 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using LiteNetLib;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.ViewModels
 {
-    public class VoiceViewModel : ViewModelBase, IDisposable
+    public partial class VoiceViewModel : ViewModelBase, IDisposable
     {
         private readonly NavigationService _navigationService;
         private readonly BackgroundService _backgroundService;
         private VoipBackgroundProcess? _process;
+
+        [ObservableProperty] private string _statusText = "My Ass is on fire.\nFIRED, YOU'RE NEXT!";
+        [ObservableProperty] private ObservableCollection<EntityViewModel> _entities = [new(), new(), new(), new(), new(), new()];
         
         public VoiceViewModel(NavigationService navigationService, BackgroundService backgroundService)
         {

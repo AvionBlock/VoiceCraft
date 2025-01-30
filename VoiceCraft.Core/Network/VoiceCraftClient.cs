@@ -82,6 +82,8 @@ namespace VoiceCraft.Core.Network
             
             if(_serverPeer != null)
                 _netManager.DisconnectPeer(_serverPeer);
+            
+            Update();
         }
         
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket

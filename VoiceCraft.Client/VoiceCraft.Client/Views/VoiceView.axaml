@@ -5,6 +5,102 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VoiceCraft.Client.Views.VoiceView"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
-             x:DataType="vm:SelectedServerViewModel">
-    Welcome to Avalonia!
+             xmlns:vmData="clr-namespace:VoiceCraft.Client.ViewModels.Data"
+             x:DataType="vm:VoiceViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0"
+                Margin="0,0,0,10"
+                Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{Binding StatusText}"
+                       TextAlignment="Center" />
+        </Border>
+        <ListBox Grid.Row="1" Background="Transparent"
+                 ItemsSource="{Binding Entities}"
+                 SelectionMode="Single">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vmData:EntityViewModel">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Text="{Binding DisplayName}" />
+
+                        <StackPanel Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="10">
+                            <TextBlock Text="Muted" />
+                            <TextBlock Text="Deafened" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="1" 
+                    VerticalAlignment="Bottom" 
+                    HorizontalAlignment="Center" 
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10"
+                    Spacing="10">
+            <ToggleButton CornerRadius="50"
+                          Width="50"
+                          Height="50">
+                <Panel>
+                    <PathIcon Classes="speakerOn" Data="{StaticResource SpeakerRegular}" />
+                    <PathIcon Classes="speakerOff" Data="{StaticResource SpeakerOffRegular}" />
+                </Panel>
+                <ToggleButton.Styles>
+                    <!-- Turns out, there is an order to styles... -->
+                    <Style Selector="ToggleButton PathIcon.speakerOn">
+                        <Setter Property="IsVisible" Value="True"/>
+                    </Style>
+                    <Style Selector="ToggleButton:checked PathIcon.speakerOn">
+                        <Setter Property="IsVisible" Value="False"/>
+                    </Style>
+                    <Style Selector="ToggleButton PathIcon.speakerOff">
+                        <Setter Property="IsVisible" Value="False"/>
+                    </Style>
+                    <Style Selector="ToggleButton:checked PathIcon.speakerOff">
+                        <Setter Property="IsVisible" Value="True"/>
+                    </Style>
+                </ToggleButton.Styles>
+            </ToggleButton>
+            <ToggleButton CornerRadius="50"
+                          Width="50"
+                          Height="50">
+                <Panel>
+                    <PathIcon Classes="micOn" Data="{StaticResource MicOnRegular}" />
+                    <PathIcon Classes="micOff" Data="{StaticResource MicOffRegular}" />
+                </Panel>
+                <ToggleButton.Styles>
+                    <!-- Turns out, there is an order to styles... -->
+                    <Style Selector="ToggleButton PathIcon.micOn">
+                        <Setter Property="IsVisible" Value="True"/>
+                    </Style>
+                    <Style Selector="ToggleButton:checked PathIcon.micOn">
+                        <Setter Property="IsVisible" Value="False"/>
+                    </Style>
+                    <Style Selector="ToggleButton PathIcon.micOff">
+                        <Setter Property="IsVisible" Value="False"/>
+                    </Style>
+                    <Style Selector="ToggleButton:checked PathIcon.micOff">
+                        <Setter Property="IsVisible" Value="True"/>
+                    </Style>
+                </ToggleButton.Styles>
+            </ToggleButton>
+            <Button Background="{DynamicResource ErrorBackgroundBrush}" 
+                          CornerRadius="50"
+                          Width="50"
+                          Height="50">
+                <PathIcon Data="{StaticResource CallEndRegular}" />
+            </Button>
+        </StackPanel>
+    </Grid>
 </UserControl>

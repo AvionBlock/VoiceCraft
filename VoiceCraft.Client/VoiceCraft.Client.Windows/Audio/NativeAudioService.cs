@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using NAudio.Wave;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Services;
@@ -16,24 +17,30 @@ public class NativeAudioService : AudioService
     {
         return new AudioPlayer();
     }
-
+    
     public override List<string> GetInputDevices()
     {
-        var list = new List<string>();
+        var devices = new List<string>();
+        for (var n = 0; n < WaveIn.DeviceCount; n++)
+        {
+            var caps = WaveIn.GetCapabilities(n);
+            if (!devices.Contains(caps.ProductName))
+                devices.Add(caps.ProductName);
+        }
 
-        var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.CaptureDeviceSpecifier);
-        list.AddRange(devices);
-        
-        return list;
+        return devices;
     }
 
     public override List<string> GetOutputDevices()
     {
-        var list = new List<string>();
-        
-        var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.AllDevicesSpecifier);
-        list.AddRange(devices);
-        
-        return list;
+        var devices = new List<string>();
+        for (var n = 0; n < WaveOut.DeviceCount; n++)
+        {
+            var caps = WaveOut.GetCapabilities(n);
+            if (!devices.Contains(caps.ProductName))
+                devices.Add(caps.ProductName);
+        }
+
+        return devices;
     }
 }
