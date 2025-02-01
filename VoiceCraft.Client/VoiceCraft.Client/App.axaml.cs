@@ -40,6 +40,7 @@ public class App : Application
     public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
     private static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
     private static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
+    public static readonly Guid DarkGreenThemeGuid = Guid.Parse("66BA4F00-C61C-4C04-A62B-CE4277679F14");
 
     public override void Initialize()
     {
@@ -139,7 +140,7 @@ public class App : Application
         ServiceCollection.AddSingleton<SettingsViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
         ServiceCollection.AddSingleton<CrashLogViewModel>();
-        
+
         //Add Available Permissions
         ServiceCollection.AddTransient<Permissions.PostNotifications>();
 
@@ -149,7 +150,7 @@ public class App : Application
     private static void SetupServices(IServiceProvider serviceProvider)
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
-        
+
         var audioService = serviceProvider.GetRequiredService<AudioService>();
         audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
         audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(SpeexDspAutomaticGainControllerGuid,
@@ -163,6 +164,8 @@ public class App : Application
             ThemeVariant.Light);
         themesService.RegisterTheme(DarkPurpleThemeGuid, "Dark Purple", [new Themes.DarkPurple.Styles()],
             [new Themes.DarkPurple.Colors(), new Themes.DarkPurple.Resources()], ThemeVariant.Dark);
+        themesService.RegisterTheme(DarkGreenThemeGuid, "Dark Green", [new Themes.DarkGreen.Styles()],
+            [new Themes.DarkGreen.Colors(), new Themes.DarkGreen.Resources()], ThemeVariant.Dark);
         themesService.RegisterBackgroundImage(DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
         themesService.RegisterBackgroundImage(LethalCraftGuid, "Lethal Craft", "avares://VoiceCraft.Client/Assets/lethalCraft.png");

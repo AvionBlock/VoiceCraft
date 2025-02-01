@@ -1,0 +1,28 @@
+<ResourceDictionary x:Class="VoiceCraft.Client.Themes.DarkGreen.Resources" xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <!--  Dark  -->
+        <ResourceDictionary x:Key="Dark">
+            <!--  Accent Brushes  -->
+            <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}" />
+            <SolidColorBrush x:Key="ErrorAccentBrush" Color="{DynamicResource ErrorAccentColor}" />
+            <SolidColorBrush x:Key="SuccessAccentBrush" Color="{DynamicResource SuccessAccentColor}" />
+
+            <!--  Notification Foreground Brushes  -->
+            <SolidColorBrush x:Key="NotificationAccentBrush" Color="{DynamicResource AccentColor}" />
+            <SolidColorBrush x:Key="NotificationAccentErrorBrush" Color="{DynamicResource ErrorAccentColor}" />
+            <SolidColorBrush x:Key="NotificationAccentSuccessBrush" Color="{DynamicResource SuccessAccentColor}" />
+
+            <!--  Background Brushes  -->
+            <SolidColorBrush x:Key="BackgroundBrush" Color="{DynamicResource BackgroundColor}" />
+            <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="{DynamicResource ErrorBackgroundColor}" />
+            <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="{DynamicResource SuccessBackgroundColor}" />
+            <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="{DynamicResource ApplicationBackgroundColor}" />
+
+            <!--  Notification Background Brushes  -->
+            <SolidColorBrush x:Key="NotificationBackgroundBrush" Color="{DynamicResource NotificationBackgroundColor}" />
+            <SolidColorBrush x:Key="NotificationBackgroundErrorBrush" Color="{DynamicResource ErrorBackgroundColor}" />
+            <SolidColorBrush x:Key="NotificationBackgroundSuccessBrush" Color="{DynamicResource SuccessBackgroundColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

@@ -75,11 +75,41 @@
         <DependentUpon>Styles.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
+        <DependentUpon>Colors.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
+        <DependentUpon>Colors.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
+        <DependentUpon>Resources.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
+        <DependentUpon>Resources.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
+        <DependentUpon>Styles.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
+        <DependentUpon>Styles.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Include="Locales\nl-nl.json" />
       <None Remove="Locales\Resources.json" />
       <EmbeddedResource Include="Locales\en-us.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Themes\DarkGreen\Colors.axaml" />
+      <AdditionalFiles Include="Themes\DarkGreen\Resources.axaml" />
+      <AdditionalFiles Include="Themes\DarkGreen\Styles.axaml" />
     </ItemGroup>
 </Project>
