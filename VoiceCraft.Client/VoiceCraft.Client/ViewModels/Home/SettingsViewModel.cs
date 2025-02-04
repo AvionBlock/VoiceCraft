@@ -144,6 +144,7 @@ namespace VoiceCraft.Client.ViewModels.Home
             {
                 if (_player != null)
                 {
+                    _player.Stop();
                     _player.Dispose();
                 }
                 else
