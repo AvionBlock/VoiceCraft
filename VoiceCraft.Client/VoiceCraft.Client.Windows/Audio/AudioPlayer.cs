@@ -102,6 +102,9 @@ namespace VoiceCraft.Client.Windows.Audio
         {
             if (!disposing || _disposed) return;
 
+            if (PlaybackState != PlaybackState.Stopped)
+                Stop();
+
             _nativePlayer.PlaybackStopped -= InvokePlaybackStopped;
             _nativePlayer.Dispose();
             _disposed = true;
