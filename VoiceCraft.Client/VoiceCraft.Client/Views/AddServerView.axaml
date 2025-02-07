@@ -1,16 +1,34 @@
-<UserControl x:Class="VoiceCraft.Client.Views.Home.AddServerView"
+<UserControl x:Class="VoiceCraft.Client.Views.AddServerView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:server="clr-namespace:VoiceCraft.Client.Models.Settings"
-             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
              xmlns:locale="using:Jeek.Avalonia.Localization"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:AddServerViewModel"
              mc:Ignorable="d">
-    <ScrollViewer>
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{locale:Localize AddServer.AddServer}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+            </Button>
+        </Grid>
+    <ScrollViewer Grid.Row="1" Margin="10,0,10,10">
         <Border Padding="15"
                 VerticalAlignment="Top"
                 Classes="card">
@@ -32,4 +50,5 @@
             </StackPanel>
         </Border>
     </ScrollViewer>
+        </Grid>
 </UserControl>

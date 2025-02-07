@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace VoiceCraft.Client.Views.Home;
+namespace VoiceCraft.Client.Views;
 
 public partial class AddServerView : UserControl
 {

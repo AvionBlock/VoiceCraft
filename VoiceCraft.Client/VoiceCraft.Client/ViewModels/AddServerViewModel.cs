@@ -4,15 +4,21 @@ using System;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Models.Settings;
 
-namespace VoiceCraft.Client.ViewModels.Home
+namespace VoiceCraft.Client.ViewModels
 {
-    public partial class AddServerViewModel(NotificationService notificationService, SettingsService settings) : ViewModelBase
+    public partial class AddServerViewModel(NotificationService notificationService, SettingsService settings, NavigationService navigationService) : ViewModelBase
     {
         [ObservableProperty]
         private ServersSettings _servers = settings.Get<ServersSettings>();
 
         [ObservableProperty]
         private Server _server = new();
+        
+        [RelayCommand]
+        private void Cancel()
+        {
+            navigationService.Back();
+        }
 
         [RelayCommand]
         private void AddServer()
@@ -24,6 +30,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                 notificationService.SendSuccessNotification($"{Server.Name} has been added.");
                 Server = new Server();
                 _ = settings.SaveAsync();
+                navigationService.Back();
             }
             catch (Exception ex)
             {

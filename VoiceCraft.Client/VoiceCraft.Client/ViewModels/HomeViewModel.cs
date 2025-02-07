@@ -19,14 +19,12 @@ namespace VoiceCraft.Client.ViewModels
 
         [ObservableProperty] private ListItemTemplate? _selectedListItem;
 
-        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, AddServerViewModel addServer,
-            CrashLogViewModel crashLog)
+        public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, CrashLogViewModel crashLog)
         {
             Localizer.LanguageChanged += LanguageChanged;
             _items.Add(new ListItemTemplate("Home.Servers", servers, "HomeRegular"));
             _items.Add(new ListItemTemplate("Home.Settings", settings, "SettingsRegular"));
             _items.Add(new ListItemTemplate("Home.Credits", credits, "InformationRegular"));
-            _items.Add(new ListItemTemplate("Home.AddServer", addServer, "AddRegular"));
             _items.Add(new ListItemTemplate("Home.CrashLogs", crashLog, "NotebookErrorRegular"));
 
             SelectedListItem = _items[0];

@@ -25,6 +25,12 @@ namespace VoiceCraft.Client.ViewModels.Home
         }
 
         [RelayCommand]
+        private void AddServer()
+        {
+            navigationService.NavigateTo<AddServerViewModel>();
+        }
+
+        [RelayCommand]
         private void DeleteServer(ServerViewModel server)
         {
             ServersSettings.ServersSettings.RemoveServer(server.Server);

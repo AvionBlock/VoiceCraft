@@ -99,6 +99,10 @@
         <DependentUpon>Styles.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\AddServerView.axaml.cs">
+        <DependentUpon>AddServerView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>
