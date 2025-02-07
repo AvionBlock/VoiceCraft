@@ -16,29 +16,14 @@ namespace VoiceCraft.Client.Linux
         [STAThread]
         public static void Main(string[] args)
         {
-            try
-            {
                 CrashLogService.Load();
+                AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
                 App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
                 App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
                 App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 
                 BuildAvaloniaApp()
                     .StartWithClassicDesktopLifetime(args);
-            }
-            catch (Exception ex)
-            {
-                try
-                {
-                    CrashLogService.Log(ex); //Log it
-                }
-                catch (Exception writeEx)
-                {
-                    Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
-                }
-
-                throw; //rethrow so if logging fails, the system event handler should catch it.
-            }
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -47,5 +32,18 @@ namespace VoiceCraft.Client.Linux
                 .UsePlatformDetect()
                 .WithInterFont()
                 .LogToTrace();
+        
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                if (e.ExceptionObject is Exception ex)
+                    CrashLogService.Log(ex); //Log it
+            }
+            catch (Exception writeEx)
+            {
+                Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
+            }
+        }
     }
 }
