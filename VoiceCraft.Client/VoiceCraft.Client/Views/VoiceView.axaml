@@ -35,46 +35,25 @@
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal"
                                     Spacing="10">
-                            <TextBlock Text="Muted" />
-                            <TextBlock Text="Deafened" />
+                            <PathIcon IsVisible="{Binding IsMuted}" Data="{StaticResource MicOffRegular}" />
+                            <PathIcon IsVisible="{Binding IsDeafened}" Data="{StaticResource SpeakerOffRegular}"></PathIcon>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <StackPanel Grid.Row="1" 
-                    VerticalAlignment="Bottom" 
-                    HorizontalAlignment="Center" 
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
                     Orientation="Horizontal"
                     Margin="0,0,0,10"
                     Spacing="10">
             <ToggleButton CornerRadius="50"
                           Width="50"
-                          Height="50">
-                <Panel>
-                    <PathIcon Classes="speakerOn" Data="{StaticResource SpeakerRegular}" />
-                    <PathIcon Classes="speakerOff" Data="{StaticResource SpeakerOffRegular}" />
-                </Panel>
-                <ToggleButton.Styles>
-                    <!-- Turns out, there is an order to styles... -->
-                    <Style Selector="ToggleButton PathIcon.speakerOn">
-                        <Setter Property="IsVisible" Value="True"/>
-                    </Style>
-                    <Style Selector="ToggleButton:checked PathIcon.speakerOn">
-                        <Setter Property="IsVisible" Value="False"/>
-                    </Style>
-                    <Style Selector="ToggleButton PathIcon.speakerOff">
-                        <Setter Property="IsVisible" Value="False"/>
-                    </Style>
-                    <Style Selector="ToggleButton:checked PathIcon.speakerOff">
-                        <Setter Property="IsVisible" Value="True"/>
-                    </Style>
-                </ToggleButton.Styles>
-            </ToggleButton>
-            <ToggleButton CornerRadius="50"
-                          Width="50"
-                          Height="50">
+                          Height="50"
+                          Command="{Binding ToggleMuteCommand}"
+                          IsChecked="{Binding IsMuted}">
                 <Panel>
                     <PathIcon Classes="micOn" Data="{StaticResource MicOnRegular}" />
                     <PathIcon Classes="micOff" Data="{StaticResource MicOffRegular}" />
@@ -82,23 +61,49 @@
                 <ToggleButton.Styles>
                     <!-- Turns out, there is an order to styles... -->
                     <Style Selector="ToggleButton PathIcon.micOn">
-                        <Setter Property="IsVisible" Value="True"/>
+                        <Setter Property="IsVisible" Value="True" />
                     </Style>
                     <Style Selector="ToggleButton:checked PathIcon.micOn">
-                        <Setter Property="IsVisible" Value="False"/>
+                        <Setter Property="IsVisible" Value="False" />
                     </Style>
                     <Style Selector="ToggleButton PathIcon.micOff">
-                        <Setter Property="IsVisible" Value="False"/>
+                        <Setter Property="IsVisible" Value="False" />
                     </Style>
                     <Style Selector="ToggleButton:checked PathIcon.micOff">
-                        <Setter Property="IsVisible" Value="True"/>
+                        <Setter Property="IsVisible" Value="True" />
                     </Style>
                 </ToggleButton.Styles>
             </ToggleButton>
-            <Button Background="{DynamicResource ErrorBackgroundBrush}" 
-                          CornerRadius="50"
+            <ToggleButton CornerRadius="50"
                           Width="50"
-                          Height="50">
+                          Height="50"
+                          Command="{Binding ToggleDeafenCommand}"
+                          IsChecked="{Binding IsDeafened}">
+                <Panel>
+                    <PathIcon Classes="speakerOn" Data="{StaticResource SpeakerRegular}" />
+                    <PathIcon Classes="speakerOff" Data="{StaticResource SpeakerOffRegular}" />
+                </Panel>
+                <ToggleButton.Styles>
+                    <!-- Turns out, there is an order to styles... -->
+                    <Style Selector="ToggleButton PathIcon.speakerOn">
+                        <Setter Property="IsVisible" Value="True" />
+                    </Style>
+                    <Style Selector="ToggleButton:checked PathIcon.speakerOn">
+                        <Setter Property="IsVisible" Value="False" />
+                    </Style>
+                    <Style Selector="ToggleButton PathIcon.speakerOff">
+                        <Setter Property="IsVisible" Value="False" />
+                    </Style>
+                    <Style Selector="ToggleButton:checked PathIcon.speakerOff">
+                        <Setter Property="IsVisible" Value="True" />
+                    </Style>
+                </ToggleButton.Styles>
+            </ToggleButton>
+            <Button Background="{DynamicResource ErrorBackgroundBrush}"
+                    CornerRadius="50"
+                    Width="50"
+                    Height="50"
+                    Command="{Binding DisconnectCommand}">
                 <PathIcon Data="{StaticResource CallEndRegular}" />
             </Button>
         </StackPanel>

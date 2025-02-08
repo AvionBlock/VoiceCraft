@@ -48,5 +48,11 @@ namespace VoiceCraft.Client.Services
                 //Do Nothing.
             }
         }
+
+        public static void Clear()
+        {
+            _crashLogs.Clear();
+            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs, SerializerOptions));
+        }
     }
 }

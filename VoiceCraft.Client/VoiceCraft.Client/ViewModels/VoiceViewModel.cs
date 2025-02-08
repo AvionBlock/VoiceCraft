@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LiteNetLib;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
@@ -10,59 +10,84 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.ViewModels
 {
-    public partial class VoiceViewModel : ViewModelBase, IDisposable
+    public partial class VoiceViewModel(NavigationService navigationService, BackgroundService backgroundService) : ViewModelBase, IDisposable
     {
-        private readonly NavigationService _navigationService;
-        private readonly BackgroundService _backgroundService;
-        private VoipBackgroundProcess? _process;
+        private readonly VoipBackgroundProcess? _process = backgroundService.GetBackgroundProcess<VoipBackgroundProcess>();
 
-        [ObservableProperty] private string _statusText = "My Ass is on fire.\nFIRED, YOU'RE NEXT!";
-        [ObservableProperty] private ObservableCollection<EntityViewModel> _entities = [new(), new(), new(), new(), new(), new()];
-        
-        public VoiceViewModel(NavigationService navigationService, BackgroundService backgroundService)
+        [ObservableProperty] private string _statusText = string.Empty;
+        [ObservableProperty] private bool _isMuted;
+        [ObservableProperty] private bool _isDeafened;
+        [ObservableProperty] private ObservableCollection<EntityViewModel> _entities = [new() { IsMuted = true}, new() { IsDeafened = true}, new() { IsDeafened = true, IsMuted = true}, new(), new(), new()];
+
+        [RelayCommand]
+        private void ToggleMute()
         {
-            _navigationService = navigationService;
-            _backgroundService = backgroundService;
+            _process?.ToggleMute();
+        }
+
+        [RelayCommand]
+        private void ToggleDeafen()
+        {
+            _process?.ToggleDeafen();
         }
         
+        [RelayCommand]
+        private void Disconnect()
+        {
+            _process?.Disconnect();
+        }
+
         public override void OnAppearing()
         {
-            _process = _backgroundService.GetBackgroundProcess<VoipBackgroundProcess>();
             if (_process == null)
             {
-                _navigationService.Back();
+                navigationService.Back();
                 return;
             }
-
             if (_process.ConnectionStatus == ConnectionStatus.Disconnected)
             {
-                _navigationService.Back();
+                navigationService.Back();
                 return;
             }
             
-            _process.OnConnected += OnConnected;
+            StatusText = _process.Description;
+            IsMuted = _process.Muted;
+            IsDeafened = _process.Deafened;
             _process.OnDisconnected += OnDisconnected;
+            _process.OnUpdateDescription += OnUpdateDescription;
+            _process.OnUpdateMute += OnUpdateMute;
+            _process.OnUpdateDeafen += OnUpdateDeafen;
         }
 
         public void Dispose()
         {
             if (_process != null)
             {
-                _process.OnConnected -= OnConnected;
                 _process.OnDisconnected -= OnDisconnected;
+                _process.OnUpdateDescription -= OnUpdateDescription;
             }
 
             GC.SuppressFinalize(this);
         }
 
-        private void OnConnected()
+        private void OnUpdateDescription(string description)
         {
-            Debug.WriteLine("Connected!");
+            StatusText = description;
         }
-
+        
         private void OnDisconnected(DisconnectInfo obj)
         {
-            _navigationService.Back();
+            navigationService.Back();
+        }
+        
+        private void OnUpdateMute(bool muted)
+        {
+            IsMuted = muted;
+        }
+        
+        private void OnUpdateDeafen(bool deafened)
+        {
+            IsDeafened = deafened;
         }
     }
 }

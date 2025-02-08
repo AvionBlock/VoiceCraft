@@ -6,10 +6,9 @@
              x:Class="VoiceCraft.Client.Views.Home.CrashLogView"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
              x:DataType="vm:CrashLogViewModel">
-    <ScrollViewer>
-    <ListBox Background="Transparent"
-             IsHitTestVisible="False"
-             ItemsSource="{Binding CrashLogs}">
+    <Panel>
+        <ListBox Background="Transparent"
+                 ItemsSource="{Binding CrashLogs}">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="CornerRadius" Value="5" />
@@ -24,16 +23,25 @@
                                    FontSize="16"
                                    FontWeight="Bold"
                                    Text="{Binding Key}"
-                                   Margin="0,0,0,10"/>
-                        
+                                   Margin="0,0,0,10" />
+
                         <TextBlock Grid.Row="1"
-                            HorizontalAlignment="Left"
+                                   HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="13"
                                    Text="{Binding Value}" />
-                        </Grid>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-    </ScrollViewer>
+        <Button Width="50"
+                Height="50"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="15"
+                CornerRadius="50"
+                Command="{Binding ClearLogsCommand}">
+            <PathIcon Data="{StaticResource DeleteRegular}" />
+        </Button>
+    </Panel>
 </UserControl>

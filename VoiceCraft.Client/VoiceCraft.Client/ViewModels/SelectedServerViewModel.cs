@@ -21,6 +21,7 @@ namespace VoiceCraft.Client.ViewModels
         private readonly VoiceCraftClient _voiceCraftClient;
         private readonly BackgroundService _backgroundService;
         private readonly NotificationService _notificationService;
+        private readonly AudioService _audioService;
         private CancellationTokenSource? _clientPingCancellation;
 
         [ObservableProperty] private ServersSettingsViewModel _serversSettings;
@@ -32,12 +33,13 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private int _latency;
 
         public SelectedServerViewModel(NavigationService navigationService, SettingsService settingsService, BackgroundService backgroundService,
-            NotificationService notificationService)
+            NotificationService notificationService, AudioService audioService)
         {
             _navigationService = navigationService;
             _settingsService = settingsService;
             _backgroundService = backgroundService;
             _notificationService = notificationService;
+            _audioService = audioService;
             _serversSettings = new ServersSettingsViewModel(_settingsService.Get<ServersSettings>(), _settingsService);
             _voiceCraftClient = new VoiceCraftClient();
 
@@ -61,6 +63,8 @@ namespace VoiceCraft.Client.ViewModels
         public override void OnDisappearing()
         {
             if (_clientPingCancellation == null) return;
+            if (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
+                _voiceCraftClient.Disconnect();
             _clientPingCancellation.Cancel();
             _clientPingCancellation.Dispose();
             _clientPingCancellation = null;
@@ -81,15 +85,13 @@ namespace VoiceCraft.Client.ViewModels
         private void Cancel()
         {
             _navigationService.Back();
-            if (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
-                _voiceCraftClient.Disconnect();
         }
 
         [RelayCommand]
         private void Connect()
         {
             if (SelectedServer == null) return;
-            _backgroundService.StartBackgroundProcess(new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, _notificationService))
+            _backgroundService.StartBackgroundProcess(new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, _notificationService, _audioService))
                 .ContinueWith(success =>
                 {
                     if (success.Result == false)
