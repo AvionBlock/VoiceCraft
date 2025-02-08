@@ -12,6 +12,7 @@ namespace VoiceCraft.Client.ViewModels
 {
     public partial class VoiceViewModel(NavigationService navigationService, BackgroundService backgroundService) : ViewModelBase, IDisposable
     {
+        public override bool DisableBackButton { get; set; } = true;
         private readonly VoipBackgroundProcess? _process = backgroundService.GetBackgroundProcess<VoipBackgroundProcess>();
 
         [ObservableProperty] private string _statusText = string.Empty;

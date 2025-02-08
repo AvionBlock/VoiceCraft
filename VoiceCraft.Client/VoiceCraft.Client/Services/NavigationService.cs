@@ -54,7 +54,7 @@ namespace VoiceCraft.Client.Services
         public ViewModelBase? Go(int offset = 0, bool checkBackButton = false)
         {
             if (checkBackButton && _currentViewModel.DisableBackButton)
-                return null;
+                return _currentViewModel;
             
             if (offset == 0)
                 return null;
