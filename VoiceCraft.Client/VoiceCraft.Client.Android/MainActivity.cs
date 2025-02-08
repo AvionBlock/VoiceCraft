@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Android.Media;
 using Android.Media.Audiofx;
 using Android.OS;
+using AndroidX.Activity;
 using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +64,7 @@ namespace VoiceCraft.Client.Android
 
             Platform.Init(this, app);
             base.OnCreate(app);
+            OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -77,5 +79,23 @@ namespace VoiceCraft.Client.Android
                 System.Diagnostics.Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
             }
         }
+
+        private static bool BackButtonBehavior()
+        {
+            if (App.ServiceProvider == null) return false;
+            var navigationService = App.ServiceProvider.GetService<NavigationService>();
+            return navigationService?.Back(true) != null;
+        }
+
+        private class BackPressedCallback(MainActivity activity, bool enabled = true) : OnBackPressedCallback(enabled)
+        {
+            public override void HandleOnBackPressed()
+            {
+                if (BackButtonBehavior()) return;
+                activity.FinishAndRemoveTask();
+                Process.KillProcess(Process.MyPid());
+            }
+        }
+
     }
 }

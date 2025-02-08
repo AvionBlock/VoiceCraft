@@ -51,18 +51,17 @@ namespace VoiceCraft.Client.Services
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
-        public ViewModelBase? Go(int offset = 0)
+        public ViewModelBase? Go(int offset = 0, bool checkBackButton = false)
         {
+            if (checkBackButton && _currentViewModel.DisableBackButton)
+                return null;
+            
             if (offset == 0)
-            {
-                return default;
-            }
+                return null;
 
             var newIndex = _historyIndex + offset;
             if (newIndex < 0 || newIndex > _history.Count - 1)
-            {
-                return default;
-            }
+                return null;
 
             _historyIndex = newIndex;
             var viewModel = _history.ElementAt(_historyIndex);
@@ -70,9 +69,9 @@ namespace VoiceCraft.Client.Services
             return viewModel;
         }
 
-        public ViewModelBase? Back() => HasPrev ? Go(-1) : default;
+        public ViewModelBase? Back(bool checkBackButton = false) => HasPrev ? Go(-1, checkBackButton) : null;
 
-        public ViewModelBase? Forward() => HasNext ? Go(1) : default;
+        public ViewModelBase? Forward() => HasNext ? Go(1) : null;
 
         public T NavigateTo<T>() where T : ViewModelBase
         {

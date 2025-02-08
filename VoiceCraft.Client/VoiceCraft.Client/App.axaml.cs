@@ -23,6 +23,7 @@ namespace VoiceCraft.Client;
 public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
+    public static IServiceProvider? ServiceProvider { get; private set; }
 
     //Speex DSP
     private static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
@@ -40,7 +41,7 @@ public class App : Application
     public static readonly Guid DarkThemeGuid = Guid.Parse("cf8e39fe-21cc-4210-91e6-d206e22ca52e");
     private static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
     private static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
-    public static readonly Guid DarkGreenThemeGuid = Guid.Parse("66BA4F00-C61C-4C04-A62B-CE4277679F14");
+    private static readonly Guid DarkGreenThemeGuid = Guid.Parse("66BA4F00-C61C-4C04-A62B-CE4277679F14");
 
     public override void Initialize()
     {
@@ -74,6 +75,8 @@ public class App : Application
                     };
                     break;
             }
+            
+            ServiceProvider = serviceProvider;
         }
         catch (Exception ex)
         {
