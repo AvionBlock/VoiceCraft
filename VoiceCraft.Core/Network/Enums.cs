@@ -24,6 +24,7 @@ namespace VoiceCraft.Core.Data
     {
         Login,
         ServerInfo,
-        Audio
+        EntityCreated,
+        EntityAudio,
     }
 }

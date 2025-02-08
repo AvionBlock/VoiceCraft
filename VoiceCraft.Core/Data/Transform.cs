@@ -4,7 +4,7 @@ namespace VoiceCraft.Core.Data
 {
     public class Transform
     {
-        public Vector3 Position { get; set; }
-        public Quaternion Rotation { get; set; }
+        public Vector3 Position = Vector3.Zero;
+        public Quaternion Rotation = Quaternion.Identity;
     }
 }

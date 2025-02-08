@@ -115,6 +115,22 @@ namespace VoiceCraft.Core.Network
             return status;
         }
 
+        public void AddEntity(VoiceCraftEntity entity)
+        {
+            var networkEntities = Entities.Where(x => x is NetworkEntity).Cast<NetworkEntity>().Select(x => x.Peer).ToArray();
+            
+            foreach (var networkEntity in networkEntities)
+            {
+                var packet = new EntityCreatedPacket(); //Finish this
+                SendPacket(networkEntity, packet);
+            }
+            
+            Entities.Add(entity);
+            var entityCreatedPacket = new EntityCreatedPacket(); //Finish this.
+            SendPacket(networkEntities, entityCreatedPacket);
+            OnEntityCreated?.Invoke(entity);
+        }
+
         //Events
         private void OnConnectionRequestEvent(ConnectionRequest request)
         {
@@ -160,10 +176,11 @@ namespace VoiceCraft.Core.Network
             var pt = (PacketType)packetType;
             switch (pt)
             {
-                case PacketType.Audio:
+                case PacketType.EntityAudio:
                     //Unused Packet Types.
                 case PacketType.Login:
                 case PacketType.ServerInfo:
+                case PacketType.EntityCreated:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -189,9 +206,7 @@ namespace VoiceCraft.Core.Network
                 case LoginType.Login:
                     var loginPeer = request.Accept();
                     loginPeer.Tag = loginPacket.LoginType;
-                    var networkEntity = new NetworkEntity();
-                    Entities.Add(networkEntity);
-                    OnEntityCreated?.Invoke(networkEntity);
+                    AddEntity(new NetworkEntity(loginPeer));
                     break;
                 case LoginType.Discovery:
                     var discoveryPeer = request.Accept();
@@ -203,7 +218,7 @@ namespace VoiceCraft.Core.Network
             }
         }
 
-        private void OnAudioPacketReceived(NetPeer netPeer, AudioPacket audioPacket)
+        private void OnAudioPacketReceived(NetPeer peer, EntityAudioPacket entityAudioPacket)
         {
             
         }
