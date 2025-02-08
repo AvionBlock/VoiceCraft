@@ -11,8 +11,4 @@
       <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Components\" />
-    </ItemGroup>
-
 </Project>

@@ -8,6 +8,7 @@ using NAudio.Wave;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
+using VoiceCraft.Core.Data;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.Processes

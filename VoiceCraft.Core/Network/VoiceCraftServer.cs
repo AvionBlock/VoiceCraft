@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Data;
+using VoiceCraft.Core.Data.Packets;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Core.Network
@@ -18,14 +21,18 @@ namespace VoiceCraft.Core.Network
         public event Action? OnStopped;
         public event Action<NetPeer>? OnClientConnected;
         public event Action<NetPeer, DisconnectInfo>? OnClientDisconnected;
+        public event Action<VoiceCraftEntity>? OnEntityCreated;
 
+        //Server Properties
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public bool DiscoveryEnabled { get; set; }
         public PositioningType PositioningType { get; set; }
+        
+        //Public Properties
+        public List<VoiceCraftEntity> Entities { get; set; } = new List<VoiceCraftEntity>();
 
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
-        private readonly NetPacketProcessor _packetProcessor;
         private readonly CancellationTokenSource _cts;
         private readonly NetDataWriter _dataWriter;
         private bool _isDisposed;
@@ -34,7 +41,6 @@ namespace VoiceCraft.Core.Network
         public VoiceCraftServer()
         {
             _dataWriter = new NetDataWriter();
-            _packetProcessor = new NetPacketProcessor();
             _cts = new CancellationTokenSource();
             _listener = new EventBasedNetListener();
             _netManager = new NetManager(_listener)
@@ -122,25 +128,7 @@ namespace VoiceCraft.Core.Network
             {
                 var loginPacket = new LoginPacket();
                 loginPacket.Deserialize(request.Data);
-
-                if (Version.Parse(loginPacket.Version).Major != Version.Major)
-                {
-                    request.Reject();
-                    return;
-                }
-                
-                switch (loginPacket.LoginType)
-                {
-                    case LoginType.Pinger:
-                    case LoginType.Login:
-                    case LoginType.Discovery:
-                        var peer = request.Accept();
-                        peer.Tag = loginPacket.LoginType;
-                        break;
-                    default:
-                        request.Reject();
-                        break;
-                }
+                OnLoginPacketReceived(loginPacket, request);
             }
             catch
             {
@@ -151,16 +139,14 @@ namespace VoiceCraft.Core.Network
         private void ListenerOnPeerConnectedEvent(NetPeer peer)
         {
             OnClientConnected?.Invoke(peer);
-            if ((LoginType?)peer.Tag == LoginType.Pinger)
+            if ((LoginType?)peer.Tag != LoginType.Pinger) return;
+            var serverInfoPacket = new ServerInfoPacket()
             {
-                var serverInfoPacket = new ServerInfoPacket()
-                {
-                    Motd = Motd,
-                    Discovery = DiscoveryEnabled,
-                    PositioningType = PositioningType,
-                };
-                SendPacket(peer, serverInfoPacket);
-            }
+                Motd = Motd,
+                Discovery = DiscoveryEnabled,
+                PositioningType = PositioningType,
+            };
+            SendPacket(peer, serverInfoPacket);
         }
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
@@ -170,11 +156,57 @@ namespace VoiceCraft.Core.Network
 
         private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
         {
-            _packetProcessor.ReadAllPackets(reader, peer);
+            var packetType = reader.GetByte();
+            var pt = (PacketType)packetType;
+            switch (pt)
+            {
+                case PacketType.Audio:
+                    //Unused Packet Types.
+                case PacketType.Login:
+                case PacketType.ServerInfo:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             reader.Recycle();
         }
-
+        
         //Packet Events
+        private void OnLoginPacketReceived(LoginPacket loginPacket, ConnectionRequest request)
+        {
+            if (Version.Parse(loginPacket.Version).Major != Version.Major)
+            {
+                request.Reject();
+                return;
+            }
+                
+            switch (loginPacket.LoginType)
+            {
+                case LoginType.Pinger:
+                    var pingerPeer = request.Accept();
+                    pingerPeer.Tag = loginPacket.LoginType;
+                    break;
+                case LoginType.Login:
+                    var loginPeer = request.Accept();
+                    loginPeer.Tag = loginPacket.LoginType;
+                    var networkEntity = new NetworkEntity();
+                    Entities.Add(networkEntity);
+                    OnEntityCreated?.Invoke(networkEntity);
+                    break;
+                case LoginType.Discovery:
+                    var discoveryPeer = request.Accept();
+                    discoveryPeer.Tag = loginPacket.LoginType;
+                    break;
+                default:
+                    request.Reject();
+                    break;
+            }
+        }
+
+        private void OnAudioPacketReceived(NetPeer netPeer, AudioPacket audioPacket)
+        {
+            
+        }
 
         //Dispose
         private void Dispose(bool disposing)

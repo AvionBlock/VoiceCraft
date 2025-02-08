@@ -1,7 +1,8 @@
 using System;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.Data;
+using VoiceCraft.Core.Data.Packets;
 
 namespace VoiceCraft.Core.Network
 {
@@ -128,6 +129,7 @@ namespace VoiceCraft.Core.Network
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            reader.Recycle();
         }
         
         private void OnNetworkLatencyUpdateEvent(NetPeer peer, int latency)

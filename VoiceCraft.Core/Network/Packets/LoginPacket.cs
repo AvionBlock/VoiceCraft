@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.Packets
+namespace VoiceCraft.Core.Data.Packets
 {
     public class LoginPacket : VoiceCraftPacket
     {

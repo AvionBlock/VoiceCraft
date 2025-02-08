@@ -1,4 +1,4 @@
-namespace VoiceCraft.Core.Network
+namespace VoiceCraft.Core.Data
 {
     public enum PositioningType : byte
     {
@@ -23,6 +23,7 @@ namespace VoiceCraft.Core.Network
     public enum PacketType : byte
     {
         Login,
-        ServerInfo
+        ServerInfo,
+        Audio
     }
 }
