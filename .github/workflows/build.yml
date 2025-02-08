@@ -18,3 +18,10 @@ jobs:
         run: dotnet workload restore ./VoiceCraft.Client/VoiceCraft.Client.Windows/VoiceCraft.Client.Windows.csproj
       - name: Build VoiceCraft.Client.Windows
         run: dotnet build ./VoiceCraft.Client/VoiceCraft.Client.Windows/VoiceCraft.Client.Windows.csproj
+      - name: Zip VoiceCraft.Client.Windows
+        run: tar.exe -a -c -f VoiceCraft.Client.Windows.zip ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceCraft.Client.Windows.zip
+          path: ./VoiceCraft.Client.Windows.zip
