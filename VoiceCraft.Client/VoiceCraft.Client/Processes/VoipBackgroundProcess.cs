@@ -8,8 +8,8 @@ using NAudio.Wave;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
-using VoiceCraft.Core.Data;
 using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes
 {
@@ -19,7 +19,6 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
-        private static readonly WaveFormat WaveFormat = new(48000, 1);
         
         //Events
         public event Action<string>? OnUpdateTitle;
@@ -100,7 +99,7 @@ namespace VoiceCraft.Client.Processes
             Description = "Status: Initializing...";
 
             _audioRecorder = _audioService.CreateAudioRecorder();
-            _audioRecorder.WaveFormat = WaveFormat;
+            _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
             _audioRecorder.StartRecording();
             
             Title = "VoiceCraft Client is running";

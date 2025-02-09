@@ -9,9 +9,8 @@ using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
-using VoiceCraft.Core.Data;
-using VoiceCraft.Core.Data.Packets;
 using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.ViewModels
 {

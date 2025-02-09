@@ -6,7 +6,7 @@ using LiteNetLib;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.Data;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.ViewModels
 {

@@ -5,7 +5,6 @@ using System.Threading;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Data;
-using VoiceCraft.Core.Data.Packets;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Core.Network

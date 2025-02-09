@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Data.Packets
+namespace VoiceCraft.Core.Network.Packets
 {
     public abstract class VoiceCraftPacket : INetSerializable
     {
