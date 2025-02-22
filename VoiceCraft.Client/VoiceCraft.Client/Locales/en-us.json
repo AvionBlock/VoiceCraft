@@ -47,5 +47,11 @@
   "Android.NativeAGC.Exception.AndroidRecorder" : "Recorder must be an android native audio recorder!",
   "Android.NativeAGC.Exception.Init" : "Native denoiser must be intialized with a recorder!",
   "Android.NativeDN.Exception.AndroidRecorder" : "Recorder must be an android native audio recorder!",
-  "Android.NativeDN.Exception.Init" : "Native denoiser must be intialized with a recorder!"
+  "Android.NativeDN.Exception.Init" : "Native denoiser must be intialized with a recorder!",
+  
+  "VoiceCraft.Status.Title" : "VoiceCraft Client Is Running",
+  "VoiceCraft.Status.Initializing" : "Initializing...",
+  "VoiceCraft.Status.Connecting" : "Connecting...",
+  "VoiceCraft.Status.Connected" : "Connected! More shit here later.",
+  "VoiceCraft.Status.Disconnected" : "Disconnected! Reason:"
 }

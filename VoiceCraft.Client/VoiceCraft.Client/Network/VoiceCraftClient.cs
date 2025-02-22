@@ -229,6 +229,7 @@ namespace VoiceCraft.Client.Network
             {
                 _netManager.Stop();
                 _encoder.Dispose();
+                _world.Dispose();
                 _queuedAudio.ClearBuffer();
             }
 
