@@ -6,14 +6,11 @@
         <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
         <TargetPlatformVersion>35</TargetPlatformVersion>
         <Nullable>enable</Nullable>
-        <ApplicationId>com.CompanyName.VoiceCraft.Client</ApplicationId>
+        <ApplicationId>com.AvionBlock.VoiceCraft.Client</ApplicationId>
         <ApplicationVersion>1</ApplicationVersion>
-        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-        <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>VoiceCraft.snk</AssemblyOriginatorKeyFile>
-        <PublicSign>true</PublicSign>
     </PropertyGroup>
 
     <ItemGroup>
