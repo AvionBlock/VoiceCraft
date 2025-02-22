@@ -1,13 +1,15 @@
+using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Reflection;
 using OpusSharp.Core;
+using VoiceCraft.Client.Network;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {
     public partial class CreditsViewModel : ViewModelBase
     {
         [ObservableProperty]
-        private string _voicecraftVersion = "N.A.";
+        private Version _voicecraftVersion = VoiceCraftClient.Version;
 
         [ObservableProperty]
         private string _appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.";

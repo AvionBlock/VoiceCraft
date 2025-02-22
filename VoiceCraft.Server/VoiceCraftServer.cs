@@ -10,7 +10,7 @@ namespace VoiceCraft.Server
         // ReSharper disable once InconsistentNaming
         private const int PINGER_BROADCAST_INTERVAL_MS = 5000;
 
-        public static readonly Version Version = new Version(1, 1, 0);
+        public static readonly Version Version = new(1, 1, 0);
 
         public event Action? OnStarted;
         public event Action? OnStopped;
@@ -23,12 +23,13 @@ namespace VoiceCraft.Server
         public PositioningType PositioningType { get; set; }
         
         //Public Properties
-        public Dictionary<VoiceCraftClient, Entity> NetworkEntities { get; set; } = new Dictionary<VoiceCraftClient, Entity>();
+        public Dictionary<VoiceCraftClient, Entity> NetworkEntities { get; set; } = new();
 
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly CancellationTokenSource _cts;
         private readonly NetDataWriter _dataWriter;
+        private readonly World _world;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -41,19 +42,22 @@ namespace VoiceCraft.Server
             {
                 AutoRecycle = true
             };
+            _world = World.Create();
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
             _listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
             _listener.NetworkReceiveEvent += ListenerOnNetworkReceiveEvent;
+            _world.SubscribeEntityCreated(OnEntityCreated);
+            _world.SubscribeEntityDestroyed(OnEntityDestroyed);
         }
 
         ~VoiceCraftServer()
         {
             Dispose(false);
         }
-
-        //Public Methods
+        
+        #region Public Methods
         public void Start(int port)
         {
             if (_netManager.IsRunning) return;
@@ -86,8 +90,11 @@ namespace VoiceCraft.Server
             _netManager.Stop();
             OnStopped?.Invoke();
         }
-
-        public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        
+        #endregion
+        
+        #region Private Methods
+        private bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
 
@@ -98,7 +105,7 @@ namespace VoiceCraft.Server
             return true;
         }
 
-        public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        private bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             var status = true;
             foreach (var peer in peers)
@@ -108,8 +115,9 @@ namespace VoiceCraft.Server
 
             return status;
         }
+        #endregion
 
-        //Events
+        #region Network Events
         private void OnConnectionRequestEvent(ConnectionRequest request)
         {
             if (request.Data.IsNull)
@@ -159,7 +167,7 @@ namespace VoiceCraft.Server
                 case PacketType.Login:
                 case PacketType.ServerInfo:
                 case PacketType.EntityCreated:
-                case PacketType.EntityRemoved:
+                case PacketType.EntityDestroyed:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -167,7 +175,31 @@ namespace VoiceCraft.Server
             reader.Recycle();
         }
         
-        //Packet Events
+        #endregion
+        
+        #region World Events
+        private void OnEntityCreated(in Entity entity)
+        {
+            var packet = new EntityCreatedPacket { Id = entity.Id, WorldId = entity.WorldId };
+            foreach (var client in NetworkEntities)
+            {
+                if(client.Value == entity) continue;
+                SendPacket(client.Key.Peer, packet);
+            }
+        }
+
+        private void OnEntityDestroyed(in Entity entity)
+        {
+            var packet = new EntityDestroyedPacket { Id = entity.Id, WorldId = entity.WorldId };
+            foreach (var client in NetworkEntities)
+            {
+                if(client.Value == entity) continue;
+                SendPacket(client.Key.Peer, packet);
+            }
+        }
+        #endregion
+        
+        #region Packet Events
         private void OnLoginPacketReceived(LoginPacket loginPacket, ConnectionRequest request)
         {
             if (Version.Parse(loginPacket.Version).Major != Version.Major)
@@ -178,25 +210,23 @@ namespace VoiceCraft.Server
             
             switch (loginPacket.LoginType)
             {
-                case LoginType.Pinger:
-                    var pingerPeer = request.Accept();
-                    pingerPeer.Tag = loginPacket.LoginType;
-                    break;
                 case LoginType.Login:
                     var loginPeer = request.Accept();
                     loginPeer.Tag = loginPacket.LoginType;
                     break;
+                case LoginType.Pinger:
                 case LoginType.Discovery:
-                    var discoveryPeer = request.Accept();
-                    discoveryPeer.Tag = loginPacket.LoginType;
+                    var peer = request.Accept();
+                    peer.Tag = loginPacket.LoginType;
                     break;
                 default:
                     request.Reject();
                     break;
             }
         }
-
-        //Dispose
+        #endregion
+        
+        #region Dispose
         private void Dispose(bool disposing)
         {
             if (_isDisposed) return;
@@ -215,5 +245,6 @@ namespace VoiceCraft.Server
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        #endregion
     }
 }

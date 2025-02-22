@@ -2,9 +2,9 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class EntityCreatedPacket : VoiceCraftPacket
+    public class EntityDestroyedPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.EntityCreated;
+        public override PacketType PacketType => PacketType.EntityDestroyed;
         public int Id { get; set; }
         public int WorldId { get; set; }
         

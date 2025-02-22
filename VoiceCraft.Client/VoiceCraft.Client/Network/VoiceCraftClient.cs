@@ -1,23 +1,22 @@
 using System;
+using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network
 {
     public class VoiceCraftClient : IDisposable
     {
-        public const int FrameSizeMs = 20;
-        public static readonly Version Version = new Version(1, 1, 0);
-        public static readonly WaveFormat WaveFormat = new WaveFormat(48000, 1);
-        public static readonly uint SamplesPerFrame = (uint)(WaveFormat.SampleRate / (1000 / FrameSizeMs) * WaveFormat.Channels);
-        public static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(FrameSizeMs);
+        public static readonly Version Version = new(1, 1, 0);
+        public static readonly WaveFormat WaveFormat = new WaveFormat(AudioConstants.SampleRate, AudioConstants.Channels);
+        private static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
 
         public int Ping { get; private set; }
         public ConnectionStatus ConnectionStatus { get; private set; }
-        public Guid PublicId { get; private set; }
 
         //Network Events
         public event Action? OnConnected;
@@ -34,6 +33,8 @@ namespace VoiceCraft.Client.Network
         private readonly BufferedWaveProvider _queuedAudio;
         private readonly byte[] _extractedAudioBuffer;
         private readonly byte[] _encodedAudioBuffer;
+        private readonly Entity _localEntity;
+        private readonly World _world;
         private NetPeer? _serverPeer;
         private bool _isDisposed;
         private uint _currentTimestamp;
@@ -51,6 +52,8 @@ namespace VoiceCraft.Client.Network
             _queuedAudio = new BufferedWaveProvider(WaveFormat) { ReadFully = false, BufferDuration = TimeSpan.FromSeconds(2) }; //2 seconds.
             _extractedAudioBuffer = new byte[BytesPerFrame];
             _encodedAudioBuffer = new byte[1000];
+            _world = World.Create();
+            _localEntity = _world.Create();
 
             _listener.PeerConnectedEvent += OnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
@@ -92,12 +95,12 @@ namespace VoiceCraft.Client.Network
             Array.Clear(_extractedAudioBuffer, 0, _extractedAudioBuffer.Length);
             Array.Clear(_encodedAudioBuffer, 0, _encodedAudioBuffer.Length);
             _queuedAudio.Read(_extractedAudioBuffer, 0, _extractedAudioBuffer.Length);
-            _currentTimestamp += SamplesPerFrame;
+            _currentTimestamp += AudioConstants.SamplesPerFrame;
             //Turns out RTPIncrement is samples per frame. IDK how this shit works...
-            var encodedBytes = _encoder.Encode(_extractedAudioBuffer, (int)SamplesPerFrame, _encodedAudioBuffer, _encodedAudioBuffer.Length);
+            var encodedBytes = _encoder.Encode(_extractedAudioBuffer, AudioConstants.SamplesPerFrame, _encodedAudioBuffer, _encodedAudioBuffer.Length);
             //We don't need to input our public ID.
-            SendPacket(new EntityAudioPacket() { Timestamp = _currentTimestamp, Data = _encodedAudioBuffer, DataLength = encodedBytes },
-                DeliveryMethod.Unreliable);
+            //SendPacket(new EntityAudioPacket() { Timestamp = _currentTimestamp, Data = _encodedAudioBuffer, DataLength = encodedBytes },
+            //    DeliveryMethod.Unreliable);
         }
 
         public void Disconnect()
@@ -155,6 +158,9 @@ namespace VoiceCraft.Client.Network
                     OnServerInfoPacketReceive(serverInfoPacket, peer);
                     break;
                 case PacketType.Login:
+                case PacketType.EntityCreated:
+                case PacketType.EntityDestroyed:
+                case PacketType.EntityAudio:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

@@ -25,7 +25,7 @@ namespace VoiceCraft.Core.Network.Packets
         Login,
         ServerInfo,
         EntityCreated,
-        EntityRemoved,
+        EntityDestroyed,
         EntityAudio,
     }
 }
