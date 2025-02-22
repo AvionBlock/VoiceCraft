@@ -42,9 +42,8 @@ namespace VoiceCraft.Client.ViewModels
             _audioService = audioService;
             _serversSettings = new ServersSettingsViewModel(_settingsService.Get<ServersSettings>(), _settingsService);
             _voiceCraftClient = new VoiceCraftClient();
-
-            _voiceCraftClient.OnLatencyUpdated += OnLatencyUpdated;
-            _voiceCraftClient.OnServerInfoPacketReceived += OnServerInfoPacketReceived;
+            
+            _voiceCraftClient.OnInfoPacketReceived += InfoPacketReceived;
             _voiceCraftClient.OnDisconnected += OnDisconnected;
         }
 
@@ -104,12 +103,7 @@ namespace VoiceCraft.Client.ViewModels
                 });
         }
 
-        private void OnLatencyUpdated(int latency)
-        {
-            Latency = latency;
-        }
-
-        private void OnServerInfoPacketReceived(ServerInfoPacket packet)
+        private void InfoPacketReceived(InfoPacket packet)
         {
             StatusInfo = $"{packet.Motd}\nConnected Clients: {packet.Clients}\nDiscovery: {packet.Discovery}\nPositioning Type: {packet.PositioningType}";
         }
@@ -140,6 +134,7 @@ namespace VoiceCraft.Client.ViewModels
                 while (!_clientPingCancellation.IsCancellationRequested)
                 {
                     _voiceCraftClient.Update();
+                    Latency = _voiceCraftClient.Latency;
                     await Task.Delay(50);
                 }
                 

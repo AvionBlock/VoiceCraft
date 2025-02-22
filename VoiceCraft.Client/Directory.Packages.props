@@ -22,6 +22,7 @@
     <PackageVersion Include="NAudio.WinForms" Version="2.2.1" />
     <PackageVersion Include="NAudio.WinMM" Version="2.2.1" />
     <PackageVersion Include="Notification.Avalonia" Version="2.1.0" />
+    <PackageVersion Include="NWaves" Version="0.9.6" />
     <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.3" />
     <PackageVersion Include="OpusSharp" Version="1.5.5" />
     <PackageVersion Include="SpeexDSPSharp" Version="1.2.2" />

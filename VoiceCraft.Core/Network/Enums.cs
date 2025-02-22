@@ -23,9 +23,10 @@ namespace VoiceCraft.Core.Network.Packets
     public enum PacketType : byte
     {
         Login,
-        ServerInfo,
+        Info,
+        Audio,
+        SetLocalEntity,
         EntityCreated,
         EntityDestroyed,
-        EntityAudio,
     }
 }

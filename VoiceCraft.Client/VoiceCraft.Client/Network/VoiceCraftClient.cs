@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -12,20 +13,21 @@ namespace VoiceCraft.Client.Network
     public class VoiceCraftClient : IDisposable
     {
         public static readonly Version Version = new(1, 1, 0);
-        public static readonly WaveFormat WaveFormat = new WaveFormat(AudioConstants.SampleRate, AudioConstants.Channels);
+        public static readonly WaveFormat WaveFormat = new(AudioConstants.SampleRate, AudioConstants.Channels);
         private static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
 
-        public int Ping { get; private set; }
+        public int Latency { get; private set; }
         public ConnectionStatus ConnectionStatus { get; private set; }
 
         //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
-        public event Action<int>? OnLatencyUpdated;
 
         //Packet Events
-        public event Action<ServerInfoPacket>? OnServerInfoPacketReceived;
-
+        public event Action<InfoPacket>? OnInfoPacketReceived;
+        public event Action<SetLocalEntityPacket>? OnSetLocalEntityPacketReceived;
+        public event Action<EntityCreatedPacket>? OnEntityCreatedPacketReceived;
+        
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter;
@@ -33,8 +35,9 @@ namespace VoiceCraft.Client.Network
         private readonly BufferedWaveProvider _queuedAudio;
         private readonly byte[] _extractedAudioBuffer;
         private readonly byte[] _encodedAudioBuffer;
-        private readonly Entity _localEntity;
         private readonly World _world;
+        private readonly Dictionary<int, Entity> _entityTranslation = new(); //Translation layer to convert server entity ID's to client.
+        private readonly int _localEntityId;
         private NetPeer? _serverPeer;
         private bool _isDisposed;
         private uint _currentTimestamp;
@@ -53,7 +56,6 @@ namespace VoiceCraft.Client.Network
             _extractedAudioBuffer = new byte[BytesPerFrame];
             _encodedAudioBuffer = new byte[1000];
             _world = World.Create();
-            _localEntity = _world.Create();
 
             _listener.PeerConnectedEvent += OnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
@@ -91,6 +93,7 @@ namespace VoiceCraft.Client.Network
         public void Update()
         {
             _netManager.PollEvents();
+            _world.TrimExcess();
             if (_queuedAudio.BufferedBytes < BytesPerFrame) return;
             Array.Clear(_extractedAudioBuffer, 0, _extractedAudioBuffer.Length);
             Array.Clear(_encodedAudioBuffer, 0, _encodedAudioBuffer.Length);
@@ -99,8 +102,8 @@ namespace VoiceCraft.Client.Network
             //Turns out RTPIncrement is samples per frame. IDK how this shit works...
             var encodedBytes = _encoder.Encode(_extractedAudioBuffer, AudioConstants.SamplesPerFrame, _encodedAudioBuffer, _encodedAudioBuffer.Length);
             //We don't need to input our public ID.
-            //SendPacket(new EntityAudioPacket() { Timestamp = _currentTimestamp, Data = _encodedAudioBuffer, DataLength = encodedBytes },
-            //    DeliveryMethod.Unreliable);
+            SendPacket(new AudioPacket() { Timestamp = _currentTimestamp, Data = _encodedAudioBuffer, DataLength = encodedBytes },
+                DeliveryMethod.Unreliable);
         }
 
         public void Disconnect()
@@ -152,15 +155,24 @@ namespace VoiceCraft.Client.Network
             var pt = (PacketType)packetType;
             switch (pt)
             {
-                case PacketType.ServerInfo:
-                    var serverInfoPacket = new ServerInfoPacket();
-                    serverInfoPacket.Deserialize(reader);
-                    OnServerInfoPacketReceive(serverInfoPacket, peer);
-                    break;
                 case PacketType.Login:
+                    break;
+                case PacketType.Info:
+                    var infoPacket = new InfoPacket();
+                    infoPacket.Deserialize(reader);
+                    OnInfoReceived(infoPacket);
+                    break;
+                case PacketType.SetLocalEntity:
+                    var localEntityPacket = new SetLocalEntityPacket();
+                    localEntityPacket.Deserialize(reader);
+                    OnSetLocalEntityReceived(localEntityPacket);
+                    break;
                 case PacketType.EntityCreated:
+                    var entityCreatedPacket = new EntityCreatedPacket();
+                    entityCreatedPacket.Deserialize(reader);
+                    OnEntityCreatedReceived(entityCreatedPacket);
+                    break;
                 case PacketType.EntityDestroyed:
-                case PacketType.EntityAudio:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -171,8 +183,7 @@ namespace VoiceCraft.Client.Network
 
         private void OnNetworkLatencyUpdateEvent(NetPeer peer, int latency)
         {
-            Ping = latency;
-            OnLatencyUpdated?.Invoke(latency);
+            Latency = latency;
         }
 
         private static void OnConnectionRequestEvent(ConnectionRequest request)
@@ -180,16 +191,28 @@ namespace VoiceCraft.Client.Network
             request.Reject();
         }
 
-        //Packet Events
-        private void OnServerInfoPacketReceive(ServerInfoPacket packet, NetPeer peer)
-        {
-            OnServerInfoPacketReceived?.Invoke(packet);
-        }
-
         private void ThrowIfDisposed()
         {
             if (!_isDisposed) return;
             throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
+        }
+        
+        //Packet Events
+        private void OnInfoReceived(InfoPacket infoPacket)
+        {
+            OnInfoPacketReceived?.Invoke(infoPacket);
+        }
+        
+        private void OnSetLocalEntityReceived(SetLocalEntityPacket packet)
+        {
+            OnSetLocalEntityPacketReceived?.Invoke(packet);
+        }
+
+        private void OnEntityCreatedReceived(EntityCreatedPacket packet)
+        {
+            var entity = _world.Create();
+            _entityTranslation.TryAdd(packet.Id, entity);
+            OnEntityCreatedPacketReceived?.Invoke(packet);
         }
 
         //Dispose

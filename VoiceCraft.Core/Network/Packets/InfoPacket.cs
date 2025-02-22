@@ -2,9 +2,9 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class ServerInfoPacket : VoiceCraftPacket
+    public class InfoPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.ServerInfo;
+        public override PacketType PacketType => PacketType.Info;
         public string Motd { get; set; } = string.Empty;
         public uint Clients { get; set; }
         public bool Discovery  { get; set; }

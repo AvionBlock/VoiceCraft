@@ -4,5 +4,6 @@ namespace VoiceCraft.Core.Components
     {
         public string EnvironmentId;
         public ulong Bitmask;
+        public string Name;
     }
 }
