@@ -149,7 +149,7 @@ namespace VoiceCraft.Client.Android.Audio
                                 DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, bytesRead));
                                 break;
                             case < 0:
-                                throw new InvalidOperationException(Localizer.Get("Android.AudioRecorder.Exception.Capture"));
+                                throw new InvalidOperationException(Locales.Locales.Android_AudioRecorder_Exception_Capture);
                         }
 
                         break;
@@ -166,7 +166,7 @@ namespace VoiceCraft.Client.Android.Audio
                                 DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, floatsRead * sizeof(float)));
                                 break;
                             case < 0:
-                                throw new InvalidOperationException(Localizer.Get("Android.AudioRecorder.Exception.Capture"));
+                                throw new InvalidOperationException(Locales.Locales.Android_AudioRecorder_Exception_Capture);
                         }
 
                         break;

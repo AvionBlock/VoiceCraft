@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
-using Jeek.Avalonia.Localization;
 using LiteNetLib;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
@@ -96,15 +95,15 @@ namespace VoiceCraft.Client.Processes
         public void Start()
         {
             _voiceCraftClient.Connect(_ip, _port, LoginType.Login);
-            Title = Localizer.Get("VoiceCraft.Status.Title");
-            Description =  Localizer.Get("VoiceCraft.Status.Initializing");
+            Title = Locales.Locales.VoiceCraft_Status_Title;
+            Description =  Locales.Locales.VoiceCraft_Status_Initializing;
 
             _audioRecorder = _audioService.CreateAudioRecorder();
             _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
             _audioRecorder.StartRecording();
             
-            Title = Localizer.Get("VoiceCraft.Status.Title");
-            Description = Localizer.Get("VoiceCraft.Status.Connecting");
+            Title = Locales.Locales.VoiceCraft_Status_Title;
+            Description = Locales.Locales.VoiceCraft_Status_Connecting;
 
             while (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
             {
@@ -147,18 +146,18 @@ namespace VoiceCraft.Client.Processes
         
         private void ClientOnConnected()
         {
-            Title = Localizer.Get("VoiceCraft.Status.Title");
-            Description = Localizer.Get("VoiceCraft.Status.Connected");
+            Title = Locales.Locales.VoiceCraft_Status_Title;
+            Description = Locales.Locales.VoiceCraft_Status_Connected;
             Dispatcher.UIThread.Invoke(() => OnConnected?.Invoke());
         }
         
         private void ClientOnDisconnected(DisconnectInfo obj)
         {
-            Title = Localizer.Get("VoiceCraft.Status.Title");
-            Description = $"{Localizer.Get("VoiceCraft.Status.Disconnected")} {obj.Reason}";
+            Title = Locales.Locales.VoiceCraft_Status_Title;
+            Description = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}";
             Dispatcher.UIThread.Invoke(() =>
             {
-                _notificationService.SendNotification($"{Localizer.Get("VoiceCraft.Status.Disconnected")} {obj.Reason}");
+                _notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
                 OnDisconnected?.Invoke(obj);
             });
         }
