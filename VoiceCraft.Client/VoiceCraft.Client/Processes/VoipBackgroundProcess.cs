@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Arch.Core;
+using Arch.Core.Extensions;
 using Avalonia.Threading;
 using LiteNetLib;
 using NAudio.CoreAudioApi;
@@ -9,6 +12,8 @@ using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
+using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core.Components;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes
@@ -19,6 +24,7 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
+        private Dictionary<Entity, AudioSourceViewModel> _audioSources = new();
         
         //Events
         public event Action<string>? OnUpdateTitle;
@@ -27,6 +33,8 @@ namespace VoiceCraft.Client.Processes
         public event Action<bool>? OnUpdateDeafen;
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
+        public event Action<AudioSourceViewModel>? OnAudioSourceCreated;
+        public event Action<AudioSourceViewModel>? OnAudioSourceDestroyed;
         
         //Public Variables
         public CancellationTokenSource TokenSource { get; }
@@ -88,6 +96,7 @@ namespace VoiceCraft.Client.Processes
             _audioService = audioService;
             _voiceCraftClient.OnConnected += ClientOnConnected;
             _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
+            _voiceCraftClient.OnEntityDestroyed += ClientOnEntityDestroyed;
             _ip = ip;
             _port = port;
         }
@@ -160,6 +169,13 @@ namespace VoiceCraft.Client.Processes
                 _notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
                 OnDisconnected?.Invoke(obj);
             });
+        }
+        
+        private void ClientOnEntityDestroyed(Entity entity)
+        {
+            if (!_audioSources.ContainsKey(entity)) return;
+            _audioSources.Remove(entity);
+            OnAudioSourceDestroyed?.Invoke(_audioSources[entity]);
         }
     }
 }

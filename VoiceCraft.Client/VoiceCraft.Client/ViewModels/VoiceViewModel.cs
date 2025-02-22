@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private string _statusText = string.Empty;
         [ObservableProperty] private bool _isMuted;
         [ObservableProperty] private bool _isDeafened;
-        [ObservableProperty] private ObservableCollection<AudioSourceViewModel> _audioSources = [new() { IsMuted = true}, new() { IsDeafened = true}, new() { IsDeafened = true, IsMuted = true}, new(), new(), new()];
+        [ObservableProperty] private ObservableCollection<AudioSourceViewModel> _audioSources = [];
 
         [RelayCommand]
         private void ToggleMute()

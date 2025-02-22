@@ -27,6 +27,11 @@ namespace VoiceCraft.Client.Network
         public event Action<InfoPacket>? OnInfoPacketReceived;
         public event Action<SetLocalEntityPacket>? OnSetLocalEntityPacketReceived;
         public event Action<EntityCreatedPacket>? OnEntityCreatedPacketReceived;
+        public event Action<EntityDestroyedPacket>? OnEntityDestroyedPacketReceived;
+        
+        //Client Events
+        public event Action<Entity>? OnEntityCreated;
+        public event Action<Entity>? OnEntityDestroyed;
         
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
@@ -37,7 +42,7 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _encodedAudioBuffer;
         private readonly World _world;
         private readonly Dictionary<int, Entity> _entityTranslation = new(); //Translation layer to convert server entity ID's to client.
-        private readonly int _localEntityId;
+        private int? _localEntityId;
         private NetPeer? _serverPeer;
         private bool _isDisposed;
         private uint _currentTimestamp;
@@ -69,6 +74,22 @@ namespace VoiceCraft.Client.Network
             Dispose(false);
         }
 
+        private Entity CreateEntity(int entityServerId)
+        {
+            var entity = _world.Create();
+            _entityTranslation.TryAdd(entityServerId, entity);
+            OnEntityCreated?.Invoke(entity);
+            return entity;
+        }
+        
+        private void DestroyEntity(int entityServerId)
+        {
+            if (!_entityTranslation.Remove(entityServerId, out var entity)) return;
+            _world.Destroy(entity);
+            OnEntityDestroyed?.Invoke(entity);
+        }
+        
+        #region Public Methods
         public void Connect(string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
@@ -131,8 +152,9 @@ namespace VoiceCraft.Client.Network
         {
             _queuedAudio.AddSamples(buffer, 0, length);
         }
-
-        //Events
+        #endregion
+        
+        #region Network Events
         private void OnPeerConnectedEvent(NetPeer peer)
         {
             ConnectionStatus = ConnectionStatus.Connected;
@@ -171,6 +193,9 @@ namespace VoiceCraft.Client.Network
                     OnEntityCreatedReceived(entityCreatedPacket);
                     break;
                 case PacketType.EntityDestroyed:
+                    var entityDestroyedPacket = new EntityDestroyedPacket();
+                    entityDestroyedPacket.Deserialize(reader);
+                    OnEntityDestroyedReceived(entityDestroyedPacket);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -188,14 +213,9 @@ namespace VoiceCraft.Client.Network
         {
             request.Reject();
         }
-
-        private void ThrowIfDisposed()
-        {
-            if (!_isDisposed) return;
-            throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
-        }
+        #endregion
         
-        //Packet Events
+        #region Packet Events
         private void OnInfoReceived(InfoPacket infoPacket)
         {
             OnInfoPacketReceived?.Invoke(infoPacket);
@@ -203,17 +223,32 @@ namespace VoiceCraft.Client.Network
         
         private void OnSetLocalEntityReceived(SetLocalEntityPacket packet)
         {
+            if(_localEntityId == null)
+                CreateEntity(packet.Id);
+            _localEntityId = packet.Id;
             OnSetLocalEntityPacketReceived?.Invoke(packet);
         }
 
         private void OnEntityCreatedReceived(EntityCreatedPacket packet)
         {
-            var entity = _world.Create();
-            _entityTranslation.TryAdd(packet.Id, entity);
+            CreateEntity(packet.Id);
             OnEntityCreatedPacketReceived?.Invoke(packet);
         }
+        
+        private void OnEntityDestroyedReceived(EntityDestroyedPacket packet)
+        {
+            DestroyEntity(packet.Id);
+            OnEntityDestroyedPacketReceived?.Invoke(packet);   
+        }
+        #endregion
 
-        //Dispose
+        #region Dispose
+        private void ThrowIfDisposed()
+        {
+            if (!_isDisposed) return;
+            throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
+        }
+        
         public void Dispose()
         {
             Dispose(true);
@@ -233,5 +268,6 @@ namespace VoiceCraft.Client.Network
 
             _isDisposed = true;
         }
+        #endregion
     }
 }

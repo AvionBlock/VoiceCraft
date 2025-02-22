@@ -1,7 +1,6 @@
 using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.Components;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Server
@@ -17,6 +16,8 @@ namespace VoiceCraft.Server
         public event Action? OnStopped;
         public event Action<NetPeer>? OnClientConnected;
         public event Action<NetPeer, DisconnectInfo>? OnClientDisconnected;
+        public event Action<Entity>? OnEntityCreated;
+        public event Action<Entity>? OnEntityDestroyed;
 
         //Server Properties
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
@@ -49,14 +50,29 @@ namespace VoiceCraft.Server
             _listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
             _listener.NetworkReceiveEvent += ListenerOnNetworkReceiveEvent;
-            
-            _world.SubscribeEntityCreated(OnEntityCreated);
-            _world.SubscribeEntityDestroyed(OnEntityDestroyed);
         }
 
         ~VoiceCraftServer()
         {
             Dispose(false);
+        }
+        
+        private Entity CreateEntity()
+        {
+            var entity = _world.Create();
+            var packet = new EntityCreatedPacket() { Id = entity.Id };
+            foreach (var networkEntity in NetworkEntities)
+            {
+                SendPacket(networkEntity.Key.Peer, packet);
+            }
+            OnEntityCreated?.Invoke(entity);
+            return entity;
+        }
+        
+        private void DestroyEntity(Entity entity)
+        {
+            _world.Destroy(entity);
+            OnEntityDestroyed?.Invoke(entity);
         }
         
         #region Public Methods
@@ -115,26 +131,6 @@ namespace VoiceCraft.Server
                 status = SendPacket(peer, packet, deliveryMethod);
             }
             return status;
-        }
-        #endregion
-        
-        #region World Events
-        private void OnEntityCreated(in Entity entity)
-        {
-            var packet = new EntityCreatedPacket { Id = entity.Id };
-            foreach (var client in NetworkEntities)
-            {
-                SendPacket(client.Key.Peer, packet);
-            }
-        }
-
-        private void OnEntityDestroyed(in Entity entity)
-        {
-            var packet = new EntityDestroyedPacket { Id = entity.Id };
-            foreach (var client in NetworkEntities)
-            {
-                SendPacket(client.Key.Peer, packet);
-            }
         }
         #endregion
         
@@ -212,7 +208,7 @@ namespace VoiceCraft.Server
                 case LoginType.Login:
                     var loginPeer = request.Accept();
                     loginPeer.Tag = loginPacket.LoginType;
-                    var peerEntity = _world.Create(new TransformComponent());
+                    var peerEntity = CreateEntity();
                     NetworkEntities.Add(new VoiceCraftClient(loginPeer), peerEntity);
                     var setEntityPacket = new SetLocalEntityPacket { Id = peerEntity.Id };
                     SendPacket(loginPeer, setEntityPacket);
