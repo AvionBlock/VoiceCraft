@@ -111,10 +111,8 @@ namespace VoiceCraft.Client.Network
             ThrowIfDisposed();
             if (ConnectionStatus == ConnectionStatus.Disconnected)
                 throw new InvalidOperationException("Must be connecting or connected before disconnecting!");
-
-            if (_serverPeer != null)
-                _netManager.DisconnectPeer(_serverPeer);
-
+            
+            _netManager.DisconnectAll();
             Update();
         }
 

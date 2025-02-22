@@ -16,17 +16,17 @@ namespace VoiceCraft.Client.Linux
         private readonly ConcurrentDictionary<IBackgroundProcess, Task> _runningBackgroundProcesses = [];
         public override event Action<IBackgroundProcess>? OnProcessStarted;
         public override event Action<IBackgroundProcess>? OnProcessStopped;
-        
+
         private void StartService()
         {
-            if (_backgroundTask != null) return;
-            
+            if (_backgroundTask is { IsCompleted: false }) return;
+
             _backgroundTask = Task.Run(async () =>
             {
                 try
                 {
                     var startTime = Environment.TickCount64;
-                    while (!_runningBackgroundProcesses.IsEmpty || 
+                    while (!_runningBackgroundProcesses.IsEmpty || !_queuedProcesses.IsEmpty ||
                            Environment.TickCount64 - startTime < 10000) //10 second wait time before self stopping activates (kinda).
                     {
                         RemoveCompletedProcesses();
@@ -39,11 +39,9 @@ namespace VoiceCraft.Client.Linux
                 {
                     Dispatcher.UIThread.Invoke(() => notificationService.SendErrorNotification($"Background Error: {ex}"));
                 }
-                
-                _backgroundTask = null;
             });
         }
-        
+
         public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000)
         {
             StartService();
@@ -53,7 +51,7 @@ namespace VoiceCraft.Client.Linux
             {
                 if (Environment.TickCount64 - startTime >= timeout)
                     return false;
-                
+
                 await Task.Delay(50);
             }
 
@@ -65,9 +63,10 @@ namespace VoiceCraft.Client.Linux
             var processes = GetBackgroundProcesses();
             foreach (var process in processes)
             {
-                if(process.GetType() == typeof(T))
+                if (process.GetType() == typeof(T))
                     return (T)process;
             }
+
             return default;
         }
 
@@ -75,7 +74,7 @@ namespace VoiceCraft.Client.Linux
         {
             return _runningBackgroundProcesses.Select(x => x.Key);
         }
-        
+
         private void RemoveCompletedProcesses()
         {
             foreach (var backgroundProcess in _runningBackgroundProcesses)

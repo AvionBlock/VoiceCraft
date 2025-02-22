@@ -90,7 +90,8 @@ namespace VoiceCraft.Client.ViewModels
         private void Connect()
         {
             if (SelectedServer == null) return;
-            _backgroundService.StartBackgroundProcess(new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, _notificationService, _audioService))
+            var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, _notificationService, _audioService);
+            _backgroundService.StartBackgroundProcess(process)
                 .ContinueWith(success =>
                 {
                     if (success.Result == false)
@@ -99,7 +100,7 @@ namespace VoiceCraft.Client.ViewModels
                         return;
                     }
 
-                    _navigationService.NavigateTo<VoiceViewModel>();
+                    _navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
                 });
         }
 

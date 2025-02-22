@@ -13,7 +13,7 @@ namespace VoiceCraft.Client.ViewModels
     public partial class VoiceViewModel(NavigationService navigationService, BackgroundService backgroundService) : ViewModelBase, IDisposable
     {
         public override bool DisableBackButton { get; set; } = true;
-        private readonly VoipBackgroundProcess? _process = backgroundService.GetBackgroundProcess<VoipBackgroundProcess>();
+        private VoipBackgroundProcess? _process;
 
         [ObservableProperty] private string _statusText = string.Empty;
         [ObservableProperty] private bool _isMuted;
@@ -40,11 +40,7 @@ namespace VoiceCraft.Client.ViewModels
 
         public override void OnAppearing()
         {
-            if (_process == null)
-            {
-                navigationService.Back();
-                return;
-            }
+            if (_process == null) return;
             if (_process.ConnectionStatus == ConnectionStatus.Disconnected)
             {
                 navigationService.Back();
@@ -60,6 +56,12 @@ namespace VoiceCraft.Client.ViewModels
             _process.OnUpdateDeafen += OnUpdateDeafen;
         }
 
+        public void AttachToProcess(VoipBackgroundProcess process)
+        {
+            _process = process;
+            OnAppearing();
+        }
+        
         public void Dispose()
         {
             if (_process != null)
@@ -78,6 +80,8 @@ namespace VoiceCraft.Client.ViewModels
         
         private void OnDisconnected(DisconnectInfo obj)
         {
+            if(_process != null)
+                _process.OnDisconnected -= OnDisconnected;
             navigationService.Back();
         }
         
