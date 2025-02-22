@@ -5,7 +5,7 @@ using NAudio.Wave;
 using OpusSharp.Core;
 using VoiceCraft.Core.Network.Packets;
 
-namespace VoiceCraft.Core.Network
+namespace VoiceCraft.Client.Network
 {
     public class VoiceCraftClient : IDisposable
     {

@@ -6,9 +6,9 @@ using LiteNetLib;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
-using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes

@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.Data;
 using VoiceCraft.Core.Network.Packets;
 
-namespace VoiceCraft.Core.Network
+namespace VoiceCraft.Server
 {
     public class VoiceCraftServer : IDisposable
     {
@@ -20,7 +16,6 @@ namespace VoiceCraft.Core.Network
         public event Action? OnStopped;
         public event Action<NetPeer>? OnClientConnected;
         public event Action<NetPeer, DisconnectInfo>? OnClientDisconnected;
-        public event Action<VoiceCraftEntity>? OnEntityCreated;
 
         //Server Properties
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
@@ -28,7 +23,7 @@ namespace VoiceCraft.Core.Network
         public PositioningType PositioningType { get; set; }
         
         //Public Properties
-        public List<VoiceCraftEntity> Entities { get; set; } = new List<VoiceCraftEntity>();
+        public Dictionary<VoiceCraftClient, Entity> NetworkEntities { get; set; } = new Dictionary<VoiceCraftClient, Entity>();
 
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
@@ -114,22 +109,6 @@ namespace VoiceCraft.Core.Network
             return status;
         }
 
-        public void AddEntity(VoiceCraftEntity entity)
-        {
-            var networkEntities = Entities.Where(x => x is NetworkEntity).Cast<NetworkEntity>().Select(x => x.Peer).ToArray();
-            
-            foreach (var networkEntity in networkEntities)
-            {
-                var packet = new EntityCreatedPacket(); //Finish this
-                SendPacket(networkEntity, packet);
-            }
-            
-            Entities.Add(entity);
-            var entityCreatedPacket = new EntityCreatedPacket(); //Finish this.
-            SendPacket(networkEntities, entityCreatedPacket);
-            OnEntityCreated?.Invoke(entity);
-        }
-
         //Events
         private void OnConnectionRequestEvent(ConnectionRequest request)
         {
@@ -180,6 +159,7 @@ namespace VoiceCraft.Core.Network
                 case PacketType.Login:
                 case PacketType.ServerInfo:
                 case PacketType.EntityCreated:
+                case PacketType.EntityRemoved:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -195,7 +175,7 @@ namespace VoiceCraft.Core.Network
                 request.Reject();
                 return;
             }
-                
+            
             switch (loginPacket.LoginType)
             {
                 case LoginType.Pinger:
@@ -205,7 +185,6 @@ namespace VoiceCraft.Core.Network
                 case LoginType.Login:
                     var loginPeer = request.Accept();
                     loginPeer.Tag = loginPacket.LoginType;
-                    AddEntity(new NetworkEntity(loginPeer));
                     break;
                 case LoginType.Discovery:
                     var discoveryPeer = request.Accept();
@@ -215,11 +194,6 @@ namespace VoiceCraft.Core.Network
                     request.Reject();
                     break;
             }
-        }
-
-        private void OnAudioPacketReceived(NetPeer peer, EntityAudioPacket entityAudioPacket)
-        {
-            
         }
 
         //Dispose
