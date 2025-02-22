@@ -19,10 +19,10 @@
                        TextAlignment="Center" />
         </Border>
         <ListBox Grid.Row="1" Background="Transparent"
-                 ItemsSource="{Binding Entities}"
+                 ItemsSource="{Binding AudioSources}"
                  SelectionMode="Single">
             <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vmData:EntityViewModel">
+                <DataTemplate x:DataType="vmData:AudioSourceViewModel">
                     <Grid ColumnDefinitions="*, Auto">
                         <TextBlock Grid.Column="0"
                                    HorizontalAlignment="Left"

@@ -10,7 +10,7 @@ using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.ViewModels
 {
-    public partial class VoiceViewModel(NavigationService navigationService, BackgroundService backgroundService) : ViewModelBase, IDisposable
+    public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
     {
         public override bool DisableBackButton { get; set; } = true;
         private VoipBackgroundProcess? _process;
@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private string _statusText = string.Empty;
         [ObservableProperty] private bool _isMuted;
         [ObservableProperty] private bool _isDeafened;
-        [ObservableProperty] private ObservableCollection<EntityViewModel> _entities = [new() { IsMuted = true}, new() { IsDeafened = true}, new() { IsDeafened = true, IsMuted = true}, new(), new(), new()];
+        [ObservableProperty] private ObservableCollection<AudioSourceViewModel> _audioSources = [new() { IsMuted = true}, new() { IsDeafened = true}, new() { IsDeafened = true, IsMuted = true}, new(), new(), new()];
 
         [RelayCommand]
         private void ToggleMute()
