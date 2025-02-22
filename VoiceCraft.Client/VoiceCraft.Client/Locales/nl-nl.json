@@ -12,7 +12,7 @@
   "Credits.AppVersion": "App Versie",
   "Credits.Author": "Auteur",
   "Credits.Codec": "Codec",
-  "Credits.Contributors": "Contributors",
+  "Credits.Contributors": "Bijdragers",
   "Credits.Version": "Versie",
 
   "Settings.General": "Algemene Instellingen",
@@ -47,5 +47,11 @@
   "Android.NativeAGC.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
   "Android.NativeAGC.Exception.Init": "Native denoiser moet worden geïnitialiseerd met een recorder!",
   "Android.NativeDN.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
-  "Android.NativeDN.Exception.Init": "Native denoiser moet worden geïnitialiseerd met een recorder!"
+  "Android.NativeDN.Exception.Init": "Native denoiser moet worden geïnitialiseerd met een recorder!",
+
+  "VoiceCraft.Status.Title": "VoiceCraft Client is draaiende",
+  "VoiceCraft.Status.Initializing": "Initialiseren...",
+  "VoiceCraft.Status.Connecting": "Verbinden...",
+  "VoiceCraft.Status.Connected": "Verbonden! Meer spul hier later.",
+  "VoiceCraft.Status.Disconnected": "Verbinding verbroken! Reden:"
 }
