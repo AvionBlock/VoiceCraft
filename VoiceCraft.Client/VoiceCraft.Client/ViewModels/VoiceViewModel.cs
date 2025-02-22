@@ -68,6 +68,8 @@ namespace VoiceCraft.Client.ViewModels
             {
                 _process.OnDisconnected -= OnDisconnected;
                 _process.OnUpdateDescription -= OnUpdateDescription;
+                _process.OnUpdateMute -= OnUpdateMute;
+                _process.OnUpdateDeafen -= OnUpdateDeafen;
             }
 
             GC.SuppressFinalize(this);
@@ -80,8 +82,14 @@ namespace VoiceCraft.Client.ViewModels
         
         private void OnDisconnected(DisconnectInfo obj)
         {
-            if(_process != null)
+            if (_process != null)
+            {
                 _process.OnDisconnected -= OnDisconnected;
+                _process.OnUpdateDescription -= OnUpdateDescription;
+                _process.OnUpdateMute -= OnUpdateMute;
+                _process.OnUpdateDeafen -= OnUpdateDeafen;
+            }
+
             navigationService.Back();
         }
         

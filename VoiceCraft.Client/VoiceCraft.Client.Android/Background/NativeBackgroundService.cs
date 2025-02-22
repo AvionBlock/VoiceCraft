@@ -59,11 +59,11 @@ namespace VoiceCraft.Client.Android.Background
 
         public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000) //5 second timeout.
         {
-            _ = StartService();
             _queuedProcesses.Enqueue(process);
             var startTime = System.Environment.TickCount64;
             while (_queuedProcesses.Contains(process))
             {
+                _ = StartService();
                 if (System.Environment.TickCount64 - startTime >= timeout)
                     return false;
                 

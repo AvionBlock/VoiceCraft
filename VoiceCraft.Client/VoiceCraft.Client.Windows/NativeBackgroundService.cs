@@ -44,14 +44,14 @@ namespace VoiceCraft.Client.Windows
 
         public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000)
         {
-            StartService();
             _queuedProcesses.Enqueue(process);
             var startTime = Environment.TickCount64;
             while (_queuedProcesses.Contains(process))
             {
+                StartService();
                 if (Environment.TickCount64 - startTime >= timeout)
                     return false;
-
+                
                 await Task.Delay(50);
             }
 
