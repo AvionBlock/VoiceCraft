@@ -46,6 +46,8 @@ namespace VoiceCraft.Core.ECS
         {
             if(_components.Exists(x => x.GetType() == component.GetType()))
                 throw new InvalidOperationException("Component already exists!");
+            if(component.Entity != this)
+                throw new InvalidOperationException("Component does not match with this entity!");
             _components.Add(component);
         }
 
