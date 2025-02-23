@@ -1,6 +1,6 @@
-using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.ECS;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Server
@@ -23,7 +23,7 @@ namespace VoiceCraft.Server
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public bool DiscoveryEnabled { get; set; }
         public PositioningType PositioningType { get; set; }
-        
+
         //Public Properties
         public Dictionary<VoiceCraftClient, Entity> NetworkEntities { get; set; } = new();
 
@@ -32,6 +32,7 @@ namespace VoiceCraft.Server
         private readonly CancellationTokenSource _cts;
         private readonly NetDataWriter _dataWriter;
         private readonly World _world;
+        private readonly List<Entity> _allEntities = [];
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -44,7 +45,7 @@ namespace VoiceCraft.Server
             {
                 AutoRecycle = true
             };
-            _world = World.Create();
+            _world = new World();
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
             _listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
@@ -56,26 +57,35 @@ namespace VoiceCraft.Server
         {
             Dispose(false);
         }
-        
+
         private Entity CreateEntity()
         {
-            var entity = _world.Create();
+            var entity = _world.CreateEntity();
+            _allEntities.Add(entity);
             var packet = new EntityCreatedPacket() { Id = entity.Id };
             foreach (var networkEntity in NetworkEntities)
             {
                 SendPacket(networkEntity.Key.Peer, packet);
             }
+
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
-        
+
         private void DestroyEntity(Entity entity)
-        {
-            _world.Destroy(entity);
+        { 
+            _world.DestroyEntity(entity);
+            _allEntities.Remove(entity);
+            var packet = new EntityDestroyedPacket() { Id = entity.Id };
+            foreach (var networkEntity in NetworkEntities)
+            {
+                SendPacket(networkEntity.Key.Peer, packet);
+            }
             OnEntityDestroyed?.Invoke(entity);
         }
-        
+
         #region Public Methods
+
         public void Start(int port)
         {
             if (_netManager.IsRunning) return;
@@ -86,7 +96,6 @@ namespace VoiceCraft.Server
         public void Update()
         {
             _netManager.PollEvents();
-            _world.TrimExcess();
 
             if (Environment.TickCount - _lastPingBroadcast < PINGER_BROADCAST_INTERVAL_MS) return;
             _lastPingBroadcast = Environment.TickCount;
@@ -109,9 +118,11 @@ namespace VoiceCraft.Server
             _netManager.Stop();
             OnStopped?.Invoke();
         }
+
         #endregion
-        
+
         #region Private Methods
+
         private bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
@@ -130,11 +141,14 @@ namespace VoiceCraft.Server
             {
                 status = SendPacket(peer, packet, deliveryMethod);
             }
+
             return status;
         }
+
         #endregion
-        
+
         #region Network Events
+
         private void OnConnectionRequestEvent(ConnectionRequest request)
         {
             if (request.Data.IsNull)
@@ -170,6 +184,11 @@ namespace VoiceCraft.Server
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
         {
+            var client = NetworkEntities.FirstOrDefault(x => Equals(x.Key.Peer, peer));
+            if (client.Key != null)
+            {
+                DestroyEntity(client.Value);
+            }
             OnClientDisconnected?.Invoke(peer, disconnectinfo);
         }
 
@@ -189,11 +208,12 @@ namespace VoiceCraft.Server
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
             reader.Recycle();
         }
-        
+
         #endregion
-        
+
         #region Packet Events
         private void OnLoginPacketReceived(LoginPacket loginPacket, ConnectionRequest request)
         {
@@ -202,12 +222,19 @@ namespace VoiceCraft.Server
                 request.Reject();
                 return;
             }
-            
+
             switch (loginPacket.LoginType)
             {
                 case LoginType.Login:
                     var loginPeer = request.Accept();
                     loginPeer.Tag = loginPacket.LoginType;
+                    var createEntityPacket = new EntityCreatedPacket();
+                    foreach (var entity in _allEntities)
+                    {
+                        createEntityPacket.Id = entity.Id;
+                        SendPacket(loginPeer, createEntityPacket);
+                    }
+                    
                     var peerEntity = CreateEntity();
                     NetworkEntities.Add(new VoiceCraftClient(loginPeer), peerEntity);
                     var setEntityPacket = new SetLocalEntityPacket { Id = peerEntity.Id };
@@ -223,9 +250,11 @@ namespace VoiceCraft.Server
                     break;
             }
         }
+
         #endregion
-        
+
         #region Dispose
+
         private void Dispose(bool disposing)
         {
             if (_isDisposed) return;
@@ -244,6 +273,7 @@ namespace VoiceCraft.Server
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         #endregion
     }
 }

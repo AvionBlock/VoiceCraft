@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Arch.Core;
+using System.Diagnostics;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
 using VoiceCraft.Core;
+using VoiceCraft.Core.ECS;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network
@@ -41,7 +42,6 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _extractedAudioBuffer;
         private readonly byte[] _encodedAudioBuffer;
         private readonly World _world;
-        private readonly Dictionary<int, Entity> _entityTranslation = new(); //Translation layer to convert server entity ID's to client.
         private int? _localEntityId;
         private NetPeer? _serverPeer;
         private bool _isDisposed;
@@ -60,7 +60,7 @@ namespace VoiceCraft.Client.Network
             _queuedAudio = new BufferedWaveProvider(WaveFormat) { ReadFully = false, BufferDuration = TimeSpan.FromSeconds(2) }; //2 seconds.
             _extractedAudioBuffer = new byte[BytesPerFrame];
             _encodedAudioBuffer = new byte[1000];
-            _world = World.Create();
+            _world = new World();
 
             _listener.PeerConnectedEvent += OnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
@@ -76,17 +76,16 @@ namespace VoiceCraft.Client.Network
 
         private Entity CreateEntity(int entityServerId)
         {
-            var entity = _world.Create();
-            _entityTranslation.TryAdd(entityServerId, entity);
+            var entity = _world.CreateEntity(entityServerId);
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
         
         private void DestroyEntity(int entityServerId)
         {
-            if (!_entityTranslation.Remove(entityServerId, out var entity)) return;
-            _world.Destroy(entity);
-            OnEntityDestroyed?.Invoke(entity);
+            var entity = _world.DestroyEntity(entityServerId);
+            if(entity != null)
+                OnEntityDestroyed?.Invoke(entity);
         }
         
         #region Public Methods
@@ -114,7 +113,6 @@ namespace VoiceCraft.Client.Network
         public void Update()
         {
             _netManager.PollEvents();
-            _world.TrimExcess();
             if (_queuedAudio.BufferedBytes < BytesPerFrame) return;
             Array.Clear(_extractedAudioBuffer, 0, _extractedAudioBuffer.Length);
             Array.Clear(_encodedAudioBuffer, 0, _encodedAudioBuffer.Length);
@@ -232,12 +230,14 @@ namespace VoiceCraft.Client.Network
         private void OnEntityCreatedReceived(EntityCreatedPacket packet)
         {
             CreateEntity(packet.Id);
+            Debug.WriteLine($"Created Entity with ID {packet.Id}");
             OnEntityCreatedPacketReceived?.Invoke(packet);
         }
         
         private void OnEntityDestroyedReceived(EntityDestroyedPacket packet)
         {
             DestroyEntity(packet.Id);
+            Debug.WriteLine($"Destroyed Entity with ID {packet.Id}");
             OnEntityDestroyedPacketReceived?.Invoke(packet);   
         }
         #endregion
@@ -262,7 +262,6 @@ namespace VoiceCraft.Client.Network
             {
                 _netManager.Stop();
                 _encoder.Dispose();
-                _world.Dispose();
                 _queuedAudio.ClearBuffer();
             }
 

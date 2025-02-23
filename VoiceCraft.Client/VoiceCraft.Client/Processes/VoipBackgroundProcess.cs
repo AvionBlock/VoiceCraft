@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Avalonia.Threading;
 using LiteNetLib;
 using NAudio.CoreAudioApi;
@@ -13,7 +11,7 @@ using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.Components;
+using VoiceCraft.Core.ECS;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes
