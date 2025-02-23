@@ -1,5 +1,6 @@
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Components;
 using VoiceCraft.Core.ECS;
 using VoiceCraft.Core.Network.Packets;
 
@@ -25,8 +26,6 @@ namespace VoiceCraft.Server
         public PositioningType PositioningType { get; set; }
 
         //Public Properties
-        public Dictionary<VoiceCraftClient, Entity> NetworkEntities { get; set; } = new();
-
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly CancellationTokenSource _cts;
@@ -63,9 +62,10 @@ namespace VoiceCraft.Server
             var entity = _world.CreateEntity();
             _allEntities.Add(entity);
             var packet = new EntityCreatedPacket() { Id = entity.Id };
-            foreach (var networkEntity in NetworkEntities)
+            var entities = _world.GetEntitiesWithComponent<NetworkClientComponent>();
+            foreach (var networkEntity in entities)
             {
-                SendPacket(networkEntity.Key.Peer, packet);
+                SendPacket(networkEntity.GetComponent<NetworkClientComponent>().Peer, packet);
             }
 
             OnEntityCreated?.Invoke(entity);
@@ -77,9 +77,10 @@ namespace VoiceCraft.Server
             _world.DestroyEntity(entity);
             _allEntities.Remove(entity);
             var packet = new EntityDestroyedPacket() { Id = entity.Id };
-            foreach (var networkEntity in NetworkEntities)
+            var entities = _world.GetEntitiesWithComponent<NetworkClientComponent>();
+            foreach (var networkEntity in entities)
             {
-                SendPacket(networkEntity.Key.Peer, packet);
+                SendPacket(networkEntity.GetComponent<NetworkClientComponent>().Peer, packet);
             }
             OnEntityDestroyed?.Invoke(entity);
         }
@@ -184,10 +185,11 @@ namespace VoiceCraft.Server
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
         {
-            var client = NetworkEntities.FirstOrDefault(x => Equals(x.Key.Peer, peer));
-            if (client.Key != null)
+            var entities = _world.GetEntitiesWithComponent<NetworkClientComponent>();
+            var client = entities.FirstOrDefault(x => Equals(x.GetComponent<NetworkClientComponent>().Peer, peer));
+            if (client != null)
             {
-                DestroyEntity(client.Value);
+                DestroyEntity(client);
             }
             OnClientDisconnected?.Invoke(peer, disconnectinfo);
         }
@@ -236,7 +238,7 @@ namespace VoiceCraft.Server
                     }
                     
                     var peerEntity = CreateEntity();
-                    NetworkEntities.Add(new VoiceCraftClient(loginPeer), peerEntity);
+                    peerEntity.AddComponent(new NetworkClientComponent(peerEntity, loginPeer)); 
                     var setEntityPacket = new SetLocalEntityPacket { Id = peerEntity.Id };
                     SendPacket(loginPeer, setEntityPacket);
                     break;

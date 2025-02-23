@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 
 namespace VoiceCraft.Core.ECS
 {
@@ -30,6 +32,11 @@ namespace VoiceCraft.Core.ECS
             var entity = new Entity(this, id);
             _entities.TryAdd(id, entity);
             return entity;
+        }
+
+        public IEnumerable<Entity> GetEntitiesWithComponent<T>() where T : Component
+        {
+            return _entities.Where(x => x.Value.HasComponent<T>()).Select(x => x.Value);
         }
 
         public void DestroyEntity(Entity entity)

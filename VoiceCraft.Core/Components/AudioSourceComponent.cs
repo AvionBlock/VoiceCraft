@@ -1,9 +1,14 @@
+using VoiceCraft.Core.ECS;
+
 namespace VoiceCraft.Core.Components
 {
-    public struct AudioSourceComponent
+    public class AudioSourceComponent : Component
     {
-        public string EnvironmentId;
+        public string EnvironmentId = string.Empty;
         public ulong Bitmask;
-        public string Name;
+        public string Name = string.Empty;
+
+        public AudioSourceComponent(Entity entity) : base(entity)
+        { }
     }
 }
