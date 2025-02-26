@@ -1,14 +1,11 @@
-using VoiceCraft.Core.ECS;
+using Friflo.Engine.ECS;
 
 namespace VoiceCraft.Core.Components
 {
-    public class ProximityEffectComponent : Component
+    public class ProximityEffectComponent : IComponent
     {
         public ulong Bitmask;
         public uint MinRange;
         public uint MaxRange;
-
-        public ProximityEffectComponent(Entity entity) : base(entity)
-        { }
     }
 }

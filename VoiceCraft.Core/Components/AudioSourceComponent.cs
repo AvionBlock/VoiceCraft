@@ -1,14 +1,11 @@
-using VoiceCraft.Core.ECS;
+using Friflo.Engine.ECS;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioSourceComponent : Component
+    public struct AudioSourceComponent : IComponent
     {
-        public string EnvironmentId = string.Empty;
+        public string EnvironmentId;
         public ulong Bitmask;
-        public string Name = string.Empty;
-
-        public AudioSourceComponent(Entity entity) : base(entity)
-        { }
+        public string Name;
     }
 }

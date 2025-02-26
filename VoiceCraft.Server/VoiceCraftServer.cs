@@ -1,7 +1,7 @@
+using Friflo.Engine.ECS;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Components;
-using VoiceCraft.Core.ECS;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Server
@@ -17,9 +17,6 @@ namespace VoiceCraft.Server
         public event Action? OnStopped;
         public event Action<NetPeer>? OnClientConnected;
         public event Action<NetPeer, DisconnectInfo>? OnClientDisconnected;
-        public event Action<Entity>? OnEntityCreated;
-        public event Action<Entity>? OnEntityDestroyed;
-
         //Server Properties
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public bool DiscoveryEnabled { get; set; }
@@ -30,8 +27,7 @@ namespace VoiceCraft.Server
         private readonly NetManager _netManager;
         private readonly CancellationTokenSource _cts;
         private readonly NetDataWriter _dataWriter;
-        private readonly World _world;
-        private readonly List<Entity> _allEntities = [];
+        private readonly EntityStore _world;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -44,7 +40,7 @@ namespace VoiceCraft.Server
             {
                 AutoRecycle = true
             };
-            _world = new World();
+            _world = new EntityStore();
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
             _listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
@@ -55,34 +51,6 @@ namespace VoiceCraft.Server
         ~VoiceCraftServer()
         {
             Dispose(false);
-        }
-
-        private Entity CreateEntity()
-        {
-            var entity = _world.CreateEntity();
-            _allEntities.Add(entity);
-            var packet = new EntityCreatedPacket() { Id = entity.Id };
-            var entities = _world.GetEntitiesWithComponent<NetworkClientComponent>();
-            foreach (var networkEntity in entities)
-            {
-                SendPacket(networkEntity.GetComponent<NetworkClientComponent>().Peer, packet);
-            }
-
-            OnEntityCreated?.Invoke(entity);
-            return entity;
-        }
-
-        private void DestroyEntity(Entity entity)
-        { 
-            _world.DestroyEntity(entity);
-            _allEntities.Remove(entity);
-            var packet = new EntityDestroyedPacket() { Id = entity.Id };
-            var entities = _world.GetEntitiesWithComponent<NetworkClientComponent>();
-            foreach (var networkEntity in entities)
-            {
-                SendPacket(networkEntity.GetComponent<NetworkClientComponent>().Peer, packet);
-            }
-            OnEntityDestroyed?.Invoke(entity);
         }
 
         #region Public Methods
@@ -185,12 +153,14 @@ namespace VoiceCraft.Server
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
         {
-            var entities = _world.GetEntitiesWithComponent<NetworkClientComponent>();
-            var client = entities.FirstOrDefault(x => Equals(x.GetComponent<NetworkClientComponent>().Peer, peer));
-            if (client != null)
+            var query = _world.Query<NetworkClientComponent>();
+            var buffer = _world.GetCommandBuffer();
+            query.ForEachEntity((ref NetworkClientComponent c1, Entity entity) =>
             {
-                DestroyEntity(client);
-            }
+                if (c1.Peer.Equals(peer))
+                    buffer.DeleteEntity(entity.Id);
+            });
+            buffer.Playback();
             OnClientDisconnected?.Invoke(peer, disconnectinfo);
         }
 
@@ -231,15 +201,15 @@ namespace VoiceCraft.Server
                     var loginPeer = request.Accept();
                     loginPeer.Tag = loginPacket.LoginType;
                     var createEntityPacket = new EntityCreatedPacket();
-                    foreach (var entity in _allEntities)
+                    var query = _world.Query<NetworkComponent>();
+                    query.ForEachEntity((ref NetworkComponent c2, Entity entity) =>
                     {
-                        createEntityPacket.Id = entity.Id;
+                        createEntityPacket.Id = c2.NetworkId;
                         SendPacket(loginPeer, createEntityPacket);
-                    }
-                    
-                    var peerEntity = CreateEntity();
-                    peerEntity.AddComponent(new NetworkClientComponent(peerEntity, loginPeer)); 
-                    var setEntityPacket = new SetLocalEntityPacket { Id = peerEntity.Id };
+                    });
+
+                    var peerEntity = _world.CreateEntity(new NetworkClientComponent(loginPeer), new NetworkComponent());
+                    var setEntityPacket = new SetLocalEntityPacket { Id = peerEntity.GetComponent<NetworkComponent>().NetworkId };
                     SendPacket(loginPeer, setEntityPacket);
                     break;
                 case LoginType.Pinger:

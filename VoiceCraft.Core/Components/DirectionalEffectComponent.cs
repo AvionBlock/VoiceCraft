@@ -1,12 +1,9 @@
-using VoiceCraft.Core.ECS;
+using Friflo.Engine.ECS;
 
 namespace VoiceCraft.Core.Components
 {
-    public class DirectionalEffectComponent : Component
+    public struct DirectionalEffectComponent : IComponent
     {
         public ulong Bitmask;
-
-        public DirectionalEffectComponent(Entity entity) : base(entity)
-        { }
     }
 }

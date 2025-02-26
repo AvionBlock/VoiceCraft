@@ -1,13 +1,13 @@
+using Friflo.Engine.ECS;
 using LiteNetLib;
-using VoiceCraft.Core.ECS;
 
 namespace VoiceCraft.Core.Components
 {
-    public class NetworkClientComponent : Component
+    public struct NetworkClientComponent : IComponent
     {
         public readonly NetPeer Peer;
-        
-        public NetworkClientComponent(Entity entity, NetPeer peer) : base(entity)
+
+        public NetworkClientComponent(NetPeer peer)
         {
             Peer = peer;
         }
