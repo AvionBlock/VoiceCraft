@@ -23,11 +23,13 @@ namespace VoiceCraft.Server
         public PositioningType PositioningType { get; set; }
 
         //Public Properties
-        private readonly EventBasedNetListener _listener;
+        public EventBasedNetListener Listener { get; }
+        public EntityStore World { get; }
+        
         private readonly NetManager _netManager;
         private readonly CancellationTokenSource _cts;
         private readonly NetDataWriter _dataWriter;
-        private readonly EntityStore _world;
+        private readonly PacketEventHandler _packetHandler;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -35,17 +37,19 @@ namespace VoiceCraft.Server
         {
             _dataWriter = new NetDataWriter();
             _cts = new CancellationTokenSource();
-            _listener = new EventBasedNetListener();
-            _netManager = new NetManager(_listener)
+            Listener = new EventBasedNetListener();
+            _netManager = new NetManager(Listener)
             {
                 AutoRecycle = true
             };
-            _world = new EntityStore();
+            World = new EntityStore();
+            _packetHandler = new PacketEventHandler(this);
 
-            _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
-            _listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
-            _listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
-            _listener.NetworkReceiveEvent += ListenerOnNetworkReceiveEvent;
+            Listener.ConnectionRequestEvent += OnConnectionRequestEvent;
+            Listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
+            Listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
+            
+            World.OnEntityCreate += WorldOnEntityCreate;
         }
 
         ~VoiceCraftServer()
@@ -80,19 +84,8 @@ namespace VoiceCraft.Server
                     .Where(peer => peer.ConnectionState == ConnectionState.Connected && (LoginType?)peer.Tag == LoginType.Pinger).ToArray(),
                 serverInfoPacket);
         }
-
-        public void Stop()
-        {
-            if (!_netManager.IsRunning) return;
-            _netManager.Stop();
-            OnStopped?.Invoke();
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        
+        public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
 
@@ -103,7 +96,7 @@ namespace VoiceCraft.Server
             return true;
         }
 
-        private bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             var status = true;
             foreach (var peer in peers)
@@ -112,6 +105,13 @@ namespace VoiceCraft.Server
             }
 
             return status;
+        }
+
+        public void Stop()
+        {
+            if (!_netManager.IsRunning) return;
+            _netManager.Stop();
+            OnStopped?.Invoke();
         }
 
         #endregion
@@ -130,11 +130,32 @@ namespace VoiceCraft.Server
             {
                 var loginPacket = new LoginPacket();
                 loginPacket.Deserialize(request.Data);
-                OnLoginPacketReceived(loginPacket, request);
+                if (Version.Parse(loginPacket.Version).Major != Version.Major)
+                {
+                    request.Reject();
+                    return;
+                }
+
+                switch (loginPacket.LoginType)
+                {
+                    case LoginType.Login:
+                        var loginPeer = request.Accept();
+                        loginPeer.Tag = loginPacket.LoginType;
+                        World.CreateEntity(new NetworkComponent(0, loginPeer));
+                        break;
+                    case LoginType.Pinger:
+                    case LoginType.Discovery:
+                        var peer = request.Accept();
+                        peer.Tag = loginPacket.LoginType;
+                        break;
+                    default:
+                        request.Reject();
+                        break;
+                }
             }
             catch
             {
-                request.Reject();
+                request.Reject(); //Need to set message data here.
             }
         }
 
@@ -153,76 +174,36 @@ namespace VoiceCraft.Server
 
         private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
         {
-            var query = _world.Query<NetworkClientComponent>();
-            var buffer = _world.GetCommandBuffer();
-            query.ForEachEntity((ref NetworkClientComponent c1, Entity entity) =>
+            var query = World.Query<NetworkComponent>();
+            var buffer = World.GetCommandBuffer();
+            query.ForEachEntity((ref NetworkComponent c1, Entity entity) =>
             {
-                if (c1.Peer.Equals(peer))
+                if (c1.Peer?.Equals(peer) ?? false)
                     buffer.DeleteEntity(entity.Id);
             });
             buffer.Playback();
             OnClientDisconnected?.Invoke(peer, disconnectinfo);
         }
 
-        private void ListenerOnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
-        {
-            var packetType = reader.GetByte();
-            var pt = (PacketType)packetType;
-            switch (pt)
-            {
-                //Unused Packet Types.
-                case PacketType.Login:
-                case PacketType.Info:
-                case PacketType.Audio:
-                case PacketType.EntityCreated:
-                case PacketType.EntityDestroyed:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            reader.Recycle();
-        }
-
         #endregion
-
-        #region Packet Events
-        private void OnLoginPacketReceived(LoginPacket loginPacket, ConnectionRequest request)
+        
+        #region World Events
+        private void WorldOnEntityCreate(EntityCreate entityCreate)
         {
-            if (Version.Parse(loginPacket.Version).Major != Version.Major)
-            {
-                request.Reject();
-                return;
-            }
+            if (!entityCreate.Entity.TryGetComponent(out NetworkComponent networkComponent)) return;
+            var entityCreatedPacket = new EntityCreatedPacket();
+            var query = World.Query<NetworkComponent>();
 
-            switch (loginPacket.LoginType)
+            if (networkComponent.Peer != null)
             {
-                case LoginType.Login:
-                    var loginPeer = request.Accept();
-                    loginPeer.Tag = loginPacket.LoginType;
-                    var createEntityPacket = new EntityCreatedPacket();
-                    var query = _world.Query<NetworkComponent>();
-                    query.ForEachEntity((ref NetworkComponent c2, Entity entity) =>
-                    {
-                        createEntityPacket.Id = c2.NetworkId;
-                        SendPacket(loginPeer, createEntityPacket);
-                    });
-
-                    var peerEntity = _world.CreateEntity(new NetworkClientComponent(loginPeer), new NetworkComponent());
-                    var setEntityPacket = new SetLocalEntityPacket { Id = peerEntity.GetComponent<NetworkComponent>().NetworkId };
-                    SendPacket(loginPeer, setEntityPacket);
-                    break;
-                case LoginType.Pinger:
-                case LoginType.Discovery:
-                    var peer = request.Accept();
-                    peer.Tag = loginPacket.LoginType;
-                    break;
-                default:
-                    request.Reject();
-                    break;
+                query.ForEachEntity((ref NetworkComponent c1, Entity entity) =>
+                {
+                    entityCreatedPacket.Id = c1.NetworkId;
+                    if (!entityCreate.Entity.Equals(entity))
+                        SendPacket(networkComponent.Peer, entityCreatedPacket);
+                });
             }
         }
-
         #endregion
 
         #region Dispose
