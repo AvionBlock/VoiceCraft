@@ -2,6 +2,6 @@
 
 Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
 
-![VoiceCraft](./VoiceCraft.Maui/Resources/AppIcon/vc.png)
+![VoiceCraft](./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png)
 
 VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE!
