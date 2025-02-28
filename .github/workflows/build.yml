@@ -24,7 +24,7 @@ jobs:
         run: dotnet build -c Debug
 
       - name: Publish VoiceCraft.Client.Windows.x64
-        run: dotnet publish -c Debug -r win-x64 --self-contained false
+        run: dotnet publish -c Debug -r win-x64 --self-contained false -p:PublishSingleFile=true
       - name: Upload Artifact VoiceCraft.Client.Windows.x64
         uses: actions/upload-artifact@v4
         with:
@@ -32,7 +32,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-x64/publish/
 
       - name: Publish VoiceCraft.Client.Windows.x86
-        run: dotnet publish -c Debug -r win-x86 --self-contained false
+        run: dotnet publish -c Debug -r win-x86 --self-contained false -p:PublishSingleFile=true
       - name: Upload Artifact VoiceCraft.Client.Windows.x86
         uses: actions/upload-artifact@v4
         with:
@@ -40,7 +40,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-x86/publish/
 
       - name: Publish VoiceCraft.Client.Windows.arm64
-        run: dotnet publish -c Debug -r win-arm64 --self-contained false
+        run: dotnet publish -c Debug -r win-arm64 --self-contained false -p:PublishSingleFile=true
       - name: Upload Artifact VoiceCraft.Client.Windows.arm64
         uses: actions/upload-artifact@v4
         with:
@@ -66,7 +66,7 @@ jobs:
         run: dotnet build -c Debug
 
       - name: Publish VoiceCraft.Client.Linux.x64
-        run: dotnet publish -c Debug -r linux-x64 --self-contained false
+        run: dotnet publish -c Debug -r linux-x64 --self-contained false -p:PublishSingleFile=true
       - name: Upload Artifact VoiceCraft.Client.Linux.x64
         uses: actions/upload-artifact@v4
         with:
@@ -74,7 +74,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-x64/publish/
 
       - name: Publish VoiceCraft.Client.Linux.arm
-        run: dotnet publish -c Debug -r linux-arm --self-contained false
+        run: dotnet publish -c Debug -r linux-arm --self-contained false -p:PublishSingleFile=true
       - name: Upload Artifact VoiceCraft.Client.Linux.arm
         uses: actions/upload-artifact@v4
         with:
@@ -82,7 +82,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-arm/publish
 
       - name: Publish VoiceCraft.Client.Linux.arm64
-        run: dotnet publish -c Debug -r linux-arm64 --self-contained false
+        run: dotnet publish -c Debug -r linux-arm64 --self-contained false -p:PublishSingleFile=true
       - name: Upload Artifact VoiceCraft.Client.Linux.arm64
         uses: actions/upload-artifact@v4
         with:
@@ -156,7 +156,7 @@ jobs:
         if: false
 
       - name: Publish VoiceCraft.Client.MacOS.x64
-        run: dotnet publish -c Debug -r osx-x64 --self-contained false
+        run: dotnet publish -c Debug -r osx-x64 --self-contained false -p:PublishSingleFile=true
         if: false
       - name: Upload Artifact VoiceCraft.Client.MacOS.x64
         uses: actions/upload-artifact@v4
