@@ -31,3 +31,6 @@ There is also a comprehensive API system in place that addon developer's can use
 |XBOX       |❌ |❌ |❌   |❌   |
 |PlayStation|❌ |❌ |❌   |❌   |
 |Switch     |❌ |❌ |❌   |❌   |
+
+## Hosts
+![AtrioxHosting $0.44/m](https://img.shields.io/badge/Accessibility-%230170EA.svg?style=for-the-badge&logo=Accessibility&logoColor=white): https://atrioxhost.com/voicecraft
