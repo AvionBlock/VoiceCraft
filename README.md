@@ -38,6 +38,10 @@ There is also a comprehensive API system in place that addon developer's can use
 - AtrioxHosting $0.44/m: https://atrioxhost.com/voicecraft
 
 ## Project Dependencies
+
+> [!NOTE]
+> Some dependencies are not used in full for example VoiceCraft only depends on NAudio.Core for all platforms but also depends on NAudio.WinForms and NAudio.WinMM for windows.
+
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
@@ -45,3 +49,6 @@ There is also a comprehensive API system in place that addon developer's can use
 - [Notification.Avalonia](https://github.com/AvaloniaCommunity/Notification.Avalonia)
 - [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
 - [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
+- [NAudio](https://github.com/naudio/NAudio)
+- [NWaves](https://github.com/ar1st0crat/NWaves)
+- [OpenTK (OpenAL)](https://github.com/opentk/opentk)
