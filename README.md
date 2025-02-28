@@ -8,6 +8,7 @@ Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, 
 > VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE!
 
 ## Project Description
+
 VoiceCraft is a cross platform proximity voice chat solution for minecraft bedrock edition. VoiceCraft supports a wide range of devices to increase it's availability to players and can indirectly support any other devices such as consoles through the binding system.
 
 VoiceCraft is coded in C# for both the server and applications using the Avalonia framework. VoiceCraft also uses the Opus codec for voice data compression and SpeexDSP for voice enhancements.
@@ -33,4 +34,14 @@ There is also a comprehensive API system in place that addon developer's can use
 |Switch     |❌ |❌ |❌   |❌   |
 
 ## Hosts
+
 - AtrioxHosting $0.44/m: https://atrioxhost.com/voicecraft
+
+## Project Dependencies
+- [Avalonia](https://github.com/AvaloniaUI/Avalonia)
+- [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
+- [OpusSharp](https://github.com/AvionBlock/OpusSharp)
+- [Friflo.Engine.ECS](https://github.com/friflo/Friflo.Engine.ECS?tab=readme-ov-file)
+- [Notification.Avalonia](https://github.com/AvaloniaCommunity/Notification.Avalonia)
+- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
+- [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
