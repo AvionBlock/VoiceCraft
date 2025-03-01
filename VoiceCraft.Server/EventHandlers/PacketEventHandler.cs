@@ -1,7 +1,7 @@
 using LiteNetLib;
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.Network;
 
-namespace VoiceCraft.Server
+namespace VoiceCraft.Server.EventHandlers
 {
     public class PacketEventHandler
     {

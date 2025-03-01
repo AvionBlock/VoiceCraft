@@ -1,6 +1,4 @@
-using LiteNetLib;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Server
 {
@@ -15,8 +13,6 @@ namespace VoiceCraft.Server
             _serverProperties = new ServerProperties();
             _server.OnStarted += OnStarted;
             _server.OnStopped += OnStopped;
-            _server.OnClientConnected += OnClientConnected;
-            _server.OnClientDisconnected += OnClientDisconnected;
         }
 
         public async Task Start()
@@ -51,16 +47,6 @@ namespace VoiceCraft.Server
         private void OnStopped()
         {
             Console.WriteLine("Server stopped!");
-        }
-        
-        private void OnClientConnected(NetPeer obj)
-        {
-            Console.WriteLine($"Client connected! {obj.Address}");
-        }
-        
-        private void OnClientDisconnected(NetPeer arg1, DisconnectInfo arg2)
-        {
-            Console.WriteLine($"Client disconnected! {arg1.Address} - {arg2.Reason}");
         }
     }
 }

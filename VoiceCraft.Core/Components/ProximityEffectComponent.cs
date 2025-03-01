@@ -2,7 +2,7 @@ using Friflo.Engine.ECS;
 
 namespace VoiceCraft.Core.Components
 {
-    public class ProximityEffectComponent : IComponent
+    public struct ProximityEffectComponent : IComponent
     {
         public ulong Bitmask;
         public uint MinRange;

@@ -1,4 +1,4 @@
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core
 {
