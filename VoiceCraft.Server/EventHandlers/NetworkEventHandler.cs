@@ -42,7 +42,7 @@ namespace VoiceCraft.Server.EventHandlers
                     case LoginType.Login:
                         var loginPeer = request.Accept();
                         loginPeer.Tag = loginPacket.LoginType;
-                        _server.World.CreateEntity(new NetworkComponent(IDGenerator.Generate(), loginPeer));
+                        _server.World.CreateEntity(new NetworkComponent(IdGenerator.Generate(), loginPeer));
                         break;
                     case LoginType.Pinger:
                     case LoginType.Discovery:

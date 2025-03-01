@@ -1,15 +1,15 @@
 namespace VoiceCraft.Server
 {
-    public static class IDGenerator
+    public static class IdGenerator
     {
-        private static List<uint> _allocatedIds = [];
+        private static readonly List<uint> AllocatedIds = [];
 
         public static uint Generate()
         {
             for (uint i = 0; i < uint.MaxValue; i++)
             {
-                if(_allocatedIds.Contains(i)) continue;
-                _allocatedIds.Add(i);
+                if(AllocatedIds.Contains(i)) continue;
+                AllocatedIds.Add(i);
                 return i;
             }
             
@@ -18,7 +18,7 @@ namespace VoiceCraft.Server
 
         public static bool Return(uint id)
         {
-            return _allocatedIds.Remove(id);
+            return AllocatedIds.Remove(id);
         }
     }
 }
