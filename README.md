@@ -35,7 +35,7 @@ There is also a comprehensive API system in place that addon developer's can use
 
 ## Hosts
 
-- AtrioxHosting $0.44/m: https://atrioxhost.com/voicecraft
+- Atrioxhosting €0.44/m: https://atrioxhost.com/voicecraft
 
 ## Project Dependencies
 
