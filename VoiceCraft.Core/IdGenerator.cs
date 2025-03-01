@@ -1,8 +1,11 @@
-namespace VoiceCraft.Server
+using System;
+using System.Collections.Generic;
+
+namespace VoiceCraft.Core
 {
     public static class IdGenerator
     {
-        private static readonly List<uint> AllocatedIds = [];
+        private static readonly List<uint> AllocatedIds = new List<uint>();
 
         public static uint Generate()
         {

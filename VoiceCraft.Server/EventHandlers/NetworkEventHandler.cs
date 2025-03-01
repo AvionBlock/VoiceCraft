@@ -1,5 +1,6 @@
 using Friflo.Engine.ECS;
 using LiteNetLib;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Components;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;

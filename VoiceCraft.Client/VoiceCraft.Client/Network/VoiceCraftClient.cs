@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using Friflo.Engine.ECS;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
 using VoiceCraft.Core;
-using VoiceCraft.Core.ECS;
+using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network
