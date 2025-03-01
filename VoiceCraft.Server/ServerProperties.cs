@@ -1,6 +1,6 @@
 using VoiceCraft.Core.Network;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Server
 {
     public class ServerProperties
     {

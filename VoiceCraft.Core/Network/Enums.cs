@@ -32,10 +32,18 @@ namespace VoiceCraft.Core.Network
         //Components
         AddComponent,
         RemoveComponent,
+        UpdateComponent
     }
 
     public enum ComponentEnum : byte
     {
-        TransformComponent
+        AudioListenerComponent,
+        AudioSourceComponent,
+        AudioStreamComponent,
+        TransformComponent,
+        
+        //Effect Components
+        ProximityEffectComponent,
+        DirectionalEffectComponent,
     }
 }
