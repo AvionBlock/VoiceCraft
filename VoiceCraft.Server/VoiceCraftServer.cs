@@ -11,7 +11,6 @@ namespace VoiceCraft.Server
     {
         // ReSharper disable once InconsistentNaming
         private const int PINGER_BROADCAST_INTERVAL_MS = 5000;
-
         public static readonly Version Version = new(1, 1, 0);
 
         public event Action? OnStarted;

@@ -19,6 +19,13 @@ namespace VoiceCraft.Core
             throw new Exception("No IDs available!");
         }
 
+        public static bool Allocate(uint id)
+        {
+            if (AllocatedIds.Contains(id)) return false;
+            AllocatedIds.Add(id);
+            return true;
+        }
+
         public static bool Return(uint id)
         {
             return AllocatedIds.Remove(id);

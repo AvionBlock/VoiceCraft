@@ -1,10 +1,10 @@
 using System;
-using System.Diagnostics;
 using Friflo.Engine.ECS;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
+using VoiceCraft.Client.Network.EventHandlers;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
@@ -17,75 +17,60 @@ namespace VoiceCraft.Client.Network
         public static readonly WaveFormat WaveFormat = new(AudioConstants.SampleRate, AudioConstants.Channels);
         private static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
 
-        public int Latency { get; private set; }
-        public ConnectionStatus ConnectionStatus { get; private set; }
+        public int Latency { get; internal set; }
+        public ConnectionStatus ConnectionStatus { get; internal set; }
 
         //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
-
-        //Packet Events
-        public event Action<InfoPacket>? OnInfoPacketReceived;
-        public event Action<SetLocalEntityPacket>? OnSetLocalEntityPacketReceived;
-        public event Action<EntityCreatedPacket>? OnEntityCreatedPacketReceived;
-        public event Action<EntityDestroyedPacket>? OnEntityDestroyedPacketReceived;
+        public event Action<string, uint, bool, PositioningType>? OnInfoReceived;
         
         //Client Events
         public event Action<Entity>? OnEntityCreated;
         public event Action<Entity>? OnEntityDestroyed;
         
-        private readonly EventBasedNetListener _listener;
+        //Public Properties
+        public EventBasedNetListener Listener { get; }
+        public EntityStore World { get; }
+        public uint LocalEntityId { get; internal set; }
+        public NetPeer? ServerPeer { get; internal set; }
+        
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter;
+        private readonly NetworkEventHandler _networkEventHandler;
+        private readonly PacketEventHandler _packetHandler;
+        private readonly WorldEventHandler _worldEventHandler;
+        
         private readonly OpusEncoder _encoder;
         private readonly BufferedWaveProvider _queuedAudio;
         private readonly byte[] _extractedAudioBuffer;
         private readonly byte[] _encodedAudioBuffer;
-        private readonly World _world;
-        private int? _localEntityId;
-        private NetPeer? _serverPeer;
         private bool _isDisposed;
         private uint _currentTimestamp;
 
         public VoiceCraftClient()
         {
             _dataWriter = new NetDataWriter();
-            _listener = new EventBasedNetListener();
-            _netManager = new NetManager(_listener)
+            Listener = new EventBasedNetListener();
+            _netManager = new NetManager(Listener)
             {
                 AutoRecycle = true,
                 IPv6Enabled = false
             };
+            World = new EntityStore();
+            _networkEventHandler = new NetworkEventHandler(this);
+            _packetHandler = new PacketEventHandler(this);
+            _worldEventHandler = new WorldEventHandler(this);
+            
             _encoder = new OpusEncoder(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
             _queuedAudio = new BufferedWaveProvider(WaveFormat) { ReadFully = false, BufferDuration = TimeSpan.FromSeconds(2) }; //2 seconds.
             _extractedAudioBuffer = new byte[BytesPerFrame];
             _encodedAudioBuffer = new byte[1000];
-            _world = new World();
-
-            _listener.PeerConnectedEvent += OnPeerConnectedEvent;
-            _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
-            _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
-            _listener.NetworkLatencyUpdateEvent += OnNetworkLatencyUpdateEvent;
-            _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
         }
 
         ~VoiceCraftClient()
         {
             Dispose(false);
-        }
-
-        private Entity CreateEntity(int entityServerId)
-        {
-            var entity = _world.CreateEntity(entityServerId);
-            OnEntityCreated?.Invoke(entity);
-            return entity;
-        }
-        
-        private void DestroyEntity(int entityServerId)
-        {
-            var entity = _world.DestroyEntity(entityServerId);
-            if(entity != null)
-                OnEntityDestroyed?.Invoke(entity);
         }
         
         #region Public Methods
@@ -137,108 +122,18 @@ namespace VoiceCraft.Client.Network
 
         public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
-            if (_serverPeer?.ConnectionState != ConnectionState.Connected) return false;
+            if (ServerPeer?.ConnectionState != ConnectionState.Connected) return false;
 
             _dataWriter.Reset();
             _dataWriter.Put((byte)packet.PacketType);
             packet.Serialize(_dataWriter);
-            _serverPeer.Send(_dataWriter, deliveryMethod);
+            ServerPeer.Send(_dataWriter, deliveryMethod);
             return true;
         }
 
         public void WriteAudio(byte[] buffer, int length)
         {
             _queuedAudio.AddSamples(buffer, 0, length);
-        }
-        #endregion
-        
-        #region Network Events
-        private void OnPeerConnectedEvent(NetPeer peer)
-        {
-            ConnectionStatus = ConnectionStatus.Connected;
-            _serverPeer = peer;
-            OnConnected?.Invoke();
-        }
-
-        private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
-        {
-            ConnectionStatus = ConnectionStatus.Disconnected;
-            _serverPeer = null;
-            OnDisconnected?.Invoke(disconnectInfo);
-        }
-
-        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
-        {
-            var packetType = reader.GetByte();
-            var pt = (PacketType)packetType;
-            switch (pt)
-            {
-                case PacketType.Login:
-                    break;
-                case PacketType.Info:
-                    var infoPacket = new InfoPacket();
-                    infoPacket.Deserialize(reader);
-                    OnInfoReceived(infoPacket);
-                    break;
-                case PacketType.SetLocalEntity:
-                    var localEntityPacket = new SetLocalEntityPacket();
-                    localEntityPacket.Deserialize(reader);
-                    OnSetLocalEntityReceived(localEntityPacket);
-                    break;
-                case PacketType.EntityCreated:
-                    var entityCreatedPacket = new EntityCreatedPacket();
-                    entityCreatedPacket.Deserialize(reader);
-                    OnEntityCreatedReceived(entityCreatedPacket);
-                    break;
-                case PacketType.EntityDestroyed:
-                    var entityDestroyedPacket = new EntityDestroyedPacket();
-                    entityDestroyedPacket.Deserialize(reader);
-                    OnEntityDestroyedReceived(entityDestroyedPacket);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            reader.Recycle();
-        }
-
-        private void OnNetworkLatencyUpdateEvent(NetPeer peer, int latency)
-        {
-            Latency = latency;
-        }
-
-        private static void OnConnectionRequestEvent(ConnectionRequest request)
-        {
-            request.Reject();
-        }
-        #endregion
-        
-        #region Packet Events
-        private void OnInfoReceived(InfoPacket infoPacket)
-        {
-            OnInfoPacketReceived?.Invoke(infoPacket);
-        }
-        
-        private void OnSetLocalEntityReceived(SetLocalEntityPacket packet)
-        {
-            if(_localEntityId == null)
-                CreateEntity(packet.Id);
-            _localEntityId = packet.Id;
-            OnSetLocalEntityPacketReceived?.Invoke(packet);
-        }
-
-        private void OnEntityCreatedReceived(EntityCreatedPacket packet)
-        {
-            CreateEntity(packet.Id);
-            Debug.WriteLine($"Created Entity with ID {packet.Id}");
-            OnEntityCreatedPacketReceived?.Invoke(packet);
-        }
-        
-        private void OnEntityDestroyedReceived(EntityDestroyedPacket packet)
-        {
-            DestroyEntity(packet.Id);
-            Debug.WriteLine($"Destroyed Entity with ID {packet.Id}");
-            OnEntityDestroyedPacketReceived?.Invoke(packet);   
         }
         #endregion
 

@@ -15,12 +15,12 @@ namespace VoiceCraft.Server.EventHandlers
         {
             _server = server;
             
-            _server.Listener.ConnectionRequestEvent += OnConnectionRequestEvent;
-            _server.Listener.PeerConnectedEvent += ListenerOnPeerConnectedEvent;
-            _server.Listener.PeerDisconnectedEvent += ListenerOnPeerDisconnectedEvent;
+            _server.Listener.ConnectionRequestEvent += OnConnectionRequest;
+            _server.Listener.PeerConnectedEvent += OnPeerConnected;
+            _server.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
         }
         
-        private void OnConnectionRequestEvent(ConnectionRequest request)
+        private void OnConnectionRequest(ConnectionRequest request)
         {
             if (request.Data.IsNull)
             {
@@ -61,7 +61,7 @@ namespace VoiceCraft.Server.EventHandlers
             }
         }
 
-        private void ListenerOnPeerConnectedEvent(NetPeer peer)
+        private void OnPeerConnected(NetPeer peer)
         {
             if ((LoginType?)peer.Tag != LoginType.Pinger) return;
             var serverInfoPacket = new InfoPacket()
@@ -73,7 +73,7 @@ namespace VoiceCraft.Server.EventHandlers
             _server.SendPacket(peer, serverInfoPacket);
         }
 
-        private void ListenerOnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
+        private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectinfo)
         {
             var query = _server.World.Query<NetworkComponent>();
             var buffer = _server.World.GetCommandBuffer();

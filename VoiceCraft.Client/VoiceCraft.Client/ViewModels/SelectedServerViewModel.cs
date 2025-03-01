@@ -10,7 +10,7 @@ using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -43,7 +43,7 @@ namespace VoiceCraft.Client.ViewModels
             _serversSettings = new ServersSettingsViewModel(_settingsService.Get<ServersSettings>(), _settingsService);
             _voiceCraftClient = new VoiceCraftClient();
             
-            _voiceCraftClient.OnInfoPacketReceived += InfoPacketReceived;
+            _voiceCraftClient.OnInfoReceived += OnInfoReceived;
             _voiceCraftClient.OnDisconnected += OnDisconnected;
         }
 
@@ -103,10 +103,10 @@ namespace VoiceCraft.Client.ViewModels
                     _navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
                 });
         }
-
-        private void InfoPacketReceived(InfoPacket packet)
+        
+        private void OnInfoReceived(string motd, uint clients, bool discovery, PositioningType positioningType)
         {
-            StatusInfo = $"{packet.Motd}\nConnected Clients: {packet.Clients}\nDiscovery: {packet.Discovery}\nPositioning Type: {packet.PositioningType}";
+            StatusInfo = $"{motd}\nConnected Clients: {clients}\nDiscovery: {discovery}\nPositioning Type: {positioningType}";
         }
 
         private void OnDisconnected(DisconnectInfo disconnectInfo)

@@ -27,6 +27,8 @@ namespace VoiceCraft.Server.EventHandlers
                 case PacketType.EntityCreated:
                 case PacketType.EntityDestroyed:
                 case PacketType.SetLocalEntity:
+                case PacketType.AddComponent:
+                case PacketType.RemoveComponent:
                 default:
                     break;
             }

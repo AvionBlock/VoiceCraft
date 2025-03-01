@@ -11,8 +11,7 @@ using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.ECS;
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.Processes
 {
@@ -22,7 +21,7 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
-        private Dictionary<Entity, AudioSourceViewModel> _audioSources = new();
+        private List<AudioSourceViewModel> _audioSources = new();
         
         //Events
         public event Action<string>? OnUpdateTitle;
@@ -94,7 +93,6 @@ namespace VoiceCraft.Client.Processes
             _audioService = audioService;
             _voiceCraftClient.OnConnected += ClientOnConnected;
             _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
-            _voiceCraftClient.OnEntityDestroyed += ClientOnEntityDestroyed;
             _ip = ip;
             _port = port;
         }
@@ -167,13 +165,6 @@ namespace VoiceCraft.Client.Processes
                 _notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
                 OnDisconnected?.Invoke(obj);
             });
-        }
-        
-        private void ClientOnEntityDestroyed(Entity entity)
-        {
-            if (!_audioSources.ContainsKey(entity)) return;
-            _audioSources.Remove(entity);
-            OnAudioSourceDestroyed?.Invoke(_audioSources[entity]);
         }
     }
 }
