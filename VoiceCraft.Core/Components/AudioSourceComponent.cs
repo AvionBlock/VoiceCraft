@@ -1,8 +1,6 @@
-using Friflo.Engine.ECS;
-
 namespace VoiceCraft.Core.Components
 {
-    public struct AudioSourceComponent : IComponent, IAudioOutput
+    public struct AudioSourceComponent : IAudioOutput
     {
         public string EnvironmentId;
         public IAudioInput AudioInput;

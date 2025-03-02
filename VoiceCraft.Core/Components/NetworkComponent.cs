@@ -1,9 +1,8 @@
-using Friflo.Engine.ECS;
 using LiteNetLib;
 
 namespace VoiceCraft.Core.Components
 {
-    public struct NetworkComponent : IComponent
+    public struct NetworkComponent
     {
         public readonly uint NetworkId;
         public readonly NetPeer? Peer;

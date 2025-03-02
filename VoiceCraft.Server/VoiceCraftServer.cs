@@ -1,4 +1,4 @@
-using Friflo.Engine.ECS;
+using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Network;
@@ -22,14 +22,13 @@ namespace VoiceCraft.Server
 
         //Public Properties
         public EventBasedNetListener Listener { get; }
-        public EntityStore World { get; }
+        public WorldHandler World { get; }
         
         private readonly NetManager _netManager;
         private readonly CancellationTokenSource _cts;
         private readonly NetDataWriter _dataWriter;
         private readonly NetworkEventHandler _networkEventHandler;
         private readonly PacketEventHandler _packetHandler;
-        private readonly WorldEventHandler _worldEventHandler;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -42,10 +41,9 @@ namespace VoiceCraft.Server
             {
                 AutoRecycle = true
             };
-            World = new EntityStore();
+            World = new WorldHandler();
             _networkEventHandler = new NetworkEventHandler(this);
             _packetHandler = new PacketEventHandler(this);
-            _worldEventHandler = new WorldEventHandler(this);
         }
 
         ~VoiceCraftServer()

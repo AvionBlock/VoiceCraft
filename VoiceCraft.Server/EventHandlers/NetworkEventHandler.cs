@@ -1,4 +1,4 @@
-using Friflo.Engine.ECS;
+using Arch.Core;
 using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Components;
@@ -43,7 +43,8 @@ namespace VoiceCraft.Server.EventHandlers
                     case LoginType.Login:
                         var loginPeer = request.Accept();
                         loginPeer.Tag = loginPacket.LoginType;
-                        _server.World.CreateEntity(new NetworkComponent(IdGenerator.Generate(), loginPeer));
+                        var entity = _server.World.Create();
+                        _server.World.Add(entity, new NetworkComponent(IdGenerator.Generate(), loginPeer));
                         break;
                     case LoginType.Pinger:
                     case LoginType.Discovery:
@@ -75,14 +76,14 @@ namespace VoiceCraft.Server.EventHandlers
 
         private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectinfo)
         {
-            var query = _server.World.Query<NetworkComponent>();
-            var buffer = _server.World.GetCommandBuffer();
-            query.ForEachEntity((ref NetworkComponent c1, Entity entity) =>
+            var query = new QueryDescription()
+                .WithAll<NetworkComponent>();
+            _server.World.Query(in query, entity =>
             {
-                if (c1.Peer?.Equals(peer) ?? false)
-                    buffer.DeleteEntity(entity.Id);
+                var networkComponent = _server.World.Get<NetworkComponent>(entity);
+                if(networkComponent.Peer?.Equals(peer) ?? false)
+                    _server.World.Destroy(entity);
             });
-            buffer.Playback();
         }
     }
 }

@@ -1,6 +1,6 @@
-namespace VoiceCraft.Core.Effects
+namespace VoiceCraft.Core.Components
 {
-    public class DirectionalEffect : IAudioEffect
+    public class DirectionalEffectComponent : IAudioEffect
     {
         public uint Bitmask { get; set; }
         public uint XRotation { get; set; }

@@ -1,6 +1,6 @@
-namespace VoiceCraft.Core.Effects
+namespace VoiceCraft.Core.Components
 {
-    public struct ProximityEffect : IAudioEffect
+    public struct ProximityEffectComponent : IAudioEffect
     {
         public uint Bitmask { get; set; }
         public uint MinRange { get; set; }
