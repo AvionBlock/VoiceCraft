@@ -6,18 +6,18 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.AddComponent;
         public uint NetworkId { get; set; }
-        public ComponentEnum ComponentType { get; set; }
+        public string ComponentType { get; set; } = string.Empty;
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put((byte)ComponentType);
+            writer.Put(ComponentType);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             NetworkId = reader.GetUInt();
-            ComponentType = (ComponentEnum)reader.GetByte();
+            ComponentType = reader.GetString();
         }
     }
 }

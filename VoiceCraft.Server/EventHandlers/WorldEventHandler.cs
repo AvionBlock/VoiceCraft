@@ -35,11 +35,10 @@ namespace VoiceCraft.Server.EventHandlers
                     entityCreatedPacket.Id = c1.NetworkId;
                     if (entityCreate.Entity.Equals(entity)) return;
                     _server.SendPacket(networkComponent.Peer, entityCreatedPacket);
-                    foreach (var enumType in entity.Components.Select(entityComponent => GetComponentTypeEnum(entityComponent.Type.Type)))
+                    foreach (var componentType in entity.Components)
                     {
-                        if(enumType == null) continue;
                         addComponentPacket.NetworkId = c1.NetworkId;
-                        addComponentPacket.ComponentType = (ComponentEnum)enumType;
+                        addComponentPacket.ComponentType = enumType;
                         _server.SendPacket(networkComponent.Peer, addComponentPacket);
                     }
                 });
@@ -116,16 +115,6 @@ namespace VoiceCraft.Server.EventHandlers
                 if (c1.Peer == null) return;
                 _server.SendPacket(c1.Peer, removeComponentPacket);
             });
-        }
-        
-        private static ComponentEnum? GetComponentTypeEnum(Type type)
-        {
-            //You can't compare types in a switch.
-            return type.Name switch
-            {
-                nameof(TransformComponent) => ComponentEnum.TransformComponent,
-                _ => null
-            };
         }
     }
 }
