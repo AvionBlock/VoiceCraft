@@ -12,15 +12,5 @@ namespace VoiceCraft.Client.Network.EventHandlers
         {
             _client = client;
         }
-        
-        private static ComponentEnum? GetComponentTypeEnum(Type type)
-        {
-            //You can't compare types in a switch.
-            return type.Name switch
-            {
-                nameof(TransformComponent) => ComponentEnum.TransformComponent,
-                _ => null
-            };
-        }
     }
 }

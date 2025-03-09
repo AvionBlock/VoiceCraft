@@ -4,8 +4,8 @@ namespace VoiceCraft.Server
 {
     public class WorldHandler
     {
-        private readonly World _world;
-        
+        public World World { get; } = World.Create();
+
         public delegate void EntityCreated(Entity entity);
         public delegate void EntityDestroyed(Entity entity);
         public delegate void ComponentAdded(Entity entity, object component);
@@ -16,38 +16,40 @@ namespace VoiceCraft.Server
         public event ComponentAdded? OnComponentAdded;
         public event ComponentRemoved? OnComponentRemoved;
 
-        public WorldHandler()
-        {
-            _world = World.Create();
-        }
-
         public Entity Create()
         {
-            var entity = _world.Create();
+            var entity = this.World.Create();
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
 
         public void Destroy(Entity entity)
         {
-            _world.Destroy(entity);
+            World.Destroy(entity);
             OnEntityDestroyed?.Invoke(entity);
         }
 
         public void Add<T>(Entity entity, in T component) where T : notnull
         {
-            _world.Add(entity, in component);
+            World.Add(entity, in component);
             OnComponentAdded?.Invoke(entity, component);
         }
 
         public void Remove<T>(Entity entity) where T : notnull
         {
-            _world.Remove<T>(entity);
+            World.Remove<T>(entity);
             OnComponentRemoved?.Invoke(entity, typeof(T));
         }
 
-        public T Get<T>(Entity entity) => _world.Get<T>(entity);
+        public T Get<T>(Entity entity) => World.Get<T>(entity);
+        
+        public bool TryGet<T>(Entity entity, out T? component) => World.TryGet(entity, out component);
 
-        public void Query(in QueryDescription queryDescription, ForEach forEach) => _world.Query(queryDescription, forEach);
+        public void Query(in QueryDescription queryDescription, ForEach forEach) => World.Query(queryDescription, forEach);
+
+        public void Trim()
+        {
+            World.TrimExcess();
+        }
     }
 }

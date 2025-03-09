@@ -22,6 +22,7 @@ namespace VoiceCraft.Server
         
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter = new();
+        private readonly WorldEventHandler _worldEventHandler;
         private readonly NetworkEventHandler _networkEventHandler;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
@@ -30,6 +31,7 @@ namespace VoiceCraft.Server
         {
             Properties = properties ?? new ServerProperties();
             Listener = new EventBasedNetListener();
+            _worldEventHandler = new WorldEventHandler(this);
             _networkEventHandler = new NetworkEventHandler(this);
             _netManager = new NetManager(Listener)
             {
@@ -54,6 +56,7 @@ namespace VoiceCraft.Server
         public void Update()
         {
             _netManager.PollEvents();
+            World.Trim();
 
             if (Environment.TickCount - _lastPingBroadcast < PINGER_BROADCAST_INTERVAL_MS) return;
             _lastPingBroadcast = Environment.TickCount;
