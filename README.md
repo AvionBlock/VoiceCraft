@@ -45,7 +45,7 @@ There is also a comprehensive API system in place that addon developer's can use
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
-- [Friflo.Engine.ECS](https://github.com/friflo/Friflo.Engine.ECS?tab=readme-ov-file)
+- [Arch](https://github.com/genaray/Arch)
 - [Notification.Avalonia](https://github.com/AvaloniaCommunity/Notification.Avalonia)
 - [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
 - [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
