@@ -30,6 +30,7 @@ namespace VoiceCraft.Server
             _server.Start(9050);
             while (true)
             {
+                //Need to make this more accurate.
                 if(UpdateInterval > 0)
                     await Task.Delay(TimeSpan.FromMilliseconds(UpdateInterval));
                 _server.Update();
