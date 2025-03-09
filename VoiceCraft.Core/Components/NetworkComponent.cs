@@ -2,12 +2,12 @@ using LiteNetLib;
 
 namespace VoiceCraft.Core.Components
 {
-    public struct NetworkComponent
+    public class NetworkComponent
     {
-        public readonly uint NetworkId;
-        public readonly NetPeer? Peer;
+        public uint NetworkId { get; }
+        public NetPeer Peer { get; }
 
-        public NetworkComponent(uint networkId, NetPeer? peer = null)
+        public NetworkComponent(uint networkId, NetPeer peer)
         {
             NetworkId = networkId;
             Peer = peer;

@@ -1,16 +1,13 @@
-using VoiceCraft.Core;
-
 namespace VoiceCraft.Server
 {
     public class App
     {
+        private const int UpdateInterval = 20;
         private readonly VoiceCraftServer _server;
-        private readonly ServerProperties _serverProperties;
 
         public App()
         {
             _server = new VoiceCraftServer();
-            _serverProperties = new ServerProperties();
             _server.OnStarted += OnStarted;
             _server.OnStopped += OnStopped;
         }
@@ -33,18 +30,18 @@ namespace VoiceCraft.Server
             _server.Start(9050);
             while (true)
             {
-                if(_serverProperties.UpdateIntervalMs > 0)
-                    await Task.Delay(TimeSpan.FromMilliseconds(_serverProperties.UpdateIntervalMs));
+                if(UpdateInterval > 0)
+                    await Task.Delay(TimeSpan.FromMilliseconds(UpdateInterval));
                 _server.Update();
             }
         }
         
-        private void OnStarted()
+        private static void OnStarted()
         {
             Console.WriteLine("Server started!");
         }
         
-        private void OnStopped()
+        private static void OnStopped()
         {
             Console.WriteLine("Server stopped!");
         }

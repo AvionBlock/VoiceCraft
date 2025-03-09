@@ -1,3 +1,6 @@
+using Arch.Core;
+using LiteNetLib.Utils;
+
 namespace VoiceCraft.Core
 {
     public interface IAudioEffect
@@ -11,5 +14,11 @@ namespace VoiceCraft.Core
 
     public interface IAudioOutput
     {
+    }
+
+    public interface IComponentSerializable : INetSerializable
+    {
+        World World { get; }
+        Entity Entity { get; }
     }
 }

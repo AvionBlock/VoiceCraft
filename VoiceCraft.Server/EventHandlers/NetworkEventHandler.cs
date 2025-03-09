@@ -10,14 +10,21 @@ namespace VoiceCraft.Server.EventHandlers
     public class NetworkEventHandler
     {
         private readonly VoiceCraftServer _server;
+        private readonly EventBasedNetListener _listener;
+        private readonly WorldHandler _world;
+        private readonly ServerProperties _properties;
         
         public NetworkEventHandler(VoiceCraftServer server)
         {
             _server = server;
+            _listener = _server.Listener;
+            _world = _server.World;
+            _properties = _server.Properties;
             
-            _server.Listener.ConnectionRequestEvent += OnConnectionRequest;
-            _server.Listener.PeerConnectedEvent += OnPeerConnected;
-            _server.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
+            _listener.ConnectionRequestEvent += OnConnectionRequest;
+            _listener.PeerConnectedEvent += OnPeerConnected;
+            _listener.PeerDisconnectedEvent += OnPeerDisconnected; 
+            _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
         }
         
         private void OnConnectionRequest(ConnectionRequest request)
@@ -43,8 +50,8 @@ namespace VoiceCraft.Server.EventHandlers
                     case LoginType.Login:
                         var loginPeer = request.Accept();
                         loginPeer.Tag = loginPacket.LoginType;
-                        var entity = _server.World.Create();
-                        _server.World.Add(entity, new NetworkComponent(IdGenerator.Generate(), loginPeer));
+                        var entity = _world.Create();
+                        _world.Add(entity, new NetworkComponent(IdGenerator.Generate(), loginPeer));
                         break;
                     case LoginType.Pinger:
                     case LoginType.Discovery:
@@ -67,9 +74,9 @@ namespace VoiceCraft.Server.EventHandlers
             if ((LoginType?)peer.Tag != LoginType.Pinger) return;
             var serverInfoPacket = new InfoPacket()
             {
-                Motd = _server.Motd,
-                Discovery = _server.DiscoveryEnabled,
-                PositioningType = _server.PositioningType,
+                Motd = _properties.Motd,
+                Discovery = _properties.Discovery,
+                PositioningType = _properties.PositioningType,
             };
             _server.SendPacket(peer, serverInfoPacket);
         }
@@ -78,12 +85,34 @@ namespace VoiceCraft.Server.EventHandlers
         {
             var query = new QueryDescription()
                 .WithAll<NetworkComponent>();
-            _server.World.Query(in query, entity =>
+            _world.Query(in query, entity =>
             {
-                var networkComponent = _server.World.Get<NetworkComponent>(entity);
-                if(networkComponent.Peer?.Equals(peer) ?? false)
-                    _server.World.Destroy(entity);
+                var networkComponent = _world.Get<NetworkComponent>(entity);
+                if(networkComponent.Peer.Equals(peer))
+                    _world.Destroy(entity);
             });
+        }
+
+        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
+        {
+            var packetType = reader.GetByte();
+            var pt = (PacketType)packetType;
+            switch (pt)
+            {
+                case PacketType.Login:
+                case PacketType.Info:
+                case PacketType.Audio:
+                case PacketType.SetLocalEntity:
+                case PacketType.EntityCreated:
+                case PacketType.EntityDestroyed:
+                case PacketType.AddComponent:
+                case PacketType.RemoveComponent:
+                case PacketType.UpdateComponent:
+                default:
+                    break;
+            }
+
+            reader.Recycle();
         }
     }
 }

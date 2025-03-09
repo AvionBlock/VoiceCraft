@@ -1,4 +1,3 @@
-using Arch.Core;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Network;
@@ -15,35 +14,27 @@ namespace VoiceCraft.Server
 
         public event Action? OnStarted;
         public event Action? OnStopped;
-        //Server Properties
-        public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
-        public bool DiscoveryEnabled { get; set; }
-        public PositioningType PositioningType { get; set; }
 
         //Public Properties
+        public ServerProperties Properties { get; }
         public EventBasedNetListener Listener { get; }
-        public WorldHandler World { get; }
+        public WorldHandler World { get; } = new();
         
         private readonly NetManager _netManager;
-        private readonly CancellationTokenSource _cts;
-        private readonly NetDataWriter _dataWriter;
+        private readonly NetDataWriter _dataWriter = new();
         private readonly NetworkEventHandler _networkEventHandler;
-        private readonly PacketEventHandler _packetHandler;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
-        public VoiceCraftServer()
+        public VoiceCraftServer(ServerProperties? properties = null)
         {
-            _dataWriter = new NetDataWriter();
-            _cts = new CancellationTokenSource();
+            Properties = properties ?? new ServerProperties();
             Listener = new EventBasedNetListener();
+            _networkEventHandler = new NetworkEventHandler(this);
             _netManager = new NetManager(Listener)
             {
                 AutoRecycle = true
             };
-            World = new WorldHandler();
-            _networkEventHandler = new NetworkEventHandler(this);
-            _packetHandler = new PacketEventHandler(this);
         }
 
         ~VoiceCraftServer()
@@ -68,9 +59,9 @@ namespace VoiceCraft.Server
             _lastPingBroadcast = Environment.TickCount;
             var serverInfoPacket = new InfoPacket()
             {
-                Motd = Motd,
-                Discovery = DiscoveryEnabled,
-                PositioningType = PositioningType,
+                Motd = Properties.Motd,
+                Discovery = Properties.Discovery,
+                PositioningType = Properties.PositioningType,
             };
 
             SendPacket(
@@ -111,14 +102,13 @@ namespace VoiceCraft.Server
         #endregion
 
         #region Dispose
+        
         private void Dispose(bool disposing)
         {
             if (_isDisposed) return;
             if (disposing)
             {
                 _netManager.Stop();
-                _cts.Cancel();
-                _cts.Dispose();
             }
 
             _isDisposed = true;
@@ -129,7 +119,7 @@ namespace VoiceCraft.Server
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
+        
         #endregion
     }
 }
