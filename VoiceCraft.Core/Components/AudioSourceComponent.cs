@@ -1,3 +1,4 @@
+using System;
 using Arch.Bus;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -6,25 +7,27 @@ using VoiceCraft.Core.Events;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioSourceComponent : IAudioOutput, IComponentSerializable
+    public class AudioSourceComponent : IAudioOutput, INetSerializable, IEntityComponent
     {
         private string _environmentId = string.Empty;
         private string _name = string.Empty;
         private ulong _bitmask; //will change to a default value later.
         private IAudioInput? _audioInput;
-
-        public World World { get; }
-        public Entity Entity { get;  }
+        private bool _isDisposed;
+        private bool IsAlive => !_isDisposed && Entity.IsAlive();
         
+        public Entity Entity { get; }
+
+        public event Action? OnDestroyed;
+
         public string EnvironmentId
         {
             get => _environmentId;
             set
             {
-                if (_environmentId == value) return;
+                if (_environmentId == value || !IsAlive) return;
                 _environmentId = value;
-                var componentCreated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentCreated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -33,10 +36,9 @@ namespace VoiceCraft.Core.Components
             get => _name;
             set
             {
-                if (_name == value) return;
+                if (_name == value || !IsAlive) return;
                 _name = value;
-                var componentCreated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentCreated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -45,10 +47,9 @@ namespace VoiceCraft.Core.Components
             get => _bitmask;
             set
             {
-                if (_bitmask == value) return;
+                if (_bitmask == value || !IsAlive) return;
                 _bitmask = value;
-                var componentCreated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentCreated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -57,17 +58,19 @@ namespace VoiceCraft.Core.Components
             get => _audioInput;
             set
             {
-                if (_audioInput == value) return;
+                if (_audioInput == value || !IsAlive) return;
                 _audioInput = value;
-                var componentCreated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentCreated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
-
-        public AudioSourceComponent(World world, Entity entity)
+        
+        public AudioSourceComponent(Entity entity)
         {
-            World = world;
+            if (entity.Has<AudioSourceComponent>())
+                throw new InvalidOperationException($"Entity already has the {GetType().Name}!");
             Entity = entity;
+            Entity.Add(this);
+            WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
         public void Serialize(NetDataWriter writer)
@@ -75,15 +78,6 @@ namespace VoiceCraft.Core.Components
             writer.Put(_environmentId);
             writer.Put(_name);
             writer.Put(_bitmask);
-
-            if (!(_audioInput is IComponentSerializable componentSerializable)) return;
-            if (componentSerializable.World.TryGet<NetworkComponent>(componentSerializable.Entity, out var netComponent) && netComponent != null)
-            {
-                writer.Put(netComponent.NetworkId); //C# compiler doesn't acknowledge null with true/false on first statement. kinda annoying.
-                writer.Put(componentSerializable.GetType().Name);
-            }
-            
-            writer.Put(uint.MaxValue); //Null value. Max value is when no entity is set.
         }
 
         public void Deserialize(NetDataReader reader)
@@ -91,31 +85,15 @@ namespace VoiceCraft.Core.Components
             _environmentId = reader.GetString();
             _name = reader.GetString();
             _bitmask = reader.GetULong();
-
-            var networkId = reader.GetUInt();
-            if(networkId == uint.MaxValue) return; //Max Value? return.
-            
-            var componentTypeName = reader.GetString();
-            var successfullyLinked = false;
-            
-            //Query and link.
-            var query = new QueryDescription()
-                .WithAll<NetworkComponent>();
-            World.Query(in query, (ref Entity entity, ref NetworkComponent networkComponent) =>
-            {
-                if(networkComponent.NetworkId != networkId) return;
-                var components = entity.GetAllComponents();
-                foreach (var component in components)
-                {
-                    if (component?.GetType().Name != componentTypeName || !(component is IAudioInput audioInput)) continue;
-                    _audioInput = audioInput;
-                    successfullyLinked = true;
-                    return;
-                }
-            });
-            
-            if (successfullyLinked) return;
-            _audioInput = null;
+        }
+        
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            Entity.Remove<AudioSourceComponent>();
+            _isDisposed = true;
+            OnDestroyed?.Invoke();
+            WorldEventHandler.InvokeComponentRemoved(new ComponentRemovedEvent(this));
         }
     }
 }

@@ -28,20 +28,29 @@ namespace VoiceCraft.Server
 #endif
             Console.WriteLine("Starting VoiceCraft server...");
             _server.Start(9050);
+            var startTick = Environment.TickCount;
             while (true)
             {
-                //Need to make this more accurate.
-                if(UpdateInterval > 0)
-                    await Task.Delay(TimeSpan.FromMilliseconds(UpdateInterval));
-                _server.Update();
+                var tick = Environment.TickCount;
+                var dist = startTick - tick;
+                if (dist > 0)
+                {
+                    await Task.Delay(dist).ConfigureAwait(false);
+                    continue;
+                }
+
+                var deltaTime = (UpdateInterval + (tick - startTick)) /
+                                10000000f; //I don't know if this is the correct way to determine the delta time. Seems to be correct though.
+                _server.Update(deltaTime);
+                startTick += UpdateInterval;
             }
         }
-        
+
         private static void OnStarted()
         {
             Console.WriteLine("Server started!");
         }
-        
+
         private static void OnStopped()
         {
             Console.WriteLine("Server stopped!");

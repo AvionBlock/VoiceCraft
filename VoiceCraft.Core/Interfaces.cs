@@ -1,5 +1,5 @@
+using System;
 using Arch.Core;
-using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core
 {
@@ -16,9 +16,10 @@ namespace VoiceCraft.Core
     {
     }
 
-    public interface IComponentSerializable : INetSerializable
+    public interface IEntityComponent: IDisposable
     {
-        World World { get; }
         Entity Entity { get; }
+        
+        event Action? OnDestroyed;
     }
 }

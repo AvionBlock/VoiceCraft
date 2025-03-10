@@ -1,27 +1,31 @@
+using System;
 using Arch.Bus;
 using Arch.Core;
+using Arch.Core.Extensions;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioListenerComponent : IAudioInput, IComponentSerializable
+    public class AudioListenerComponent : IAudioInput, INetSerializable, IEntityComponent
     {
         private string _environmentId = string.Empty;
         private ulong _bitmask; //Will change to a default value later.
-
-        public World World { get; }
+        private bool _isDisposed;
+        private bool IsAlive => !_isDisposed && Entity.IsAlive();
+        
         public Entity Entity { get; }
+        
+        public event Action? OnDestroyed;
         
         public string EnvironmentId
         {
             get => _environmentId;
             set
             {
-                if (_environmentId == value) return;
+                if (_environmentId == value || !IsAlive) return;
                 _environmentId = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -30,17 +34,19 @@ namespace VoiceCraft.Core.Components
             get => _bitmask;
             set
             {
-                if (_bitmask == value) return;
+                if (_bitmask == value || !IsAlive) return;
                 _bitmask = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
-        public AudioListenerComponent(World world, Entity entity)
+        public AudioListenerComponent(Entity entity)
         {
-            World = world;
+            if (entity.Has<AudioListenerComponent>())
+                throw new InvalidOperationException($"Entity already has the {GetType().Name}!");
             Entity = entity;
+            Entity.Add(this);
+            WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
         public void Serialize(NetDataWriter writer)
@@ -53,6 +59,15 @@ namespace VoiceCraft.Core.Components
         {
             _environmentId = reader.GetString();
             _bitmask = reader.GetULong();
+        }
+
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            Entity.Remove<AudioListenerComponent>();
+            _isDisposed = true;
+            OnDestroyed?.Invoke();
+            WorldEventHandler.InvokeComponentRemoved(new ComponentRemovedEvent(this));
         }
     }
 }

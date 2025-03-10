@@ -1,28 +1,32 @@
+using System;
 using System.Numerics;
 using Arch.Bus;
 using Arch.Core;
+using Arch.Core.Extensions;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 
 namespace VoiceCraft.Core.Components
 {
-    public class TransformComponent : IComponentSerializable
+    public class TransformComponent : INetSerializable, IEntityComponent
     {
         private Vector3 _position = Vector3.Zero;
         private Quaternion _rotation = Quaternion.Identity;
-
-        public World World { get; }
+        private bool _isDisposed;
+        private bool IsAlive => !_isDisposed && Entity.IsAlive();
+        
         public Entity Entity { get; }
+        
+        public event Action? OnDestroyed;
         
         public Vector3 Position
         {
             get => _position;
             set
             {
-                if(_position == value) return;
+                if(_position == value || !IsAlive) return;
                 _position = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -31,17 +35,19 @@ namespace VoiceCraft.Core.Components
             get => _rotation;
             set
             {
-                if(_rotation == value) return;
+                if(_rotation == value || !IsAlive) return;
                 _rotation = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
-        public TransformComponent(World world, Entity entity)
+        public TransformComponent(Entity entity)
         {
-            World = world;
+            if (entity.Has<TransformComponent>())
+                throw new InvalidOperationException($"Entity already has the {GetType().Name}!");
             Entity = entity;
+            Entity.Add(this);
+            WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
         public void Serialize(NetDataWriter writer)
@@ -68,6 +74,15 @@ namespace VoiceCraft.Core.Components
             _rotation.Y = reader.GetFloat();
             _rotation.Z = reader.GetFloat();
             _rotation.W = reader.GetFloat();
+        }
+        
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            Entity.Remove<TransformComponent>();
+            _isDisposed = true;
+            OnDestroyed?.Invoke();
+            WorldEventHandler.InvokeComponentRemoved(new ComponentRemovedEvent(this));
         }
     }
 }

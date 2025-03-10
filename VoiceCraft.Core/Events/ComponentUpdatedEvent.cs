@@ -2,11 +2,8 @@ namespace VoiceCraft.Core.Events
 {
     public class ComponentUpdatedEvent
     {
-        public readonly object Component;
+        public readonly IEntityComponent Component;
 
-        public ComponentUpdatedEvent(object component)
-        {
-            Component = component;
-        }
+        public ComponentUpdatedEvent(IEntityComponent component) => Component = component;
     }
 }

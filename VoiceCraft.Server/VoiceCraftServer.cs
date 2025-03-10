@@ -1,8 +1,11 @@
+using Arch.Core;
+using Arch.System;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.EventHandlers;
+using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server
 {
@@ -18,12 +21,12 @@ namespace VoiceCraft.Server
         //Public Properties
         public ServerProperties Properties { get; }
         public EventBasedNetListener Listener { get; }
-        public WorldHandler World { get; } = new();
+        public World World { get; } = World.Create();
         
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter = new();
-        private readonly WorldEventHandler _worldEventHandler;
         private readonly NetworkEventHandler _networkEventHandler;
+        private readonly Group<float> _systems;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -31,12 +34,13 @@ namespace VoiceCraft.Server
         {
             Properties = properties ?? new ServerProperties();
             Listener = new EventBasedNetListener();
-            _worldEventHandler = new WorldEventHandler(this);
-            _networkEventHandler = new NetworkEventHandler(this);
             _netManager = new NetManager(Listener)
             {
                 AutoRecycle = true
             };
+            
+            _networkEventHandler = new NetworkEventHandler(this);
+            _systems = new Group<float>("systems", new NetworkComponentSystem(World));
         }
 
         ~VoiceCraftServer()
@@ -50,13 +54,18 @@ namespace VoiceCraft.Server
         {
             if (_netManager.IsRunning) return;
             _netManager.Start(port);
+            _systems.Initialize();
             OnStarted?.Invoke();
         }
 
-        public void Update()
+        public void Update(float deltaTime)
         {
             _netManager.PollEvents();
-            World.Trim();
+            World.TrimExcess();
+            
+            _systems.BeforeUpdate(deltaTime);
+            _systems.Update(deltaTime);
+            _systems.AfterUpdate(deltaTime);
 
             if (Environment.TickCount - _lastPingBroadcast < PINGER_BROADCAST_INTERVAL_MS) return;
             _lastPingBroadcast = Environment.TickCount;
@@ -112,6 +121,7 @@ namespace VoiceCraft.Server
             if (disposing)
             {
                 _netManager.Stop();
+                _systems.Dispose();
             }
 
             _isDisposed = true;

@@ -2,6 +2,7 @@ using Arch.Core;
 using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Components;
+using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
@@ -11,7 +12,7 @@ namespace VoiceCraft.Server.EventHandlers
     {
         private readonly VoiceCraftServer _server;
         private readonly EventBasedNetListener _listener;
-        private readonly WorldHandler _world;
+        private readonly World _world;
         private readonly ServerProperties _properties;
         
         public NetworkEventHandler(VoiceCraftServer server)
@@ -51,7 +52,8 @@ namespace VoiceCraft.Server.EventHandlers
                         var loginPeer = request.Accept();
                         loginPeer.Tag = loginPacket.LoginType;
                         var entity = _world.Create();
-                        _world.Add(entity, new NetworkComponent(IdGenerator.Generate(), loginPeer));
+                        WorldEventHandler.InvokeEntityCreated(new EntityCreatedEvent(entity));
+                        _ = new NetworkComponent(entity, IdGenerator.Generate(), loginPeer);
                         break;
                     case LoginType.Pinger:
                     case LoginType.Discovery:

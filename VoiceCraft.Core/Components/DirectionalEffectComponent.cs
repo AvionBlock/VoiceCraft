@@ -1,30 +1,34 @@
+using System;
 using Arch.Bus;
 using Arch.Core;
+using Arch.Core.Extensions;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 
 namespace VoiceCraft.Core.Components
 {
-    public class DirectionalEffectComponent : IAudioEffect, IComponentSerializable
+    public class DirectionalEffectComponent : IAudioEffect, INetSerializable, IEntityComponent
     {
         private uint _bitmask; //Will change to default value later.
         private uint _xRotation;
         private uint _yRotation;
         private uint _xRange;
         private uint _yRange;
-
-        public World World { get; }
+        private bool _isDisposed;
+        private bool IsAlive => !_isDisposed && Entity.IsAlive();
+        
         public Entity Entity { get; }
+        
+        public event Action? OnDestroyed;
         
         public uint Bitmask
         {
             get => _bitmask;
             set
             {
-                if (_bitmask == value) return;
+                if (_bitmask == value || !IsAlive) return;
                 _bitmask = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -33,10 +37,9 @@ namespace VoiceCraft.Core.Components
             get => _xRotation;
             set
             {
-                if (_xRotation == value) return;
+                if (_xRotation == value || !IsAlive) return;
                 _xRotation = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -45,10 +48,9 @@ namespace VoiceCraft.Core.Components
             get => _yRotation;
             set
             {
-                if (_yRotation == value) return;
+                if (_yRotation == value || !IsAlive) return;
                 _yRotation = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -57,10 +59,9 @@ namespace VoiceCraft.Core.Components
             get => _xRange;
             set
             {
-                if (_xRange == value) return;
+                if (_xRange == value || !IsAlive) return;
                 _xRange = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
 
@@ -69,17 +70,19 @@ namespace VoiceCraft.Core.Components
             get => _yRange;
             set
             {
-                if (_yRange == value) return;
+                if (_yRange == value || !IsAlive) return;
                 _yRange = value;
-                var componentUpdated = new ComponentUpdatedEvent(this);
-                EventBus.Send(ref componentUpdated);
+                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
-
-        public DirectionalEffectComponent(World world, Entity entity)
+        
+        public DirectionalEffectComponent(Entity entity)
         {
-            World = world;
+            if (entity.Has<DirectionalEffectComponent>())
+                throw new InvalidOperationException($"Entity already has the {GetType().Name}!");
             Entity = entity;
+            Entity.Add(this);
+            WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
         public void Serialize(NetDataWriter writer)
@@ -98,6 +101,15 @@ namespace VoiceCraft.Core.Components
             _yRotation = reader.GetUInt();
             _xRange = reader.GetUInt();
             _yRange = reader.GetUInt();
+        }
+        
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+            Entity.Remove<DirectionalEffectComponent>();
+            _isDisposed = true;
+            OnDestroyed?.Invoke();
+            WorldEventHandler.InvokeComponentRemoved(new ComponentRemovedEvent(this));
         }
     }
 }
