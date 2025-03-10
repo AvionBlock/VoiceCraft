@@ -9,8 +9,6 @@ namespace VoiceCraft.Client.Network.EventHandlers
     {
         private readonly VoiceCraftClient _client;
         public event Action<InfoPacket>? OnInfoPacketReceived;
-        public event Action<AudioPacket>? OnAudioPacketReceived;
-        public event Action<SetLocalEntityPacket>? OnSetLocalEntityPacketReceived;
         public event Action<EntityCreatedPacket>? OnEntityCreatedPacketReceived;
         public event Action<EntityDestroyedPacket>? OnEntityDestroyedPacketReceived;
         public event Action<AddComponentPacket>? OnAddComponentPacketReceived;
@@ -39,8 +37,8 @@ namespace VoiceCraft.Client.Network.EventHandlers
                     audioPacket.Deserialize(reader);
                     OnAudioPacket(audioPacket);
                     break;
-                case PacketType.SetLocalEntity:
-                    var localEntityPacket = new SetLocalEntityPacket();
+                case PacketType.StartClient:
+                    var localEntityPacket = new StartClientPacket();
                     localEntityPacket.Deserialize(reader);
                     OnSetLocalEntityPacket(localEntityPacket);
                     break;
@@ -83,10 +81,10 @@ namespace VoiceCraft.Client.Network.EventHandlers
             OnAudioPacketReceived?.Invoke(audioPacket);
         }
 
-        private void OnSetLocalEntityPacket(SetLocalEntityPacket setLocalEntityPacket)
+        private void OnSetLocalEntityPacket(StartClientPacket startClientPacket)
         {
-            _client.LocalEntityId = setLocalEntityPacket.NetworkId;
-            OnSetLocalEntityPacketReceived?.Invoke(setLocalEntityPacket);
+            _client.LocalEntityId = startClientPacket.NetworkId;
+            OnSetLocalEntityPacketReceived?.Invoke(startClientPacket);
         }
 
         private void OnEntityCreatedPacket(EntityCreatedPacket entityCreatedPacket)

@@ -22,16 +22,31 @@ namespace VoiceCraft.Core.Network
 
     public enum PacketType : byte
     {
-        Login,
         Info,
-        Audio,
-        SetLocalEntity,
+        Login,
+        
+        //ECS
         EntityCreated,
-        EntityDestroyed,
-
-        //Components
         AddComponent,
+        UpdateComponent,
         RemoveComponent,
-        UpdateComponent
+        EntityDestroyed,
+    }
+
+    public enum ComponentType : byte
+    {
+        //Audio
+        AudioListener,
+        AudioSource,
+        AudioStream,
+        
+        //Effects
+        DirectionalEffect,
+        ProximityEffect,
+        
+        //Other
+        Transform,
+        Network,
+        Unknown
     }
 }

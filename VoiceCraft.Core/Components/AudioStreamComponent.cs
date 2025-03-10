@@ -3,6 +3,7 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
+using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
@@ -10,6 +11,8 @@ namespace VoiceCraft.Core.Components
     {
         private bool _isDisposed;
         private bool IsAlive => !_isDisposed && Entity.IsAlive();
+        
+        public ComponentType ComponentType => ComponentType.AudioStream;
         
         public Entity Entity { get; }
         

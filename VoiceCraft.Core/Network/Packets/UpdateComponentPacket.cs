@@ -5,7 +5,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class UpdateComponentPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.RemoveComponent;
-        public uint NetworkId { get; set; }
+        public int NetworkId { get; set; }
         public string ComponentType { get; set; } = string.Empty;
         public byte[]? Data { get; set; }
         
@@ -20,7 +20,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetUInt();
+            NetworkId = reader.GetInt();
             ComponentType = reader.GetString();
             var dataLength = reader.GetInt();
             if (dataLength <= 0) return;

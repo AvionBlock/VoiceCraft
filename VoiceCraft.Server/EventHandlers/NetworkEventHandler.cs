@@ -12,15 +12,17 @@ namespace VoiceCraft.Server.EventHandlers
     {
         private readonly VoiceCraftServer _server;
         private readonly EventBasedNetListener _listener;
+        private readonly NetManager _netManager;
         private readonly World _world;
         private readonly ServerProperties _properties;
         
-        public NetworkEventHandler(VoiceCraftServer server)
+        public NetworkEventHandler(VoiceCraftServer server, NetManager netManager)
         {
             _server = server;
             _listener = _server.Listener;
             _world = _server.World;
             _properties = _server.Properties;
+            _netManager = netManager;
             
             _listener.ConnectionRequestEvent += OnConnectionRequest;
             _listener.PeerConnectedEvent += OnPeerConnected;
@@ -51,9 +53,8 @@ namespace VoiceCraft.Server.EventHandlers
                     case LoginType.Login:
                         var loginPeer = request.Accept();
                         loginPeer.Tag = loginPacket.LoginType;
-                        var entity = _world.Create();
-                        WorldEventHandler.InvokeEntityCreated(new EntityCreatedEvent(entity));
-                        _ = new NetworkComponent(entity, IdGenerator.Generate(), loginPeer);
+                        var entity = _server.CreateEntity();
+                        _ = new NetworkComponent(entity, loginPeer.Id, loginPeer);
                         break;
                     case LoginType.Pinger:
                     case LoginType.Discovery:
@@ -77,6 +78,7 @@ namespace VoiceCraft.Server.EventHandlers
             var serverInfoPacket = new InfoPacket()
             {
                 Motd = _properties.Motd,
+                Clients = (uint)_netManager.ConnectedPeersCount,
                 Discovery = _properties.Discovery,
                 PositioningType = _properties.PositioningType,
             };
@@ -90,8 +92,8 @@ namespace VoiceCraft.Server.EventHandlers
             _world.Query(in query, entity =>
             {
                 var networkComponent = _world.Get<NetworkComponent>(entity);
-                if(networkComponent.Peer.Equals(peer))
-                    _world.Destroy(entity);
+                if(networkComponent.NetPeer?.Equals(peer) ?? false)
+                    _server.DestroyEntity(entity);
             });
         }
 
@@ -103,8 +105,6 @@ namespace VoiceCraft.Server.EventHandlers
             {
                 case PacketType.Login:
                 case PacketType.Info:
-                case PacketType.Audio:
-                case PacketType.SetLocalEntity:
                 case PacketType.EntityCreated:
                 case PacketType.EntityDestroyed:
                 case PacketType.AddComponent:

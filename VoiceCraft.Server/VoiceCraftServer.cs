@@ -1,7 +1,9 @@
 using Arch.Core;
+using Arch.Core.Extensions;
 using Arch.System;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.EventHandlers;
@@ -39,8 +41,8 @@ namespace VoiceCraft.Server
                 AutoRecycle = true
             };
             
-            _networkEventHandler = new NetworkEventHandler(this);
-            _systems = new Group<float>("systems", new NetworkComponentSystem(World));
+            _networkEventHandler = new NetworkEventHandler(this, _netManager);
+            _systems = new Group<float>("systems", new NetworkComponentSystem(World, this));
         }
 
         ~VoiceCraftServer()
@@ -66,12 +68,13 @@ namespace VoiceCraft.Server
             _systems.BeforeUpdate(deltaTime);
             _systems.Update(deltaTime);
             _systems.AfterUpdate(deltaTime);
-
+            
             if (Environment.TickCount - _lastPingBroadcast < PINGER_BROADCAST_INTERVAL_MS) return;
             _lastPingBroadcast = Environment.TickCount;
             var serverInfoPacket = new InfoPacket()
             {
                 Motd = Properties.Motd,
+                Clients = (uint)_netManager.ConnectedPeersCount,
                 Discovery = Properties.Discovery,
                 PositioningType = Properties.PositioningType,
             };
@@ -109,6 +112,25 @@ namespace VoiceCraft.Server
             if (!_netManager.IsRunning) return;
             _netManager.Stop();
             OnStopped?.Invoke();
+        }
+
+        public Entity CreateEntity()
+        {
+            var entity = this.World.Create();
+            WorldEventHandler.InvokeEntityCreated(new EntityCreatedEvent(entity));
+            return entity;
+        }
+
+        public void DestroyEntity(Entity entity)
+        {
+            var entityComponents = entity.GetAllComponents(); //Get all entity components before destroying the entity.
+            World.Destroy(entity);
+            foreach (var component in entityComponents)
+            {
+                if(component is IDisposable disposable) //Disposable
+                    disposable.Dispose(); //Dispose events will still trigger ComponentRemoved events.
+            }
+            WorldEventHandler.InvokeEntityDestroyed(new EntityDestroyedEvent(entity));
         }
 
         #endregion
