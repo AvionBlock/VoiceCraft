@@ -3,7 +3,7 @@
 Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
 
 <p align="center">
-  <img style="margin: 10" width="500" height="500" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
+  <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
 > [!NOTE]
