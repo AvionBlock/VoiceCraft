@@ -1,5 +1,5 @@
 using System;
-using Arch.Bus;
+using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
 using LiteNetLib.Utils;
@@ -8,9 +8,9 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class DirectionalEffectComponent : IAudioEffect, INetSerializable, IEntityComponent
+    public class DirectionalEffectComponent : IAudioEffect, ISerializableEntityComponent
     {
-        private uint _bitmask; //Will change to default value later.
+        private ulong _bitmask; //Will change to default value later.
         private uint _xRotation;
         private uint _yRotation;
         private uint _xRange;
@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Components
         
         public event Action? OnDestroyed;
         
-        public uint Bitmask
+        public ulong Bitmask
         {
             get => _bitmask;
             set
@@ -87,23 +87,37 @@ namespace VoiceCraft.Core.Components
             Entity.Add(this);
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
-
-        public void Serialize(NetDataWriter writer)
+        
+        public byte[] Serialize()
         {
-            writer.Put(_bitmask);
-            writer.Put(_xRotation);
-            writer.Put(_yRotation);
-            writer.Put(_xRange);
-            writer.Put(_yRange);
+            var data = new List<byte>();
+            data.AddRange(BitConverter.GetBytes(_bitmask));
+            data.AddRange(BitConverter.GetBytes(_xRotation));
+            data.AddRange(BitConverter.GetBytes(_yRotation));
+            data.AddRange(BitConverter.GetBytes(_xRange));
+            data.AddRange(BitConverter.GetBytes(_yRange));
+
+            return data.ToArray();
         }
 
-        public void Deserialize(NetDataReader reader)
+        public void Deserialize(byte[] data)
         {
-            _bitmask = reader.GetUInt();
-            _xRotation = reader.GetUInt();
-            _yRotation = reader.GetUInt();
-            _xRange = reader.GetUInt();
-            _yRange = reader.GetUInt();
+            var offset = 0;
+            
+            //Extract Bitmask
+            _bitmask = BitConverter.ToUInt64(data, offset);
+            offset += sizeof(ulong);
+            //Extract xRotation
+            _xRotation = BitConverter.ToUInt32(data, offset);
+            offset += sizeof(uint);
+            //Extract yRotation
+            _yRotation = BitConverter.ToUInt32(data, offset);
+            offset += sizeof(uint);
+            //Extract xRange
+            _xRange = BitConverter.ToUInt32(data, offset);
+            offset += sizeof(uint);
+            //Extract yRange
+            _yRange = BitConverter.ToUInt32(data, offset);
         }
         
         public void Dispose()

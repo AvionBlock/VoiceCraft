@@ -1,6 +1,7 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
+using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Components;
 using VoiceCraft.Core.Events;
@@ -17,6 +18,7 @@ namespace VoiceCraft.Server.Systems
             _server = server;
 
             WorldEventHandler.OnComponentAdded += OnComponentAdded;
+            WorldEventHandler.OnComponentUpdated += OnComponentUpdated;
             WorldEventHandler.OnComponentRemoved += OnComponentRemoved;
         }
 
@@ -29,53 +31,83 @@ namespace VoiceCraft.Server.Systems
 
         private void OnComponentAdded(ComponentAddedEvent @event)
         {
-            var query = new QueryDescription()
-                .WithAll<NetworkComponent>();
             if (@event.Component is NetworkComponent networkComponent)
             {
                 var entityCreatedPacket = new EntityCreatedPacket() { NetworkId = networkComponent.NetworkId };
                 var componentAddedPacket = new AddComponentPacket() { NetworkId = networkComponent.NetworkId };
                 var components = @event.Component.Entity.GetAllComponents();
 
-                World.Query(in query, (ref Entity entity, ref NetworkComponent entityNetworkComponent) =>
+                Broadcast(entityCreatedPacket, networkComponent.NetPeer);
+                foreach (var component in components)
                 {
-                    if (entity == networkComponent.Entity || entityNetworkComponent.NetPeer == null) return; //Local entity or not a client.
-                    _server.SendPacket(entityNetworkComponent.NetPeer, entityCreatedPacket);
-                    foreach (var component in components)
-                    {
-                        if (component is not IEntityComponent entityComponent) continue;
-                        componentAddedPacket.ComponentType = entityComponent.ComponentType;
-                        _server.SendPacket(entityNetworkComponent.NetPeer, componentAddedPacket);
-                    }
-                });
+                    if (component is not ISerializableEntityComponent serializableEntityComponent) continue;
+                    componentAddedPacket.ComponentType = serializableEntityComponent.ComponentType;
+                    Broadcast(componentAddedPacket);
+                }
             }
-            else if (@event.Component.Entity.TryGet<NetworkComponent>(out var netComponent) && netComponent is { NetPeer: not null })
+            else if (@event.Component.Entity.Has<NetworkComponent>() && @event.Component is ISerializableEntityComponent serializableEntityComponent)
             {
-                var componentAddedPacket = new AddComponentPacket() { NetworkId = netComponent.NetworkId };
-                //Loop through all entities and notify of the changes.
-                World.Query(in query, (ref NetworkComponent entityNetworkComponent) =>
+                var entityNetworkComponent = @event.Component.Entity.Get<NetworkComponent>();
+                var componentAddedPacket = new AddComponentPacket()
                 {
-                    if (entityNetworkComponent.NetPeer == null)
-                        return; //not a client. (we also want to notify the local client because of server sided changes)
-                    _server.SendPacket(entityNetworkComponent.NetPeer, componentAddedPacket);
-                });
+                    NetworkId = entityNetworkComponent.NetworkId,
+                    ComponentType = serializableEntityComponent.ComponentType
+                };
+                //Notify all entities of the changes.
+                Broadcast(componentAddedPacket);
+            }
+        }
+
+        private void OnComponentUpdated(ComponentUpdatedEvent @event)
+        {
+            if (!@event.Component.Entity.Has<NetworkComponent>() || @event.Component is not ISerializableEntityComponent serializableEntityComponent) return;
+            var networkComponent = @event.Component.Entity.Get<NetworkComponent>();
+            var componentUpdatedPacket = new UpdateComponentPacket()
+            {
+                NetworkId = networkComponent.NetworkId,
+                ComponentType = serializableEntityComponent.ComponentType,
+                Data = serializableEntityComponent.Serialize()
+            };
+            foreach (var visibleEntity in networkComponent.VisibleNetworkEntities)
+            {
+                if (visibleEntity.NetPeer == null) continue;
+                _server.SendPacket(visibleEntity.NetPeer, componentUpdatedPacket);
             }
         }
 
         private void OnComponentRemoved(ComponentRemovedEvent @event)
         {
-            if (@event.Component is not NetworkComponent networkComponent) return;
+            if (@event.Component is NetworkComponent networkComponent)
+            {
+                //Disconnect local client. This should only happen when the server destroys the entity or for some reason. I decide to just allow removal of the
+                //network component BECAUSE WHY THE FUCK NOT?
+                networkComponent.NetPeer?.Disconnect();
+
+                var entityDestroyedPacket = new EntityDestroyedPacket() { NetworkId = networkComponent.NetworkId };
+                Broadcast(entityDestroyedPacket);
+            }
+            else if (@event.Component.Entity.Has<NetworkComponent>() && @event.Component is ISerializableEntityComponent serializableEntityComponent)
+            {
+                var entityNetworkComponent = @event.Component.Entity.Get<NetworkComponent>();
+                var componentRemovedPacket = new RemoveComponentPacket()
+                {
+                    NetworkId = entityNetworkComponent.NetworkId,
+                    ComponentType = serializableEntityComponent.ComponentType
+                };
+                //Notify all entities of the changes.
+                Broadcast(componentRemovedPacket);
+            }
+        }
+
+        private void Broadcast(VoiceCraftPacket packet, params NetPeer?[] excludedPeers)
+        {
             var query = new QueryDescription()
                 .WithAll<NetworkComponent>();
 
-            //Disconnect local client. This should only happen when the server destroys the entity.
-            networkComponent.NetPeer?.Disconnect();
-
-            var entityDestroyedPacket = new EntityDestroyedPacket() { NetworkId = networkComponent.NetworkId };
             World.Query(in query, (ref NetworkComponent netComponent) =>
             {
-                if (netComponent.NetPeer == null) return; //not a client.
-                _server.SendPacket(netComponent.NetPeer, entityDestroyedPacket);
+                if (netComponent.NetPeer == null || excludedPeers.Contains(netComponent.NetPeer)) return; //not a client or is excluded.
+                _server.SendPacket(netComponent.NetPeer, packet);
             });
         }
     }

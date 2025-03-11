@@ -1,14 +1,14 @@
 using System;
-using Arch.Bus;
+using System.Collections.Generic;
+using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioSourceComponent : IAudioOutput, INetSerializable, IEntityComponent
+    public class AudioSourceComponent : IAudioOutput, ISerializableEntityComponent
     {
         private string _environmentId = string.Empty;
         private string _name = string.Empty;
@@ -16,9 +16,9 @@ namespace VoiceCraft.Core.Components
         private IAudioInput? _audioInput;
         private bool _isDisposed;
         private bool IsAlive => !_isDisposed && Entity.IsAlive();
-        
+
         public ComponentType ComponentType => ComponentType.AudioSource;
-        
+
         public Entity Entity { get; }
 
         public event Action? OnDestroyed;
@@ -66,7 +66,7 @@ namespace VoiceCraft.Core.Components
                 WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
-        
+
         public AudioSourceComponent(Entity entity)
         {
             if (entity.Has<AudioSourceComponent>())
@@ -76,20 +76,48 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public void Serialize(NetDataWriter writer)
+        public byte[] Serialize()
         {
-            writer.Put(_environmentId);
-            writer.Put(_name);
-            writer.Put(_bitmask);
+            var data = new List<byte>();
+            data.AddRange(BitConverter.GetBytes(_environmentId.Length));
+            if (_environmentId.Length > 0)
+                data.AddRange(Encoding.UTF8.GetBytes(_environmentId));
+
+            data.AddRange(BitConverter.GetBytes(_name.Length));
+            if (_name.Length > 0)
+                data.AddRange(Encoding.UTF8.GetBytes(_name));
+
+            data.AddRange(BitConverter.GetBytes(_bitmask));
+
+            return data.ToArray();
         }
 
-        public void Deserialize(NetDataReader reader)
+        public void Deserialize(byte[] data)
         {
-            _environmentId = reader.GetString();
-            _name = reader.GetString();
-            _bitmask = reader.GetULong();
+            var offset = 0;
+
+            //Extract EnvironmentId
+            var environmentIdLength = BitConverter.ToInt32(data, offset);
+            offset += sizeof(int);
+            if (environmentIdLength > 0)
+            {
+                _environmentId = Encoding.UTF8.GetString(data);
+                offset += environmentIdLength;
+            }
+            
+            //Extract Name
+            var nameLength = BitConverter.ToInt32(data, offset);
+            offset += sizeof(int);
+            if (nameLength > 0)
+            {
+                _name = Encoding.UTF8.GetString(data);
+                offset += nameLength;
+            }
+            
+            //Extract Bitmask
+            _bitmask = BitConverter.ToUInt64(data, offset);
         }
-        
+
         public void Dispose()
         {
             if (_isDisposed) return;

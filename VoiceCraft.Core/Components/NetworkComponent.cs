@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using LiteNetLib;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Core.Components
 {
     public class NetworkComponent : IEntityComponent
     {
+        private readonly List<NetworkComponent> _visibleNetworkEntities = new List<NetworkComponent>();
         private bool _isDisposed;
         private bool IsAlive => !_isDisposed && Entity.IsAlive();
-        
-        public ComponentType ComponentType => ComponentType.Network;
         
         public Entity Entity { get; }
         
@@ -23,7 +24,7 @@ namespace VoiceCraft.Core.Components
         
         public NetPeer? NetPeer { get; }
         
-        public List<Entity> VisibleEntities { get; } = new List<Entity>();
+        public IEnumerable<NetworkComponent> VisibleNetworkEntities => _visibleNetworkEntities;
 
         public NetworkComponent(Entity entity, int networkId, NetPeer netPeer)
         {
@@ -34,6 +35,26 @@ namespace VoiceCraft.Core.Components
             NetPeer = netPeer;
             Entity.Add(this);
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
+        }
+
+        public void AddVisibleEntity(NetworkComponent networkComponent)
+        {
+            if (!networkComponent.IsAlive) return;
+            networkComponent.OnDestroyed += ClearDeadVisibleEntities;
+            _visibleNetworkEntities.Add(networkComponent);
+        }
+
+        public bool RemoveVisibleEntity(NetworkComponent networkComponent)
+        {
+            networkComponent.OnDestroyed -= ClearDeadVisibleEntities;
+            var removed = _visibleNetworkEntities.Remove(networkComponent);
+            return removed;
+        }
+
+        public void ClearDeadVisibleEntities()
+        {
+            foreach (var networkComponent in _visibleNetworkEntities.ToList().Where(networkComponent => !networkComponent.IsAlive))
+                RemoveVisibleEntity(networkComponent);
         }
         
         public void Dispose()

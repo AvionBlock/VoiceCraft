@@ -6,13 +6,13 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.RemoveComponent;
         public int NetworkId { get; set; }
-        public string ComponentType { get; set; } = string.Empty;
+        public ComponentType ComponentType { get; set; } = ComponentType.Unknown;
         public byte[]? Data { get; set; }
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put(ComponentType);
+            writer.Put((byte)ComponentType);
             writer.Put(Data?.Length ?? 0);
             if (Data != null && Data.Length > 0)
                 writer.Put(Data, 0, Data.Length);
@@ -21,7 +21,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             NetworkId = reader.GetInt();
-            ComponentType = reader.GetString();
+            ComponentType = (ComponentType)reader.GetByte();
             var dataLength = reader.GetInt();
             if (dataLength <= 0) return;
             Data = new byte[dataLength];

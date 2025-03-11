@@ -46,7 +46,6 @@ namespace VoiceCraft.Core.Network
         
         //Other
         Transform,
-        Network,
         Unknown
     }
 }

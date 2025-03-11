@@ -1,14 +1,14 @@
 using System;
-using Arch.Bus;
+using System.Collections.Generic;
+using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioListenerComponent : IAudioInput, INetSerializable, IEntityComponent
+    public class AudioListenerComponent : IAudioInput, ISerializableEntityComponent
     {
         private string _environmentId = string.Empty;
         private ulong _bitmask; //Will change to a default value later.
@@ -51,16 +51,33 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public void Serialize(NetDataWriter writer)
+        public byte[] Serialize()
         {
-            writer.Put(EnvironmentId);
-            writer.Put(Bitmask);
+            var data = new List<byte>();
+            data.AddRange(BitConverter.GetBytes(_environmentId.Length));
+            if (_environmentId.Length > 0)
+                data.AddRange(Encoding.UTF8.GetBytes(_environmentId));
+
+            data.AddRange(BitConverter.GetBytes(_bitmask));
+
+            return data.ToArray();
         }
 
-        public void Deserialize(NetDataReader reader)
+        public void Deserialize(byte[] data)
         {
-            _environmentId = reader.GetString();
-            _bitmask = reader.GetULong();
+            var offset = 0;
+
+            //Extract EnvironmentId
+            var environmentIdLength = BitConverter.ToInt32(data, offset);
+            offset += sizeof(int);
+            if (environmentIdLength > 0)
+            {
+                _environmentId = Encoding.UTF8.GetString(data);
+                offset += environmentIdLength;
+            }
+            
+            //Extract Bitmask
+            _bitmask = BitConverter.ToUInt64(data, offset);
         }
 
         public void Dispose()

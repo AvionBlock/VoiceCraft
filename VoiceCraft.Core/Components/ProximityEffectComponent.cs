@@ -1,16 +1,15 @@
 using System;
-using Arch.Bus;
+using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class ProximityEffectComponent : IAudioEffect, INetSerializable, IEntityComponent
+    public class ProximityEffectComponent : IAudioEffect, ISerializableEntityComponent
     {
-        private uint _bitmask;
+        private ulong _bitmask;
         private uint _minRange;
         private uint _maxRange;
         private bool _isDisposed;
@@ -22,7 +21,7 @@ namespace VoiceCraft.Core.Components
         
         public event Action? OnDestroyed;
 
-        public uint Bitmask
+        public ulong Bitmask
         {
             get => _bitmask;
             set
@@ -64,18 +63,28 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public void Serialize(NetDataWriter writer)
+        public byte[] Serialize()
         {
-            writer.Put(_bitmask);
-            writer.Put(_minRange);
-            writer.Put(_maxRange);
+            var data = new List<byte>();
+            data.AddRange(BitConverter.GetBytes(_bitmask));
+            data.AddRange(BitConverter.GetBytes(_minRange));
+            data.AddRange(BitConverter.GetBytes(_maxRange));
+
+            return data.ToArray();
         }
 
-        public void Deserialize(NetDataReader reader)
+        public void Deserialize(byte[] data)
         {
-            _bitmask = reader.GetUInt();
-            _minRange = reader.GetUInt();
-            _maxRange = reader.GetUInt();
+            var offset = 0;
+            
+            //Extract Bitmask
+            _bitmask = BitConverter.ToUInt64(data, offset);
+            offset += sizeof(ulong);
+            //Extract minRange
+            _minRange = BitConverter.ToUInt32(data, offset);
+            offset += sizeof(uint);
+            //Extract maxRange
+            _maxRange = BitConverter.ToUInt32(data, offset);
         }
         
         public void Dispose()

@@ -7,7 +7,7 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioStreamComponent : IAudioInput, INetSerializable, IEntityComponent
+    public class AudioStreamComponent : IAudioInput, ISerializableEntityComponent
     {
         private bool _isDisposed;
         private bool IsAlive => !_isDisposed && Entity.IsAlive();
@@ -28,12 +28,13 @@ namespace VoiceCraft.Core.Components
         }
         
         
-        public void Serialize(NetDataWriter writer)
+        public byte[]? Serialize()
         {
             //Do absolutely nothing.
+            return null;
         }
 
-        public void Deserialize(NetDataReader reader)
+        public void Deserialize(byte[] data)
         {
             //Do absolutely nothing.
         }
