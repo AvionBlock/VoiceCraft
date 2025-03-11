@@ -30,7 +30,7 @@ There is also a comprehensive API system in place that addon developer's can use
 |Android    |❎ |❎ |✅   |✅   |
 |Windows    |✅ |✅ |✅   |✅   |
 |iOS        |❎ |❎ |✅   |✅   |
-|MacOS      |✅ |✅ |✅   |✅   |
+|MacOS      |✅ |❌ |❌   |✅   |
 |XBOX       |❌ |❌ |❌   |❌   |
 |PlayStation|❌ |❌ |❌   |❌   |
 |Switch     |❌ |❌ |❌   |❌   |
