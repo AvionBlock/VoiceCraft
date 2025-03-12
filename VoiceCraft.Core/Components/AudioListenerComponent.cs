@@ -89,27 +89,36 @@ namespace VoiceCraft.Core.Components
             var query = new QueryDescription()
                 .WithAll<AudioSourceComponent>(); //Only search for this component. May make it generic later but for now, AudioSource is needed.
             //We don't include NetworkComponent because this will be checked in the system for network transfer for further custom behavior.
-            
+
             var localComponents = Entity.GetAllComponents(); //Get all local components to loop through.
             var localComponentTypes = localComponents.Select(x => x?.GetType()).ToArray();
             world.Query(in query, (ref Entity entity, ref AudioSourceComponent component) =>
             {
                 var combinedBitmask = _bitmask | component.Bitmask; //Get the combined bitmask of the AudioSource and AudioListener for effect checking.
                 var otherComponents = entity.GetAllComponents(); //Get all the components on the other entity.
+                var isVisible = true;
 
                 //Loop through local components first.
                 foreach (var localComponent in localComponents)
                 {
-                    if (!(localComponent is IVisibilityComponent visibilityComponent)) continue;
-                    visibilityComponent.VisibleTo(entity, combinedBitmask);
+                    if (!isVisible || !(localComponent is IVisibilityComponent visibilityComponent)) continue;
+                    isVisible = visibilityComponent.VisibleTo(entity, combinedBitmask);
                 }
-                
                 //Loop through other entity components.
                 foreach (var otherComponent in otherComponents)
                 {
                     //Do not check against local component types.
-                    if (!(otherComponent is IVisibilityComponent visibilityComponent) || localComponentTypes.Contains(otherComponent.GetType())) continue;
-                    visibilityComponent.VisibleTo(entity, combinedBitmask);
+                    if (!isVisible || !(otherComponent is IVisibilityComponent visibilityComponent) ||
+                        localComponentTypes.Contains(otherComponent.GetType())) continue;
+                    isVisible = visibilityComponent.VisibleTo(Entity, combinedBitmask);
+                }
+
+                if (!isVisible) return; //Not visible, return.
+                //Visible, Loop through all IVisibleComponent's
+                foreach (var otherComponent in otherComponents)
+                {
+                    if (!(otherComponent is IVisibleComponent visibleComponent)) continue;
+                    visibleComponent.GetVisibleComponents(world, components);
                 }
             });
         }
