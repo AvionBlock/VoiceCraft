@@ -130,7 +130,7 @@ namespace VoiceCraft.Core.Components
 
         public bool VisibleTo(Entity entity, ulong bitmask)
         {
-            return Entity != entity || !IsAlive; //Should not see itself or if the entity/component is dead.
+            return Entity != entity && IsAlive; //Should not see itself or if the entity/component is dead.
         }
     }
 }

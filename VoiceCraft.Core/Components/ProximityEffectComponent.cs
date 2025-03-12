@@ -102,9 +102,10 @@ namespace VoiceCraft.Core.Components
             if (Entity == entity || !IsAlive) return false; //Should not see itself or if the entity/component is dead.
             
             entity.TryGet<ProximityEffectComponent>(out var otherProximityComponent);
-            var combinedBitmask = _bitmask | otherProximityComponent?.Bitmask ?? 0; //Get the combined bitmask of the 2 to compare against.
+            var combinedBitmask = _bitmask | (otherProximityComponent?.Bitmask ?? 0); //Get the combined bitmask of the 2 to compare against.
             var combinedMaxRange = Math.Max(_maxRange, otherProximityComponent?.MaxRange ?? 0); //Get the maximum of the 2.
-            if ((combinedBitmask & bitmask) == 0) return true; //None of these components are enabled on the bitmask. Entity can be seen.
+            if ((combinedBitmask & bitmask) == 0)
+                return true; //None of these components are enabled on the bitmask. Entity can be seen.
             
             //Should not see any entities with no transform component.
             if(!entity.Has<TransformComponent>() || !Entity.Has<TransformComponent>()) return false;

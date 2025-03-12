@@ -12,6 +12,9 @@ namespace VoiceCraft.Server.Systems
     public class NetworkComponentSystem : BaseSystem<World, float>
     {
         private readonly VoiceCraftServer _server;
+        private readonly List<object> _visibleComponents = [];
+        private readonly List<Entity> _uniqueEntities = [];
+        private readonly QueryDescription _query = new QueryDescription().WithAll<NetworkComponent>();
 
         public NetworkComponentSystem(World world, VoiceCraftServer server) : base(world)
         {
@@ -22,11 +25,32 @@ namespace VoiceCraft.Server.Systems
             WorldEventHandler.OnComponentRemoved += OnComponentRemoved;
         }
 
-        [Query]
-        [All(typeof(NetworkComponent))]
-        public void CalculateVisibleEntities([Data] in float deltaTime, ref Entity entity, ref NetworkComponent networkComponent)
+        public override void Update(in float deltaTime)
         {
-            Console.WriteLine(entity);
+            World.Query(in _query, (ref NetworkComponent networkComponent) =>
+            {
+                //This needs optimisation! I don't know how though!!..
+                networkComponent.ClearDeadVisibleEntities();
+                _visibleComponents.Clear();
+                _uniqueEntities.Clear();
+            
+                var components = networkComponent.Entity.GetAllComponents();
+                foreach (var component in components)
+                {
+                    if (component is not IVisibleComponent visibleComponent) continue;
+                    visibleComponent.GetVisibleComponents(World, _visibleComponents);
+                }
+            
+                foreach (var visibleComponent in _visibleComponents)
+                {
+                    if (visibleComponent is not IEntityComponent entityComponent || _uniqueEntities.Contains(entityComponent.Entity)) continue;
+                    _uniqueEntities.Add(entityComponent.Entity);
+                }
+
+                var newVisibleEntities =
+                    (from uniqueEntity in _uniqueEntities where uniqueEntity.Has<NetworkComponent>() select uniqueEntity.Get<NetworkComponent>()).ToList();
+                networkComponent.SetVisibleEntities(newVisibleEntities);
+            });
         }
 
         private void OnComponentAdded(ComponentAddedEvent @event)

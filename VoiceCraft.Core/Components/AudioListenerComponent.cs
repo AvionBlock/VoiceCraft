@@ -92,17 +92,17 @@ namespace VoiceCraft.Core.Components
 
             var localComponents = Entity.GetAllComponents(); //Get all local components to loop through.
             var localComponentTypes = localComponents.Select(x => x?.GetType()).ToArray();
-            world.Query(in query, (ref Entity entity, ref AudioSourceComponent component) =>
+            world.Query(in query, (ref AudioSourceComponent component) =>
             {
                 var combinedBitmask = _bitmask | component.Bitmask; //Get the combined bitmask of the AudioSource and AudioListener for effect checking.
-                var otherComponents = entity.GetAllComponents(); //Get all the components on the other entity.
+                var otherComponents = component.Entity.GetAllComponents(); //Get all the components on the other entity.
                 var isVisible = true;
 
                 //Loop through local components first.
                 foreach (var localComponent in localComponents)
                 {
                     if (!isVisible || !(localComponent is IVisibilityComponent visibilityComponent)) continue;
-                    isVisible = visibilityComponent.VisibleTo(entity, combinedBitmask);
+                    isVisible = visibilityComponent.VisibleTo(component.Entity, combinedBitmask);
                 }
                 //Loop through other entity components.
                 foreach (var otherComponent in otherComponents)
