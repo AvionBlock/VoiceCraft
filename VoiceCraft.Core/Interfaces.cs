@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using Arch.Core;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core
@@ -10,11 +10,11 @@ namespace VoiceCraft.Core
         public ulong Bitmask { get; set; }
     }
 
-    public interface IAudioInput
+    public interface IAudioInput : IVisibleComponent
     {
     }
 
-    public interface IAudioOutput
+    public interface IAudioOutput : IVisibleComponent
     {
     }
 
@@ -32,5 +32,15 @@ namespace VoiceCraft.Core
         byte[]? Serialize();
         
         void Deserialize(byte[] data);
+    }
+    
+    public interface IVisibleComponent
+    {
+        public void GetVisibleComponents(World world, List<object> components);
+    }
+
+    public interface IVisibilityComponent
+    {
+        bool VisibleTo(Entity entity, ulong bitmask);
     }
 }

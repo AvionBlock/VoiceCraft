@@ -118,6 +118,14 @@ namespace VoiceCraft.Core.Components
             _bitmask = BitConverter.ToUInt64(data, offset);
         }
 
+        public void GetVisibleComponents(World world, List<object> components)
+        {
+            if (components.Contains(this) || !IsAlive)
+                return; //Already part of the list. don't need to recheck through or if the component/entity is dead. Also prevents stack overflows (I think).
+            components.Add(this);
+            _audioInput?.GetVisibleComponents(world, components); //Get visible components of the linked audioInput.
+        }
+
         public void Dispose()
         {
             if (_isDisposed) return;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -17,9 +18,9 @@ namespace VoiceCraft.Core.Components
 
         public ComponentType ComponentType => ComponentType.AudioListener;
         public Entity Entity { get; }
-        
+
         public event Action? OnDestroyed;
-        
+
         public string EnvironmentId
         {
             get => _environmentId;
@@ -75,9 +76,42 @@ namespace VoiceCraft.Core.Components
                 _environmentId = Encoding.UTF8.GetString(data);
                 offset += environmentIdLength;
             }
-            
+
             //Extract Bitmask
             _bitmask = BitConverter.ToUInt64(data, offset);
+        }
+
+        public void GetVisibleComponents(World world, List<object> components)
+        {
+            if (components.Contains(this) || !IsAlive)
+                return; //Already part of the list. don't need to recheck through or if the component/entity is dead. Also prevents stack overflows (I think).
+            components.Add(this);
+            var query = new QueryDescription()
+                .WithAll<AudioSourceComponent>(); //Only search for this component. May make it generic later but for now, AudioSource is needed.
+            //We don't include NetworkComponent because this will be checked in the system for network transfer for further custom behavior.
+            
+            var localComponents = Entity.GetAllComponents(); //Get all local components to loop through.
+            var localComponentTypes = localComponents.Select(x => x?.GetType()).ToArray();
+            world.Query(in query, (ref Entity entity, ref AudioSourceComponent component) =>
+            {
+                var combinedBitmask = _bitmask | component.Bitmask; //Get the combined bitmask of the AudioSource and AudioListener for effect checking.
+                var otherComponents = entity.GetAllComponents(); //Get all the components on the other entity.
+
+                //Loop through local components first.
+                foreach (var localComponent in localComponents)
+                {
+                    if (!(localComponent is IVisibilityComponent visibilityComponent)) continue;
+                    visibilityComponent.VisibleTo(entity, combinedBitmask);
+                }
+                
+                //Loop through other entity components.
+                foreach (var otherComponent in otherComponents)
+                {
+                    //Do not check against local component types.
+                    if (!(otherComponent is IVisibilityComponent visibilityComponent) || localComponentTypes.Contains(otherComponent.GetType())) continue;
+                    visibilityComponent.VisibleTo(entity, combinedBitmask);
+                }
+            });
         }
 
         public void Dispose()

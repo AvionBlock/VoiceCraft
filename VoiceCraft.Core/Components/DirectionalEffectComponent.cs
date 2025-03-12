@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class DirectionalEffectComponent : IAudioEffect, ISerializableEntityComponent
+    public class DirectionalEffectComponent : IAudioEffect, ISerializableEntityComponent, IVisibilityComponent
     {
         private ulong _bitmask; //Will change to default value later.
         private uint _xRotation;
@@ -127,6 +126,11 @@ namespace VoiceCraft.Core.Components
             _isDisposed = true;
             OnDestroyed?.Invoke();
             WorldEventHandler.InvokeComponentRemoved(new ComponentRemovedEvent(this));
+        }
+
+        public bool VisibleTo(Entity entity, ulong bitmask)
+        {
+            return Entity != entity || !IsAlive; //Should not see itself or if the entity/component is dead.
         }
     }
 }

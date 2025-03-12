@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
 using LiteNetLib.Utils;
@@ -38,7 +39,15 @@ namespace VoiceCraft.Core.Components
         {
             //Do absolutely nothing.
         }
-        
+
+        public void GetVisibleComponents(World world, List<object> components)
+        {
+            if (components.Contains(this) || !IsAlive)
+                return; //Already part of the list. don't need to recheck through or if the component/entity is dead. Also prevents stack overflows (I think).
+            
+            components.Add(this);
+        }
+
         public void Dispose()
         {
             if (_isDisposed) return;
