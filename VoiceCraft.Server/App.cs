@@ -31,6 +31,17 @@ namespace VoiceCraft.Server
             Console.WriteLine("Starting VoiceCraft server...");
             _server.Start(9050);
             var startTick = Environment.TickCount;
+            
+            var entity1 = _server.CreateEntity();
+            _ = new AudioListenerComponent(entity1) { Bitmask = ulong.MaxValue };
+            _ = new AudioSourceComponent(entity1) { Bitmask = ulong.MaxValue };
+            _ = new NetworkComponent(entity1, -1, null);
+            
+            var entity2 = _server.CreateEntity();
+            _ = new AudioListenerComponent(entity2) { Bitmask = ulong.MaxValue };
+            _ = new AudioSourceComponent(entity2) { Bitmask = ulong.MaxValue };
+            _ = new NetworkComponent(entity2, -2, null);
+            
             while (true)
             {
                 var tick = Environment.TickCount;
