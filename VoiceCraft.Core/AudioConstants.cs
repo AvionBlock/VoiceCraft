@@ -1,6 +1,6 @@
 namespace VoiceCraft.Core
 {
-    public class AudioConstants
+    public static class AudioConstants
     {
         public const int FrameSizeMs = 20;
         public const int SampleRate = 48000;
