@@ -1,8 +1,6 @@
 using Arch.Core;
 using LiteNetLib;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Components;
-using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 

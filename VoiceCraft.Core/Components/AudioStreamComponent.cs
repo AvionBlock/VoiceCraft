@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
 using LiteNetLib.Utils;
@@ -11,7 +10,6 @@ namespace VoiceCraft.Core.Components
     public class AudioStreamComponent : IAudioInput, ISerializableEntityComponent
     {
         private bool _isDisposed;
-        private bool IsAlive => !_isDisposed && Entity.IsAlive();
         
         public ComponentType ComponentType => ComponentType.AudioStream;
         

@@ -12,7 +12,6 @@ namespace VoiceCraft.Core.Components
     {
         private List<Entity> _visibleEntities = new List<Entity>();
         private bool _isDisposed;
-        private bool IsAlive => !_isDisposed && Entity.IsAlive();
 
         public Entity Entity { get; }
 
