@@ -1,6 +1,6 @@
 namespace VoiceCraft.Core.Events
 {
-    public class ComponentUpdatedEvent
+    public struct ComponentUpdatedEvent
     {
         public readonly IEntityComponent Component;
 

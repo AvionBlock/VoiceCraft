@@ -1,6 +1,6 @@
 namespace VoiceCraft.Core.Events
 {
-    public class ComponentRemovedEvent
+    public struct ComponentRemovedEvent
     {
         public readonly IEntityComponent Component;
         

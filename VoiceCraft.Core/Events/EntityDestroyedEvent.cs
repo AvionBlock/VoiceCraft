@@ -2,7 +2,7 @@ using Arch.Core;
 
 namespace VoiceCraft.Core.Events
 {
-    public class EntityDestroyedEvent
+    public struct EntityDestroyedEvent
     {
         public readonly Entity Entity;
         

@@ -10,27 +10,27 @@ namespace VoiceCraft.Core.Events
         public static event Action<ComponentRemovedEvent>? OnComponentRemoved;
         public static event Action<EntityDestroyedEvent>? OnEntityDestroyed;
 
-        public static void InvokeEntityCreated(EntityCreatedEvent @event)
+        public static void InvokeEntityCreated(in EntityCreatedEvent @event)
         {
             OnEntityCreated?.Invoke(@event);
         }
 
-        public static void InvokeComponentAdded(ComponentAddedEvent @event)
+        public static void InvokeComponentAdded(in ComponentAddedEvent @event)
         {
             OnComponentAdded?.Invoke(@event);
         }
 
-        public static void InvokeComponentUpdated(ComponentUpdatedEvent @event)
+        public static void InvokeComponentUpdated(in ComponentUpdatedEvent @event)
         {
             OnComponentUpdated?.Invoke(@event);
         }
 
-        public static void InvokeComponentRemoved(ComponentRemovedEvent @event)
+        public static void InvokeComponentRemoved(in ComponentRemovedEvent @event)
         {
             OnComponentRemoved?.Invoke(@event);
         }
 
-        public static void InvokeEntityDestroyed(EntityDestroyedEvent @event)
+        public static void InvokeEntityDestroyed(in EntityDestroyedEvent @event)
         {
             OnEntityDestroyed?.Invoke(@event);
         }
