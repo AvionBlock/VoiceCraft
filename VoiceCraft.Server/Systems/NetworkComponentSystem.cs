@@ -12,8 +12,7 @@ namespace VoiceCraft.Server.Systems
     public class NetworkComponentSystem : BaseSystem<World, float>
     {
         private readonly VoiceCraftServer _server;
-        private readonly List<object> _visibleComponents = [];
-        private readonly List<Entity> _uniqueEntities = [];
+        private readonly List<Entity> _visibleEntities = [];
         private readonly QueryDescription _query = new QueryDescription().WithAll<NetworkComponent>();
 
         public NetworkComponentSystem(World world, VoiceCraftServer server) : base(world)
@@ -29,27 +28,18 @@ namespace VoiceCraft.Server.Systems
         {
             World.Query(in _query, (ref NetworkComponent networkComponent) =>
             {
-                //This needs optimisation! I don't know how though!!..
-                networkComponent.ClearDeadVisibleEntities();
-                _visibleComponents.Clear();
-                _uniqueEntities.Clear();
-            
+                _visibleEntities.Clear();
+                networkComponent.ClearDeadEntities();
+                //Add as local entity. Cascading components will detect this and ignore any computations for the added entity.
+                _visibleEntities.Add(networkComponent.Entity); 
                 var components = networkComponent.Entity.GetAllComponents();
                 foreach (var component in components)
                 {
                     if (component is not IVisibleComponent visibleComponent) continue;
-                    visibleComponent.GetVisibleComponents(World, _visibleComponents);
+                    visibleComponent.GetVisibleEntities(World, _visibleEntities);
                 }
-            
-                foreach (var visibleComponent in _visibleComponents)
-                {
-                    if (visibleComponent is not IEntityComponent entityComponent || _uniqueEntities.Contains(entityComponent.Entity)) continue;
-                    _uniqueEntities.Add(entityComponent.Entity);
-                }
-
-                var newVisibleEntities =
-                    (from uniqueEntity in _uniqueEntities where uniqueEntity.Has<NetworkComponent>() select uniqueEntity.Get<NetworkComponent>()).ToList();
-                networkComponent.SetVisibleEntities(newVisibleEntities);
+                _visibleEntities.Remove(networkComponent.Entity); //Remove local entity.
+                networkComponent.SetVisibleEntities(_visibleEntities);
             });
         }
 
@@ -89,13 +79,13 @@ namespace VoiceCraft.Server.Systems
             var componentUpdatedPacket = new UpdateComponentPacket()
             {
                 NetworkId = networkComponent.NetworkId,
-                ComponentType = serializableEntityComponent.ComponentType,
-                Data = serializableEntityComponent.Serialize()
+                Component = serializableEntityComponent
             };
-            foreach (var visibleEntity in networkComponent.VisibleNetworkEntities)
+            foreach (var visibleEntity in networkComponent.VisibleEntities)
             {
-                if (visibleEntity.NetPeer == null) continue;
-                _server.SendPacket(visibleEntity.NetPeer, componentUpdatedPacket);
+                visibleEntity.TryGet<NetworkComponent>(out var visibleNetworkComponent);
+                if (visibleNetworkComponent?.NetPeer == null) continue;
+                _server.SendPacket(visibleNetworkComponent.NetPeer, componentUpdatedPacket);
             }
         }
 

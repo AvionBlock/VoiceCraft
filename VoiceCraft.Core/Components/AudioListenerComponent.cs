@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
+using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioListenerComponent : IAudioInput, ISerializableEntityComponent
+    public class AudioListenerComponent : IAudioInput, ISerializableEntityComponent, IVisibleComponent
     {
+        private readonly QueryDescription _query = new QueryDescription().WithAll<AudioSourceComponent>();
         private string _environmentId = string.Empty;
         private ulong _bitmask; //Will change to a default value later.
         private bool _isDisposed;
@@ -52,73 +54,46 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public byte[] Serialize()
+        public void Serialize(NetDataWriter writer)
         {
-            var data = new List<byte>();
-            data.AddRange(BitConverter.GetBytes(_environmentId.Length));
-            if (_environmentId.Length > 0)
-                data.AddRange(Encoding.UTF8.GetBytes(_environmentId));
-
-            data.AddRange(BitConverter.GetBytes(_bitmask));
-
-            return data.ToArray();
+            writer.Put(EnvironmentId);
+            writer.Put(Bitmask);
         }
 
-        public void Deserialize(byte[] data)
+        public void Deserialize(NetDataReader reader)
         {
-            var offset = 0;
-
-            //Extract EnvironmentId
-            var environmentIdLength = BitConverter.ToInt32(data, offset);
-            offset += sizeof(int);
-            if (environmentIdLength > 0)
-            {
-                _environmentId = Encoding.UTF8.GetString(data);
-                offset += environmentIdLength;
-            }
-
-            //Extract Bitmask
-            _bitmask = BitConverter.ToUInt64(data, offset);
+            EnvironmentId = reader.GetString();
+            Bitmask = reader.GetULong();
         }
 
-        public void GetVisibleComponents(World world, List<object> components)
+        public bool VisibleTo(Entity entity)
         {
-            if (components.Contains(this) || !IsAlive)
-                return; //Already part of the list. don't need to recheck through or if the component/entity is dead. Also prevents stack overflows (I think).
-            components.Add(this);
-            var query = new QueryDescription()
-                .WithAll<AudioSourceComponent>(); //Only search for this component. May make it generic later but for now, AudioSource is needed.
-            //We don't include NetworkComponent because this will be checked in the system for network transfer for further custom behavior.
+            entity.TryGet<AudioSourceComponent>(out var audioSourceComponent);
+            return (Bitmask & (audioSourceComponent?.Bitmask ?? 0)) != 0; //Check for audioListener and check against the bitmask.
+        }
 
-            var localComponents = Entity.GetAllComponents(); //Get all local components to loop through.
-            var localComponentTypes = localComponents.Select(x => x?.GetType()).ToArray();
-            world.Query(in query, (ref AudioSourceComponent component) =>
+        public void GetVisibleEntities(World world, List<Entity> entities)
+        {
+            world.Query(in _query, (ref AudioSourceComponent audioListenerComponent) =>
             {
-                var combinedBitmask = _bitmask | component.Bitmask; //Get the combined bitmask of the AudioSource and AudioListener for effect checking.
-                var otherComponents = component.Entity.GetAllComponents(); //Get all the components on the other entity.
-                var isVisible = true;
+                if (audioListenerComponent.Entity == Entity || entities.Contains(audioListenerComponent.Entity))
+                    return; //Already checked entity or it's a local entity.
+                
+                var components = audioListenerComponent.Entity.GetAllComponents();
 
-                //Loop through local components first.
-                foreach (var localComponent in localComponents)
+                foreach (var component in components)
                 {
-                    if (!isVisible || !(localComponent is IVisibilityComponent visibilityComponent)) continue;
-                    isVisible = visibilityComponent.VisibleTo(component.Entity, combinedBitmask);
-                }
-                //Loop through other entity components.
-                foreach (var otherComponent in otherComponents)
-                {
-                    //Do not check against local component types.
-                    if (!isVisible || !(otherComponent is IVisibilityComponent visibilityComponent) ||
-                        localComponentTypes.Contains(otherComponent.GetType())) continue;
-                    isVisible = visibilityComponent.VisibleTo(Entity, combinedBitmask);
+                    if (!(component is IVisibilityComponent visibilityComponent)) continue;
+                    if (!visibilityComponent.VisibleTo(Entity)) return; //Not visible return the function.
                 }
 
-                if (!isVisible) return; //Not visible, return.
-                //Visible, Loop through all IVisibleComponent's
-                foreach (var otherComponent in otherComponents)
+                //Visible. Add the entity.
+                entities.Add(audioListenerComponent.Entity);
+                //Loop through all the components that can get more visible entities.
+                foreach (var component in components)
                 {
-                    if (!(otherComponent is IVisibleComponent visibleComponent)) continue;
-                    visibleComponent.GetVisibleComponents(world, components);
+                    if (!(component is IVisibleComponent visibilityComponent)) continue;
+                    visibilityComponent.GetVisibleEntities(world, entities); //Get all visible entities from this component on the entity.
                 }
             });
         }

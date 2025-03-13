@@ -29,23 +29,14 @@ namespace VoiceCraft.Core.Components
         }
         
         
-        public byte[]? Serialize()
+        public void Serialize(NetDataWriter writer)
         {
-            //Do absolutely nothing.
-            return null;
+            //Do nothing
         }
 
-        public void Deserialize(byte[] data)
+        public void Deserialize(NetDataReader reader)
         {
-            //Do absolutely nothing.
-        }
-
-        public void GetVisibleComponents(World world, List<object> components)
-        {
-            if (components.Contains(this) || !IsAlive)
-                return; //Already part of the list. don't need to recheck through or if the component/entity is dead. Also prevents stack overflows (I think).
-            
-            components.Add(this);
+            //Do nothing
         }
 
         public void Dispose()

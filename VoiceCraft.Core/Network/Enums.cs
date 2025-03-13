@@ -39,10 +39,7 @@ namespace VoiceCraft.Core.Network
         AudioListener,
         AudioSource,
         AudioStream,
-        
-        //Effects
-        DirectionalEffect,
-        ProximityEffect,
+        AudioEffects,
         
         //Other
         Transform,

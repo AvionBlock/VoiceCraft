@@ -10,7 +10,7 @@ namespace VoiceCraft.Core.Components
 {
     public class NetworkComponent : IEntityComponent
     {
-        private List<NetworkComponent> _visibleNetworkEntities = new List<NetworkComponent>();
+        private List<Entity> _visibleEntities = new List<Entity>();
         private bool _isDisposed;
         private bool IsAlive => !_isDisposed && Entity.IsAlive();
 
@@ -22,7 +22,7 @@ namespace VoiceCraft.Core.Components
 
         public NetPeer? NetPeer { get; }
 
-        public IEnumerable<NetworkComponent> VisibleNetworkEntities => _visibleNetworkEntities;
+        public IEnumerable<Entity> VisibleEntities => _visibleEntities;
 
         public NetworkComponent(Entity entity, int networkId, NetPeer? netPeer)
         {
@@ -35,38 +35,38 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public void AddVisibleEntity(NetworkComponent networkComponent)
+        public void SetVisibleEntities(List<Entity> visibleEntities)
         {
-            if (!networkComponent.IsAlive || networkComponent == this) return;
-            networkComponent.OnDestroyed += ClearDeadVisibleEntities;
-            _visibleNetworkEntities.Add(networkComponent);
+            foreach (var visibleEntity in visibleEntities)
+            {
+                //Already is visible or does not have a network component.
+                if(_visibleEntities.Contains(visibleEntity) || !visibleEntity.Has<NetworkComponent>()) continue;
+                var networkComponent = visibleEntity.Get<NetworkComponent>();
+                networkComponent.OnDestroyed += ClearDeadEntities;
+                _visibleEntities.Add(visibleEntity);
+            }
+
+            foreach (var visibleEntity in _visibleEntities.Where(visibleEntity => !visibleEntities.Contains(visibleEntity)))
+            {
+                visibleEntity.TryGet<NetworkComponent>(out var networkComponent); //May not contain it so we do a safe event removal.
+                if(networkComponent != null)
+                    networkComponent.OnDestroyed -= ClearDeadEntities;
+                _visibleEntities.Remove(visibleEntity);
+            }
         }
 
-        public bool RemoveVisibleEntity(NetworkComponent networkComponent)
+        public void ClearDeadEntities()
         {
-            networkComponent.OnDestroyed -= ClearDeadVisibleEntities;
-            var removed = _visibleNetworkEntities.Remove(networkComponent);
-            return removed;
+            for(var i = _visibleEntities.Count - 1; i >= 0; i--) //Reverse indexing to remove dead entities.
+            {
+                var visibleEntity = _visibleEntities[i];
+                if(visibleEntity.IsAlive() && visibleEntity.Has<NetworkComponent>()) continue; //Alive and working.
+                
+                //Dead, Remove it.
+                _visibleEntities.RemoveAt(i);
+            }
         }
 
-        public void SetVisibleEntities(List<NetworkComponent> visibleNetworkEntities)
-        {
-            foreach (var networkComponent in _visibleNetworkEntities)
-                networkComponent.OnDestroyed -= ClearDeadVisibleEntities;
-            
-            _visibleNetworkEntities = visibleNetworkEntities;
-            _visibleNetworkEntities.Remove(this);
-
-            foreach (var networkComponent in _visibleNetworkEntities.Where(networkComponent => networkComponent.IsAlive))
-                networkComponent.OnDestroyed += ClearDeadVisibleEntities;
-        }
-
-    public void ClearDeadVisibleEntities()
-        {
-            foreach (var networkComponent in _visibleNetworkEntities.ToList().Where(networkComponent => !networkComponent.IsAlive))
-                RemoveVisibleEntity(networkComponent);
-        }
-        
         public void Dispose()
         {
             if (_isDisposed) return;

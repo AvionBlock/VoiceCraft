@@ -1,8 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Arch.Core;
 using Arch.Core.Extensions;
+using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
@@ -52,46 +52,31 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
         
-        public byte[] Serialize()
+        public void Serialize(NetDataWriter writer)
         {
-            var data = new List<byte>();
-            data.AddRange(BitConverter.GetBytes(Position.X));
-            data.AddRange(BitConverter.GetBytes(Position.Y));
-            data.AddRange(BitConverter.GetBytes(Position.Z));
+            writer.Put(Position.X);
+            writer.Put(Position.Y);
+            writer.Put(Position.Z);
             
-            data.AddRange(BitConverter.GetBytes(Rotation.X));
-            data.AddRange(BitConverter.GetBytes(Rotation.Y));
-            data.AddRange(BitConverter.GetBytes(Rotation.Z));
-            data.AddRange(BitConverter.GetBytes(Rotation.W));
-
-            return data.ToArray();
+            writer.Put(Rotation.X);
+            writer.Put(Rotation.Y);
+            writer.Put(Rotation.Z);
+            writer.Put(Rotation.W);
         }
 
-        public void Deserialize(byte[] data)
+        public void Deserialize(NetDataReader reader)
         {
-            var offset = 0;
+            var x = reader.GetFloat();
+            var y = reader.GetFloat();
+            var z = reader.GetFloat();
             
-            //Extract xPosition
-            _position.X = BitConverter.ToSingle(data, offset);
-            offset += sizeof(float);
-            //Extract yPosition
-            _position.Y = BitConverter.ToSingle(data, offset);
-            offset += sizeof(float);
-            //Extract zPosition
-            _position.Z = BitConverter.ToSingle(data, offset);
-            offset += sizeof(float);
+            var rX = reader.GetFloat();
+            var rY = reader.GetFloat();
+            var rZ = reader.GetFloat();
+            var rW = reader.GetFloat();
             
-            //Extract xRotation
-            _rotation.X = BitConverter.ToSingle(data, offset);
-            offset += sizeof(float);
-            //Extract yRotation
-            _rotation.Y = BitConverter.ToSingle(data, offset);
-            offset += sizeof(float);
-            //Extract zRotation
-            _rotation.Z = BitConverter.ToSingle(data, offset);
-            offset += sizeof(float);
-            //Extract wRotation
-            _rotation.W = BitConverter.ToSingle(data, offset);
+            Position = new Vector3(x, y, z);
+            Rotation = new Quaternion(rX, rY, rZ, rW);
         }
         
         public void Dispose()

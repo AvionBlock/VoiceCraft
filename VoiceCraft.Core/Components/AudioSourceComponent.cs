@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using Arch.Core;
 using Arch.Core.Extensions;
+using LiteNetLib.Utils;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioSourceComponent : IAudioOutput, ISerializableEntityComponent
+    public class AudioSourceComponent : IAudioOutput, ISerializableEntityComponent, IVisibleComponent
     {
         private string _environmentId = string.Empty;
         private string _name = string.Empty;
@@ -75,55 +76,41 @@ namespace VoiceCraft.Core.Components
             Entity.Add(this);
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
-
-        public byte[] Serialize()
+        
+        public void Serialize(NetDataWriter writer)
         {
-            var data = new List<byte>();
-            data.AddRange(BitConverter.GetBytes(_environmentId.Length));
-            if (_environmentId.Length > 0)
-                data.AddRange(Encoding.UTF8.GetBytes(_environmentId));
-
-            data.AddRange(BitConverter.GetBytes(_name.Length));
-            if (_name.Length > 0)
-                data.AddRange(Encoding.UTF8.GetBytes(_name));
-
-            data.AddRange(BitConverter.GetBytes(_bitmask));
-
-            return data.ToArray();
+            writer.Put(_environmentId);
+            writer.Put(_name);
+            writer.Put(_bitmask);
         }
 
-        public void Deserialize(byte[] data)
+        public void Deserialize(NetDataReader reader)
         {
-            var offset = 0;
-
-            //Extract EnvironmentId
-            var environmentIdLength = BitConverter.ToInt32(data, offset);
-            offset += sizeof(int);
-            if (environmentIdLength > 0)
-            {
-                _environmentId = Encoding.UTF8.GetString(data);
-                offset += environmentIdLength;
-            }
+            _environmentId = reader.GetString();
+            _name = reader.GetString();
+            _bitmask = reader.GetULong();
             
-            //Extract Name
-            var nameLength = BitConverter.ToInt32(data, offset);
-            offset += sizeof(int);
-            if (nameLength > 0)
-            {
-                _name = Encoding.UTF8.GetString(data);
-                offset += nameLength;
-            }
-            
-            //Extract Bitmask
-            _bitmask = BitConverter.ToUInt64(data, offset);
+            //TODO Figure out component references later.
+        }
+        
+        public bool VisibleTo(Entity entity)
+        {
+            entity.TryGet<AudioListenerComponent>(out var audioListenerComponent);
+            return (Bitmask & (audioListenerComponent?.Bitmask ?? 0)) != 0; //Check for audioListener and check against the bitmask.
         }
 
-        public void GetVisibleComponents(World world, List<object> components)
+        public void GetVisibleEntities(World world, List<Entity> entities)
         {
-            if (components.Contains(this) || !IsAlive)
-                return; //Already part of the list. don't need to recheck through or if the component/entity is dead. Also prevents stack overflows (I think).
-            components.Add(this);
-            _audioInput?.GetVisibleComponents(world, components); //Get visible components of the linked audioInput.
+            if (!(_audioInput is IEntityComponent audioEntityComponent) || entities.Contains(audioEntityComponent.Entity)) return;
+            entities.Add(audioEntityComponent.Entity); //No matter what it's visible because of the direct reference.
+            var components = audioEntityComponent.Entity.GetAllComponents();
+            
+            //Get all visible entities from the entity.
+            foreach (var component in components)
+            {
+                if (!(component is IVisibleComponent visibilityComponent)) continue;
+                visibilityComponent.GetVisibleEntities(world, entities);
+            }
         }
 
         public void Dispose()
