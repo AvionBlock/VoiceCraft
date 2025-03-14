@@ -120,18 +120,8 @@ namespace VoiceCraft.Server.Systems
                 if(!networkComponent.AddVisibleEntity(visibleEntity)) continue;
                 if (networkComponent.NetPeer == null) break;
                 
-                //If it's an actual client. Send all the current component values.
-                var visibleEntityComponents = visibleEntity.GetAllComponents();
-                foreach (var component in visibleEntityComponents)
-                {
-                    if (component is not ISerializableEntityComponent serializableEntityComponent) continue;
-                    var componentUpdatedPacket = new UpdateComponentPacket()
-                    {
-                        NetworkId = networkComponent.NetworkId,
-                        Component = serializableEntityComponent
-                    };
-                    _server.SendPacket(networkComponent.NetPeer, componentUpdatedPacket);
-                }
+                //If it's an actual client. Send all the current component values of the newly added entity.
+                SendEntityComponentData(networkComponent, visibleEntity);
             }
                 
             foreach (var visibleEntity in networkComponent.VisibleEntities.Where(visibleEntities.Contains))
@@ -140,12 +130,26 @@ namespace VoiceCraft.Server.Systems
             }
         }
 
+        private void SendEntityComponentData(NetworkComponent networkComponent, Entity targetEntity)
+        {
+            if (networkComponent.NetPeer == null) return;
+            
+            var entityComponents = targetEntity.GetAllComponents();
+            foreach (var component in entityComponents)
+            {
+                if (component is not ISerializableEntityComponent serializableEntityComponent) continue;
+                var componentUpdatedPacket = new UpdateComponentPacket()
+                {
+                    NetworkId = networkComponent.NetworkId,
+                    Component = serializableEntityComponent
+                };
+                _server.SendPacket(networkComponent.NetPeer, componentUpdatedPacket);
+            }
+        }
+
         private void Broadcast(VoiceCraftPacket packet, params NetPeer?[] excludedPeers)
         {
-            var query = new QueryDescription()
-                .WithAll<NetworkComponent>();
-
-            World.Query(in query, (ref NetworkComponent netComponent) =>
+            World.Query(in NetworkComponent.Query, (ref NetworkComponent netComponent) =>
             {
                 if (netComponent.NetPeer == null || excludedPeers.Contains(netComponent.NetPeer)) return; //not a client or is excluded.
                 _server.SendPacket(netComponent.NetPeer, packet);
