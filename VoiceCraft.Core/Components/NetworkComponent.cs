@@ -10,6 +10,7 @@ namespace VoiceCraft.Core.Components
 {
     public class NetworkComponent : IEntityComponent
     {
+        public static readonly QueryDescription Query = new QueryDescription().WithAll<NetworkComponent>();
         private List<Entity> _visibleEntities = new List<Entity>();
         private bool _isDisposed;
 
@@ -34,24 +35,21 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public void SetVisibleEntities(List<Entity> visibleEntities)
+        public bool AddVisibleEntity(Entity entity)
         {
-            foreach (var visibleEntity in visibleEntities)
-            {
-                //Already is visible or does not have a network component.
-                if(_visibleEntities.Contains(visibleEntity) || !visibleEntity.Has<NetworkComponent>()) continue;
-                var networkComponent = visibleEntity.Get<NetworkComponent>();
-                networkComponent.OnDestroyed += ClearDeadEntities;
-                _visibleEntities.Add(visibleEntity);
-            }
+            //Already is visible or does not have a network component.
+            if (_visibleEntities.Contains(entity) || !entity.Has<NetworkComponent>()) return false;
+            var networkComponent = entity.Get<NetworkComponent>();
+            networkComponent.OnDestroyed += ClearDeadEntities;
+            return true;
+        }
 
-            foreach (var visibleEntity in _visibleEntities.Where(visibleEntity => !visibleEntities.Contains(visibleEntity)))
-            {
-                visibleEntity.TryGet<NetworkComponent>(out var networkComponent); //May not contain it so we do a safe event removal.
-                if(networkComponent != null)
-                    networkComponent.OnDestroyed -= ClearDeadEntities;
-                _visibleEntities.Remove(visibleEntity);
-            }
+        public bool RemoveVisibleEntity(Entity entity)
+        {
+            entity.TryGet<NetworkComponent>(out var networkComponent); //May not contain it so we do a safe event removal.
+            if(networkComponent != null)
+                networkComponent.OnDestroyed -= ClearDeadEntities;
+            return _visibleEntities.Remove(entity);
         }
 
         public void ClearDeadEntities()

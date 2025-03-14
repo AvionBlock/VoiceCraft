@@ -10,6 +10,7 @@ namespace VoiceCraft.Core.Components
 {
     public class TransformComponent : ISerializableEntityComponent
     {
+        public static readonly QueryDescription Query = new QueryDescription().WithAll<TransformComponent>();
         private Vector3 _position = Vector3.Zero;
         private Quaternion _rotation = Quaternion.Identity;
         private bool _isDisposed;

@@ -8,8 +8,9 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioSourceComponent : IAudioOutput, ISerializableEntityComponent, IVisibleComponent
+    public class AudioSourceComponent : IAudioOutput, IVisibleComponent, ISerializableEntityComponent
     {
+        public static readonly QueryDescription Query = new QueryDescription().WithAll<AudioSourceComponent>();
         private string _environmentId = string.Empty;
         private string _name = string.Empty;
         private ulong _bitmask; //will change to a default value later.
@@ -75,27 +76,10 @@ namespace VoiceCraft.Core.Components
             Entity.Add(this);
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
-        
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(_environmentId);
-            writer.Put(_name);
-            writer.Put(_bitmask);
-        }
 
-        public void Deserialize(NetDataReader reader)
+        public virtual int ReadOutput(byte[] buffer, int offset, int count)
         {
-            _environmentId = reader.GetString();
-            _name = reader.GetString();
-            _bitmask = reader.GetULong();
-            
-            //TODO Figure out component references later.
-        }
-        
-        public bool VisibleTo(Entity entity)
-        {
-            entity.TryGet<AudioListenerComponent>(out var audioListenerComponent);
-            return (Bitmask & (audioListenerComponent?.Bitmask ?? 0)) != 0; //Check for audioListener and check against the bitmask.
+            throw new NotSupportedException();
         }
 
         public void GetVisibleEntities(World world, List<Entity> entities)
@@ -103,13 +87,53 @@ namespace VoiceCraft.Core.Components
             if (!(_audioInput is IEntityComponent audioEntityComponent) || entities.Contains(audioEntityComponent.Entity)) return;
             entities.Add(audioEntityComponent.Entity); //No matter what it's visible because of the direct reference.
             var components = audioEntityComponent.Entity.GetAllComponents();
-            
+
             //Get all visible entities from the entity.
             foreach (var component in components)
             {
                 if (!(component is IVisibleComponent visibilityComponent)) continue;
                 visibilityComponent.GetVisibleEntities(world, entities);
             }
+        }
+
+        public bool VisibleTo(Entity entity)
+        {
+            entity.TryGet<AudioListenerComponent>(out var audioListenerComponent);
+            //Check for audioListener and check against the bitmask and environment ID.
+            return (Bitmask & (audioListenerComponent?.Bitmask ?? 0)) != 0 && audioListenerComponent?.EnvironmentId == _environmentId;
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(_environmentId);
+            writer.Put(_name);
+            writer.Put(_bitmask);
+            var componentReference = new ComponentReference(0);
+
+            if (_audioInput is ISerializableEntityComponent entityComponent && entityComponent.Entity.Has<NetworkComponent>())
+            {
+                var networkComponent = entityComponent.Entity.Get<NetworkComponent>();
+                componentReference.NetworkId = networkComponent.NetworkId;
+                componentReference.ComponentType = entityComponent.ComponentType;
+            }
+
+            writer.Put(componentReference);
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            _environmentId = reader.GetString();
+            _name = reader.GetString();
+            _bitmask = reader.GetULong();
+
+            var componentReference = new ComponentReference(0);
+            componentReference.Deserialize(reader);
+            if (componentReference.ComponentType == ComponentType.Unknown) return;
+
+            var world = World.Worlds[Entity.WorldId];
+            var component = world.GetComponentFromReference<IAudioInput>(componentReference);
+            if (!(component is IAudioInput audioInput)) return;
+            _audioInput = audioInput;
         }
 
         public void Dispose()

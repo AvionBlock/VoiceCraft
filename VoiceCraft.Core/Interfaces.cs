@@ -6,19 +6,39 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core
 {
-    public interface IAudioEffect
+    //Audio
+    public interface IAudioStreamable
     {
-        public ulong Bitmask { get; set; }
+        int ReadStream(byte[] buffer, int length, int count);
     }
-
+    
     public interface IAudioInput
     {
+        int ReadInput(byte[] buffer, int offset, int count);
     }
 
     public interface IAudioOutput
     {
+        int ReadOutput(byte[] buffer, int offset, int count);
+    }
+    
+    public interface IAudioEffect
+    {
+        public ulong Bitmask { get; set; }
+    }
+    
+    //Visibility
+    public interface IVisibleComponent : IVisibilityComponent
+    {
+        public void GetVisibleEntities(World world, List<Entity> entities);
     }
 
+    public interface IVisibilityComponent
+    {
+        bool VisibleTo(Entity entity);
+    }
+
+    //Entity
     public interface IEntityComponent: IDisposable
     {
         Entity Entity { get; }
@@ -29,15 +49,5 @@ namespace VoiceCraft.Core
     public interface ISerializableEntityComponent : IEntityComponent, INetSerializable
     {
         ComponentType ComponentType { get; }
-    }
-    
-    public interface IVisibleComponent : IVisibilityComponent
-    {
-        public void GetVisibleEntities(World world, List<Entity> entities);
-    }
-
-    public interface IVisibilityComponent
-    {
-        bool VisibleTo(Entity entity);
     }
 }

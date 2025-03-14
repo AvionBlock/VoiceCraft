@@ -13,7 +13,6 @@ namespace VoiceCraft.Server.Systems
     {
         private readonly VoiceCraftServer _server;
         private readonly List<Entity> _visibleEntities = [];
-        private readonly QueryDescription _query = new QueryDescription().WithAll<NetworkComponent>();
 
         public NetworkComponentSystem(World world, VoiceCraftServer server) : base(world)
         {
@@ -26,7 +25,7 @@ namespace VoiceCraft.Server.Systems
 
         public override void Update(in float deltaTime)
         {
-            World.Query(in _query, (ref NetworkComponent networkComponent) =>
+            World.Query(in NetworkComponent.Query, (ref NetworkComponent networkComponent) =>
             {
                 _visibleEntities.Clear();
                 networkComponent.ClearDeadEntities();
@@ -39,7 +38,7 @@ namespace VoiceCraft.Server.Systems
                     visibleComponent.GetVisibleEntities(World, _visibleEntities);
                 }
                 _visibleEntities.Remove(networkComponent.Entity); //Remove local entity.
-                networkComponent.SetVisibleEntities(_visibleEntities);
+                SetVisibleEntities(networkComponent, _visibleEntities);
             });
         }
 
@@ -110,6 +109,34 @@ namespace VoiceCraft.Server.Systems
                 };
                 //Notify all entities of the changes.
                 Broadcast(componentRemovedPacket);
+            }
+        }
+
+        private void SetVisibleEntities(NetworkComponent networkComponent, List<Entity> visibleEntities)
+        {
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var visibleEntity in visibleEntities)
+            {
+                if(!networkComponent.AddVisibleEntity(visibleEntity)) continue;
+                if (networkComponent.NetPeer == null) break;
+                
+                //If it's an actual client. Send all the current component values.
+                var visibleEntityComponents = visibleEntity.GetAllComponents();
+                foreach (var component in visibleEntityComponents)
+                {
+                    if (component is not ISerializableEntityComponent serializableEntityComponent) continue;
+                    var componentUpdatedPacket = new UpdateComponentPacket()
+                    {
+                        NetworkId = networkComponent.NetworkId,
+                        Component = serializableEntityComponent
+                    };
+                    _server.SendPacket(networkComponent.NetPeer, componentUpdatedPacket);
+                }
+            }
+                
+            foreach (var visibleEntity in networkComponent.VisibleEntities.Where(visibleEntities.Contains))
+            {
+                networkComponent.RemoveVisibleEntity(visibleEntity);
             }
         }
 

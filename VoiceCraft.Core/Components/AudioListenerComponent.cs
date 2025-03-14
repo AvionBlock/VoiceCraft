@@ -8,9 +8,9 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Components
 {
-    public class AudioListenerComponent : IAudioInput, ISerializableEntityComponent, IVisibleComponent
+    public class AudioListenerComponent : IAudioInput, IVisibleComponent, ISerializableEntityComponent
     {
-        private readonly QueryDescription _query = new QueryDescription().WithAll<AudioSourceComponent>();
+        public static readonly QueryDescription Query = new QueryDescription().WithAll<AudioListenerComponent>();
         private string _environmentId = string.Empty;
         private ulong _bitmask; //Will change to a default value later.
         private bool _isDisposed;
@@ -52,27 +52,14 @@ namespace VoiceCraft.Core.Components
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public void Serialize(NetDataWriter writer)
+        public virtual int ReadInput(byte[] buffer, int offset, int count)
         {
-            writer.Put(EnvironmentId);
-            writer.Put(Bitmask);
+            throw new NotSupportedException();
         }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            EnvironmentId = reader.GetString();
-            Bitmask = reader.GetULong();
-        }
-
-        public bool VisibleTo(Entity entity)
-        {
-            entity.TryGet<AudioSourceComponent>(out var audioSourceComponent);
-            return (Bitmask & (audioSourceComponent?.Bitmask ?? 0)) != 0; //Check for audioListener and check against the bitmask.
-        }
-
+        
         public void GetVisibleEntities(World world, List<Entity> entities)
         {
-            world.Query(in _query, (ref AudioSourceComponent audioListenerComponent) =>
+            world.Query(in AudioSourceComponent.Query, (ref AudioSourceComponent audioListenerComponent) =>
             {
                 if (audioListenerComponent.Entity == Entity || entities.Contains(audioListenerComponent.Entity))
                     return; //Already checked entity or it's a local entity.
@@ -94,6 +81,25 @@ namespace VoiceCraft.Core.Components
                     visibilityComponent.GetVisibleEntities(world, entities); //Get all visible entities from this component on the entity.
                 }
             });
+        }
+        
+        public bool VisibleTo(Entity entity)
+        {
+            entity.TryGet<AudioSourceComponent>(out var audioSourceComponent);
+            //Check for audioListener and check against the bitmask and environment ID.
+            return (Bitmask & (audioSourceComponent?.Bitmask ?? 0)) != 0 && audioSourceComponent?.EnvironmentId == _environmentId;
+        }
+        
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(EnvironmentId);
+            writer.Put(Bitmask);
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            EnvironmentId = reader.GetString();
+            Bitmask = reader.GetULong();
         }
 
         public void Dispose()

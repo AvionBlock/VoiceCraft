@@ -41,8 +41,12 @@ namespace VoiceCraft.Core.Network
         AudioStream,
         AudioEffects,
         
+        //Streamable
+        Microphone,
+        Speaker,
+        
         //Other
         Transform,
-        Unknown
+        Unknown = 255
     }
 }
