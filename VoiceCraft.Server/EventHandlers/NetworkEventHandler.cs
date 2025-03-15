@@ -73,9 +73,7 @@ namespace VoiceCraft.Server.EventHandlers
                 case PacketType.Info:
                 case PacketType.EntityCreated:
                 case PacketType.EntityDestroyed:
-                case PacketType.AddComponent:
-                case PacketType.RemoveComponent:
-                case PacketType.UpdateComponent:
+                case PacketType.Unknown:
                 default:
                     break;
             }
@@ -103,9 +101,7 @@ namespace VoiceCraft.Server.EventHandlers
                 case PacketType.Login:
                 case PacketType.EntityCreated:
                 case PacketType.EntityDestroyed:
-                case PacketType.AddComponent:
-                case PacketType.RemoveComponent:
-                case PacketType.UpdateComponent:
+                case PacketType.Unknown:
                 default:
                     break;
             }

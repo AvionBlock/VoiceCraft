@@ -1,6 +1,7 @@
 using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Server
@@ -16,6 +17,8 @@ namespace VoiceCraft.Server
         //Public Properties
         public ServerProperties Properties { get; }
         public EventBasedNetListener Listener { get; }
+
+        public VoiceCraftWorld World { get; } = new();
 
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter = new();

@@ -1,12 +1,9 @@
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiteNetLib;
 using VoiceCraft.Client.Models.Settings;
-using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
@@ -18,11 +15,9 @@ namespace VoiceCraft.Client.ViewModels
     {
         private readonly NavigationService _navigationService;
         private readonly SettingsService _settingsService;
-        private readonly VoiceCraftClient _voiceCraftClient;
         private readonly BackgroundService _backgroundService;
         private readonly NotificationService _notificationService;
         private readonly AudioService _audioService;
-        private CancellationTokenSource? _clientPingCancellation;
 
         [ObservableProperty] private ServersSettingsViewModel _serversSettings;
 
@@ -41,42 +36,20 @@ namespace VoiceCraft.Client.ViewModels
             _notificationService = notificationService;
             _audioService = audioService;
             _serversSettings = new ServersSettingsViewModel(_settingsService.Get<ServersSettings>(), _settingsService);
-            _voiceCraftClient = new VoiceCraftClient();
-            
-            _voiceCraftClient.OnInfoReceived += OnInfoReceived;
-            _voiceCraftClient.OnDisconnected += OnDisconnected;
-        }
-
-        public void SetServer(Server server)
-        {
-            SelectedServer?.Dispose();
-            SelectedServer = new ServerViewModel(server, _settingsService);
-            StartPinger();
         }
 
         public override void OnAppearing()
         {
-            StartPinger();
         }
 
         public override void OnDisappearing()
         {
-            if (_clientPingCancellation == null) return;
-            if (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
-                _voiceCraftClient.Disconnect();
-            _clientPingCancellation.Cancel();
-            _clientPingCancellation.Dispose();
-            _clientPingCancellation = null;
         }
 
         public void Dispose()
         {
             SelectedServer?.Dispose();
             ServersSettings.Dispose();
-            _voiceCraftClient.Dispose();
-            _clientPingCancellation?.Cancel();
-            _clientPingCancellation?.Dispose();
-            _voiceCraftClient.OnDisconnected -= OnDisconnected;
             GC.SuppressFinalize(this);
         }
 
@@ -112,36 +85,6 @@ namespace VoiceCraft.Client.ViewModels
         private void OnDisconnected(DisconnectInfo disconnectInfo)
         {
             StatusInfo = $"Failed to ping server.\nReason: {disconnectInfo.Reason}"; //We'll have to do more disconnection testing but this works.
-        }
-
-        private void StartPinger()
-        {
-            if (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
-                _voiceCraftClient.Disconnect();
-
-            if (SelectedServer == null) return;
-            _voiceCraftClient.Connect(SelectedServer.Ip, SelectedServer.Port, LoginType.Pinger);
-            StatusInfo = "Pinging...";
-
-            if (_clientPingCancellation != null)
-            {
-                _clientPingCancellation.Cancel();
-                _clientPingCancellation.Dispose();
-            }
-
-            _clientPingCancellation = new CancellationTokenSource();
-            Task.Run(async () =>
-            {
-                while (!_clientPingCancellation.IsCancellationRequested)
-                {
-                    _voiceCraftClient.Update();
-                    Latency = _voiceCraftClient.Latency;
-                    await Task.Delay(50);
-                }
-                
-                _clientPingCancellation.Dispose();
-                _clientPingCancellation = null;
-            }, _clientPingCancellation.Token);
         }
     }
 }

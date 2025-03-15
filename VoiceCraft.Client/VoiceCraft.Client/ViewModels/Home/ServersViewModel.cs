@@ -20,7 +20,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         {
             if (value == null) return;
             var vm = navigationService.NavigateTo<SelectedServerViewModel>();
-            vm.SetServer(value.Server);
+            vm.SelectedServer = value;
             SelectedServer = null;
         }
 

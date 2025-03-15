@@ -22,49 +22,34 @@ namespace VoiceCraft.Client.Network
         //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
-        public event Action<string, uint, bool, PositioningType>? OnInfoReceived;
         
-        //Client Events
-        public event Action<Entity>? OnEntityCreated;
-        public event Action<Entity>? OnEntityDestroyed;
         
         //Public Properties
-        public EventBasedNetListener Listener { get; }
-        public EntityStore World { get; }
-        public uint LocalEntityId { get; internal set; }
+        public EventBasedNetListener Listener { get; } = new();
         public NetPeer? ServerPeer { get; internal set; }
         
         private readonly NetManager _netManager;
-        private readonly NetDataWriter _dataWriter;
+        private readonly NetDataWriter _dataWriter = new();
         private readonly NetworkEventHandler _networkEventHandler;
-        private readonly PacketEventHandler _packetHandler;
-        private readonly WorldEventHandler _worldEventHandler;
         
         private readonly OpusEncoder _encoder;
         private readonly BufferedWaveProvider _queuedAudio;
-        private readonly byte[] _extractedAudioBuffer;
-        private readonly byte[] _encodedAudioBuffer;
+        private readonly byte[] _extractedAudioBuffer = new byte[BytesPerFrame];
+        private readonly byte[] _encodedAudioBuffer = new byte[1000];
         private bool _isDisposed;
         private uint _currentTimestamp;
 
         public VoiceCraftClient()
         {
-            _dataWriter = new NetDataWriter();
-            Listener = new EventBasedNetListener();
             _netManager = new NetManager(Listener)
             {
                 AutoRecycle = true,
                 IPv6Enabled = false
             };
-            World = new EntityStore();
             _networkEventHandler = new NetworkEventHandler(this);
-            _packetHandler = new PacketEventHandler(this);
-            _worldEventHandler = new WorldEventHandler(this);
             
             _encoder = new OpusEncoder(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
             _queuedAudio = new BufferedWaveProvider(WaveFormat) { ReadFully = false, BufferDuration = TimeSpan.FromSeconds(2) }; //2 seconds.
-            _extractedAudioBuffer = new byte[BytesPerFrame];
-            _encodedAudioBuffer = new byte[1000];
         }
 
         ~VoiceCraftClient()
@@ -97,16 +82,6 @@ namespace VoiceCraft.Client.Network
         public void Update()
         {
             _netManager.PollEvents();
-            if (_queuedAudio.BufferedBytes < BytesPerFrame) return;
-            Array.Clear(_extractedAudioBuffer, 0, _extractedAudioBuffer.Length);
-            Array.Clear(_encodedAudioBuffer, 0, _encodedAudioBuffer.Length);
-            _queuedAudio.Read(_extractedAudioBuffer, 0, _extractedAudioBuffer.Length);
-            _currentTimestamp += AudioConstants.SamplesPerFrame;
-            //Turns out RTPIncrement is samples per frame. IDK how this shit works...
-            var encodedBytes = _encoder.Encode(_extractedAudioBuffer, AudioConstants.SamplesPerFrame, _encodedAudioBuffer, _encodedAudioBuffer.Length);
-            //We don't need to input our public ID.
-            SendPacket(new AudioPacket() { Timestamp = _currentTimestamp, Data = _encodedAudioBuffer, DataLength = encodedBytes },
-                DeliveryMethod.Unreliable);
         }
 
         public void Disconnect()
@@ -128,11 +103,6 @@ namespace VoiceCraft.Client.Network
             packet.Serialize(_dataWriter);
             ServerPeer.Send(_dataWriter, deliveryMethod);
             return true;
-        }
-
-        public void WriteAudio(byte[] buffer, int length)
-        {
-            _queuedAudio.AddSamples(buffer, 0, length);
         }
         #endregion
 
