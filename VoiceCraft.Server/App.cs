@@ -35,12 +35,12 @@ namespace VoiceCraft.Server
             var entity1 = _server.CreateEntity();
             _ = new AudioListenerComponent(entity1) { Bitmask = ulong.MaxValue };
             _ = new AudioSourceComponent(entity1) { Bitmask = ulong.MaxValue };
-            _ = new NetworkComponent(entity1, -1, null);
+            _ = new NetworkComponent(entity1, NetworkComponent.GetNextAvailableId());
             
             var entity2 = _server.CreateEntity();
             _ = new AudioListenerComponent(entity2) { Bitmask = ulong.MaxValue };
             _ = new AudioSourceComponent(entity2) { Bitmask = ulong.MaxValue };
-            _ = new NetworkComponent(entity2, -2, null);
+            _ = new NetworkComponent(entity2, NetworkComponent.GetNextAvailableId());
             
             while (true)
             {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using LiteNetLib;
@@ -10,9 +9,11 @@ namespace VoiceCraft.Core.Components
 {
     public class NetworkComponent : IEntityComponent
     {
+        private static readonly Dictionary<int, NetworkComponent> NetworkComponents = new Dictionary<int, NetworkComponent>();
         public static readonly QueryDescription Query = new QueryDescription().WithAll<NetworkComponent>();
-        private List<Entity> _visibleEntities = new List<Entity>();
+        private readonly List<NetworkComponent> _visibleNetworkComponents = new List<NetworkComponent>();
         private bool _isDisposed;
+        private bool IsAlive => !_isDisposed && Entity.IsAlive();
 
         public Entity Entity { get; }
 
@@ -22,45 +23,50 @@ namespace VoiceCraft.Core.Components
 
         public NetPeer? NetPeer { get; }
 
-        public IEnumerable<Entity> VisibleEntities => _visibleEntities;
+        public IEnumerable<NetworkComponent> VisibleNetworkComponents => _visibleNetworkComponents;
 
-        public NetworkComponent(Entity entity, int networkId, NetPeer? netPeer)
+        public NetworkComponent(Entity entity, int networkId, NetPeer? netPeer = null)
         {
             if (entity.Has<NetworkComponent>())
                 throw new InvalidOperationException($"Entity already has the {GetType().Name}!");
+            if (NetworkComponents.ContainsKey(networkId))
+                throw new InvalidOperationException($"A network component for the Network Id {networkId} already exists!");
+            if (netPeer != null && networkId != netPeer.Id)
+                throw new InvalidOperationException($"Input Network Id {networkId} does not match input NetPeer Id {netPeer.Id}!");
+            
             Entity = entity;
-            NetworkId = networkId;
             NetPeer = netPeer;
+            NetworkId = networkId;
             Entity.Add(this);
+            NetworkComponents.Add(NetworkId, this);
             WorldEventHandler.InvokeComponentAdded(new ComponentAddedEvent(this));
         }
 
-        public bool AddVisibleEntity(Entity entity)
+        public bool AddVisibleNetworkComponent(NetworkComponent component)
         {
             //Already is visible or does not have a network component.
-            if (_visibleEntities.Contains(entity) || !entity.Has<NetworkComponent>()) return false;
-            var networkComponent = entity.Get<NetworkComponent>();
-            networkComponent.OnDestroyed += ClearDeadEntities;
+            if (_visibleNetworkComponents.Contains(component) || !component.IsAlive) return false;
+            component.OnDestroyed += ClearDeadNetworkComponents;
+            _visibleNetworkComponents.Add(component);
             return true;
         }
 
-        public bool RemoveVisibleEntity(Entity entity)
+        public bool RemoveVisibleNetworkComponent(NetworkComponent component)
         {
-            entity.TryGet<NetworkComponent>(out var networkComponent); //May not contain it so we do a safe event removal.
-            if(networkComponent != null)
-                networkComponent.OnDestroyed -= ClearDeadEntities;
-            return _visibleEntities.Remove(entity);
+            component.OnDestroyed -= ClearDeadNetworkComponents;
+            return _visibleNetworkComponents.Remove(component);
         }
 
-        public void ClearDeadEntities()
+        public void ClearDeadNetworkComponents()
         {
-            for(var i = _visibleEntities.Count - 1; i >= 0; i--) //Reverse indexing to remove dead entities.
+            for(var i = _visibleNetworkComponents.Count - 1; i >= 0; i--) //Reverse indexing to remove dead entities.
             {
-                var visibleEntity = _visibleEntities[i];
-                if(visibleEntity.IsAlive() && visibleEntity.Has<NetworkComponent>()) continue; //Alive and working.
+                var component = _visibleNetworkComponents[i];
+                if(component.IsAlive) continue; //Alive and working.
                 
                 //Dead, Remove it.
-                _visibleEntities.RemoveAt(i);
+                component.OnDestroyed -= ClearDeadNetworkComponents;
+                _visibleNetworkComponents.RemoveAt(i);
             }
         }
 
@@ -68,9 +74,25 @@ namespace VoiceCraft.Core.Components
         {
             if (_isDisposed) return;
             Entity.Remove<NetworkComponent>();
+            NetworkComponents.Remove(NetworkId);
             _isDisposed = true;
             OnDestroyed?.Invoke();
             WorldEventHandler.InvokeComponentRemoved(new ComponentRemovedEvent(this));
+        }
+
+        public static int GetNextAvailableId()
+        {
+            for (var i = -1; i > int.MinValue; i--)
+            {
+                if(!NetworkComponents.ContainsKey(i)) return i;
+            }
+
+            throw new Exception("Could not generate a networkId for this entity! ID Limit reached!");
+        }
+        
+        public static NetworkComponent? GetNetworkComponentFromId(int networkId)
+        {
+            return NetworkComponents.GetValueOrDefault(networkId);
         }
     }
 }

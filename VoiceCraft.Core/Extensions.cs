@@ -13,24 +13,12 @@ namespace VoiceCraft.Core
                 : value;
         }
 
-        public static Entity GetEntityFromNetworkId(this World world, int networkId)
-        {
-            var entity = Entity.Null;
-            world.Query(in NetworkComponent.Query, (ref NetworkComponent component) =>
-            {
-                if (entity != Entity.Null || component.NetworkId != networkId) return;
-                entity = component.Entity;
-            });
-            
-            return entity;
-        }
-
         public static object? GetComponentFromReference<T>(this World world, ComponentReference componentReference) where T : notnull
         {
-            var entity = world.GetEntityFromNetworkId(componentReference.NetworkId);
-            if (entity == Entity.Null) return null;
+            var networkComponent = NetworkComponent.GetNetworkComponentFromId(componentReference.NetworkId);
+            if (networkComponent == null) return null;
             
-            var components = entity.GetAllComponents();
+            var components = networkComponent.Entity.GetAllComponents();
             foreach (var component in components)
             {
                 if (component is ISerializableEntityComponent entityComponent &&

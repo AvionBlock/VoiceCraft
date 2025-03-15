@@ -28,7 +28,7 @@ namespace VoiceCraft.Server.Systems
             World.Query(in NetworkComponent.Query, (ref NetworkComponent networkComponent) =>
             {
                 _visibleEntities.Clear();
-                networkComponent.ClearDeadEntities();
+                networkComponent.ClearDeadNetworkComponents();
                 //Add as local entity. Cascading components will detect this and ignore any computations for the added entity.
                 _visibleEntities.Add(networkComponent.Entity); 
                 var components = networkComponent.Entity.GetAllComponents();
@@ -38,7 +38,7 @@ namespace VoiceCraft.Server.Systems
                     visibleComponent.GetVisibleEntities(World, _visibleEntities);
                 }
                 _visibleEntities.Remove(networkComponent.Entity); //Remove local entity.
-                SetVisibleEntities(networkComponent, _visibleEntities);
+                SetVisibleEntities(networkComponent, _visibleEntities.Where(x => x.Has<NetworkComponent>()).Select(x => x.Get<NetworkComponent>()).ToArray());
             });
         }
 
@@ -80,10 +80,9 @@ namespace VoiceCraft.Server.Systems
                 NetworkId = networkComponent.NetworkId,
                 Component = serializableEntityComponent
             };
-            foreach (var visibleEntity in networkComponent.VisibleEntities)
+            foreach (var visibleNetworkComponent in networkComponent.VisibleNetworkComponents)
             {
-                visibleEntity.TryGet<NetworkComponent>(out var visibleNetworkComponent);
-                if (visibleNetworkComponent?.NetPeer == null) continue;
+                if (visibleNetworkComponent.NetPeer == null) continue;
                 _server.SendPacket(visibleNetworkComponent.NetPeer, componentUpdatedPacket);
             }
         }
@@ -112,21 +111,19 @@ namespace VoiceCraft.Server.Systems
             }
         }
 
-        private void SetVisibleEntities(NetworkComponent networkComponent, List<Entity> visibleEntities)
+        private void SetVisibleEntities(NetworkComponent networkComponent, NetworkComponent[] visibleNetworkComponents)
         {
-            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-            foreach (var visibleEntity in visibleEntities)
+            foreach (var visibleNetworkComponent in visibleNetworkComponents)
             {
-                if(!networkComponent.AddVisibleEntity(visibleEntity)) continue;
-                if (networkComponent.NetPeer == null) break;
+                if(!networkComponent.AddVisibleNetworkComponent(visibleNetworkComponent) || networkComponent.NetPeer == null) continue;
                 
                 //If it's an actual client. Send all the current component values of the newly added entity.
-                SendEntityComponentData(networkComponent, visibleEntity);
+                SendEntityComponentData(networkComponent, visibleNetworkComponent.Entity);
             }
                 
-            foreach (var visibleEntity in networkComponent.VisibleEntities.Where(visibleEntities.Contains))
+            foreach (var visibleNetworkComponent in networkComponent.VisibleNetworkComponents.Where(visible => !visibleNetworkComponents.Contains(visible)))
             {
-                networkComponent.RemoveVisibleEntity(visibleEntity);
+                networkComponent.RemoveVisibleNetworkComponent(visibleNetworkComponent);
             }
         }
 

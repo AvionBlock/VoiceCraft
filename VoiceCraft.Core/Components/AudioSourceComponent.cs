@@ -12,7 +12,6 @@ namespace VoiceCraft.Core.Components
     {
         public static readonly QueryDescription Query = new QueryDescription().WithAll<AudioSourceComponent>();
         private string _environmentId = string.Empty;
-        private string _name = string.Empty;
         private ulong _bitmask; //will change to a default value later.
         private IAudioInput? _audioInput;
         private bool _isDisposed;
@@ -31,17 +30,6 @@ namespace VoiceCraft.Core.Components
             {
                 if (_environmentId == value || !IsAlive) return;
                 _environmentId = value;
-                WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
-            }
-        }
-
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                if (_name == value || !IsAlive) return;
-                _name = value;
                 WorldEventHandler.InvokeComponentUpdated(new ComponentUpdatedEvent(this));
             }
         }
@@ -106,7 +94,6 @@ namespace VoiceCraft.Core.Components
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(_environmentId);
-            writer.Put(_name);
             writer.Put(_bitmask);
             var componentReference = new ComponentReference(0);
 
@@ -123,7 +110,6 @@ namespace VoiceCraft.Core.Components
         public void Deserialize(NetDataReader reader)
         {
             _environmentId = reader.GetString();
-            _name = reader.GetString();
             _bitmask = reader.GetULong();
 
             var componentReference = new ComponentReference(0);
