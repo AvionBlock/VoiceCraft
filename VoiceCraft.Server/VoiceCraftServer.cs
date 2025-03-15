@@ -3,6 +3,7 @@ using Arch.Core.Extensions;
 using Arch.System;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Schedulers;
 using VoiceCraft.Core.Events;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
@@ -29,6 +30,7 @@ namespace VoiceCraft.Server
         private readonly NetDataWriter _dataWriter = new();
         private readonly NetworkEventHandler _networkEventHandler;
         private readonly Group<float> _systems;
+        private readonly JobScheduler _jobScheduler;
         private bool _isDisposed;
         private int _lastPingBroadcast = Environment.TickCount;
 
@@ -42,7 +44,17 @@ namespace VoiceCraft.Server
             };
             
             _networkEventHandler = new NetworkEventHandler(this, _netManager);
-            _systems = new Group<float>("systems", new NetworkComponentSystem(World, this));
+            _systems = new Group<float>("systems", new NetworkSystem(World, this));
+            _jobScheduler = new JobScheduler(
+                new JobScheduler.Config
+                {
+                    ThreadPrefixName = "VoiceCraft.Server",
+                    ThreadCount = 0,                           // 0 = Determine at runtime
+                    MaxExpectedConcurrentJobs = 64,
+                    StrictAllocationMode = false,
+                }
+            );
+            World.SharedJobScheduler = _jobScheduler;
         }
 
         ~VoiceCraftServer()
@@ -144,6 +156,7 @@ namespace VoiceCraft.Server
             {
                 _netManager.Stop();
                 _systems.Dispose();
+                _jobScheduler.Dispose();
             }
 
             _isDisposed = true;

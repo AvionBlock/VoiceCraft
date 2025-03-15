@@ -74,14 +74,13 @@ namespace VoiceCraft.Core.Components
         {
             if (!(_audioInput is IEntityComponent audioEntityComponent) || entities.Contains(audioEntityComponent.Entity)) return;
             entities.Add(audioEntityComponent.Entity); //No matter what it's visible because of the direct reference.
-            var components = audioEntityComponent.Entity.GetAllComponents();
+            var entity = audioEntityComponent.Entity;
 
             //Get all visible entities from the entity.
-            foreach (var component in components)
-            {
-                if (!(component is IVisibleComponent visibilityComponent)) continue;
-                visibilityComponent.GetVisibleEntities(world, entities);
-            }
+            if(world.Has<AudioListenerComponent>(entity))
+                world.Get<AudioListenerComponent>(entity).GetVisibleEntities(world, entities);
+            if(world.Has<AudioSourceComponent>(entity))
+                world.Get<AudioSourceComponent>(entity).GetVisibleEntities(world, entities);
         }
 
         public bool VisibleTo(Entity entity)

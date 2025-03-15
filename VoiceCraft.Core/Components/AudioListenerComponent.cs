@@ -59,9 +59,10 @@ namespace VoiceCraft.Core.Components
         
         public void GetVisibleEntities(World world, List<Entity> entities)
         {
-            world.Query(in AudioSourceComponent.Query, (ref AudioSourceComponent audioListenerComponent) =>
+            world.Query(in AudioSourceComponent.Query, entity =>
             {
-                if (audioListenerComponent.Entity == Entity || entities.Contains(audioListenerComponent.Entity))
+                var audioListenerComponent = entity.Get<AudioListenerComponent>();
+                if (Entity == entity || entities.Contains(entity))
                     return; //Already checked entity or it's a local entity.
                 
                 var components = audioListenerComponent.Entity.GetAllComponents();
@@ -71,15 +72,11 @@ namespace VoiceCraft.Core.Components
                     if (!(component is IVisibilityComponent visibilityComponent)) continue;
                     if (!visibilityComponent.VisibleTo(Entity)) return; //Not visible return the function.
                 }
-
-                //Visible. Add the entity.
-                entities.Add(audioListenerComponent.Entity);
-                //Loop through all the components that can get more visible entities.
-                foreach (var component in components)
-                {
-                    if (!(component is IVisibleComponent visibilityComponent)) continue;
-                    visibilityComponent.GetVisibleEntities(world, entities); //Get all visible entities from this component on the entity.
-                }
+                
+                if(world.Has<AudioListenerComponent>(entity))
+                    world.Get<AudioListenerComponent>(entity).GetVisibleEntities(world, entities);
+                if(world.Has<AudioSourceComponent>(entity))
+                    world.Get<AudioSourceComponent>(entity).GetVisibleEntities(world, entities);
             });
         }
         

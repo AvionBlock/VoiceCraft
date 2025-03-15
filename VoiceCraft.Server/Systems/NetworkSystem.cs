@@ -9,37 +9,17 @@ using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class NetworkComponentSystem : BaseSystem<World, float>
+    public class NetworkSystem : BaseSystem<World, float>
     {
         private readonly VoiceCraftServer _server;
-        private readonly List<Entity> _visibleEntities = [];
 
-        public NetworkComponentSystem(World world, VoiceCraftServer server) : base(world)
+        public NetworkSystem(World world, VoiceCraftServer server) : base(world)
         {
             _server = server;
 
             WorldEventHandler.OnComponentAdded += OnComponentAdded;
             WorldEventHandler.OnComponentUpdated += OnComponentUpdated;
             WorldEventHandler.OnComponentRemoved += OnComponentRemoved;
-        }
-
-        public override void Update(in float deltaTime)
-        {
-            World.Query(in NetworkComponent.Query, (ref NetworkComponent networkComponent) =>
-            {
-                _visibleEntities.Clear();
-                networkComponent.ClearDeadNetworkComponents();
-                //Add as local entity. Cascading components will detect this and ignore any computations for the added entity.
-                _visibleEntities.Add(networkComponent.Entity); 
-                var components = networkComponent.Entity.GetAllComponents();
-                foreach (var component in components)
-                {
-                    if (component is not IVisibleComponent visibleComponent) continue;
-                    visibleComponent.GetVisibleEntities(World, _visibleEntities);
-                }
-                _visibleEntities.Remove(networkComponent.Entity); //Remove local entity.
-                SetVisibleEntities(networkComponent, _visibleEntities.Where(x => x.Has<NetworkComponent>()).Select(x => x.Get<NetworkComponent>()).ToArray());
-            });
         }
 
         private void OnComponentAdded(ComponentAddedEvent @event)
