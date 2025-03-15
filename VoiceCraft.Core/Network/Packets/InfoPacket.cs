@@ -6,7 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.Info;
         public string Motd { get; set; } = string.Empty;
-        public uint Clients { get; set; }
+        public int Clients { get; set; }
         public bool Discovery  { get; set; }
         public PositioningType PositioningType { get; set; }
         
@@ -22,7 +22,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Motd = reader.GetString();
-            Clients = reader.GetUInt();
+            Clients = reader.GetInt();
             Discovery = reader.GetBool();
             PositioningType = (PositioningType)reader.GetByte();
         }

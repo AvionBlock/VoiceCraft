@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using VoiceCraft.Core.Components;
 
 namespace VoiceCraft.Server
 {
@@ -32,29 +31,12 @@ namespace VoiceCraft.Server
             Console.WriteLine("Starting VoiceCraft server...");
             _server.Start(9050);
 
-            for (var i = 0; i < 3; i++)
-            {
-                var entity = _server.CreateEntity();
-                _ = new AudioListenerComponent(entity) { Bitmask = ulong.MaxValue };
-                _ = new AudioSourceComponent(entity) { Bitmask = ulong.MaxValue };
-                _ = new NetworkComponent(entity, NetworkComponent.GetNextAvailableId());
-            }
-            
             var tick1 = Environment.TickCount;
             while (true)
             {
-                try
-                {
-                    _server.Update(0.2f);
-                    Console.WriteLine(Environment.TickCount - tick1);
-                    await Task.Delay(UpdateInterval);
-
-                    tick1 = Environment.TickCount;
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e);
-                }
+                _server.Update(0.2f);
+                Console.WriteLine(Environment.TickCount - tick1);
+                await Task.Delay(UpdateInterval);
             }
         }
 

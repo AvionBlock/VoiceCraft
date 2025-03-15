@@ -8,7 +8,6 @@ namespace VoiceCraft.Core.Network
 
     public enum LoginType : byte
     {
-        Pinger,
         Login,
         Discovery
     }
