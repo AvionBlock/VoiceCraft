@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
@@ -8,6 +10,7 @@ namespace VoiceCraft.Server.EventHandlers
     public class NetworkEventHandler
     {
         private readonly VoiceCraftServer _server;
+        private readonly VoiceCraftWorld _world;
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly ServerProperties _properties;
@@ -15,6 +18,7 @@ namespace VoiceCraft.Server.EventHandlers
         public NetworkEventHandler(VoiceCraftServer server, NetManager netManager)
         {
             _server = server;
+            _world = _server.World;
             _listener = _server.Listener;
             _properties = _server.Properties;
             _netManager = netManager;
@@ -47,6 +51,8 @@ namespace VoiceCraft.Server.EventHandlers
                     case LoginType.Login:
                         var loginPeer = request.Accept();
                         loginPeer.Tag = LoginType.Login;
+                        var entity = new VoiceCraftNetworkEntity(loginPeer);
+                        _world.AddEntity(entity);
                         break;
                     case LoginType.Discovery:
                         var peer = request.Accept();
@@ -65,48 +71,62 @@ namespace VoiceCraft.Server.EventHandlers
 
         private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
         {
-            var packetType = reader.GetByte();
-            var pt = (PacketType)packetType;
-            switch (pt)
+            try
             {
-                case PacketType.Login:
-                case PacketType.Info:
-                case PacketType.EntityCreated:
-                case PacketType.EntityDestroyed:
-                case PacketType.Unknown:
-                default:
-                    break;
-            }
+                var packetType = reader.GetByte();
+                var pt = (PacketType)packetType;
+                switch (pt)
+                {
+                    case PacketType.Login:
+                    case PacketType.Info:
+                    case PacketType.EntityCreated:
+                    case PacketType.EntityRemoved:
+                    case PacketType.Unknown:
+                    default:
+                        break;
+                }
 
-            reader.Recycle();
+                reader.Recycle();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteendpoint, NetPacketReader reader, UnconnectedMessageType messagetype)
         {
-            var packetType = reader.GetByte();
-            var pt = (PacketType)packetType;
-            switch (pt)
+            try
             {
-                case PacketType.Info:
-                    var infoPacket = new InfoPacket()
-                    {
-                        Clients = _netManager.ConnectedPeersCount,
-                        Discovery = _properties.Discovery,
-                        PositioningType = _properties.PositioningType,
-                        Motd = _properties.Motd
-                    };
-                    _server.SendUnconnectedPacket(remoteendpoint, infoPacket);
-                    break;
-                //Unused
-                case PacketType.Login:
-                case PacketType.EntityCreated:
-                case PacketType.EntityDestroyed:
-                case PacketType.Unknown:
-                default:
-                    break;
-            }
+                var packetType = reader.GetByte();
+                var pt = (PacketType)packetType;
+                switch (pt)
+                {
+                    case PacketType.Info:
+                        var infoPacket = new InfoPacket()
+                        {
+                            Clients = _netManager.ConnectedPeersCount,
+                            Discovery = _properties.Discovery,
+                            PositioningType = _properties.PositioningType,
+                            Motd = _properties.Motd
+                        };
+                        _server.SendUnconnectedPacket(remoteendpoint, infoPacket);
+                        break;
+                    //Unused
+                    case PacketType.Login:
+                    case PacketType.EntityCreated:
+                    case PacketType.EntityRemoved:
+                    case PacketType.Unknown:
+                    default:
+                        break;
+                }
 
-            reader.Recycle();
+                reader.Recycle();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
     }
 }

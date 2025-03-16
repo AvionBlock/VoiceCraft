@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace VoiceCraft.Server
 {
     public class App

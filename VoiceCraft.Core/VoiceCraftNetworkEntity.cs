@@ -2,11 +2,11 @@ using LiteNetLib;
 
 namespace VoiceCraft.Core
 {
-    public class VoiceCraftClientEntity : VoiceCraftEntity
+    public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
         public NetPeer NetPeer { get; }
         
-        public VoiceCraftClientEntity(NetPeer netPeer) : base(netPeer.Id)
+        public VoiceCraftNetworkEntity(NetPeer netPeer) : base(netPeer.Id)
         {
             NetPeer = netPeer;
         }

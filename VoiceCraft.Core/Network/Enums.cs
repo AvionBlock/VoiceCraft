@@ -24,7 +24,15 @@ namespace VoiceCraft.Core.Network
         Info,
         Login,
         EntityCreated,
-        EntityDestroyed,
-        Unknown
+        EntityRemoved,
+        SetEffect,
+        RemoveEffect,
+        Unknown //C# does a thing where any number higher than this will always result to this value.
+    }
+
+    public enum EffectType : byte
+    {
+        Proximity,
+        Unknown //C# does a thing where any number higher than this will always result to this value.
     }
 }

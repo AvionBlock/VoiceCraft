@@ -16,13 +16,14 @@ namespace VoiceCraft.Client.Network
         public static readonly WaveFormat WaveFormat = new(AudioConstants.SampleRate, AudioConstants.Channels);
         private static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
 
+        public ServerInfo? ServerInfo { get; internal set; }
+        
         public int Latency { get; internal set; }
-        public ConnectionStatus ConnectionStatus { get; internal set; }
+        public ConnectionStatus ConnectionStatus { get; private set; }
 
         //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
-        
         
         //Public Properties
         public EventBasedNetListener Listener { get; } = new();
@@ -46,7 +47,7 @@ namespace VoiceCraft.Client.Network
                 AutoRecycle = true,
                 IPv6Enabled = false
             };
-            _networkEventHandler = new NetworkEventHandler(this);
+            _networkEventHandler = new NetworkEventHandler(this, _netManager);
             
             _encoder = new OpusEncoder(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
             _queuedAudio = new BufferedWaveProvider(WaveFormat) { ReadFully = false, BufferDuration = TimeSpan.FromSeconds(2) }; //2 seconds.
@@ -57,7 +58,6 @@ namespace VoiceCraft.Client.Network
             Dispose(false);
         }
         
-        #region Public Methods
         public void Connect(string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
@@ -104,7 +104,6 @@ namespace VoiceCraft.Client.Network
             ServerPeer.Send(_dataWriter, deliveryMethod);
             return true;
         }
-        #endregion
 
         #region Dispose
         private void ThrowIfDisposed()

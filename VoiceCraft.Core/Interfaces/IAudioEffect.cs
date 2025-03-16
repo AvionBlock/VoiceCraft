@@ -1,12 +1,15 @@
 using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Interfaces
 {
     public interface IAudioEffect : INetSerializable
     {
-        event Action<IAudioEffect>? OnEffectUpdated;
+        public ulong Bitmask { get; set; }
+
+        EffectType EffectType { get; }
         
-        public bool VisibleTo(VoiceCraftEntity entity1, VoiceCraftEntity entity2);
+        event Action<IAudioEffect>? OnEffectUpdated;
     }
 }

@@ -1,42 +1,88 @@
+using System;
+using System.Diagnostics;
+using System.Net;
 using LiteNetLib;
 using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network.EventHandlers
 {
     public class NetworkEventHandler
     {
         private readonly VoiceCraftClient _client;
+        private readonly EventBasedNetListener _listener;
+        private readonly NetManager _netManager;
 
-        public NetworkEventHandler(VoiceCraftClient client)
+        public NetworkEventHandler(VoiceCraftClient client, NetManager netManager)
         {
             _client = client;
-            
-            _client.Listener.PeerConnectedEvent += OnPeerConnected;
-            _client.Listener.PeerDisconnectedEvent += OnPeerDisconnected;
-            _client.Listener.NetworkLatencyUpdateEvent += OnNetworkLatencyUpdateEvent;
-            _client.Listener.ConnectionRequestEvent += OnConnectionRequest;
-        }
-        
-        private void OnPeerConnected(NetPeer peer)
-        {
-            _client.ConnectionStatus = ConnectionStatus.Connected;
-            _client.ServerPeer = peer;
-        }
+            _netManager = netManager;
+            _listener = _client.Listener;
 
-        private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
-        {
-            _client.ConnectionStatus = ConnectionStatus.Disconnected;
-            _client.ServerPeer = null;
-        }
-        
-        private void OnNetworkLatencyUpdateEvent(NetPeer peer, int latency)
-        {
-            _client.Latency = latency;
+            _listener.ConnectionRequestEvent += OnConnectionRequest;
+            _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
+            _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
         }
 
         private static void OnConnectionRequest(ConnectionRequest request)
         {
             request.Reject();
+        }
+
+        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
+        {
+            try
+            {
+                var packetType = reader.GetByte();
+                var pt = (PacketType)packetType;
+                switch (pt)
+                {
+                    case PacketType.EntityCreated:
+                    case PacketType.EntityRemoved:
+                    //Unused
+                    case PacketType.Login:
+                    case PacketType.Info:
+                    case PacketType.Unknown:
+                    default:
+                        break;
+                }
+
+                reader.Recycle();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteendpoint, NetPacketReader reader, UnconnectedMessageType messagetype)
+        {
+            try
+            {
+                var packetType = reader.GetByte();
+                var pt = (PacketType)packetType;
+                switch (pt)
+                {
+                    case PacketType.Info:
+                        var packet = new InfoPacket();
+                        packet.Deserialize(reader);
+                        _client.ServerInfo = new ServerInfo(packet);
+                        break;
+                    //Unused
+                    case PacketType.Login:
+                    case PacketType.EntityCreated:
+                    case PacketType.EntityRemoved:
+                    case PacketType.Unknown:
+                    default:
+                        break;
+                }
+
+                reader.Recycle();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
     }
 }
