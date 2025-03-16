@@ -60,7 +60,7 @@ namespace VoiceCraft.Core
         public Dictionary<EffectType, IAudioEffect> Effects { get; } = new Dictionary<EffectType, IAudioEffect>();
         //Modifiers for modifying data for later?
 
-        protected VoiceCraftEntity(int networkId)
+        public VoiceCraftEntity(int networkId)
         {
             if(Entities.ContainsKey(networkId))
                 throw new InvalidOperationException($"An entity with the network ID {networkId} has already been added!");
@@ -96,10 +96,16 @@ namespace VoiceCraft.Core
         public bool VisibleTo(VoiceCraftEntity entity)
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
-            var combinedBitmask =  Bitmask | entity.Bitmask;
+            var combinedBitmask =  Bitmask & entity.Bitmask;
             if (combinedBitmask == 0) return false;
             
             foreach (var effect in Effects)
+            {
+                if (!(effect.Value is IVisible visible)) continue;
+                if (!visible.VisibleTo(this, entity, combinedBitmask)) return false;
+            }
+
+            foreach (var effect in entity.Effects)
             {
                 if (!(effect.Value is IVisible visible)) continue;
                 if (!visible.VisibleTo(this, entity, combinedBitmask)) return false;
