@@ -7,21 +7,20 @@ namespace VoiceCraft.Core
     {
         public event Action<VoiceCraftEntity>? OnEntityAdded;
         public event Action<VoiceCraftEntity>? OnEntityRemoved;
-        
-        public Dictionary<int, VoiceCraftEntity> Entities { get; } = new Dictionary<int, VoiceCraftEntity>();
 
-        public bool AddEntity(VoiceCraftEntity entity)
+        public List<VoiceCraftEntity> Entities { get; } = new List<VoiceCraftEntity>();
+
+        public void AddEntity(VoiceCraftEntity entity)
         {
-            var status = Entities.TryAdd(entity.NetworkId, entity);
-            if(status) OnEntityAdded?.Invoke(entity);
-            return status;
+            Entities.Add(entity);
+            OnEntityAdded?.Invoke(entity);
         }
 
         public bool RemoveEntity(VoiceCraftEntity entity)
         {
-            var status = Entities.Remove(entity.NetworkId);
-            if (status) OnEntityRemoved?.Invoke(entity);
-            return status;
+            if(!Entities.Remove(entity)) return false;
+            OnEntityRemoved?.Invoke(entity);
+            return true;
         }
     }
 }

@@ -51,6 +51,14 @@ namespace VoiceCraft.Server
         public void Update()
         {
             _netManager.PollEvents();
+
+            foreach (var entity in World.Entities)
+            {
+                foreach (var visibleEntity in World.Entities)
+                {
+                    entity.VisibleTo(visibleEntity);
+                }
+            }
         }
 
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
