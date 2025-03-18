@@ -1,180 +1,110 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core
 {
     public class VoiceCraftEntity
     {
-        private static readonly Dictionary<int, VoiceCraftEntity> Entities = new Dictionary<int, VoiceCraftEntity>();
-        
+        //Data updates.
+        public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
+        public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnBitmaskUpdated;
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
-        public event Action<EntityData, VoiceCraftEntity>? OnDataUpdated;
+        
+        //Effect Updates.
         public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectAdded;
         public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectUpdated;
         public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectRemoved;
+        
+        //Other Updates.
         public event Action<byte[], VoiceCraftEntity>? OnAudioReceived;
-
-        private ulong _bitmask;
+        
+        //Privates
         private string _name = string.Empty;
-        private EntityData _entityData;
-        private bool _destroyed;
+        private string _worldId = string.Empty;
+        private ulong _bitmask;
+        private Vector3 _position;
+        private Quaternion _rotation;
 
+        //Properties
         public int NetworkId { get; }
-        public string WorldId { get; set; } = string.Empty;
-        public ulong Bitmask
+
+        //Updatable Properties
+        public string WorldId
         {
-            get => _bitmask;
+            get => _worldId;
             set
             {
-                if(_destroyed || _bitmask == value) return;
-                _bitmask = value;
-                OnBitmaskUpdated?.Invoke(_bitmask, this);
+                if (_worldId != value) return;
+                _worldId = value;
+                OnNameUpdated?.Invoke(_worldId, this);
             }
         }
+        
         public string Name
         {
             get => _name;
             set
             {
-                if (_destroyed || _name != value) return;
+                if (_name != value) return;
                 _name = value;
                 OnNameUpdated?.Invoke(_name, this);
             }
         }
-        public EntityData EntityData
+        
+        public ulong Bitmask
         {
-            get => _entityData;
+            get => _bitmask;
             set
             {
-                if (_destroyed || value.Equals(_entityData)) return;
-                _entityData = value;
-                OnDataUpdated?.Invoke(_entityData, this);
+                if (_bitmask == value) return;
+                _bitmask = value;
+                OnBitmaskUpdated?.Invoke(_bitmask, this);
+            }
+        }
+        
+        public Vector3 Position
+        {
+            get => _position;
+            set
+            {
+                if (_position == value) return;
+                _position = value;
+                OnPositionUpdated?.Invoke(_position, this);
+            }
+        }
+        
+        public Quaternion Rotation
+        {
+            get => _rotation;
+            set
+            {
+                if (_rotation == value) return;
+                _rotation = value;
+                OnRotationUpdated?.Invoke(_rotation, this);
             }
         }
 
-        public Dictionary<EffectType, IAudioEffect> Effects { get; } = new Dictionary<EffectType, IAudioEffect>();
         //Modifiers for modifying data for later?
 
         public VoiceCraftEntity(int networkId)
         {
-            if(Entities.ContainsKey(networkId))
-                throw new InvalidOperationException($"An entity with the network ID {networkId} has already been added!");
-            Entities.Add(networkId, this);
             NetworkId = networkId;
-        }
-
-        public bool AddEffect(IAudioEffect effect)
-        {
-            if (_destroyed || !Effects.TryAdd(effect.EffectType, effect)) return false;
-            effect.OnEffectUpdated += EffectUpdated;
-            OnEffectAdded?.Invoke(effect, this);
-            return true;
-
-        }
-
-        public bool RemoveEffect(EffectType effectType)
-        {
-            if(_destroyed || !Effects.Remove(effectType, out var effect)) return false;
-            effect.OnEffectUpdated -= EffectUpdated;
-            OnEffectRemoved?.Invoke(effect, this);
-            return true;
         }
 
         public virtual void Write(byte[] buffer)
         {
-            if(_destroyed) return;
             OnAudioReceived?.Invoke(buffer, this);
         }
 
         public virtual int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        
+
         public bool VisibleTo(VoiceCraftEntity entity)
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
-            var combinedBitmask =  Bitmask & entity.Bitmask;
-            if (combinedBitmask == 0) return false;
-            
-            foreach (var effect in Effects)
-            {
-                if (!(effect.Value is IVisible visible)) continue;
-                if (!visible.VisibleTo(this, entity, combinedBitmask)) return false;
-            }
-
-            foreach (var effect in entity.Effects)
-            {
-                if (!(effect.Value is IVisible visible)) continue;
-                if (!visible.VisibleTo(this, entity, combinedBitmask)) return false;
-            }
-
-            return true;
-        }
-
-        public void Destroy()
-        {
-            Entities.Remove(NetworkId);
-            _destroyed = true;
-        }
-        
-        private void EffectUpdated(IAudioEffect effect) => OnEffectUpdated?.Invoke(effect, this);
-
-        public static VoiceCraftEntity? GetEntityFromNetworkId(int networkId)
-        {
-            Entities.TryGetValue(networkId, out var entity);
-            return entity;
-        }
-
-        public static bool Destroy(int networkId)
-        {
-            var entity = GetEntityFromNetworkId(networkId);
-            if(entity == null) return false;
-            entity.Destroy();
-            return true;
-        }
-    }
-
-    public struct EntityData : INetSerializable, IEquatable<EntityData>
-    {
-        public Vector3 Position;
-        public Quaternion Rotation;
-
-        public void Serialize(NetDataWriter writer)
-        {
-            //Position
-            writer.Put(Position.X);
-            writer.Put(Position.Y);
-            writer.Put(Position.Z);
-
-            //Rotation
-            writer.Put(Rotation.X);
-            writer.Put(Rotation.Y);
-            writer.Put(Rotation.Z);
-            writer.Put(Rotation.W);
-        }
-
-        public void Deserialize(NetDataReader reader)
-        {
-            Position = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
-            Rotation = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
-        }
-
-        public bool Equals(EntityData other)
-        {
-            return Position.Equals(other.Position) && Rotation.Equals(other.Rotation);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is EntityData other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Position, Rotation);
+            var combinedBitmask = Bitmask & entity.Bitmask;
+            return combinedBitmask != 0;
         }
     }
 }

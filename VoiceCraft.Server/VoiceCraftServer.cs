@@ -48,7 +48,7 @@ namespace VoiceCraft.Server
             OnStarted?.Invoke();
         }
 
-        public void Update(float deltaTime)
+        public void Update()
         {
             _netManager.PollEvents();
         }

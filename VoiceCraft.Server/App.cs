@@ -29,10 +29,15 @@ namespace VoiceCraft.Server
             Console.WriteLine("Starting VoiceCraft server...");
             _server.Start(9050);
 
+            for (var i = 0; i < 1000; i++)
+            {
+                
+            }
+
             var tick1 = Environment.TickCount;
             while (true)
             {
-                _server.Update(0.2f);
+                _server.Update();
                 Console.WriteLine(Environment.TickCount - tick1);
                 await Task.Delay(UpdateInterval);
             }
