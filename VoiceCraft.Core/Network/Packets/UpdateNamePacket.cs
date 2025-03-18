@@ -2,27 +2,29 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class EntityCreatedPacket : VoiceCraftPacket
+    public class UpdateNamePacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.EntityCreated;
+        public override PacketType PacketType => PacketType.UpdateName;
         public int NetworkId { get; set; }
-        public VoiceCraftEntity Entity { get; set; }
+        public string Name { get; set; }
+        
 
-        public EntityCreatedPacket(int networkId, VoiceCraftEntity entity)
+        public UpdateNamePacket(int networkId, string name)
         {
             NetworkId = networkId;
-            Entity = entity;
+            Name = name;
         }
-
+        
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put(Entity);
+            writer.Put(Name);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             NetworkId = reader.GetInt();
+            Name = reader.GetString();
         }
     }
 }

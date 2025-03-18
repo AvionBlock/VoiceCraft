@@ -51,8 +51,7 @@ namespace VoiceCraft.Server.EventHandlers
                     case LoginType.Login:
                         var loginPeer = request.Accept();
                         loginPeer.Tag = LoginType.Login;
-                        var entity = new VoiceCraftNetworkEntity(loginPeer);
-                        _world.AddEntity(entity);
+                        _world.CreateEntity(loginPeer);
                         break;
                     case LoginType.Discovery:
                         var peer = request.Accept();
@@ -77,10 +76,17 @@ namespace VoiceCraft.Server.EventHandlers
                 var pt = (PacketType)packetType;
                 switch (pt)
                 {
-                    case PacketType.Login:
                     case PacketType.Info:
+                    case PacketType.Login:
                     case PacketType.EntityCreated:
-                    case PacketType.EntityRemoved:
+                    case PacketType.EntityDestroyed:
+                    case PacketType.UpdatePosition:
+                    case PacketType.UpdateRotation:
+                    case PacketType.UpdateTalkBitmask:
+                    case PacketType.UpdateListenBitmask:
+                    case PacketType.UpdateName:
+                    case PacketType.SetEffect:
+                    case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -115,7 +121,14 @@ namespace VoiceCraft.Server.EventHandlers
                     //Unused
                     case PacketType.Login:
                     case PacketType.EntityCreated:
-                    case PacketType.EntityRemoved:
+                    case PacketType.EntityDestroyed:
+                    case PacketType.UpdatePosition:
+                    case PacketType.UpdateRotation:
+                    case PacketType.UpdateTalkBitmask:
+                    case PacketType.UpdateListenBitmask:
+                    case PacketType.UpdateName:
+                    case PacketType.SetEffect:
+                    case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:
                         break;

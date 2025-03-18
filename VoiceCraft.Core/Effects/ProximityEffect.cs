@@ -57,9 +57,14 @@ namespace VoiceCraft.Core.Effects
 
         public void Deserialize(NetDataReader reader)
         {
-            _bitmask = reader.GetULong();
-            _minRange = reader.GetUInt();
-            _maxRange = reader.GetUInt();
+            //Do this first before actually assigning the data.
+            var bitmask = reader.GetULong();
+            var minRange = reader.GetUInt();
+            var maxRange = reader.GetUInt();
+            
+            _bitmask = bitmask;
+            _minRange = minRange;
+            _maxRange = maxRange;
             OnEffectUpdated?.Invoke(this);
         }
 

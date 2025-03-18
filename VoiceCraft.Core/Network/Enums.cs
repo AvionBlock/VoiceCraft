@@ -23,10 +23,17 @@ namespace VoiceCraft.Core.Network
     {
         Info,
         Login,
+        //Entity stuff
         EntityCreated,
-        EntityRemoved,
+        EntityDestroyed,
+        UpdatePosition,
+        UpdateRotation,
+        UpdateTalkBitmask,
+        UpdateListenBitmask,
+        UpdateName,
         SetEffect,
         RemoveEffect,
+        
         Unknown //C# does a thing where any number higher than this will always result to this value.
     }
 

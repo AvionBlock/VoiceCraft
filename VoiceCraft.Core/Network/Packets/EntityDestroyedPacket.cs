@@ -2,10 +2,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class EntityRemovedPacket : VoiceCraftPacket
+    public class EntityDestroyedPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.EntityRemoved;
+        public override PacketType PacketType => PacketType.EntityDestroyed;
         public int NetworkId { get; set; }
+
+        public EntityDestroyedPacket(int networkId)
+        {
+            NetworkId = networkId;
+        }
         
         public override void Serialize(NetDataWriter writer)
         {

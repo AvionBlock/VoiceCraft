@@ -1,5 +1,3 @@
-using VoiceCraft.Core;
-
 namespace VoiceCraft.Server
 {
     public class App
@@ -33,7 +31,7 @@ namespace VoiceCraft.Server
 
             for (var i = 0; i < 1000; i++)
             {
-                _server.World.AddEntity(new VoiceCraftEntity(i));
+                _server.World.CreateEntity();
             }
 
             var tick1 = Environment.TickCount;
@@ -42,7 +40,7 @@ namespace VoiceCraft.Server
                 _server.Update();
                 Console.WriteLine(Environment.TickCount - tick1);
                 tick1 = Environment.TickCount;
-                //await Task.Delay(UpdateInterval);
+                await Task.Delay(UpdateInterval);
             }
         }
 

@@ -56,7 +56,7 @@ namespace VoiceCraft.Server
             {
                 foreach (var visibleEntity in World.Entities)
                 {
-                    entity.VisibleTo(visibleEntity);
+                    entity.Value.VisibleTo(visibleEntity.Value);
                 }
             }
         }

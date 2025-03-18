@@ -38,7 +38,7 @@ namespace VoiceCraft.Client.Network.EventHandlers
                 switch (pt)
                 {
                     case PacketType.EntityCreated:
-                    case PacketType.EntityRemoved:
+                    case PacketType.EntityDestroyed:
                     //Unused
                     case PacketType.Login:
                     case PacketType.Info:
@@ -71,7 +71,7 @@ namespace VoiceCraft.Client.Network.EventHandlers
                     //Unused
                     case PacketType.Login:
                     case PacketType.EntityCreated:
-                    case PacketType.EntityRemoved:
+                    case PacketType.EntityDestroyed:
                     case PacketType.Unknown:
                     default:
                         break;

@@ -13,19 +13,66 @@ namespace VoiceCraft.Server.EventHandlers
             _server = server;
             _world = _server.World;
 
-            _world.OnEntityAdded += OnEntityAdded;
-            _world.OnEntityRemoved += OnEntityRemoved;
+            _world.OnEntityCreated += OnEntityCreated;
+            _world.OnEntityDestroyed += OnEntityDestroyed;
         }
 
-        private static void OnEntityAdded(VoiceCraftEntity newEntity)
+        private void OnEntityCreated(VoiceCraftEntity newEntity)
         {
-        }
-
-        private static void OnEntityRemoved(VoiceCraftEntity removedEntity)
-        {
-            if (removedEntity is VoiceCraftNetworkEntity networkentity)
+            var createEntityPacket = new EntityCreatedPacket(newEntity.NetworkId, newEntity);
+            foreach (var entity in _world.Entities)
             {
-                networkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.
+                if (entity.Key == newEntity.NetworkId || entity.Value is not VoiceCraftNetworkEntity networkEntity) continue;
+                _server.SendPacket(networkEntity.NetPeer, createEntityPacket);
+                SendEntityEffects(entity.Value, networkEntity);
+                
+                if (!newEntity.VisibleTo(entity.Value)) continue;
+                SendEntityData(newEntity, networkEntity);
+            }
+
+            if (newEntity is not VoiceCraftNetworkEntity newNetworkEntity) return;
+            foreach (var entity in _world.Entities)
+            {
+                if (entity.Key == newNetworkEntity.NetworkId) continue;
+                createEntityPacket = new EntityCreatedPacket(entity.Value.NetworkId, entity.Value);
+                _server.SendPacket(newNetworkEntity.NetPeer, createEntityPacket);
+                SendEntityEffects(entity.Value, newNetworkEntity);
+                
+                if (!entity.Value.VisibleTo(newNetworkEntity)) continue;
+                SendEntityData(entity.Value, newNetworkEntity);
+            }
+        }
+
+        private void SendEntityEffects(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            foreach (var effect in entity.Effects)
+            {
+                var setEffectPacket = new SetEffectPacket(entity.NetworkId, effect.Value);
+                _server.SendPacket(targetEntity.NetPeer, setEffectPacket);
+            }
+        }
+
+        private void SendEntityData(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            var updatePositionPacket = new UpdatePositionPacket(entity.NetworkId, entity.Position);
+            var updateRotationPacket = new UpdateRotationPacket(entity.NetworkId, entity.Rotation);
+
+            _server.SendPacket(targetEntity.NetPeer, updatePositionPacket);
+            _server.SendPacket(targetEntity.NetPeer, updateRotationPacket);
+        }
+
+        private void OnEntityDestroyed(VoiceCraftEntity removedEntity)
+        {
+            var destroyEntityPacket = new EntityDestroyedPacket(removedEntity.NetworkId);
+            if (removedEntity is VoiceCraftNetworkEntity removedNetworkentity)
+            {
+                removedNetworkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.
+            }
+            
+            foreach (var entity in _world.Entities)
+            {
+                if(entity.Value is not VoiceCraftNetworkEntity networkentity) continue;
+                _server.SendPacket(networkentity.NetPeer, destroyEntityPacket);
             }
         }
     }

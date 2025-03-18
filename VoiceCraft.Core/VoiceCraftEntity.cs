@@ -1,16 +1,20 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
+using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core
 {
-    public class VoiceCraftEntity
+    public class VoiceCraftEntity : INetSerializable
     {
         //Data updates.
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<ulong, VoiceCraftEntity>? OnBitmaskUpdated;
+        public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
+        public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         
         //Effect Updates.
@@ -22,14 +26,17 @@ namespace VoiceCraft.Core
         public event Action<byte[], VoiceCraftEntity>? OnAudioReceived;
         
         //Privates
-        private string _name = string.Empty;
+        private string _name = "New Entity";
         private string _worldId = string.Empty;
-        private ulong _bitmask;
+        private ulong _talkBitmask;
+        private ulong _listenBitmask;
         private Vector3 _position;
         private Quaternion _rotation;
+        private readonly ConcurrentDictionary<EffectType, IAudioEffect> _effects = new ConcurrentDictionary<EffectType, IAudioEffect>();
 
         //Properties
         public int NetworkId { get; }
+        public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
 
         //Updatable Properties
         public string WorldId
@@ -54,14 +61,25 @@ namespace VoiceCraft.Core
             }
         }
         
-        public ulong Bitmask
+        public ulong TalkBitmask
         {
-            get => _bitmask;
+            get => _talkBitmask;
             set
             {
-                if (_bitmask == value) return;
-                _bitmask = value;
-                OnBitmaskUpdated?.Invoke(_bitmask, this);
+                if (_talkBitmask == value) return;
+                _talkBitmask = value;
+                OnListenBitmaskUpdated?.Invoke(_talkBitmask, this);
+            }
+        }
+
+        public ulong ListenBitmask
+        {
+            get => _listenBitmask;
+            set
+            {
+                if (_listenBitmask == value) return;
+                _listenBitmask = value;
+                OnTalkBitmaskUpdated?.Invoke(_listenBitmask, this);
             }
         }
         
@@ -94,6 +112,20 @@ namespace VoiceCraft.Core
             NetworkId = networkId;
         }
 
+        public bool AddEffect(IAudioEffect effect)
+        {
+            if (!_effects.TryAdd(effect.EffectType, effect)) return false;
+            OnEffectAdded?.Invoke(effect, this);
+            return true;
+        }
+
+        public bool RemoveEffect(EffectType effectType)
+        {
+            if (!_effects.TryRemove(effectType, out var effect)) return false;
+            OnEffectRemoved?.Invoke(effect, this);
+            return true;
+        }
+
         public virtual void Write(byte[] buffer)
         {
             OnAudioReceived?.Invoke(buffer, this);
@@ -104,8 +136,26 @@ namespace VoiceCraft.Core
         public bool VisibleTo(VoiceCraftEntity entity)
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
-            var combinedBitmask = Bitmask & entity.Bitmask;
+            var combinedBitmask = TalkBitmask & entity.ListenBitmask;
             return combinedBitmask != 0;
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            writer.Put(Name);
+            writer.Put(TalkBitmask);
+            writer.Put(ListenBitmask);
+        }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            var name = reader.GetString();
+            var talkBitmask = reader.GetULong();
+            var listenBitmask = reader.GetULong();
+            
+            Name = name;
+            TalkBitmask = talkBitmask;
+            ListenBitmask = listenBitmask;
         }
     }
 }
