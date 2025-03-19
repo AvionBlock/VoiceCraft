@@ -1,4 +1,5 @@
 using VoiceCraft.Core.Effects;
+using VoiceCraft.Server.Pages;
 
 namespace VoiceCraft.Server
 {
@@ -6,6 +7,17 @@ namespace VoiceCraft.Server
     {
         private const int UpdateInterval = 20;
         private readonly VoiceCraftServer _server;
+        private IPage? _currentPage;
+
+        public IPage? CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                _currentPage = value;
+                _currentPage?.Render();
+            }
+        }
 
         public App()
         {
@@ -17,18 +29,7 @@ namespace VoiceCraft.Server
         public async Task Start()
         {
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Loading...";
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"__     __    _           ____            __ _");
-            Console.WriteLine(@"\ \   / /__ (_) ___ ___ / ___|_ __ __ _ / _| |_");
-            Console.WriteLine(@" \ \ / / _ \| |/ __/ _ \ |   | '__/ _` | |_| __|");
-            Console.WriteLine(@"  \ V / (_) | | (_|  __/ |___| | | (_| |  _| |_");
-            Console.WriteLine(@"   \_/ \___/|_|\___\___|\____|_|  \__,_|_|  \__|");
-#if DEBUG
-            Console.WriteLine($"[Server: {VoiceCraftServer.Version}]===============[DEBUG]\n");
-#else
-            Console.WriteLine($"[Server: {VoiceCraftServer.Version}]================[RELEASE]\n");
-#endif
-            Console.WriteLine("Starting VoiceCraft server...");
+            CurrentPage = new StartScreen();
             _server.Start(9050);
 
             for (var i = 0; i < 1000; i++)
