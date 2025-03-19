@@ -45,26 +45,31 @@ namespace VoiceCraft.Server.EventHandlers
                     request.Reject();
                     return;
                 }
-
-                switch (loginPacket.LoginType)
-                {
-                    case LoginType.Login:
-                        var loginPeer = request.Accept();
-                        loginPeer.Tag = LoginType.Login;
-                        _world.CreateEntity(loginPeer);
-                        break;
-                    case LoginType.Discovery:
-                        var peer = request.Accept();
-                        peer.Tag = LoginType.Discovery;
-                        break;
-                    default:
-                        request.Reject();
-                        break;
-                }
+                
+                HandleLogin(loginPacket, request);
             }
             catch
             {
-                request.Reject(); //Need to set message data here.
+                request.Reject("An error occurred on the server while trying to parse the login!"u8.ToArray());
+            }
+        }
+
+        private void HandleLogin(LoginPacket loginPacket, ConnectionRequest request)
+        {
+            switch (loginPacket.LoginType)
+            {
+                case LoginType.Login:
+                    var loginPeer = request.Accept();
+                    loginPeer.Tag = LoginType.Login;
+                    _world.CreateEntity(loginPeer);
+                    break;
+                case LoginType.Discovery:
+                    var peer = request.Accept();
+                    peer.Tag = LoginType.Discovery;
+                    break;
+                default:
+                    request.Reject();
+                    break;
             }
         }
 

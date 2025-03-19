@@ -44,9 +44,11 @@ namespace VoiceCraft.Server
             while (true)
             {
                 _server.Update();
-                Console.WriteLine(Environment.TickCount - tick1);
+                var dist = Environment.TickCount - tick1;
+                var delay = UpdateInterval - dist;
+                if(delay > 0)
+                    await Task.Delay(delay);
                 tick1 = Environment.TickCount;
-                //await Task.Delay(UpdateInterval);
             }
         }
 

@@ -76,14 +76,14 @@ namespace VoiceCraft.Server.EventHandlers
 
         private void OnEntityDestroyed(VoiceCraftEntity removedEntity)
         {
-            var destroyEntityPacket = new EntityDestroyedPacket(removedEntity.NetworkId);
-            if (removedEntity is VoiceCraftNetworkEntity removedNetworkentity)
-            {
-                removedNetworkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.
-            }
-
             _tasks.Add(Task.Run(() =>
             {
+                var destroyEntityPacket = new EntityDestroyedPacket(removedEntity.NetworkId);
+                if (removedEntity is VoiceCraftNetworkEntity removedNetworkentity)
+                {
+                    removedNetworkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.
+                }
+
                 foreach (var entity in _world.Entities)
                 {
                     if (entity.Value is not VoiceCraftNetworkEntity networkentity) continue;
