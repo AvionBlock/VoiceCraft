@@ -14,21 +14,22 @@ namespace VoiceCraft.Core
 
         public ConcurrentDictionary<int, VoiceCraftEntity> Entities { get; } = new ConcurrentDictionary<int, VoiceCraftEntity>();
 
-        public bool CreateEntity()
+        public VoiceCraftEntity CreateEntity()
         {
             var id = GetNextNegativeId();
             var entity = new VoiceCraftEntity(id);
-            if (!Entities.TryAdd(id, entity)) return false;
+            if (!Entities.TryAdd(id, entity)) throw new InvalidOperationException($"An entity with the id of {id} already exists!");
             OnEntityCreated?.Invoke(entity);
-            return true;
+            return entity;
         }
 
-        public bool CreateEntity(NetPeer netPeer)
+        public VoiceCraftEntity CreateEntity(NetPeer netPeer)
         {
             var entity = new VoiceCraftEntity(netPeer.Id);
-            if (!Entities.TryAdd(netPeer.Id, new VoiceCraftEntity(netPeer.Id))) return false;
+            if (!Entities.TryAdd(netPeer.Id, new VoiceCraftEntity(netPeer.Id)))
+                throw new InvalidOperationException($"An entity with the id of {netPeer.Id} already exists!");
             OnEntityCreated?.Invoke(entity);
-            return true;
+            return entity;
         }
 
         public bool DestroyEntity(int id)

@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network;
@@ -70,8 +71,14 @@ namespace VoiceCraft.Core.Effects
 
         public bool VisibleTo(VoiceCraftEntity fromEntity, VoiceCraftEntity toEntity, ulong bitmask)
         {
-            //TODO Implement this!
-            return true;
+            if ((bitmask & _bitmask) == 0) return true; //Disabled, Is visible.
+            var distance = Vector3.Distance(fromEntity.Position, toEntity.Position);
+            var maxRange = _maxRange;
+
+            if (toEntity.HasEffect<ProximityEffect>(EffectType.Proximity))
+                maxRange = Math.Max(maxRange, toEntity.GetEffect<ProximityEffect>(EffectType.Proximity).MaxRange);
+            
+            return distance <= maxRange;
         }
     }
 }

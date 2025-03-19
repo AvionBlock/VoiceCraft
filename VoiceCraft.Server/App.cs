@@ -1,3 +1,5 @@
+using VoiceCraft.Core.Effects;
+
 namespace VoiceCraft.Server
 {
     public class App
@@ -31,7 +33,11 @@ namespace VoiceCraft.Server
 
             for (var i = 0; i < 1000; i++)
             {
-                _server.World.CreateEntity();
+                var entity = _server.World.CreateEntity();
+                entity.WorldId = "test";
+                entity.TalkBitmask = ulong.MaxValue;
+                entity.ListenBitmask = ulong.MaxValue;
+                entity.AddEffect(new ProximityEffect() { Bitmask = ulong.MaxValue });
             }
 
             var tick1 = Environment.TickCount;
@@ -40,7 +46,7 @@ namespace VoiceCraft.Server
                 _server.Update();
                 Console.WriteLine(Environment.TickCount - tick1);
                 tick1 = Environment.TickCount;
-                await Task.Delay(UpdateInterval);
+                //await Task.Delay(UpdateInterval);
             }
         }
 

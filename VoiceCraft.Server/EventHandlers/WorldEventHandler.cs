@@ -7,6 +7,7 @@ namespace VoiceCraft.Server.EventHandlers
     {
         private readonly VoiceCraftServer _server;
         private readonly VoiceCraftWorld _world;
+        private readonly List<Task> _tasks = [];
 
         public WorldEventHandler(VoiceCraftServer server)
         {
@@ -17,30 +18,42 @@ namespace VoiceCraft.Server.EventHandlers
             _world.OnEntityDestroyed += OnEntityDestroyed;
         }
 
+        public void Update()
+        {
+            var t = Task.WhenAll(_tasks);
+            t.Wait();
+        }
+
         private void OnEntityCreated(VoiceCraftEntity newEntity)
         {
             var createEntityPacket = new EntityCreatedPacket(newEntity.NetworkId, newEntity);
-            foreach (var entity in _world.Entities)
+            _tasks.Add(Task.Run(() =>
             {
-                if (entity.Key == newEntity.NetworkId || entity.Value is not VoiceCraftNetworkEntity networkEntity) continue;
-                _server.SendPacket(networkEntity.NetPeer, createEntityPacket);
-                SendEntityEffects(entity.Value, networkEntity);
-                
-                if (!newEntity.VisibleTo(entity.Value)) continue;
-                SendEntityData(newEntity, networkEntity);
-            }
+                foreach (var entity in _world.Entities)
+                {
+                    if (entity.Key == newEntity.NetworkId || entity.Value is not VoiceCraftNetworkEntity networkEntity) continue;
+                    _server.SendPacket(networkEntity.NetPeer, createEntityPacket);
+                    SendEntityEffects(entity.Value, networkEntity);
+
+                    if (!newEntity.VisibleTo(entity.Value)) continue;
+                    SendEntityData(newEntity, networkEntity);
+                }
+            }));
 
             if (newEntity is not VoiceCraftNetworkEntity newNetworkEntity) return;
-            foreach (var entity in _world.Entities)
+            _tasks.Add(Task.Run(() =>
             {
-                if (entity.Key == newNetworkEntity.NetworkId) continue;
-                createEntityPacket = new EntityCreatedPacket(entity.Value.NetworkId, entity.Value);
-                _server.SendPacket(newNetworkEntity.NetPeer, createEntityPacket);
-                SendEntityEffects(entity.Value, newNetworkEntity);
-                
-                if (!entity.Value.VisibleTo(newNetworkEntity)) continue;
-                SendEntityData(entity.Value, newNetworkEntity);
-            }
+                foreach (var entity in _world.Entities)
+                {
+                    if (entity.Key == newNetworkEntity.NetworkId) continue;
+                    createEntityPacket = new EntityCreatedPacket(entity.Value.NetworkId, entity.Value);
+                    _server.SendPacket(newNetworkEntity.NetPeer, createEntityPacket);
+                    SendEntityEffects(entity.Value, newNetworkEntity);
+
+                    if (!entity.Value.VisibleTo(newNetworkEntity)) continue;
+                    SendEntityData(entity.Value, newNetworkEntity);
+                }
+            }));
         }
 
         private void SendEntityEffects(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
@@ -68,12 +81,15 @@ namespace VoiceCraft.Server.EventHandlers
             {
                 removedNetworkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.
             }
-            
-            foreach (var entity in _world.Entities)
+
+            _tasks.Add(Task.Run(() =>
             {
-                if(entity.Value is not VoiceCraftNetworkEntity networkentity) continue;
-                _server.SendPacket(networkentity.NetPeer, destroyEntityPacket);
-            }
+                foreach (var entity in _world.Entities)
+                {
+                    if (entity.Value is not VoiceCraftNetworkEntity networkentity) continue;
+                    _server.SendPacket(networkentity.NetPeer, destroyEntityPacket);
+                }
+            }));
         }
     }
 }

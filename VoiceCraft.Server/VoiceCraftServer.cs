@@ -3,6 +3,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Server.EventHandlers;
 
 namespace VoiceCraft.Server
 {
@@ -17,11 +18,12 @@ namespace VoiceCraft.Server
         //Public Properties
         public ServerProperties Properties { get; }
         public EventBasedNetListener Listener { get; }
-
         public VoiceCraftWorld World { get; } = new();
 
         private readonly NetManager _netManager;
         private readonly NetDataWriter _dataWriter = new();
+        private readonly WorldEventHandler _worldEventHandler;
+        private readonly NetworkEventHandler _networkEventHandler;
         private bool _isDisposed;
 
         public VoiceCraftServer(ServerProperties? properties = null)
@@ -32,6 +34,9 @@ namespace VoiceCraft.Server
             {
                 AutoRecycle = true
             };
+
+            _worldEventHandler = new WorldEventHandler(this);
+            _networkEventHandler = new NetworkEventHandler(this, _netManager);
         }
 
         ~VoiceCraftServer()
@@ -40,7 +45,6 @@ namespace VoiceCraft.Server
         }
 
         #region Public Methods
-
         public void Start(int port)
         {
             if (_netManager.IsRunning) return;
@@ -51,14 +55,7 @@ namespace VoiceCraft.Server
         public void Update()
         {
             _netManager.PollEvents();
-
-            foreach (var entity in World.Entities)
-            {
-                foreach (var visibleEntity in World.Entities)
-                {
-                    entity.Value.VisibleTo(visibleEntity.Value);
-                }
-            }
+            _worldEventHandler.Update();
         }
 
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket

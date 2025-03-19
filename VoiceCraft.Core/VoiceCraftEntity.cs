@@ -44,7 +44,7 @@ namespace VoiceCraft.Core
             get => _worldId;
             set
             {
-                if (_worldId != value) return;
+                if (_worldId == value) return;
                 _worldId = value;
                 OnNameUpdated?.Invoke(_worldId, this);
             }
@@ -55,7 +55,7 @@ namespace VoiceCraft.Core
             get => _name;
             set
             {
-                if (_name != value) return;
+                if (_name == value) return;
                 _name = value;
                 OnNameUpdated?.Invoke(_name, this);
             }
@@ -119,6 +119,19 @@ namespace VoiceCraft.Core
             return true;
         }
 
+        public bool HasEffect<T>(EffectType effectType) where T : IAudioEffect
+        {
+            if (!_effects.TryGetValue(effectType, out var effect)) return false;
+            return effect.GetType() == typeof(T);
+        }
+
+        public T GetEffect<T>(EffectType effectType) where T : IAudioEffect
+        {
+            _effects.TryGetValue(effectType, out var effect);
+            if (effect is T effectObject) return effectObject;
+            throw new Exception($"No effect of type {typeof(T).Name}");
+        }
+
         public bool RemoveEffect(EffectType effectType)
         {
             if (!_effects.TryRemove(effectType, out var effect)) return false;
@@ -137,7 +150,23 @@ namespace VoiceCraft.Core
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
             var combinedBitmask = TalkBitmask & entity.ListenBitmask;
-            return combinedBitmask != 0;
+            if (combinedBitmask == 0) return false;
+
+            foreach (var effect in _effects)
+            {
+                if(!(effect.Value is IVisible visibleEffect)) continue;
+                if (visibleEffect.VisibleTo(this, entity, combinedBitmask)) continue;
+                return false;
+            }
+
+            foreach (var effect in entity.Effects)
+            {
+                if (!(effect.Value is IVisible visibleEffect)) continue;
+                if (visibleEffect.VisibleTo(this, entity, combinedBitmask)) continue;
+                return false;
+            }
+            
+            return true;
         }
 
         public void Serialize(NetDataWriter writer)
