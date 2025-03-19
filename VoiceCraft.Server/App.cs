@@ -6,14 +6,17 @@ namespace VoiceCraft.Server
     public class App
     {
         private const int UpdateInterval = 20;
-        private readonly VoiceCraftServer _server;
+        private readonly VoiceCraftServer _server = new();
         private IPage? _currentPage;
+        private bool _isRunning;
+        private bool _shutdown;
 
         public IPage? CurrentPage
         {
             get => _currentPage;
             set
             {
+                _currentPage?.Dispose();
                 _currentPage = value;
                 _currentPage?.Render();
             }
@@ -21,9 +24,7 @@ namespace VoiceCraft.Server
 
         public App()
         {
-            _server = new VoiceCraftServer();
             _server.OnStarted += OnStarted;
-            _server.OnStopped += OnStopped;
         }
 
         public async Task Start()
@@ -42,7 +43,7 @@ namespace VoiceCraft.Server
             }
 
             var tick1 = Environment.TickCount;
-            while (true)
+            while (!_shutdown)
             {
                 _server.Update();
                 var dist = Environment.TickCount - tick1;
@@ -51,16 +52,20 @@ namespace VoiceCraft.Server
                     await Task.Delay(delay);
                 tick1 = Environment.TickCount;
             }
+            
+            _server.Stop();
+            _isRunning = false;
         }
 
-        private static void OnStarted()
+        public void Shutdown()
         {
-            Console.WriteLine("Server started!");
+            if (!_isRunning) return;
+            _shutdown = true;
         }
 
-        private static void OnStopped()
+        private void OnStarted()
         {
-            Console.WriteLine("Server stopped!");
+            _isRunning = true;
         }
     }
 }
