@@ -17,7 +17,7 @@ namespace VoiceCraft.Server.Systems
 
         private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
         {
-            entity.VisibleEntities.RemoveAll(x => x.Dead);
+            entity.VisibleEntities.RemoveAll(x => x.Destroyed);
             foreach (var visibleEntity in _world.Entities)
             {
                 if(visibleEntity.Value == entity || visibleEntity.Value is not VoiceCraftNetworkEntity visibleNetworkEntity) continue;

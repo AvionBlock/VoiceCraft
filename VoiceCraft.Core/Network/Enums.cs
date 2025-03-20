@@ -31,7 +31,8 @@ namespace VoiceCraft.Core.Network
         UpdateTalkBitmask,
         UpdateListenBitmask,
         UpdateName,
-        SetEffect,
+        AddEffect,
+        UpdateEffect,
         RemoveEffect,
         
         Unknown //C# does a thing where any number higher than this will always result to this value.

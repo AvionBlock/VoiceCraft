@@ -19,6 +19,8 @@ namespace VoiceCraft.Core
             var id = GetNextNegativeId();
             var entity = new VoiceCraftEntity(id);
             if (!Entities.TryAdd(id, entity)) throw new InvalidOperationException($"An entity with the id of {id} already exists!");
+            
+            entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
@@ -28,6 +30,8 @@ namespace VoiceCraft.Core
             var entity = new VoiceCraftEntity(netPeer.Id);
             if (!Entities.TryAdd(netPeer.Id, new VoiceCraftEntity(netPeer.Id)))
                 throw new InvalidOperationException($"An entity with the id of {netPeer.Id} already exists!");
+            
+            entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
@@ -35,10 +39,16 @@ namespace VoiceCraft.Core
         public bool DestroyEntity(int id)
         {
             if (!Entities.TryRemove(id, out var entity)) return false;
-            entity.Kill();
+            entity.Destroy();
             OnEntityDestroyed?.Invoke(Entities[id]);
             _recycledIds.Enqueue(id);
             return true;
+        }
+
+        private void DestroyEntity(VoiceCraftEntity entity)
+        {
+            entity.OnDestroyed -= DestroyEntity;
+            DestroyEntity(entity.NetworkId);
         }
 
         private int GetNextNegativeId()

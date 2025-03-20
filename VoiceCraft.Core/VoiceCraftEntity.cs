@@ -24,6 +24,7 @@ namespace VoiceCraft.Core
         
         //Other Updates.
         public event Action<byte[], VoiceCraftEntity>? OnAudioReceived;
+        public event Action<VoiceCraftEntity>? OnDestroyed;
         
         //Privates
         private string _name = "New Entity";
@@ -35,7 +36,7 @@ namespace VoiceCraft.Core
         private readonly ConcurrentDictionary<EffectType, IAudioEffect> _effects = new ConcurrentDictionary<EffectType, IAudioEffect>();
 
         //Properties
-        public bool Dead { get; private set; }
+        public bool Destroyed { get; private set; }
         public int NetworkId { get; }
         public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
         public List<VoiceCraftEntity> VisibleEntities { get; } = new List<VoiceCraftEntity>();
@@ -117,6 +118,7 @@ namespace VoiceCraft.Core
         public bool AddEffect(IAudioEffect effect)
         {
             if (!_effects.TryAdd(effect.EffectType, effect)) return false;
+            effect.OnEffectUpdated += EffectUpdated;
             OnEffectAdded?.Invoke(effect, this);
             return true;
         }
@@ -137,6 +139,7 @@ namespace VoiceCraft.Core
         public bool RemoveEffect(EffectType effectType)
         {
             if (!_effects.TryRemove(effectType, out var effect)) return false;
+            effect.OnEffectUpdated -= EffectUpdated;
             OnEffectRemoved?.Invoke(effect, this);
             return true;
         }
@@ -189,9 +192,16 @@ namespace VoiceCraft.Core
             ListenBitmask = listenBitmask;
         }
 
-        public void Kill()
+        public void Destroy()
         {
-            Dead = true;
+            if (Destroyed) return;
+            Destroyed = true;
+            OnDestroyed?.Invoke(this);
+        }
+
+        private void EffectUpdated(IAudioEffect effect)
+        {
+            OnEffectUpdated?.Invoke(effect, this);
         }
     }
 }

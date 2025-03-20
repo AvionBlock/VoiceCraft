@@ -63,7 +63,7 @@ namespace VoiceCraft.Server.Systems
         {
             foreach (var effect in entity.Effects)
             {
-                var setEffectPacket = new SetEffectPacket(entity.NetworkId, effect.Value);
+                var setEffectPacket = new AddEffectPacket(entity.NetworkId, effect.Value);
                 SendPacket(targetEntity.NetPeer, setEffectPacket);
             }
         }
@@ -139,7 +139,8 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.UpdateTalkBitmask:
                     case PacketType.UpdateListenBitmask:
                     case PacketType.UpdateName:
-                    case PacketType.SetEffect:
+                    case PacketType.AddEffect:
+                    case PacketType.UpdateEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:
@@ -181,7 +182,8 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.UpdateTalkBitmask:
                     case PacketType.UpdateListenBitmask:
                     case PacketType.UpdateName:
-                    case PacketType.SetEffect:
+                    case PacketType.AddEffect:
+                    case PacketType.UpdateEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:
