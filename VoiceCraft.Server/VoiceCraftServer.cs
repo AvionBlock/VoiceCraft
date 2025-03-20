@@ -1,9 +1,6 @@
-using System.Net;
 using LiteNetLib;
-using LiteNetLib.Utils;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network.Packets;
-using VoiceCraft.Server.EventHandlers;
+using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server
 {
@@ -19,11 +16,11 @@ namespace VoiceCraft.Server
         public ServerProperties Properties { get; }
         public EventBasedNetListener Listener { get; }
         public VoiceCraftWorld World { get; } = new();
+        public WorldSystem WorldSystem { get; }
+        public NetworkSystem NetworkSystem { get; }
+        public VisibilitySystem VisibilitySystem { get; }
 
         private readonly NetManager _netManager;
-        private readonly NetDataWriter _dataWriter = new();
-        private readonly WorldEventHandler _worldEventHandler;
-        private readonly NetworkEventHandler _networkEventHandler;
         private bool _isDisposed;
 
         public VoiceCraftServer(ServerProperties? properties = null)
@@ -35,8 +32,9 @@ namespace VoiceCraft.Server
                 AutoRecycle = true
             };
 
-            _worldEventHandler = new WorldEventHandler(this);
-            _networkEventHandler = new NetworkEventHandler(this, _netManager);
+            WorldSystem = new WorldSystem(this);
+            NetworkSystem = new NetworkSystem(this, _netManager);
+            VisibilitySystem = new VisibilitySystem(this);
         }
 
         ~VoiceCraftServer()
@@ -55,37 +53,7 @@ namespace VoiceCraft.Server
         public void Update()
         {
             _netManager.PollEvents();
-            _worldEventHandler.Update();
-        }
-
-        public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            if (peer.ConnectionState != ConnectionState.Connected) return false;
-
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            peer.Send(_dataWriter, deliveryMethod);
-            return true;
-        }
-
-        public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            var status = true;
-            foreach (var peer in peers)
-            {
-                status = SendPacket(peer, packet, deliveryMethod);
-            }
-
-            return status;
-        }
-
-        public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
-        {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+            VisibilitySystem.Update();
         }
 
         public void Stop()

@@ -35,8 +35,10 @@ namespace VoiceCraft.Core
         private readonly ConcurrentDictionary<EffectType, IAudioEffect> _effects = new ConcurrentDictionary<EffectType, IAudioEffect>();
 
         //Properties
+        public bool Dead { get; private set; }
         public int NetworkId { get; }
         public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
+        public List<VoiceCraftEntity> VisibleEntities { get; } = new List<VoiceCraftEntity>();
 
         //Updatable Properties
         public string WorldId
@@ -185,6 +187,11 @@ namespace VoiceCraft.Core
             Name = name;
             TalkBitmask = talkBitmask;
             ListenBitmask = listenBitmask;
+        }
+
+        public void Kill()
+        {
+            Dead = true;
         }
     }
 }

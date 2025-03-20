@@ -1,4 +1,3 @@
-using VoiceCraft.Core.Effects;
 using VoiceCraft.Server.Pages;
 
 namespace VoiceCraft.Server
@@ -32,15 +31,6 @@ namespace VoiceCraft.Server
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Loading...";
             CurrentPage = new StartScreen();
             _server.Start(9050);
-
-            for (var i = 0; i < 1000; i++)
-            {
-                var entity = _server.World.CreateEntity();
-                entity.WorldId = "test";
-                entity.TalkBitmask = ulong.MaxValue;
-                entity.ListenBitmask = ulong.MaxValue;
-                entity.AddEffect(new ProximityEffect() { Bitmask = ulong.MaxValue });
-            }
 
             var tick1 = Environment.TickCount;
             while (!_shutdown)

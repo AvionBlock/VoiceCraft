@@ -1,31 +1,80 @@
 using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
+using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
-namespace VoiceCraft.Server.EventHandlers
+namespace VoiceCraft.Server.Systems
 {
-    public class NetworkEventHandler
+    public class NetworkSystem
     {
-        private readonly VoiceCraftServer _server;
+        private readonly NetDataWriter _dataWriter;
         private readonly VoiceCraftWorld _world;
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly ServerProperties _properties;
 
-        public NetworkEventHandler(VoiceCraftServer server, NetManager netManager)
+        public NetworkSystem(VoiceCraftServer server, NetManager netManager)
         {
-            _server = server;
-            _world = _server.World;
-            _listener = _server.Listener;
-            _properties = _server.Properties;
+            _dataWriter = new NetDataWriter();
+            _world = server.World;
+            _listener = server.Listener;
+            _properties = server.Properties;
             _netManager = netManager;
 
             _listener.ConnectionRequestEvent += OnConnectionRequest;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
+        }
+        
+        public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        {
+            if (peer.ConnectionState != ConnectionState.Connected) return false;
+
+            _dataWriter.Reset();
+            _dataWriter.Put((byte)packet.PacketType);
+            packet.Serialize(_dataWriter);
+            peer.Send(_dataWriter, deliveryMethod);
+            return true;
+        }
+
+        public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        {
+            var status = true;
+            foreach (var peer in peers)
+            {
+                status = SendPacket(peer, packet, deliveryMethod);
+            }
+
+            return status;
+        }
+        
+        public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
+        {
+            _dataWriter.Reset();
+            _dataWriter.Put((byte)packet.PacketType);
+            packet.Serialize(_dataWriter);
+            return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+        }
+        
+        public void SendEntityEffects(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            foreach (var effect in entity.Effects)
+            {
+                var setEffectPacket = new SetEffectPacket(entity.NetworkId, effect.Value);
+                SendPacket(targetEntity.NetPeer, setEffectPacket);
+            }
+        }
+
+        public void SendEntityData(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            var updatePositionPacket = new UpdatePositionPacket(entity.NetworkId, entity.Position);
+            var updateRotationPacket = new UpdateRotationPacket(entity.NetworkId, entity.Rotation);
+
+            SendPacket(targetEntity.NetPeer, updatePositionPacket);
+            SendPacket(targetEntity.NetPeer, updateRotationPacket);
         }
 
         private void OnConnectionRequest(ConnectionRequest request)
@@ -42,7 +91,7 @@ namespace VoiceCraft.Server.EventHandlers
                 loginPacket.Deserialize(request.Data);
                 if (Version.Parse(loginPacket.Version).Major != VoiceCraftServer.Version.Major)
                 {
-                    request.Reject();
+                    request.Reject("Incompatible client/server version!"u8.ToArray());
                     return;
                 }
                 
@@ -121,7 +170,7 @@ namespace VoiceCraft.Server.EventHandlers
                             PositioningType = _properties.PositioningType,
                             Motd = _properties.Motd
                         };
-                        _server.SendUnconnectedPacket(remoteendpoint, infoPacket);
+                        SendUnconnectedPacket(remoteendpoint, infoPacket);
                         break;
                     //Unused
                     case PacketType.Login:

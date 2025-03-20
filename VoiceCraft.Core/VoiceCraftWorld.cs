@@ -34,7 +34,8 @@ namespace VoiceCraft.Core
 
         public bool DestroyEntity(int id)
         {
-            if (!Entities.TryRemove(id, out _)) return false;
+            if (!Entities.TryRemove(id, out var entity)) return false;
+            entity.Kill();
             OnEntityDestroyed?.Invoke(Entities[id]);
             _recycledIds.Enqueue(id);
             return true;
