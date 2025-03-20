@@ -1,32 +1,34 @@
 using Spectre.Console;
+using VoiceCraft.Server.Application;
 
 namespace VoiceCraft.Server.Pages
 {
-    public class StartScreen : IPage
+    public class StartScreen(VoiceCraftServer server)
     {
-        private readonly Rows _rows;
-
-        public StartScreen()
+        public async Task Start()
         {
-            _rows = new Rows(
-                new FigletText("VoiceCraft").Color(Color.Green).Justify(Justify.Center),
-#if DEBUG
-                new Text($"[Server: {VoiceCraftServer.Version}][DEBUG]"),
-#else
-                new Text($"[Server: {VoiceCraftServer.Version}]================[RELEASE]\n"),
-#endif
-                new Text("Starting VoiceCraft server...")
-                );
-        }
-
-        public void Render()
-        {
-            AnsiConsole.Write(_rows);
-        }
-
-        public void Dispose()
-        {
-            AnsiConsole.Clear();
+            await AnsiConsole.Status()
+                .StartAsync("Starting...", ctx =>
+                {
+                    //Startup.
+                    Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Starting...";
+                    AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
+                    
+                    //Properties
+                    ctx.Status("Loading Server Properties...");
+                    var properties = ServerProperties.Load("testPath");
+                    AnsiConsole.MarkupLine("[green]Successfully loaded server properties![/]");
+                    
+                    //Server Startup
+                    ctx.Status("Starting Server...");
+                    server.Properties = properties;
+                    server.Start();
+                    ctx.Status("Server Started");
+                    
+                    //Finish
+                    AnsiConsole.MarkupLine("[green]VoiceCraft server started![/]");
+                    return Task.CompletedTask;
+                });
         }
     }
 }

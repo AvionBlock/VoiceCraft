@@ -2,7 +2,7 @@ using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Server.Systems;
 
-namespace VoiceCraft.Server
+namespace VoiceCraft.Server.Application
 {
     public class VoiceCraftServer : IDisposable
     {
@@ -13,7 +13,7 @@ namespace VoiceCraft.Server
         public event Action? OnStopped;
 
         //Public Properties
-        public ServerProperties Properties { get; }
+        public ServerProperties Properties { get; set; }
         public EventBasedNetListener Listener { get; }
         public VoiceCraftWorld World { get; } = new();
         public WorldSystem WorldSystem { get; }
@@ -45,10 +45,13 @@ namespace VoiceCraft.Server
         }
 
         #region Public Methods
-        public void Start(int port)
+        public void Start()
         {
+            #if DEBUG
+            Thread.Sleep(1000); //Debug Simulation.
+            #endif
             if (_netManager.IsRunning) return;
-            _netManager.Start(port);
+            _netManager.Start((int)Properties.Port);
             OnStarted?.Invoke();
         }
 

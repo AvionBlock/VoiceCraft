@@ -1,7 +1,7 @@
 using LiteNetLib;
 using VoiceCraft.Core;
 
-namespace VoiceCraft.Server
+namespace VoiceCraft.Server.Application
 {
     public class VoiceCraftNetworkEntity(NetPeer netPeer) : VoiceCraftEntity(netPeer.Id)
     {

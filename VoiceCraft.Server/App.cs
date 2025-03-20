@@ -1,41 +1,25 @@
+using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Pages;
 
 namespace VoiceCraft.Server
 {
-    public class App
+    public class App(IServiceProvider serviceProvider)
     {
         private const int UpdateInterval = 20;
-        private readonly VoiceCraftServer _server = new();
-        private IPage? _currentPage;
+        
         private bool _isRunning;
         private bool _shutdown;
 
-        public IPage? CurrentPage
-        {
-            get => _currentPage;
-            set
-            {
-                _currentPage?.Dispose();
-                _currentPage = value;
-                _currentPage?.Render();
-            }
-        }
-
-        public App()
-        {
-            _server.OnStarted += OnStarted;
-        }
-
         public async Task Start()
         {
-            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Loading...";
-            CurrentPage = new StartScreen();
-            _server.Start(9050);
+            _ = StartScreen();
+            var server = serviceProvider.GetRequiredService<VoiceCraftServer>();
 
             var tick1 = Environment.TickCount;
             while (!_shutdown)
             {
-                _server.Update();
+                server.Update();
                 var dist = Environment.TickCount - tick1;
                 var delay = UpdateInterval - dist;
                 if(delay > 0)
@@ -43,19 +27,13 @@ namespace VoiceCraft.Server
                 tick1 = Environment.TickCount;
             }
             
-            _server.Stop();
-            _isRunning = false;
+            server.Stop();
         }
 
-        public void Shutdown()
+        private async Task StartScreen()
         {
-            if (!_isRunning) return;
-            _shutdown = true;
-        }
-
-        private void OnStarted()
-        {
-            _isRunning = true;
+            var startScreen = serviceProvider.GetRequiredService<StartScreen>();
+            await startScreen.Start();
         }
     }
 }
