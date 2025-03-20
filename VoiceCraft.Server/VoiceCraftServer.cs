@@ -19,6 +19,7 @@ namespace VoiceCraft.Server
         public WorldSystem WorldSystem { get; }
         public NetworkSystem NetworkSystem { get; }
         public VisibilitySystem VisibilitySystem { get; }
+        public EntityEventsSystem EntityEventsSystem { get; }
 
         private readonly NetManager _netManager;
         private bool _isDisposed;
@@ -35,6 +36,7 @@ namespace VoiceCraft.Server
             WorldSystem = new WorldSystem(this);
             NetworkSystem = new NetworkSystem(this, _netManager);
             VisibilitySystem = new VisibilitySystem(this);
+            EntityEventsSystem = new EntityEventsSystem(this);
         }
 
         ~VoiceCraftServer()

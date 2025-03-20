@@ -11,11 +11,11 @@ namespace VoiceCraft.Core
     public class VoiceCraftEntity : INetSerializable
     {
         //Data updates.
-        public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
-        public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
+        public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
-        public event Action<string, VoiceCraftEntity>? OnNameUpdated;
+        public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
+        public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
         
         //Effect Updates.
         public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectAdded;
