@@ -6,6 +6,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
+using VoiceCraft.Server.Config;
 
 namespace VoiceCraft.Server.Systems
 {
@@ -15,14 +16,14 @@ namespace VoiceCraft.Server.Systems
         private readonly VoiceCraftWorld _world;
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
-        private readonly ServerProperties _properties;
+        private readonly VoiceCraftConfig _config;
 
         public NetworkSystem(VoiceCraftServer server, NetManager netManager)
         {
             _dataWriter = new NetDataWriter();
             _world = server.World;
             _listener = server.Listener;
-            _properties = server.Properties;
+            _config = server.Config;
             _netManager = netManager;
 
             _listener.ConnectionRequestEvent += OnConnectionRequest;
@@ -168,9 +169,9 @@ namespace VoiceCraft.Server.Systems
                         var infoPacket = new InfoPacket()
                         {
                             Clients = _netManager.ConnectedPeersCount,
-                            Discovery = _properties.Discovery,
-                            PositioningType = _properties.PositioningType,
-                            Motd = _properties.Motd
+                            Discovery = _config.Discovery,
+                            PositioningType = _config.PositioningType,
+                            Motd = _config.Motd
                         };
                         SendUnconnectedPacket(remoteendpoint, infoPacket);
                         break;

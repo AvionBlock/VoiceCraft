@@ -6,14 +6,14 @@ namespace VoiceCraft.Server
 {
     public static class Program
     {
-        private static readonly App App = new(BuildServiceProvider());
+        public static readonly IServiceProvider ServiceProvider = BuildServiceProvider();
         
         public static void Main(string[] args)
         {
-            App.Start().GetAwaiter().GetResult();
+            App.Start();
         }
 
-        private static IServiceProvider BuildServiceProvider()
+        private static ServiceProvider BuildServiceProvider()
         {
             var serviceCollection = new ServiceCollection();
             

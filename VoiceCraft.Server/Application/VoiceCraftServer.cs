@@ -1,5 +1,6 @@
 using LiteNetLib;
 using VoiceCraft.Core;
+using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Application
@@ -13,7 +14,7 @@ namespace VoiceCraft.Server.Application
         public event Action? OnStopped;
 
         //Public Properties
-        public ServerProperties Properties { get; set; }
+        public VoiceCraftConfig Config { get; set; }
         public EventBasedNetListener Listener { get; }
         public VoiceCraftWorld World { get; } = new();
         public WorldSystem WorldSystem { get; }
@@ -24,9 +25,9 @@ namespace VoiceCraft.Server.Application
         private readonly NetManager _netManager;
         private bool _isDisposed;
 
-        public VoiceCraftServer(ServerProperties? properties = null)
+        public VoiceCraftServer(VoiceCraftConfig? config = null)
         {
-            Properties = properties ?? new ServerProperties();
+            Config = config ?? new VoiceCraftConfig();
             Listener = new EventBasedNetListener();
             _netManager = new NetManager(Listener)
             {
@@ -51,7 +52,7 @@ namespace VoiceCraft.Server.Application
             Thread.Sleep(1000); //Debug Simulation.
             #endif
             if (_netManager.IsRunning) return;
-            _netManager.Start((int)Properties.Port);
+            _netManager.Start((int)Config.Port);
             OnStarted?.Invoke();
         }
 
@@ -64,6 +65,7 @@ namespace VoiceCraft.Server.Application
         public void Stop()
         {
             if (!_netManager.IsRunning) return;
+            _netManager.DisconnectAll();
             _netManager.Stop();
             OnStopped?.Invoke();
         }
