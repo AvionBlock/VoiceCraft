@@ -5,36 +5,33 @@ namespace VoiceCraft.Server.Pages
 {
     public class StartScreen(VoiceCraftServer server)
     {
-        public bool Start()
+        public void Start()
         {
-            return AnsiConsole.Status().Start("Starting...", ctx =>
-                {
-                    try
-                    {
-                        //Startup.
-                        Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Starting...";
-                        AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
+            try
+            {
+                //Startup.
+                Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Starting...";
+                AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
 
-                        //Properties
-                        ctx.Status("Loading Server Properties...");
-                        var properties = ServerProperties.Load().VoiceCraftConfig;
-                        AnsiConsole.MarkupLine("[green]Successfully loaded server properties![/]");
-                        //Server Startup
-                        ctx.Status("Starting Server...");
-                        server.Config = properties;
-                        server.Start();
+                //Properties
+                AnsiConsole.WriteLine("Loading Server Properties...");
+                var properties = ServerProperties.Load().VoiceCraftConfig;
+                AnsiConsole.MarkupLine("[green]Successfully loaded server properties![/]");
+                //Server Startup
+                AnsiConsole.WriteLine("Starting VoiceCraft Server...");
+                server.Config = properties;
+                server.Start();
 
-                        //Finish
-                        AnsiConsole.MarkupLine("[green]VoiceCraft server started![/]");
-                    }
-                    catch (Exception ex)
-                    {
-                        AnsiConsole.MarkupLine("[red]An error occurred while trying to startup the server![/]");
-                        AnsiConsole.WriteException(ex);
-                        return false;
-                    }
-                    return true;
-                });
+                throw new Exception("Oh no new exception.");
+                //Finish
+                AnsiConsole.MarkupLine("[bold green]VoiceCraft server started![/]");
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine("[red]An error occurred while trying to startup the server![/]");
+                AnsiConsole.WriteException(ex);
+                App.Shutdown(10000);
+            }
         }
     }
 }

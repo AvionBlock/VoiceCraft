@@ -10,7 +10,7 @@ namespace VoiceCraft.Server
         
         public static void Main(string[] args)
         {
-            App.Start();
+            App.Start().GetAwaiter().GetResult();
         }
 
         private static ServiceProvider BuildServiceProvider()

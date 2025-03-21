@@ -8,69 +8,61 @@ namespace VoiceCraft.Server
     public static class App
     {
         private const int UpdateInterval = 20;
-        
-        private static bool _shutdown;
+        private static bool _shuttingDown;
+        private static CancellationTokenSource _cts = new();
 
-        public static void Start()
-        {
-            StartUpdateTask();
-            var startScreen = Program.ServiceProvider.GetRequiredService<StartScreen>();
-            if (startScreen.Start())
-            {
-                while (!_shutdown)
-                {
-                    Console.ReadLine();
-                }
-            }
-            
-            Shutdown(10);
-        }
-
-        private static void StartUpdateTask()
+        public static async Task Start()
         {
             var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
-            Task.Run(async () =>
+
+            StartCommandTask();
+            var startScreen = Program.ServiceProvider.GetRequiredService<StartScreen>();
+            startScreen.Start();
+            
+            var tick1 = Environment.TickCount;
+            while (!_cts.IsCancellationRequested)
             {
-                var tick1 = Environment.TickCount;
-                while (!_shutdown)
+                try
                 {
-                    try
-                    {
-                        server.Update();
-                        var dist = Environment.TickCount - tick1;
-                        var delay = UpdateInterval - dist;
-                        if (delay > 0)
-                            await Task.Delay(delay);
-                        tick1 = Environment.TickCount;
-                    }
-                    catch (Exception ex)
-                    {
-                        AnsiConsole.WriteException(ex);
-                    }
+                    server.Update();
+                    var dist = Environment.TickCount - tick1;
+                    var delay = UpdateInterval - dist;
+                    if (delay > 0)
+                        await Task.Delay(delay);
+                    tick1 = Environment.TickCount;
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.WriteException(ex);
+                }
+            }
+
+            server.Stop();
+            server.Dispose();
+            _cts.Dispose();
+            AnsiConsole.MarkupLine("[green]Server shut down successfully![/]");
+        }
+
+        private static void StartCommandTask()
+        {
+            Task.Run(() =>
+            {
+                while (!_cts.IsCancellationRequested && !_shuttingDown)
+                {
+                    var result = Console.ReadLine();
+                    if (_cts.IsCancellationRequested || _shuttingDown) return;
+                    AnsiConsole.WriteLine($"Said {result}");
                 }
             });
         }
 
-        public static void Shutdown(uint delaySeconds = 0)
+        public static void Shutdown(uint delayMs = 0)
         {
-            _shutdown = true;
-            AnsiConsole.Status()
-                .Start("Shutting down server...",ctx =>
-                {
-                    ctx.Spinner(Spinner.Known.GrowHorizontal);
-                    while(delaySeconds > 0)
-                    {
-                        ctx.Status($"Shutting down server in {delaySeconds} seconds...");
-                        Task.Delay(1000).Wait();
-                        delaySeconds--;
-                    }
-                    
-                    var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
-                    server.Stop();
-                    server.Dispose();
-                    
-                    AnsiConsole.MarkupLine("[green]Server shut down successfully![/]");
-                });
+            if (_cts.IsCancellationRequested || _shuttingDown) return;
+            _shuttingDown = true;
+            AnsiConsole.MarkupLine(delayMs > 0 ? $"[bold yellow]Shutting down server in {delayMs}ms...[/]" : $"[bold yellow]Shutting down server...[/]");
+            Task.Delay((int)delayMs).Wait();
+            _cts.Cancel();
         }
     }
 }
