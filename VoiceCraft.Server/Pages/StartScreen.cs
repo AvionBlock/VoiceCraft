@@ -21,8 +21,7 @@ namespace VoiceCraft.Server.Pages
                 AnsiConsole.WriteLine("Starting VoiceCraft Server...");
                 server.Config = properties;
                 server.Start();
-
-                throw new Exception("Oh no new exception.");
+                
                 //Finish
                 AnsiConsole.MarkupLine("[bold green]VoiceCraft server started![/]");
             }
