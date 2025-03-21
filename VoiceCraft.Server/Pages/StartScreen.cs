@@ -7,7 +7,7 @@ namespace VoiceCraft.Server.Pages
     {
         public bool Start()
         {
-            return AnsiConsole.Status().Start<bool>("Starting...", ctx =>
+            return AnsiConsole.Status().Start("Starting...", ctx =>
                 {
                     try
                     {
