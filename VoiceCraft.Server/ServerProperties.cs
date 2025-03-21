@@ -18,7 +18,7 @@ namespace VoiceCraft.Server
             if (files.Length == 0)
             {
                 AnsiConsole.MarkupLine(
-                    "[yellow]ServerProperties.json was not found in the current and sub-directories! Falling back to default server properties![/]");
+                    "[yellow]ServerProperties.json was not found in the current and/or sub directories! Falling back to default server properties![/]");
                 return CreateConfigFile();
             }
 
