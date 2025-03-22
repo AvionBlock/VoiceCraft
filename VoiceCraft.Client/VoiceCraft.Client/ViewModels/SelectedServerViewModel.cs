@@ -102,6 +102,7 @@ namespace VoiceCraft.Client.ViewModels
                 .Replace("{positioningType}", info.PositioningType.ToString())
                 .Replace("{clients}", info.Clients.ToString());
             StatusInfo = statusInfo;
+            Latency = Environment.TickCount - info.Tick - 2000;
         }
     }
 }

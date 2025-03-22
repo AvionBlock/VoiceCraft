@@ -166,13 +166,13 @@ namespace VoiceCraft.Server.Systems
                 switch (pt)
                 {
                     case PacketType.Info:
-                        var infoPacket = new InfoPacket()
-                        {
-                            Clients = _netManager.ConnectedPeersCount,
-                            Discovery = _config.Discovery,
-                            PositioningType = _config.PositioningType,
-                            Motd = _config.Motd
-                        };
+                        var infoPacket = new InfoPacket();
+                        infoPacket.Deserialize(reader);
+
+                        infoPacket.Clients = _netManager.ConnectedPeersCount;
+                        infoPacket.Discovery = _config.Discovery;
+                        infoPacket.PositioningType = _config.PositioningType;
+                        infoPacket.Motd = _config.Motd;
                         SendUnconnectedPacket(remoteendpoint, infoPacket);
                         break;
                     //Unused

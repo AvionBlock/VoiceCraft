@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
@@ -62,7 +61,7 @@ namespace VoiceCraft.Client.Network
 
         public bool Ping(string ip, uint port)
         {
-            var packet = new InfoPacket();
+            var packet = new InfoPacket() { Tick = Environment.TickCount };
             try
             {
                 NetworkSystem.SendUnconnectedPacket(ip, port, packet);

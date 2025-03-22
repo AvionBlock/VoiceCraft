@@ -9,6 +9,7 @@ namespace VoiceCraft.Client.Network
         public int Clients { get; set; }
         public bool Discovery  { get; set; }
         public PositioningType PositioningType { get; set; }
+        public int Tick { get; set; }
 
         public ServerInfo(InfoPacket infoPacket)
         {
@@ -16,6 +17,7 @@ namespace VoiceCraft.Client.Network
             Clients = infoPacket.Clients;
             Discovery = infoPacket.Discovery;
             PositioningType = infoPacket.PositioningType;
+            Tick = infoPacket.Tick;
         }
     }
 }
