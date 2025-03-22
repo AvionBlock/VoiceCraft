@@ -26,11 +26,13 @@ namespace VoiceCraft.Server.Systems
             _config = server.Config;
             _netManager = netManager;
 
+            _listener.PeerConnectedEvent += OnPeerConnectedEvent;
+            _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
             _listener.ConnectionRequestEvent += OnConnectionRequest;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
         }
-        
+
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
@@ -78,6 +80,21 @@ namespace VoiceCraft.Server.Systems
             SendPacket(targetEntity.NetPeer, updatePositionPacket);
             SendPacket(targetEntity.NetPeer, updateRotationPacket);
         }
+        
+        private void OnPeerConnectedEvent(NetPeer peer)
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+            foreach (var visibleEntity in _world.Entities)
+            {
+                SendEntityEffects(visibleEntity.Value, networkEntity);
+            }
+        }
+        
+        private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
+        {
+            if (peer.Tag != (object)LoginType.Login) return;
+            _world.DestroyEntity(peer.Id);
+        }
 
         private void OnConnectionRequest(ConnectionRequest request)
         {
@@ -111,8 +128,7 @@ namespace VoiceCraft.Server.Systems
             {
                 case LoginType.Login:
                     var loginPeer = request.Accept();
-                    loginPeer.Tag = LoginType.Login;
-                    _world.CreateEntity(loginPeer);
+                    loginPeer.Tag = _world.CreateEntity(loginPeer);
                     break;
                 case LoginType.Discovery:
                     var peer = request.Accept();

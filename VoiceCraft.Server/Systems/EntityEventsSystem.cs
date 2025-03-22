@@ -46,7 +46,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateNamePacket(entity.NetworkId, name);
             foreach (var networkEntity in networkEntities)
             {
@@ -96,7 +96,7 @@ namespace VoiceCraft.Server.Systems
 
         private void OnEntityEffectAdded(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new AddEffectPacket(entity.NetworkId, effect);
             foreach (var networkEntity in networkEntities)
             {
@@ -106,7 +106,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityEffectUpdated(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateEffectPacket(entity.NetworkId, effect);
             foreach (var networkEntity in networkEntities)
             {
@@ -116,7 +116,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityEffectRemoved(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new RemoveEffectPacket(entity.NetworkId, effect.EffectType);
             foreach (var networkEntity in networkEntities)
             {

@@ -25,10 +25,10 @@ namespace VoiceCraft.Core
             return entity;
         }
 
-        public VoiceCraftEntity CreateEntity(NetPeer netPeer)
+        public VoiceCraftNetworkEntity CreateEntity(NetPeer netPeer)
         {
-            var entity = new VoiceCraftEntity(netPeer.Id);
-            if (!Entities.TryAdd(netPeer.Id, new VoiceCraftEntity(netPeer.Id)))
+            var entity = new VoiceCraftNetworkEntity(netPeer);
+            if (!Entities.TryAdd(entity.NetworkId, entity))
                 throw new InvalidOperationException($"An entity with the id of {netPeer.Id} already exists!");
             
             entity.OnDestroyed += DestroyEntity;
