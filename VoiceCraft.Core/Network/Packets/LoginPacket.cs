@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -5,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class LoginPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Login;
+        [StringLength(Constants.MaxStringLength)]
         public string Version { get; set; } = string.Empty;
         public LoginType LoginType { get; set; }
         public PositioningType PositioningType { get; set; }

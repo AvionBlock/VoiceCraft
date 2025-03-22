@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -5,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class InfoPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Info;
+        [StringLength(Constants.MaxStringLength)]
         public string Motd { get; set; } = string.Empty;
         public int Clients { get; set; }
         public bool Discovery  { get; set; }

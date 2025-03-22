@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
@@ -27,7 +28,9 @@ namespace VoiceCraft.Core
         public event Action<VoiceCraftEntity>? OnDestroyed;
         
         //Privates
+        [StringLength(Constants.MaxStringLength)]
         private string _name = "New Entity";
+        [StringLength(Constants.MaxStringLength)]
         private string _worldId = string.Empty;
         private ulong _talkBitmask;
         private ulong _listenBitmask;

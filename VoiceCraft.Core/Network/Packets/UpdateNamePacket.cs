@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -5,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class UpdateNamePacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.UpdateName;
+        [StringLength(Constants.MaxStringLength)]
         public int NetworkId { get; set; }
         public string Name { get; set; }
         

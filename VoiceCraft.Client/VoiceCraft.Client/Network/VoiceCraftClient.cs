@@ -13,8 +13,8 @@ namespace VoiceCraft.Client.Network
     public class VoiceCraftClient : IDisposable
     {
         public static readonly Version Version = new(1, 1, 0);
-        public static readonly WaveFormat WaveFormat = new(AudioConstants.SampleRate, AudioConstants.Channels);
-        public static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
+        public static readonly WaveFormat WaveFormat = new(Constants.SampleRate, Constants.Channels);
+        public static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(Constants.FrameSizeMs);
         
         //Network Events
         public event Action? OnConnected;
