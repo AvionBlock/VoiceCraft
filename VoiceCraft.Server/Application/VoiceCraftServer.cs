@@ -10,18 +10,14 @@ namespace VoiceCraft.Server.Application
         // ReSharper disable once InconsistentNaming
         public static readonly Version Version = new(1, 1, 0);
 
-        public event Action? OnStarted;
-        public event Action? OnStopped;
-
         //Public Properties
         public VoiceCraftConfig Config { get; set; }
         public EventBasedNetListener Listener { get; }
         public VoiceCraftWorld World { get; } = new();
         public WorldSystem WorldSystem { get; }
         public NetworkSystem NetworkSystem { get; }
-        public VisibilitySystem VisibilitySystem { get; }
-        public EntityEventsSystem EntityEventsSystem { get; }
-
+        private readonly VisibilitySystem _visibilitySystem;
+        private readonly EntityEventsSystem _entityEventsSystem;
         private readonly NetManager _netManager;
         private bool _isDisposed;
 
@@ -31,13 +27,14 @@ namespace VoiceCraft.Server.Application
             Listener = new EventBasedNetListener();
             _netManager = new NetManager(Listener)
             {
-                AutoRecycle = true
+                AutoRecycle = true,
+                UnconnectedMessagesEnabled = true
             };
 
             WorldSystem = new WorldSystem(this);
             NetworkSystem = new NetworkSystem(this, _netManager);
-            VisibilitySystem = new VisibilitySystem(this);
-            EntityEventsSystem = new EntityEventsSystem(this);
+            _visibilitySystem = new VisibilitySystem(this);
+            _entityEventsSystem = new EntityEventsSystem(this);
         }
 
         ~VoiceCraftServer()
@@ -46,20 +43,15 @@ namespace VoiceCraft.Server.Application
         }
 
         #region Public Methods
-        public void Start()
+        public bool Start()
         {
-            #if DEBUG
-            Thread.Sleep(1000); //Debug Simulation.
-            #endif
-            if (_netManager.IsRunning) return;
-            _netManager.Start((int)Config.Port);
-            OnStarted?.Invoke();
+            return _netManager.IsRunning || _netManager.Start((int)Config.Port);
         }
 
         public void Update()
         {
             _netManager.PollEvents();
-            VisibilitySystem.Update();
+            _visibilitySystem.Update();
         }
 
         public void Stop()
@@ -67,7 +59,6 @@ namespace VoiceCraft.Server.Application
             if (!_netManager.IsRunning) return;
             _netManager.DisconnectAll();
             _netManager.Stop();
-            OnStopped?.Invoke();
         }
 
         #endregion

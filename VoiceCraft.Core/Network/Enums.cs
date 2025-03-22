@@ -12,13 +12,6 @@ namespace VoiceCraft.Core.Network
         Discovery
     }
 
-    public enum ConnectionStatus
-    {
-        Disconnected,
-        Connecting,
-        Connected
-    }
-
     public enum PacketType : byte
     {
         Info,

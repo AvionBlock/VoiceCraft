@@ -6,8 +6,6 @@ using LiteNetLib;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.Network;
-using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -42,7 +40,7 @@ namespace VoiceCraft.Client.ViewModels
         public override void OnAppearing()
         {
             if (_process == null) return;
-            if (_process.ConnectionStatus == ConnectionStatus.Disconnected)
+            if (_process.ConnectionState == ConnectionState.Disconnected)
             {
                 navigationService.Back();
                 return;

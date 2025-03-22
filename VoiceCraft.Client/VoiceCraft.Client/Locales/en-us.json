@@ -33,6 +33,13 @@
   "Settings.Audio.MicrophoneTest.Test" : "Test",
   "Settings.Audio.OutputDevices" : "Output Devices",
   "Settings.Audio.TestOutput" : "Test Output",
+  
+  "SelectedServer.Address" : "Address",
+  "SelectedServer.PingInformation" : "Ping Information",
+  "SelectedServer.Latency" : "Latency",
+  "SelectedServer.ServerInfo" : "Server Info",
+  "SelectedServer.ServerInfo.Status" : "Motd: {motd}\nDiscovery: {discovery}\nPositioning Type: {positioningType}\nConnected Clients: {clients}",
+  "SelectedServer.ServerInfo.Status.Pinging" : "Pinging...",
 
   "Android.AudioPlayer.Exception.ChannelMask" : "Input wave provider must be mono or stereo!",
   "Android.AudioPlayer.Exception.CreateAudioTrack" : "Could not create audio track!",

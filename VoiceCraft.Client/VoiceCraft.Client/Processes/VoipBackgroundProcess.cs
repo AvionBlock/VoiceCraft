@@ -21,7 +21,7 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
-        private List<AudioSourceViewModel> _audioSources = new();
+        private List<AudioSourceViewModel> _audioSources = [];
         
         //Events
         public event Action<string>? OnUpdateTitle;
@@ -30,12 +30,10 @@ namespace VoiceCraft.Client.Processes
         public event Action<bool>? OnUpdateDeafen;
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
-        public event Action<AudioSourceViewModel>? OnAudioSourceCreated;
-        public event Action<AudioSourceViewModel>? OnAudioSourceDestroyed;
         
         //Public Variables
         public CancellationTokenSource TokenSource { get; }
-        public ConnectionStatus ConnectionStatus => _voiceCraftClient.ConnectionStatus;
+        public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
         public string Title
         {
             get => _title;
@@ -110,7 +108,7 @@ namespace VoiceCraft.Client.Processes
             Title = Locales.Locales.VoiceCraft_Status_Title;
             Description = Locales.Locales.VoiceCraft_Status_Connecting;
 
-            while (_voiceCraftClient.ConnectionStatus != ConnectionStatus.Disconnected)
+            while (_voiceCraftClient.ConnectionState != ConnectionState.Connected)
             {
                 if (TokenSource.Token.IsCancellationRequested)
                     _voiceCraftClient.Disconnect();

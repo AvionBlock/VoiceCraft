@@ -39,6 +39,12 @@ namespace VoiceCraft.Client.Locales
         public static string Settings_Audio_MicrophoneTest_Test => Localizer.Get("Settings.Audio.MicrophoneTest.Test");
         public static string Settings_Audio_OutputDevices => Localizer.Get("Settings.Audio.OutputDevices");
         public static string Settings_Audio_TestOutput => Localizer.Get("Settings.Audio.TestOutput");
+        
+        public static string SelectedServer_PingInformation => Localizer.Get("SelectedServer.PingInformation");
+        public static string SelectedServer_Latency => Localizer.Get("SelectedServer.Latency");
+        public static string SelectedServer_ServerInfo => Localizer.Get("SelectedServer.ServerInfo");
+        public static string SelectedServer_ServerInfo_Status => Localizer.Get("SelectedServer.ServerInfo.Status");
+        public static string SelectedServer_ServerInfo_Status_Pinging => Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
 
         public static string Android_AudioPlayer_Exception_ChannelMask => Localizer.Get("Android.AudioPlayer.Exception.ChannelMask");
         public static string Android_AudioPlayer_Exception_CreateAudioTrack => Localizer.Get("Android.AudioPlayer.Exception.CreateAudioTrack");

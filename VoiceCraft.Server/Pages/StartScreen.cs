@@ -20,7 +20,8 @@ namespace VoiceCraft.Server.Pages
                 //Server Startup
                 AnsiConsole.WriteLine("Starting VoiceCraft Server...");
                 server.Config = properties;
-                server.Start();
+                if(!server.Start())
+                    throw new Exception("Failed to start VoiceCraft Server! Please check if another process is using the same port!");
                 
                 //Finish
                 AnsiConsole.MarkupLine("[bold green]VoiceCraft server started![/]");

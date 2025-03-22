@@ -1,9 +1,10 @@
 using System;
+using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
-using VoiceCraft.Client.Network.EventHandlers;
+using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
@@ -14,69 +15,82 @@ namespace VoiceCraft.Client.Network
     {
         public static readonly Version Version = new(1, 1, 0);
         public static readonly WaveFormat WaveFormat = new(AudioConstants.SampleRate, AudioConstants.Channels);
-        private static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
-
-        public ServerInfo? ServerInfo { get; internal set; }
+        public static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(AudioConstants.FrameSizeMs);
         
-        public int Latency { get; internal set; }
-        public ConnectionStatus ConnectionStatus { get; private set; }
-
         //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
         
         //Public Properties
+        public ConnectionState ConnectionState => ServerPeer?.ConnectionState ?? ConnectionState.Disconnected;
         public EventBasedNetListener Listener { get; } = new();
-        public NetPeer? ServerPeer { get; internal set; }
+        public NetDataWriter DataWriter { get; } = new();
+        public NetPeer? ServerPeer { get; private set; }
+        public NetworkSystem NetworkSystem { get; }
         
         private readonly NetManager _netManager;
-        private readonly NetDataWriter _dataWriter = new();
-        private readonly NetworkEventHandler _networkEventHandler;
-        
         private readonly OpusEncoder _encoder;
-        private readonly BufferedWaveProvider _queuedAudio;
-        private readonly byte[] _extractedAudioBuffer = new byte[BytesPerFrame];
-        private readonly byte[] _encodedAudioBuffer = new byte[1000];
         private bool _isDisposed;
-        private uint _currentTimestamp;
 
         public VoiceCraftClient()
         {
             _netManager = new NetManager(Listener)
             {
                 AutoRecycle = true,
-                IPv6Enabled = false
+                IPv6Enabled = false,
+                UnconnectedMessagesEnabled = true
             };
-            _networkEventHandler = new NetworkEventHandler(this, _netManager);
+            NetworkSystem = new NetworkSystem(this, _netManager);
             
             _encoder = new OpusEncoder(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
-            _queuedAudio = new BufferedWaveProvider(WaveFormat) { ReadFully = false, BufferDuration = TimeSpan.FromSeconds(2) }; //2 seconds.
+            
+            _netManager.Start();
+            
+            Listener.PeerDisconnectedEvent += (peer, info) =>
+            {
+                if (Equals(peer, ServerPeer))
+                {
+                    OnDisconnected?.Invoke(info);
+                }
+            };
         }
 
         ~VoiceCraftClient()
         {
             Dispose(false);
         }
+
+        public bool Ping(string ip, uint port)
+        {
+            var packet = new InfoPacket();
+            try
+            {
+                NetworkSystem.SendUnconnectedPacket(ip, port, packet);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         
         public void Connect(string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
-            if (ConnectionStatus != ConnectionStatus.Disconnected)
-                throw new InvalidOperationException("You must disconnect before connecting!");
-
-            if (!_netManager.IsRunning)
-                _netManager.Start();
-
-            ConnectionStatus = ConnectionStatus.Connecting;
+            if(ConnectionState != ConnectionState.Disconnected)
+                throw new InvalidOperationException("This client is already connected or is connecting to a server!");
+            
+            DataWriter.Reset();
             var loginPacket = new LoginPacket()
             {
                 Version = Version.ToString(),
                 LoginType = loginType,
                 PositioningType = PositioningType.Server
             };
-            _dataWriter.Reset();
-            loginPacket.Serialize(_dataWriter);
-            _netManager.Connect(ip, port, _dataWriter);
+            loginPacket.Serialize(DataWriter);
+            var serverPeer = _netManager.Connect(ip, port, DataWriter);
+            ServerPeer = serverPeer ?? throw new InvalidOperationException("A connection request is awaiting!");
+            OnConnected?.Invoke();
         }
 
         public void Update()
@@ -87,22 +101,7 @@ namespace VoiceCraft.Client.Network
         public void Disconnect()
         {
             ThrowIfDisposed();
-            if (ConnectionStatus == ConnectionStatus.Disconnected)
-                throw new InvalidOperationException("Must be connecting or connected before disconnecting!");
-            
             _netManager.DisconnectAll();
-            Update();
-        }
-
-        public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            if (ServerPeer?.ConnectionState != ConnectionState.Connected) return false;
-
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            ServerPeer.Send(_dataWriter, deliveryMethod);
-            return true;
         }
 
         #region Dispose
@@ -125,7 +124,6 @@ namespace VoiceCraft.Client.Network
             {
                 _netManager.Stop();
                 _encoder.Dispose();
-                _queuedAudio.ClearBuffer();
             }
 
             _isDisposed = true;
