@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace VoiceCraft.Client.Services
@@ -15,10 +16,9 @@ namespace VoiceCraft.Client.Services
         private bool _writing;
         private bool _queueWrite;
         private static readonly string SettingsPath = Path.Combine(AppContext.BaseDirectory, "Settings.json");
-        private static readonly JsonSerializerOptions SerializerOptions = new() { WriteIndented = true };
         private readonly ConcurrentDictionary<string, Type> _registeredSettings = new();
         private ConcurrentDictionary<string, object?> _settings = new();
-        
+
         public T Get<T>() where T : Setting<T>
         {
             var settingType = typeof(T);
@@ -53,7 +53,8 @@ namespace VoiceCraft.Client.Services
                     settingValue.OnSaving();
             }
 
-            await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, SerializerOptions));
+            await File.WriteAllTextAsync(SettingsPath,
+                JsonSerializer.Serialize(_settings, SettingsServiceSourceGenerationContext.Default.ConcurrentDictionaryStringObject));
         }
 
         public async Task SaveAsync()
@@ -73,8 +74,10 @@ namespace VoiceCraft.Client.Services
                             settingValue.OnSaving();
                     }
 
-                    await File.WriteAllTextAsync(SettingsPath, JsonSerializer.Serialize(_settings, SerializerOptions));
+                    await File.WriteAllTextAsync(SettingsPath,
+                        JsonSerializer.Serialize(_settings, SettingsServiceSourceGenerationContext.Default.ConcurrentDictionaryStringObject));
                 }
+
                 _writing = false;
             }
         }
@@ -83,11 +86,18 @@ namespace VoiceCraft.Client.Services
         {
             try
             {
-                if (!File.Exists(SettingsPath)) { return; }
+                if (!File.Exists(SettingsPath))
+                {
+                    return;
+                }
 
                 var result = File.ReadAllText(SettingsPath);
-                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object?>>(result);
-                if (loadedSettings is null) { return; }
+                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object?>>(result,
+                    SettingsServiceSourceGenerationContext.Default.ConcurrentDictionaryStringObject);
+                if (loadedSettings is null)
+                {
+                    return;
+                }
 
                 //Convert them to the actual objects.
                 foreach (var setting in loadedSettings)
@@ -95,15 +105,17 @@ namespace VoiceCraft.Client.Services
                     if (_registeredSettings.TryGetValue(setting.Key, out var registeredSetting))
                     {
                         if (setting.Value is JsonElement element
-                        && element.Deserialize(registeredSetting) is ISetting deserializedSetting
-                        && deserializedSetting.OnLoading())
+                            && element.Deserialize(registeredSetting) is ISetting deserializedSetting
+                            && deserializedSetting.OnLoading())
                         {
                             loadedSettings.TryUpdate(setting.Key, deserializedSetting, setting.Value);
                             continue;
                         }
                     }
+
                     loadedSettings.TryRemove(setting.Key, out _);
                 }
+
                 _settings = loadedSettings;
             }
             catch (JsonException)
@@ -117,7 +129,11 @@ namespace VoiceCraft.Client.Services
     {
         public abstract event Action<T>? OnUpdated;
         public virtual bool OnLoading() => true;
-        public virtual void OnSaving() { }
+
+        public virtual void OnSaving()
+        {
+        }
+
         public abstract object Clone();
     }
 
@@ -126,5 +142,11 @@ namespace VoiceCraft.Client.Services
         bool OnLoading();
 
         void OnSaving();
+    }
+
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(ConcurrentDictionary<string, object?>))]
+    public partial class SettingsServiceSourceGenerationContext : JsonSerializerContext
+    {
     }
 }
