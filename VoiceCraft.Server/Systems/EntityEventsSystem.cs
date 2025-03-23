@@ -44,14 +44,11 @@ namespace VoiceCraft.Server.Systems
             entity.OnEffectRemoved -= OnEntityEffectRemoved;
         }
         
+        //Data
         private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
         {
-            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateNamePacket(entity.Id, name);
-            foreach (var networkEntity in networkEntities)
-            {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
-            }
+            _networkSystem.Broadcast(packet);
         }
         
         private void OnEntityTalkBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
@@ -94,14 +91,11 @@ namespace VoiceCraft.Server.Systems
             }
         }
 
+        //Effects
         private void OnEntityEffectAdded(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new AddEffectPacket(entity.Id, effect.EffectType);
-            foreach (var networkEntity in networkEntities)
-            {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
-            }
+            _networkSystem.Broadcast(packet);
         }
         
         private void OnEntityEffectUpdated(IAudioEffect effect, VoiceCraftEntity entity)
@@ -116,12 +110,8 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityEffectRemoved(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new RemoveEffectPacket(entity.Id, effect.EffectType);
-            foreach (var networkEntity in networkEntities)
-            {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
-            }
+            _networkSystem.Broadcast(packet);
         }
     }
 }

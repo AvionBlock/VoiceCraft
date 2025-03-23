@@ -46,10 +46,19 @@ namespace VoiceCraft.Server.Systems
 
         public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
+            _dataWriter.Reset();
+            _dataWriter.Put((byte)packet.PacketType);
+            packet.Serialize(_dataWriter);
+            
             var status = true;
             foreach (var peer in peers)
             {
-                status = SendPacket(peer, packet, deliveryMethod);
+                if (peer.ConnectionState != ConnectionState.Connected)
+                {
+                    status = false;
+                    continue;
+                }
+                peer.Send(_dataWriter, deliveryMethod);
             }
 
             return status;
@@ -61,6 +70,18 @@ namespace VoiceCraft.Server.Systems
             _dataWriter.Put((byte)packet.PacketType);
             packet.Serialize(_dataWriter);
             return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+        }
+
+        public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        {
+            _dataWriter.Reset();
+            _dataWriter.Put((byte)packet.PacketType);
+            packet.Serialize(_dataWriter);
+
+            foreach (var client in _netManager.ConnectedPeerList.Where(x => x.Tag is VoiceCraftNetworkEntity))
+            {
+                client.Send(_dataWriter, deliveryMethod);
+            }
         }
         
         public void SendEntityEffects(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
