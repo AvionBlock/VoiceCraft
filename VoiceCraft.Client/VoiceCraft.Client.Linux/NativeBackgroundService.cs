@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Linux
         public override event Action<IBackgroundProcess>? OnProcessStarted;
         public override event Action<IBackgroundProcess>? OnProcessStopped;
 
-        protected override bool StartBackgroundWorker()
+        private bool StartBackgroundWorker()
         {
             if (_backgroundWorker is { IsCompleted: false }) return true;
             _backgroundWorker = Task.Run(async () =>

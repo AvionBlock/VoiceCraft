@@ -9,8 +9,6 @@ namespace VoiceCraft.Client.Services
         public abstract event Action<IBackgroundProcess>? OnProcessStarted;
         
         public abstract event Action<IBackgroundProcess>? OnProcessStopped;
-        
-        protected abstract bool StartBackgroundWorker();
 
         public abstract Task StartBackgroundProcess<T>(T process, int timeout = 5000) where T : IBackgroundProcess;
         

@@ -27,17 +27,17 @@ namespace VoiceCraft.Client.Android.Background
             WeakReferenceMessenger.Default.Register<ProcessStopped>(this, (_, m) => OnProcessStopped?.Invoke(m.Value));
         }
 
-        protected override bool StartBackgroundWorker()
+        private async Task<bool> StartBackgroundWorker()
         {
             //Is it running?
             if (AndroidBackgroundService.IsStarted) return true;
 
             //Don't care if it's granted or not.
-            _permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
-                "Notifications are required to show running background processes and errors.").GetAwaiter().GetResult();
+            await _permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
+                "Notifications are required to show running background processes and errors.");
 
-            if (_permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
-                    "Microphone access is required to properly run the background worker.").GetAwaiter().GetResult() != PermissionStatus.Granted) return false;
+            if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
+                    "Microphone access is required to properly run the background worker.") != PermissionStatus.Granted) return false;
 
             var context = Application.Context;
             var intent = new Intent(context, typeof(AndroidBackgroundService));
@@ -60,7 +60,7 @@ namespace VoiceCraft.Client.Android.Background
                 throw new InvalidOperationException("A background process of this type has already been queued/started!");
 
             AndroidBackgroundService.QueuedProcesses.Enqueue(new KeyValuePair<Type, IBackgroundProcess>(processType, process));
-            if (!StartBackgroundWorker())
+            if (!await StartBackgroundWorker())
             {
                 AndroidBackgroundService.QueuedProcesses.Clear();
                 throw new Exception("Failed to start background process! Background worker failed to start!");

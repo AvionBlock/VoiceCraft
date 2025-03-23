@@ -11,6 +11,7 @@
         <ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+        <AndroidSDKDirectory>/home/asuka/Android/Sdk</AndroidSDKDirectory>
     </PropertyGroup>
 
     <ItemGroup>
