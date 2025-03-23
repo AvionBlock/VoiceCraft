@@ -100,7 +100,7 @@ namespace VoiceCraft.Client.Processes
                 while (!TokenSource.Token.IsCancellationRequested)
                 {
                     _voiceCraftClient.Update(); //Update all networking processes.
-                    Task.Delay(1).GetAwaiter().GetResult();
+                    Task.Delay(20).GetAwaiter().GetResult(); //Same update tick rate as the server.
                 }
 
                 if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
@@ -128,7 +128,7 @@ namespace VoiceCraft.Client.Processes
 
         public void Disconnect()
         {
-            TokenSource.Cancel();
+            _voiceCraftClient.Disconnect();
         }
         
         public void Dispose()
