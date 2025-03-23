@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using _Microsoft.Android.Resource.Designer;
 using Android.App;
@@ -24,7 +23,9 @@ namespace VoiceCraft.Client.Android.Background
         private const int ErrorNotificationId = 999;
         private const int NotificationId = 1000;
         private const string ChannelId = "1001";
-        private static readonly ConcurrentDictionary<IBackgroundProcess, Task> RunningBackgroundProcesses = [];
+
+        internal static readonly ConcurrentQueue<KeyValuePair<Type, IBackgroundProcess>> QueuedProcesses = [];
+        internal static readonly ConcurrentDictionary<Type, KeyValuePair<Task, IBackgroundProcess>> RunningBackgroundProcesses = [];
         private static string _notificationTitle = string.Empty;
         private static string _notificationDescription = string.Empty;
 
@@ -40,36 +41,43 @@ namespace VoiceCraft.Client.Android.Background
 
             var notification = CreateNotification();
             StartForeground(NotificationId, notification.Build());
-            WeakReferenceMessenger.Default.Register<GetBackgroundProcesses>(this, (_, m) =>
+
+            WeakReferenceMessenger.Default.Register<StopBackgroundProcess>(this, (_, m) =>
             {
-                var backroundProcesses = RunningBackgroundProcesses.Select(x => x.Key);
-                m.Reply(backroundProcesses);
+                if (RunningBackgroundProcesses.TryRemove(m.ProcessType, out var process))
+                {
+                    if (!process.Value.TokenSource.IsCancellationRequested)
+                        process.Value.TokenSource.Cancel();
+                    while (!process.Key.IsCompleted)
+                    {
+                        Task.Delay(10).GetAwaiter().GetResult();
+                    }
+
+                    process.Value.Dispose();
+                    process.Key.Dispose();
+                    m.Reply(process.Value);
+                }
+                m.Reply(null);
             });
 
             Task.Run(async () =>
             {
                 try
                 {
-                    var startTime = System.Environment.TickCount64;
-                    while (!RunningBackgroundProcesses.IsEmpty ||
-                           System.Environment.TickCount64 - startTime < 10000) //10 second wait time before self stopping activates (kinda).
+                    while (!QueuedProcesses.IsEmpty && !RunningBackgroundProcesses.IsEmpty) //10 second wait time before self stopping activates (kinda).
                     {
-                        RemoveCompletedProcesses();
-                        QueueNextProcess();
-
-                        //Update Notification.
-                        var notificationManager = GetSystemService(NotificationService) as NotificationManager;
-                        notificationManager?.Notify(NotificationId,
-                            CreateNotification()
-                                .SetSmallIcon(ResourceConstant.Drawable.Icon)
-                                .SetContentTitle(string.IsNullOrWhiteSpace(_notificationTitle) ? "Running background processes" : _notificationTitle)
-                                .SetContentText(string.IsNullOrWhiteSpace(_notificationDescription)
-                                    ? $"Background Processes: {RunningBackgroundProcesses.Count}"
-                                    : _notificationDescription)
-                                .Build());
-
                         //Delay
                         await Task.Delay(500);
+                        ClearCompletedProcesses();
+                        UpdateNotification();
+                        if (!QueuedProcesses.TryDequeue(out var process)) continue;
+
+                        process.Value.OnUpdateTitle += ProcessOnUpdateTitle;
+                        process.Value.OnUpdateDescription += ProcessOnUpdateDescription;
+                        
+                        var task = Task.Run(() => process.Value.Start(), process.Value.TokenSource.Token);
+                        RunningBackgroundProcesses.TryAdd(process.Key, new KeyValuePair<Task, IBackgroundProcess>(task, process.Value));
+                        WeakReferenceMessenger.Default.Send(new ProcessStarted(process.Value));
                     }
 
                     StopSelf();
@@ -83,7 +91,7 @@ namespace VoiceCraft.Client.Android.Background
                             .SetSmallIcon(ResourceConstant.Drawable.Icon)
                             .SetContentTitle("Background process error")
                             .SetStyle(new NotificationCompat.BigTextStyle().BigText(ex.ToString()
-                                .Truncate(10000))) //10000 characters so we don't annihilate the phone. Usually for debugging we only need the first 2000 characters
+                                .Truncate(5000))) //5000 characters so we don't annihilate the phone. Usually for debugging we only need the first 2000 characters
                             .SetContentText(ex.GetType().ToString()).Build());
                     StopSelf();
                 }
@@ -98,31 +106,31 @@ namespace VoiceCraft.Client.Android.Background
             IsStarted = false;
             base.OnDestroy();
         }
-
-        private static void RemoveCompletedProcesses()
+        
+        private static void ProcessOnUpdateTitle(string title)
         {
-            foreach (var backgroundProcess in RunningBackgroundProcesses)
+            _notificationTitle = title;
+        }
+
+        private static void ProcessOnUpdateDescription(string description)
+        {
+            _notificationDescription = description;
+        }
+        
+        private static void ClearCompletedProcesses()
+        {
+            foreach (var process in RunningBackgroundProcesses)
             {
-                if (!backgroundProcess.Value.IsCompleted) continue;
-                backgroundProcess.Key.Dispose(); //Dispose Process
-                backgroundProcess.Value.Dispose(); //Dispose Task
-                backgroundProcess.Key.OnUpdateTitle -= ProcessOnUpdateTitle; //Deregister notification event.
-                backgroundProcess.Key.OnUpdateDescription -= ProcessOnUpdateDescription; //Deregister notification event.
-                RunningBackgroundProcesses.Remove(backgroundProcess.Key, out _); //Remove it.
-                WeakReferenceMessenger.Default.Send(new ProcessStopped(backgroundProcess.Key));
+                process.Value.Value.Dispose();
+                process.Value.Key.Dispose();
+                if (!process.Value.Key.IsCompleted || !RunningBackgroundProcesses.Remove(process.Key, out _)) continue;
+                process.Value.Value.OnUpdateTitle -= ProcessOnUpdateTitle;
+                process.Value.Value.OnUpdateDescription -= ProcessOnUpdateDescription;
+                WeakReferenceMessenger.Default.Send(new ProcessStopped(process.Value.Value));
             }
         }
 
-        private static void QueueNextProcess()
-        {
-            var message = WeakReferenceMessenger.Default.Send<GetQueuedProcess>();
-            if (!message.HasReceivedResponse || message.Response == null) return;
-            message.Response.OnUpdateTitle += ProcessOnUpdateTitle;
-            message.Response.OnUpdateDescription += ProcessOnUpdateDescription;
-            RunningBackgroundProcesses.TryAdd(message.Response, Task.Run(() => message.Response.Start(), message.Response.TokenSource.Token));
-            WeakReferenceMessenger.Default.Send(new ProcessStarted(message.Response));
-        }
-
+        //Notification
         private static NotificationCompat.Builder CreateNotification()
         {
             var context = Application.Context;
@@ -142,14 +150,17 @@ namespace VoiceCraft.Client.Android.Background
             return notificationBuilder;
         }
 
-        private static void ProcessOnUpdateTitle(string title)
+        private void UpdateNotification()
         {
-            _notificationTitle = title;
-        }
-
-        private static void ProcessOnUpdateDescription(string description)
-        {
-            _notificationDescription = description;
+            var notificationManager = GetSystemService(NotificationService) as NotificationManager;
+            notificationManager?.Notify(NotificationId,
+                CreateNotification()
+                    .SetSmallIcon(ResourceConstant.Drawable.Icon)
+                    .SetContentTitle(string.IsNullOrWhiteSpace(_notificationTitle) ? "Running background processes" : _notificationTitle)
+                    .SetContentText(string.IsNullOrWhiteSpace(_notificationDescription)
+                        ? $"Background Processes: {RunningBackgroundProcesses.Count}"
+                        : _notificationDescription)
+                    .Build());
         }
     }
 

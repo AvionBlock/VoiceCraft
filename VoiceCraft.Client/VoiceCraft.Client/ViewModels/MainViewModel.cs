@@ -45,10 +45,9 @@ namespace VoiceCraft.Client.ViewModels
             // change to HomeView 
             navigationService.NavigateTo<HomeViewModel>();
 
-            if (backgroundService.GetBackgroundProcess<VoipBackgroundProcess>() != null)
-            {
-                navigationService.NavigateTo<VoiceViewModel>();
-            }
+            backgroundService.TryGetBackgroundProcess<VoipBackgroundProcess>(out var process);
+            if (process == null) return;
+            navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
         }
     }
 }

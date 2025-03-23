@@ -11,28 +11,29 @@ namespace VoiceCraft.Client.Linux
 {
     public class NativeBackgroundService(NotificationService notificationService) : BackgroundService
     {
-        private Task? _backgroundTask;
-        private readonly ConcurrentQueue<IBackgroundProcess> _queuedProcesses = new();
-        private readonly ConcurrentDictionary<IBackgroundProcess, Task> _runningBackgroundProcesses = [];
+        private Task? _backgroundWorker;
+
+        private readonly ConcurrentQueue<KeyValuePair<Type, IBackgroundProcess>> _queuedProcesses = new();
+        private readonly ConcurrentDictionary<Type, KeyValuePair<Task, IBackgroundProcess>> _runningBackgroundProcesses = [];
         public override event Action<IBackgroundProcess>? OnProcessStarted;
         public override event Action<IBackgroundProcess>? OnProcessStopped;
 
-        private void StartService()
+        protected override bool StartBackgroundWorker()
         {
-            if (_backgroundTask is { IsCompleted: false }) return;
-
-            _backgroundTask = Task.Run(async () =>
+            if (_backgroundWorker is { IsCompleted: false }) return true;
+            _backgroundWorker = Task.Run(async () =>
             {
                 try
                 {
-                    var startTime = Environment.TickCount64;
-                    while (!_runningBackgroundProcesses.IsEmpty || !_queuedProcesses.IsEmpty ||
-                           Environment.TickCount64 - startTime < 10000) //10 second wait time before self stopping activates (kinda).
+                    while (!_queuedProcesses.IsEmpty && !_runningBackgroundProcesses.IsEmpty)
                     {
-                        RemoveCompletedProcesses();
-                        QueueNextProcess();
-                        //Delay
                         await Task.Delay(500);
+                        ClearCompletedProcesses();
+                        
+                        if (!_queuedProcesses.TryDequeue(out var process)) continue;
+                        var task = Task.Run(() => process.Value.Start(), process.Value.TokenSource.Token);
+                        _runningBackgroundProcesses.TryAdd(process.Key, new KeyValuePair<Task, IBackgroundProcess>(task, process.Value));
+                        OnProcessStarted?.Invoke(process.Value);
                     }
                 }
                 catch (Exception ex)
@@ -40,58 +41,72 @@ namespace VoiceCraft.Client.Linux
                     Dispatcher.UIThread.Invoke(() => notificationService.SendErrorNotification($"Background Error: {ex}"));
                 }
             });
-        }
-
-        public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000)
-        {
-            _queuedProcesses.Enqueue(process);
-            var startTime = Environment.TickCount64;
-            while (_queuedProcesses.Contains(process))
-            {
-                StartService();
-                if (Environment.TickCount64 - startTime >= timeout)
-                    return false;
-                
-                await Task.Delay(50);
-            }
-
             return true;
         }
 
-        public override T? GetBackgroundProcess<T>() where T : default
+        public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
         {
-            var processes = GetBackgroundProcesses();
-            foreach (var process in processes)
+            var processType = typeof(T);
+            if (_queuedProcesses.Any(x => x.Key == processType) || _runningBackgroundProcesses.ContainsKey(processType))
+                throw new InvalidOperationException("A background process of this type has already been queued/started!");
+            
+            _queuedProcesses.Enqueue(new KeyValuePair<Type, IBackgroundProcess>(processType, process));
+            if (!StartBackgroundWorker())
             {
-                if (process.GetType() == typeof(T))
-                    return (T)process;
+                _queuedProcesses.Clear();
+                throw new Exception("Failed to start background process! Background worker failed to start!");
             }
 
-            return default;
-        }
-
-        public override IEnumerable<IBackgroundProcess> GetBackgroundProcesses()
-        {
-            return _runningBackgroundProcesses.Select(x => x.Key);
-        }
-
-        private void RemoveCompletedProcesses()
-        {
-            foreach (var backgroundProcess in _runningBackgroundProcesses)
+            var startTime = Environment.TickCount64;
+            while (!_runningBackgroundProcesses.ContainsKey(processType))
             {
-                if (!backgroundProcess.Value.IsCompleted) continue;
-                backgroundProcess.Key.Dispose(); //Dispose Process
-                backgroundProcess.Value.Dispose(); //Dispose Task
-                _runningBackgroundProcesses.Remove(backgroundProcess.Key, out _); //Remove it.
-                OnProcessStopped?.Invoke(backgroundProcess.Key);
+                if (Environment.TickCount64 - startTime >= timeout)
+                    throw new Exception("Failed to start background process!");
+                await Task.Delay(10); //Don't burn the CPU!
             }
         }
 
-        private void QueueNextProcess()
+        public override async Task StopBackgroundProcess<T>()
         {
-            if (!_queuedProcesses.TryDequeue(out var process)) return;
-            _runningBackgroundProcesses.TryAdd(process, Task.Run(() => process.Start(), process.TokenSource.Token));
-            OnProcessStarted?.Invoke(process);
+            var processType = typeof(T);
+            if (_runningBackgroundProcesses.TryRemove(processType, out var process))
+            {
+                if(!process.Value.TokenSource.IsCancellationRequested)
+                    await process.Value.TokenSource.CancelAsync();
+                while (!process.Key.IsCompleted)
+                {
+                    await Task.Delay(10); //Don't burn the CPU!
+                }
+                process.Value.Dispose();
+                process.Key.Dispose();
+                OnProcessStopped?.Invoke(process.Value);
+            }
+        }
+
+        public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
+        {
+            var processType = typeof(T);
+            if (!_runningBackgroundProcesses.TryGetValue(processType, out var value))
+            {
+                process = default;
+                return false;
+            }
+            
+            process = (T?)value.Value;
+            return process != null;
+        }
+
+        private void ClearCompletedProcesses()
+        {
+            foreach (var process in _runningBackgroundProcesses)
+            {
+                process.Value.Value.Dispose();
+                process.Value.Key.Dispose();
+                if (process.Value.Key.IsCompleted && _runningBackgroundProcesses.Remove(process.Key, out _))
+                {
+                    OnProcessStopped?.Invoke(process.Value.Value);
+                }
+            }
         }
     }
 }

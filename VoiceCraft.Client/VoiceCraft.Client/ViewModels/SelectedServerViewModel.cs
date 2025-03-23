@@ -81,21 +81,20 @@ namespace VoiceCraft.Client.ViewModels
         }
 
         [RelayCommand]
-        private void Connect()
+        private async Task Connect()
         {
             if (SelectedServer == null) return;
             var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService);
-            backgroundService.StartBackgroundProcess(process)
-                .ContinueWith(success =>
-                {
-                    if (success.Result == false)
-                    {
-                        Dispatcher.UIThread.Invoke(() => notificationService.SendNotification("Background worker failed to start VOIP process!"));
-                        return;
-                    }
-
-                    navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
-                });
+            try
+            {
+                await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
+                await backgroundService.StartBackgroundProcess(process);
+                navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
+            }
+            catch (Exception ex)
+            {
+                notificationService.SendNotification("Background worker failed to start VOIP process!");
+            }
         }
         
         private void OnServerInfo(IPEndPoint arg1, ServerInfo info)

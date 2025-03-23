@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,34 +16,28 @@ namespace VoiceCraft.Client.Android.Background
     public class NativeBackgroundService : BackgroundService
     {
         private readonly PermissionsService _permissionsService;
-        private readonly ConcurrentQueue<IBackgroundProcess> _queuedProcesses = new();
         public override event Action<IBackgroundProcess>? OnProcessStarted;
-        
+
         public override event Action<IBackgroundProcess>? OnProcessStopped;
-        
+
         public NativeBackgroundService(PermissionsService permissionsService)
         {
             _permissionsService = permissionsService;
             WeakReferenceMessenger.Default.Register<ProcessStarted>(this, (_, m) => OnProcessStarted?.Invoke(m.Value));
             WeakReferenceMessenger.Default.Register<ProcessStopped>(this, (_, m) => OnProcessStopped?.Invoke(m.Value));
-            WeakReferenceMessenger.Default.Register<GetQueuedProcess>(this, (_, m) =>
-            {
-                if(_queuedProcesses.TryDequeue(out var process))
-                    m.Reply(process);
-            });
         }
-        
-        private async Task StartService()
+
+        protected override bool StartBackgroundWorker()
         {
             //Is it running?
-            if(AndroidBackgroundService.IsStarted) return;
-            
+            if (AndroidBackgroundService.IsStarted) return true;
+
             //Don't care if it's granted or not.
-            await _permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
-                "Notifications are required to show running background processes and errors.");
-            
-            if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
-                    "Microphone access is required to properly run the background worker.") != PermissionStatus.Granted) return;
+            _permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
+                "Notifications are required to show running background processes and errors.").GetAwaiter().GetResult();
+
+            if (_permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
+                    "Microphone access is required to properly run the background worker.").GetAwaiter().GetResult() != PermissionStatus.Granted) return false;
 
             var context = Application.Context;
             var intent = new Intent(context, typeof(AndroidBackgroundService));
@@ -55,49 +48,66 @@ namespace VoiceCraft.Client.Android.Background
 #pragma warning restore CA1416
             else
                 context.StartService(intent);
-        }
-
-        public override async Task<bool> StartBackgroundProcess(IBackgroundProcess process, int timeout = 5000) //5 second timeout.
-        {
-            _queuedProcesses.Enqueue(process);
-            var startTime = System.Environment.TickCount64;
-            while (_queuedProcesses.Contains(process))
-            {
-                _ = StartService();
-                if (System.Environment.TickCount64 - startTime >= timeout)
-                    return false;
-                
-                await Task.Delay(50);
-            }
 
             return true;
         }
 
-        public override T? GetBackgroundProcess<T>() where T : default
+        public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
         {
-            if (!AndroidBackgroundService.IsStarted) return default;
-            var processes = GetBackgroundProcesses();
-            foreach (var process in processes)
+            var processType = typeof(T);
+            if (AndroidBackgroundService.QueuedProcesses.Any(x => x.Key == processType) ||
+                AndroidBackgroundService.RunningBackgroundProcesses.ContainsKey(processType))
+                throw new InvalidOperationException("A background process of this type has already been queued/started!");
+
+            AndroidBackgroundService.QueuedProcesses.Enqueue(new KeyValuePair<Type, IBackgroundProcess>(processType, process));
+            if (!StartBackgroundWorker())
             {
-                if(process.GetType() == typeof(T))
-                    return (T)process;
+                AndroidBackgroundService.QueuedProcesses.Clear();
+                throw new Exception("Failed to start background process! Background worker failed to start!");
             }
-            return default;
+
+            var startTime = System.Environment.TickCount;
+            while (!AndroidBackgroundService.RunningBackgroundProcesses.ContainsKey(processType))
+            {
+                if (System.Environment.TickCount - startTime >= timeout)
+                    throw new Exception("Failed to start background process!");
+                await Task.Delay(10); //Don't burn the CPU!
+            }
         }
 
-        public override IEnumerable<IBackgroundProcess> GetBackgroundProcesses()
+        public override Task StopBackgroundProcess<T>()
         {
-            if (!AndroidBackgroundService.IsStarted) return [];
-            var message = WeakReferenceMessenger.Default.Send<GetBackgroundProcesses>();
-            return message.HasReceivedResponse ? message.Response : [];
+            var processType = typeof(T);
+            var message = WeakReferenceMessenger.Default.Send(new StopBackgroundProcess(processType));
+            if (message is { HasReceivedResponse: true, Response: not null })
+            {
+                OnProcessStopped?.Invoke(message.Response);
+            }
+            
+            return Task.CompletedTask;
+        }
+        
+        public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
+        {
+            var processType = typeof(T);
+            if (!AndroidBackgroundService.RunningBackgroundProcesses.TryGetValue(processType, out var value))
+            {
+                process = default;
+                return false;
+            }
+            
+            process = (T?)value.Value;
+            return process != null;
         }
     }
 
     //Messages
-
-    public class GetBackgroundProcesses : RequestMessage<IEnumerable<IBackgroundProcess>>;
+    public class StopBackgroundProcess(Type processType) : RequestMessage<IBackgroundProcess?>
+    {
+        public readonly Type ProcessType = processType;
+    }
 
     public class ProcessStarted(IBackgroundProcess process) : ValueChangedMessage<IBackgroundProcess>(process);
-    
+
     public class ProcessStopped(IBackgroundProcess process) : ValueChangedMessage<IBackgroundProcess>(process);
 }
