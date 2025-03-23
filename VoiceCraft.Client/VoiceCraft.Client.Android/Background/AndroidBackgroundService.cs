@@ -79,8 +79,6 @@ namespace VoiceCraft.Client.Android.Background
                         RunningBackgroundProcesses.TryAdd(process.Key, new KeyValuePair<Task, IBackgroundProcess>(task, process.Value));
                         WeakReferenceMessenger.Default.Send(new ProcessStarted(process.Value));
                     }
-
-                    StopSelf();
                 }
                 catch (Exception ex)
                 {
@@ -93,8 +91,9 @@ namespace VoiceCraft.Client.Android.Background
                             .SetStyle(new NotificationCompat.BigTextStyle().BigText(ex.ToString()
                                 .Truncate(5000))) //5000 characters so we don't annihilate the phone. Usually for debugging we only need the first 2000 characters
                             .SetContentText(ex.GetType().ToString()).Build());
-                    StopSelf();
                 }
+                
+                StopSelf();
             });
 
             return StartCommandResult.Sticky;

@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models.Settings;
@@ -77,6 +76,7 @@ namespace VoiceCraft.Client.ViewModels
         [RelayCommand]
         private void Cancel()
         {
+            if (DisableBackButton) return;
             navigationService.Back();
         }
 
@@ -87,14 +87,16 @@ namespace VoiceCraft.Client.ViewModels
             var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService);
             try
             {
+                DisableBackButton = true;
                 await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
                 await backgroundService.StartBackgroundProcess(process);
                 navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
             }
-            catch (Exception ex)
+            catch
             {
                 notificationService.SendNotification("Background worker failed to start VOIP process!");
             }
+            DisableBackButton = false;
         }
         
         private void OnServerInfo(IPEndPoint arg1, ServerInfo info)
