@@ -64,7 +64,7 @@ namespace VoiceCraft.Client.Android.Background
             {
                 try
                 {
-                    while (!QueuedProcesses.IsEmpty && !RunningBackgroundProcesses.IsEmpty) //10 second wait time before self stopping activates (kinda).
+                    while (!QueuedProcesses.IsEmpty || !RunningBackgroundProcesses.IsEmpty) //10 second wait time before self stopping activates (kinda).
                     {
                         //Delay
                         await Task.Delay(500);

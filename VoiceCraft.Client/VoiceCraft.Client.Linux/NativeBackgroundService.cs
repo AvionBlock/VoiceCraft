@@ -25,7 +25,7 @@ namespace VoiceCraft.Client.Linux
             {
                 try
                 {
-                    while (!_queuedProcesses.IsEmpty && !_runningBackgroundProcesses.IsEmpty)
+                    while (!_queuedProcesses.IsEmpty || !_runningBackgroundProcesses.IsEmpty)
                     {
                         await Task.Delay(500);
                         ClearCompletedProcesses();
