@@ -100,12 +100,10 @@ namespace VoiceCraft.Client.Windows
         {
             foreach (var process in _runningBackgroundProcesses)
             {
+                if (!process.Value.Key.IsCompleted || !_runningBackgroundProcesses.Remove(process.Key, out _)) continue;
                 process.Value.Value.Dispose();
                 process.Value.Key.Dispose();
-                if (process.Value.Key.IsCompleted && _runningBackgroundProcesses.Remove(process.Key, out _))
-                {
-                    OnProcessStopped?.Invoke(process.Value.Value);
-                }
+                OnProcessStopped?.Invoke(process.Value.Value);
             }
         }
     }

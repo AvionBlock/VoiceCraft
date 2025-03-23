@@ -120,9 +120,9 @@ namespace VoiceCraft.Client.Android.Background
         {
             foreach (var process in RunningBackgroundProcesses)
             {
+                if (!process.Value.Key.IsCompleted || !RunningBackgroundProcesses.Remove(process.Key, out _)) continue;
                 process.Value.Value.Dispose();
                 process.Value.Key.Dispose();
-                if (!process.Value.Key.IsCompleted || !RunningBackgroundProcesses.Remove(process.Key, out _)) continue;
                 process.Value.Value.OnUpdateTitle -= ProcessOnUpdateTitle;
                 process.Value.Value.OnUpdateDescription -= ProcessOnUpdateDescription;
                 WeakReferenceMessenger.Default.Send(new ProcessStopped(process.Value.Value));

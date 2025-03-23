@@ -73,7 +73,7 @@ namespace VoiceCraft.Client.ViewModels
             GC.SuppressFinalize(this);
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanCancel))]
         private void Cancel()
         {
             if (DisableBackButton) return;
@@ -108,6 +108,11 @@ namespace VoiceCraft.Client.ViewModels
                 .Replace("{clients}", info.Clients.ToString());
             StatusInfo = statusInfo;
             Latency = Environment.TickCount - info.Tick;
+        }
+
+        private bool CanCancel()
+        {
+            return !DisableBackButton;
         }
     }
 }
