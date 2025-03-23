@@ -90,6 +90,10 @@ namespace VoiceCraft.Client.ViewModels
                 DisableBackButton = true;
                 await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
                 await backgroundService.StartBackgroundProcess(process);
+                while (!process.IsStarted)
+                {
+                    await Task.Delay(10); //Don't burn the CPU!
+                }
                 navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
             }
             catch

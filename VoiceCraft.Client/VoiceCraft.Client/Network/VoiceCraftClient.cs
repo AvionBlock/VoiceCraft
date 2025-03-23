@@ -44,13 +44,17 @@ namespace VoiceCraft.Client.Network
             _encoder = new OpusEncoder(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
             
             _netManager.Start();
+
+            Listener.PeerConnectedEvent += (peer) =>
+            {
+                if(Equals(peer, ServerPeer))
+                    OnConnected?.Invoke();
+            };
             
             Listener.PeerDisconnectedEvent += (peer, info) =>
             {
                 if (Equals(peer, ServerPeer))
-                {
                     OnDisconnected?.Invoke(info);
-                }
             };
         }
 
@@ -89,7 +93,6 @@ namespace VoiceCraft.Client.Network
             loginPacket.Serialize(DataWriter);
             var serverPeer = _netManager.Connect(ip, port, DataWriter);
             ServerPeer = serverPeer ?? throw new InvalidOperationException("A connection request is awaiting!");
-            OnConnected?.Invoke();
         }
 
         public void Update()

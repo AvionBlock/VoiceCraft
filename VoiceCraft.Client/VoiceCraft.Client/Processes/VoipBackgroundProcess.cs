@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -10,18 +9,17 @@ using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
-using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.Processes
 {
-    public class VoipBackgroundProcess : IBackgroundProcess
+    public class VoipBackgroundProcess(string ip, int port, NotificationService notificationService, AudioService audioService)
+        : IBackgroundProcess
     {
         private string _title = string.Empty;
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
-        private List<AudioSourceViewModel> _audioSources = [];
         
         //Events
         public event Action<string>? OnUpdateTitle;
@@ -32,7 +30,8 @@ namespace VoiceCraft.Client.Processes
         public event Action<DisconnectInfo>? OnDisconnected;
         
         //Public Variables
-        public CancellationTokenSource TokenSource { get; }
+        public bool IsStarted { get; private set; }
+        public CancellationTokenSource TokenSource { get; } = new();
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
         public string Title
         {
@@ -47,7 +46,7 @@ namespace VoiceCraft.Client.Processes
         public string Description
         {
             get => _description;
-            set
+            private set
             {
                 _description = value;
                 OnUpdateDescription?.Invoke(value);
@@ -57,7 +56,7 @@ namespace VoiceCraft.Client.Processes
         public bool Muted
         {
             get => _muted;
-            set
+            private set
             {
                 _muted = value;
                 OnUpdateMute?.Invoke(value);
@@ -67,7 +66,7 @@ namespace VoiceCraft.Client.Processes
         public bool Deafened
         {
             get => _deafened;
-            set
+            private set
             {
                 _deafened = value;
                 OnUpdateDeafen?.Invoke(value);
@@ -75,47 +74,46 @@ namespace VoiceCraft.Client.Processes
         }
 
         //Privates
-        private readonly VoiceCraftClient _voiceCraftClient;
-        private readonly NotificationService _notificationService;
-        private readonly AudioService _audioService;
+        private readonly VoiceCraftClient _voiceCraftClient = new();
         private IAudioRecorder? _audioRecorder;
         private IAudioPlayer? _audioPlayer;
-        private readonly string _ip;
-        private readonly int _port;
-
-        public VoipBackgroundProcess(string ip, int port, NotificationService notificationService, AudioService audioService)
-        {
-            TokenSource = new CancellationTokenSource();
-            _voiceCraftClient = new VoiceCraftClient();
-            _notificationService = notificationService;
-            _audioService = audioService;
-            _voiceCraftClient.OnConnected += ClientOnConnected;
-            _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
-            _ip = ip;
-            _port = port;
-        }
 
         public void Start()
         {
-            _voiceCraftClient.Connect(_ip, _port, LoginType.Login);
-            Title = Locales.Locales.VoiceCraft_Status_Title;
-            Description =  Locales.Locales.VoiceCraft_Status_Initializing;
-
-            _audioRecorder = _audioService.CreateAudioRecorder();
-            _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
-            _audioRecorder.StartRecording();
-            
-            Title = Locales.Locales.VoiceCraft_Status_Title;
-            Description = Locales.Locales.VoiceCraft_Status_Connecting;
-
-            while (!TokenSource.Token.IsCancellationRequested)
+            try
             {
-                _voiceCraftClient.Update(); //Update all networking processes.
-                Task.Delay(1).GetAwaiter().GetResult();
+                _voiceCraftClient.OnConnected += ClientOnConnected;
+                _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
+
+                _voiceCraftClient.Connect(ip, port, LoginType.Login);
+                Title = Locales.Locales.VoiceCraft_Status_Title;
+                Description = Locales.Locales.VoiceCraft_Status_Initializing;
+
+                _audioRecorder = audioService.CreateAudioRecorder();
+                _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
+                _audioRecorder.StartRecording();
+
+                Title = Locales.Locales.VoiceCraft_Status_Title;
+                Description = Locales.Locales.VoiceCraft_Status_Connecting;
+
+                IsStarted = true;
+                while (!TokenSource.Token.IsCancellationRequested)
+                {
+                    _voiceCraftClient.Update(); //Update all networking processes.
+                    Task.Delay(1).GetAwaiter().GetResult();
+                }
+
+                if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
+                    _voiceCraftClient.Disconnect();
+
+                _voiceCraftClient.OnConnected -= ClientOnConnected;
+                _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
             }
-            
-            if(_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
-                _voiceCraftClient.Disconnect();
+            catch
+            {
+                IsStarted = true;
+                throw;
+            }
         }
         
         public void ToggleMute()
@@ -162,7 +160,7 @@ namespace VoiceCraft.Client.Processes
             Description = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}";
             Dispatcher.UIThread.Invoke(() =>
             {
-                _notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
+                notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
                 OnDisconnected?.Invoke(obj);
             });
         }
