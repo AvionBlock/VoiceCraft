@@ -31,6 +31,7 @@ namespace VoiceCraft.Server.Systems
                 if (entity.VisibleEntities.Contains(visibleNetworkEntity)) continue;
                 entity.VisibleEntities.Add(visibleNetworkEntity);
                 _networkSystem.SendEntityData(entity, visibleNetworkEntity);
+                _networkSystem.SendEntityEffectUpdates(entity, visibleNetworkEntity);
             }
         }
     }

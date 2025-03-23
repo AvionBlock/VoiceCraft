@@ -21,25 +21,25 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityCreated(VoiceCraftEntity newEntity)
         {
             //Visibility system will handle sending entity data.
-            var createEntityPacket = new EntityCreatedPacket(newEntity.NetworkId, newEntity);
+            var createEntityPacket = new EntityCreatedPacket(newEntity.Id, newEntity);
             foreach (var entity in _world.Entities)
             {
-                if (entity.Key == newEntity.NetworkId || entity.Value is not VoiceCraftNetworkEntity networkEntity) continue;
+                if (entity.Key == newEntity.Id || entity.Value is not VoiceCraftNetworkEntity networkEntity) continue;
                 _networkSystem.SendPacket(networkEntity.NetPeer, createEntityPacket);
             }
 
             if (newEntity is not VoiceCraftNetworkEntity newNetworkEntity) return;
             foreach (var entity in _world.Entities)
             {
-                if (entity.Key == newNetworkEntity.NetworkId) continue;
-                createEntityPacket = new EntityCreatedPacket(entity.Value.NetworkId, entity.Value);
+                if (entity.Key == newNetworkEntity.Id) continue;
+                createEntityPacket = new EntityCreatedPacket(entity.Value.Id, entity.Value);
                 _networkSystem.SendPacket(newNetworkEntity.NetPeer, createEntityPacket);
             }
         }
 
         private void OnEntityDestroyed(VoiceCraftEntity removedEntity)
         {
-            var destroyEntityPacket = new EntityDestroyedPacket(removedEntity.NetworkId);
+            var destroyEntityPacket = new EntityDestroyedPacket(removedEntity.Id);
             if (removedEntity is VoiceCraftNetworkEntity removedNetworkentity)
             {
                 removedNetworkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.

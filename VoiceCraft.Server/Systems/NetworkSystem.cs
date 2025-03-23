@@ -67,15 +67,24 @@ namespace VoiceCraft.Server.Systems
         {
             foreach (var effect in entity.Effects)
             {
-                var setEffectPacket = new AddEffectPacket(entity.NetworkId, effect.Value);
-                SendPacket(targetEntity.NetPeer, setEffectPacket);
+                var addEffectPacket = new AddEffectPacket(entity.Id, effect.Value.EffectType);
+                SendPacket(targetEntity.NetPeer, addEffectPacket);
+            }
+        }
+
+        public void SendEntityEffectUpdates(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            foreach (var effect in entity.Effects)
+            {
+                var updateEffectPacket = new UpdateEffectPacket(entity.Id, effect.Value);
+                SendPacket(targetEntity.NetPeer, updateEffectPacket);
             }
         }
 
         public void SendEntityData(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
         {
-            var updatePositionPacket = new UpdatePositionPacket(entity.NetworkId, entity.Position);
-            var updateRotationPacket = new UpdateRotationPacket(entity.NetworkId, entity.Rotation);
+            var updatePositionPacket = new UpdatePositionPacket(entity.Id, entity.Position);
+            var updateRotationPacket = new UpdateRotationPacket(entity.Id, entity.Rotation);
 
             SendPacket(targetEntity.NetPeer, updatePositionPacket);
             SendPacket(targetEntity.NetPeer, updateRotationPacket);

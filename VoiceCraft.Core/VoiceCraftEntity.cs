@@ -39,8 +39,8 @@ namespace VoiceCraft.Core
         private readonly ConcurrentDictionary<EffectType, IAudioEffect> _effects = new ConcurrentDictionary<EffectType, IAudioEffect>();
 
         //Properties
+        public int Id { get; }
         public bool Destroyed { get; private set; }
-        public int NetworkId { get; }
         public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
         public List<VoiceCraftEntity> VisibleEntities { get; } = new List<VoiceCraftEntity>();
 
@@ -113,9 +113,9 @@ namespace VoiceCraft.Core
 
         //Modifiers for modifying data for later?
 
-        public VoiceCraftEntity(int networkId)
+        public VoiceCraftEntity(int id)
         {
-            NetworkId = networkId;
+            Id = id;
         }
 
         public bool AddEffect(IAudioEffect effect)

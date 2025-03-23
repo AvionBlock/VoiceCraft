@@ -9,20 +9,17 @@ namespace VoiceCraft.Core.Network.Packets
         
         public int NetworkId { get; set; }
         public EffectType EffectType { get; set; }
-        public IAudioEffect Effect { get; set; }
 
-        public AddEffectPacket(int networkId, IAudioEffect effect)
+        public AddEffectPacket(int networkId, EffectType effectType)
         {
             NetworkId = networkId;
-            EffectType = effect.EffectType;
-            Effect = effect;
+            EffectType = effectType;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put((byte)Effect.EffectType);
-            writer.Put(Effect);
+            writer.Put((byte)EffectType);
         }
 
         public override void Deserialize(NetDataReader reader)

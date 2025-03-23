@@ -9,6 +9,7 @@ namespace VoiceCraft.Core.Effects
     public class ProximityEffect : IAudioEffect, IVisible
     {
         private ulong _bitmask;
+        private byte _priority;
         private uint _minRange;
         private uint _maxRange;
 
@@ -23,6 +24,17 @@ namespace VoiceCraft.Core.Effects
             {
                 if (_bitmask == value) return;
                 _bitmask = value;
+                OnEffectUpdated?.Invoke(this);
+            }
+        }
+
+        public byte Priority
+        {
+            get => _priority;
+            set
+            {
+                if(_priority == value) return;
+                _priority = value;
                 OnEffectUpdated?.Invoke(this);
             }
         }
@@ -52,6 +64,7 @@ namespace VoiceCraft.Core.Effects
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(_bitmask);
+            writer.Put(_priority);
             writer.Put(_minRange);
             writer.Put(_maxRange);
         }
@@ -60,10 +73,12 @@ namespace VoiceCraft.Core.Effects
         {
             //Do this first before actually assigning the data.
             var bitmask = reader.GetULong();
+            var priority = reader.GetByte();
             var minRange = reader.GetUInt();
             var maxRange = reader.GetUInt();
             
             _bitmask = bitmask;
+            _priority = priority;
             _minRange = minRange;
             _maxRange = maxRange;
             OnEffectUpdated?.Invoke(this);

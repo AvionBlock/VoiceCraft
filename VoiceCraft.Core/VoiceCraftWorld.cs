@@ -28,7 +28,7 @@ namespace VoiceCraft.Core
         public VoiceCraftNetworkEntity CreateEntity(NetPeer netPeer)
         {
             var entity = new VoiceCraftNetworkEntity(netPeer);
-            if (!Entities.TryAdd(entity.NetworkId, entity))
+            if (!Entities.TryAdd(entity.Id, entity))
                 throw new InvalidOperationException($"An entity with the id of {netPeer.Id} already exists!");
             
             entity.OnDestroyed += DestroyEntity;
@@ -48,7 +48,7 @@ namespace VoiceCraft.Core
         private void DestroyEntity(VoiceCraftEntity entity)
         {
             entity.OnDestroyed -= DestroyEntity;
-            DestroyEntity(entity.NetworkId);
+            DestroyEntity(entity.Id);
         }
 
         private int GetNextNegativeId()
