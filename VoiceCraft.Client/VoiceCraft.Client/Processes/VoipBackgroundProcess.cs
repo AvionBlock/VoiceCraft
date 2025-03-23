@@ -108,13 +108,14 @@ namespace VoiceCraft.Client.Processes
             Title = Locales.Locales.VoiceCraft_Status_Title;
             Description = Locales.Locales.VoiceCraft_Status_Connecting;
 
-            while (_voiceCraftClient.ConnectionState != ConnectionState.Connected)
+            while (!TokenSource.Token.IsCancellationRequested)
             {
-                if (TokenSource.Token.IsCancellationRequested)
-                    _voiceCraftClient.Disconnect();
                 _voiceCraftClient.Update(); //Update all networking processes.
                 Task.Delay(1).GetAwaiter().GetResult();
             }
+            
+            if(_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
+                _voiceCraftClient.Disconnect();
         }
         
         public void ToggleMute()
@@ -156,6 +157,7 @@ namespace VoiceCraft.Client.Processes
         
         private void ClientOnDisconnected(DisconnectInfo obj)
         {
+            TokenSource.Cancel(); //Cancel the thread.
             Title = Locales.Locales.VoiceCraft_Status_Title;
             Description = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}";
             Dispatcher.UIThread.Invoke(() =>
