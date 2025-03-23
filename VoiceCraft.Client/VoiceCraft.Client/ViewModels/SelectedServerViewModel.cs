@@ -37,7 +37,7 @@ namespace VoiceCraft.Client.ViewModels
                 _stopPinger = true;
             while (_pinger is { IsCompleted: false })
             {
-                Task.Delay(1).Wait(); //Don't burn the CPU!.
+                Task.Delay(10).Wait(); //Don't burn the CPU!.
             }
             
             _stopPinger = false;
@@ -46,12 +46,16 @@ namespace VoiceCraft.Client.ViewModels
             {
                 var client = new VoiceCraftClient();
                 client.NetworkSystem.OnServerInfo += OnServerInfo;
+                var startTime = Environment.TickCount;
                 while (!_stopPinger)
                 {
-                    await Task.Delay(2000);
+                    await Task.Delay(2);
                     if(SelectedServer == null) continue;
                     client.Update();
+                    
+                    if (Environment.TickCount - startTime < 2000) continue;
                     client.Ping(SelectedServer.Ip, SelectedServer.Port);
+                    startTime = Environment.TickCount;
                 }
                 client.NetworkSystem.OnServerInfo -= OnServerInfo;
                 client.Dispose();
@@ -102,7 +106,7 @@ namespace VoiceCraft.Client.ViewModels
                 .Replace("{positioningType}", info.PositioningType.ToString())
                 .Replace("{clients}", info.Clients.ToString());
             StatusInfo = statusInfo;
-            Latency = Environment.TickCount - info.Tick - 2000;
+            Latency = Environment.TickCount - info.Tick;
         }
     }
 }
