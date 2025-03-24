@@ -7,13 +7,21 @@ namespace VoiceCraft.Server.Systems
     {
         private readonly VoiceCraftWorld _world = server.World;
         private readonly NetworkSystem _networkSystem = server.NetworkSystem;
+        private readonly List<Task> _tasks = [];
 
         public void Update()
         {
             foreach (var entity in _world.Entities)
             {
-                UpdateVisibleNetworkEntities(entity.Value);
+                _tasks.Add(Task.Run(() =>
+                {
+                    UpdateVisibleNetworkEntities(entity.Value);
+                }));
             }
+            
+            var task = Task.WhenAll(_tasks);
+            task.Wait();
+            _tasks.Clear();
         }
 
         private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)

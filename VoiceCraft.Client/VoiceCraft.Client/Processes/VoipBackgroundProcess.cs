@@ -91,6 +91,7 @@ namespace VoiceCraft.Client.Processes
 
                 _audioRecorder = audioService.CreateAudioRecorder();
                 _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
+                _audioRecorder.DataAvailable += DataAvailable;
                 _audioRecorder.StartRecording();
 
                 Title = Locales.Locales.VoiceCraft_Status_Title;
@@ -115,7 +116,7 @@ namespace VoiceCraft.Client.Processes
                 throw;
             }
         }
-        
+
         public void ToggleMute()
         {
             Muted = !Muted;
@@ -163,6 +164,11 @@ namespace VoiceCraft.Client.Processes
                 notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
                 OnDisconnected?.Invoke(obj);
             });
+        }
+        
+        private void DataAvailable(object? sender, WaveInEventArgs e)
+        {
+            _voiceCraftClient.Write(e.Buffer, 0, e.BytesRecorded);
         }
     }
 }

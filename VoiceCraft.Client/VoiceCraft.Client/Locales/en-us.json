@@ -59,6 +59,6 @@
   "VoiceCraft.Status.Title" : "VoiceCraft Client Is Running",
   "VoiceCraft.Status.Initializing" : "Initializing...",
   "VoiceCraft.Status.Connecting" : "Connecting...",
-  "VoiceCraft.Status.Connected" : "Connected! More shit here later.",
+  "VoiceCraft.Status.Connected" : "Connected!",
   "VoiceCraft.Status.Disconnected" : "Disconnected! Reason:"
 }

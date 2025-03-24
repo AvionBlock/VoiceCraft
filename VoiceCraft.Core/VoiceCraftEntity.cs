@@ -147,12 +147,12 @@ namespace VoiceCraft.Core
             return true;
         }
 
-        public virtual void Write(byte[] buffer)
+        public virtual void Write(byte[] buffer, int count)
         {
             OnAudioReceived?.Invoke(buffer, this);
         }
 
-        public virtual int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public virtual int Read(byte[] buffer, int count) => throw new NotSupportedException();
 
         public bool VisibleTo(VoiceCraftEntity entity)
         {

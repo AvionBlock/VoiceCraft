@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace VoiceCraft.Client.Services
@@ -54,7 +53,7 @@ namespace VoiceCraft.Client.Services
             }
 
             await File.WriteAllTextAsync(SettingsPath,
-                JsonSerializer.Serialize(_settings, SettingsServiceSourceGenerationContext.Default.ConcurrentDictionaryStringObject));
+                JsonSerializer.Serialize(_settings));
         }
 
         public async Task SaveAsync()
@@ -75,7 +74,7 @@ namespace VoiceCraft.Client.Services
                     }
 
                     await File.WriteAllTextAsync(SettingsPath,
-                        JsonSerializer.Serialize(_settings, SettingsServiceSourceGenerationContext.Default.ConcurrentDictionaryStringObject));
+                        JsonSerializer.Serialize(_settings));
                 }
 
                 _writing = false;
@@ -92,8 +91,7 @@ namespace VoiceCraft.Client.Services
                 }
 
                 var result = File.ReadAllText(SettingsPath);
-                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object?>>(result,
-                    SettingsServiceSourceGenerationContext.Default.ConcurrentDictionaryStringObject);
+                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object?>>(result);
                 if (loadedSettings is null)
                 {
                     return;
@@ -142,11 +140,5 @@ namespace VoiceCraft.Client.Services
         bool OnLoading();
 
         void OnSaving();
-    }
-
-    [JsonSourceGenerationOptions(WriteIndented = true)]
-    [JsonSerializable(typeof(ConcurrentDictionary<string, object?>))]
-    public partial class SettingsServiceSourceGenerationContext : JsonSerializerContext
-    {
     }
 }

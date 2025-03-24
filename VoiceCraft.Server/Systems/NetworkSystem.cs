@@ -178,6 +178,13 @@ namespace VoiceCraft.Server.Systems
                 var pt = (PacketType)packetType;
                 switch (pt)
                 {
+                    case PacketType.Audio:
+                        var packet = new AudioPacket([], 0, 0);
+                        packet.Deserialize(reader);
+                        Console.WriteLine($"Received audio, {reader}");
+                        break;
+                    
+                    // Will need to implement these for client sided mode later.
                     case PacketType.Info:
                     case PacketType.Login:
                     case PacketType.EntityCreated:
@@ -223,6 +230,7 @@ namespace VoiceCraft.Server.Systems
                         break;
                     //Unused
                     case PacketType.Login:
+                    case PacketType.Audio:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
                     case PacketType.UpdatePosition:

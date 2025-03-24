@@ -36,6 +36,15 @@ namespace VoiceCraft.Core
             return entity;
         }
 
+        public void AddEntity(VoiceCraftEntity entity)
+        {
+            if(!Entities.TryAdd(entity.Id, entity))
+                throw new InvalidOperationException($"An entity with the id of {entity.Id} already exists!");
+            
+            entity.OnDestroyed += DestroyEntity;
+            OnEntityCreated?.Invoke(entity);
+        }
+
         public bool DestroyEntity(int id)
         {
             if (!Entities.TryRemove(id, out var entity)) return false;

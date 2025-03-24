@@ -14,21 +14,26 @@ namespace VoiceCraft.Client.Network
     {
         public static readonly Version Version = new(1, 1, 0);
         public static readonly WaveFormat WaveFormat = new(Constants.SampleRate, Constants.Channels);
-        public static readonly uint BytesPerFrame = (uint)WaveFormat.ConvertLatencyToByteSize(Constants.FrameSizeMs);
-        
+
         //Network Events
         public event Action? OnConnected;
         public event Action<DisconnectInfo>? OnDisconnected;
-        
+
         //Public Properties
         public ConnectionState ConnectionState => ServerPeer?.ConnectionState ?? ConnectionState.Disconnected;
         public EventBasedNetListener Listener { get; } = new();
         public NetDataWriter DataWriter { get; } = new();
         public NetPeer? ServerPeer { get; private set; }
+        public VoiceCraftWorld World { get; } = new();
         public NetworkSystem NetworkSystem { get; }
         
         private readonly NetManager _netManager;
-        private readonly OpusEncoder _encoder;
+        private readonly OpusEncoder _encoder = new(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
+        private readonly byte[] _senderBuffer = new byte[Constants.BytesPerFrame];
+        private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
+        private readonly BufferedWaveProvider _sendBuffer = new(WaveFormat) { DiscardOnBufferOverflow = true};
+        private readonly BufferedWaveProvider _recvBuffer = new(WaveFormat) { ReadFully = true, DiscardOnBufferOverflow = true };
+        private uint _timestamp;
         private bool _isDisposed;
 
         public VoiceCraftClient()
@@ -40,21 +45,18 @@ namespace VoiceCraft.Client.Network
                 UnconnectedMessagesEnabled = true
             };
             NetworkSystem = new NetworkSystem(this, _netManager);
-            
-            _encoder = new OpusEncoder(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
-            
             _netManager.Start();
 
-            Listener.PeerConnectedEvent += (peer) =>
+            Listener.PeerConnectedEvent += peer =>
             {
-                if(Equals(peer, ServerPeer))
-                    OnConnected?.Invoke();
+                if (!Equals(peer, ServerPeer)) return;
+                OnConnected?.Invoke();
             };
-            
+
             Listener.PeerDisconnectedEvent += (peer, info) =>
             {
-                if (Equals(peer, ServerPeer))
-                    OnDisconnected?.Invoke(info);
+                if (!Equals(peer, ServerPeer)) return;
+                OnDisconnected?.Invoke(info);
             };
         }
 
@@ -76,13 +78,13 @@ namespace VoiceCraft.Client.Network
                 return false;
             }
         }
-        
+
         public void Connect(string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
-            if(ConnectionState != ConnectionState.Disconnected)
+            if (ConnectionState != ConnectionState.Disconnected)
                 throw new InvalidOperationException("This client is already connected or is connecting to a server!");
-            
+
             DataWriter.Reset();
             var loginPacket = new LoginPacket()
             {
@@ -98,6 +100,14 @@ namespace VoiceCraft.Client.Network
         public void Update()
         {
             _netManager.PollEvents();
+            while (_sendBuffer.BufferedBytes >= Constants.BytesPerFrame)
+            {
+                Array.Clear(_senderBuffer);
+                var read = _sendBuffer.Read(_senderBuffer, 0, _senderBuffer.Length);
+                var encoded = _encoder.Encode(_senderBuffer, read, _encodeBuffer, _encodeBuffer.Length);
+                var packet = new AudioPacket(_senderBuffer, encoded, _timestamp++);
+                NetworkSystem.SendPacket(packet);
+            }
         }
 
         public void Disconnect()
@@ -106,13 +116,24 @@ namespace VoiceCraft.Client.Network
             _netManager.DisconnectAll();
         }
 
+        public void Write(byte[] buffer, int offset, int count)
+        {
+            _sendBuffer.AddSamples(buffer, offset, count);
+        }
+
+        public void Read(byte[] buffer, int offset, int count)
+        {
+            _recvBuffer.Read(buffer, offset, count);
+        }
+
         #region Dispose
+
         private void ThrowIfDisposed()
         {
             if (!_isDisposed) return;
             throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
         }
-        
+
         public void Dispose()
         {
             Dispose(true);
@@ -130,6 +151,7 @@ namespace VoiceCraft.Client.Network
 
             _isDisposed = true;
         }
+
         #endregion
     }
 }

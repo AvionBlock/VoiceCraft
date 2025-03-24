@@ -16,6 +16,7 @@ namespace VoiceCraft.Core.Network
     {
         Info,
         Login,
+        Audio,
         //Entity stuff
         EntityCreated,
         EntityDestroyed,

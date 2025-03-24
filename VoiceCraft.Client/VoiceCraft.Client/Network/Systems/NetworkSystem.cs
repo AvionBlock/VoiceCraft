@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
@@ -14,6 +15,7 @@ namespace VoiceCraft.Client.Network.Systems
         private readonly EventBasedNetListener _listener;
         private readonly NetDataWriter _dataWriter;
         private readonly NetManager _netManager;
+        private readonly VoiceCraftWorld _world;
 
         public event Action<IPEndPoint, ServerInfo>? OnServerInfo;
 
@@ -23,6 +25,7 @@ namespace VoiceCraft.Client.Network.Systems
             _netManager = netManager;
             _listener = _client.Listener;
             _dataWriter = _client.DataWriter;
+            _world = _client.World;
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
@@ -71,6 +74,7 @@ namespace VoiceCraft.Client.Network.Systems
                 {
                     case PacketType.Info:
                     case PacketType.Login:
+                    case PacketType.Audio:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
                     case PacketType.UpdatePosition:
@@ -109,6 +113,7 @@ namespace VoiceCraft.Client.Network.Systems
                         break;
                     //Unused
                     case PacketType.Login:
+                    case PacketType.Audio:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
                     case PacketType.UpdatePosition:
