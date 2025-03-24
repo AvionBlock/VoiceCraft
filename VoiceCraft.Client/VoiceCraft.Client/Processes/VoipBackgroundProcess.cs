@@ -100,10 +100,15 @@ namespace VoiceCraft.Client.Processes
                 Description = Locales.Locales.VoiceCraft_Status_Connecting;
 
                 IsStarted = true;
+                var tick1 = Environment.TickCount;
                 while (!TokenSource.Token.IsCancellationRequested)
                 {
                     _voiceCraftClient.Update(); //Update all networking processes.
-                    Task.Delay(20).GetAwaiter().GetResult(); //Same update tick rate as the server.
+                    var dist = Environment.TickCount - tick1;
+                    var delay = Constants.UpdateIntervalMS - dist;
+                    if (delay > 0)
+                        Task.Delay(delay).GetAwaiter().GetResult();
+                    tick1 = Environment.TickCount;
                 }
 
                 if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)

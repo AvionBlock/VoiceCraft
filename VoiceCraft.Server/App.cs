@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
+using VoiceCraft.Core;
 using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Pages;
 
@@ -7,7 +8,6 @@ namespace VoiceCraft.Server
 {
     public static class App
     {
-        private const int UpdateInterval = 20;
         private static bool _shuttingDown;
         private static CancellationTokenSource _cts = new();
 
@@ -26,7 +26,7 @@ namespace VoiceCraft.Server
                 {
                     server.Update();
                     var dist = Environment.TickCount - tick1;
-                    var delay = UpdateInterval - dist;
+                    var delay = Constants.UpdateIntervalMS - dist;
                     if (delay > 0)
                         await Task.Delay(delay);
                     tick1 = Environment.TickCount;
