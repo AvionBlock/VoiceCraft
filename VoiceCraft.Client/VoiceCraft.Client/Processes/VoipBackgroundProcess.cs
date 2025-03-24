@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -21,6 +22,7 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
+        private int _tick1 = Environment.TickCount;
         
         //Events
         public event Action<string>? OnUpdateTitle;
@@ -175,6 +177,8 @@ namespace VoiceCraft.Client.Processes
         
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
+            Debug.WriteLine(Environment.TickCount - _tick1);
+            _tick1 = Environment.TickCount;
             _voiceCraftClient.Write(e.Buffer, 0, e.BytesRecorded);
         }
     }
