@@ -107,7 +107,7 @@ namespace VoiceCraft.Client.Processes
                 {
                     _voiceCraftClient.Update(); //Update all networking processes.
                     var dist = Environment.TickCount - tick1;
-                    var delay = Constants.UpdateIntervalMS - dist;
+                    var delay = Constants.UpdateIntervalMs - dist;
                     if (delay > 0)
                         Task.Delay(delay).GetAwaiter().GetResult();
                     tick1 = Environment.TickCount;
