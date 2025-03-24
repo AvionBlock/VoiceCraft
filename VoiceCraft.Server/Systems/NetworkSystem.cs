@@ -17,6 +17,7 @@ namespace VoiceCraft.Server.Systems
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly VoiceCraftConfig _config;
+        private readonly int start = Environment.TickCount;
 
         public NetworkSystem(VoiceCraftServer server, NetManager netManager)
         {
@@ -181,7 +182,7 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Audio:
                         var packet = new AudioPacket([], 0, 0);
                         packet.Deserialize(reader);
-                        Console.WriteLine($"Received audio, {reader}");
+                        Console.WriteLine($"Received audio, {Environment.TickCount - start}");
                         break;
                     
                     // Will need to implement these for client sided mode later.

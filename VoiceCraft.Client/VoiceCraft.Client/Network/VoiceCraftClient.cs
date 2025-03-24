@@ -100,6 +100,8 @@ namespace VoiceCraft.Client.Network
         public void Update()
         {
             _netManager.PollEvents();
+            if (ServerPeer == null) return; //Not connected.
+            
             while (_sendBuffer.BufferedBytes >= Constants.BytesPerFrame)
             {
                 Array.Clear(_senderBuffer);

@@ -9,6 +9,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.Processes
@@ -91,6 +92,7 @@ namespace VoiceCraft.Client.Processes
 
                 _audioRecorder = audioService.CreateAudioRecorder();
                 _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
+                _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioRecorder.DataAvailable += DataAvailable;
                 _audioRecorder.StartRecording();
 
