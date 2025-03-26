@@ -22,6 +22,13 @@ namespace VoiceCraft.Client.Network.Systems
             _world.OnEntityDestroyed += OnEntityDestroyed;
         }
 
+        public bool GetNextFrame(VoiceCraftEntity entity, byte[] buffer)
+        {
+            if (!_entityJitterBuffers.TryGetValue(entity, out var jitterBuffer)) return false;
+            jitterBuffer.Get(buffer);
+            return true;
+        }
+
         private void OnEntityCreated(VoiceCraftEntity entity)
         {
             if (_entityJitterBuffers.ContainsKey(entity)) return;
