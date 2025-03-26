@@ -41,6 +41,7 @@ namespace VoiceCraft.Core
         //Properties
         public int Id { get; }
         public bool Destroyed { get; private set; }
+        public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
         public ConcurrentDictionary<int, VoiceCraftEntity> VisibleEntities { get; } = new ConcurrentDictionary<int, VoiceCraftEntity>();
 
@@ -149,6 +150,7 @@ namespace VoiceCraft.Core
 
         public virtual void ReceiveAudio(byte[] buffer, uint timestamp)
         {
+            LastSpoke = DateTime.UtcNow;
             OnAudioReceived?.Invoke(buffer, timestamp, this);
         }
 
