@@ -24,7 +24,7 @@ namespace VoiceCraft.Core
         public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectRemoved;
         
         //Other Updates.
-        public event Action<byte[], VoiceCraftEntity>? OnAudioReceived;
+        public event Action<byte[], uint, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
         
         //Privates
@@ -42,7 +42,7 @@ namespace VoiceCraft.Core
         public int Id { get; }
         public bool Destroyed { get; private set; }
         public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
-        public List<VoiceCraftEntity> VisibleEntities { get; } = new List<VoiceCraftEntity>();
+        public ConcurrentDictionary<int, VoiceCraftEntity> VisibleEntities { get; } = new ConcurrentDictionary<int, VoiceCraftEntity>();
 
         //Updatable Properties
         public string WorldId
@@ -147,12 +147,10 @@ namespace VoiceCraft.Core
             return true;
         }
 
-        public virtual void Write(byte[] buffer, int count)
+        public virtual void ReceiveAudio(byte[] buffer, uint timestamp)
         {
-            OnAudioReceived?.Invoke(buffer, this);
+            OnAudioReceived?.Invoke(buffer, timestamp, this);
         }
-
-        public virtual int Read(byte[] buffer, int count) => throw new NotSupportedException();
 
         public bool VisibleTo(VoiceCraftEntity entity)
         {

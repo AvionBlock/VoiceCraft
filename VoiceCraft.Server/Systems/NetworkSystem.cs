@@ -17,7 +17,6 @@ namespace VoiceCraft.Server.Systems
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
         private readonly VoiceCraftConfig _config;
-        private readonly int start = Environment.TickCount;
 
         public NetworkSystem(VoiceCraftServer server, NetManager netManager)
         {
@@ -180,11 +179,10 @@ namespace VoiceCraft.Server.Systems
                 switch (pt)
                 {
                     case PacketType.Audio:
-                        var packet = new AudioPacket([], 0, 0);
-                        packet.Deserialize(reader);
-                        Console.WriteLine($"Received audio, {Environment.TickCount - start}");
+                        var audioPacket = new AudioPacket(0, [], 0, 0);
+                        audioPacket.Deserialize(reader);
+                        HandleAudioPacket(audioPacket, peer);
                         break;
-                    
                     // Will need to implement these for client sided mode later.
                     case PacketType.Info:
                     case PacketType.Login:
@@ -222,12 +220,7 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Info:
                         var infoPacket = new InfoPacket();
                         infoPacket.Deserialize(reader);
-
-                        infoPacket.Clients = _netManager.ConnectedPeersCount;
-                        infoPacket.Discovery = _config.Discovery;
-                        infoPacket.PositioningType = _config.PositioningType;
-                        infoPacket.Motd = _config.Motd;
-                        SendUnconnectedPacket(remoteendpoint, infoPacket);
+                        HandleInfoPacket(infoPacket, remoteendpoint);
                         break;
                     //Unused
                     case PacketType.Login:
@@ -253,6 +246,23 @@ namespace VoiceCraft.Server.Systems
             {
                 Debug.WriteLine(ex);
             }
+        }
+        
+        //Packet Handling
+        private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteendpoint)
+        {
+            infoPacket.Clients = _netManager.ConnectedPeersCount;
+            infoPacket.Discovery = _config.Discovery;
+            infoPacket.PositioningType = _config.PositioningType;
+            infoPacket.Motd = _config.Motd;
+            SendUnconnectedPacket(remoteendpoint, infoPacket);
+        }
+
+        private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
+        {
+            if (!_world.Entities.TryGetValue(audioPacket.NetworkId, out var entity)) return;
+            if (entity is not VoiceCraftNetworkEntity networkEntity || !Equals(networkEntity.NetPeer, peer)) return;
+            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
         }
     }
 }

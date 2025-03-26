@@ -30,6 +30,7 @@ namespace VoiceCraft.Server.Systems
             entity.OnEffectAdded += OnEntityEffectAdded;
             entity.OnEffectUpdated += OnEntityEffectUpdated;
             entity.OnEffectRemoved += OnEntityEffectRemoved;
+            entity.OnAudioReceived += OnEntityAudioReceived;
         }
 
         private void OnEntityDestroyed(VoiceCraftEntity entity)
@@ -53,7 +54,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityTalkBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateTalkBitmaskPacket(entity.Id, bitmask);
             foreach (var networkEntity in networkEntities)
             {
@@ -63,7 +64,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityListenBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateListenBitmaskPacket(entity.Id, bitmask);
             foreach (var networkEntity in networkEntities)
             {
@@ -73,7 +74,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityPositionUpdated(Vector3 position, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdatePositionPacket(entity.Id, position);
             foreach (var networkEntity in networkEntities)
             {
@@ -83,7 +84,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityRotationUpdated(Quaternion rotation, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateRotationPacket(entity.Id, rotation);
             foreach (var networkEntity in networkEntities)
             {
@@ -100,7 +101,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityEffectUpdated(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>(); //Only send updates to visible entities.
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>(); //Only send updates to visible entities.
             var packet = new UpdateEffectPacket(entity.Id, effect);
             foreach (var networkEntity in networkEntities)
             {
@@ -112,6 +113,18 @@ namespace VoiceCraft.Server.Systems
         {
             var packet = new RemoveEffectPacket(entity.Id, effect.EffectType);
             _networkSystem.Broadcast(packet);
+        }
+        
+        //Audio
+        private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
+        {
+            //Only send updates to visible entities.
+            var networkEntities = entity.VisibleEntities.Values.Where(x => x != entity).OfType<VoiceCraftNetworkEntity>();
+            var packet = new AudioPacket(entity.Id, data, data.Length, timestamp);
+            foreach (var networkEntity in networkEntities)
+            {
+                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+            }
         }
     }
 }

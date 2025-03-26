@@ -26,20 +26,29 @@ namespace VoiceCraft.Server.Systems
 
         private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
         {
-            entity.VisibleEntities.RemoveAll(x => x.Destroyed);
-            foreach (var visibleEntity in _world.Entities)
+            RemoveDeadNetworkEntities(entity);
+            entity.VisibleEntities.TryAdd(entity.Id, entity); //Should always be visible to itself.
+            foreach (var possibleEntity in _world.Entities)
             {
-                if(visibleEntity.Value == entity || visibleEntity.Value is not VoiceCraftNetworkEntity visibleNetworkEntity) continue;
+                if(possibleEntity.Value is not VoiceCraftNetworkEntity visibleNetworkEntity) continue;
                 if (!entity.VisibleTo(visibleNetworkEntity))
                 {
-                    entity.VisibleEntities.Remove(visibleNetworkEntity);
+                    entity.VisibleEntities.TryRemove(possibleEntity.Key, out _);
                     continue;
                 }
-
-                if (entity.VisibleEntities.Contains(visibleNetworkEntity)) continue;
-                entity.VisibleEntities.Add(visibleNetworkEntity);
+                
+                if(!entity.VisibleEntities.TryAdd(possibleEntity.Key, visibleNetworkEntity)) continue;
                 _networkSystem.SendEntityData(entity, visibleNetworkEntity);
                 _networkSystem.SendEntityEffectUpdates(entity, visibleNetworkEntity);
+            }
+        }
+
+        private void RemoveDeadNetworkEntities(VoiceCraftEntity entity)
+        {
+            foreach (var visibleEntity in _world.Entities)
+            {
+                if(!visibleEntity.Value.Destroyed) continue;
+                entity.VisibleEntities.Remove(visibleEntity.Key, out _);
             }
         }
     }
