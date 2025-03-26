@@ -51,7 +51,7 @@ namespace VoiceCraft.Client.Network.Systems
             public EntityJitterBuffer(VoiceCraftEntity entity)
             {
                 _entity = entity;
-                _buffer = new SpeexDSPJitterBuffer(Constants.FrameSizeMs);
+                _buffer = new SpeexDSPJitterBuffer(1);
                 _decoder = new OpusDecoder(Constants.SampleRate, Constants.Channels);
                 _entity.OnAudioReceived += OnEntityAudioReceived;
             }

@@ -3,7 +3,6 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
-using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
