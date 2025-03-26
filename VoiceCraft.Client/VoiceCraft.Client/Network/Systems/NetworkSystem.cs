@@ -72,11 +72,23 @@ namespace VoiceCraft.Client.Network.Systems
                 var pt = (PacketType)packetType;
                 switch (pt)
                 {
+                    case PacketType.Audio:
+                        var audioPacket = new AudioPacket(0, [], 0, 0);
+                        audioPacket.Deserialize(reader);
+                        HandleAudioPacket(audioPacket);
+                        break;
+                    case PacketType.EntityCreated:
+                        var entityCreatedPacket = new EntityCreatedPacket();
+                        entityCreatedPacket.Deserialize(reader);
+                        HandleEntityCreatedPacket(entityCreatedPacket, reader);
+                        break;
+                    case PacketType.EntityDestroyed:
+                        var entityDestroyedPacket = new EntityDestroyedPacket(0);
+                        entityDestroyedPacket.Deserialize(reader);
+                        HandleEntityDestroyedPacket(entityDestroyedPacket);
+                        break;
                     case PacketType.Info:
                     case PacketType.Login:
-                    case PacketType.Audio:
-                    case PacketType.EntityCreated:
-                    case PacketType.EntityDestroyed:
                     case PacketType.UpdatePosition:
                     case PacketType.UpdateRotation:
                     case PacketType.UpdateTalkBitmask:
@@ -135,6 +147,32 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 Debug.WriteLine(ex);
             }
+        }
+
+        private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
+        {
+            try
+            {
+                if (_world.Entities.ContainsKey(packet.NetworkId)) return;
+                var entity = new VoiceCraftEntity(packet.NetworkId);
+                entity.Deserialize(reader); //Deserialize entity.
+                _world.AddEntity(entity); //Could crash the application, this shouldn't happen though.
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
+        {
+            _world.DestroyEntity(packet.NetworkId); //Won't crash.
+        }
+
+        private void HandleAudioPacket(AudioPacket packet)
+        {
+            if (!_world.Entities.TryGetValue(packet.NetworkId, out var entity)) return;
+            entity.ReceiveAudio(packet.Data, packet.Timestamp);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityCreated(VoiceCraftEntity newEntity)
         {
             //Visibility system will handle sending entity data.
-            var createEntityPacket = new EntityCreatedPacket(newEntity.Id, newEntity);
+            var createEntityPacket = new EntityCreatedPacket(newEntity);
             foreach (var entity in _world.Entities)
             {
                 if (entity.Key == newEntity.Id || entity.Value is not VoiceCraftNetworkEntity networkEntity) continue;
@@ -32,7 +32,7 @@ namespace VoiceCraft.Server.Systems
             foreach (var entity in _world.Entities)
             {
                 if (entity.Key == newNetworkEntity.Id) continue;
-                createEntityPacket = new EntityCreatedPacket(entity.Value.Id, entity.Value);
+                createEntityPacket = new EntityCreatedPacket(entity.Value);
                 _networkSystem.SendPacket(newNetworkEntity.NetPeer, createEntityPacket);
             }
         }

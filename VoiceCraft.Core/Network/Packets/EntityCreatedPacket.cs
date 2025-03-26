@@ -6,17 +6,17 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.EntityCreated;
         public int NetworkId { get; set; }
-        public VoiceCraftEntity Entity { get; set; }
+        public VoiceCraftEntity? Entity { get; set; }
 
-        public EntityCreatedPacket(int networkId, VoiceCraftEntity entity)
+        public EntityCreatedPacket(VoiceCraftEntity? entity = null)
         {
-            NetworkId = networkId;
+            NetworkId = entity?.Id ?? 0;
             Entity = entity;
         }
 
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Entity?.Id ?? 0);
             writer.Put(Entity);
         }
 
