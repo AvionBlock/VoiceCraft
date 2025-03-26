@@ -71,6 +71,10 @@ namespace VoiceCraft.Server.Application
             if (disposing)
             {
                 _netManager.Stop();
+                World.Dispose();
+                WorldSystem.Dispose();
+                NetworkSystem.Dispose();
+                _entityEventsSystem.Dispose();
             }
 
             _isDisposed = true;

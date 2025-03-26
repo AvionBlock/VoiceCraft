@@ -9,7 +9,7 @@ using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network.Systems
 {
-    public class NetworkSystem
+    public class NetworkSystem : IDisposable
     {
         private readonly VoiceCraftClient _client;
         private readonly EventBasedNetListener _listener;
@@ -57,6 +57,13 @@ namespace VoiceCraft.Client.Network.Systems
             _dataWriter.Put((byte)packet.PacketType);
             packet.Serialize(_dataWriter);
             return _netManager.SendUnconnectedMessage(_dataWriter, ip, (int)port);
+        }
+        
+        public void Dispose()
+        {
+            _listener.ConnectionRequestEvent -= OnConnectionRequestEvent;
+            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
+            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
         }
 
         private static void OnConnectionRequestEvent(ConnectionRequest request)

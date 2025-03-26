@@ -4,7 +4,7 @@ using LiteNetLib;
 
 namespace VoiceCraft.Core
 {
-    public class VoiceCraftWorld
+    public class VoiceCraftWorld : IDisposable //Make this disposable BECAUSE WHY THE FUCK NOT?!
     {
         private int _idIndex = -1;
         private readonly ConcurrentQueue<int> _recycledIds = new ConcurrentQueue<int>();
@@ -52,6 +52,17 @@ namespace VoiceCraft.Core
             OnEntityDestroyed?.Invoke(Entities[id]);
             _recycledIds.Enqueue(id);
             return true;
+        }
+
+        public void Dispose()
+        {
+            foreach (var entity in Entities)
+            {
+                entity.Value.OnDestroyed -= DestroyEntity; //Don't trigger the events!
+                entity.Value.Destroy();
+            }
+            
+            Entities.Clear();
         }
 
         private void DestroyEntity(VoiceCraftEntity entity)

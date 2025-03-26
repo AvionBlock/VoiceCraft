@@ -26,6 +26,7 @@ namespace VoiceCraft.Client.Network
         public NetPeer? ServerPeer { get; private set; }
         public VoiceCraftWorld World { get; } = new();
         public NetworkSystem NetworkSystem { get; }
+        public EntityAudioBufferSystem AudioBufferSystem { get; }
         
         private readonly NetManager _netManager;
         private readonly OpusEncoder _encoder = new(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
@@ -45,6 +46,7 @@ namespace VoiceCraft.Client.Network
                 UnconnectedMessagesEnabled = true
             };
             NetworkSystem = new NetworkSystem(this, _netManager);
+            AudioBufferSystem = new EntityAudioBufferSystem(this);
             _netManager.Start();
 
             Listener.PeerConnectedEvent += peer =>
@@ -110,6 +112,12 @@ namespace VoiceCraft.Client.Network
                 var packet = new AudioPacket(ServerPeer.RemoteId, _senderBuffer, encoded, _timestamp++);
                 NetworkSystem.SendPacket(packet);
             }
+
+            foreach (var entity in World.Entities)
+            {
+                var buffer = new byte[Constants.BytesPerFrame];
+                AudioBufferSystem.GetNextFrame(entity.Value, buffer);
+            }
         }
 
         public void Disconnect()
@@ -149,6 +157,9 @@ namespace VoiceCraft.Client.Network
             {
                 _netManager.Stop();
                 _encoder.Dispose();
+                World.Dispose();
+                NetworkSystem.Dispose();
+                AudioBufferSystem.Dispose();
             }
 
             _isDisposed = true;

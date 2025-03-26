@@ -4,7 +4,7 @@ using VoiceCraft.Server.Application;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class WorldSystem
+    public class WorldSystem : IDisposable
     {
         private readonly VoiceCraftWorld _world;
         private readonly NetworkSystem _networkSystem;
@@ -16,6 +16,12 @@ namespace VoiceCraft.Server.Systems
 
             _world.OnEntityCreated += OnEntityCreated;
             _world.OnEntityDestroyed += OnEntityDestroyed;
+        }
+        
+        public void Dispose()
+        {
+            _world.OnEntityCreated -= OnEntityCreated;
+            _world.OnEntityDestroyed -= OnEntityDestroyed;
         }
 
         private void OnEntityCreated(VoiceCraftEntity newEntity)

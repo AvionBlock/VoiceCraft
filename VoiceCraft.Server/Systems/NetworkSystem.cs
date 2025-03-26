@@ -10,7 +10,7 @@ using VoiceCraft.Server.Config;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class NetworkSystem
+    public class NetworkSystem : IDisposable
     {
         private readonly NetDataWriter _dataWriter;
         private readonly VoiceCraftWorld _world;
@@ -109,6 +109,15 @@ namespace VoiceCraft.Server.Systems
 
             SendPacket(targetEntity.NetPeer, updatePositionPacket);
             SendPacket(targetEntity.NetPeer, updateRotationPacket);
+        }
+        
+        public void Dispose()
+        {
+            _listener.PeerConnectedEvent -= OnPeerConnectedEvent;
+            _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
+            _listener.ConnectionRequestEvent -= OnConnectionRequest;
+            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
+            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
         }
         
         private void OnPeerConnectedEvent(NetPeer peer)

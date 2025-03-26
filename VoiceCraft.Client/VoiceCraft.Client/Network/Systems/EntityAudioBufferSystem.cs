@@ -7,7 +7,7 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Network.Systems
 {
-    public class EntityAudioBufferSystem
+    public class EntityAudioBufferSystem : IDisposable
     {
         private readonly VoiceCraftClient _client;
         private readonly VoiceCraftWorld _world;
@@ -39,6 +39,19 @@ namespace VoiceCraft.Client.Network.Systems
         {
             if(_entityJitterBuffers.TryRemove(entity, out var jitterBuffer)) return;
             jitterBuffer?.Dispose();
+        }
+        
+        public void Dispose()
+        {
+            _world.OnEntityCreated -= OnEntityCreated;
+            _world.OnEntityDestroyed -= OnEntityDestroyed;
+            
+            foreach (var entity in _entityJitterBuffers)
+            {
+                entity.Value.Dispose(); //DISPOSE EVERYTHING!
+            }
+            
+            _entityJitterBuffers.Clear();
         }
 
         private class EntityJitterBuffer : IDisposable
