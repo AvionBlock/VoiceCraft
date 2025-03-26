@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.Network.Systems
         private readonly NetManager _netManager;
         private readonly VoiceCraftWorld _world;
 
-        public event Action<IPEndPoint, ServerInfo>? OnServerInfo;
+        public event Action<ServerInfo>? OnServerInfo;
 
         public NetworkSystem(VoiceCraftClient client, NetManager netManager)
         {
@@ -119,9 +119,9 @@ namespace VoiceCraft.Client.Network.Systems
                 switch (pt)
                 {
                     case PacketType.Info:
-                        var serverInfoPacket = new InfoPacket();
-                        serverInfoPacket.Deserialize(reader);
-                        OnServerInfo?.Invoke(remoteendpoint, new ServerInfo(serverInfoPacket));
+                        var infoPacket = new InfoPacket();
+                        infoPacket.Deserialize(reader);
+                        HandleInfoPacket(infoPacket);
                         break;
                     //Unused
                     case PacketType.Login:
@@ -147,6 +147,11 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 Debug.WriteLine(ex);
             }
+        }
+
+        private void HandleInfoPacket(InfoPacket infoPacket)
+        {
+            OnServerInfo?.Invoke(new ServerInfo(infoPacket));
         }
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)

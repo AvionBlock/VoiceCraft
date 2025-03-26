@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -103,7 +102,7 @@ namespace VoiceCraft.Client.ViewModels
             DisableBackButton = false;
         }
         
-        private void OnServerInfo(IPEndPoint arg1, ServerInfo info)
+        private void OnServerInfo(ServerInfo info)
         {
             var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status
                 .Replace("{motd}", info.Motd)
