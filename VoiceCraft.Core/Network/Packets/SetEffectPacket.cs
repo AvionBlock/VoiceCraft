@@ -3,25 +3,25 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class UpdateEffectPacket : VoiceCraftPacket
+    public class SetEffectPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.UpdateEffect;
+        public override PacketType PacketType => PacketType.SetEffect;
         
         public int NetworkId { get; set; }
         public EffectType EffectType { get; set; }
-        public IAudioEffect Effect { get; set; }
+        public IAudioEffect? Effect { get; set; }
 
-        public UpdateEffectPacket(int networkId, IAudioEffect effect)
+        public SetEffectPacket(int networkId, IAudioEffect? effect)
         {
             NetworkId = networkId;
-            EffectType = effect.EffectType;
+            EffectType = effect?.EffectType ?? EffectType.Unknown;
             Effect = effect;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put((byte)Effect.EffectType);
+            writer.Put((byte)(Effect?.EffectType ?? EffectType.Unknown));
             writer.Put(Effect);
         }
 

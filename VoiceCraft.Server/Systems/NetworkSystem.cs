@@ -25,8 +25,7 @@ namespace VoiceCraft.Server.Systems
             _listener = server.Listener;
             _config = server.Config;
             _netManager = netManager;
-
-            _listener.PeerConnectedEvent += OnPeerConnectedEvent;
+            
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
             _listener.ConnectionRequestEvent += OnConnectionRequest;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
@@ -71,62 +70,13 @@ namespace VoiceCraft.Server.Systems
             packet.Serialize(_dataWriter);
             return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
         }
-
-        public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-
-            foreach (var client in _netManager.ConnectedPeerList.Where(x => x.Tag is VoiceCraftNetworkEntity))
-            {
-                client.Send(_dataWriter, deliveryMethod);
-            }
-        }
-        
-        public void SendEntityEffects(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
-        {
-            foreach (var effect in entity.Effects)
-            {
-                var addEffectPacket = new AddEffectPacket(entity.Id, effect.Value.EffectType);
-                SendPacket(targetEntity.NetPeer, addEffectPacket);
-            }
-        }
-
-        public void SendEntityEffectUpdates(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
-        {
-            foreach (var effect in entity.Effects)
-            {
-                var updateEffectPacket = new UpdateEffectPacket(entity.Id, effect.Value);
-                SendPacket(targetEntity.NetPeer, updateEffectPacket);
-            }
-        }
-
-        public void SendEntityData(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
-        {
-            var updatePositionPacket = new UpdatePositionPacket(entity.Id, entity.Position);
-            var updateRotationPacket = new UpdateRotationPacket(entity.Id, entity.Rotation);
-
-            SendPacket(targetEntity.NetPeer, updatePositionPacket);
-            SendPacket(targetEntity.NetPeer, updateRotationPacket);
-        }
         
         public void Dispose()
         {
-            _listener.PeerConnectedEvent -= OnPeerConnectedEvent;
             _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
             _listener.ConnectionRequestEvent -= OnConnectionRequest;
             _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
-        }
-        
-        private void OnPeerConnectedEvent(NetPeer peer)
-        {
-            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
-            foreach (var visibleEntity in _world.Entities)
-            {
-                SendEntityEffects(visibleEntity.Value, networkEntity);
-            }
         }
         
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
@@ -202,8 +152,7 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.UpdateTalkBitmask:
                     case PacketType.UpdateListenBitmask:
                     case PacketType.UpdateName:
-                    case PacketType.AddEffect:
-                    case PacketType.UpdateEffect:
+                    case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:
@@ -241,8 +190,7 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.UpdateTalkBitmask:
                     case PacketType.UpdateListenBitmask:
                     case PacketType.UpdateName:
-                    case PacketType.AddEffect:
-                    case PacketType.UpdateEffect:
+                    case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:

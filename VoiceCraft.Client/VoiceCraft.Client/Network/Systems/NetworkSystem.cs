@@ -101,8 +101,7 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.UpdateTalkBitmask:
                     case PacketType.UpdateListenBitmask:
                     case PacketType.UpdateName:
-                    case PacketType.AddEffect:
-                    case PacketType.UpdateEffect:
+                    case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:
@@ -140,8 +139,7 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.UpdateTalkBitmask:
                     case PacketType.UpdateListenBitmask:
                     case PacketType.UpdateName:
-                    case PacketType.AddEffect:
-                    case PacketType.UpdateEffect:
+                    case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
                     default:

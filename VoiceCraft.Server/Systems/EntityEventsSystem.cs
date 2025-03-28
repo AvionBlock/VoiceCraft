@@ -54,8 +54,12 @@ namespace VoiceCraft.Server.Systems
         //Data
         private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
         {
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new UpdateNamePacket(entity.Id, name);
-            _networkSystem.Broadcast(packet);
+            foreach (var networkEntity in networkEntities)
+            {
+                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+            }
         }
         
         private void OnEntityTalkBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
@@ -101,14 +105,18 @@ namespace VoiceCraft.Server.Systems
         //Effects
         private void OnEntityEffectAdded(IAudioEffect effect, VoiceCraftEntity entity)
         {
-            var packet = new AddEffectPacket(entity.Id, effect.EffectType);
-            _networkSystem.Broadcast(packet);
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
+            var packet = new SetEffectPacket(entity.Id, effect);
+            foreach (var networkEntity in networkEntities)
+            {
+                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+            }
         }
         
         private void OnEntityEffectUpdated(IAudioEffect effect, VoiceCraftEntity entity)
         {
             var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>(); //Only send updates to visible entities.
-            var packet = new UpdateEffectPacket(entity.Id, effect);
+            var packet = new SetEffectPacket(entity.Id, effect);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
@@ -117,8 +125,12 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityEffectRemoved(IAudioEffect effect, VoiceCraftEntity entity)
         {
+            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
             var packet = new RemoveEffectPacket(entity.Id, effect.EffectType);
-            _networkSystem.Broadcast(packet);
+            foreach (var networkEntity in networkEntities)
+            {
+                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+            }
         }
         
         //Audio

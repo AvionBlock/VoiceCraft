@@ -182,6 +182,15 @@ namespace VoiceCraft.Core
             writer.Put(Name);
             writer.Put(TalkBitmask);
             writer.Put(ListenBitmask);
+            
+            writer.Put(Position.X);
+            writer.Put(Position.Y);
+            writer.Put(Position.Z);
+            
+            writer.Put(Rotation.X);
+            writer.Put(Rotation.Y);
+            writer.Put(Rotation.Z);
+            writer.Put(Rotation.W);
         }
 
         public void Deserialize(NetDataReader reader)
@@ -189,10 +198,20 @@ namespace VoiceCraft.Core
             var name = reader.GetString();
             var talkBitmask = reader.GetULong();
             var listenBitmask = reader.GetULong();
+            var positionX = reader.GetFloat();
+            var positionY = reader.GetFloat();
+            var positionZ = reader.GetFloat();
+            
+            var rotationX = reader.GetFloat();
+            var rotationY = reader.GetFloat();
+            var rotationZ = reader.GetFloat();
+            var rotationW = reader.GetFloat();
             
             Name = name;
             TalkBitmask = talkBitmask;
             ListenBitmask = listenBitmask;
+            Position = new Vector3(positionX, positionY, positionZ);
+            Rotation = new Quaternion(rotationX, rotationY, rotationZ, rotationW);
         }
 
         public void Destroy()

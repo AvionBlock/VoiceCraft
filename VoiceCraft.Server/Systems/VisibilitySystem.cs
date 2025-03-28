@@ -1,4 +1,5 @@
 using VoiceCraft.Core;
+using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
 
 namespace VoiceCraft.Server.Systems
@@ -34,12 +35,13 @@ namespace VoiceCraft.Server.Systems
                 if (!entity.VisibleTo(visibleNetworkEntity))
                 {
                     entity.VisibleEntities.TryRemove(possibleEntity.Key, out _);
+                    if(possibleEntity.Value is VoiceCraftNetworkEntity possibleNetworkEntity)
+                        SendEntityDestroyed(entity, possibleNetworkEntity);
                     continue;
                 }
                 
                 if(!entity.VisibleEntities.TryAdd(possibleEntity.Key, visibleNetworkEntity)) continue;
-                _networkSystem.SendEntityData(entity, visibleNetworkEntity);
-                _networkSystem.SendEntityEffectUpdates(entity, visibleNetworkEntity);
+                SendEntityCreated(entity, visibleNetworkEntity);
             }
         }
 
@@ -50,6 +52,25 @@ namespace VoiceCraft.Server.Systems
                 if(!visibleEntity.Value.Destroyed) continue;
                 entity.VisibleEntities.Remove(visibleEntity.Key, out _);
             }
+        }
+
+        private void SendEntityCreated(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            var entityCreatedPacket = new EntityCreatedPacket(entity);
+            _networkSystem.SendPacket(targetEntity.NetPeer, entityCreatedPacket);
+
+            var addEffectPacket = new SetEffectPacket(entity.Id, null);
+            foreach (var effect in entity.Effects)
+            {
+                addEffectPacket.Effect = effect.Value;
+                _networkSystem.SendPacket(targetEntity.NetPeer, addEffectPacket);
+            }
+        }
+
+        private void SendEntityDestroyed(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
+        {
+            var entityDestroyedPacket = new EntityDestroyedPacket(entity.Id);
+            _networkSystem.SendPacket(targetEntity.NetPeer, entityDestroyedPacket);
         }
     }
 }
