@@ -26,7 +26,7 @@ namespace VoiceCraft.Server
                 {
                     server.Update();
                     var dist = Environment.TickCount - tick1;
-                    var delay = Constants.UpdateIntervalMs - dist;
+                    var delay = Constants.FrameSizeMs - dist;
                     if (delay > 0)
                         await Task.Delay(delay);
                     tick1 = Environment.TickCount;
