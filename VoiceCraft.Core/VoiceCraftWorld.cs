@@ -49,7 +49,7 @@ namespace VoiceCraft.Core
         {
             if (!Entities.TryRemove(id, out var entity)) return false;
             entity.Destroy();
-            OnEntityDestroyed?.Invoke(Entities[id]);
+            OnEntityDestroyed?.Invoke(entity);
             _recycledIds.Enqueue(id);
             return true;
         }

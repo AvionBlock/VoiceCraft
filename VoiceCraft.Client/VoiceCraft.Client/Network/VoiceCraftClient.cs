@@ -164,7 +164,6 @@ namespace VoiceCraft.Client.Network
 
             _isDisposed = true;
         }
-
         #endregion
     }
 }

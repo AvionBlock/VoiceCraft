@@ -1,6 +1,7 @@
+using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Server.Application;
-using VoiceCraft.Server.Pages;
+using VoiceCraft.Server.Commands;
 
 namespace VoiceCraft.Server
 {
@@ -18,8 +19,17 @@ namespace VoiceCraft.Server
             var serviceCollection = new ServiceCollection();
             
             serviceCollection.AddSingleton<VoiceCraftServer>();
-            serviceCollection.AddTransient<StartScreen>();
-            return serviceCollection.BuildServiceProvider();
+            
+            //Commands
+            var rootCommand = new RootCommand("VoiceCraft commands.");
+            serviceCollection.AddSingleton(rootCommand);
+            serviceCollection.AddSingleton<SetWorldIdCommand>();
+            serviceCollection.AddSingleton<ListCommand>();
+            
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            rootCommand.AddCommand(serviceProvider.GetRequiredService<SetWorldIdCommand>());
+            rootCommand.AddCommand(serviceProvider.GetRequiredService<ListCommand>());
+            return serviceProvider;
         }
     }
 }

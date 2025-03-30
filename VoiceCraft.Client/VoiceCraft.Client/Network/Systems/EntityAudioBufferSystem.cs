@@ -9,14 +9,12 @@ namespace VoiceCraft.Client.Network.Systems
 {
     public class EntityAudioBufferSystem : IDisposable
     {
-        private readonly VoiceCraftClient _client;
         private readonly VoiceCraftWorld _world;
         private readonly ConcurrentDictionary<VoiceCraftEntity, EntityJitterBuffer> _entityJitterBuffers = new();
 
         public EntityAudioBufferSystem(VoiceCraftClient client)
         {
-            _client = client;
-            _world = _client.World;
+            _world = client.World;
             
             _world.OnEntityCreated += OnEntityCreated;
             _world.OnEntityDestroyed += OnEntityDestroyed;

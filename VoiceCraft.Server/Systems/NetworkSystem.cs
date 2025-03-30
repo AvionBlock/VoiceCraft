@@ -81,7 +81,7 @@ namespace VoiceCraft.Server.Systems
         
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
         {
-            if (peer.Tag != (object)LoginType.Login) return;
+            if (peer.Tag is not VoiceCraftNetworkEntity) return;
             _world.DestroyEntity(peer.Id);
         }
 
