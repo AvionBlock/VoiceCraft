@@ -89,6 +89,7 @@ namespace VoiceCraft.Server.Systems
             _listener.ConnectionRequestEvent -= OnConnectionRequest;
             _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
+            GC.SuppressFinalize(this);
         }
         
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
