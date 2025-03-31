@@ -1,4 +1,5 @@
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
 
@@ -8,6 +9,7 @@ namespace VoiceCraft.Server.Systems
     {
         private readonly VoiceCraftWorld _world = server.World;
         private readonly NetworkSystem _networkSystem = server.NetworkSystem;
+        private readonly AudioEffectSystem _audioEffectSystem = server.AudioEffectSystem;
         private readonly List<Task> _tasks = [];
 
         public void Update()
@@ -34,7 +36,7 @@ namespace VoiceCraft.Server.Systems
             foreach (var possibleEntity in _world.Entities)
             {
                 if(possibleEntity.Key == entity.Id || possibleEntity.Value is not VoiceCraftNetworkEntity possibleNetworkEntity) continue;
-                if (!entity.VisibleTo(possibleNetworkEntity))
+                if (!EntityVisibleTo(entity, possibleNetworkEntity))
                 {
                     entity.VisibleEntities.Remove(possibleNetworkEntity);
                     SendEntityDestroyed(entity, possibleNetworkEntity);
@@ -57,6 +59,13 @@ namespace VoiceCraft.Server.Systems
         {
             var entityDestroyedPacket = new EntityDestroyedPacket(entity.Id);
             _networkSystem.SendPacket(targetEntity.NetPeer, entityDestroyedPacket);
+        }
+
+        private bool EntityVisibleTo(VoiceCraftEntity entity, VoiceCraftEntity otherEntity)
+        {
+            if(!entity.VisibleTo(otherEntity)) return false;
+            var bitmask = entity.TalkBitmask & entity.ListenBitmask;
+            return _audioEffectSystem.Effects.OfType<IVisible>().All(effect => effect.VisibleTo(entity, otherEntity, bitmask));
         }
     }
 }
