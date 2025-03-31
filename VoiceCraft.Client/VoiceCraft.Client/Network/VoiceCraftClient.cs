@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.Network
 
         //Network Events
         public event Action? OnConnected;
-        public event Action<DisconnectInfo>? OnDisconnected;
+        public event Action<string>? OnDisconnected;
 
         //Public Properties
         public ConnectionState ConnectionState => ServerPeer?.ConnectionState ?? ConnectionState.Disconnected;
@@ -58,7 +58,15 @@ namespace VoiceCraft.Client.Network
             Listener.PeerDisconnectedEvent += (peer, info) =>
             {
                 if (!Equals(peer, ServerPeer)) return;
-                OnDisconnected?.Invoke(info);
+                try
+                {
+                    var reason = !info.AdditionalData.IsNull ? info.AdditionalData.GetString() : info.Reason.ToString();
+                    OnDisconnected?.Invoke(reason);
+                }
+                catch
+                {
+                    OnDisconnected?.Invoke(info.Reason.ToString());
+                }
             };
         }
 

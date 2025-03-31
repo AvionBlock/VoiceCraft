@@ -79,7 +79,7 @@ namespace VoiceCraft.Client.ViewModels
             StatusText = description;
         }
         
-        private void OnDisconnected(DisconnectInfo obj)
+        private void OnDisconnected(string reason)
         {
             if (_process != null)
             {

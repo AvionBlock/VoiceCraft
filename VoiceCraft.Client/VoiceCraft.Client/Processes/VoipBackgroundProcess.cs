@@ -30,7 +30,7 @@ namespace VoiceCraft.Client.Processes
         public event Action<bool>? OnUpdateMute;
         public event Action<bool>? OnUpdateDeafen;
         public event Action? OnConnected;
-        public event Action<DisconnectInfo>? OnDisconnected;
+        public event Action<string>? OnDisconnected;
         
         //Public Variables
         public bool IsStarted { get; private set; }
@@ -163,15 +163,15 @@ namespace VoiceCraft.Client.Processes
             Dispatcher.UIThread.Invoke(() => OnConnected?.Invoke());
         }
         
-        private void ClientOnDisconnected(DisconnectInfo obj)
+        private void ClientOnDisconnected(string reason)
         {
             TokenSource.Cancel(); //Cancel the thread.
             Title = Locales.Locales.VoiceCraft_Status_Title;
-            Description = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}";
+            Description = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}";
             Dispatcher.UIThread.Invoke(() =>
             {
-                notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {obj.Reason}");
-                OnDisconnected?.Invoke(obj);
+                notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}");
+                OnDisconnected?.Invoke(reason);
             });
         }
         
