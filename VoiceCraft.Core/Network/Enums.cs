@@ -17,16 +17,22 @@ namespace VoiceCraft.Core.Network
         Info,
         Login,
         Audio,
+        SetEffect,
+        RemoveEffect,
         //Entity stuff
         EntityCreated,
         EntityDestroyed,
-        SetPosition,
-        SetRotation,
+        SetName,
         SetTalkBitmask,
         SetListenBitmask,
-        SetName,
-        SetEffect,
-        RemoveEffect,
+        SetPosition,
+        SetRotation,
+        SetIntProperty,
+        SetBoolProperty,
+        SetFloatProperty,
+        RemoveIntProperty,
+        RemoveBoolProperty,
+        RemoveFloatProperty,
         
         Unknown //C# does a thing where any number higher than this will always result to this value.
     }

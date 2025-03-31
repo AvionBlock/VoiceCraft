@@ -147,13 +147,19 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Login:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
+                    case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:
-                    case PacketType.SetName:
+                    case PacketType.SetPosition:
+                    case PacketType.SetRotation:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
+                    case PacketType.SetIntProperty:
+                    case PacketType.SetBoolProperty:
+                    case PacketType.SetFloatProperty:
+                    case PacketType.RemoveIntProperty:
+                    case PacketType.RemoveBoolProperty:
+                    case PacketType.RemoveFloatProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -185,13 +191,19 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Audio:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
+                    case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:
-                    case PacketType.SetName:
+                    case PacketType.SetPosition:
+                    case PacketType.SetRotation:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
+                    case PacketType.SetIntProperty:
+                    case PacketType.SetBoolProperty:
+                    case PacketType.SetFloatProperty:
+                    case PacketType.RemoveIntProperty:
+                    case PacketType.RemoveBoolProperty:
+                    case PacketType.RemoveFloatProperty:
                     case PacketType.Unknown:
                     default:
                         break;

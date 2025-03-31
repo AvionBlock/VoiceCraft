@@ -22,6 +22,7 @@ namespace VoiceCraft.Server.Systems
         {
             _world.OnEntityCreated -= OnEntityCreated;
             _world.OnEntityDestroyed -= OnEntityDestroyed;
+            GC.SuppressFinalize(this);
         }
 
         private void OnEntityCreated(VoiceCraftEntity newEntity)
