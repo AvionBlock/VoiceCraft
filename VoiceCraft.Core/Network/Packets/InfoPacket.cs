@@ -7,11 +7,20 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.Info;
         [StringLength(Constants.MaxStringLength)]
-        public string Motd { get; set; } = string.Empty;
-        public int Clients { get; set; }
-        public bool Discovery  { get; set; }
-        public PositioningType PositioningType { get; set; }
-        public int Tick { get; set; }
+        public string Motd { get; private set; }
+        public int Clients { get; private set; }
+        public bool Discovery  { get; private set; }
+        public PositioningType PositioningType { get; private set; }
+        public int Tick { get; private set; }
+
+        public InfoPacket(string motd, int clients, bool discovery, PositioningType positioningType, int tick)
+        {
+            Motd = motd;
+            Clients = clients;
+            Discovery = discovery;
+            PositioningType = positioningType;
+            Tick = tick;
+        }
         
         
         public override void Serialize(NetDataWriter writer)

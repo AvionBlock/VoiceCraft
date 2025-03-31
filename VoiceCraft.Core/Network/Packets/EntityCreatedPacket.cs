@@ -5,8 +5,8 @@ namespace VoiceCraft.Core.Network.Packets
     public class EntityCreatedPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.EntityCreated;
-        public int NetworkId { get; set; }
-        public VoiceCraftEntity? Entity { get; set; }
+        public int NetworkId { get; private set; }
+        public VoiceCraftEntity? Entity { get; private set; }
 
         public EntityCreatedPacket(VoiceCraftEntity? entity = null)
         {
@@ -23,6 +23,8 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             NetworkId = reader.GetInt();
+            Entity = new VoiceCraftEntity(NetworkId);
+            Entity.Deserialize(reader);
         }
     }
 }

@@ -27,30 +27,23 @@ namespace VoiceCraft.Server.Systems
 
         private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
         {
-            RemoveDeadNetworkEntities(entity);
-            entity.VisibleEntities.TryAdd(entity.Id, entity); //Should always be visible to itself.
+            //Remove dead network entities.
+            entity.VisibleEntities.RemoveAll(x => x.Destroyed);
+            
+            //Add any new possible entities.
             foreach (var possibleEntity in _world.Entities)
             {
-                if(possibleEntity.Value is not VoiceCraftNetworkEntity visibleNetworkEntity) continue;
-                if (!entity.VisibleTo(visibleNetworkEntity))
+                if(possibleEntity.Key == entity.Id || possibleEntity.Value is not VoiceCraftNetworkEntity possibleNetworkEntity) continue;
+                if (!entity.VisibleTo(possibleNetworkEntity))
                 {
-                    entity.VisibleEntities.TryRemove(possibleEntity.Key, out _);
-                    if(possibleEntity.Value is VoiceCraftNetworkEntity possibleNetworkEntity)
-                        SendEntityDestroyed(entity, possibleNetworkEntity);
+                    entity.VisibleEntities.Remove(possibleNetworkEntity);
+                    SendEntityDestroyed(entity, possibleNetworkEntity);
                     continue;
                 }
                 
-                if(!entity.VisibleEntities.TryAdd(possibleEntity.Key, visibleNetworkEntity)) continue;
-                SendEntityCreated(entity, visibleNetworkEntity);
-            }
-        }
-
-        private void RemoveDeadNetworkEntities(VoiceCraftEntity entity)
-        {
-            foreach (var visibleEntity in _world.Entities)
-            {
-                if(!visibleEntity.Value.Destroyed) continue;
-                entity.VisibleEntities.Remove(visibleEntity.Key, out _);
+                if(!entity.VisibleEntities.Contains(possibleNetworkEntity)) continue;
+                entity.VisibleEntities.Add(possibleNetworkEntity);
+                SendEntityCreated(entity, possibleNetworkEntity);
             }
         }
 
@@ -58,13 +51,6 @@ namespace VoiceCraft.Server.Systems
         {
             var entityCreatedPacket = new EntityCreatedPacket(entity);
             _networkSystem.SendPacket(targetEntity.NetPeer, entityCreatedPacket);
-
-            var addEffectPacket = new SetEffectPacket(entity.Id, null);
-            foreach (var effect in entity.Effects)
-            {
-                addEffectPacket.Effect = effect.Value;
-                _networkSystem.SendPacket(targetEntity.NetPeer, addEffectPacket);
-            }
         }
 
         private void SendEntityDestroyed(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)

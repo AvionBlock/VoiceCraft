@@ -3,24 +3,25 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class UpdatePositionPacket : VoiceCraftPacket
+    public class SetRotationPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.UpdatePosition;
+        public override PacketType PacketType => PacketType.SetRotation;
         public int NetworkId { get; set; }
-        public Vector3 Position { get; set; }
+        public Quaternion Rotation { get; set; }
 
-        public UpdatePositionPacket(int networkId, Vector3 position)
+        public SetRotationPacket(int networkId, Quaternion rotation)
         {
             NetworkId = networkId;
-            Position = position;
+            Rotation = rotation;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put(Position.X);
-            writer.Put(Position.Y);
-            writer.Put(Position.Z);
+            writer.Put(Rotation.X);
+            writer.Put(Rotation.Y);
+            writer.Put(Rotation.Z);
+            writer.Put(Rotation.W);
         }
 
         public override void Deserialize(NetDataReader reader)
@@ -29,7 +30,8 @@ namespace VoiceCraft.Core.Network.Packets
             var x = reader.GetFloat();
             var y = reader.GetFloat();
             var z = reader.GetFloat();
-            Position = new Vector3(x, y, z);
+            var w = reader.GetFloat();
+            Rotation = new Quaternion(x, y, z, w);
         }
     }
 }

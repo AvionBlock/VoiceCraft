@@ -6,12 +6,8 @@ namespace VoiceCraft.Core.Interfaces
 {
     public interface IAudioEffect : INetSerializable
     {
-        public ulong Bitmask { get; set; }
-        
-        byte Priority { get; set; }
+        public ulong Bitmask { get; }
         
         EffectType EffectType { get; }
-        
-        event Action<IAudioEffect>? OnEffectUpdated;
     }
 }

@@ -1,32 +1,29 @@
-using System.ComponentModel.DataAnnotations;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class UpdateNamePacket : VoiceCraftPacket
+    public class SetListenBitmaskPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.UpdateName;
-        [StringLength(Constants.MaxStringLength)]
+        public override PacketType PacketType => PacketType.SetListenBitmask;
         public int NetworkId { get; set; }
-        public string Name { get; set; }
-        
+        public ulong Bitmask { get; set; }
 
-        public UpdateNamePacket(int networkId, string name)
+        public SetListenBitmaskPacket(int networkId, ulong bitmask)
         {
             NetworkId = networkId;
-            Name = name;
+            Bitmask = bitmask;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(NetworkId);
-            writer.Put(Name);
+            writer.Put(Bitmask);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             NetworkId = reader.GetInt();
-            Name = reader.GetString();
+            Bitmask = reader.GetULong();
         }
     }
 }

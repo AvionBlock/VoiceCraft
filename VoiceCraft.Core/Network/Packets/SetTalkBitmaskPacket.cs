@@ -2,13 +2,13 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class UpdateListenBitmaskPacket : VoiceCraftPacket
+    public class SetTalkBitmaskPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.UpdateListenBitmask;
+        public override PacketType PacketType => PacketType.SetTalkBitmask;
         public int NetworkId { get; set; }
         public ulong Bitmask { get; set; }
 
-        public UpdateListenBitmaskPacket(int networkId, ulong bitmask)
+        public SetTalkBitmaskPacket(int networkId, ulong bitmask)
         {
             NetworkId = networkId;
             Bitmask = bitmask;

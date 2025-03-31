@@ -7,27 +7,27 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.SetEffect;
         
-        public int NetworkId { get; set; }
-        public EffectType EffectType { get; set; }
-        public IAudioEffect? Effect { get; set; }
+        public byte Index { get; private set; }
+        public EffectType EffectType { get; private set; }
+        public IAudioEffect? Effect { get; private set; }
 
-        public SetEffectPacket(int networkId, IAudioEffect? effect)
+        public SetEffectPacket(byte index, IAudioEffect? effect)
         {
-            NetworkId = networkId;
+            Index = index;
             EffectType = effect?.EffectType ?? EffectType.Unknown;
             Effect = effect;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Index);
             writer.Put((byte)(Effect?.EffectType ?? EffectType.Unknown));
             writer.Put(Effect);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Index = reader.GetByte();
             EffectType = (EffectType)reader.GetByte();
         }
     }

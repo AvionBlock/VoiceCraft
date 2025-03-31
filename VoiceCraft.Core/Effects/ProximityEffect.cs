@@ -1,4 +1,3 @@
-using System;
 using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
@@ -6,92 +5,37 @@ using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Effects
 {
-    public class ProximityEffect : IAudioEffect, IVisible
+    public struct ProximityEffect : IAudioEffect, IVisible
     {
-        private ulong _bitmask;
-        private byte _priority;
-        private uint _minRange;
-        private uint _maxRange;
-
         public EffectType EffectType => EffectType.Proximity;
-
-        public event Action<IAudioEffect>? OnEffectUpdated;
-
-        public ulong Bitmask
-        {
-            get => _bitmask;
-            set
-            {
-                if (_bitmask == value) return;
-                _bitmask = value;
-                OnEffectUpdated?.Invoke(this);
-            }
-        }
-
-        public byte Priority
-        {
-            get => _priority;
-            set
-            {
-                if(_priority == value) return;
-                _priority = value;
-                OnEffectUpdated?.Invoke(this);
-            }
-        }
-
-        public uint MinRange
-        {
-            get => _minRange;
-            set
-            {
-                if (_minRange == value) return;
-                _minRange = value;
-                OnEffectUpdated?.Invoke(this);
-            }
-        }
-
-        public uint MaxRange
-        {
-            get => _maxRange;
-            set
-            {
-                if (_maxRange == value) return;
-                _maxRange = value;
-                OnEffectUpdated?.Invoke(this);
-            }
-        }
+        public ulong Bitmask { get; private set; }
+        public uint MinRange { get; private set; }
+        public uint MaxRange { get; private set; }
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(_bitmask);
-            writer.Put(_priority);
-            writer.Put(_minRange);
-            writer.Put(_maxRange);
+            writer.Put(Bitmask);
+            writer.Put(MinRange);
+            writer.Put(MaxRange);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             //Do this first before actually assigning the data.
             var bitmask = reader.GetULong();
-            var priority = reader.GetByte();
             var minRange = reader.GetUInt();
             var maxRange = reader.GetUInt();
             
-            _bitmask = bitmask;
-            _priority = priority;
-            _minRange = minRange;
-            _maxRange = maxRange;
-            OnEffectUpdated?.Invoke(this);
+            Bitmask = bitmask;
+            MinRange = minRange;
+            MaxRange = maxRange;
         }
 
         public bool VisibleTo(VoiceCraftEntity fromEntity, VoiceCraftEntity toEntity, ulong bitmask)
         {
-            if ((bitmask & _bitmask) == 0) return true; //Disabled, Is visible.
+            if ((bitmask & Bitmask) == 0) return true; //Disabled, Is visible.
             var distance = Vector3.Distance(fromEntity.Position, toEntity.Position);
-            var maxRange = _maxRange;
-
-            if (toEntity.HasEffect<ProximityEffect>(EffectType.Proximity))
-                maxRange = Math.Max(maxRange, toEntity.GetEffect<ProximityEffect>(EffectType.Proximity).MaxRange);
+            var maxRange = MaxRange; //Need to do a check for entity states.
             
             return distance <= maxRange;
         }

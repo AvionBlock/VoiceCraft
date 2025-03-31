@@ -10,6 +10,6 @@ namespace VoiceCraft.Core
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
         
         public const int MaxStringLength = 100; //100 characters.
-        public const int SilenceThresholdMs = 20;
+        public const float FloatingPointTolerance = 0.001f;
     }
 }

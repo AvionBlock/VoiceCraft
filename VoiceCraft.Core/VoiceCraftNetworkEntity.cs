@@ -6,7 +6,7 @@ namespace VoiceCraft.Core
     {
         public NetPeer NetPeer { get; }
         
-        public VoiceCraftNetworkEntity(NetPeer netPeer) : base(netPeer.Id)
+        public VoiceCraftNetworkEntity(NetPeer netPeer) : base((short)netPeer.Id)
         {
             NetPeer = netPeer;
         }

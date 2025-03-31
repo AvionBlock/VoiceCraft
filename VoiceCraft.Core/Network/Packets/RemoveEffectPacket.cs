@@ -6,8 +6,8 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.SetEffect;
         
-        public int NetworkId { get; set; }
-        public EffectType EffectType { get; set; }
+        public int NetworkId { get; private set; }
+        public EffectType EffectType { get; private set; }
 
         public RemoveEffectPacket(int networkId, EffectType effectType)
         {

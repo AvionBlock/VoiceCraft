@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using LiteNetLib;
 
 namespace VoiceCraft.Core
@@ -12,7 +13,7 @@ namespace VoiceCraft.Core
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
 
-        public ConcurrentDictionary<int, VoiceCraftEntity> Entities { get; } = new ConcurrentDictionary<int, VoiceCraftEntity>();
+        public Dictionary<int, VoiceCraftEntity> Entities { get; } = new Dictionary<int, VoiceCraftEntity>();
 
         public VoiceCraftEntity CreateEntity()
         {
@@ -47,7 +48,7 @@ namespace VoiceCraft.Core
 
         public bool DestroyEntity(int id)
         {
-            if (!Entities.TryRemove(id, out var entity)) return false;
+            if (!Entities.Remove(id, out var entity)) return false;
             entity.Destroy();
             OnEntityDestroyed?.Invoke(entity);
             _recycledIds.Enqueue(id);

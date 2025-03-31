@@ -96,11 +96,11 @@ namespace VoiceCraft.Client.Network.Systems
                         break;
                     case PacketType.Info:
                     case PacketType.Login:
-                    case PacketType.UpdatePosition:
-                    case PacketType.UpdateRotation:
-                    case PacketType.UpdateTalkBitmask:
-                    case PacketType.UpdateListenBitmask:
-                    case PacketType.UpdateName:
+                    case PacketType.SetPosition:
+                    case PacketType.SetRotation:
+                    case PacketType.SetTalkBitmask:
+                    case PacketType.SetListenBitmask:
+                    case PacketType.SetName:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:
@@ -134,11 +134,11 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.Audio:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
-                    case PacketType.UpdatePosition:
-                    case PacketType.UpdateRotation:
-                    case PacketType.UpdateTalkBitmask:
-                    case PacketType.UpdateListenBitmask:
-                    case PacketType.UpdateName:
+                    case PacketType.SetPosition:
+                    case PacketType.SetRotation:
+                    case PacketType.SetTalkBitmask:
+                    case PacketType.SetListenBitmask:
+                    case PacketType.SetName:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.Unknown:

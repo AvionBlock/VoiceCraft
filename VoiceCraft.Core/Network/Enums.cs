@@ -20,11 +20,11 @@ namespace VoiceCraft.Core.Network
         //Entity stuff
         EntityCreated,
         EntityDestroyed,
-        UpdatePosition,
-        UpdateRotation,
-        UpdateTalkBitmask,
-        UpdateListenBitmask,
-        UpdateName,
+        SetPosition,
+        SetRotation,
+        SetTalkBitmask,
+        SetListenBitmask,
+        SetName,
         SetEffect,
         RemoveEffect,
         

@@ -7,9 +7,16 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.Login;
         [StringLength(Constants.MaxStringLength)]
-        public string Version { get; set; } = string.Empty;
-        public LoginType LoginType { get; set; }
-        public PositioningType PositioningType { get; set; }
+        public string Version { get; private set; }
+        public LoginType LoginType { get; private set; }
+        public PositioningType PositioningType { get; private set; }
+
+        public LoginPacket(string version, LoginType loginType, PositioningType positioningType)
+        {
+            Version = version;
+            LoginType = loginType;
+            PositioningType = positioningType;
+        }
         
         public override void Serialize(NetDataWriter writer)
         {

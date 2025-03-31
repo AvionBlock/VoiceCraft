@@ -1,33 +1,32 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core
 {
     public class VoiceCraftEntity : INetSerializable
     {
-        //Data updates.
+        //Entity events.
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
-        
-        //Effect Updates.
-        public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectAdded;
-        public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectUpdated;
-        public event Action<IAudioEffect, VoiceCraftEntity>? OnEffectRemoved;
-        
-        //Other Updates.
+        public event Action<string, int, VoiceCraftEntity>? OnIntPropertySet; //TOO MANY EVENTS!
+        public event Action<string, bool, VoiceCraftEntity>? OnBoolPropertySet;
+        public event Action<string, float, VoiceCraftEntity>? OnFloatPropertySet;
+        public event Action<string, int, VoiceCraftEntity>? OnIntPropertyRemoved;
+        public event Action<string, bool, VoiceCraftEntity>? OnBoolPropertyRemoved;
+        public event Action<string, float, VoiceCraftEntity>? OnFloatPropertyRemoved;
         public event Action<byte[], uint, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
         
         //Privates
+        private readonly Dictionary<string, int> _intProperties = new Dictionary<string, int>();
+        private readonly Dictionary<string, bool> _boolProperties = new Dictionary<string, bool>();
+        private readonly Dictionary<string, float> _floatProperties = new Dictionary<string, float>();
         [StringLength(Constants.MaxStringLength)]
         private string _name = "New Entity";
         [StringLength(Constants.MaxStringLength)]
@@ -36,14 +35,15 @@ namespace VoiceCraft.Core
         private ulong _listenBitmask;
         private Vector3 _position;
         private Quaternion _rotation;
-        private readonly ConcurrentDictionary<EffectType, IAudioEffect> _effects = new ConcurrentDictionary<EffectType, IAudioEffect>();
 
         //Properties
         public int Id { get; }
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
-        public IEnumerable<KeyValuePair<EffectType, IAudioEffect>> Effects => _effects;
-        public ConcurrentDictionary<int, VoiceCraftEntity> VisibleEntities { get; } = new ConcurrentDictionary<int, VoiceCraftEntity>();
+        public IEnumerable<KeyValuePair<string, int>> IntProperties => _intProperties;
+        public IEnumerable<KeyValuePair<string, bool>> BoolProperties => _boolProperties;
+        public IEnumerable<KeyValuePair<string, float>> FloatProperties => _floatProperties;
+        public List<VoiceCraftNetworkEntity> VisibleEntities { get; } = new List<VoiceCraftNetworkEntity>();
 
         //Updatable Properties
         public string WorldId
@@ -119,36 +119,91 @@ namespace VoiceCraft.Core
             Id = id;
         }
 
-        public bool AddEffect(IAudioEffect effect)
+        public void SetProperty(string key, int value)
         {
-            if (!_effects.TryAdd(effect.EffectType, effect)) return false;
-            effect.OnEffectUpdated += EffectUpdated;
-            OnEffectAdded?.Invoke(effect, this);
-            return true;
+            if(key.Length > Constants.MaxStringLength)
+                throw new ArgumentException($"Key must be less than {Constants.MaxStringLength} characters long!", nameof(key));
+            
+            if (_intProperties.TryAdd(key, value))
+            {
+                OnIntPropertySet?.Invoke(key, value, this);
+                return;
+            }
+            
+            if(_intProperties[key] == value) return;
+            _intProperties[key] = value;
+            OnIntPropertyRemoved?.Invoke(key, value, this);
+        }
+        
+        public void SetProperty(string key, bool value)
+        {
+            if(key.Length > Constants.MaxStringLength)
+                throw new ArgumentException($"Key must be less than {Constants.MaxStringLength} characters long!", nameof(key));
+            
+            if (_boolProperties.TryAdd(key, value))
+            {
+                OnBoolPropertySet?.Invoke(key, value, this);
+                return;
+            }
+            
+            if(_boolProperties[key] == value) return;
+            _boolProperties[key] = value;
+            OnBoolPropertyRemoved?.Invoke(key, value, this);
+        }
+        
+        public void SetProperty(string key, float value)
+        {
+            if(key.Length > Constants.MaxStringLength)
+                throw new ArgumentException($"Key must be less than {Constants.MaxStringLength} characters long!", nameof(key));
+            
+            if (_floatProperties.TryAdd(key, value))
+            {
+                OnFloatPropertySet?.Invoke(key, value, this);
+                return;
+            }
+            
+            if(Math.Abs(_floatProperties[key] - value) < Constants.FloatingPointTolerance) return;
+            _floatProperties[key] = value;
+            OnFloatPropertyRemoved?.Invoke(key, value, this);
         }
 
-        public bool HasEffect<T>(EffectType effectType) where T : IAudioEffect
+        public int GetIntProperty(string key)
         {
-            if (!_effects.TryGetValue(effectType, out var effect)) return false;
-            return effect.GetType() == typeof(T);
+            if(!_intProperties.TryGetValue(key, out var value))
+                throw new Exception("Property was not found!");
+            return value;
+        }
+        
+        public bool GetBoolProperty(string key)
+        {
+            if(!_boolProperties.TryGetValue(key, out var value))
+                throw new Exception("Property was not found!");
+            return value;
+        }
+        
+        public float GetFloatProperty(string key)
+        {
+            if(!_floatProperties.TryGetValue(key, out var value))
+                throw new Exception("Property was not found!");
+            return value;
         }
 
-        public T GetEffect<T>(EffectType effectType) where T : IAudioEffect
+        public bool RemoveIntProperty(string key)
         {
-            _effects.TryGetValue(effectType, out var effect);
-            if (effect is T effectObject) return effectObject;
-            throw new Exception($"No effect of type {typeof(T).Name}");
+            return _intProperties.Remove(key);
         }
 
-        public bool RemoveEffect(EffectType effectType)
+        public bool RemoveBoolProperty(string key)
         {
-            if (!_effects.TryRemove(effectType, out var effect)) return false;
-            effect.OnEffectUpdated -= EffectUpdated;
-            OnEffectRemoved?.Invoke(effect, this);
-            return true;
+            return _boolProperties.Remove(key);
         }
 
-        public virtual void ReceiveAudio(byte[] buffer, uint timestamp)
+        public bool RemoveFloatProperty(string key)
+        {
+            return _floatProperties.Remove(key);
+        }
+
+        public void ReceiveAudio(byte[] buffer, uint timestamp)
         {
             LastSpoke = DateTime.UtcNow;
             OnAudioReceived?.Invoke(buffer, timestamp, this);
@@ -157,24 +212,7 @@ namespace VoiceCraft.Core
         public bool VisibleTo(VoiceCraftEntity entity)
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
-            var combinedBitmask = TalkBitmask & entity.ListenBitmask;
-            if (combinedBitmask == 0) return false;
-
-            foreach (var effect in _effects)
-            {
-                if(!(effect.Value is IVisible visibleEffect)) continue;
-                if (visibleEffect.VisibleTo(this, entity, combinedBitmask)) continue;
-                return false;
-            }
-
-            foreach (var effect in entity.Effects)
-            {
-                if (!(effect.Value is IVisible visibleEffect)) continue;
-                if (visibleEffect.VisibleTo(this, entity, combinedBitmask)) continue;
-                return false;
-            }
-            
-            return true;
+            return (TalkBitmask & entity.ListenBitmask) != 0; //Check talk and listen bitmask.
         }
 
         public void Serialize(NetDataWriter writer)
@@ -191,6 +229,27 @@ namespace VoiceCraft.Core
             writer.Put(Rotation.Y);
             writer.Put(Rotation.Z);
             writer.Put(Rotation.W);
+
+            writer.Put(_intProperties.Count);
+            foreach (var property in _intProperties)
+            {
+                writer.Put(property.Key);
+                writer.Put(property.Value);
+            }
+            
+            writer.Put(_boolProperties.Count);
+            foreach (var property in _boolProperties)
+            {
+                writer.Put(property.Key);
+                writer.Put(property.Value);
+            }
+            
+            writer.Put(_floatProperties.Count);
+            foreach (var property in _floatProperties)
+            {
+                writer.Put(property.Key);
+                writer.Put(property.Value);
+            }
         }
 
         public void Deserialize(NetDataReader reader)
@@ -212,6 +271,37 @@ namespace VoiceCraft.Core
             ListenBitmask = listenBitmask;
             Position = new Vector3(positionX, positionY, positionZ);
             Rotation = new Quaternion(rotationX, rotationY, rotationZ, rotationW);
+            
+            _intProperties.Clear();
+            _boolProperties.Clear();
+            _floatProperties.Clear();
+            
+            var intPropertiesCount = reader.GetInt();
+            for (var i = 0; i < intPropertiesCount; i++)
+            {
+                var key = reader.GetString();
+                var value = reader.GetInt();
+                
+                _intProperties.Add(key, value);
+            }
+            
+            var boolPropertiesCount = reader.GetInt();
+            for (var i = 0; i < boolPropertiesCount; i++)
+            {
+                var key = reader.GetString();
+                var value = reader.GetBool();
+                
+                _boolProperties.Add(key, value);
+            }
+            
+            var floatPropertiesCount = reader.GetInt();
+            for (var i = 0; i < floatPropertiesCount; i++)
+            {
+                var key = reader.GetString();
+                var value = reader.GetFloat();
+                
+                _floatProperties.Add(key, value);
+            }
         }
 
         public void Destroy()
@@ -219,11 +309,6 @@ namespace VoiceCraft.Core
             if (Destroyed) return;
             Destroyed = true;
             OnDestroyed?.Invoke(this);
-        }
-
-        private void EffectUpdated(IAudioEffect effect)
-        {
-            OnEffectUpdated?.Invoke(effect, this);
         }
     }
 }

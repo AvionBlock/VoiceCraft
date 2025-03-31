@@ -1,6 +1,5 @@
 using System.Numerics;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
 
@@ -33,10 +32,13 @@ namespace VoiceCraft.Server.Systems
             entity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
             entity.OnPositionUpdated += OnEntityPositionUpdated;
             entity.OnRotationUpdated += OnEntityRotationUpdated;
-            entity.OnEffectAdded += OnEntityEffectAdded;
-            entity.OnEffectUpdated += OnEntityEffectUpdated;
-            entity.OnEffectRemoved += OnEntityEffectRemoved;
             entity.OnAudioReceived += OnEntityAudioReceived;
+            entity.OnIntPropertySet += OnEntityIntPropertySet;
+            entity.OnBoolPropertySet += OnEntityBoolPropertySet;
+            entity.OnFloatPropertySet += OnEntityFloatPropertySet;
+            entity.OnIntPropertyRemoved += OnEntityIntPropertyRemoved;
+            entity.OnBoolPropertyRemoved += OnEntityBoolPropertyRemoved;
+            entity.OnFloatPropertyRemoved += OnEntityFloatPropertyRemoved;
         }
 
         private void OnEntityDestroyed(VoiceCraftEntity entity)
@@ -46,16 +48,19 @@ namespace VoiceCraft.Server.Systems
             entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
             entity.OnPositionUpdated -= OnEntityPositionUpdated;
             entity.OnRotationUpdated -= OnEntityRotationUpdated;
-            entity.OnEffectAdded -= OnEntityEffectAdded;
-            entity.OnEffectUpdated -= OnEntityEffectUpdated;
-            entity.OnEffectRemoved -= OnEntityEffectRemoved;
+            entity.OnIntPropertySet -= OnEntityIntPropertySet;
+            entity.OnBoolPropertySet -= OnEntityBoolPropertySet;
+            entity.OnFloatPropertySet -= OnEntityFloatPropertySet;
+            entity.OnIntPropertyRemoved -= OnEntityIntPropertyRemoved;
+            entity.OnBoolPropertyRemoved -= OnEntityBoolPropertyRemoved;
+            entity.OnFloatPropertyRemoved -= OnEntityFloatPropertyRemoved;
         }
         
         //Data
         private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new UpdateNamePacket(entity.Id, name);
+            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var packet = new SetNamePacket(entity.Id, name);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
@@ -64,8 +69,8 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityTalkBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new UpdateTalkBitmaskPacket(entity.Id, bitmask);
+            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var packet = new SetTalkBitmaskPacket(entity.Id, bitmask);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
@@ -74,8 +79,8 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityListenBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new UpdateListenBitmaskPacket(entity.Id, bitmask);
+            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
@@ -84,8 +89,8 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityPositionUpdated(Vector3 position, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new UpdatePositionPacket(entity.Id, position);
+            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var packet = new SetPositionPacket(entity.Id, position);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
@@ -94,39 +99,8 @@ namespace VoiceCraft.Server.Systems
         
         private void OnEntityRotationUpdated(Quaternion rotation, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new UpdateRotationPacket(entity.Id, rotation);
-            foreach (var networkEntity in networkEntities)
-            {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
-            }
-        }
-
-        //Effects
-        private void OnEntityEffectAdded(IAudioEffect effect, VoiceCraftEntity entity)
-        {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new SetEffectPacket(entity.Id, effect);
-            foreach (var networkEntity in networkEntities)
-            {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
-            }
-        }
-        
-        private void OnEntityEffectUpdated(IAudioEffect effect, VoiceCraftEntity entity)
-        {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>(); //Only send updates to visible entities.
-            var packet = new SetEffectPacket(entity.Id, effect);
-            foreach (var networkEntity in networkEntities)
-            {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
-            }
-        }
-        
-        private void OnEntityEffectRemoved(IAudioEffect effect, VoiceCraftEntity entity)
-        {
-            var networkEntities = entity.VisibleEntities.Values.OfType<VoiceCraftNetworkEntity>();
-            var packet = new RemoveEffectPacket(entity.Id, effect.EffectType);
+            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            var packet = new SetRotationPacket(entity.Id, rotation);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
@@ -137,12 +111,43 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
         {
             //Only send updates to visible entities.
-            var networkEntities = entity.VisibleEntities.Values.Where(x => x != entity).OfType<VoiceCraftNetworkEntity>();
+            var networkEntities = entity.VisibleEntities.Where(x => x != entity);
             var packet = new AudioPacket(entity.Id, data, data.Length, timestamp);
             foreach (var networkEntity in networkEntities)
             {
                 _networkSystem.SendPacket(networkEntity.NetPeer, packet);
             }
+        }
+        
+        //Properties
+        private void OnEntityIntPropertySet(string arg1, int arg2, VoiceCraftEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void OnEntityBoolPropertySet(string arg1, bool arg2, VoiceCraftEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void OnEntityFloatPropertySet(string arg1, float arg2, VoiceCraftEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void OnEntityIntPropertyRemoved(string arg1, int arg2, VoiceCraftEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void OnEntityBoolPropertyRemoved(string arg1, bool arg2, VoiceCraftEntity entity)
+        {
+            throw new NotImplementedException();
+        }
+        
+        private void OnEntityFloatPropertyRemoved(string arg1, float arg2, VoiceCraftEntity entity)
+        {
+            throw new NotImplementedException();
         }
     }
 }
