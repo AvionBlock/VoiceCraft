@@ -5,21 +5,21 @@ namespace VoiceCraft.Core.Network.Packets
     public class EntityDestroyedPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.EntityDestroyed;
-        public int NetworkId { get; private set; }
+        public int Id { get; private set; }
 
-        public EntityDestroyedPacket(int networkId = 0)
+        public EntityDestroyedPacket(int id = 0)
         {
-            NetworkId = networkId;
+            Id = id;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Id);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Id = reader.GetInt();
         }
     }
 }

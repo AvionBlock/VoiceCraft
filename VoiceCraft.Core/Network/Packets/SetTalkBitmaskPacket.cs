@@ -5,24 +5,24 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetTalkBitmaskPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetTalkBitmask;
-        public int NetworkId { get; set; }
+        public int Id { get; set; }
         public ulong Bitmask { get; set; }
 
-        public SetTalkBitmaskPacket(int networkId = 0, ulong bitmask = 0)
+        public SetTalkBitmaskPacket(int id = 0, ulong bitmask = 0)
         {
-            NetworkId = networkId;
+            Id = id;
             Bitmask = bitmask;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Id);
             writer.Put(Bitmask);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Id = reader.GetInt();
             Bitmask = reader.GetULong();
         }
     }

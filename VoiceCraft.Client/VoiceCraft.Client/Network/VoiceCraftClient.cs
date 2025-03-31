@@ -69,7 +69,7 @@ namespace VoiceCraft.Client.Network
 
         public bool Ping(string ip, uint port)
         {
-            var packet = new InfoPacket() { Tick = Environment.TickCount };
+            var packet = new InfoPacket(tick: Environment.TickCount);
             try
             {
                 NetworkSystem.SendUnconnectedPacket(ip, port, packet);
@@ -88,12 +88,7 @@ namespace VoiceCraft.Client.Network
                 throw new InvalidOperationException("This client is already connected or is connecting to a server!");
 
             DataWriter.Reset();
-            var loginPacket = new LoginPacket()
-            {
-                Version = Version.ToString(),
-                LoginType = loginType,
-                PositioningType = PositioningType.Server
-            };
+            var loginPacket = new LoginPacket(Version.ToString(), loginType);
             loginPacket.Serialize(DataWriter);
             var serverPeer = _netManager.Connect(ip, port, DataWriter);
             ServerPeer = serverPeer ?? throw new InvalidOperationException("A connection request is awaiting!");

@@ -32,6 +32,18 @@ namespace VoiceCraft.Server.Systems
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
         }
 
+        public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+        {
+            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
+            _dataWriter.Reset();
+            _dataWriter.Put((byte)packet.PacketType);
+            packet.Serialize(_dataWriter);
+            foreach (var networkEntity in networkEntities)
+            {
+                networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
+            }
+        }
+
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
@@ -145,6 +157,8 @@ namespace VoiceCraft.Server.Systems
                     // Will need to implement these for client sided mode later.
                     case PacketType.Info:
                     case PacketType.Login:
+                    case PacketType.SetEffect:
+                    case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
                     case PacketType.SetName:
@@ -152,8 +166,6 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetListenBitmask:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
-                    case PacketType.SetEffect:
-                    case PacketType.RemoveEffect:
                     case PacketType.SetIntProperty:
                     case PacketType.SetBoolProperty:
                     case PacketType.SetFloatProperty:
@@ -189,6 +201,8 @@ namespace VoiceCraft.Server.Systems
                     //Unused
                     case PacketType.Login:
                     case PacketType.Audio:
+                    case PacketType.SetEffect:
+                    case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
                     case PacketType.EntityDestroyed:
                     case PacketType.SetName:
@@ -196,8 +210,6 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetListenBitmask:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
-                    case PacketType.SetEffect:
-                    case PacketType.RemoveEffect:
                     case PacketType.SetIntProperty:
                     case PacketType.SetBoolProperty:
                     case PacketType.SetFloatProperty:
@@ -226,7 +238,7 @@ namespace VoiceCraft.Server.Systems
 
         private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
         {
-            if (!_world.Entities.TryGetValue(audioPacket.NetworkId, out var entity)) return;
+            if (!_world.Entities.TryGetValue(audioPacket.Id, out var entity)) return;
             if (entity is not VoiceCraftNetworkEntity networkEntity || !Equals(networkEntity.NetPeer, peer)) return;
             networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
         }

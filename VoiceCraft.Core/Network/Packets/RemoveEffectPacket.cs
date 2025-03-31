@@ -4,7 +4,7 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class RemoveEffectPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetEffect;
+        public override PacketType PacketType => PacketType.RemoveEffect;
         
         public byte Index { get; private set; }
 

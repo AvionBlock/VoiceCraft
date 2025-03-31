@@ -5,26 +5,26 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class RemoveFloatProperty : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.RemoveIntProperty;
-        public int NetworkId { get; private set; }
+        public override PacketType PacketType => PacketType.RemoveFloatProperty;
+        public int Id { get; private set; }
         [StringLength(Constants.MaxStringLength)]
         public string Key { get; private set; }
 
-        public RemoveFloatProperty(int networkId = 0, string key = "")
+        public RemoveFloatProperty(int id = 0, string key = "")
         {
-            NetworkId = networkId;
+            Id = id;
             Key = key;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Id);
             writer.Put(Key);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Id = reader.GetInt();
             Key = reader.GetString();
         }
     }

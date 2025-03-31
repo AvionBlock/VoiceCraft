@@ -59,51 +59,46 @@ namespace VoiceCraft.Server.Systems
         //Data
         private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             var packet = new SetNamePacket(entity.Id, name);
-            foreach (var networkEntity in networkEntities)
+            foreach (var visibleEntity in entity.VisibleEntities)
             {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
             }
         }
         
         private void OnEntityTalkBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             var packet = new SetTalkBitmaskPacket(entity.Id, bitmask);
-            foreach (var networkEntity in networkEntities)
+            foreach (var visibleEntity in entity.VisibleEntities)
             {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
             }
         }        
         
         private void OnEntityListenBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
-            foreach (var networkEntity in networkEntities)
+            foreach (var visibleEntity in entity.VisibleEntities)
             {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
             }
         }
         
         private void OnEntityPositionUpdated(Vector3 position, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             var packet = new SetPositionPacket(entity.Id, position);
-            foreach (var networkEntity in networkEntities)
+            foreach (var visibleEntity in entity.VisibleEntities)
             {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
             }
         }
         
         private void OnEntityRotationUpdated(Quaternion rotation, VoiceCraftEntity entity)
         {
-            var networkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             var packet = new SetRotationPacket(entity.Id, rotation);
-            foreach (var networkEntity in networkEntities)
+            foreach (var visibleEntity in entity.VisibleEntities)
             {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
             }
         }
         
@@ -111,43 +106,67 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
         {
             //Only send updates to visible entities.
-            var networkEntities = entity.VisibleEntities.Where(x => x != entity);
-            var packet = new AudioPacket(entity.Id, data, timestamp);
-            foreach (var networkEntity in networkEntities)
+            var visibleEntities = entity.VisibleEntities.Where(x => x != entity);
+            var packet = new AudioPacket(entity.Id, data, data.Length, timestamp);
+            foreach (var visibleEntity in visibleEntities)
             {
-                _networkSystem.SendPacket(networkEntity.NetPeer, packet);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
             }
         }
         
         //Properties
-        private void OnEntityIntPropertySet(string arg1, int arg2, VoiceCraftEntity entity)
+        private void OnEntityIntPropertySet(string key, int value, VoiceCraftEntity entity)
         {
-            throw new NotImplementedException();
+            var packet = new SetIntProperty(entity.Id, key, value);
+            foreach (var visibleEntity in entity.VisibleEntities)
+            {
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }
         }
         
-        private void OnEntityBoolPropertySet(string arg1, bool arg2, VoiceCraftEntity entity)
+        private void OnEntityBoolPropertySet(string key, bool value, VoiceCraftEntity entity)
         {
-            throw new NotImplementedException();
+            var packet = new SetBoolProperty(entity.Id, key, value);
+            foreach (var visibleEntity in entity.VisibleEntities)
+            {
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }
         }
         
-        private void OnEntityFloatPropertySet(string arg1, float arg2, VoiceCraftEntity entity)
+        private void OnEntityFloatPropertySet(string key, float value, VoiceCraftEntity entity)
         {
-            throw new NotImplementedException();
+            var packet = new SetFloatProperty(entity.Id, key, value);
+            foreach (var visibleEntity in entity.VisibleEntities)
+            {
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }
         }
         
-        private void OnEntityIntPropertyRemoved(string arg1, int arg2, VoiceCraftEntity entity)
+        private void OnEntityIntPropertyRemoved(string key, int value, VoiceCraftEntity entity)
         {
-            throw new NotImplementedException();
+            var packet = new RemoveIntProperty(entity.Id, key);
+            foreach (var visibleEntity in entity.VisibleEntities)
+            {
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }
         }
         
-        private void OnEntityBoolPropertyRemoved(string arg1, bool arg2, VoiceCraftEntity entity)
+        private void OnEntityBoolPropertyRemoved(string key, bool value, VoiceCraftEntity entity)
         {
-            throw new NotImplementedException();
+            var packet = new RemoveBoolProperty(entity.Id, key);
+            foreach (var visibleEntity in entity.VisibleEntities)
+            {
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }
         }
         
-        private void OnEntityFloatPropertyRemoved(string arg1, float arg2, VoiceCraftEntity entity)
+        private void OnEntityFloatPropertyRemoved(string key, float value, VoiceCraftEntity entity)
         {
-            throw new NotImplementedException();
+            var packet = new RemoveFloatProperty(entity.Id, key);
+            foreach (var visibleEntity in entity.VisibleEntities)
+            {
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }
         }
     }
 }

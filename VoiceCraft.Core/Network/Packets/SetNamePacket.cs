@@ -7,25 +7,25 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.SetName;
         [StringLength(Constants.MaxStringLength)]
-        public int NetworkId { get; private set; }
+        public int Id { get; private set; }
         public string Name { get; private set; }
         
 
-        public SetNamePacket(int networkId = 0, string name = "")
+        public SetNamePacket(int id = 0, string name = "")
         {
-            NetworkId = networkId;
+            Id = id;
             Name = name;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Id);
             writer.Put(Name);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Id = reader.GetInt();
             Name = reader.GetString();
         }
     }

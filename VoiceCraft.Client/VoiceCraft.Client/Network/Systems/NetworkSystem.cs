@@ -80,7 +80,7 @@ namespace VoiceCraft.Client.Network.Systems
                 switch (pt)
                 {
                     case PacketType.Audio:
-                        var audioPacket = new AudioPacket(0, [], 0, 0);
+                        var audioPacket = new AudioPacket();
                         audioPacket.Deserialize(reader);
                         HandleAudioPacket(audioPacket);
                         break;
@@ -90,19 +90,25 @@ namespace VoiceCraft.Client.Network.Systems
                         HandleEntityCreatedPacket(entityCreatedPacket, reader);
                         break;
                     case PacketType.EntityDestroyed:
-                        var entityDestroyedPacket = new EntityDestroyedPacket(0);
+                        var entityDestroyedPacket = new EntityDestroyedPacket();
                         entityDestroyedPacket.Deserialize(reader);
                         HandleEntityDestroyedPacket(entityDestroyedPacket);
                         break;
                     case PacketType.Info:
                     case PacketType.Login:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
-                    case PacketType.SetTalkBitmask:
-                    case PacketType.SetListenBitmask:
-                    case PacketType.SetName:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
+                    case PacketType.SetName:
+                    case PacketType.SetTalkBitmask:
+                    case PacketType.SetListenBitmask:
+                    case PacketType.SetPosition:
+                    case PacketType.SetRotation:
+                    case PacketType.SetIntProperty:
+                    case PacketType.SetBoolProperty:
+                    case PacketType.SetFloatProperty:
+                    case PacketType.RemoveIntProperty:
+                    case PacketType.RemoveBoolProperty:
+                    case PacketType.RemoveFloatProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -132,15 +138,21 @@ namespace VoiceCraft.Client.Network.Systems
                     //Unused
                     case PacketType.Login:
                     case PacketType.Audio:
-                    case PacketType.EntityCreated:
-                    case PacketType.EntityDestroyed:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
-                    case PacketType.SetTalkBitmask:
-                    case PacketType.SetListenBitmask:
-                    case PacketType.SetName:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
+                    case PacketType.EntityCreated:
+                    case PacketType.EntityDestroyed:
+                    case PacketType.SetName:
+                    case PacketType.SetTalkBitmask:
+                    case PacketType.SetListenBitmask:
+                    case PacketType.SetPosition:
+                    case PacketType.SetRotation:
+                    case PacketType.SetIntProperty:
+                    case PacketType.SetBoolProperty:
+                    case PacketType.SetFloatProperty:
+                    case PacketType.RemoveIntProperty:
+                    case PacketType.RemoveBoolProperty:
+                    case PacketType.RemoveFloatProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -163,8 +175,8 @@ namespace VoiceCraft.Client.Network.Systems
         {
             try
             {
-                if (_world.Entities.ContainsKey(packet.NetworkId)) return;
-                var entity = new VoiceCraftEntity(packet.NetworkId);
+                if (_world.Entities.ContainsKey(packet.Id)) return;
+                var entity = new VoiceCraftEntity(packet.Id);
                 entity.Deserialize(reader); //Deserialize entity.
                 _world.AddEntity(entity); //Could crash the application, this shouldn't happen though.
             }
@@ -176,12 +188,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
         {
-            _world.DestroyEntity(packet.NetworkId); //Won't crash.
+            _world.DestroyEntity(packet.Id); //Won't crash.
         }
 
         private void HandleAudioPacket(AudioPacket packet)
         {
-            if (!_world.Entities.TryGetValue(packet.NetworkId, out var entity)) return;
+            if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
             entity.ReceiveAudio(packet.Data, packet.Timestamp);
         }
     }

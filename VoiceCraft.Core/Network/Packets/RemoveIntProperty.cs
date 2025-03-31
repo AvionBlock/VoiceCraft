@@ -6,25 +6,25 @@ namespace VoiceCraft.Core.Network.Packets
     public class RemoveIntProperty : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.RemoveIntProperty;
-        public int NetworkId { get; private set; }
+        public int Id { get; private set; }
         [StringLength(Constants.MaxStringLength)]
         public string Key { get; private set; }
 
-        public RemoveIntProperty(int networkId = 0, string key = "")
+        public RemoveIntProperty(int id = 0, string key = "")
         {
-            NetworkId = networkId;
+            Id = id;
             Key = key;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Id);
             writer.Put(Key);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Id = reader.GetInt();
             Key = reader.GetString();
         }
     }

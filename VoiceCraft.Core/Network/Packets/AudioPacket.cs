@@ -6,28 +6,30 @@ namespace VoiceCraft.Core.Network.Packets
     public class AudioPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Audio;
-        public int NetworkId { get; private set; }
+        public int Id { get; private set; }
         public uint Timestamp { get; private set; }
+        public int Length { get; private set; }
         public byte[] Data { get; private set; }
         
-        public AudioPacket(int networkId = 0, byte[]? data = null, uint timestamp = 0)
+        public AudioPacket(int id = 0, byte[]? data = null, int length = 0, uint timestamp = 0)
         {
-            NetworkId = networkId;
+            Id = id;
             Data = data ?? Array.Empty<byte>();
+            Length = length;
             Timestamp = timestamp;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
+            writer.Put(Id);
             writer.Put(Timestamp);
-            writer.Put(Data.Length);
-            writer.Put(Data);
+            writer.Put(Length);
+            writer.Put(Data, 0, Length);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
+            Id = reader.GetInt();
             Timestamp = reader.GetUInt();
             var length = reader.GetInt();
             //Fuck no. we aren't allocating anything higher than the expected amount of bytes (WHICH SHOULD BE COMPRESSED!).
