@@ -14,8 +14,9 @@ namespace VoiceCraft.Server.Application
         public VoiceCraftConfig Config { get; set; }
         public EventBasedNetListener Listener { get; }
         public VoiceCraftWorld World { get; } = new();
-        public WorldSystem WorldSystem { get; }
         public NetworkSystem NetworkSystem { get; }
+        public AudioEffectSystem AudioEffectSystem { get; }
+        private readonly WorldSystem _worldSystem;
         private readonly VisibilitySystem _visibilitySystem;
         private readonly EntityEventsSystem _entityEventsSystem;
         private readonly NetManager _netManager;
@@ -31,8 +32,10 @@ namespace VoiceCraft.Server.Application
                 UnconnectedMessagesEnabled = true
             };
 
-            WorldSystem = new WorldSystem(this);
+            //Has to be initialized in this order otherwise shit falls apart.
+            _worldSystem = new WorldSystem(this);
             NetworkSystem = new NetworkSystem(this, _netManager);
+            AudioEffectSystem = new AudioEffectSystem(this);
             _visibilitySystem = new VisibilitySystem(this);
             _entityEventsSystem = new EntityEventsSystem(this);
         }
@@ -72,7 +75,7 @@ namespace VoiceCraft.Server.Application
             {
                 _netManager.Stop();
                 World.Dispose();
-                WorldSystem.Dispose();
+                _worldSystem.Dispose();
                 NetworkSystem.Dispose();
                 _entityEventsSystem.Dispose();
             }

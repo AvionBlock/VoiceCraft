@@ -8,6 +8,8 @@ namespace VoiceCraft.Server.Systems
     {
         public event Action<IAudioEffect>? OnEffectSet;
         public event Action<IAudioEffect>? OnEffectRemoved;
+
+        public IEnumerable<IAudioEffect?> Effects => _audioEffects;
         
         private readonly IAudioEffect?[] _audioEffects = new IAudioEffect?[byte.MaxValue]; //Can only have 256 effects
         private readonly NetworkSystem _networkSystem = server.NetworkSystem;
