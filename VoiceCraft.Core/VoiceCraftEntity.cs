@@ -167,24 +167,24 @@ namespace VoiceCraft.Core
             OnFloatPropertyRemoved?.Invoke(key, value, this);
         }
 
-        public int GetIntProperty(string key)
+        public int? GetIntProperty(string key)
         {
-            if(!_intProperties.TryGetValue(key, out var value))
-                throw new Exception("Property was not found!");
+            if (!_intProperties.TryGetValue(key, out var value))
+                return null;
             return value;
         }
         
-        public bool GetBoolProperty(string key)
+        public bool? GetBoolProperty(string key)
         {
-            if(!_boolProperties.TryGetValue(key, out var value))
-                throw new Exception("Property was not found!");
+            if (!_boolProperties.TryGetValue(key, out var value))
+                return null;
             return value;
         }
         
-        public float GetFloatProperty(string key)
+        public float? GetFloatProperty(string key)
         {
-            if(!_floatProperties.TryGetValue(key, out var value))
-                throw new Exception("Property was not found!");
+            if (!_floatProperties.TryGetValue(key, out var value))
+                return null;
             return value;
         }
 

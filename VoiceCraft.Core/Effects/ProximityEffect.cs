@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
@@ -9,8 +10,8 @@ namespace VoiceCraft.Core.Effects
     {
         public EffectType EffectType => EffectType.Proximity;
         public ulong Bitmask { get; private set; }
-        public uint MinRange { get; private set; }
-        public uint MaxRange { get; private set; }
+        public int MinRange { get; private set; }
+        public int MaxRange { get; private set; }
 
         public void Serialize(NetDataWriter writer)
         {
@@ -23,8 +24,8 @@ namespace VoiceCraft.Core.Effects
         {
             //Do this first before actually assigning the data.
             var bitmask = reader.GetULong();
-            var minRange = reader.GetUInt();
-            var maxRange = reader.GetUInt();
+            var minRange = reader.GetInt();
+            var maxRange = reader.GetInt();
             
             Bitmask = bitmask;
             MinRange = minRange;
@@ -35,7 +36,10 @@ namespace VoiceCraft.Core.Effects
         {
             if ((bitmask & Bitmask) == 0) return true; //Disabled, Is visible.
             var distance = Vector3.Distance(fromEntity.Position, toEntity.Position);
-            var maxRange = MaxRange; //Need to do a check for entity states.
+            var maxRange = MaxRange;
+            //Checks for entity states that override the default value.
+            maxRange = Math.Max(maxRange, fromEntity.GetIntProperty($"{GetType().Name}:{nameof(MaxRange)}") ?? 0);
+            maxRange = Math.Max(maxRange, toEntity.GetIntProperty($"{GetType().Name}:{nameof(MaxRange)}") ?? 0);
             
             return distance <= maxRange;
         }
