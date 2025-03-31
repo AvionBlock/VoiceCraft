@@ -7,11 +7,11 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.SetName;
         [StringLength(Constants.MaxStringLength)]
-        public int NetworkId { get; set; }
-        public string Name { get; set; }
+        public int NetworkId { get; private set; }
+        public string Name { get; private set; }
         
 
-        public SetNamePacket(int networkId, string name)
+        public SetNamePacket(int networkId = 0, string name = "")
         {
             NetworkId = networkId;
             Name = name;

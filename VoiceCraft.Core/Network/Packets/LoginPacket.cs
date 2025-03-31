@@ -11,7 +11,7 @@ namespace VoiceCraft.Core.Network.Packets
         public LoginType LoginType { get; private set; }
         public PositioningType PositioningType { get; private set; }
 
-        public LoginPacket(string version, LoginType loginType, PositioningType positioningType)
+        public LoginPacket(string version = "", LoginType loginType = LoginType.Login, PositioningType positioningType = PositioningType.Server)
         {
             Version = version;
             LoginType = loginType;

@@ -5,10 +5,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetListenBitmaskPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetListenBitmask;
-        public int NetworkId { get; set; }
-        public ulong Bitmask { get; set; }
+        public int NetworkId { get; private set; }
+        public ulong Bitmask { get; private set; }
 
-        public SetListenBitmaskPacket(int networkId, ulong bitmask)
+        public SetListenBitmaskPacket(int networkId = 0, ulong bitmask = 0)
         {
             NetworkId = networkId;
             Bitmask = bitmask;

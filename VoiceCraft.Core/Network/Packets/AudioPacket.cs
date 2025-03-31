@@ -10,10 +10,10 @@ namespace VoiceCraft.Core.Network.Packets
         public uint Timestamp { get; private set; }
         public byte[] Data { get; private set; }
         
-        public AudioPacket(int networkId, byte[] data, uint timestamp)
+        public AudioPacket(int networkId = 0, byte[]? data = null, uint timestamp = 0)
         {
             NetworkId = networkId;
-            Data = data;
+            Data = data ?? Array.Empty<byte>();
             Timestamp = timestamp;
         }
         

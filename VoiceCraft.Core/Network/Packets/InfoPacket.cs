@@ -13,7 +13,7 @@ namespace VoiceCraft.Core.Network.Packets
         public PositioningType PositioningType { get; private set; }
         public int Tick { get; private set; }
 
-        public InfoPacket(string motd, int clients, bool discovery, PositioningType positioningType, int tick)
+        public InfoPacket(string motd = "", int clients = 0, bool discovery = false, PositioningType positioningType = PositioningType.Server, int tick = 0)
         {
             Motd = motd;
             Clients = clients;

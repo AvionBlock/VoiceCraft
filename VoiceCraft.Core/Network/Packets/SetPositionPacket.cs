@@ -6,10 +6,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetPositionPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetPosition;
-        public int NetworkId { get; set; }
-        public Vector3 Position { get; set; }
+        public int NetworkId { get; private set; }
+        public Vector3 Position { get; private set; }
 
-        public SetPositionPacket(int networkId, Vector3 position)
+        public SetPositionPacket(int networkId = 0, Vector3 position = new Vector3())
         {
             NetworkId = networkId;
             Position = position;

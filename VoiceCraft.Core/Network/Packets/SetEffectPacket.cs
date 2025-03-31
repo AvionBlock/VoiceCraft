@@ -11,7 +11,7 @@ namespace VoiceCraft.Core.Network.Packets
         public EffectType EffectType { get; private set; }
         public IAudioEffect? Effect { get; private set; }
 
-        public SetEffectPacket(byte index, IAudioEffect? effect)
+        public SetEffectPacket(byte index = 0, IAudioEffect? effect = null)
         {
             Index = index;
             EffectType = effect?.EffectType ?? EffectType.Unknown;

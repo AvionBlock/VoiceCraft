@@ -6,10 +6,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetRotationPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetRotation;
-        public int NetworkId { get; set; }
-        public Quaternion Rotation { get; set; }
+        public int NetworkId { get; private set; }
+        public Quaternion Rotation { get; private set; }
 
-        public SetRotationPacket(int networkId, Quaternion rotation)
+        public SetRotationPacket(int networkId = 0, Quaternion rotation = new Quaternion())
         {
             NetworkId = networkId;
             Rotation = rotation;

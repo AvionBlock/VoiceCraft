@@ -138,7 +138,7 @@ namespace VoiceCraft.Server.Systems
                 switch (pt)
                 {
                     case PacketType.Audio:
-                        var audioPacket = new AudioPacket(0, [], 0, 0);
+                        var audioPacket = new AudioPacket();
                         audioPacket.Deserialize(reader);
                         HandleAudioPacket(audioPacket, peer);
                         break;
@@ -208,11 +208,8 @@ namespace VoiceCraft.Server.Systems
         //Packet Handling
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteendpoint)
         {
-            infoPacket.Clients = _netManager.ConnectedPeersCount;
-            infoPacket.Discovery = _config.Discovery;
-            infoPacket.PositioningType = _config.PositioningType;
-            infoPacket.Motd = _config.Motd;
-            SendUnconnectedPacket(remoteendpoint, infoPacket);
+            var packet = new InfoPacket(_config.Motd,_netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);
+            SendUnconnectedPacket(remoteendpoint, packet);
         }
 
         private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)

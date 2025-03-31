@@ -6,25 +6,21 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.SetEffect;
         
-        public int NetworkId { get; private set; }
-        public EffectType EffectType { get; private set; }
+        public byte Index { get; private set; }
 
-        public RemoveEffectPacket(int networkId, EffectType effectType)
+        public RemoveEffectPacket(byte index = 0)
         {
-            NetworkId = networkId;
-            EffectType = effectType;
+            Index = index;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(NetworkId);
-            writer.Put((byte)EffectType);
+            writer.Put(Index);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            NetworkId = reader.GetInt();
-            EffectType = (EffectType)reader.GetByte();
+            Index = reader.GetByte();
         }
     }
 }

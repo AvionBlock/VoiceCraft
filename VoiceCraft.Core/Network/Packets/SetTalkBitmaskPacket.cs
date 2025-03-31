@@ -8,7 +8,7 @@ namespace VoiceCraft.Core.Network.Packets
         public int NetworkId { get; set; }
         public ulong Bitmask { get; set; }
 
-        public SetTalkBitmaskPacket(int networkId, ulong bitmask)
+        public SetTalkBitmaskPacket(int networkId = 0, ulong bitmask = 0)
         {
             NetworkId = networkId;
             Bitmask = bitmask;

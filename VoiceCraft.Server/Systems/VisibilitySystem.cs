@@ -49,7 +49,7 @@ namespace VoiceCraft.Server.Systems
 
         private void SendEntityCreated(VoiceCraftEntity entity, VoiceCraftNetworkEntity targetEntity)
         {
-            var entityCreatedPacket = new EntityCreatedPacket(entity);
+            var entityCreatedPacket = new EntityCreatedPacket(entity.Id, entity);
             _networkSystem.SendPacket(targetEntity.NetPeer, entityCreatedPacket);
         }
 
