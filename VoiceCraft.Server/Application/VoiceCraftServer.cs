@@ -55,6 +55,7 @@ namespace VoiceCraft.Server.Application
         {
             _netManager.PollEvents();
             _visibilitySystem.Update();
+            _entityEventsSystem.Update();
         }
 
         public void Stop()
