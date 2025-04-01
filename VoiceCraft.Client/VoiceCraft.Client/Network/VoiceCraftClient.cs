@@ -35,6 +35,7 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _senderBuffer = new byte[Constants.BytesPerFrame];
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private readonly BufferedWaveProvider _sendBuffer = new(WaveFormat) { DiscardOnBufferOverflow = true};
+        
         private uint _timestamp;
         private bool _isDisposed;
 
@@ -112,8 +113,8 @@ namespace VoiceCraft.Client.Network
             {
                 Array.Clear(_senderBuffer);
                 var read = _sendBuffer.Read(_senderBuffer, 0, _senderBuffer.Length);
-                var encoded = _encoder.Encode(_senderBuffer, read, _encodeBuffer, _encodeBuffer.Length);
-                var packet = new AudioPacket(ServerPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, encoded, _senderBuffer);
+                var encoded = _encoder.Encode(_senderBuffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
+                var packet = new AudioPacket(ServerPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, (ushort)encoded, _senderBuffer);
                 NetworkSystem.SendPacket(packet);
             }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using OpusSharp.Core;
 using SpeexDSPSharp.Core;
 using SpeexDSPSharp.Core.Structures;
@@ -64,7 +65,7 @@ namespace VoiceCraft.Client.Network.Systems
             private readonly VoiceCraftEntity _entity;
             private readonly SpeexDSPJitterBuffer _buffer;
             private readonly OpusDecoder _decoder;
-            private readonly byte[] _bufferData = new byte[Constants.MaximumEncodedBytes];
+            private readonly byte[] _decodeData = new byte[Constants.MaximumEncodedBytes];
 
             public EntityJitterBuffer(VoiceCraftEntity entity)
             {
@@ -79,7 +80,7 @@ namespace VoiceCraft.Client.Network.Systems
                 if(buffer.Length < Constants.BytesPerFrame)
                     throw new InvalidOperationException("Buffer is too small!");
 
-                var outPacket = new SpeexDSPJitterBufferPacket(_bufferData, (uint)buffer.Length);
+                var outPacket = new SpeexDSPJitterBufferPacket(_decodeData, (uint)_decodeData.Length);
                 var startOffset = 0;
                 if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
                 {
@@ -87,7 +88,7 @@ namespace VoiceCraft.Client.Network.Systems
                 }
                 else
                 {
-                    _decoder.Decode(_bufferData, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
+                    _decoder.Decode(_decodeData, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
                 }
                 
                 _buffer.Tick();
@@ -95,14 +96,22 @@ namespace VoiceCraft.Client.Network.Systems
             
             private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
             {
-                var inPacket = new SpeexDSPJitterBufferPacket(data, (uint)data.Length)
+                try
                 {
-                    sequence = 0, //Don't care about the sequence.
-                    span = Constants.SamplesPerFrame,
-                    timestamp = timestamp
-                };
-                
-                _buffer.Put(ref inPacket);
+                    var decoded = new byte[Constants.BytesPerFrame];
+                    _decoder.Decode(data, data.Length, decoded, Constants.SamplesPerFrame, false);
+                    var inPacket = new SpeexDSPJitterBufferPacket(decoded, (uint)decoded.Length)
+                    {
+                        sequence = 0, //Don't care about the sequence.
+                        span = Constants.SamplesPerFrame,
+                        timestamp = timestamp
+                    };
+                    _buffer.Put(ref inPacket);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
             }
 
             public void Dispose()
