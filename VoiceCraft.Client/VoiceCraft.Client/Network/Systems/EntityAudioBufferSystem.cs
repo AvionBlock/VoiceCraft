@@ -22,9 +22,16 @@ namespace VoiceCraft.Client.Network.Systems
 
         public bool GetNextFrame(VoiceCraftEntity entity, byte[] buffer)
         {
-            if (!_entityJitterBuffers.TryGetValue(entity, out var jitterBuffer)) return false;
-            jitterBuffer.Get(buffer);
-            return true;
+            try
+            {
+                if (!_entityJitterBuffers.TryGetValue(entity, out var jitterBuffer)) return false;
+                jitterBuffer.Get(buffer);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void OnEntityCreated(VoiceCraftEntity entity)
@@ -74,7 +81,7 @@ namespace VoiceCraft.Client.Network.Systems
 
                 var outPacket = new SpeexDSPJitterBufferPacket(_bufferData, (uint)buffer.Length);
                 var startOffset = 0;
-                if (_buffer.Get(ref outPacket, Constants.BytesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
+                if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
                 {
                     _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
                 }

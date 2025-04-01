@@ -1,3 +1,4 @@
+using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
@@ -43,7 +44,7 @@ namespace VoiceCraft.Server.Systems
 
         private void OnEntityDestroyed(VoiceCraftEntity removedEntity)
         {
-            if (removedEntity is VoiceCraftNetworkEntity removedNetworkentity)
+            if (removedEntity is VoiceCraftNetworkEntity { NetPeer.ConnectionState: ConnectionState.Connected } removedNetworkentity)
             {
                 removedNetworkentity.NetPeer.Disconnect(); //Disconnect if it's a client entity.
             }

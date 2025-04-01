@@ -176,9 +176,7 @@ namespace VoiceCraft.Client.Network.Systems
             try
             {
                 if (_world.Entities.ContainsKey(packet.Id)) return;
-                var entity = new VoiceCraftEntity(packet.Id);
-                entity.Deserialize(reader); //Deserialize entity.
-                _world.AddEntity(entity); //Could crash the application, this shouldn't happen though.
+                _world.AddEntity(packet.Entity); //Could crash the application, this shouldn't happen though.
             }
             catch (Exception ex)
             {
@@ -194,6 +192,7 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleAudioPacket(AudioPacket packet)
         {
             if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
+            Debug.WriteLine($"Received audio packet: Length: {packet.Length}, Timestamp: {packet.Timestamp}");
             entity.ReceiveAudio(packet.Data, packet.Timestamp);
         }
     }

@@ -11,12 +11,12 @@ namespace VoiceCraft.Core.Network.Packets
         public int Length { get; private set; }
         public byte[] Data { get; private set; }
         
-        public AudioPacket(int id = 0, byte[]? data = null, int length = 0, uint timestamp = 0)
+        public AudioPacket(int id = 0, uint timestamp = 0, int length = 0, byte[]? data = null)
         {
             Id = id;
-            Data = data ?? Array.Empty<byte>();
-            Length = length;
             Timestamp = timestamp;
+            Length = length;
+            Data = data ?? Array.Empty<byte>();
         }
         
         public override void Serialize(NetDataWriter writer)
@@ -31,12 +31,12 @@ namespace VoiceCraft.Core.Network.Packets
         {
             Id = reader.GetInt();
             Timestamp = reader.GetUInt();
-            var length = reader.GetInt();
+            Length = reader.GetInt();
             //Fuck no. we aren't allocating anything higher than the expected amount of bytes (WHICH SHOULD BE COMPRESSED!).
-            if (length > Constants.MaximumEncodedBytes)
-                throw new InvalidOperationException("Array length exceeds maximum number of bytes per packet!");
-            Data = new byte[length];
-            reader.GetBytes(Data, length);
+            if (Length > Constants.MaximumEncodedBytes)
+                throw new InvalidOperationException($"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
+            Data = new byte[Length];
+            reader.GetBytes(Data, Length);
         }
     }
 }

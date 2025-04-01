@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 

@@ -34,13 +34,16 @@ namespace VoiceCraft.Server.Systems
 
         public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
-            var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            foreach (var networkEntity in networkEntities)
+            lock (_dataWriter)
             {
-                networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
+                var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                foreach (var networkEntity in networkEntities)
+                {
+                    networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
+                }
             }
         }
 
@@ -48,39 +51,48 @@ namespace VoiceCraft.Server.Systems
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
 
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            peer.Send(_dataWriter, deliveryMethod);
-            return true;
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                peer.Send(_dataWriter, deliveryMethod);
+                return true;
+            }
         }
 
         public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            
-            var status = true;
-            foreach (var peer in peers)
+            lock (_dataWriter)
             {
-                if (peer.ConnectionState != ConnectionState.Connected)
-                {
-                    status = false;
-                    continue;
-                }
-                peer.Send(_dataWriter, deliveryMethod);
-            }
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
 
-            return status;
+                var status = true;
+                foreach (var peer in peers)
+                {
+                    if (peer.ConnectionState != ConnectionState.Connected)
+                    {
+                        status = false;
+                        continue;
+                    }
+
+                    peer.Send(_dataWriter, deliveryMethod);
+                }
+                return status;
+            }
         }
         
         public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
         {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+            }
         }
         
         public void Dispose()

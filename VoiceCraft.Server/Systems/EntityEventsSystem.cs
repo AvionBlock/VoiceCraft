@@ -138,7 +138,7 @@ namespace VoiceCraft.Server.Systems
             {
                 //Only send updates to visible entities.
                 var visibleEntities = entity.VisibleEntities.Where(x => x != entity);
-                var packet = new AudioPacket(entity.Id, data, data.Length, timestamp);
+                var packet = new AudioPacket(entity.Id, timestamp, data.Length, data);
                 foreach (var visibleEntity in visibleEntities)
                 {
                     _networkSystem.SendPacket(visibleEntity.NetPeer, packet);

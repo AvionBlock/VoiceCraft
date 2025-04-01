@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -83,7 +82,6 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _muted;
         private bool _deafened;
-        private int _tick1 = Environment.TickCount;
 
         public void Start()
         {
@@ -103,6 +101,10 @@ namespace VoiceCraft.Client.Processes
                 _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioRecorder.DataAvailable += DataAvailable;
                 _audioRecorder.StartRecording();
+                
+                _audioPlayer = audioService.CreateAudioPlayer();
+                _audioPlayer.Init(_voiceCraftClient.ReceiveBuffer);
+                _audioPlayer.Play();
 
                 Title = Locales.Locales.VoiceCraft_Status_Title;
                 Description = Locales.Locales.VoiceCraft_Status_Connecting;
@@ -122,12 +124,15 @@ namespace VoiceCraft.Client.Processes
                 if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
                     _voiceCraftClient.Disconnect();
 
+                _audioRecorder.DataAvailable -= DataAvailable;
                 _voiceCraftClient.OnConnected -= ClientOnConnected;
                 _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
+                _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
+                _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
             }
             catch
             {
-                IsStarted = true;
+                IsStarted = false; //I don't know why I left this as true.
                 throw;
             }
         }
@@ -196,8 +201,6 @@ namespace VoiceCraft.Client.Processes
         
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
-            Debug.WriteLine(Environment.TickCount - _tick1);
-            _tick1 = Environment.TickCount;
             _voiceCraftClient.Write(e.Buffer, 0, e.BytesRecorded);
         }
     }

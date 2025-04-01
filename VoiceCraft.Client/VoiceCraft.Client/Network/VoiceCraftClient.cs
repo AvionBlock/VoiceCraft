@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -29,13 +28,13 @@ namespace VoiceCraft.Client.Network
         public VoiceCraftWorld World { get; } = new();
         public NetworkSystem NetworkSystem { get; }
         public EntityAudioBufferSystem AudioBufferSystem { get; }
+        public BufferedWaveProvider ReceiveBuffer { get; } = new(WaveFormat) { ReadFully = true, DiscardOnBufferOverflow = true };
         
         private readonly NetManager _netManager;
         private readonly OpusEncoder _encoder = new(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         private readonly byte[] _senderBuffer = new byte[Constants.BytesPerFrame];
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private readonly BufferedWaveProvider _sendBuffer = new(WaveFormat) { DiscardOnBufferOverflow = true};
-        private readonly BufferedWaveProvider _recvBuffer = new(WaveFormat) { ReadFully = true, DiscardOnBufferOverflow = true };
         private uint _timestamp;
         private bool _isDisposed;
 
@@ -114,14 +113,15 @@ namespace VoiceCraft.Client.Network
                 Array.Clear(_senderBuffer);
                 var read = _sendBuffer.Read(_senderBuffer, 0, _senderBuffer.Length);
                 var encoded = _encoder.Encode(_senderBuffer, read, _encodeBuffer, _encodeBuffer.Length);
-                var packet = new AudioPacket(ServerPeer.RemoteId, _senderBuffer, encoded, _timestamp += Constants.SamplesPerFrame);
+                var packet = new AudioPacket(ServerPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, encoded, _senderBuffer);
                 NetworkSystem.SendPacket(packet);
             }
 
             foreach (var entity in World.Entities)
             {
                 var buffer = new byte[Constants.BytesPerFrame];
-                AudioBufferSystem.GetNextFrame(entity.Value, buffer);
+                if(AudioBufferSystem.GetNextFrame(entity.Value, buffer))
+                    ReceiveBuffer.AddSamples(buffer, 0, buffer.Length);
             }
         }
 
@@ -138,7 +138,7 @@ namespace VoiceCraft.Client.Network
 
         public void Read(byte[] buffer, int offset, int count)
         {
-            _recvBuffer.Read(buffer, offset, count);
+            ReceiveBuffer.Read(buffer, offset, count);
         }
 
         #region Dispose
