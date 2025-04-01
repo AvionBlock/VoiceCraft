@@ -69,7 +69,7 @@ namespace VoiceCraft.Client.Network.Systems
 
             public void Get(byte[] buffer)
             {
-                if(buffer.Length <= Constants.BytesPerFrame)
+                if(buffer.Length < Constants.BytesPerFrame)
                     throw new InvalidOperationException("Buffer is too small!");
 
                 var outPacket = new SpeexDSPJitterBufferPacket(_bufferData, (uint)buffer.Length);

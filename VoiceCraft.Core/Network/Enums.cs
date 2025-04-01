@@ -9,7 +9,8 @@ namespace VoiceCraft.Core.Network
     public enum LoginType : byte
     {
         Login,
-        Discovery
+        Discovery,
+        Unknown
     }
 
     public enum PacketType : byte

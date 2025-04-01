@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using NAudio.Wave;
@@ -60,7 +62,7 @@ namespace VoiceCraft.Client.Network
                 if (!Equals(peer, ServerPeer)) return;
                 try
                 {
-                    var reason = !info.AdditionalData.IsNull ? info.AdditionalData.GetString() : info.Reason.ToString();
+                    var reason = !info.AdditionalData.IsNull ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan()) : info.Reason.ToString();
                     OnDisconnected?.Invoke(reason);
                 }
                 catch
@@ -125,7 +127,7 @@ namespace VoiceCraft.Client.Network
 
         public void Disconnect()
         {
-            ThrowIfDisposed();
+            if (_isDisposed || ConnectionState == ConnectionState.Disconnected) return;
             _netManager.DisconnectAll();
         }
 

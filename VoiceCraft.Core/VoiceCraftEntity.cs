@@ -31,8 +31,8 @@ namespace VoiceCraft.Core
         private string _name = "New Entity";
         [StringLength(Constants.MaxStringLength)]
         private string _worldId = string.Empty;
-        private ulong _talkBitmask;
-        private ulong _listenBitmask;
+        private ulong _talkBitmask = 1;
+        private ulong _listenBitmask = 1;
         private Vector3 _position;
         private Quaternion _rotation;
 

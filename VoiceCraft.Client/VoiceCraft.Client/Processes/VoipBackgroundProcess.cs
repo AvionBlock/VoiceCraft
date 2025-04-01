@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Services.Interfaces;
+using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 
@@ -18,12 +20,6 @@ namespace VoiceCraft.Client.Processes
     public class VoipBackgroundProcess(string ip, int port, NotificationService notificationService, AudioService audioService)
         : IBackgroundProcess
     {
-        private string _title = string.Empty;
-        private string _description = string.Empty;
-        private bool _muted;
-        private bool _deafened;
-        private int _tick1 = Environment.TickCount;
-        
         //Events
         public event Action<string>? OnUpdateTitle;
         public event Action<string>? OnUpdateDescription;
@@ -31,6 +27,8 @@ namespace VoiceCraft.Client.Processes
         public event Action<bool>? OnUpdateDeafen;
         public event Action? OnConnected;
         public event Action<string>? OnDisconnected;
+        public event Action<EntityViewModel>? OnEntityAdded;
+        public event Action<EntityViewModel>? OnEntityRemoved;
         
         //Public Variables
         public bool IsStarted { get; private set; }
@@ -75,11 +73,17 @@ namespace VoiceCraft.Client.Processes
                 OnUpdateDeafen?.Invoke(value);
             }
         }
-
+        
         //Privates
         private readonly VoiceCraftClient _voiceCraftClient = new();
+        private readonly Dictionary<VoiceCraftEntity, EntityViewModel> _entityViewModels = new();
         private IAudioRecorder? _audioRecorder;
         private IAudioPlayer? _audioPlayer;
+        private string _title = string.Empty;
+        private string _description = string.Empty;
+        private bool _muted;
+        private bool _deafened;
+        private int _tick1 = Environment.TickCount;
 
         public void Start()
         {
@@ -87,6 +91,8 @@ namespace VoiceCraft.Client.Processes
             {
                 _voiceCraftClient.OnConnected += ClientOnConnected;
                 _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
+                _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
+                _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
 
                 _voiceCraftClient.Connect(ip, port, LoginType.Login);
                 Title = Locales.Locales.VoiceCraft_Status_Title;
@@ -173,6 +179,19 @@ namespace VoiceCraft.Client.Processes
                 notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}");
                 OnDisconnected?.Invoke(reason);
             });
+        }
+        
+        private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
+        {
+            var entityViewModel = new EntityViewModel(entity);
+            if(!_entityViewModels.TryAdd(entity, entityViewModel)) return;
+            OnEntityAdded?.Invoke(entityViewModel);
+        }
+        
+        private void ClientWorldOnEntityDestroyed(VoiceCraftEntity entity)
+        {
+            if(!_entityViewModels.Remove(entity, out var entityViewModel)) return;
+            OnEntityRemoved?.Invoke(entityViewModel);
         }
         
         private void DataAvailable(object? sender, WaveInEventArgs e)

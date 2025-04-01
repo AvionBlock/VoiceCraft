@@ -17,7 +17,7 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private string _statusText = string.Empty;
         [ObservableProperty] private bool _isMuted;
         [ObservableProperty] private bool _isDeafened;
-        [ObservableProperty] private ObservableCollection<AudioSourceViewModel> _audioSources = [];
+        [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
 
         [RelayCommand]
         private void ToggleMute()
@@ -53,6 +53,8 @@ namespace VoiceCraft.Client.ViewModels
             _process.OnUpdateDescription += OnUpdateDescription;
             _process.OnUpdateMute += OnUpdateMute;
             _process.OnUpdateDeafen += OnUpdateDeafen;
+            _process.OnEntityAdded += OnEntityAdded;
+            _process.OnEntityRemoved += OnEntityRemoved;
         }
 
         public void AttachToProcess(VoipBackgroundProcess process)
@@ -69,6 +71,8 @@ namespace VoiceCraft.Client.ViewModels
                 _process.OnUpdateDescription -= OnUpdateDescription;
                 _process.OnUpdateMute -= OnUpdateMute;
                 _process.OnUpdateDeafen -= OnUpdateDeafen;
+                _process.OnEntityAdded -= OnEntityAdded;
+                _process.OnEntityRemoved -= OnEntityRemoved;
             }
 
             GC.SuppressFinalize(this);
@@ -87,6 +91,8 @@ namespace VoiceCraft.Client.ViewModels
                 _process.OnUpdateDescription -= OnUpdateDescription;
                 _process.OnUpdateMute -= OnUpdateMute;
                 _process.OnUpdateDeafen -= OnUpdateDeafen;
+                _process.OnEntityAdded -= OnEntityAdded;
+                _process.OnEntityRemoved -= OnEntityRemoved;
             }
 
             navigationService.Back();
@@ -100,6 +106,16 @@ namespace VoiceCraft.Client.ViewModels
         private void OnUpdateDeafen(bool deafened)
         {
             IsDeafened = deafened;
+        }
+        
+        private void OnEntityAdded(EntityViewModel entity)
+        {
+            EntityViewModels.Add(entity);
+        }
+        
+        private void OnEntityRemoved(EntityViewModel entity)
+        {
+            EntityViewModels.Remove(entity);
         }
     }
 }

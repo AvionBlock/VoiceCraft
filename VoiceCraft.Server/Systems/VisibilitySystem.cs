@@ -43,7 +43,7 @@ namespace VoiceCraft.Server.Systems
                     continue;
                 }
                 
-                if(!entity.VisibleEntities.Contains(possibleNetworkEntity)) continue;
+                if(entity.VisibleEntities.Contains(possibleNetworkEntity)) continue;
                 entity.VisibleEntities.Add(possibleNetworkEntity);
                 SendEntityCreated(entity, possibleNetworkEntity);
             }

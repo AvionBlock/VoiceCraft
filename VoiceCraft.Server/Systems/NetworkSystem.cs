@@ -126,19 +126,32 @@ namespace VoiceCraft.Server.Systems
 
         private void HandleLogin(LoginPacket loginPacket, ConnectionRequest request)
         {
-            switch (loginPacket.LoginType)
+            if (loginPacket.LoginType == LoginType.Unknown)
             {
-                case LoginType.Login:
-                    var loginPeer = request.Accept();
-                    loginPeer.Tag = _world.CreateEntity(loginPeer);
-                    break;
-                case LoginType.Discovery:
-                    var peer = request.Accept();
-                    peer.Tag = LoginType.Discovery;
-                    break;
-                default:
-                    request.Reject();
-                    break;
+                request.Reject("Unknown login type!"u8.ToArray());
+                return;
+            }
+
+            var peer = request.Accept();
+            try
+            {
+                switch (loginPacket.LoginType)
+                {
+                    case LoginType.Login:
+                        peer.Tag = _world.CreateEntity(peer);
+                        break;
+                    case LoginType.Discovery:
+                        peer.Tag = LoginType.Discovery;
+                        break;
+                    case LoginType.Unknown:
+                    default:
+                        request.Reject();
+                        break;
+                }
+            }
+            catch
+            {
+                peer.Disconnect("An error occurred on the server while trying to parse the login!"u8.ToArray());
             }
         }
 

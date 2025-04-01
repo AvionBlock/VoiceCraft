@@ -7,7 +7,6 @@ namespace VoiceCraft.Server.Application
 {
     public class VoiceCraftServer : IDisposable
     {
-        // ReSharper disable once InconsistentNaming
         public static readonly Version Version = new(1, 1, 0);
 
         //Public Properties
@@ -33,9 +32,9 @@ namespace VoiceCraft.Server.Application
             };
 
             //Has to be initialized in this order otherwise shit falls apart.
-            _worldSystem = new WorldSystem(this);
-            NetworkSystem = new NetworkSystem(this, _netManager);
             AudioEffectSystem = new AudioEffectSystem(this);
+            NetworkSystem = new NetworkSystem(this, _netManager);
+            _worldSystem = new WorldSystem(this);
             _visibilitySystem = new VisibilitySystem(this);
             _entityEventsSystem = new EntityEventsSystem(this);
         }
