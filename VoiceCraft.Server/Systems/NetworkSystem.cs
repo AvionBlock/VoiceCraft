@@ -202,8 +202,6 @@ namespace VoiceCraft.Server.Systems
                     default:
                         break;
                 }
-
-                reader.Recycle();
             }
             catch (Exception ex)
             {
@@ -246,8 +244,6 @@ namespace VoiceCraft.Server.Systems
                     default:
                         break;
                 }
-
-                reader.Recycle();
             }
             catch (Exception ex)
             {

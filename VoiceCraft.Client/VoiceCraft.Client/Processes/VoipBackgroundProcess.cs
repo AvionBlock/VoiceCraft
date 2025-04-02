@@ -201,7 +201,7 @@ namespace VoiceCraft.Client.Processes
         
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
-            _voiceCraftClient.Write(e.Buffer, 0, e.BytesRecorded);
+            _voiceCraftClient.SendBuffer.AddSamples(e.Buffer, 0, e.BytesRecorded);
         }
     }
 }

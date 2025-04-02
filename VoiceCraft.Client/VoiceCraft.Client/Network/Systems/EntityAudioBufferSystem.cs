@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using OpusSharp.Core;
 using SpeexDSPSharp.Core;
 using SpeexDSPSharp.Core.Structures;
@@ -16,7 +15,7 @@ namespace VoiceCraft.Client.Network.Systems
         public EntityAudioBufferSystem(VoiceCraftClient client)
         {
             _world = client.World;
-            
+
             _world.OnEntityCreated += OnEntityCreated;
             _world.OnEntityDestroyed += OnEntityDestroyed;
         }
@@ -43,21 +42,22 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void OnEntityDestroyed(VoiceCraftEntity entity)
         {
-            if(_entityJitterBuffers.TryRemove(entity, out var jitterBuffer)) return;
+            if (_entityJitterBuffers.TryRemove(entity, out var jitterBuffer)) return;
             jitterBuffer?.Dispose();
         }
-        
+
         public void Dispose()
         {
             _world.OnEntityCreated -= OnEntityCreated;
             _world.OnEntityDestroyed -= OnEntityDestroyed;
-            
+
             foreach (var entity in _entityJitterBuffers)
             {
                 entity.Value.Dispose(); //DISPOSE EVERYTHING!
             }
-            
+
             _entityJitterBuffers.Clear();
+            GC.SuppressFinalize(this);
         }
 
         private class EntityJitterBuffer : IDisposable
@@ -77,9 +77,10 @@ namespace VoiceCraft.Client.Network.Systems
 
             public void Get(byte[] buffer)
             {
-                if(buffer.Length < Constants.BytesPerFrame)
+                if (buffer.Length < Constants.BytesPerFrame)
                     throw new InvalidOperationException("Buffer is too small!");
 
+                Array.Clear(_decodeData);
                 var outPacket = new SpeexDSPJitterBufferPacket(_decodeData, (uint)_decodeData.Length);
                 var startOffset = 0;
                 if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
@@ -90,28 +91,19 @@ namespace VoiceCraft.Client.Network.Systems
                 {
                     _decoder.Decode(_decodeData, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
                 }
-                
+
                 _buffer.Tick();
             }
-            
+
             private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
             {
-                try
+                var inPacket = new SpeexDSPJitterBufferPacket(data, (uint)data.Length)
                 {
-                    var decoded = new byte[Constants.BytesPerFrame];
-                    _decoder.Decode(data, data.Length, decoded, Constants.SamplesPerFrame, false);
-                    var inPacket = new SpeexDSPJitterBufferPacket(decoded, (uint)decoded.Length)
-                    {
-                        sequence = 0, //Don't care about the sequence.
-                        span = Constants.SamplesPerFrame,
-                        timestamp = timestamp
-                    };
-                    _buffer.Put(ref inPacket);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                }
+                    sequence = 0, //Don't care about the sequence.
+                    span = Constants.SamplesPerFrame,
+                    timestamp = timestamp
+                };
+                _buffer.Put(ref inPacket);
             }
 
             public void Dispose()

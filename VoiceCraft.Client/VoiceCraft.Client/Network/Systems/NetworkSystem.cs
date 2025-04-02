@@ -36,27 +36,36 @@ namespace VoiceCraft.Client.Network.Systems
         {
             if (_client.ServerPeer?.ConnectionState != ConnectionState.Connected) return false;
 
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            _client.ServerPeer.Send(_dataWriter, deliveryMethod);
-            return true;
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                _client.ServerPeer.Send(_dataWriter, deliveryMethod);
+                return true;
+            }
         }
 
         public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
         {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
+            }
         }
         
         public bool SendUnconnectedPacket<T>(string ip, uint port, T packet) where T : VoiceCraftPacket
         {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            return _netManager.SendUnconnectedMessage(_dataWriter, ip, (int)port);
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                return _netManager.SendUnconnectedMessage(_dataWriter, ip, (int)port);
+            }
         }
         
         public void Dispose()
@@ -64,6 +73,7 @@ namespace VoiceCraft.Client.Network.Systems
             _listener.ConnectionRequestEvent -= OnConnectionRequestEvent;
             _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
+            GC.SuppressFinalize(this);
         }
 
         private static void OnConnectionRequestEvent(ConnectionRequest request)
@@ -87,7 +97,7 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.EntityCreated:
                         var entityCreatedPacket = new EntityCreatedPacket();
                         entityCreatedPacket.Deserialize(reader);
-                        HandleEntityCreatedPacket(entityCreatedPacket, reader);
+                        HandleEntityCreatedPacket(entityCreatedPacket);
                         break;
                     case PacketType.EntityDestroyed:
                         var entityDestroyedPacket = new EntityDestroyedPacket();
@@ -113,8 +123,6 @@ namespace VoiceCraft.Client.Network.Systems
                     default:
                         break;
                 }
-
-                reader.Recycle();
             }
             catch (Exception ex)
             {
@@ -157,8 +165,6 @@ namespace VoiceCraft.Client.Network.Systems
                     default:
                         break;
                 }
-
-                reader.Recycle();
             }
             catch (Exception ex)
             {
@@ -171,7 +177,7 @@ namespace VoiceCraft.Client.Network.Systems
             OnServerInfo?.Invoke(new ServerInfo(infoPacket));
         }
 
-        private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
+        private void HandleEntityCreatedPacket(EntityCreatedPacket packet)
         {
             try
             {
