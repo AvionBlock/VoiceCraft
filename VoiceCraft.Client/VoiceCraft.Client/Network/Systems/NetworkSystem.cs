@@ -34,14 +34,14 @@ namespace VoiceCraft.Client.Network.Systems
 
         public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
-            if (_client.ServerPeer?.ConnectionState != ConnectionState.Connected) return false;
+            if (_client.ConnectionState != ConnectionState.Connected) return false;
 
             lock (_dataWriter)
             {
                 _dataWriter.Reset();
                 _dataWriter.Put((byte)packet.PacketType);
                 packet.Serialize(_dataWriter);
-                _client.ServerPeer.Send(_dataWriter, deliveryMethod);
+                _client.LocalEntity?.NetPeer.Send(_dataWriter, deliveryMethod);
                 return true;
             }
         }

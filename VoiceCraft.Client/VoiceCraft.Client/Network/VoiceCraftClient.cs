@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using LiteNetLib;
@@ -23,10 +22,10 @@ namespace VoiceCraft.Client.Network
         public event Action<string>? OnDisconnected;
 
         //Public Properties
-        public ConnectionState ConnectionState => ServerPeer?.ConnectionState ?? ConnectionState.Disconnected;
+        public ConnectionState ConnectionState => LocalEntity?.NetPeer.ConnectionState ?? ConnectionState.Disconnected;
         public EventBasedNetListener Listener { get; } = new();
         public NetDataWriter DataWriter { get; } = new();
-        public NetPeer? ServerPeer { get; private set; }
+        public VoiceCraftNetworkEntity? LocalEntity { get; private set; }
         public VoiceCraftWorld World { get; } = new();
         public NetworkSystem NetworkSystem { get; }
         public EntityAudioBufferSystem AudioBufferSystem { get; }
@@ -55,13 +54,13 @@ namespace VoiceCraft.Client.Network
 
             Listener.PeerConnectedEvent += peer =>
             {
-                if (!Equals(peer, ServerPeer)) return;
+                if (!Equals(peer, LocalEntity?.NetPeer)) return;
                 OnConnected?.Invoke();
             };
 
             Listener.PeerDisconnectedEvent += (peer, info) =>
             {
-                if (!Equals(peer, ServerPeer)) return;
+                if (!Equals(peer, LocalEntity?.NetPeer)) return;
                 try
                 {
                     var reason = !info.AdditionalData.IsNull ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan()) : info.Reason.ToString();
@@ -103,13 +102,13 @@ namespace VoiceCraft.Client.Network
             var loginPacket = new LoginPacket(Version.ToString(), loginType);
             loginPacket.Serialize(DataWriter);
             var serverPeer = _netManager.Connect(ip, port, DataWriter);
-            ServerPeer = serverPeer ?? throw new InvalidOperationException("A connection request is awaiting!");
+            LocalEntity = new VoiceCraftNetworkEntity(serverPeer) ?? throw new InvalidOperationException("A connection request is awaiting!");
         }
 
         public void Update()
         {
             _netManager.PollEvents();
-            if (ServerPeer == null) return; //Not connected.
+            if (ConnectionState == ConnectionState.Disconnected || LocalEntity == null) return; //Not connected.
 
             while (SendBuffer.BufferedBytes >= Constants.BytesPerFrame)
             {
@@ -119,7 +118,7 @@ namespace VoiceCraft.Client.Network
                 var encoded = _encoder.Encode(_senderBuffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
                 
                 //Temporary
-                var packet = new AudioPacket(ServerPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, false, encoded, _encodeBuffer);
+                var packet = new AudioPacket(LocalEntity.NetPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, false, encoded, _encodeBuffer);
                 NetworkSystem.SendPacket(packet);
             }
 
