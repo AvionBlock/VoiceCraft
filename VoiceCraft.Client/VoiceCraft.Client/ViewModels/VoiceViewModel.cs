@@ -34,6 +34,12 @@ namespace VoiceCraft.Client.ViewModels
         [RelayCommand]
         private void Disconnect()
         {
+            if (_process?.ConnectionState == ConnectionState.Disconnected)
+            {
+                navigationService.Back(); //If disconnected. Return to previous page.
+                return;
+            }
+            
             _process?.Disconnect();
         }
 
@@ -46,15 +52,17 @@ namespace VoiceCraft.Client.ViewModels
                 return;
             }
             
-            StatusText = _process.Description;
-            IsMuted = _process.Muted;
-            IsDeafened = _process.Deafened;
+            //Register events first.
             _process.OnDisconnected += OnDisconnected;
             _process.OnUpdateDescription += OnUpdateDescription;
             _process.OnUpdateMute += OnUpdateMute;
             _process.OnUpdateDeafen += OnUpdateDeafen;
             _process.OnEntityAdded += OnEntityAdded;
             _process.OnEntityRemoved += OnEntityRemoved;
+            
+            StatusText = _process.Description;
+            IsMuted = _process.Muted;
+            IsDeafened = _process.Deafened;
         }
 
         public void AttachToProcess(VoipBackgroundProcess process)

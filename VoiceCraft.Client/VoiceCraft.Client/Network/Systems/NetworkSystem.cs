@@ -21,10 +21,10 @@ namespace VoiceCraft.Client.Network.Systems
 
         public NetworkSystem(VoiceCraftClient client, NetManager netManager)
         {
+            _dataWriter = new NetDataWriter();
             _client = client;
             _netManager = netManager;
             _listener = _client.Listener;
-            _dataWriter = _client.DataWriter;
             _world = _client.World;
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;

@@ -23,16 +23,16 @@ namespace VoiceCraft.Client.Network
 
         //Public Properties
         public ConnectionState ConnectionState => LocalEntity?.NetPeer.ConnectionState ?? ConnectionState.Disconnected;
-        public EventBasedNetListener Listener { get; } = new();
-        public NetDataWriter DataWriter { get; } = new();
-        public VoiceCraftNetworkEntity? LocalEntity { get; private set; }
-        public VoiceCraftWorld World { get; } = new();
-        public NetworkSystem NetworkSystem { get; }
-        public EntityAudioBufferSystem AudioBufferSystem { get; }
+        public VoiceCraftClientNetworkEntity? LocalEntity { get; private set; }
         public BufferedWaveProvider ReceiveBuffer { get; } = new(WaveFormat) { ReadFully = true, DiscardOnBufferOverflow = true };
         public BufferedWaveProvider SendBuffer { get; } = new(WaveFormat) { DiscardOnBufferOverflow = true };
+        
+        public EventBasedNetListener Listener { get; } = new();
+        public VoiceCraftWorld World { get; } = new();
+        public NetworkSystem NetworkSystem { get; }
 
         private readonly NetManager _netManager;
+        private readonly EntityAudioBufferSystem _audioBufferSystem;
         private readonly OpusEncoder _encoder = new(WaveFormat.SampleRate, WaveFormat.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         private readonly byte[] _senderBuffer = new byte[Constants.BytesPerFrame];
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
@@ -49,7 +49,7 @@ namespace VoiceCraft.Client.Network
                 UnconnectedMessagesEnabled = true
             };
             NetworkSystem = new NetworkSystem(this, _netManager);
-            AudioBufferSystem = new EntityAudioBufferSystem(this);
+            _audioBufferSystem = new EntityAudioBufferSystem(this);
             _netManager.Start();
 
             Listener.PeerConnectedEvent += peer =>
@@ -97,38 +97,21 @@ namespace VoiceCraft.Client.Network
             ThrowIfDisposed();
             if (ConnectionState != ConnectionState.Disconnected)
                 throw new InvalidOperationException("This client is already connected or is connecting to a server!");
-
-            DataWriter.Reset();
+            
+            var dataWriter = new NetDataWriter();
             var loginPacket = new LoginPacket(Version.ToString(), loginType);
-            loginPacket.Serialize(DataWriter);
-            var serverPeer = _netManager.Connect(ip, port, DataWriter);
-            LocalEntity = new VoiceCraftNetworkEntity(serverPeer) ?? throw new InvalidOperationException("A connection request is awaiting!");
+            loginPacket.Serialize(dataWriter);
+            var serverPeer = _netManager.Connect(ip, port, dataWriter);
+            LocalEntity = new VoiceCraftClientNetworkEntity(serverPeer) ?? throw new InvalidOperationException("A connection request is awaiting!");
         }
 
         public void Update()
         {
             _netManager.PollEvents();
-            if (ConnectionState == ConnectionState.Disconnected || LocalEntity == null) return; //Not connected.
-
-            while (SendBuffer.BufferedBytes >= Constants.BytesPerFrame)
-            {
-                Array.Clear(_senderBuffer);
-                Array.Clear(_encodeBuffer);
-                SendBuffer.Read(_senderBuffer, 0, _senderBuffer.Length);
-                var encoded = _encoder.Encode(_senderBuffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-                
-                //Temporary
-                var packet = new AudioPacket(LocalEntity.NetPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, false, encoded, _encodeBuffer);
-                NetworkSystem.SendPacket(packet);
-            }
-
-            foreach (var buffer in from entity in World.Entities
-                     let buffer = new byte[Constants.BytesPerFrame]
-                     where AudioBufferSystem.GetNextFrame(entity.Value, buffer)
-                     select buffer)
-            {
-                ReceiveBuffer.AddSamples(buffer, 0, buffer.Length);
-            }
+            if (ConnectionState == ConnectionState.Disconnected) return; //Not connected.
+            
+            SendBufferedAudio();
+            ReceiveBufferedAudio();
         }
 
         public void Disconnect()
@@ -160,12 +143,43 @@ namespace VoiceCraft.Client.Network
                 _encoder.Dispose();
                 World.Dispose();
                 NetworkSystem.Dispose();
-                AudioBufferSystem.Dispose();
+                _audioBufferSystem.Dispose();
+                
+                LocalEntity?.Destroy();
+                LocalEntity = null;
             }
 
             _isDisposed = true;
         }
 
         #endregion
+
+        private void SendBufferedAudio()
+        {
+            if(LocalEntity == null) return;
+            
+            while (SendBuffer.BufferedBytes >= Constants.BytesPerFrame)
+            {
+                Array.Clear(_senderBuffer);
+                Array.Clear(_encodeBuffer);
+                SendBuffer.Read(_senderBuffer, 0, _senderBuffer.Length);
+                var encoded = _encoder.Encode(_senderBuffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
+                
+                //Temporary
+                var packet = new AudioPacket(LocalEntity.NetPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, false, encoded, _encodeBuffer);
+                NetworkSystem.SendPacket(packet);
+            }
+        }
+
+        private void ReceiveBufferedAudio()
+        {
+            foreach (var buffer in from entity in World.Entities
+                     let buffer = new byte[Constants.BytesPerFrame]
+                     where _audioBufferSystem.GetNextFrame(entity.Value, buffer)
+                     select buffer)
+            {
+                ReceiveBuffer.AddSamples(buffer, 0, buffer.Length);
+            }
+        }
     }
 }
