@@ -171,8 +171,7 @@ namespace VoiceCraft.Client.Network
                     _lastAudioPeakTime = DateTime.UtcNow;
                 
                 var encoded = _encoder.Encode(_senderBuffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-
-                //Temporary
+                
                 var passedSilenceThreshold = (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds >= Constants.SilenceThresholdMs;
                 AudioPacket packet;
                 switch (passedSilenceThreshold)
@@ -196,6 +195,7 @@ namespace VoiceCraft.Client.Network
 
         private void ReceiveBufferedAudio()
         {
+            //Need to figure out mixing audio.
             foreach (var buffer in from entity in World.Entities
                      let buffer = new byte[Constants.BytesPerFrame]
                      where _audioBufferSystem.GetNextFrame(entity.Value, buffer)
