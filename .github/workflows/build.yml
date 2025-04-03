@@ -21,7 +21,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Setup Keystore File
-        run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode --output android.keystore
+        run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode --outputFile android.keystore
 
       - name: Publish VoiceCraft.Client.Android.arm64
         run: dotnet publish -c Release -r arm64 --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
