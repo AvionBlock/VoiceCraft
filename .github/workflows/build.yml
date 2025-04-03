@@ -6,7 +6,7 @@ on:
 
 jobs:
    build-android:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Android
