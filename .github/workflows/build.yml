@@ -23,10 +23,10 @@ jobs:
       - name: Setup Keystore File
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
-      - name: Publish VoiceCraft.Client.Android.armeabi-v7a
-        run: dotnet publish -c Release -r armeabi-v7a --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
-      - name: Upload Artifact VoiceCraft.Client.Android.arm64
+      - name: Publish VoiceCraft.Client.Android.arm
+        run: dotnet publish -c Release -r android-arm --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+      - name: Upload Artifact VoiceCraft.Client.Android.arm
         uses: actions/upload-artifact@v4
         with:
-          name: VoiceCraft.Client.Android.armeabi-v7a
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Debug/net9.0-android/armeabi-v7a/publish/
+          name: VoiceCraft.Client.Android.arm
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Debug/net9.0-android/android-arm/publish/
