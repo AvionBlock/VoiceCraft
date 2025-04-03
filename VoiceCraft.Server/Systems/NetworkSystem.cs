@@ -254,14 +254,14 @@ namespace VoiceCraft.Server.Systems
         //Packet Handling
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteendpoint)
         {
-            var packet = new InfoPacket(_config.Motd,_netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);
+            var packet = new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);
             SendUnconnectedPacket(remoteendpoint, packet);
         }
 
         private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
         {
             if (!_world.Entities.TryGetValue(peer.Id, out var entity) || entity is not VoiceCraftNetworkEntity networkEntity) return;
-            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
+            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp, audioPacket.EndOfTransmission);
         }
     }
 }

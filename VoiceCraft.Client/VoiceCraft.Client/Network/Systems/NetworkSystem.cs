@@ -128,6 +128,8 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 Debug.WriteLine(ex);
             }
+            
+            reader.Recycle();
         }
 
         private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteendpoint, NetPacketReader reader, UnconnectedMessageType messagetype)
@@ -170,6 +172,8 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 Debug.WriteLine(ex);
             }
+            
+            reader.Recycle();
         }
 
         private void HandleInfoPacket(InfoPacket infoPacket)
@@ -198,7 +202,7 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleAudioPacket(AudioPacket packet)
         {
             if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
-            entity.ReceiveAudio(packet.Data, packet.Timestamp);
+            entity.ReceiveAudio(packet.Data, packet.Timestamp, packet.EndOfTransmission);
         }
     }
 }

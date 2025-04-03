@@ -17,7 +17,7 @@ namespace VoiceCraft.Server.Application
         public AudioEffectSystem AudioEffectSystem { get; }
         private readonly WorldSystem _worldSystem;
         private readonly VisibilitySystem _visibilitySystem;
-        private readonly EntityEventsSystem _entityEventsSystem;
+        private readonly EventHandlerSystem _eventHandlerSystem;
         private readonly NetManager _netManager;
         private bool _isDisposed;
 
@@ -32,11 +32,11 @@ namespace VoiceCraft.Server.Application
             };
 
             //Has to be initialized in this order otherwise shit falls apart.
-            AudioEffectSystem = new AudioEffectSystem(this);
             NetworkSystem = new NetworkSystem(this, _netManager);
+            AudioEffectSystem = new AudioEffectSystem();
             _worldSystem = new WorldSystem(this);
             _visibilitySystem = new VisibilitySystem(this);
-            _entityEventsSystem = new EntityEventsSystem(this);
+            _eventHandlerSystem = new EventHandlerSystem(this); //This should always be last!
         }
 
         ~VoiceCraftServer()
@@ -54,7 +54,7 @@ namespace VoiceCraft.Server.Application
         {
             _netManager.PollEvents();
             _visibilitySystem.Update();
-            _entityEventsSystem.Update();
+            _eventHandlerSystem.Update();
         }
 
         public void Stop()
@@ -77,7 +77,7 @@ namespace VoiceCraft.Server.Application
                 World.Dispose();
                 _worldSystem.Dispose();
                 NetworkSystem.Dispose();
-                _entityEventsSystem.Dispose();
+                _eventHandlerSystem.Dispose();
             }
 
             _isDisposed = true;

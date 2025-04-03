@@ -13,6 +13,11 @@ namespace VoiceCraft.Core.Effects
         public int MinRange { get; private set; }
         public int MaxRange { get; private set; }
 
+        public bool ApplyEffect(byte[] data, uint sampleRate, uint channels, VoiceCraftEntity fromEntity, VoiceCraftEntity toEntity)
+        {
+            throw new NotSupportedException();
+        }
+
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(Bitmask);

@@ -80,6 +80,9 @@ namespace VoiceCraft.Client.Network.Systems
                 if (buffer.Length < Constants.BytesPerFrame)
                     throw new InvalidOperationException("Buffer is too small!");
 
+                if (!_entity.IsSpeaking)
+                    return;
+                
                 Array.Clear(_decodeData);
                 var outPacket = new SpeexDSPJitterBufferPacket(_decodeData, (uint)_decodeData.Length);
                 var startOffset = 0;
@@ -95,7 +98,7 @@ namespace VoiceCraft.Client.Network.Systems
                 _buffer.Tick();
             }
 
-            private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
+            private void OnEntityAudioReceived(byte[] data, uint timestamp, bool endOfTransmission, VoiceCraftEntity entity)
             {
                 var inPacket = new SpeexDSPJitterBufferPacket(data, (uint)data.Length)
                 {

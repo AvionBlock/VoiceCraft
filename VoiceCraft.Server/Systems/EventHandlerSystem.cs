@@ -1,23 +1,28 @@
 using System.Numerics;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class EntityEventsSystem : IDisposable
+    public class EventHandlerSystem : IDisposable
     {
         private readonly VoiceCraftWorld _world;
         private readonly NetworkSystem _networkSystem;
+        private readonly AudioEffectSystem _audioEffectSystem;
         private readonly List<Task> _tasks = [];
 
-        public EntityEventsSystem(VoiceCraftServer server)
+        public EventHandlerSystem(VoiceCraftServer server)
         {
             _world = server.World;
             _networkSystem = server.NetworkSystem;
+            _audioEffectSystem = server.AudioEffectSystem;
 
             _world.OnEntityCreated += OnEntityCreated;
             _world.OnEntityDestroyed += OnEntityDestroyed;
+            _audioEffectSystem.OnEffectSet += OnAudioEffectSet;
+            _audioEffectSystem.OnEffectRemoved += OnAudioEffectRemoved;
         }
 
         public void Update()
@@ -36,11 +41,37 @@ namespace VoiceCraft.Server.Systems
         {
             _world.OnEntityCreated -= OnEntityCreated;
             _world.OnEntityDestroyed -= OnEntityDestroyed;
+            _audioEffectSystem.OnEffectSet -= OnAudioEffectSet;
+            _audioEffectSystem.OnEffectRemoved -= OnAudioEffectRemoved;
             GC.SuppressFinalize(this);
         }
+        
+        #region Audio Effect Events
+        private void OnAudioEffectSet(IAudioEffect effect, byte index)
+        {
+            _tasks.Add(new Task(() =>
+            {
+                var packet = new SetEffectPacket(index, effect);
+                _networkSystem.Broadcast(packet);
+            }));
+        }
+
+        private void OnAudioEffectRemoved(IAudioEffect effect, byte index)
+        {
+            _tasks.Add(new Task(() =>
+            {
+                var packet = new RemoveEffectPacket(index);
+                _networkSystem.Broadcast(packet);
+            }));
+        }
+        #endregion
+
+        #region Entity Events
 
         private void OnEntityCreated(VoiceCraftEntity entity)
         {
+            entity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
+            entity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
             entity.OnNameUpdated += OnEntityNameUpdated;
             entity.OnTalkBitmaskUpdated += OnEntityTalkBitmaskUpdated;
             entity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
@@ -57,6 +88,8 @@ namespace VoiceCraft.Server.Systems
 
         private void OnEntityDestroyed(VoiceCraftEntity entity)
         {
+            entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
+            entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
             entity.OnNameUpdated -= OnEntityNameUpdated;
             entity.OnTalkBitmaskUpdated -= OnEntityTalkBitmaskUpdated;
             entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
@@ -68,6 +101,25 @@ namespace VoiceCraft.Server.Systems
             entity.OnIntPropertyRemoved -= OnEntityIntPropertyRemoved;
             entity.OnBoolPropertyRemoved -= OnEntityBoolPropertyRemoved;
             entity.OnFloatPropertyRemoved -= OnEntityFloatPropertyRemoved;
+        }
+
+        //Visibility
+        private void OnEntityVisibleEntityAdded(VoiceCraftNetworkEntity visibleEntity, VoiceCraftEntity entity)
+        {
+            _tasks.Add(new Task(() =>
+            {
+                var packet = new EntityCreatedPacket(entity.Id, entity);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
+            }));
+        }
+
+        private void OnEntityVisibleEntityRemoved(VoiceCraftNetworkEntity visibleEntity, VoiceCraftEntity entity)
+        {
+            _tasks.Add(new Task(() =>
+            {
+                var entityDestroyedPacket = new EntityDestroyedPacket(entity.Id);
+                _networkSystem.SendPacket(visibleEntity.NetPeer, entityDestroyedPacket);
+            }));
         }
 
         //Data
@@ -132,7 +184,7 @@ namespace VoiceCraft.Server.Systems
         }
 
         //Audio
-        private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
+        private void OnEntityAudioReceived(byte[] data, uint timestamp, bool endOfTransmission, VoiceCraftEntity entity)
         {
             _tasks.Add(new Task(() =>
             {
@@ -140,7 +192,7 @@ namespace VoiceCraft.Server.Systems
                 var visibleEntities = entity.VisibleEntities.Where(x => x != entity);
                 foreach (var visibleEntity in visibleEntities)
                 {
-                    var packet = new AudioPacket(entity.Id, timestamp, (ushort)data.Length, data);
+                    var packet = new AudioPacket(entity.Id, timestamp, endOfTransmission, data.Length, data);
                     _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
                 }
             }));
@@ -218,5 +270,7 @@ namespace VoiceCraft.Server.Systems
                 }
             }));
         }
+
+        #endregion
     }
 }

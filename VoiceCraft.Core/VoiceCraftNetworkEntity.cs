@@ -9,7 +9,7 @@ namespace VoiceCraft.Core
         public VoiceCraftNetworkEntity(NetPeer netPeer) : base((short)netPeer.Id)
         {
             NetPeer = netPeer;
-            VisibleEntities.Add(this); //Should always be visible to itself.
+            AddVisibleEntity(this); //Should always be visible to itself.
         }
     }
 }

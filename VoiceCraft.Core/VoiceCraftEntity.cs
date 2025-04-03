@@ -9,6 +9,12 @@ namespace VoiceCraft.Core
     public class VoiceCraftEntity : INetSerializable
     {
         //Entity events.
+        public event Action<VoiceCraftNetworkEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
+        public event Action<VoiceCraftNetworkEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
+        public event Action<byte[], uint, bool, VoiceCraftEntity>? OnAudioReceived;
+        public event Action<VoiceCraftEntity>? OnDestroyed;
+        
+        #region Updatable Property Events
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
@@ -20,10 +26,10 @@ namespace VoiceCraft.Core
         public event Action<string, int, VoiceCraftEntity>? OnIntPropertyRemoved;
         public event Action<string, bool, VoiceCraftEntity>? OnBoolPropertyRemoved;
         public event Action<string, float, VoiceCraftEntity>? OnFloatPropertyRemoved;
-        public event Action<byte[], uint, VoiceCraftEntity>? OnAudioReceived;
-        public event Action<VoiceCraftEntity>? OnDestroyed;
+        #endregion
         
         //Privates
+        private readonly List<VoiceCraftNetworkEntity> _visibleEntities = new List<VoiceCraftNetworkEntity>();
         private readonly Dictionary<string, int> _intProperties = new Dictionary<string, int>();
         private readonly Dictionary<string, bool> _boolProperties = new Dictionary<string, bool>();
         private readonly Dictionary<string, float> _floatProperties = new Dictionary<string, float>();
@@ -35,17 +41,19 @@ namespace VoiceCraft.Core
         private ulong _listenBitmask = 1;
         private Vector3 _position;
         private Quaternion _rotation;
+        private bool _endTransmission = true;
 
         //Properties
         public int Id { get; }
+        public bool IsSpeaking => DateTime.UtcNow.Ticks - LastSpoke.Ticks < Constants.SilenceThresholdMs || !_endTransmission;
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<KeyValuePair<string, int>> IntProperties => _intProperties;
         public IEnumerable<KeyValuePair<string, bool>> BoolProperties => _boolProperties;
         public IEnumerable<KeyValuePair<string, float>> FloatProperties => _floatProperties;
-        public List<VoiceCraftNetworkEntity> VisibleEntities { get; } = new List<VoiceCraftNetworkEntity>();
-
-        //Updatable Properties
+        public IEnumerable<VoiceCraftNetworkEntity> VisibleEntities => _visibleEntities;
+        
+        #region Updatable Properties
         public string WorldId
         {
             get => _worldId;
@@ -111,6 +119,7 @@ namespace VoiceCraft.Core
                 OnRotationUpdated?.Invoke(_rotation, this);
             }
         }
+        #endregion
 
         //Modifiers for modifying data for later?
 
@@ -119,6 +128,7 @@ namespace VoiceCraft.Core
             Id = id;
         }
 
+        #region Property Methods
         public void SetProperty(string key, int value)
         {
             if(key.Length > Constants.MaxStringLength)
@@ -202,11 +212,33 @@ namespace VoiceCraft.Core
         {
             return _floatProperties.Remove(key);
         }
+        #endregion
 
-        public void ReceiveAudio(byte[] buffer, uint timestamp)
+        #region Visible Entity Methods
+        public void AddVisibleEntity(VoiceCraftNetworkEntity entity)
         {
+            if(_visibleEntities.Contains(entity)) return;
+            _visibleEntities.Add(entity);
+            OnVisibleEntityAdded?.Invoke(entity, this);
+        }
+
+        public void RemoveVisibleEntity(VoiceCraftNetworkEntity entity)
+        {
+            if(!_visibleEntities.Remove(entity)) return;
+            OnVisibleEntityRemoved?.Invoke(entity, this);
+        }
+
+        public void TrimVisibleDeadEntities()
+        {
+            _visibleEntities.RemoveAll(x => x.Destroyed);
+        }
+        #endregion
+
+        public void ReceiveAudio(byte[] buffer, uint timestamp, bool endOfTransmission)
+        {
+            _endTransmission = endOfTransmission;
             LastSpoke = DateTime.UtcNow;
-            OnAudioReceived?.Invoke(buffer, timestamp, this);
+            OnAudioReceived?.Invoke(buffer, timestamp, endOfTransmission, this);
         }
 
         public bool VisibleTo(VoiceCraftEntity entity)

@@ -117,7 +117,9 @@ namespace VoiceCraft.Client.Network
                 Array.Clear(_encodeBuffer);
                 SendBuffer.Read(_senderBuffer, 0, _senderBuffer.Length);
                 var encoded = _encoder.Encode(_senderBuffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-                var packet = new AudioPacket(ServerPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, (ushort)encoded, _encodeBuffer);
+                
+                //Temporary
+                var packet = new AudioPacket(ServerPeer.RemoteId, _timestamp += Constants.SamplesPerFrame, false, encoded, _encodeBuffer);
                 NetworkSystem.SendPacket(packet);
             }
 
