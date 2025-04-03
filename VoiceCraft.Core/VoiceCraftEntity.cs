@@ -45,7 +45,7 @@ namespace VoiceCraft.Core
 
         //Properties
         public int Id { get; }
-        public bool IsSpeaking => DateTime.UtcNow.Ticks - LastSpoke.Ticks < Constants.SilenceThresholdMs || !_endTransmission;
+        public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs || !_endTransmission;
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<KeyValuePair<string, int>> IntProperties => _intProperties;

@@ -66,6 +66,7 @@ namespace VoiceCraft.Client.Network.Systems
             private readonly SpeexDSPJitterBuffer _buffer;
             private readonly OpusDecoder _decoder;
             private readonly byte[] _decodeData = new byte[Constants.MaximumEncodedBytes];
+            private bool _reset;
 
             public EntityJitterBuffer(VoiceCraftEntity entity)
             {
@@ -80,21 +81,26 @@ namespace VoiceCraft.Client.Network.Systems
                 if (buffer.Length < Constants.BytesPerFrame)
                     throw new InvalidOperationException("Buffer is too small!");
 
-                if (!_entity.IsSpeaking)
-                    return;
-                
                 Array.Clear(_decodeData);
                 var outPacket = new SpeexDSPJitterBufferPacket(_decodeData, (uint)_decodeData.Length);
                 var startOffset = 0;
                 if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
                 {
-                    _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
+                    if(!_reset)
+                        _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
                 }
                 else
                 {
                     _decoder.Decode(_decodeData, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
+                    _reset = false;
                 }
 
+                if ((outPacket.user_data == 1 || (DateTime.UtcNow - _entity.LastSpoke).TotalMilliseconds >= Constants.SilenceThresholdMs) && !_reset)
+                {
+                    _buffer.Reset(); //Reset buffer. This is bullshit silent detection but it works.
+                    _reset = true;
+                }
+                
                 _buffer.Tick();
             }
 
@@ -104,7 +110,8 @@ namespace VoiceCraft.Client.Network.Systems
                 {
                     sequence = 0, //Don't care about the sequence.
                     span = Constants.SamplesPerFrame,
-                    timestamp = timestamp
+                    timestamp = timestamp,
+                    user_data = endOfTransmission ? 1u : 0u
                 };
                 _buffer.Put(ref inPacket);
             }
