@@ -191,3 +191,25 @@ jobs:
           name: VoiceCraft.Client.iOS.x64
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Debug/net9.0-ios/ios-arm64/publish/
 
+   build-android:
+    runs-on: linux-latest
+    defaults:
+      run:
+        working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Android
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.x'
+
+      - name: Install VoiceCraft.Client.Android WorkLoads
+        run: dotnet workload restore
+
+      - name: Publish VoiceCraft.Client.Android.arm64
+        run: dotnet publish -c Release -r arm64 --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=${{ secrets.ANDROID_SIGNINGKEY }} -p:AndroidSigningKeyAlias=${{ secrets.ANDROID_ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      - name: Upload Artifact VoiceCraft.Client.Android.arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceCraft.Client.Windows.x64
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Debug/net9.0-windows/arm64/publish/
