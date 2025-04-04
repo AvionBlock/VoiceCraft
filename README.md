@@ -26,7 +26,7 @@ There is also a comprehensive API system in place that addon developer's can use
 
 |Device     |x64|x86|arm32|arm64|
 |-----------|---|---|-----|-----|
-|Linux      |✅ |✅ |✅   |✅   |
+|Linux      |✅ |❌ |✅   |✅   |
 |Android    |❎ |❎ |✅   |✅   |
 |Windows    |✅ |✅ |❌   |✅   |
 |iOS        |❌ |❌ |✅   |✅   |
