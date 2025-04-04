@@ -28,8 +28,8 @@ There is also a comprehensive API system in place that addon developer's can use
 |-----------|---|---|-----|-----|
 |Linux      |✅ |✅ |✅   |✅   |
 |Android    |❎ |❎ |✅   |✅   |
-|Windows    |✅ |✅ |✅   |✅   |
-|iOS        |❎ |❎ |✅   |✅   |
+|Windows    |✅ |✅ |❌   |✅   |
+|iOS        |❌ |❌ |✅   |✅   |
 |MacOS      |✅ |❌ |❌   |✅   |
 |XBOX       |❌ |❌ |❌   |❌   |
 |PlayStation|❌ |❌ |❌   |❌   |
