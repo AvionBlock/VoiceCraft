@@ -27,7 +27,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Windows.x86
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-x86/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-x86/publish/
              
    Build_Windows_x64:
       runs-on: windows-latest
@@ -51,7 +51,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Windows.x64
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-x64/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-x64/publish/
 
    Build_Windows_Arm:
       runs-on: windows-latest
@@ -75,7 +75,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Windows.arm
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-arm/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-arm/publish/
 
    Build_Windows_Arm64:
       runs-on: windows-latest
@@ -99,7 +99,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Windows.arm64
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-arm64/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-arm64/publish/
 
    Build_Linux_x64:
       runs-on: ubuntu-latest
@@ -123,7 +123,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Linux.x64
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-x64/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-x64/publish/
 
    Build_Linux_Arm:
       runs-on: ubuntu-latest
@@ -147,7 +147,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Linux.arm
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-arm/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-arm/publish/
 
    Build_Linux_Arm64:
       runs-on: ubuntu-latest
@@ -171,7 +171,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
              name: VoiceCraft.Client.Linux.arm64
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-arm64/publish/
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-arm64/publish/
           
    Build_Android_Arm:
     runs-on: ubuntu-latest
