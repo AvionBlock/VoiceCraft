@@ -53,30 +53,6 @@ jobs:
              name: VoiceCraft.Client.Windows.x64
              path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-x64/publish/
 
-   Build_Windows_Arm:
-      runs-on: windows-latest
-      defaults:
-         run:
-            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Windows
-      steps:
-         - uses: actions/checkout@v4
-         - name: Setup Dotnet
-           uses: actions/setup-dotnet@v3
-           with:
-             dotnet-version: '9.x'
-             
-         - name: Install VoiceCraft.Client.Windows WorkLoads
-           run: dotnet workload restore
-
-         - name: Publish VoiceCraft.Client.Windows.arm
-           run: dotnet publish -c Release -r win-arm --self-contained false -p:PublishSingleFile=true
-
-         - name: Upload Artifact VoiceCraft.Client.Windows.arm
-           uses: actions/upload-artifact@v4
-           with:
-             name: VoiceCraft.Client.Windows.arm
-             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-arm/publish/
-
    Build_Windows_Arm64:
       runs-on: windows-latest
       defaults:
