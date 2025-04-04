@@ -4,7 +4,175 @@ on:
       branches: [ "dev", "features/dev_actions" ]
    workflow_dispatch:
 
-jobs:       
+jobs:
+   Build_Windows_x86:
+      runs-on: windows-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Windows
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Windows WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Windows.x86
+           run: dotnet publish -c Release -r win-x86 --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Windows.x86
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Windows.x86
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-x86/publish/
+             
+   Build_Windows_x64:
+      runs-on: windows-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Windows
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Windows WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Windows.x64
+           run: dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Windows.x64
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Windows.x64
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-x64/publish/
+
+   Build_Windows_Arm:
+      runs-on: windows-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Windows
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Windows WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Windows.arm
+           run: dotnet publish -c Release -r win-arm --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Windows.arm
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Windows.arm
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-arm/publish/
+
+   Build_Windows_Arm64:
+      runs-on: windows-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Windows
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Windows WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Windows.arm64
+           run: dotnet publish -c Release -r win-arm64 --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Windows.arm64
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Windows.arm64
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Debug/net9.0-windows/win-arm64/publish/
+
+   Build_Linux_x64:
+      runs-on: ubuntu-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Linux
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Linux WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Linux.x64
+           run: dotnet publish -c Release -r linux-x64 --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Linux.x64
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Linux.x64
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-x64/publish/
+
+   Build_Linux_Arm:
+      runs-on: ubuntu-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Linux
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Linux WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Linux.arm
+           run: dotnet publish -c Release -r linux-arm --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Linux.arm
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Linux.arm
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-arm/publish/
+
+   Build_Linux_Arm64:
+      runs-on: ubuntu-latest
+      defaults:
+         run:
+            working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Linux
+      steps:
+         - uses: actions/checkout@v4
+         - name: Setup Dotnet
+           uses: actions/setup-dotnet@v3
+           with:
+             dotnet-version: '9.x'
+             
+         - name: Install VoiceCraft.Client.Linux WorkLoads
+           run: dotnet workload restore
+
+         - name: Publish VoiceCraft.Client.Linux.arm64
+           run: dotnet publish -c Release -r linux-arm64 --self-contained false -p:PublishSingleFile=true
+
+         - name: Upload Artifact VoiceCraft.Client.Linux.arm64
+           uses: actions/upload-artifact@v4
+           with:
+             name: VoiceCraft.Client.Linux.arm64
+             path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Debug/net9.0/linux-arm64/publish/
+          
    Build_Android_Arm:
     runs-on: ubuntu-latest
     defaults:
@@ -25,6 +193,7 @@ jobs:
 
       - name: Publish VoiceCraft.Client.Android.arm
         run: dotnet publish -c Release -r android-arm --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+        
       - name: Upload Artifact VoiceCraft.Client.Android.arm
         uses: actions/upload-artifact@v4
         with:
@@ -51,6 +220,7 @@ jobs:
 
       - name: Publish VoiceCraft.Client.Android.arm64
         run: dotnet publish -c Release -r android-arm64 --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+      
       - name: Upload Artifact VoiceCraft.Client.Android.arm64
         uses: actions/upload-artifact@v4
         with:
