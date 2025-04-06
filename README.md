@@ -22,6 +22,7 @@ There is also a comprehensive API system in place that addon developer's can use
 
 - ✅ Fully and natively supported.
 - ❎ Can be supported but no reason to.
+- ❗ Unknown status (limited support)
 - ❌ Not planned, Not supported.
 
 |Device     |x64|x86|arm32|arm64|
@@ -31,6 +32,7 @@ There is also a comprehensive API system in place that addon developer's can use
 |Windows    |✅ |✅ |❌   |✅   |
 |iOS        |❌ |❌ |✅   |✅   |
 |MacOS      |✅ |❌ |❌   |✅   |
+|Web        |❗ |❗ |❗   |❗   |
 |XBOX       |❌ |❌ |❌   |❌   |
 |PlayStation|❌ |❌ |❌   |❌   |
 |Switch     |❌ |❌ |❌   |❌   |
