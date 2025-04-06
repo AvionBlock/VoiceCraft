@@ -58,8 +58,11 @@ namespace VoiceCraft.Client.Audio
             }
             else
             {
-                _decoder.Decode(null, 0, _decodeBuffer, Constants.SamplesPerFrame, false);
-                _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
+                if (addSamples)
+                {
+                    _decoder.Decode(null, 0, _decodeBuffer, Constants.SamplesPerFrame, false);
+                    _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
+                }
             }
             
             _buffer.Tick();
