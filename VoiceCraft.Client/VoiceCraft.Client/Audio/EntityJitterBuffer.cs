@@ -49,20 +49,19 @@ namespace VoiceCraft.Client.Audio
             var outPacket = new SpeexDSPJitterBufferPacket(_decodeData, (uint)_decodeData.Length);
             var startOffset = 0;
             var addSamples = (_lastPacket - DateTime.UtcNow).TotalMilliseconds < Constants.SilenceThresholdMs;
-            if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
+            
+            if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) == JitterBufferState.JITTER_BUFFER_OK)
             {
-                if (addSamples)
-                    _decoder.Decode(null, 0, _decodeBuffer, Constants.SamplesPerFrame, false);
+                _decoder.Decode(_decodeData, (int)outPacket.len, _decodeBuffer, Constants.SamplesPerFrame, false);
+                _lastPacket = outPacket.user_data == 1 ? DateTime.MinValue : DateTime.UtcNow;
+                _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
             }
             else
             {
-                _decoder.Decode(_decodeData, (int)outPacket.len, _decodeBuffer, Constants.SamplesPerFrame, false);
-                _lastPacket = outPacket.user_data == 0? DateTime.UtcNow : DateTime.MinValue;
-                addSamples = true;
-            }
-
-            if(addSamples)
+                _decoder.Decode(null, 0, _decodeBuffer, Constants.SamplesPerFrame, false);
                 _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
+            }
+            
             _buffer.Tick();
         }
 
