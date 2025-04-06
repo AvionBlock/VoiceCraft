@@ -9,7 +9,7 @@ namespace VoiceCraft.Server
     public static class App
     {
         private static bool _shuttingDown;
-        private static CancellationTokenSource _cts = new();
+        private static readonly CancellationTokenSource Cts = new();
         private static string? _bufferedCommand;
 
         public static async Task Start()
@@ -22,6 +22,12 @@ namespace VoiceCraft.Server
                 //Startup.
                 Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Starting...";
                 AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
+                
+                //Table for Server Setup Display
+                var serverSetupTable = new Table()
+                    .AddColumn("Server")
+                    .AddColumn("Port")
+                    .AddColumn("Protocol");
 
                 //Properties
                 AnsiConsole.WriteLine("Loading Server Properties...");
@@ -32,13 +38,18 @@ namespace VoiceCraft.Server
                 server.Config = properties;
                 if (!server.Start())
                     throw new Exception("Failed to start VoiceCraft Server! Please check if another process is using the same port!");
-
-                //Finish
-                AnsiConsole.MarkupLine("[bold green]VoiceCraft server started![/]");
-
+                
+                //Server Started
+                AnsiConsole.MarkupLine("[green]VoiceCraft server started![/]");
+                serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
+                
+                //Server finished.
+                AnsiConsole.MarkupLine("[bold green]Server started![/]");
+                AnsiConsole.Write(serverSetupTable);
+                
                 StartCommandTask();
                 var tick1 = Environment.TickCount;
-                while (!_cts.IsCancellationRequested)
+                while (!Cts.IsCancellationRequested)
                 {
                     try
                     {
@@ -59,7 +70,7 @@ namespace VoiceCraft.Server
 
                 server.Stop();
                 server.Dispose();
-                _cts.Dispose();
+                Cts.Dispose();
                 AnsiConsole.MarkupLine("[green]Server shut down successfully![/]");
             }
             catch (Exception ex)
@@ -89,7 +100,7 @@ namespace VoiceCraft.Server
         {
             Task.Run(async () =>
             {
-                while (!_cts.IsCancellationRequested && !_shuttingDown)
+                while (!Cts.IsCancellationRequested && !_shuttingDown)
                 {
                     if (_bufferedCommand != null)
                     {
@@ -97,18 +108,18 @@ namespace VoiceCraft.Server
                         continue;
                     }
                     _bufferedCommand = Console.ReadLine();
-                    if (_cts.IsCancellationRequested || _shuttingDown) return;
+                    if (Cts.IsCancellationRequested || _shuttingDown) return;
                 }
             });
         }
 
-        public static void Shutdown(uint delayMs = 0)
+        private static void Shutdown(uint delayMs = 0)
         {
-            if (_cts.IsCancellationRequested || _shuttingDown) return;
+            if (Cts.IsCancellationRequested || _shuttingDown) return;
             _shuttingDown = true;
             AnsiConsole.MarkupLine(delayMs > 0 ? $"[bold yellow]Shutting down server in {delayMs}ms...[/]" : $"[bold yellow]Shutting down server...[/]");
             Task.Delay((int)delayMs).Wait();
-            _cts.Cancel();
+            Cts.Cancel();
         }
     }
 }
