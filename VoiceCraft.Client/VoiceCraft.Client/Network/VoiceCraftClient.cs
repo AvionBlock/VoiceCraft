@@ -25,6 +25,8 @@ namespace VoiceCraft.Client.Network
         public WaveFormat WaveFormat => AudioWaveFormat;
         public ConnectionState ConnectionState => LocalEntity?.NetPeer.ConnectionState ?? ConnectionState.Disconnected;
         public VoiceCraftClientNetworkEntity? LocalEntity { get; private set; }
+        public bool Muted { get; set; }
+        public bool Deafened { get; set; }
 
         public EventBasedNetListener Listener { get; } = new();
         public VoiceCraftWorld World { get; } = new();
@@ -176,6 +178,13 @@ namespace VoiceCraft.Client.Network
         
         private bool UpdateTransmitState(byte[] buffer)
         {
+            if (Muted)
+            {
+                if (!_transmitting) return false;
+                _transmitting = false;
+                return true;
+            }
+            
             var frameLoudness = GetFrameLoudness(buffer);
             if (frameLoudness >= 0.02f)
             {

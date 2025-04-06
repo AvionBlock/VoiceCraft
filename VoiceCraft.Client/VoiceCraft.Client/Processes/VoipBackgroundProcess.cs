@@ -140,6 +140,7 @@ namespace VoiceCraft.Client.Processes
         public void ToggleMute()
         {
             Muted = !Muted;
+            _voiceCraftClient.Muted = Muted;
         }
 
         public void ToggleDeafen()
