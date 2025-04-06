@@ -25,10 +25,12 @@ namespace VoiceCraft.Server
             serviceCollection.AddSingleton(rootCommand);
             serviceCollection.AddSingleton<SetWorldIdCommand>();
             serviceCollection.AddSingleton<ListCommand>();
+            serviceCollection.AddSingleton<SetTitleCommand>();
             
             var serviceProvider = serviceCollection.BuildServiceProvider();
             rootCommand.AddCommand(serviceProvider.GetRequiredService<SetWorldIdCommand>());
             rootCommand.AddCommand(serviceProvider.GetRequiredService<ListCommand>());
+            rootCommand.AddCommand(serviceProvider.GetRequiredService<SetTitleCommand>());
             return serviceProvider;
         }
     }

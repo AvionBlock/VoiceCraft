@@ -40,7 +40,7 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
         private bool _transmitting;
-
+        
         private uint _timestamp;
         private bool _isDisposed;
 

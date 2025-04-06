@@ -91,6 +91,7 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
                 _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
+                _voiceCraftClient.NetworkSystem.OnSetTitle += ClientOnSetTitle;
 
                 _voiceCraftClient.Connect(ip, port, LoginType.Login);
                 Title = Locales.Locales.VoiceCraft_Status_Title;
@@ -198,6 +199,11 @@ namespace VoiceCraft.Client.Processes
         {
             if(!_entityViewModels.Remove(entity, out var entityViewModel)) return;
             OnEntityRemoved?.Invoke(entityViewModel);
+        }
+
+        private void ClientOnSetTitle(string title)
+        {
+            Description = title;
         }
         
         private void DataAvailable(object? sender, WaveInEventArgs e)

@@ -18,6 +18,7 @@ namespace VoiceCraft.Client.Network.Systems
         private readonly VoiceCraftWorld _world;
 
         public event Action<ServerInfo>? OnServerInfo;
+        public event Action<string>? OnSetTitle;
 
         public NetworkSystem(VoiceCraftClient client, NetManager netManager)
         {
@@ -94,6 +95,11 @@ namespace VoiceCraft.Client.Network.Systems
                         audioPacket.Deserialize(reader);
                         HandleAudioPacket(audioPacket);
                         break;
+                    case PacketType.SetTitle:
+                        var setTitlePacket = new SetTitlePacket();
+                        setTitlePacket.Deserialize(reader);
+                        HandleSetTitlePacket(setTitlePacket);
+                        break;
                     case PacketType.EntityCreated:
                         var entityCreatedPacket = new EntityCreatedPacket();
                         entityCreatedPacket.Deserialize(reader);
@@ -148,6 +154,7 @@ namespace VoiceCraft.Client.Network.Systems
                     //Unused
                     case PacketType.Login:
                     case PacketType.Audio:
+                    case PacketType.SetTitle:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
@@ -180,6 +187,17 @@ namespace VoiceCraft.Client.Network.Systems
         {
             OnServerInfo?.Invoke(new ServerInfo(infoPacket));
         }
+        
+        private void HandleAudioPacket(AudioPacket packet)
+        {
+            if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
+            entity.ReceiveAudio(packet.Data, packet.Timestamp, packet.EndOfTransmission);
+        }
+
+        private void HandleSetTitlePacket(SetTitlePacket packet)
+        {
+            OnSetTitle?.Invoke(packet.Title);
+        }
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet)
         {
@@ -197,12 +215,6 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
         {
             _world.DestroyEntity(packet.Id); //Won't crash.
-        }
-
-        private void HandleAudioPacket(AudioPacket packet)
-        {
-            if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
-            entity.ReceiveAudio(packet.Data, packet.Timestamp, packet.EndOfTransmission);
         }
     }
 }
