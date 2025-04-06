@@ -341,6 +341,24 @@ namespace VoiceCraft.Core
             if (Destroyed) return;
             Destroyed = true;
             OnDestroyed?.Invoke(this);
+            
+            //Deregister all events.
+            OnVisibleEntityAdded = null;
+            OnVisibleEntityRemoved = null;
+            OnAudioReceived = null;
+            OnDestroyed = null;
+            OnNameUpdated = null;
+            OnTalkBitmaskUpdated = null;
+            OnListenBitmaskUpdated = null;
+            OnPositionUpdated = null;
+            OnRotationUpdated = null;
+            OnAudioReceived = null;
+            OnIntPropertySet = null;
+            OnBoolPropertySet = null;
+            OnFloatPropertySet = null;
+            OnIntPropertyRemoved = null;
+            OnBoolPropertyRemoved = null;
+            OnFloatPropertyRemoved = null;
         }
     }
 }

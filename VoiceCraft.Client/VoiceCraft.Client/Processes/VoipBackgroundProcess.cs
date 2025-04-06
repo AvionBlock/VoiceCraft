@@ -97,13 +97,13 @@ namespace VoiceCraft.Client.Processes
                 Description = Locales.Locales.VoiceCraft_Status_Initializing;
 
                 _audioRecorder = audioService.CreateAudioRecorder();
-                _audioRecorder.WaveFormat = VoiceCraftClient.WaveFormat;
+                _audioRecorder.WaveFormat = VoiceCraftClient.RecordWaveFormat;
                 _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioRecorder.DataAvailable += DataAvailable;
                 _audioRecorder.StartRecording();
                 
                 _audioPlayer = audioService.CreateAudioPlayer();
-                _audioPlayer.Init(_voiceCraftClient.ReceiveBuffer);
+                _audioPlayer.Init(_voiceCraftClient);
                 _audioPlayer.Play();
 
                 Title = Locales.Locales.VoiceCraft_Status_Title;
@@ -201,7 +201,7 @@ namespace VoiceCraft.Client.Processes
         
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
-            _voiceCraftClient.SendBuffer.AddSamples(e.Buffer, 0, e.BytesRecorded);
+            _voiceCraftClient.Write(e.Buffer, 0, e.BytesRecorded);
         }
     }
 }

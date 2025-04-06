@@ -64,6 +64,10 @@ namespace VoiceCraft.Core
             }
             
             Entities.Clear();
+
+            //Deregister all events.
+            OnEntityDestroyed = null;
+            OnEntityDestroyed = null;
         }
 
         private void DestroyEntity(VoiceCraftEntity entity)
