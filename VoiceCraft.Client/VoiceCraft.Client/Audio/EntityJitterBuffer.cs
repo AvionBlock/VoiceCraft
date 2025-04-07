@@ -24,6 +24,7 @@ namespace VoiceCraft.Client.Audio
         private readonly byte[] _decodeData = new byte[Constants.MaximumEncodedBytes];
         private readonly byte[] _decodeBuffer = new byte[Constants.BytesPerFrame];
         private DateTime _lastPacket = DateTime.MinValue;
+        private bool _receiving;
 
         public EntityJitterBuffer(WaveFormat waveFormat, VoiceCraftEntity entity)
         {
@@ -48,34 +49,44 @@ namespace VoiceCraft.Client.Audio
 
             var outPacket = new SpeexDSPJitterBufferPacket(_decodeData, (uint)_decodeData.Length);
             var startOffset = 0;
-            var addSamples = (_lastPacket - DateTime.UtcNow).TotalMilliseconds < Constants.SilenceThresholdMs;
             
             if (_buffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) == JitterBufferState.JITTER_BUFFER_OK)
             {
+                if (_receiving == false)
+                {
+                    //Just to smooth out audio.
+                    _decoder.Decode(null, 0, _decodeBuffer, Constants.SamplesPerFrame, false);
+                    _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
+                    _receiving = true;
+                }
+                
                 _decoder.Decode(_decodeData, (int)outPacket.len, _decodeBuffer, Constants.SamplesPerFrame, false);
-                _lastPacket = outPacket.user_data == 1 ? DateTime.MinValue : DateTime.UtcNow;
+                _lastPacket = DateTime.UtcNow;
                 _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
             }
             else
             {
-                if (addSamples)
+                if ((DateTime.UtcNow - _lastPacket).TotalMilliseconds < Constants.SilenceThresholdMs)
                 {
                     _decoder.Decode(null, 0, _decodeBuffer, Constants.SamplesPerFrame, false);
                     _bufferedAudio.AddSamples(_decodeBuffer, 0, _decodeBuffer.Length);
+                }
+                else
+                {
+                    _receiving = false;
                 }
             }
             
             _buffer.Tick();
         }
 
-        private void OnEntityAudioReceived(byte[] data, uint timestamp, bool endOfTransmission, VoiceCraftEntity entity)
+        private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
         {
             var inPacket = new SpeexDSPJitterBufferPacket(data, (uint)data.Length)
             {
                 sequence = 0, //Don't care about the sequence.
                 span = Constants.SamplesPerFrame,
-                timestamp = timestamp,
-                user_data = endOfTransmission ? 1u : 0u
+                timestamp = timestamp
             };
             _buffer.Put(ref inPacket);
         }

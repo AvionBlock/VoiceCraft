@@ -25,6 +25,7 @@ namespace VoiceCraft.Client.Network
         public WaveFormat WaveFormat => AudioWaveFormat;
         public ConnectionState ConnectionState => LocalEntity?.NetPeer.ConnectionState ?? ConnectionState.Disconnected;
         public VoiceCraftClientNetworkEntity? LocalEntity { get; private set; }
+        public bool IsSpeaking => (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds < Constants.SilenceThresholdMs;
         public bool Muted { get; set; }
         public bool Deafened { get; set; }
 
@@ -39,7 +40,6 @@ namespace VoiceCraft.Client.Network
         //Buffers
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
-        private bool _transmitting;
         
         private uint _timestamp;
         private bool _isDisposed;
@@ -128,11 +128,13 @@ namespace VoiceCraft.Client.Network
             if (LocalEntity == null) return;
             Array.Clear(_encodeBuffer);
             _timestamp += Constants.SamplesPerFrame; //Increase timestamp. even if we don't send it.
-            var lastPacket = UpdateTransmitState(buffer);
-            if (!_transmitting && !lastPacket) return;
-            
+            var frameLoudness = GetFrameLoudness(buffer);
+            if (frameLoudness >= 0.03f)
+                _lastAudioPeakTime = DateTime.UtcNow;
+
+            if (!IsSpeaking) return;
             var encoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-            var packet = new AudioPacket(LocalEntity.NetPeer.RemoteId, _timestamp, lastPacket, encoded, _encodeBuffer);
+            var packet = new AudioPacket(LocalEntity.NetPeer.RemoteId, _timestamp, encoded, _encodeBuffer);
             NetworkSystem.SendPacket(packet);
         }
 
@@ -175,28 +177,6 @@ namespace VoiceCraft.Client.Network
         }
 
         #endregion
-        
-        private bool UpdateTransmitState(byte[] buffer)
-        {
-            if (Muted)
-            {
-                if (!_transmitting) return false;
-                _transmitting = false;
-                return true;
-            }
-            
-            var frameLoudness = GetFrameLoudness(buffer);
-            if (frameLoudness >= 0.02f)
-            {
-                _lastAudioPeakTime = DateTime.UtcNow;
-                _transmitting = true;
-                return false;
-            }
-
-            if (!_transmitting || !((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds >= Constants.SilenceThresholdMs)) return false;
-            _transmitting = false;
-            return true;
-        }
 
         private static float GetFrameLoudness(byte[] data)
         {

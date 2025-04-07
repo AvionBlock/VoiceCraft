@@ -111,15 +111,15 @@ namespace VoiceCraft.Client.Processes
                 Description = Locales.Locales.VoiceCraft_Status_Connecting;
 
                 IsStarted = true;
-                var tick1 = Environment.TickCount;
+                var startTime = DateTime.UtcNow;
                 while (!TokenSource.Token.IsCancellationRequested)
                 {
                     _voiceCraftClient.Update(); //Update all networking processes.
-                    var dist = Environment.TickCount - tick1;
-                    var delay = Constants.FrameSizeMs - dist;
+                    var dist = DateTime.UtcNow - startTime;
+                    var delay = Constants.FrameSizeMs - dist.TotalMilliseconds;
                     if (delay > 0)
-                        Task.Delay(delay).GetAwaiter().GetResult();
-                    tick1 = Environment.TickCount;
+                        Task.Delay((int)delay).GetAwaiter().GetResult();
+                    startTime = DateTime.UtcNow;
                 }
 
                 if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)

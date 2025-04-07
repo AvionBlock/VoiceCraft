@@ -48,7 +48,7 @@ namespace VoiceCraft.Server
                 AnsiConsole.Write(serverSetupTable);
                 
                 StartCommandTask();
-                var tick1 = Environment.TickCount;
+                var startTime = DateTime.UtcNow;
                 while (!Cts.IsCancellationRequested)
                 {
                     try
@@ -56,11 +56,11 @@ namespace VoiceCraft.Server
                         server.Update();
                         await FlushCommand(rootCommand);
                         
-                        var dist = Environment.TickCount - tick1;
-                        var delay = Constants.FrameSizeMs - dist;
+                        var dist = DateTime.UtcNow - startTime;
+                        var delay = Constants.FrameSizeMs - dist.TotalMilliseconds;
                         if (delay > 0)
-                            await Task.Delay(delay);
-                        tick1 = Environment.TickCount;
+                            await Task.Delay((int)delay);
+                        startTime = DateTime.UtcNow;
                     }
                     catch (Exception ex)
                     {

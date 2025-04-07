@@ -66,10 +66,10 @@ namespace VoiceCraft.Client.Android.Background
                 throw new Exception("Failed to start background process! Background worker failed to start!");
             }
 
-            var startTime = System.Environment.TickCount;
+            var startTime = DateTime.UtcNow;
             while (!AndroidBackgroundService.RunningBackgroundProcesses.ContainsKey(processType))
             {
-                if (System.Environment.TickCount - startTime >= timeout)
+                if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
                     throw new Exception("Failed to start background process!");
                 await Task.Delay(10); //Don't burn the CPU!
             }

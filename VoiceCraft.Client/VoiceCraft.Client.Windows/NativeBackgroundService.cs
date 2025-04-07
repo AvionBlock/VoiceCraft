@@ -57,10 +57,10 @@ namespace VoiceCraft.Client.Windows
                 throw new Exception("Failed to start background process! Background worker failed to start!");
             }
 
-            var startTime = Environment.TickCount64;
+            var startTime = DateTime.UtcNow;
             while (!_runningBackgroundProcesses.ContainsKey(processType))
             {
-                if (Environment.TickCount64 - startTime >= timeout)
+                if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
                     throw new Exception("Failed to start background process!");
                 await Task.Delay(10); //Don't burn the CPU!
             }

@@ -191,7 +191,7 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleAudioPacket(AudioPacket packet)
         {
             if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
-            entity.ReceiveAudio(packet.Data, packet.Timestamp, packet.EndOfTransmission);
+            entity.ReceiveAudio(packet.Data, packet.Timestamp);
         }
 
         private void HandleSetTitlePacket(SetTitlePacket packet)

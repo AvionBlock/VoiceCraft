@@ -8,15 +8,13 @@ namespace VoiceCraft.Core.Network.Packets
         public override PacketType PacketType => PacketType.Audio;
         public int Id { get; private set; }
         public uint Timestamp { get; private set; }
-        public bool EndOfTransmission { get; private set; }
         public int Length { get; private set; }
         public byte[] Data { get; private set; }
         
-        public AudioPacket(int id = 0, uint timestamp = 0, bool endOfTransmission = false, int length = 0, byte[]? data = null)
+        public AudioPacket(int id = 0, uint timestamp = 0, int length = 0, byte[]? data = null)
         {
             Id = id;
             Timestamp = timestamp;
-            EndOfTransmission = endOfTransmission;
             Length = length;
             Data = data ?? Array.Empty<byte>();
         }
@@ -25,7 +23,6 @@ namespace VoiceCraft.Core.Network.Packets
         {
             writer.Put(Id);
             writer.Put(Timestamp);
-            writer.Put(EndOfTransmission);
             writer.Put(Data, 0, Length);
         }
 
@@ -33,7 +30,6 @@ namespace VoiceCraft.Core.Network.Packets
         {
             Id = reader.GetInt();
             Timestamp = reader.GetUInt();
-            EndOfTransmission = reader.GetBool();
             Length = reader.AvailableBytes;
             //Fuck no. we aren't allocating anything higher than the expected amount of bytes (WHICH SHOULD BE COMPRESSED!).
             if (Length > Constants.MaximumEncodedBytes)

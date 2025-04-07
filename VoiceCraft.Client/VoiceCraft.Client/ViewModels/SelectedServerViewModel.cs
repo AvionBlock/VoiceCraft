@@ -44,16 +44,16 @@ namespace VoiceCraft.Client.ViewModels
             {
                 var client = new VoiceCraftClient();
                 client.NetworkSystem.OnServerInfo += OnServerInfo;
-                var startTime = Environment.TickCount;
+                var startTime = DateTime.UtcNow;
                 while (!_stopPinger)
                 {
                     await Task.Delay(2);
                     if(SelectedServer == null) continue;
                     client.Update();
                     
-                    if (Environment.TickCount - startTime < 2000) continue;
+                    if ((DateTime.UtcNow - startTime).TotalMilliseconds < 2000) continue;
                     client.Ping(SelectedServer.Ip, SelectedServer.Port);
-                    startTime = Environment.TickCount;
+                    startTime = DateTime.UtcNow;
                 }
                 client.NetworkSystem.OnServerInfo -= OnServerInfo;
                 client.Dispose();

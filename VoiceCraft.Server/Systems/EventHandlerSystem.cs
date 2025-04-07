@@ -184,7 +184,7 @@ namespace VoiceCraft.Server.Systems
         }
 
         //Audio
-        private void OnEntityAudioReceived(byte[] data, uint timestamp, bool endOfTransmission, VoiceCraftEntity entity)
+        private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
         {
             _tasks.Add(new Task(() =>
             {
@@ -192,7 +192,7 @@ namespace VoiceCraft.Server.Systems
                 var visibleEntities = entity.VisibleEntities.Where(x => x != entity);
                 foreach (var visibleEntity in visibleEntities)
                 {
-                    var packet = new AudioPacket(entity.Id, timestamp, endOfTransmission, data.Length, data);
+                    var packet = new AudioPacket(entity.Id, timestamp, data.Length, data);
                     _networkSystem.SendPacket(visibleEntity.NetPeer, packet);
                 }
             }));

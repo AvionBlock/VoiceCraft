@@ -261,7 +261,7 @@ namespace VoiceCraft.Server.Systems
         private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
         {
             if (!_world.Entities.TryGetValue(peer.Id, out var entity) || entity is not VoiceCraftNetworkEntity networkEntity) return;
-            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp, audioPacket.EndOfTransmission);
+            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
         }
     }
 }

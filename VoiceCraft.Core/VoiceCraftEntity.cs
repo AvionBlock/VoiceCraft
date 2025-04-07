@@ -11,7 +11,7 @@ namespace VoiceCraft.Core
         //Entity events.
         public event Action<VoiceCraftNetworkEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftNetworkEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
-        public event Action<byte[], uint, bool, VoiceCraftEntity>? OnAudioReceived;
+        public event Action<byte[], uint, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
         
         #region Updatable Property Events
@@ -41,11 +41,10 @@ namespace VoiceCraft.Core
         private ulong _listenBitmask = 1;
         private Vector3 _position;
         private Quaternion _rotation;
-        private bool _endTransmission = true;
 
         //Properties
         public int Id { get; }
-        public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs || !_endTransmission;
+        public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<KeyValuePair<string, int>> IntProperties => _intProperties;
@@ -234,11 +233,10 @@ namespace VoiceCraft.Core
         }
         #endregion
 
-        public void ReceiveAudio(byte[] buffer, uint timestamp, bool endOfTransmission)
+        public void ReceiveAudio(byte[] buffer, uint timestamp)
         {
-            _endTransmission = endOfTransmission;
             LastSpoke = DateTime.UtcNow;
-            OnAudioReceived?.Invoke(buffer, timestamp, endOfTransmission, this);
+            OnAudioReceived?.Invoke(buffer, timestamp, this);
         }
 
         public bool VisibleTo(VoiceCraftEntity entity)
