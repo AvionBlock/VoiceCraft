@@ -17,6 +17,9 @@ VoiceCraft is coded in C# for both the server and applications using the Avaloni
 
 There is also a comprehensive API system in place that addon developer's can use to customize VoiceCraft's behavior, audio effects, audio simulations and more!
 
+<p align="center">
+  <img width="800" src="./Images/Screenshot from 2025-04-07 15-06-51.png">
+</p>
 
 ## Supported Devices
 
