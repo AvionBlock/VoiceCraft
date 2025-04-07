@@ -28,6 +28,7 @@ namespace VoiceCraft.Client.Network
         public bool IsSpeaking => (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds < Constants.SilenceThresholdMs;
         public bool Muted { get; set; }
         public bool Deafened { get; set; }
+        public float MicrophoneSensitivity { get; set; }
 
         public EventBasedNetListener Listener { get; } = new();
         public VoiceCraftWorld World { get; } = new();
@@ -129,10 +130,10 @@ namespace VoiceCraft.Client.Network
             Array.Clear(_encodeBuffer);
             _timestamp += Constants.SamplesPerFrame; //Increase timestamp. even if we don't send it.
             var frameLoudness = GetFrameLoudness(buffer);
-            if (frameLoudness >= 0.03f)
+            if (frameLoudness >= MicrophoneSensitivity)
                 _lastAudioPeakTime = DateTime.UtcNow;
 
-            if (!IsSpeaking) return;
+            if (!IsSpeaking || Muted) return;
             var encoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
             var packet = new AudioPacket(LocalEntity.NetPeer.RemoteId, _timestamp, encoded, _encodeBuffer);
             NetworkSystem.SendPacket(packet);

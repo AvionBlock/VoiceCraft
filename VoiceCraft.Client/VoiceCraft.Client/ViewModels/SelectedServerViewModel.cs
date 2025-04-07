@@ -83,7 +83,7 @@ namespace VoiceCraft.Client.ViewModels
         private async Task Connect()
         {
             if (SelectedServer == null) return;
-            var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService);
+            var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService, settingsService);
             try
             {
                 DisableBackButton = true;
