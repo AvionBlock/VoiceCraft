@@ -2,16 +2,63 @@
     <PropertyGroup>
         <TargetFramework>net9.0-browser</TargetFramework>
         <OutputType>Exe</OutputType>
+        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Nullable>enable</Nullable>
+        <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+
+        <IsAotCompatible>true</IsAotCompatible>
+        <WasmBuildNative>true</WasmBuildNative>
+        <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+        <WasmEnableThreads>true</WasmEnableThreads>
+        <PublishTrimmed>true</PublishTrimmed>
+        <EnableAggressiveTrimming>true</EnableAggressiveTrimming>
+        <WasmEnableWebcil>false</WasmEnableWebcil>
+        <EmccEnvironment>web,worker</EmccEnvironment>
+
+        <WasmEmitSymbolMap>true</WasmEmitSymbolMap>
+        <EmccEnableAssertions>true</EmccEnableAssertions>
+
+        <!-- <RunAOTCompilation>true</RunAOTCompilation> -->
+
+        <!-- <TrimMode>full</TrimMode> -->
+        <!-- <WasmStripILAfterAOT>true</WasmStripILAfterAOT> -->
+        <!-- <WasmEnableLinking>false</WasmEnableLinking> -->
+
+        <!-- <EmccExtraCFlags>-fPIC -sMAIN_MODULE=2</EmccExtraCFlags> -->
+        <!-- <EmccExtraLDFlags>-fPIC -sMAIN_MODULE=2 -s USE_CLOSURE_COMPILER=1</EmccExtraLDFlags> -->
+        <!-- <EmccFlags>-fPIC</EmccFlags> -->
+        <!-- <EmccFlags>-sMAIN_MODULE</EmccFlags> -->
+        <!-- <EmccExtraCFlags>$(MSBuildProjectDirectory)/wrapper/wrapper.wasm -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccExtraCFlags> -->
+        <!-- <EmccExtraLDFlags>-lopenal $(MSBuildProjectDirectory)/wrapper/wrapper.wasm -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccExtraLDFlags> -->
+        <!-- <EmccExtraLDFlags>-sMAIN_MODULE -s USE_CLOSURE_COMPILER=1</EmccExtraLDFlags> -->
+        <!-- <_WasiSdkClangArgs Include="-lopenal.js -O3 -sNO_DYNAMIC_EXECUTION=1 -sNO_FILESYSTEM=1 -sWASM=1 -sBINARYEN_ASYNC_COMPILATION=0" /> -->
+        <!-- <EmccExportedFunction>alcGetString</EmccExportedFunction> -->
+        <!-- <EmccExtraLDFlags>-lopenal</EmccExtraLDFlags> -->
+        <CompressionEnabled>false</CompressionEnabled>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Browser"/>
         <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+
+        <PackageReference Include="OpenTK.Audio.OpenAL" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <NativeFileReference Include="opus.a" />
+        <!-- <NativeFileReference Include="speexdsp.a" /> -->
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- <EmccExportedRuntimeMethod Include="AL" /> -->
+        <!-- <EmccExportedFunction Include="_alcGetString" /> -->
+        <NativeFileReference Include="libal.c" ScanForPInvokes="true" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+        <TrimmerRootAssembly Include="VoiceCraft.Client"/>
     </ItemGroup>
 </Project>
