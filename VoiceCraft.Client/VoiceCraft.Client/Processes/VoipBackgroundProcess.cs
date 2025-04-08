@@ -32,7 +32,7 @@ namespace VoiceCraft.Client.Processes
         public event Action<EntityViewModel>? OnEntityRemoved;
 
         //Public Variables
-        public bool IsStarted { get; private set; }
+        public BackgroundProcessStatus Status { get; set; }
         public CancellationTokenSource TokenSource { get; } = new();
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
 
@@ -42,7 +42,7 @@ namespace VoiceCraft.Client.Processes
             set
             {
                 _title = value;
-                OnUpdateTitle?.Invoke(value);
+                Dispatcher.UIThread.Invoke(() => OnUpdateTitle?.Invoke(value));
             }
         }
 
@@ -52,7 +52,7 @@ namespace VoiceCraft.Client.Processes
             private set
             {
                 _description = value;
-                OnUpdateDescription?.Invoke(value);
+                Dispatcher.UIThread.Invoke(() => OnUpdateDescription?.Invoke(value));
             }
         }
 
@@ -101,7 +101,7 @@ namespace VoiceCraft.Client.Processes
             {
                 Title = Locales.Locales.VoiceCraft_Status_Title;
                 Description = Locales.Locales.VoiceCraft_Status_Initializing;
-
+                
                 var audioSettings = settingsService.Get<AudioSettings>();
 
                 _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
@@ -144,7 +144,7 @@ namespace VoiceCraft.Client.Processes
                 Title = Locales.Locales.VoiceCraft_Status_Title;
                 Description = Locales.Locales.VoiceCraft_Status_Connecting;
 
-                IsStarted = true;
+                Status = BackgroundProcessStatus.Started;
                 var startTime = DateTime.UtcNow;
                 while (!TokenSource.Token.IsCancellationRequested)
                 {
@@ -164,11 +164,15 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
                 _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
+                Status = BackgroundProcessStatus.Completed;
             }
-            catch
+            catch(Exception ex)
             {
-                IsStarted = false; //I don't know why I left this as true.
-                throw;
+                Status = BackgroundProcessStatus.Error;
+                Dispatcher.UIThread.Invoke(() =>
+                {
+                    notificationService.SendErrorNotification($"Voip Background Error: {ex.Message}");
+                });
             }
         }
 
@@ -226,13 +230,13 @@ namespace VoiceCraft.Client.Processes
         {
             var entityViewModel = new EntityViewModel(entity);
             if (!_entityViewModels.TryAdd(entity, entityViewModel)) return;
-            OnEntityAdded?.Invoke(entityViewModel);
+            Dispatcher.UIThread.Invoke(() => OnEntityAdded?.Invoke(entityViewModel));
         }
 
         private void ClientWorldOnEntityDestroyed(VoiceCraftEntity entity)
         {
             if (!_entityViewModels.Remove(entity, out var entityViewModel)) return;
-            OnEntityRemoved?.Invoke(entityViewModel);
+            Dispatcher.UIThread.Invoke(() => OnEntityRemoved?.Invoke(entityViewModel));
         }
 
         private void ClientOnSetTitle(string title)

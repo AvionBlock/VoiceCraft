@@ -31,7 +31,11 @@ namespace VoiceCraft.Client.Linux
                         ClearCompletedProcesses();
                         
                         if (!_queuedProcesses.TryDequeue(out var process)) continue;
-                        var task = Task.Run(() => process.Value.Start(), process.Value.TokenSource.Token);
+                        var task = Task.Run(() => {
+                                process.Value.Status = BackgroundProcessStatus.Starting;
+                                process.Value.Start();
+                            },
+                            process.Value.TokenSource.Token);
                         _runningBackgroundProcesses.TryAdd(process.Key, new KeyValuePair<Task, IBackgroundProcess>(task, process.Value));
                         OnProcessStarted?.Invoke(process.Value);
                     }
@@ -58,7 +62,7 @@ namespace VoiceCraft.Client.Linux
             }
 
             var startTime = DateTime.UtcNow;
-            while (!_runningBackgroundProcesses.ContainsKey(processType))
+            while (process.Status == BackgroundProcessStatus.Stopped)
             {
                 if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
                     throw new Exception("Failed to start background process!");

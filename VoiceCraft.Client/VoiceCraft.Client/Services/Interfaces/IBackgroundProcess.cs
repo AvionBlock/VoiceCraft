@@ -5,10 +5,19 @@ namespace VoiceCraft.Client.Services.Interfaces
 {
     public interface IBackgroundProcess : IDisposable
     {
-        bool IsStarted { get; }
+        BackgroundProcessStatus Status { get; set; }
         event Action<string>? OnUpdateTitle;
         event Action<string>? OnUpdateDescription;
         CancellationTokenSource TokenSource { get; }
         void Start();
+    }
+
+    public enum BackgroundProcessStatus
+    {
+        Stopped,
+        Starting,
+        Started,
+        Completed,
+        Error
     }
 }

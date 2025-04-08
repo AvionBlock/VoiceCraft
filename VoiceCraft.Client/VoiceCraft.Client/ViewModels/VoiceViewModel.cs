@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using LiteNetLib;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Client.ViewModels.Data;
 
 namespace VoiceCraft.Client.ViewModels
@@ -46,7 +47,7 @@ namespace VoiceCraft.Client.ViewModels
         public override void OnAppearing()
         {
             if (_process == null) return;
-            if (_process.ConnectionState == ConnectionState.Disconnected)
+            if (_process.Status is not (BackgroundProcessStatus.Starting or BackgroundProcessStatus.Started))
             {
                 navigationService.Back();
                 return;

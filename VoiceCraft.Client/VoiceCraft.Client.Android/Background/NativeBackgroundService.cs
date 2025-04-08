@@ -67,7 +67,7 @@ namespace VoiceCraft.Client.Android.Background
             }
 
             var startTime = DateTime.UtcNow;
-            while (!AndroidBackgroundService.RunningBackgroundProcesses.ContainsKey(processType))
+            while (process.Status == BackgroundProcessStatus.Stopped)
             {
                 if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
                     throw new Exception("Failed to start background process!");

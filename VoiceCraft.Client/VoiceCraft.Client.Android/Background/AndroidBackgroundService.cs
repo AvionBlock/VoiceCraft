@@ -9,7 +9,6 @@ using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Core;
 
@@ -75,7 +74,11 @@ namespace VoiceCraft.Client.Android.Background
                         process.Value.OnUpdateTitle += ProcessOnUpdateTitle;
                         process.Value.OnUpdateDescription += ProcessOnUpdateDescription;
                         
-                        var task = Task.Run(() => process.Value.Start(), process.Value.TokenSource.Token);
+                        var task = Task.Run(() => {
+                                process.Value.Status = BackgroundProcessStatus.Starting;
+                                process.Value.Start();
+                            },
+                            process.Value.TokenSource.Token);
                         RunningBackgroundProcesses.TryAdd(process.Key, new KeyValuePair<Task, IBackgroundProcess>(task, process.Value));
                         WeakReferenceMessenger.Default.Send(new ProcessStarted(process.Value));
                     }
@@ -162,6 +165,4 @@ namespace VoiceCraft.Client.Android.Background
                     .Build());
         }
     }
-
-    public class GetQueuedProcess : RequestMessage<IBackgroundProcess?>;
 }
