@@ -4,12 +4,13 @@ using VoiceCraft.Client.Audio.Interfaces;
 
 namespace VoiceCraft.Client.Audio
 {
-    public class EchoCancellationSampleProvider : ISampleProvider
+    public class EchoCancellationSampleProvider : ISampleProvider, IDisposable
     {
         public WaveFormat WaveFormat => _source.WaveFormat;
         private readonly IEchoCanceler _canceller;
         private readonly ISampleProvider _source;
         private readonly byte[] _buffer;
+        private bool _disposed;
         
         public EchoCancellationSampleProvider(int bufferMilliseconds, ISampleProvider source, IEchoCanceler echoCanceler)
         {
@@ -17,6 +18,11 @@ namespace VoiceCraft.Client.Audio
             _source = source;
             var bytesPerFrame = WaveFormat.ConvertLatencyToByteSize(bufferMilliseconds);
             _buffer = new byte[bytesPerFrame];
+        }
+
+        ~EchoCancellationSampleProvider()
+        {
+            Dispose(false);
         }
 
         public void Init(IAudioRecorder audioRecorder, IAudioPlayer audioPlayer)
@@ -35,6 +41,24 @@ namespace VoiceCraft.Client.Audio
         public void Cancel(byte[] buffer)
         {
             _canceller.EchoCancel(buffer);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        
+        private void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _canceller.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

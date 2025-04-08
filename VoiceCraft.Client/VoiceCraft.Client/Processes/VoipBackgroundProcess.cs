@@ -172,6 +172,7 @@ namespace VoiceCraft.Client.Processes
                 Dispatcher.UIThread.Invoke(() =>
                 {
                     notificationService.SendErrorNotification($"Voip Background Error: {ex.Message}");
+                    OnDisconnected?.Invoke(ex.Message);
                 });
             }
         }
@@ -204,6 +205,13 @@ namespace VoiceCraft.Client.Processes
                 _audioPlayer?.Stop();
             _audioPlayer?.Dispose();
             _audioPlayer = null;
+            
+            _automaticGainController?.Dispose();
+            _automaticGainController = null;
+            _denoiser?.Dispose();
+            _denoiser = null;
+            _echoCanceler?.Dispose();
+            _echoCanceler = null;
             GC.SuppressFinalize(this);
         }
 
