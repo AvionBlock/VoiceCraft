@@ -25,7 +25,7 @@
 
   "Settings.Audio": "Audio Instellingen",
   "Settings.Audio.AutomaticGainControllers": "Automatische versterkingsregelaars",
-  "Settings.Audio.Denoisers": "Denoisers",
+  "Settings.Audio.Denoisers": "Ruis-onderdrukkers",
   "Settings.Audio.EchoCancelers": "Echo-onderdrukkers",
   "Settings.Audio.InputDevices": "Invoerapparaten",
   "Settings.Audio.MicrophoneSensitivity": "Microfoon Gevoeligheid",
@@ -33,6 +33,13 @@
   "Settings.Audio.MicrophoneTest.Test": "Test",
   "Settings.Audio.OutputDevices": "Uitvoerapparaten",
   "Settings.Audio.TestOutput": "Test Uitvoer",
+
+  "SelectedServer.Address": "Adres",
+  "SelectedServer.PingInformation": "Ping informatie",
+  "SelectedServer.Latency": "Latentie",
+  "SelectedServer.ServerInfo": "Server info",
+  "SelectedServer.ServerInfo.Status": "Motd: {motd}\nOntdekking: {discovery}\nPositioneringstype: {positioningType}\nVerbonden clients: {clients}",
+  "SelectedServer.ServerInfo.Status.Pinging": "Pingen...",
 
   "Android.AudioPlayer.Exception.ChannelMask": "Invoergolfprovider moet mono of stereo zijn!",
   "Android.AudioPlayer.Exception.CreateAudioTrack": "Kan geen audiotrack maken!",
