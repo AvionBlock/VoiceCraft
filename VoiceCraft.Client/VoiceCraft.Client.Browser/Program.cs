@@ -24,7 +24,8 @@ namespace VoiceCraft.Client.Browser
     sealed class Program
     {
         private static Task Main(string[] _) {
-            OpenALLibraryNameContainer.OverridePath = "libal";
+            OpenALLibraryNameContainer.OverridePath = "openal";
+            // OpenALLibraryNameContainer.OverridePath = "libalol";
             // OpenALLibraryNameContainer.OverridePath = "__Internal";
             // OpenALLibraryNameContainer.OverridePath = "__Internal_emscripten";
 

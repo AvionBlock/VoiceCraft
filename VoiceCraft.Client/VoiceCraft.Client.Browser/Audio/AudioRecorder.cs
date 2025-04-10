@@ -1,28 +1,44 @@
-// using Microsoft.JSInterop;
-using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Runtime.InteropServices.JavaScript;
+using NAudio.CoreAudioApi;
+using OpenTK.Audio.OpenAL;
 using VoiceCraft.Client.Audio.Interfaces;
-using VoiceCraft.Core;
+
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace VoiceCraft.Client.Browser.Audio
 {
-    public sealed class AudioRecorder : IAudioRecorder
+    public class AudioRecorder : IAudioRecorder
     {
+        internal const string Lib = "openal";
+        internal const CallingConvention AlcCallingConv = CallingConvention.Cdecl;
+        [DllImport(Lib, EntryPoint = "alcOpenDevice", ExactSpelling = true, CallingConvention = AlcCallingConv, CharSet = CharSet.Ansi)]
+        public static extern ALDevice OpenDevice([In] string devicename);
+        [DllImport(Lib, EntryPoint = "alcCaptureOpenDevice", ExactSpelling = true, CallingConvention = AlcCallingConv, CharSet = CharSet.Ansi)]
+        public static extern ALCaptureDevice CaptureOpenDevice(string devicename, uint frequency, ALFormat format, int buffersize);
+        [DllImport(Lib, EntryPoint = "alcGetIntegerv", ExactSpelling = true, CallingConvention = AlcCallingConv, CharSet = CharSet.Ansi)]
+        public static unsafe extern void GetInteger(ALDevice device, AlcGetInteger param, int size, int* data);
+        [DllImport(Lib, EntryPoint = "alcCaptureSamples", ExactSpelling = true, CallingConvention = AlcCallingConv)]
+        public static extern void CaptureSamples(ALCaptureDevice device, IntPtr buffer, int samples);
+        [DllImport(Lib, EntryPoint = "alcCaptureStart", ExactSpelling = true, CallingConvention = AlcCallingConv)]
+        public static extern void CaptureStart([In] ALCaptureDevice device);
+        [DllImport(Lib, EntryPoint = "alcCaptureStop", ExactSpelling = true, CallingConvention = AlcCallingConv)]
+        public static extern void CaptureStop([In] ALCaptureDevice device);
+        [DllImport(Lib, EntryPoint = "alcCaptureCloseDevice", ExactSpelling = true, CallingConvention = AlcCallingConv)]
+        public static extern bool CaptureCloseDevice([In] ALCaptureDevice device);
+
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private JSObject? _audioStream;
-        private JSObject? _audioRecord;
+        private ALCaptureDevice _device = ALCaptureDevice.Null;
         private bool _disposed;
 
         public WaveFormat WaveFormat { get; set; } = new(8000, 16, 1);
         public CaptureState CaptureState { get; private set; } = CaptureState.Stopped;
         public int BufferMilliseconds { get; set; } = 100;
         public string? SelectedDevice { get; set; }
-        // public int? SessionId => _audioRecord?.AudioSessionId;
 
         public event EventHandler<WaveInEventArgs>? DataAvailable;
         public event EventHandler<StoppedEventArgs>? RecordingStopped;
@@ -41,11 +57,11 @@ namespace VoiceCraft.Client.Browser.Audio
             if (CaptureState is CaptureState.Capturing or CaptureState.Starting) return;
 
             while (CaptureState is CaptureState.Stopping) //If stopping, wait.
-                Thread.Sleep(1);
+                Task.Delay(1).GetAwaiter().GetResult();
 
             //Open Capture Device
             CaptureState = CaptureState.Starting;
-            (_audioRecord, _audioStream) = OpenCaptureDevice(WaveFormat, BufferMilliseconds, SelectedDevice);
+            _device = OpenCaptureDevice(WaveFormat, BufferMilliseconds, SelectedDevice);
             ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
         }
 
@@ -53,16 +69,16 @@ namespace VoiceCraft.Client.Browser.Audio
         {
             //Disposed? DIE!
             ThrowIfDisposed();
-            
+
             //Check if device is already closed/null.
-            if (_audioRecord == null) return;
+            if (_device == ALCaptureDevice.Null) return;
 
             //Check if it has already been stopped or is stopping.
             if (CaptureState is CaptureState.Stopped or CaptureState.Stopping) return;
             CaptureState = CaptureState.Stopping;
-            
+
             //Block thread until it's fully stopped.
-            while(CaptureState is CaptureState.Stopping)
+            while (CaptureState is CaptureState.Stopping)
                 Task.Delay(1).GetAwaiter().GetResult();
         }
 
@@ -79,7 +95,7 @@ namespace VoiceCraft.Client.Browser.Audio
             {
                 StopRecording();
             }
-            
+
             _disposed = true;
         }
 
@@ -102,9 +118,8 @@ namespace VoiceCraft.Client.Browser.Audio
             }
             finally
             {
-                CloseCaptureDevice(_audioRecord, _audioStream);
-                _audioRecord = null;
-                _audioStream = null;
+                CloseCaptureDevice(_device);
+                _device = ALCaptureDevice.Null;
                 CaptureState = CaptureState.Stopped;
                 RaiseRecordingStoppedEvent(exception);
             }
@@ -124,7 +139,7 @@ namespace VoiceCraft.Client.Browser.Audio
             }
         }
 
-        private void RecordingLogic()
+        private unsafe void RecordingLogic()
         {
             //Initialize the wave buffer
             var bufferSize = BufferMilliseconds * WaveFormat.AverageBytesPerSecond / 1000;
@@ -134,124 +149,51 @@ namespace VoiceCraft.Client.Browser.Audio
             }
 
             CaptureState = CaptureState.Capturing;
+            var capturedSamples = 0;
+            var targetSamples = BufferMilliseconds * WaveFormat.SampleRate / 1000;
 
             //Run the record loop
-            while (CaptureState == CaptureState.Capturing && _audioRecord != null)
+            while (CaptureState == CaptureState.Capturing && _device != ALCaptureDevice.Null)
             {
-                switch (WaveFormat.Encoding)
-                {
-                    case WaveFormatEncoding.Pcm:
-                    {
-                        var byteBuffer = new byte[bufferSize];
-                        // var bytesRead = _audioRecord.Read(byteBuffer, 0, bufferSize);
-                        // switch (bytesRead)
-                        // {
-                        //     case > 0:
-                        //         DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, bytesRead));
-                        //         break;
-                        //     case < 0:
-                        //         throw new InvalidOperationException(Locales.Locales.Android_AudioRecorder_Exception_Capture);
-                        // }
+                // Query the number of captured samples
+                ALC.GetInteger(_device, AlcGetInteger.CaptureSamples, sizeof(int), &capturedSamples);
 
-                        break;
-                    }
-                    case WaveFormatEncoding.IeeeFloat:
-                    {
-                        var floatBuffer = new float[bufferSize / sizeof(float)];
-                        // var floatsRead = _audioRecord.Read(floatBuffer, 0, floatBuffer.Length, 0);
-                        // switch (floatsRead)
-                        // {
-                        //     case > 0:
-                        //         var byteBuffer = new byte[bufferSize];
-                        //         Buffer.BlockCopy(floatBuffer, 0, byteBuffer, 0, byteBuffer.Length);
-                        //         DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, floatsRead * sizeof(float)));
-                        //         break;
-                        //     case < 0:
-                        //         throw new InvalidOperationException(Locales.Locales.Android_AudioRecorder_Exception_Capture);
-                        // }
+                if (capturedSamples < targetSamples) continue;
+                var buffer = new byte[bufferSize];
+                fixed (void* bufferPtr = buffer)
+                    ALC.CaptureSamples(_device, bufferPtr, targetSamples);
 
-                        break;
-                    }
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                DataAvailable?.Invoke(this, new WaveInEventArgs(buffer, bufferSize));
             }
         }
 
-        private static (JSObject, JSObject) OpenCaptureDevice(WaveFormat waveFormat, int bufferSizeMs, string? selectedDevice = null)
+        private static ALCaptureDevice OpenCaptureDevice(WaveFormat waveFormat, int bufferSizeMs, string? selectedDevice = null)
         {
-            // throw new Exception("a problem");
-            //Set the encoding
-            // var encoding = (waveFormat.BitsPerSample, waveFormat.Encoding) switch
-            // {
-            //     (8, WaveFormatEncoding.Pcm) => Encoding.Pcm8bit,
-            //     (16, WaveFormatEncoding.Pcm) => Encoding.Pcm16bit,
-            //     (32, WaveFormatEncoding.IeeeFloat) => Encoding.PcmFloat,
-            //     _ => throw new NotSupportedException()
-            // };
-
-            //Set the channel type. Only accepts Mono or Stereo
-            // var channelMask = waveFormat.Channels switch
-            // {
-            //     1 => ChannelIn.Mono,
-            //     2 => ChannelIn.Stereo,
-            //     _ => throw new NotSupportedException()
-            // };
-
-            //Determine the buffer size
-            var bufferSize = bufferSizeMs * waveFormat.AverageBytesPerSecond / 1000;
-            if (bufferSize % waveFormat.BlockAlign != 0)
+            var format = (waveFormat.BitsPerSample, waveFormat.Channels) switch
             {
-                bufferSize -= bufferSize % waveFormat.BlockAlign;
+                (8, 1) => ALFormat.Mono8,
+                (8, 2) => ALFormat.Stereo8,
+                (16, 1) => ALFormat.Mono16,
+                (16, 2) => ALFormat.Stereo16,
+                _ => throw new NotSupportedException()
+            };
+
+            var bufferSize = bufferSizeMs * waveFormat.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
+            var device = ALC.CaptureOpenDevice(selectedDevice, waveFormat.SampleRate, format, bufferSize);
+            if (device == ALCaptureDevice.Null)
+            {
+                throw new InvalidOperationException("Could not create device!");
             }
 
-            JSObject audioStream = EmbedInteropRecord.construct();
-            EmbedInteropRecord.applyTo(audioStream, "default", waveFormat.Channels, waveFormat.SampleRate, bufferSize);
-            JSObject audioRecord = EmbedInteropRecord.constructRec(audioStream);
-            // TODO
-            // var device = audioManager.GetDevices(GetDevicesTargets.Inputs)
-            //     ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == selectedDevice);
-            //
-            // audioRecord.SetPreferredDevice(device);
-            try
-            {
-                EmbedInteropRecord.startRec(audioRecord);
-            }
-            catch
-            {
-                CloseCaptureDevice(audioRecord, audioStream);
-                throw; //Rethrow stack error.
-            }
-            return (audioRecord, audioStream);
+            ALC.CaptureStart(device);
+            return device;
         }
-        
-        private static void CloseCaptureDevice(JSObject? audioRecord, JSObject? audioStream)
+
+        private static void CloseCaptureDevice(ALCaptureDevice device)
         {
-            //Make sure that the recorder was opened
-            if (audioRecord == null || audioStream == null) return;
-            EmbedInteropRecord.deconstruct(audioRecord, audioStream);
+            if (device == ALCaptureDevice.Null) return;
+            ALC.CaptureStop(device);
+            ALC.CaptureCloseDevice(device);
         }
-    }
-
-    static partial class EmbedInteropRecord
-    {
-        [JSImport("constructStream", "audio_recorder.js")]
-        public static partial JSObject construct();
-
-        [JSImport("constructRec", "audio_recorder.js")]
-        public static partial JSObject constructRec(JSObject mediaStream);
-
-        [JSImport("startRec", "audio_recorder.js")]
-        public static partial void startRec(JSObject mediaStream);
-
-        [JSImport("applyTo", "audio_recorder.js")]
-        public static partial void applyTo(JSObject audioStream, string deviceId, int numOfChannels, int sampleRate, int bufferSize);
-
-        [JSImport("deconstruct", "audio_recorder.js")]
-        public static partial void deconstruct(JSObject mediaRecorder, JSObject audioRecord);
-
-        // IMPORTANT: This gives devices in ["name", "id", etc...]
-        [JSImport("getDevices", "audio_recorder.js")]
-        public static partial string[] getDevices();
     }
 }

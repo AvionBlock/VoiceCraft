@@ -25,7 +25,6 @@
         <!-- <WasmStripILAfterAOT>true</WasmStripILAfterAOT> -->
         <!-- <WasmEnableLinking>false</WasmEnableLinking> -->
 
-        <!-- <EmccExtraCFlags>-fPIC -sMAIN_MODULE=2</EmccExtraCFlags> -->
         <!-- <EmccExtraLDFlags>-fPIC -sMAIN_MODULE=2 -s USE_CLOSURE_COMPILER=1</EmccExtraLDFlags> -->
         <!-- <EmccFlags>-fPIC</EmccFlags> -->
         <!-- <EmccFlags>-sMAIN_MODULE</EmccFlags> -->
@@ -33,32 +32,36 @@
         <!-- <EmccExtraLDFlags>-lopenal $(MSBuildProjectDirectory)/wrapper/wrapper.wasm -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccExtraLDFlags> -->
         <!-- <EmccExtraLDFlags>-sMAIN_MODULE -s USE_CLOSURE_COMPILER=1</EmccExtraLDFlags> -->
         <!-- <_WasiSdkClangArgs Include="-lopenal.js -O3 -sNO_DYNAMIC_EXECUTION=1 -sNO_FILESYSTEM=1 -sWASM=1 -sBINARYEN_ASYNC_COMPILATION=0" /> -->
-        <!-- <EmccExportedFunction>alcGetString</EmccExportedFunction> -->
         <!-- <EmccExtraLDFlags>-lopenal</EmccExtraLDFlags> -->
+        <!-- <EmccExtraCFlags>-fdeclspec</EmccExtraCFlags> -->
+        <EmccExtraLDFlags>-sAUTO_JS_LIBRARIES=0 -sAUTO_NATIVE_LIBRARIES=0 -lopenal</EmccExtraLDFlags>
         <CompressionEnabled>false</CompressionEnabled>
+        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
+        <!-- <BuiltInComInteropSupport>true</BuiltInComInteropSupport> -->
+        <!-- <EmccExportedFunction>alcGetString</EmccExportedFunction> -->
+        <!-- <EmccExportedLibraryFunction>alcGetString</EmccExportedLibraryFunction> -->
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Browser"/>
         <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    </ItemGroup>
 
+    <ItemGroup>
         <PackageReference Include="OpenTK.Audio.OpenAL" />
+        <NativeFileReference Include="openal.c" />
     </ItemGroup>
 
     <ItemGroup>
-        <NativeFileReference Include="opus.a" />
+        <PackageReference Include="OpusSharp" />
+        <NativeFileReference Include="opus.c" />
         <!-- <NativeFileReference Include="speexdsp.a" /> -->
-    </ItemGroup>
-
-    <ItemGroup>
-        <!-- <EmccExportedRuntimeMethod Include="AL" /> -->
-        <!-- <EmccExportedFunction Include="_alcGetString" /> -->
-        <NativeFileReference Include="libal.c" ScanForPInvokes="true" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
         <TrimmerRootAssembly Include="VoiceCraft.Client"/>
+        <TrimmerRootAssembly Include="VoiceCraft.Client.Browser"/>
     </ItemGroup>
 </Project>

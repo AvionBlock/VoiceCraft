@@ -18,10 +18,10 @@ const dotnetRuntime = await dotnet
 //     exit(-10, "Can't find GL");
 // }
 
-const assemblyName = "wrapper.wasm";
-const response = await fetch("./" + assemblyName);
-const assemblyBytes = await response.arrayBuffer();
-const isPdb = dotnetRuntime.Module._mono_wasm_add_assembly(assemblyName, assemblyBytes, assemblyBytes.byteLength);
+// const assemblyName = "wrapper.wasm";
+// const response = await fetch("./" + assemblyName);
+// const assemblyBytes = await response.arrayBuffer();
+// const isPdb = dotnetRuntime.Module._mono_wasm_add_assembly(assemblyName, assemblyBytes, assemblyBytes.byteLength);
 
 dotnetRuntime.setModuleImports('audio_player.js', await import('/audio_player.js'));
 dotnetRuntime.setModuleImports('audio_recorder.js', await import('/audio_recorder.js'));
