@@ -29,10 +29,10 @@ namespace VoiceCraft.Client.ViewModels
                 Content = viewModel;
                 viewModel.OnAppearing();
             };
-            var themeSettings = settingsService.Get<ThemeSettings>();
+            var themeSettings = settingsService.ThemeSettings;
             themesService.SwitchTheme(themeSettings.SelectedTheme);
             themesService.SwitchBackgroundImage(themeSettings.SelectedBackgroundImage);
-            var localeSettings = settingsService.Get<LocaleSettings>();
+            var localeSettings = settingsService.LocaleSettings;
             try
             {
                 Localizer.Language = localeSettings.Culture;

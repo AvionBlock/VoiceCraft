@@ -16,9 +16,9 @@ namespace VoiceCraft.Client.ViewModels.Settings
         [ObservableProperty] private Guid _selectedTheme;
         [ObservableProperty] private Guid _selectedBackgroundImage;
 
-        public ThemeSettingsViewModel(ThemeSettings themeSettings, SettingsService settingsService, ThemesService themesService)
+        public ThemeSettingsViewModel(SettingsService settingsService, ThemesService themesService)
         {
-            _themeSettings = themeSettings;
+            _themeSettings = settingsService.ThemeSettings;
             _settingsService = settingsService;
             _themesService = themesService;
             _themeSettings.OnUpdated += Update;

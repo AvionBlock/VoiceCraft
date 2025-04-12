@@ -1,6 +1,6 @@
 using Android.Media.Audiofx;
 using System;
-using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Android.Audio
 {

@@ -1,9 +1,8 @@
 using System;
-using NAudio.Wave;
 using SpeexDSPSharp.Core;
-using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Audio
+namespace VoiceCraft.Core.Audio
 {
     public class SpeexDspEchoCanceler : IEchoCanceler
     {
@@ -11,8 +10,8 @@ namespace VoiceCraft.Client.Audio
 
         public bool IsNative => false;
         private bool _disposed;
-        private WaveFormat? _waveFormat;
         private int _bytesPerFrame;
+        private byte[]? _outputBuffer;
         private SpeexDSPEchoCanceler? _echoCanceler;
         
         ~SpeexDspEchoCanceler()
@@ -20,26 +19,28 @@ namespace VoiceCraft.Client.Audio
             Dispose(false);
         }
 
-        public void Init(IAudioRecorder recorder, IAudioPlayer player)
+        public void Initialize(IAudioRecorder recorder, IAudioPlayer player)
         {
             ThrowIfDisposed();
-
+            
+            if(recorder.SampleRate != player.SampleRate)
+                throw new ArgumentException("The specified audio recorder and audio player sample rate do not match!");
+            
             if (_echoCanceler != null)
             {
                 _echoCanceler.Dispose();
                 _echoCanceler = null;
             }
-
-            _waveFormat = recorder.WaveFormat;
-            _bytesPerFrame = _waveFormat.ConvertLatencyToByteSize(recorder.BufferMilliseconds);
+            
+            _bytesPerFrame = recorder.BufferMilliseconds;
 
             _echoCanceler = new SpeexDSPEchoCanceler(
-                recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000,
-                FilterLengthMs * _waveFormat.SampleRate / 1000,
-                _waveFormat.Channels,
-                player.OutputWaveFormat.Channels);
-
-            var sampleRate = _waveFormat.SampleRate;
+                recorder.BufferMilliseconds * recorder.SampleRate / 1000,
+                FilterLengthMs * recorder.SampleRate / 1000,
+                recorder.Channels,
+                player.Channels);
+            
+            var sampleRate = recorder.SampleRate;
             _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
         }
 
@@ -47,19 +48,18 @@ namespace VoiceCraft.Client.Audio
         {
             ThrowIfDisposed();
 
-            if (_echoCanceler == null || _waveFormat == null)
-            {
+            if (_echoCanceler == null)
                 throw new InvalidOperationException("Speex echo canceller must be intialized with a recorder!");
-            }
-
             if (buffer.Length < _bytesPerFrame)
-            {
                 throw new InvalidOperationException($"Input buffer must be {_bytesPerFrame} in length or higher!");
-            }
-
-            var outputBuffer = new byte[buffer.Length];
-            _echoCanceler.EchoCapture(buffer, outputBuffer);
-            outputBuffer.CopyTo(buffer);
+            
+            if(_outputBuffer == null || _outputBuffer.Length != buffer.Length)
+                _outputBuffer = new byte[buffer.Length];
+            else
+                Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
+            
+            _echoCanceler.EchoCapture(buffer, _outputBuffer);
+            _outputBuffer.CopyTo(buffer);
         }
 
         public void EchoCancel(byte[] buffer) => EchoCancel(buffer.AsSpan());
@@ -68,7 +68,7 @@ namespace VoiceCraft.Client.Audio
         {
             ThrowIfDisposed();
 
-            if (_echoCanceler == null || _waveFormat == null)
+            if (_echoCanceler == null)
                 throw new InvalidOperationException("Speex echo canceller must be intialized with a recorder!");
 
             _echoCanceler.EchoPlayback(buffer);

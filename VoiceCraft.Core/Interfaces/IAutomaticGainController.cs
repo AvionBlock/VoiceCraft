@@ -1,12 +1,12 @@
 using System;
 
-namespace VoiceCraft.Client.Audio.Interfaces
+namespace VoiceCraft.Core.Interfaces
 {
     public interface IAutomaticGainController : IDisposable
     {
         bool IsNative { get; }
         
-        void Init(IAudioRecorder recorder);
+        void Initialize(IAudioRecorder recorder);
         
         void Process(byte[] buffer);
         

@@ -5,12 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jeek.Avalonia.Localization;
 using Microsoft.Maui.ApplicationModel;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
-using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.ViewModels.Settings;
 
 namespace VoiceCraft.Client.ViewModels.Home
@@ -20,18 +15,6 @@ namespace VoiceCraft.Client.ViewModels.Home
         private readonly AudioService _audioService;
         private readonly NotificationService _notificationService;
         private readonly PermissionsService _permissionsService;
-
-        private readonly SignalGenerator _signal = new(48000, 2)
-        {
-            Gain = 0.2,
-            Frequency = 500,
-            Type = SignalGeneratorType.Sin
-        };
-
-        private IAudioRecorder? _recorder;
-        private IAudioPlayer? _player;
-        private IDenoiser? _denoiser;
-        private IAutomaticGainController? _automaticGainController;
 
         [ObservableProperty] private bool _generalSettingsExpanded;
 
@@ -74,11 +57,11 @@ namespace VoiceCraft.Client.ViewModels.Home
             _locales = new ObservableCollection<string>(Localizer.Languages);
             _themes = new ObservableCollection<RegisteredTheme>(themesService.RegisteredThemes);
             _backgroundImages = new ObservableCollection<RegisteredBackgroundImage>(themesService.RegisteredBackgroundImages);
-            _localeSettings = new LocaleSettingsViewModel(settingsService.Get<LocaleSettings>(), settingsService);
-            _themeSettings = new ThemeSettingsViewModel(settingsService.Get<ThemeSettings>(), settingsService, themesService);
-            _notificationSettings = new NotificationSettingsViewModel(settingsService.Get<NotificationSettings>(), settingsService);
-            _serversSettings = new ServersSettingsViewModel(settingsService.Get<ServersSettings>(), settingsService);
-            _audioSettings = new AudioSettingsViewModel(settingsService.Get<AudioSettings>(), settingsService, _audioService);
+            _localeSettings = new LocaleSettingsViewModel(settingsService);
+            _themeSettings = new ThemeSettingsViewModel(settingsService, themesService);
+            _notificationSettings = new NotificationSettingsViewModel(settingsService);
+            _serversSettings = new ServersSettingsViewModel(settingsService);
+            _audioSettings = new AudioSettingsViewModel(settingsService, _audioService);
         }
 
         [RelayCommand]
@@ -93,11 +76,6 @@ namespace VoiceCraft.Client.ViewModels.Home
                     IsRecording = false;
                     return;
                 }
-                
-                if(_recorder != null)
-                    CloseAudioRecorder();
-                else
-                    OpenAudioRecorder();
             }
             catch (Exception ex)
             {
@@ -110,10 +88,6 @@ namespace VoiceCraft.Client.ViewModels.Home
         {
             try
             {
-                if(_player != null)
-                    CloseAudioPlayer();
-                else
-                    OpenAudioPlayer();
             }
             catch (Exception ex)
             {
@@ -127,142 +101,13 @@ namespace VoiceCraft.Client.ViewModels.Home
             AudioSettings.ReloadAvailableDevices();
         }
 
-        public override void OnDisappearing()
-        {
-            base.OnDisappearing();
-            CloseAudioRecorder();
-            CloseAudioPlayer();
-        }
-
         public void Dispose()
         {
             ThemeSettings.Dispose();
             NotificationSettings.Dispose();
             ServersSettings.Dispose();
             AudioSettings.Dispose();
-            CloseAudioRecorder();
-            CloseAudioPlayer();
             GC.SuppressFinalize(this);
-        }
-
-        private void OnRecordingStopped(object? sender, StoppedEventArgs e)
-        {
-            if (e.Exception != null)
-                _notificationService.SendErrorNotification(e.Exception.Message);
-            CloseAudioRecorder();
-        }
-
-        private void OnPlaybackStopped(object? sender, StoppedEventArgs e)
-        {
-            if (e.Exception != null)
-                _notificationService.SendErrorNotification(e.Exception.Message);
-            CloseAudioPlayer();
-        }
-
-        private void OnDataAvailable(object? sender, WaveInEventArgs e)
-        {
-            _denoiser?.Denoise(e.Buffer);
-            _automaticGainController?.Process(e.Buffer);
-            float max = 0;
-            // interpret as 16-bit audio
-            for (var index = 0; index < e.BytesRecorded; index += 2)
-            {
-                var sample = (short)((e.Buffer[index + 1] << 8) |
-                                     e.Buffer[index + 0]);
-                // to floating point
-                var sample32 = sample / 32768f;
-                // absolute value
-                if (sample32 < 0) sample32 = -sample32;
-                // is this the max value?
-                if (sample32 > max) max = sample32;
-            }
-
-            MicrophoneValue = max;
-            DetectingVoiceActivity = MicrophoneValue > AudioSettings.MicrophoneSensitivity;
-        }
-
-        private void OpenAudioRecorder()
-        {
-            try
-            {
-                CloseAudioRecorder();
-                _recorder = _audioService.CreateAudioRecorder();
-                _recorder.BufferMilliseconds = 20;
-                _recorder.WaveFormat = new WaveFormat(48000, 1);
-                _recorder.SelectedDevice =
-                    AudioSettings.InputDevice == "Default" ? null : AudioSettings.InputDevice;
-
-                var denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser);
-                _denoiser = denoiser?.Type == null ? null : denoiser.Instantiate();
-                var automaticGainController = _audioService.GetAutomaticGainController(AudioSettings.AutomaticGainController);
-                _automaticGainController = automaticGainController?.Type == null ? null : automaticGainController.Instantiate();
-
-                //Can't really test echo cancellation.
-                _recorder.DataAvailable += OnDataAvailable;
-                _recorder.RecordingStopped += OnRecordingStopped;
-                _recorder.StartRecording();
-                _denoiser?.Init(_recorder);
-                _automaticGainController?.Init(_recorder);
-                IsRecording = true;
-            }
-            catch
-            {
-                CloseAudioRecorder();
-                throw;
-            }
-        }
-
-        private void CloseAudioRecorder()
-        {
-            if (_recorder == null) return;
-            
-            if (_recorder.CaptureState is not (CaptureState.Stopped or CaptureState.Stopping))
-                _recorder.StopRecording();
-            
-            _recorder.DataAvailable -= OnDataAvailable;
-            _recorder.RecordingStopped -= OnRecordingStopped;
-            _recorder.Dispose();
-            _denoiser?.Dispose();
-            _automaticGainController?.Dispose();
-            _recorder = null;
-            _denoiser = null;
-            _automaticGainController = null;
-            MicrophoneValue = 0;
-            DetectingVoiceActivity = false;
-            IsRecording = false;
-        }
-
-        private void OpenAudioPlayer()
-        {
-            try
-            {
-                CloseAudioPlayer();
-                _player = _audioService.CreateAudioPlayer();
-                _player.SelectedDevice =
-                    AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
-
-                _player.PlaybackStopped += OnPlaybackStopped;
-                _player.Init(_signal);
-                _player.Play();
-                IsPlaying = true;
-            }
-            catch
-            {
-                CloseAudioPlayer();
-                throw;
-            }
-        }
-
-        private void CloseAudioPlayer()
-        {
-            if (_player == null) return;
-
-            if (_player.PlaybackState != PlaybackState.Stopped)
-                _player.Stop();
-            _player.PlaybackStopped -= OnPlaybackStopped;
-            _player.Dispose();
-            _player = null;
-            IsPlaying = false;
         }
     }
 }

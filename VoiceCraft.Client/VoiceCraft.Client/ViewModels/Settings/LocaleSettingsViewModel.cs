@@ -15,9 +15,9 @@ namespace VoiceCraft.Client.ViewModels.Settings
         
         [ObservableProperty] private string _culture;
         
-        public LocaleSettingsViewModel(LocaleSettings localeSettings, SettingsService settingsService)
+        public LocaleSettingsViewModel(SettingsService settingsService)
         {
-            _localeSettings = localeSettings;
+            _localeSettings = settingsService.LocaleSettings;
             _settingsService = settingsService;
             _localeSettings.OnUpdated += Update;
             _culture = _localeSettings.Culture;

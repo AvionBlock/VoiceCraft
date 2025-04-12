@@ -24,7 +24,7 @@ namespace VoiceCraft.Client.ViewModels
         {
             try
             {
-                var serversSettings = settings.Get<ServersSettings>();
+                var serversSettings = settings.ServersSettings;
                 serversSettings.AddServer(EditableServer);
                 serversSettings.RemoveServer(Server);
 

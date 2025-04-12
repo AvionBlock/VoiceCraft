@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.Linux.Audio;
 using VoiceCraft.Client.Linux.Permissions;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.Linux
 {
@@ -18,7 +20,16 @@ namespace VoiceCraft.Client.Linux
         {
                 CrashLogService.Load();
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-                App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+                App.ServiceCollection.AddSingleton<AudioService>(_ =>
+                {
+                    var audioService = new NativeAudioService();
+                    audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
+                    audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid, "SpeexDsp Automatic Gain Controller");
+                    audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
+                
+                    return audioService;
+                });
+                
                 App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
                 App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 

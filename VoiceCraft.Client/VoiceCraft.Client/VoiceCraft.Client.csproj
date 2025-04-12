@@ -25,11 +25,8 @@
         <PackageReference Include="Jeek.Avalonia.Localization" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Maui.Essentials" />
-        <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
-        <PackageReference Include="NWaves" />
         <PackageReference Include="OpusSharp" />
-        <PackageReference Include="SpeexDSPSharp" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,5 +1,6 @@
 using System;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Models.Settings
 {
@@ -27,8 +28,8 @@ namespace VoiceCraft.Client.Models.Settings
             }
         }
 
-        private Guid _selectedTheme = App.DarkThemeGuid;
-        private Guid _selectedBackgroundImage = App.DockNightGuid;
+        private Guid _selectedTheme = Constants.DarkThemeGuid;
+        private Guid _selectedBackgroundImage = Constants.DockNightGuid;
         
         public override object Clone()
         {

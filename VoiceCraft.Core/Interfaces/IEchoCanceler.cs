@@ -1,12 +1,12 @@
 using System;
 
-namespace VoiceCraft.Client.Audio.Interfaces
+namespace VoiceCraft.Core.Interfaces
 {
     public interface IEchoCanceler : IDisposable
     {
         bool IsNative { get; }
         
-        void Init(IAudioRecorder recorder, IAudioPlayer player);
+        void Initialize(IAudioRecorder recorder, IAudioPlayer player);
 
         void EchoPlayback(byte[] buffer);
 

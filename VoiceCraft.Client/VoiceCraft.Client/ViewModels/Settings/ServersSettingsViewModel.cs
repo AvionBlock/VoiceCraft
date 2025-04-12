@@ -17,9 +17,9 @@ namespace VoiceCraft.Client.ViewModels.Settings
         [ObservableProperty] private bool _hideServerAddresses;
         [ObservableProperty] private ObservableCollection<ServerViewModel> _servers;
 
-        public ServersSettingsViewModel(ServersSettings serversSettings, SettingsService settingsService)
+        public ServersSettingsViewModel(SettingsService settingsService)
         {
-            ServersSettings = serversSettings;
+            ServersSettings = settingsService.ServersSettings;
             _settingsService = settingsService;
             ServersSettings.OnUpdated += Update;
             _hideServerAddresses = ServersSettings.HideServerAddresses;

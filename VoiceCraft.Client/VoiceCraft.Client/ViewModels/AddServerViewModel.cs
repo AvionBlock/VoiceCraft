@@ -9,7 +9,7 @@ namespace VoiceCraft.Client.ViewModels
     public partial class AddServerViewModel(NotificationService notificationService, SettingsService settings, NavigationService navigationService) : ViewModelBase
     {
         [ObservableProperty]
-        private ServersSettings _servers = settings.Get<ServersSettings>();
+        private ServersSettings _servers = settings.ServersSettings;
 
         [ObservableProperty]
         private Server _server = new();

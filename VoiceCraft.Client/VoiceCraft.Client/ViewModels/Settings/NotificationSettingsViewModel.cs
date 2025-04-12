@@ -15,9 +15,9 @@ namespace VoiceCraft.Client.ViewModels.Settings
         [ObservableProperty] private ushort _dismissDelayMs;
         [ObservableProperty] private bool _disableNotifications;
 
-        public NotificationSettingsViewModel(NotificationSettings notificationSettings, SettingsService settingsService)
+        public NotificationSettingsViewModel(SettingsService settingsService)
         {
-            _notificationSettings = notificationSettings;
+            _notificationSettings = settingsService.NotificationSettings;
             _settingsService = settingsService;
             _notificationSettings.OnUpdated += Update;
             _dismissDelayMs = _notificationSettings.DismissDelayMs;

@@ -2,10 +2,11 @@ using Android.Media.Audiofx;
 using System;
 using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    public class NativeAutomaticGainController : IAutomaticGainController
+    public class NativeAutomaticGainController : IAutomaticGainController, IAutomaticGainController
     {
         public bool IsNative => true;
 

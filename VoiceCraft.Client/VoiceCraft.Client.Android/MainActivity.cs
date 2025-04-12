@@ -12,6 +12,8 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 using Exception = System.Exception;
 
 namespace VoiceCraft.Client.Android
@@ -50,6 +52,8 @@ namespace VoiceCraft.Client.Android
             {
                 var audioService = new NativeAudioService((AudioManager?)GetSystemService(AudioService) ?? throw new Exception(
                     $"Could not find {AudioService}. Cannot initialize audio service."));
+                
+                //Register native preprocessors
                 if (AcousticEchoCanceler.IsAvailable)
                     audioService.RegisterEchoCanceler<NativeEchoCanceler>(EchoCancelerGuid, "Native Echo Canceler");
                 if (NoiseSuppressor.IsAvailable)
@@ -57,8 +61,15 @@ namespace VoiceCraft.Client.Android
                 if (AutomaticGainControl.IsAvailable)
                     audioService.RegisterAutomaticGainController<NativeAutomaticGainController>(NativeAutomaticGainControllerGuid,
                         "Native Automatic Gain Controller");
+                
+                //Register Speex Preprocessors
+                audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
+                audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid,
+                    "SpeexDsp Automatic Gain Controller");
+                audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
                 return audioService;
             });
+            
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
 
@@ -96,6 +107,5 @@ namespace VoiceCraft.Client.Android
                 Process.KillProcess(Process.MyPid());
             }
         }
-
     }
 }

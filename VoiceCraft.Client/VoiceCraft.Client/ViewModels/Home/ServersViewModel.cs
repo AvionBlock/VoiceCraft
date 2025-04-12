@@ -11,7 +11,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         : ViewModelBase, IDisposable
     {
         [ObservableProperty]
-        private ServersSettingsViewModel _serversSettings = new(settings.Get<ServersSettings>(), settings);
+        private ServersSettingsViewModel _serversSettings = new(settings);
 
         [ObservableProperty]
         private ServerViewModel? _selectedServer;

@@ -1,11 +1,8 @@
 using Android.Media;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Android.Audio

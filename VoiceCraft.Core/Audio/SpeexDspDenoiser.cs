@@ -1,14 +1,12 @@
 using System;
-using NAudio.Wave;
 using SpeexDSPSharp.Core;
-using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Audio
+namespace VoiceCraft.Core.Audio
 {
     public class SpeexDspDenoiser : IDenoiser
     {
         public bool IsNative => false;
-        private WaveFormat? _waveFormat;
         private SpeexDSPPreprocessor? _denoisePreprocessor;
         private bool _disposed;
 
@@ -17,7 +15,7 @@ namespace VoiceCraft.Client.Audio
             Dispose(false);
         }
 
-        public void Init(IAudioRecorder recorder)
+        public void Initialize(IAudioRecorder recorder)
         {
             //Disposed? DIE!!
             ThrowIfDisposed();
@@ -30,12 +28,11 @@ namespace VoiceCraft.Client.Audio
             }
             
             //Check if recorder is mono channel.
-            if(recorder.WaveFormat.Channels != 1)
+            if(recorder.Channels != 1)
                 throw new InvalidOperationException("Speex denoiser can only support mono audio channels!");
             
             //Create preprocessor
-            _waveFormat = recorder.WaveFormat;
-            _denoisePreprocessor = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * _waveFormat.SampleRate / 1000, _waveFormat.SampleRate);
+            _denoisePreprocessor = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * recorder.SampleRate / 1000, recorder.SampleRate);
 
             //Setup preprocessor to only work with the denoiser.
             var @false = 0;
@@ -53,7 +50,7 @@ namespace VoiceCraft.Client.Audio
             ThrowIfDisposed();
             
             //Check if the preprocessor has been initialized.
-            if (_denoisePreprocessor == null || _waveFormat == null)
+            if (_denoisePreprocessor == null)
                 throw new InvalidOperationException("Speex denoiser must be intialized with a recorder!");
             
             _denoisePreprocessor.Run(buffer);

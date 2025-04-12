@@ -2,12 +2,11 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Client.ViewModels.Settings;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -22,7 +21,7 @@ namespace VoiceCraft.Client.ViewModels
         private bool _stopPinger;
         private Task? _pinger;
 
-        [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService.Get<ServersSettings>(), settingsService);
+        [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
 
         [ObservableProperty] private ServerViewModel? _selectedServer;
 
@@ -90,7 +89,7 @@ namespace VoiceCraft.Client.ViewModels
                 DisableBackButton = true;
                 await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
                 await backgroundService.StartBackgroundProcess(process);
-                if(process.Status is BackgroundProcessStatus.Started or BackgroundProcessStatus.Starting)
+                if(process.Status == BackgroundProcessStatus.Started)
                     navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
             }
             catch

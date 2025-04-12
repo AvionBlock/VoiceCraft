@@ -2,7 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using VoiceCraft.Client.Audio.Interfaces;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services
 {
@@ -72,9 +73,9 @@ namespace VoiceCraft.Client.Services
 
         public abstract List<string> GetOutputDevices();
 
-        public abstract IAudioRecorder CreateAudioRecorder();
+        public abstract IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format);
 
-        public abstract IAudioPlayer CreateAudioPlayer();
+        public abstract IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format);
     }
 
     public class RegisteredEchoCanceler(Guid id, string name, Type? type)

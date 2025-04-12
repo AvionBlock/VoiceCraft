@@ -4,10 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using LiteNetLib;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
-using VoiceCraft.Client.Audio;
-using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
@@ -85,7 +81,6 @@ namespace VoiceCraft.Client.Processes
         private IAudioRecorder? _audioRecorder;
         private IAudioPlayer? _audioPlayer;
         private IAutomaticGainController? _automaticGainController;
-        private EchoCancellationSampleProvider? _echoCanceler;
 
         private IDenoiser? _denoiser;
 

@@ -8,7 +8,7 @@ namespace VoiceCraft.Client.Services
     {
         public void SendNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
         {
-            var notificationSettings = settingsService.Get<NotificationSettings>();
+            var notificationSettings = settingsService.NotificationSettings;
             if (!notificationSettings.DisableNotifications)
             {
                 notificationMessageManager.CreateMessage()
@@ -25,7 +25,7 @@ namespace VoiceCraft.Client.Services
 
         public void SendSuccessNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
         {
-            var notificationSettings = settingsService.Get<NotificationSettings>();
+            var notificationSettings = settingsService.NotificationSettings;
             if (!notificationSettings.DisableNotifications)
             {
                 notificationMessageManager.CreateMessage()
@@ -42,7 +42,7 @@ namespace VoiceCraft.Client.Services
 
         public void SendErrorNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
         {
-            var notificationSettings = settingsService.Get<NotificationSettings>();
+            var notificationSettings = settingsService.NotificationSettings;
             if (!notificationSettings.DisableNotifications)
             {
                 notificationMessageManager.CreateMessage()

@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
-using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
@@ -11,62 +10,20 @@ namespace VoiceCraft.Client.Network.Systems
 {
     public class NetworkSystem : IDisposable
     {
-        private readonly VoiceCraftClient _client;
         private readonly EventBasedNetListener _listener;
-        private readonly NetDataWriter _dataWriter;
-        private readonly NetManager _netManager;
         private readonly VoiceCraftWorld _world;
 
         public event Action<ServerInfo>? OnServerInfo;
         public event Action<string>? OnSetTitle;
 
-        public NetworkSystem(VoiceCraftClient client, NetManager netManager)
+        public NetworkSystem(VoiceCraftClient client)
         {
-            _dataWriter = new NetDataWriter();
-            _client = client;
-            _netManager = netManager;
-            _listener = _client.Listener;
-            _world = _client.World;
+            _listener = client.Listener;
+            _world = client.World;
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
-        }
-
-        public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            if (_client.ConnectionState != ConnectionState.Connected) return false;
-
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-                _client.LocalEntity?.NetPeer.Send(_dataWriter, deliveryMethod);
-                return true;
-            }
-        }
-
-        public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
-        {
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-                return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
-            }
-        }
-        
-        public bool SendUnconnectedPacket<T>(string ip, uint port, T packet) where T : VoiceCraftPacket
-        {
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-                return _netManager.SendUnconnectedMessage(_dataWriter, ip, (int)port);
-            }
         }
         
         public void Dispose()

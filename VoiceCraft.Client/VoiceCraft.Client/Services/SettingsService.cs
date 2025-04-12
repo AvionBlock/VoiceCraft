@@ -1,87 +1,28 @@
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Services
 {
     public class SettingsService
     {
         // ReSharper disable once InconsistentNaming
-        private const int FILE_WRITING_DELAY = 2000;
-
+        private static readonly string SettingsPath = Path.Combine(AppContext.BaseDirectory, "Settings.json");
+        public AudioSettings AudioSettings => _settings.AudioSettings;
+        public LocaleSettings LocaleSettings => _settings.LocaleSettings;
+        public NotificationSettings NotificationSettings => _settings.NotificationSettings;
+        public ServersSettings ServersSettings => _settings.ServersSettings;
+        public ThemeSettings ThemeSettings => _settings.ThemeSettings;
+        
         private bool _writing;
         private bool _queueWrite;
-        private static readonly string SettingsPath = Path.Combine(AppContext.BaseDirectory, "Settings.json");
-        private readonly ConcurrentDictionary<string, Type> _registeredSettings = new();
-        private ConcurrentDictionary<string, object?> _settings = new();
+        private readonly SettingsStructure _settings = new();
 
-        public T Get<T>() where T : Setting<T>
-        {
-            var settingType = typeof(T);
-            if (_registeredSettings.TryGetValue(settingType.Name, out var registeredSetting) && registeredSetting == settingType)
-            {
-                return (T)_settings.GetOrAdd(settingType.Name, Activator.CreateInstance<T>())!;
-            }
-
-            throw new Exception($"Could not find registered setting {settingType.Name} of type {typeof(T)}.");
-        }
-
-        public void RegisterSetting<T>() where T : Setting<T>
-        {
-            var settingType = typeof(T);
-            _registeredSettings.AddOrUpdate(settingType.Name, settingType, (_, _) => settingType);
-        }
-
-        public void UnregisterSetting<T>() where T : Setting<T>
-        {
-            var settingType = typeof(T);
-            _registeredSettings.TryRemove(settingType.Name, out _);
-        }
-
-        public async Task SaveImmediate()
-        {
-#if DEBUG
-            Debug.WriteLine("Saving immediately. Only use this function if necessary!");
-#endif
-            foreach (var setting in _settings)
-            {
-                if (setting.Value is ISetting settingValue)
-                    settingValue.OnSaving();
-            }
-
-            await File.WriteAllTextAsync(SettingsPath,
-                JsonSerializer.Serialize(_settings));
-        }
-
-        public async Task SaveAsync()
-        {
-            _queueWrite = true;
-            //Writing boolean is so we don't get multiple loop instances.
-            if (!_writing)
-            {
-                _writing = true;
-                while (_queueWrite)
-                {
-                    _queueWrite = false;
-                    await Task.Delay(FILE_WRITING_DELAY);
-                    foreach (var setting in _settings)
-                    {
-                        if (setting.Value is ISetting settingValue)
-                            settingValue.OnSaving();
-                    }
-
-                    await File.WriteAllTextAsync(SettingsPath,
-                        JsonSerializer.Serialize(_settings));
-                }
-
-                _writing = false;
-            }
-        }
-
-        public void Load()
+        public SettingsService(NotificationService notificationService)
         {
             try
             {
@@ -91,35 +32,73 @@ namespace VoiceCraft.Client.Services
                 }
 
                 var result = File.ReadAllText(SettingsPath);
-                var loadedSettings = JsonSerializer.Deserialize<ConcurrentDictionary<string, object?>>(result);
-                if (loadedSettings is null)
+                var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result);
+                if (loadedSettings == null)
                 {
+                    notificationService.SendErrorNotification("Failed to load settings file, Reverting to default.");
                     return;
                 }
-
-                //Convert them to the actual objects.
-                foreach (var setting in loadedSettings)
-                {
-                    if (_registeredSettings.TryGetValue(setting.Key, out var registeredSetting))
-                    {
-                        if (setting.Value is JsonElement element
-                            && element.Deserialize(registeredSetting) is ISetting deserializedSetting
-                            && deserializedSetting.OnLoading())
-                        {
-                            loadedSettings.TryUpdate(setting.Key, deserializedSetting, setting.Value);
-                            continue;
-                        }
-                    }
-
-                    loadedSettings.TryRemove(setting.Key, out _);
-                }
+                
+                loadedSettings.AudioSettings.OnLoading();
+                loadedSettings.LocaleSettings.OnLoading();
+                loadedSettings.NotificationSettings.OnLoading();
+                loadedSettings.ServersSettings.OnLoading();
+                loadedSettings.ThemeSettings.OnLoading();
 
                 _settings = loadedSettings;
             }
-            catch (JsonException)
+            catch
             {
-                //Do nothing.
+                notificationService.SendErrorNotification("Failed to load settings file, Reverting to default.");
             }
+            
+        }
+
+        public async Task SaveImmediate()
+        {
+#if DEBUG
+            Debug.WriteLine("Saving immediately. Only use this function if necessary!");
+#endif
+            await SaveSettingsAsync();
+        }
+
+        public async Task SaveAsync()
+        {
+            _queueWrite = true;
+            //Writing boolean is so we don't get multiple loop instances.
+            if (_writing) return;
+            
+            _writing = true;
+            while (_queueWrite)
+            {
+                _queueWrite = false;
+                await Task.Delay(Constants.FileWritingDelay);
+                await SaveSettingsAsync();
+            }
+
+            _writing = false;
+        }
+
+        private async Task SaveSettingsAsync()
+        {
+            AudioSettings.OnSaving();
+            LocaleSettings.OnSaving();
+            NotificationSettings.OnSaving();
+            ServersSettings.OnSaving();
+            ThemeSettings.OnSaving();
+            
+            await File.WriteAllTextAsync(SettingsPath,
+                JsonSerializer.Serialize(_settings));
+        }
+
+        // ReSharper disable PropertyCanBeMadeInitOnly.Local
+        private class SettingsStructure
+        {
+            public AudioSettings AudioSettings { get; set; } = new();
+            public LocaleSettings LocaleSettings { get; set; } = new();
+            public NotificationSettings NotificationSettings { get; set; } = new();
+            public ServersSettings ServersSettings { get; set; } = new();
+            public ThemeSettings ThemeSettings { get; set; } = new();
         }
     }
 

@@ -28,9 +28,9 @@ namespace VoiceCraft.Client.ViewModels.Settings
         [ObservableProperty] private Guid _automaticGainController;
         [ObservableProperty] private float _microphoneSensitivity;
 
-        public AudioSettingsViewModel(AudioSettings audioSettings, SettingsService settingsService, AudioService audioService)
+        public AudioSettingsViewModel(SettingsService settingsService, AudioService audioService)
         {
-            _audioSettings = audioSettings;
+            _audioSettings = settingsService.AudioSettings;
             _settingsService = settingsService;
             _audioService = audioService;
             

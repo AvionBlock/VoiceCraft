@@ -1,36 +1,113 @@
 using NAudio.Wave;
 using System;
-using VoiceCraft.Client.Audio.Interfaces;
+using System.Threading;
+using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core;
+using PlaybackState = VoiceCraft.Core.PlaybackState;
 
 namespace VoiceCraft.Client.Windows.Audio
 {
     public class AudioPlayer : IAudioPlayer
     {
+        //Public Properties
+        public int SampleRate
+        {
+            get => _sampleRate;
+            set
+            {
+                if(PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot set sample rate when recording!");
+                if(value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+
+                _sampleRate = value;
+            }
+        }
+
+        public int Channels
+        {
+            get => _channels;
+            set
+            {
+                if(PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot set channels when recording!");
+                if(value < 1)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+
+                _channels = value;
+            }
+        }
+        
+        public int BitDepth
+        {
+            get
+            {
+                return (Format) switch
+                {
+                    AudioFormat.Pcm8 => 8,
+                    AudioFormat.Pcm16 => 16,
+                    AudioFormat.PcmFloat => 32,
+                    _ => throw new ArgumentOutOfRangeException(nameof(Format))
+                };
+            }
+        }
+
+        public AudioFormat Format
+        {
+            get => _format;
+            set
+            {
+                if(PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot set audio format when recording!");
+                
+                _format = value;
+            }
+        }
+        
+        public int BufferMilliseconds
+        {
+            get => _bufferMilliseconds;
+            set
+            {
+                if(PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot set buffer milliseconds when recording!");
+                if(value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+
+                _bufferMilliseconds = value;
+            }
+        }
+
+        public string? SelectedDevice
+        {
+            get => _selectedDevice;
+            set
+            {
+                if(PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot set selected device when recording!");
+                
+                _selectedDevice = value;
+            }
+        }
+        
+        public PlaybackState PlaybackState { get; private set; }
+
+        public event Action<Exception?>? OnPlaybackStopped;
+        
+        //Privates
+        private WaveOutEvent? _nativePlayer;
+        private int _sampleRate;
+        private int _channels;
+        private AudioFormat _format;
+        private int _bufferMilliseconds;
+        private string? _selectedDevice;
         private bool _disposed;
-        private readonly WaveOutEvent _nativePlayer = new();
-
-        public PlaybackState PlaybackState => _nativePlayer.PlaybackState;
-        public WaveFormat OutputWaveFormat => _nativePlayer.OutputWaveFormat;
-
-        public float Volume
+        
+        public AudioPlayer(int sampleRate, int channels, AudioFormat format)
         {
-            get => _nativePlayer.Volume;
-            set => _nativePlayer.Volume = value;
-        }
-
-        public int DesiredLatency
-        {
-            get => _nativePlayer.DesiredLatency;
-            set => _nativePlayer.DesiredLatency = value;
-        }
-
-        public string? SelectedDevice { get; set; }
-
-        public event EventHandler<StoppedEventArgs>? PlaybackStopped;
-
-        public AudioPlayer()
-        {
-            _nativePlayer.PlaybackStopped += InvokePlaybackStopped;
+            SampleRate = sampleRate;
+            Channels = channels;
+            Format = format;
         }
 
         ~AudioPlayer()
@@ -39,52 +116,114 @@ namespace VoiceCraft.Client.Windows.Audio
             Dispose(false);
         }
 
-        public void Init(IWaveProvider waveProvider)
+        public void Initialize(Func<byte[], int, int, int> playerCallback)
         {
             //Disposed? DIE!
-            ThrowIfDisposed();
+            ThrowIfDisposed(); 
+            
+            if(PlaybackState != PlaybackState.Stopped)
+                throw new InvalidOperationException("Cannot initialize when playing!");
+            
+            //Cleanup previous player.
+            CleanupPlayer();
 
-            var selectedDevice = -1;
-            for (var n = 0; n < WaveOut.DeviceCount; n++)
+            try
             {
-                var caps = WaveOut.GetCapabilities(n);
-                if (caps.ProductName != SelectedDevice) continue;
-                selectedDevice = n;
-                break;
+                //Select Device.
+                var selectedDevice = -1;
+                for (var n = 0; n < WaveOut.DeviceCount; n++)
+                {
+                    var caps = WaveOut.GetCapabilities(n);
+                    if (caps.ProductName != SelectedDevice) continue;
+                    selectedDevice = n;
+                    break;
+                }
+
+                //Setup WaveFormat
+                var waveFormat = Format switch
+                {
+                    AudioFormat.Pcm8 => new WaveFormat(SampleRate, 8, Channels),
+                    AudioFormat.Pcm16 => new WaveFormat(SampleRate, 16, Channels),
+                    AudioFormat.PcmFloat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels),
+                    _ => throw new NotSupportedException("Input format is not supported!")
+                };
+                
+                var callbackProvider = new CallbackWaveProvider(waveFormat, playerCallback);
+                
+                //Setup Player
+                _nativePlayer = new WaveOutEvent();
+                _nativePlayer.DesiredLatency = BufferMilliseconds;
+                _nativePlayer.DeviceNumber = selectedDevice;
+                _nativePlayer.Volume = 1.0f;
+                _nativePlayer.NumberOfBuffers = 3;
+                _nativePlayer.Init(callbackProvider);
             }
-
-            _nativePlayer.DeviceNumber = selectedDevice;
-            _nativePlayer.Init(waveProvider);
+            catch
+            {
+                CleanupPlayer();
+                throw;
+            }
         }
-
+        
         public void Play()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
+            ThrowIfNotInitialized();
+            if (PlaybackState != PlaybackState.Stopped) return;
 
-            _nativePlayer.Play();
+            try
+            {
+                PlaybackState = PlaybackState.Starting;
+                _nativePlayer?.Play();
+                PlaybackState = PlaybackState.Playing;
+            }
+            catch
+            {
+                PlaybackState = PlaybackState.Stopped;
+                throw;
+            }
         }
 
         public void Pause()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
-
-            _nativePlayer.Pause();
+            ThrowIfNotInitialized();
+            if (PlaybackState != PlaybackState.Playing) return;
+            
+            PlaybackState = PlaybackState.Paused;
+            _nativePlayer?.Pause();
         }
 
         public void Stop()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
+            ThrowIfNotInitialized();
+            if (PlaybackState is not (PlaybackState.Playing or PlaybackState.Paused)) return;
+            
+            PlaybackState = PlaybackState.Stopping;
+            _nativePlayer?.Stop();
 
-            _nativePlayer.Stop();
+            while (PlaybackState == PlaybackState.Stopping)
+            {
+                Thread.Sleep(1); //Wait until stopped.
+            }
         }
-
+        
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
             Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void CleanupPlayer()
+        {
+            if (_nativePlayer == null) return;
+            _nativePlayer.PlaybackStopped -= InvokePlaybackStopped;
+            _nativePlayer.Dispose();
+            _nativePlayer = null;
         }
         
         private void ThrowIfDisposed()
@@ -93,21 +232,42 @@ namespace VoiceCraft.Client.Windows.Audio
             throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
         }
 
+        private void ThrowIfNotInitialized()
+        {
+            if(_nativePlayer == null)
+                throw new InvalidOperationException("You must initialize the player before calling starting!");
+        }
+        
         private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)
         {
-            PlaybackStopped?.Invoke(sender, e);
+            PlaybackState = PlaybackState.Stopped;
+            OnPlaybackStopped?.Invoke(e.Exception);
         }
-
+        
         private void Dispose(bool disposing)
         {
-            if (!disposing || _disposed) return;
+            if (_disposed) return;
 
-            if (PlaybackState != PlaybackState.Stopped)
-                Stop();
-
-            _nativePlayer.PlaybackStopped -= InvokePlaybackStopped;
-            _nativePlayer.Dispose();
+            if (disposing)
+            {
+                CleanupPlayer();
+            }
+            
             _disposed = true;
+        }
+
+        private class CallbackWaveProvider(WaveFormat waveFormat, Func<byte[], int, int, int> callback) : IWaveProvider
+        {
+            public WaveFormat WaveFormat { get; } = waveFormat;
+
+            public int Read(byte[] buffer, int offset, int count)
+            {
+                var read = callback(buffer, offset, count);
+                if (read >= count) return read;
+                
+                Array.Clear(buffer, offset + read, count - read);
+                return count;
+            }
         }
     }
 }

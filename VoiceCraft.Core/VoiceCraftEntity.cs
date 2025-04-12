@@ -43,7 +43,7 @@ namespace VoiceCraft.Core
         private Quaternion _rotation;
 
         //Properties
-        public int Id { get; }
+        public int Id { get; protected set; }
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
