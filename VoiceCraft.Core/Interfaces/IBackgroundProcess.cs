@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace VoiceCraft.Client.Services.Interfaces
+namespace VoiceCraft.Core.Interfaces
 {
     public interface IBackgroundProcess : IDisposable
     {

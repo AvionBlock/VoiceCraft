@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Android.Audio
             Dispose(false);
         }
 
-        public void Init(IAudioRecorder recorder, IAudioPlayer player) //We don't need to have the audio player, but it's there for other compatibility reasons.
+        public void Initialize(IAudioRecorder recorder, IAudioPlayer player) //We don't need to have the audio player, but it's there for other compatibility reasons.
         {
             ThrowIfDisposed();
 

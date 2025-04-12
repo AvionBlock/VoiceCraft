@@ -9,7 +9,6 @@ using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
 using CommunityToolkit.Mvvm.Messaging;
-using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Android.Background
@@ -22,9 +21,8 @@ namespace VoiceCraft.Client.Android.Background
         private const int ErrorNotificationId = 999;
         private const int NotificationId = 1000;
         private const string ChannelId = "1001";
-
-        internal static readonly ConcurrentQueue<KeyValuePair<Type, IBackgroundProcess>> QueuedProcesses = [];
-        internal static readonly ConcurrentDictionary<Type, KeyValuePair<Task, IBackgroundProcess>> RunningBackgroundProcesses = [];
+        
+        internal static readonly ConcurrentDictionary<Type, BackgroundProcess> Processes = [];
         private static string _notificationTitle = string.Empty;
         private static string _notificationDescription = string.Empty;
 
@@ -41,46 +39,32 @@ namespace VoiceCraft.Client.Android.Background
             var notification = CreateNotification();
             StartForeground(NotificationId, notification.Build());
 
-            WeakReferenceMessenger.Default.Register<StopBackgroundProcess>(this, (_, m) =>
-            {
-                if (RunningBackgroundProcesses.TryRemove(m.ProcessType, out var process))
-                {
-                    if (!process.Value.TokenSource.IsCancellationRequested)
-                        process.Value.TokenSource.Cancel();
-                    while (!process.Key.IsCompleted)
-                    {
-                        Task.Delay(10).GetAwaiter().GetResult();
-                    }
-
-                    process.Value.Dispose();
-                    process.Key.Dispose();
-                    m.Reply(process.Value);
-                }
-                m.Reply(null);
-            });
-
             Task.Run(async () =>
             {
                 try
                 {
-                    while (!QueuedProcesses.IsEmpty || !RunningBackgroundProcesses.IsEmpty) //10 second wait time before self stopping activates (kinda).
+                    while (!Processes.IsEmpty) //10 second wait time before self stopping activates (kinda).
                     {
                         //Delay
                         await Task.Delay(500);
-                        ClearCompletedProcesses();
                         UpdateNotification();
-                        if (!QueuedProcesses.TryDequeue(out var process)) continue;
-
-                        process.Value.OnUpdateTitle += ProcessOnUpdateTitle;
-                        process.Value.OnUpdateDescription += ProcessOnUpdateDescription;
-                        
-                        var task = Task.Run(() => {
-                                process.Value.Status = BackgroundProcessStatus.Starting;
+                        foreach (var process in Processes)
+                        {
+                            if (process.Value.Status == BackgroundProcessStatus.Stopped)
+                            {
+                                process.Value.Process.OnUpdateTitle += ProcessOnUpdateTitle;
+                                process.Value.Process.OnUpdateDescription += ProcessOnUpdateDescription;
                                 process.Value.Start();
-                            },
-                            process.Value.TokenSource.Token);
-                        RunningBackgroundProcesses.TryAdd(process.Key, new KeyValuePair<Task, IBackgroundProcess>(task, process.Value));
-                        WeakReferenceMessenger.Default.Send(new ProcessStarted(process.Value));
+                                WeakReferenceMessenger.Default.Send(new ProcessStarted(process.Value.Process));
+                                continue;
+                            }
+
+                            if (process.Value.IsCompleted && Processes.Remove(process.Key, out _)) continue;
+                            process.Value.Process.OnUpdateTitle -= ProcessOnUpdateTitle;
+                            process.Value.Process.OnUpdateDescription -= ProcessOnUpdateDescription;
+                            process.Value.Dispose();
+                            WeakReferenceMessenger.Default.Send(new ProcessStopped(process.Value.Process));
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -118,19 +102,6 @@ namespace VoiceCraft.Client.Android.Background
         {
             _notificationDescription = description;
         }
-        
-        private static void ClearCompletedProcesses()
-        {
-            foreach (var process in RunningBackgroundProcesses)
-            {
-                if (!process.Value.Key.IsCompleted || !RunningBackgroundProcesses.Remove(process.Key, out _)) continue;
-                process.Value.Value.Dispose();
-                process.Value.Key.Dispose();
-                process.Value.Value.OnUpdateTitle -= ProcessOnUpdateTitle;
-                process.Value.Value.OnUpdateDescription -= ProcessOnUpdateDescription;
-                WeakReferenceMessenger.Default.Send(new ProcessStopped(process.Value.Value));
-            }
-        }
 
         //Notification
         private static NotificationCompat.Builder CreateNotification()
@@ -160,7 +131,7 @@ namespace VoiceCraft.Client.Android.Background
                     .SetSmallIcon(ResourceConstant.Drawable.Icon)
                     .SetContentTitle(string.IsNullOrWhiteSpace(_notificationTitle) ? "Running background processes" : _notificationTitle)
                     .SetContentText(string.IsNullOrWhiteSpace(_notificationDescription)
-                        ? $"Background Processes: {RunningBackgroundProcesses.Count}"
+                        ? $"Background Processes: {Processes.Count}"
                         : _notificationDescription)
                     .Build());
         }

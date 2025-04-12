@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using VoiceCraft.Client.Services.Interfaces;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services
 {

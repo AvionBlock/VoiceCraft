@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -9,7 +8,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Services.Interfaces;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Android.Background
 {
@@ -27,6 +27,57 @@ namespace VoiceCraft.Client.Android.Background
             WeakReferenceMessenger.Default.Register<ProcessStopped>(this, (_, m) => OnProcessStopped?.Invoke(m.Value));
         }
 
+        public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
+        {
+            var processType = typeof(T);
+            if (AndroidBackgroundService.Processes.ContainsKey(processType))
+                throw new InvalidOperationException("A background process of this type has already been queued/started!");
+
+            var backgroundProcess = new BackgroundProcess(process);
+            AndroidBackgroundService.Processes.TryAdd(processType, backgroundProcess);
+            if (!await StartBackgroundWorker())
+            {
+                AndroidBackgroundService.Processes.Clear();
+                throw new Exception("Failed to start background process! Background worker failed to start!");
+            }
+
+            var startTime = DateTime.UtcNow;
+            while (backgroundProcess.Status == BackgroundProcessStatus.Stopped)
+            {
+                if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
+                {
+                    AndroidBackgroundService.Processes.TryRemove(processType, out _);
+                    backgroundProcess.Dispose();
+                    throw new Exception("Failed to start background process!");
+                }
+
+                await Task.Delay(10); //Don't burn the CPU!
+            }
+        }
+
+        public override Task StopBackgroundProcess<T>()
+        {
+            var processType = typeof(T);
+            if (!AndroidBackgroundService.Processes.TryRemove(processType, out var process)) return Task.CompletedTask;
+            process.Stop();
+            process.Dispose();
+            OnProcessStopped?.Invoke(process.Process);
+            return Task.CompletedTask;
+        }
+        
+        public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
+        {
+            var processType = typeof(T);
+            if (!AndroidBackgroundService.Processes.TryGetValue(processType, out var value))
+            {
+                process = default;
+                return false;
+            }
+            
+            process = (T?)value.Process;
+            return process != null;
+        }
+        
         private async Task<bool> StartBackgroundWorker()
         {
             //Is it running?
@@ -51,62 +102,9 @@ namespace VoiceCraft.Client.Android.Background
 
             return true;
         }
-
-        public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
-        {
-            var processType = typeof(T);
-            if (AndroidBackgroundService.QueuedProcesses.Any(x => x.Key == processType) ||
-                AndroidBackgroundService.RunningBackgroundProcesses.ContainsKey(processType))
-                throw new InvalidOperationException("A background process of this type has already been queued/started!");
-
-            AndroidBackgroundService.QueuedProcesses.Enqueue(new KeyValuePair<Type, IBackgroundProcess>(processType, process));
-            if (!await StartBackgroundWorker())
-            {
-                AndroidBackgroundService.QueuedProcesses.Clear();
-                throw new Exception("Failed to start background process! Background worker failed to start!");
-            }
-
-            var startTime = DateTime.UtcNow;
-            while (process.Status == BackgroundProcessStatus.Stopped)
-            {
-                if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
-                    throw new Exception("Failed to start background process!");
-                await Task.Delay(10); //Don't burn the CPU!
-            }
-        }
-
-        public override Task StopBackgroundProcess<T>()
-        {
-            var processType = typeof(T);
-            var message = WeakReferenceMessenger.Default.Send(new StopBackgroundProcess(processType));
-            if (message is { HasReceivedResponse: true, Response: not null })
-            {
-                OnProcessStopped?.Invoke(message.Response);
-            }
-            
-            return Task.CompletedTask;
-        }
-        
-        public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
-        {
-            var processType = typeof(T);
-            if (!AndroidBackgroundService.RunningBackgroundProcesses.TryGetValue(processType, out var value))
-            {
-                process = default;
-                return false;
-            }
-            
-            process = (T?)value.Value;
-            return process != null;
-        }
     }
 
     //Messages
-    public class StopBackgroundProcess(Type processType) : RequestMessage<IBackgroundProcess?>
-    {
-        public readonly Type ProcessType = processType;
-    }
-
     public class ProcessStarted(IBackgroundProcess process) : ValueChangedMessage<IBackgroundProcess>(process);
 
     public class ProcessStopped(IBackgroundProcess process) : ValueChangedMessage<IBackgroundProcess>(process);

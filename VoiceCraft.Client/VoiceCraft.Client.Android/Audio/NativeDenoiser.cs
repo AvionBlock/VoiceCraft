@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Android.Audio
             Dispose(false);
         }
 
-        public void Init(IAudioRecorder recorder)
+        public void Initialize(IAudioRecorder recorder)
         {
             ThrowIfDisposed();
 

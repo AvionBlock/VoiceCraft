@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Services.Interfaces;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Linux
 {
@@ -46,19 +45,14 @@ namespace VoiceCraft.Client.Linux
             }
         }
 
-        public override async Task StopBackgroundProcess<T>()
+        public override Task StopBackgroundProcess<T>()
         {
             var processType = typeof(T);
-            if (_processes.TryRemove(processType, out var process))
-            {
-                await process.StopAsync();
-                while (!process.IsCompleted)
-                {
-                    await Task.Delay(10); //Don't burn the CPU!
-                }
-                process.Dispose();
-                OnProcessStopped?.Invoke(process.Process);
-            }
+            if (!_processes.TryRemove(processType, out var process)) return Task.CompletedTask;
+            process.Stop();
+            process.Dispose();
+            OnProcessStopped?.Invoke(process.Process);
+            return Task.CompletedTask;
         }
 
         public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
@@ -106,73 +100,6 @@ namespace VoiceCraft.Client.Linux
             catch (Exception ex)
             {
                 Dispatcher.UIThread.Invoke(() => notificationService.SendErrorNotification($"Background Error: {ex}"));
-            }
-        }
-
-        private class BackgroundProcess : IDisposable
-        {
-            public bool IsCompleted => Status is BackgroundProcessStatus.Completed or BackgroundProcessStatus.Error;
-            public BackgroundProcessStatus Status => GetStatus();
-            public IBackgroundProcess Process { get; }
-            
-            private readonly Task _backgroundTask;
-            private readonly CancellationTokenSource _cts;
-            private bool _disposed;
-
-            public BackgroundProcess(IBackgroundProcess process)
-            {
-                Process = process;
-                _cts = new CancellationTokenSource();
-                _backgroundTask = new Task(() => process.Start(_cts.Token), _cts.Token);
-            }
-
-            public void Start()
-            {
-                ThrowIfDisposed();
-                if(Status != BackgroundProcessStatus.Stopped) return;
-                
-                _backgroundTask.Start();
-            }
-
-            public async Task StopAsync()
-            {
-                ThrowIfDisposed();
-                
-                if(_cts.IsCancellationRequested) return;
-                await _cts.CancelAsync();
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private void ThrowIfDisposed()
-            {
-                if (!_disposed) return;
-                throw new ObjectDisposedException(typeof(BackgroundProcess).ToString());
-            }
-            
-            private BackgroundProcessStatus GetStatus()
-            {
-                if (_backgroundTask.IsFaulted)
-                    return BackgroundProcessStatus.Error;
-                return _backgroundTask.IsCompleted ? BackgroundProcessStatus.Completed : BackgroundProcessStatus.Started;
-            }
-
-            private void Dispose(bool disposing)
-            {
-                if (_disposed) return;
-
-                if (disposing)
-                {
-                    _cts.Dispose();
-                    _backgroundTask.Dispose();
-                    Process.Dispose();
-                }
-                
-                _disposed = true;
             }
         }
     }
