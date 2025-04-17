@@ -226,6 +226,7 @@ namespace VoiceCraft.Client.Linux.Audio
             if (_nativeRecorder == ALCaptureDevice.Null) return;
             ALC.CaptureStop(_nativeRecorder);
             ALC.CaptureCloseDevice(_nativeRecorder);
+            _nativeRecorder = ALCaptureDevice.Null;
         }
 
         private void ThrowIfDisposed()

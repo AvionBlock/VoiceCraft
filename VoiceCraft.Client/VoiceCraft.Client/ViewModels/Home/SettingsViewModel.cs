@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -119,7 +120,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                     if (sample > max) max = sample;
                 }
             }
-
+            
             MicrophoneValue = max;
         }
 
@@ -138,6 +139,8 @@ namespace VoiceCraft.Client.ViewModels.Home
         private bool CleanupRecorder()
         {
             if (_recorder == null) return false;
+            MicrophoneValue = 0;
+            _recorder.OnDataAvailable -= OnDataAvailable;
             _recorder.Dispose();
             _recorder = null;
             return true;
