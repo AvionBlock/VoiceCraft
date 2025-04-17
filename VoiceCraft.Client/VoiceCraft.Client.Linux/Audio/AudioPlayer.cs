@@ -285,7 +285,7 @@ namespace VoiceCraft.Client.Linux.Audio
             if (_buffers.Length != 0)
             {
                 foreach (var buffer in _buffers)
-                    buffer.Delete();
+                    buffer.Dispose();
                 _buffers = [];
             }
 
@@ -421,10 +421,16 @@ namespace VoiceCraft.Client.Linux.Audio
             ALSourceState State() => (ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState);
         }
 
-        private class AudioBuffer(int id, int size, int sampleRate, ALFormat format)
+        private class AudioBuffer(int id, int size, int sampleRate, ALFormat format) : IDisposable
         {
             public int Id { get; } = id;
             public byte[] Data { get; } = GC.AllocateArray<byte>(size, true);
+            private bool _isDisposed;
+
+            ~AudioBuffer()
+            {
+                Dispose(false);
+            }
 
             public void Clear()
             {
@@ -433,18 +439,32 @@ namespace VoiceCraft.Client.Linux.Audio
 
             public unsafe void FillBuffer(int read)
             {
+                ObjectDisposedException.ThrowIf(_isDisposed, nameof(AudioBuffer));
+                
                 fixed (byte* byteBufferPtr = Data)
                     AL.BufferData(Id, format, byteBufferPtr, read, sampleRate);
             }
 
             public void SourceQueue(int sourceId)
             {
+                ObjectDisposedException.ThrowIf(_isDisposed, nameof(AudioBuffer));
+                
                 AL.SourceQueueBuffer(sourceId, Id);
             }
 
-            public void Delete()
+            public void Dispose()
             {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            
+            private void Dispose(bool _)
+            {
+                if (_isDisposed) return;
+
                 AL.DeleteBuffer(Id);
+
+                _isDisposed = true;
             }
         }
     }

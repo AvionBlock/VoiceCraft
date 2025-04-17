@@ -87,12 +87,14 @@ namespace VoiceCraft.Client.ViewModels.Home
                 if (CleanupRecorder())
                 {
                     IsRecording = false;
+                    MicrophoneValue = 0;
                     return;
                 }
 
                 _recorder = _audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
                 _recorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _recorder.OnDataAvailable += OnDataAvailable;
+                _recorder.OnRecordingStopped += OnRecordingStopped;
                 _recorder.Initialize();
                 _recorder.Start();
                 IsRecording = true;
@@ -149,12 +151,20 @@ namespace VoiceCraft.Client.ViewModels.Home
             }
             
             MicrophoneValue = max;
+            DetectingVoiceActivity = max >= AudioSettings.MicrophoneSensitivity;
+        }
+        
+        private void OnRecordingStopped(Exception? obj)
+        {
+            CleanupRecorder();
+            IsRecording = false;
+            MicrophoneValue = 0;
         }
         
         private bool CleanupRecorder()
         {
             if (_recorder == null) return false;
-            MicrophoneValue = 0;
+            _recorder.OnRecordingStopped -= OnRecordingStopped;
             _recorder.OnDataAvailable -= OnDataAvailable;
             _recorder.Dispose();
             _recorder = null;
