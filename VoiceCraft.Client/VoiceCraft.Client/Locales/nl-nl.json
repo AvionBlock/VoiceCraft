@@ -40,15 +40,7 @@
   "SelectedServer.ServerInfo": "Server info",
   "SelectedServer.ServerInfo.Status": "Motd: {motd}\nOntdekking: {discovery}\nPositioneringstype: {positioningType}\nVerbonden clients: {clients}",
   "SelectedServer.ServerInfo.Status.Pinging": "Pingen...",
-
-  "Android.AudioPlayer.Exception.ChannelMask": "Invoergolfprovider moet mono of stereo zijn!",
-  "Android.AudioPlayer.Exception.CreateAudioTrack": "Kan geen audiotrack maken!",
-  "Android.AudioPlayer.Exception.Encoding": "Invoergolfprovider moet 8-bit, 16-bit of 32-bit zijn!",
-  "Android.AudioPlayer.Exception.Format": "Invoergolfprovider moet PCM of IEEE float zijn!",
-  "Android.AudioPlayer.Exception.Init": "Moet eerst Init aanroepen!",
-  "Android.AudioPlayer.Exception.Reinit": "Kan niet opnieuw initialiseren tijdens het afspelen!",
-  "Android.AudioPlayer.Exception.Write": "Er is een fout opgetreden tijdens het schrijven naar de audiospeler!",
-  "Android.AudioRecorder.Exception.Capture": "Er is een fout opgetreden tijdens het vastleggen van gegevens!",
+  
   "Android.NativeAEC.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
   "Android.NativeAEC.Exception.Init": "Native echo-onderdrukking moet worden geïnitialiseerd met een recorder!",
   "Android.NativeAGC.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
