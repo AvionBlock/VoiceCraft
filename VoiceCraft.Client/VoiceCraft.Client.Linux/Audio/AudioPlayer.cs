@@ -17,8 +17,6 @@ namespace VoiceCraft.Client.Linux.Audio
             get => _sampleRate;
             set
             {
-                if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set sample rate when recording!");
                 if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
@@ -31,8 +29,6 @@ namespace VoiceCraft.Client.Linux.Audio
             get => _channels;
             set
             {
-                if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set channels when recording!");
                 if (value < 1)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
 
@@ -54,25 +50,13 @@ namespace VoiceCraft.Client.Linux.Audio
             }
         }
 
-        public AudioFormat Format
-        {
-            get => _format;
-            set
-            {
-                if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set audio format when recording!");
-
-                _format = value;
-            }
-        }
+        public AudioFormat Format { get; set; }
 
         public int BufferMilliseconds
         {
             get => _bufferMilliseconds;
             set
             {
-                if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set buffer milliseconds when recording!");
                 if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
 
@@ -80,17 +64,7 @@ namespace VoiceCraft.Client.Linux.Audio
             }
         }
 
-        public string? SelectedDevice
-        {
-            get => _selectedDevice;
-            set
-            {
-                if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set selected device when recording!");
-
-                _selectedDevice = value;
-            }
-        }
+        public string? SelectedDevice { get; set; }
 
         public PlaybackState PlaybackState { get; private set; }
 
@@ -110,9 +84,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
         private int _sampleRate;
         private int _channels;
-        private AudioFormat _format;
         private int _bufferMilliseconds;
-        private string? _selectedDevice;
 
         public AudioPlayer(int sampleRate, int channels, AudioFormat format)
         {
@@ -144,16 +116,16 @@ namespace VoiceCraft.Client.Linux.Audio
                 _playerCallback = playerCallback;
                 //Create/Open new audio device.
                 //Check if the format is supported first.
-                _alFormat = (BitDepth, Channels) switch
+                _alFormat = (Format, Channels) switch
                 {
-                    (8, 1) => ALFormat.Mono8,
-                    (8, 2) => ALFormat.Stereo8,
-                    (16, 1) => ALFormat.Mono16,
-                    (16, 2) => ALFormat.Stereo16,
-                    (32, 1) => AL.IsExtensionPresent("AL_EXT_float32")
+                    (AudioFormat.Pcm8, 1) => ALFormat.Mono8,
+                    (AudioFormat.Pcm8, 2) => ALFormat.Stereo8,
+                    (AudioFormat.Pcm16, 1) => ALFormat.Mono16,
+                    (AudioFormat.Pcm16, 2) => ALFormat.Stereo16,
+                    (AudioFormat.PcmFloat, 1) => AL.IsExtensionPresent("AL_EXT_float32")
                         ? ALFormat.MonoFloat32Ext
                         : throw new NotSupportedException("Input format is not supported!"),
-                    (32, 2) => AL.IsExtensionPresent("AL_EXT_float32")
+                    (AudioFormat.PcmFloat, 2) => AL.IsExtensionPresent("AL_EXT_float32")
                         ? ALFormat.StereoFloat32Ext
                         : throw new NotSupportedException("Input format is not supported!"),
                     _ => throw new NotSupportedException("Input format is not supported!")
@@ -315,7 +287,7 @@ namespace VoiceCraft.Client.Linux.Audio
         private void ThrowIfNotInitialized()
         {
             if (_nativePlayer == ALDevice.Null || _nativePlayerContext == ALContext.Null || _playerCallback == null)
-                throw new InvalidOperationException("You must initialize the player before calling starting!");
+                throw new InvalidOperationException("Audio player is not intialized!");
         }
 
         private void Resume()
@@ -344,7 +316,7 @@ namespace VoiceCraft.Client.Linux.Audio
             }
             finally
             {
-                CleanupPlayer();
+                Stop();
                 PlaybackState = PlaybackState.Stopped;
                 InvokePlaybackStopped(exception);
             }

@@ -2,64 +2,205 @@ using Android.Media;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
+using AudioFormat = VoiceCraft.Core.AudioFormat;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    public sealed class AudioRecorder(AudioManager audioManager) : IAudioRecorder
+    public class AudioRecorder : IAudioRecorder
     {
+        //Public Properties
+        public int SampleRate
+        {
+            get => _sampleRate;
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+
+                _sampleRate = value;
+            }
+        }
+
+        public int Channels
+        {
+            get => _channels;
+            set
+            {
+                if (value < 1)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+
+                _channels = value;
+            }
+        }
+
+        public int BitDepth
+        {
+            get
+            {
+                return (Format) switch
+                {
+                    AudioFormat.Pcm8 => 8,
+                    AudioFormat.Pcm16 => 16,
+                    AudioFormat.PcmFloat => 32,
+                    _ => throw new ArgumentOutOfRangeException(nameof(Format))
+                };
+            }
+        }
+
+        public AudioFormat Format { get; set; }
+
+        public int BufferMilliseconds
+        {
+            get => _bufferMilliseconds;
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+
+                _bufferMilliseconds = value;
+            }
+        }
+
+        public string? SelectedDevice { get; set; }
+
+        public CaptureState CaptureState { get; private set; }
+
+        public AudioSource AudioSource { get; set; } = AudioSource.Default;
+
+        public int SessionId => _nativeRecorder?.AudioSessionId ?? throw new InvalidOperationException("Recorder not intialized!");
+
+        public event Action<byte[], int>? OnDataAvailable;
+        public event Action<Exception?>? OnRecordingStopped;
+
+        //Privates
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private AudioRecord? _audioRecord;
+        private readonly AudioManager _audioManager;
+        private AudioRecord? _nativeRecorder;
+        private int _sampleRate;
+        private int _channels;
+        private int _bufferMilliseconds;
+        private int _bufferSamples;
+        private int _bufferBytes;
+        private int _blockAlign;
+        private byte[] _byteBuffer = [];
+        private float[] _floatBuffer = [];
         private bool _disposed;
 
-        public WaveFormat WaveFormat { get; set; } = new(8000, 16, 1);
-        public CaptureState CaptureState { get; private set; } = CaptureState.Stopped;
-        public int BufferMilliseconds { get; set; } = 100;
-        public string? SelectedDevice { get; set; }
-        public AudioSource AudioSource { get; set; }
-        public int? SessionId => _audioRecord?.AudioSessionId;
-
-        public event EventHandler<WaveInEventArgs>? DataAvailable;
-        public event EventHandler<StoppedEventArgs>? RecordingStopped;
+        public AudioRecorder(AudioManager audioManager, int sampleRate, int channels, AudioFormat format)
+        {
+            _audioManager = audioManager;
+            SampleRate = sampleRate;
+            Channels = channels;
+            Format = format;
+        }
 
         ~AudioRecorder()
         {
             Dispose(false);
         }
 
-        public void StartRecording()
+        public void Initialize()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
 
-            //Check if we are already recording or starting to record.
-            if (CaptureState is CaptureState.Capturing or CaptureState.Starting) return;
+            if (CaptureState != CaptureState.Stopped)
+                throw new InvalidOperationException("Cannot initialize when recording!");
 
-            while (CaptureState is CaptureState.Stopping) //If stopping, wait.
-                Thread.Sleep(1);
+            //Cleanup previous recorder.
+            CleanupRecorder();
 
-            //Open Capture Device
-            CaptureState = CaptureState.Starting;
-            _audioRecord = OpenCaptureDevice(WaveFormat, BufferMilliseconds, audioManager, AudioSource, SelectedDevice);
-            ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
+            try
+            {
+                //Set the encoding
+                var encoding = (BitDepth, Format) switch
+                {
+                    (8, AudioFormat.Pcm8) => Encoding.Pcm8bit,
+                    (16, AudioFormat.Pcm16) => Encoding.Pcm16bit,
+                    (32, AudioFormat.PcmFloat) => Encoding.PcmFloat,
+                    _ => throw new NotSupportedException()
+                };
+
+                //Set the channel type. Only accepts Mono or Stereo
+                var channelMask = Channels switch
+                {
+                    1 => ChannelIn.Mono,
+                    2 => ChannelIn.Stereo,
+                    _ => throw new NotSupportedException()
+                };
+
+                //Determine the buffer size
+                _bufferSamples = BufferMilliseconds * SampleRate / 1000; //Calculate buffer size IN SAMPLES!
+                _bufferBytes = BitDepth / 8 * Channels * _bufferSamples;
+                _blockAlign = Channels * (BitDepth / 8);
+                if (_bufferBytes % _blockAlign != 0)
+                {
+                    _bufferBytes -= _bufferBytes % _blockAlign;
+                }
+
+                _byteBuffer = new byte[_bufferBytes];
+                _floatBuffer = new float[_bufferBytes / sizeof(float)];
+
+                //Create the AudioRecord Object.
+                _nativeRecorder = new AudioRecord(AudioSource, SampleRate, channelMask, encoding, _bufferBytes);
+                if(_nativeRecorder.State != State.Initialized)
+                    throw new InvalidOperationException("Could not initialize device!");
+                
+                var device = _audioManager.GetDevices(GetDevicesTargets.Inputs)
+                    ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
+                _nativeRecorder.SetPreferredDevice(device);
+            }
+            catch
+            {
+                CleanupRecorder();
+                throw;
+            }
         }
 
-        public void StopRecording()
+        public void Start()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
-            
-            //Check if device is already closed/null.
-            if (_audioRecord == null) return;
+            ThrowIfNotInitialized();
+            if (CaptureState != CaptureState.Stopped) return;
 
-            //Check if it has already been stopped or is stopping.
-            if (CaptureState is CaptureState.Stopped or CaptureState.Stopping) return;
+            //Open Capture Device
+            try
+            {
+                CaptureState = CaptureState.Starting;
+                ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
+                
+                while (CaptureState == CaptureState.Starting)
+                {
+                    Thread.Sleep(1); //Wait until started.
+                }
+            }
+            catch
+            {
+                CaptureState = CaptureState.Stopped;
+                throw;
+            }
+        }
+
+        public void Stop()
+        {
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+            if (CaptureState != CaptureState.Capturing) return;
+
             CaptureState = CaptureState.Stopping;
-            
-            //Block thread until it's fully stopped.
-            while(CaptureState is CaptureState.Stopping)
-                Task.Delay(1).GetAwaiter().GetResult();
+            _nativeRecorder?.Stop();
+
+            while (CaptureState == CaptureState.Stopping)
+            {
+                Thread.Sleep(1); //Wait until stopped.
+            }
+
+            //Disposed? DIE!
+            ThrowIfDisposed();
         }
 
         public void Dispose()
@@ -68,21 +209,44 @@ namespace VoiceCraft.Client.Android.Audio
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        private void CleanupRecorder()
         {
-            if (_disposed || !disposing) return;
-            if (CaptureState != CaptureState.Stopped)
-            {
-                StopRecording();
-            }
-            
-            _disposed = true;
+            if (_nativeRecorder == null) return;
+            _nativeRecorder.Stop();
+            _nativeRecorder.Dispose();
         }
 
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(AudioRecorder).ToString());
+            throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
+        }
+
+        private void ThrowIfNotInitialized()
+        {
+            if (_nativeRecorder == null)
+                throw new InvalidOperationException("Audio recorder is not initialized!");
+        }
+
+        private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)
+        {
+            CaptureState = CaptureState.Capturing;
+            OnDataAvailable?.Invoke(buffer, bytesRecorded);
+        }
+
+        private void InvokeRecordingStopped(Exception? exception = null)
+        {
+            CaptureState = CaptureState.Stopped;
+            var handler = OnRecordingStopped;
+            if (handler == null) return;
+            if (_synchronizationContext == null)
+            {
+                handler(exception);
+            }
+            else
+            {
+                _synchronizationContext.Post(_ => handler(exception), null);
+            }
         }
 
         private void RecordThread()
@@ -98,73 +262,41 @@ namespace VoiceCraft.Client.Android.Audio
             }
             finally
             {
-                CloseCaptureDevice(_audioRecord);
-                _audioRecord = null;
+                _nativeRecorder?.Stop();
                 CaptureState = CaptureState.Stopped;
-                RaiseRecordingStoppedEvent(exception);
-            }
-        }
-
-        private void RaiseRecordingStoppedEvent(Exception? e)
-        {
-            var handler = RecordingStopped;
-            if (handler == null) return;
-            if (_synchronizationContext == null)
-            {
-                handler(this, new StoppedEventArgs(e));
-            }
-            else
-            {
-                _synchronizationContext.Post(_ => handler(this, new StoppedEventArgs(e)), null);
+                InvokeRecordingStopped(exception);
             }
         }
 
         private void RecordingLogic()
         {
-            //Initialize the wave buffer
-            var bufferSize = BufferMilliseconds * WaveFormat.AverageBytesPerSecond / 1000;
-            if (bufferSize % WaveFormat.BlockAlign != 0)
-            {
-                bufferSize -= bufferSize % WaveFormat.BlockAlign;
-            }
-
+            _nativeRecorder?.StartRecording();
             CaptureState = CaptureState.Capturing;
 
             //Run the record loop
-            while (CaptureState == CaptureState.Capturing && _audioRecord != null)
+            while (CaptureState == CaptureState.Capturing && _nativeRecorder != null)
             {
-                switch (WaveFormat.Encoding)
+                Array.Clear(_byteBuffer);
+                Array.Clear(_floatBuffer);
+                
+                switch (_nativeRecorder.AudioFormat)
                 {
-                    case WaveFormatEncoding.Pcm:
+                    case Encoding.Pcm8bit:
+                    case Encoding.Pcm16bit:
                     {
-                        var byteBuffer = new byte[bufferSize];
-                        var bytesRead = _audioRecord.Read(byteBuffer, 0, bufferSize);
-                        switch (bytesRead)
-                        {
-                            case > 0:
-                                DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, bytesRead));
-                                break;
-                            case < 0:
-                                throw new InvalidOperationException(Locales.Locales.Android_AudioRecorder_Exception_Capture);
-                        }
-
+                        var bytesRead = _nativeRecorder.Read(_byteBuffer, 0, _byteBuffer.Length);
+                        if(bytesRead > 0)
+                            InvokeDataAvailable(_byteBuffer, bytesRead);
                         break;
                     }
-                    case WaveFormatEncoding.IeeeFloat:
+                    case Encoding.PcmFloat:
                     {
-                        var floatBuffer = new float[bufferSize / sizeof(float)];
-                        var floatsRead = _audioRecord.Read(floatBuffer, 0, floatBuffer.Length, 0);
-                        switch (floatsRead)
+                        var floatsRead = _nativeRecorder.Read(_floatBuffer, 0, _floatBuffer.Length, 0);
+                        if (floatsRead > 0)
                         {
-                            case > 0:
-                                var byteBuffer = new byte[bufferSize];
-                                Buffer.BlockCopy(floatBuffer, 0, byteBuffer, 0, byteBuffer.Length);
-                                DataAvailable?.Invoke(this, new WaveInEventArgs(byteBuffer, floatsRead * sizeof(float)));
-                                break;
-                            case < 0:
-                                throw new InvalidOperationException(Locales.Locales.Android_AudioRecorder_Exception_Capture);
+                            Buffer.BlockCopy(_floatBuffer, 0, _byteBuffer, 0, _byteBuffer.Length);
+                            InvokeDataAvailable(_byteBuffer, floatsRead * sizeof(float));
                         }
-
                         break;
                     }
                     default:
@@ -173,63 +305,12 @@ namespace VoiceCraft.Client.Android.Audio
             }
         }
 
-        private static AudioRecord OpenCaptureDevice(WaveFormat waveFormat, int bufferSizeMs, AudioManager audioManager, AudioSource audioSource = AudioSource.Mic, string? selectedDevice = null)
+        private void Dispose(bool disposing)
         {
-            //Set the encoding
-            var encoding = (waveFormat.BitsPerSample, waveFormat.Encoding) switch
-            {
-                (8, WaveFormatEncoding.Pcm) => Encoding.Pcm8bit,
-                (16, WaveFormatEncoding.Pcm) => Encoding.Pcm16bit,
-                (32, WaveFormatEncoding.IeeeFloat) => Encoding.PcmFloat,
-                _ => throw new NotSupportedException()
-            };
+            if (_disposed || !disposing) return;
+            CleanupRecorder();
 
-            //Set the channel type. Only accepts Mono or Stereo
-            var channelMask = waveFormat.Channels switch
-            {
-                1 => ChannelIn.Mono,
-                2 => ChannelIn.Stereo,
-                _ => throw new NotSupportedException()
-            };
-
-            //Determine the buffer size
-            var bufferSize = bufferSizeMs * waveFormat.AverageBytesPerSecond / 1000;
-            if (bufferSize % waveFormat.BlockAlign != 0)
-            {
-                bufferSize -= bufferSize % waveFormat.BlockAlign;
-            }
-
-            //Determine min buffer size.
-            var minBufferSize = AudioRecord.GetMinBufferSize(waveFormat.SampleRate, channelMask, encoding);
-            if (bufferSize < minBufferSize)
-            {
-                bufferSize = minBufferSize;
-            }
-
-            //Create the AudioRecord Object.
-            var audioRecord = new AudioRecord(audioSource, waveFormat.SampleRate, channelMask, encoding, bufferSize);
-            var device = audioManager.GetDevices(GetDevicesTargets.Inputs)
-                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == selectedDevice);
-
-            audioRecord.SetPreferredDevice(device);
-            try
-            {
-                audioRecord.StartRecording();
-            }
-            catch
-            {
-                audioRecord.Dispose(); //Dispose audio recorder if created.
-                throw; //Rethrow stack error.
-            }
-            return audioRecord;
-        }
-        
-        private static void CloseCaptureDevice(AudioRecord? audioRecord)
-        {
-            //Make sure that the recorder was opened
-            if (audioRecord is not { State: State.Initialized }) return;
-            audioRecord.Stop();
-            audioRecord.Dispose();
+            _disposed = true;
         }
     }
 }

@@ -1,41 +1,103 @@
 using Android.Media;
-using NAudio.Wave;
 using System;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
+using AudioFormat = Android.Media.AudioFormat;
 
 namespace VoiceCraft.Client.Android.Audio
 {
-    public class AudioPlayer(AudioManager audioManager) : IAudioPlayer
+    public class AudioPlayer : IAudioPlayer
     {
-        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private IWaveProvider? _waveProvider;
-        private AudioTrack? _audioTrack;
-        private float _volume = 1.0f;
-        private bool _disposed;
+        private const int NumberOfBuffers = 3;
 
-        public float Volume
+        //Public Properties
+        public int SampleRate
         {
-            get => _volume;
+            get => _sampleRate;
             set
             {
-                _volume = Math.Clamp(value, 0, 1);
-                _audioTrack?.SetVolume(_volume);
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+
+                _sampleRate = value;
             }
         }
 
-        public int DesiredLatency { get; set; } = 100;
+        public int Channels
+        {
+            get => _channels;
+            set
+            {
+                if (value < 1)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+
+                _channels = value;
+            }
+        }
+
+        public int BitDepth
+        {
+            get
+            {
+                return (Format) switch
+                {
+                    Core.AudioFormat.Pcm8 => 8,
+                    Core.AudioFormat.Pcm16 => 16,
+                    Core.AudioFormat.PcmFloat => 32,
+                    _ => throw new ArgumentOutOfRangeException(nameof(Format))
+                };
+            }
+        }
+
+        public Core.AudioFormat Format { get; set; }
+
+        public int BufferMilliseconds
+        {
+            get => _bufferMilliseconds;
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+
+                _bufferMilliseconds = value;
+            }
+        }
+
         public string? SelectedDevice { get; set; }
-        public int NumberOfBuffers { get; set; } = 2;
-        public PlaybackState PlaybackState { get; private set; } = PlaybackState.Stopped;
-        public WaveFormat OutputWaveFormat { get; private set; } = new();
+
+        public PlaybackState PlaybackState { get; private set; }
+
         public AudioUsageKind Usage { get; set; } = AudioUsageKind.Media;
+
         public AudioContentType ContentType { get; set; } = AudioContentType.Music;
 
-        public event EventHandler<StoppedEventArgs>? PlaybackStopped;
+        public int SessionId => _nativePlayer?.AudioSessionId ?? throw new InvalidOperationException("Recorder not intialized!");
+
+        public event Action<Exception?>? OnPlaybackStopped;
+
+        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
+        private readonly AudioManager _audioManager;
+        private Func<byte[], int, int, int>? _playerCallback;
+        private AudioTrack? _nativePlayer;
+        private int _sampleRate;
+        private int _channels;
+        private int _bufferMilliseconds;
+        private int _bufferSamples;
+        private int _bufferBytes;
+        private int _blockAlign;
+        private byte[] _byteBuffer = [];
+        private float[] _floatBuffer = [];
+        private bool _disposed;
+
+        public AudioPlayer(AudioManager audioManager, int sampleRate, int channels, Core.AudioFormat format)
+        {
+            _audioManager = audioManager;
+            SampleRate = sampleRate;
+            Channels = channels;
+            Format = format;
+        }
 
         ~AudioPlayer()
         {
@@ -43,89 +105,133 @@ namespace VoiceCraft.Client.Android.Audio
             Dispose(false);
         }
 
-        public void Init(IWaveProvider waveProvider)
+        public void Initialize(Func<byte[], int, int, int> playerCallback)
         {
             //Disposed? DIE!
             ThrowIfDisposed();
 
             //Check if already playing.
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Android_AudioPlayer_Exception_Reinit);
+                throw new InvalidOperationException("Cannot initialize when playing!");
 
-            //Close previous audio track if it's not closed.
-            if (_audioTrack != null)
-                CloseDevice();
+            //Cleanup previous player.
+            CleanupPlayer();
 
-            //Create/Open new audio track.
-            var audioTrack = CreateAudioTrack(audioManager, waveProvider, DesiredLatency, Usage, ContentType,
-                SelectedDevice);
-            _waveProvider = waveProvider;
-            _audioTrack = audioTrack;
-            _audioTrack.SetVolume(_volume); //Force set volume.
+            try
+            {
+                _playerCallback = playerCallback;
+                //Create/Open new audio device.
+                //Check if the format is supported first.
+                var encoding = (BitDepth, Format) switch
+                {
+                    (8, Core.AudioFormat.Pcm8) => Encoding.Pcm8bit,
+                    (16, Core.AudioFormat.Pcm16) => Encoding.Pcm16bit,
+                    (32, Core.AudioFormat.PcmFloat) => Encoding.PcmFloat,
+                    _ => throw new NotSupportedException()
+                };
 
-            //Set output wave format.
-            OutputWaveFormat = waveProvider.WaveFormat;
+                //Set the channel type. Only accepts Mono or Stereo
+                var channelMask = Channels switch
+                {
+                    1 => ChannelOut.Mono,
+                    2 => ChannelOut.Stereo,
+                    _ => throw new NotSupportedException()
+                };
+
+                //Determine the buffer size
+                _bufferSamples = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers * (SampleRate / 1000); //Calculate buffer size IN SAMPLES!
+                _bufferBytes = BitDepth / 8 * Channels * _bufferSamples;
+                _blockAlign = Channels * (BitDepth / 8);
+                if (_bufferBytes % _blockAlign != 0)
+                {
+                    _bufferBytes -= _bufferBytes % _blockAlign;
+                }
+
+                _byteBuffer = new byte[_bufferBytes];
+                _floatBuffer = new float[_bufferBytes / sizeof(float)];
+
+                var audioAttributes = new AudioAttributes.Builder().SetUsage(Usage)?.SetContentType(ContentType)?.Build();
+                var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)?.SetSampleRate(SampleRate)?.SetChannelMask(channelMask).Build();
+
+                if (audioAttributes == null || audioFormat == null)
+                    throw new InvalidOperationException();
+
+                _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
+                    .SetBufferSizeInBytes(BufferMilliseconds).SetTransferMode(AudioTrackMode.Stream).Build();
+                if (_nativePlayer.State != AudioTrackState.Initialized)
+                    throw new InvalidOperationException("Could not initialize device!");
+
+                _nativePlayer.SetVolume(1.0f);
+                var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Outputs)
+                    ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
+                _nativePlayer.SetPreferredDevice(selectedDevice);
+            }
+            catch
+            {
+                CleanupPlayer();
+                throw;
+            }
         }
 
         public void Play()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
+            ThrowIfNotInitialized();
 
-            //Check if device is already closed/null.
-            if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException(Locales.Locales.Android_AudioPlayer_Exception_Init);
-
-            //Resume or start playback.
-            switch (PlaybackState)
+            try
             {
-                case PlaybackState.Stopped:
-                    ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
-                    break;
-                case PlaybackState.Paused:
-                    Resume();
-                    break;
-                case PlaybackState.Playing:
-                default:
-                    break;
+                //Resume or start playback.
+                switch (PlaybackState)
+                {
+                    case PlaybackState.Stopped:
+                        PlaybackState = PlaybackState.Starting;
+                        ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
+                        break;
+                    case PlaybackState.Paused:
+                        Resume();
+                        break;
+                    case PlaybackState.Starting:
+                    case PlaybackState.Playing:
+                    case PlaybackState.Stopping:
+                    default:
+                        break;
+                }
             }
-        }
-
-        public void Stop()
-        {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-
-            //Check if device is already closed/null.
-            if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException(Locales.Locales.Android_AudioPlayer_Exception_Init);
-
-            //Check if it has already been stopped.
-            if (PlaybackState == PlaybackState.Stopped) return;
-
-            //Stop the wave player
-            PlaybackState = PlaybackState.Stopped;
-
-            //Block thread until it's fully stopped.
-            while (_audioTrack != null)
-                Task.Delay(1).GetAwaiter().GetResult();
+            catch
+            {
+                PlaybackState = PlaybackState.Stopped;
+                throw;
+            }
         }
 
         public void Pause()
         {
             //Disposed? DIE!
             ThrowIfDisposed();
+            ThrowIfNotInitialized();
 
-            //Check if device is already closed/null.
-            if (_audioTrack == null || _waveProvider == null)
-                throw new InvalidOperationException(Locales.Locales.Android_AudioPlayer_Exception_Init);
-
-            //Check if it has already been paused or is not playing.
             if (PlaybackState != PlaybackState.Playing) return;
 
-            //Pause the wave player.
-            _audioTrack?.Pause();
             PlaybackState = PlaybackState.Paused;
+            _nativePlayer?.Pause();
+        }
+
+        public void Stop()
+        {
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+
+            if (PlaybackState != PlaybackState.Playing) return;
+
+            PlaybackState = PlaybackState.Stopping;
+            _nativePlayer?.Stop();
+
+            while (PlaybackState == PlaybackState.Stopping)
+            {
+                Thread.Sleep(1); //Wait until stopped.
+            }
         }
 
         public void Dispose()
@@ -135,30 +241,45 @@ namespace VoiceCraft.Client.Android.Audio
             GC.SuppressFinalize(this);
         }
 
+        private void CleanupPlayer()
+        {
+            if (_nativePlayer == null) return;
+            _nativePlayer.Stop();
+            _nativePlayer.Dispose();
+            _nativePlayer = null;
+        }
+
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
             throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
         }
 
+        private void ThrowIfNotInitialized()
+        {
+            if (_nativePlayer == null)
+                throw new InvalidOperationException("Audio player is not intialized!");
+        }
+
         private void Resume()
         {
             if (PlaybackState != PlaybackState.Paused) return;
-            _audioTrack?.Play();
+            _nativePlayer?.Play();
             PlaybackState = PlaybackState.Playing;
         }
 
-        private void RaisePlaybackStoppedEvent(Exception? e)
+        private void InvokePlaybackStopped(Exception? exception = null)
         {
-            var handler = PlaybackStopped;
+            PlaybackState = PlaybackState.Stopped;
+            var handler = OnPlaybackStopped;
             if (handler == null) return;
             if (_synchronizationContext == null)
             {
-                handler(this, new StoppedEventArgs(e));
+                handler(exception);
             }
             else
             {
-                _synchronizationContext.Post(_ => handler(this, new StoppedEventArgs(e)), null);
+                _synchronizationContext.Post(_ => handler(exception), null);
             }
         }
 
@@ -175,27 +296,22 @@ namespace VoiceCraft.Client.Android.Audio
             }
             finally
             {
-                if (_audioTrack != null)
-                    CloseDevice();
-
+                Stop();
                 PlaybackState = PlaybackState.Stopped;
-                RaisePlaybackStoppedEvent(exception);
+                InvokePlaybackStopped(exception);
             }
         }
 
         private void PlaybackLogic()
         {
-            if (_waveProvider == null || _audioTrack == null)
-                throw new InvalidOperationException(Locales.Locales.Android_AudioPlayer_Exception_Init);
-            
-            //Calculate buffer size.
-            var waveBufferSize = (_audioTrack.BufferSizeInFrames + NumberOfBuffers - 1) / NumberOfBuffers * _waveProvider.WaveFormat.BlockAlign;
-            waveBufferSize = (waveBufferSize + 3) & ~3;
+            //This shouldn't happen...
+            if (_playerCallback == null)
+                throw new InvalidOperationException("Player callback was not found!");
 
             //Run the playback loop
-            _audioTrack.Play();
+            _nativePlayer?.Play();
             PlaybackState = PlaybackState.Playing;
-            while (PlaybackState != PlaybackState.Stopped && _audioTrack != null)
+            while (PlaybackState != PlaybackState.Stopped && _nativePlayer != null)
             {
                 //Check the playback state
                 if (PlaybackState != PlaybackState.Playing)
@@ -204,122 +320,43 @@ namespace VoiceCraft.Client.Android.Audio
                     continue;
                 }
 
-                if (_audioTrack.PlayState == PlayState.Stopped)
+                if (_nativePlayer.PlayState == PlayState.Stopped)
                     break;
 
+                Array.Clear(_byteBuffer);
+                Array.Clear(_floatBuffer);
+
                 //Fill the wave buffer with new samples
-                var byteBuffer = GC.AllocateArray<byte>(waveBufferSize, true);
-                var read = _waveProvider.Read(byteBuffer, 0, waveBufferSize);
+                var read = _playerCallback(_byteBuffer, 0, _byteBuffer.Length);
                 if (read <= 0) break;
-                switch (_waveProvider.WaveFormat.Encoding)
+                switch (_nativePlayer.AudioFormat)
                 {
                     //Write the specified wave buffer to the audio track
-                    case WaveFormatEncoding.Pcm:
+                    case Encoding.Pcm8bit:
+                    case Encoding.Pcm16bit:
                     {
-                        var bytesWritten = _audioTrack.Write(byteBuffer, 0, read);
-                        if (bytesWritten < 0 && _audioTrack.PlayState is not (PlayState.Playing or PlayState.Paused))
-                        {
-                            throw new Exception(Locales.Locales.Android_AudioPlayer_Exception_Write);
-                        }
-
+                        _nativePlayer.Write(_byteBuffer, 0, read);
                         break;
                     }
-                    case WaveFormatEncoding.IeeeFloat:
+                    case Encoding.PcmFloat:
                     {
-                        var floatBuffer = new float[waveBufferSize / sizeof(float)];
-                        Buffer.BlockCopy(byteBuffer, 0, floatBuffer, 0, read);
-                        var floatsWritten = _audioTrack.Write(floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
-                        if (floatsWritten < 0 && _audioTrack.PlayState is not (PlayState.Playing or PlayState.Paused))
-                        {
-                            throw new Exception(Locales.Locales.Android_AudioPlayer_Exception_Write);
-                        }
-
+                        Buffer.BlockCopy(_byteBuffer, 0, _floatBuffer, 0, read);
+                        _nativePlayer.Write(_floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
                         break;
                     }
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
 
-                _audioTrack.Flush();
+                _nativePlayer.Flush();
             }
         }
 
         private void Dispose(bool disposing)
         {
             if (!disposing || _disposed) return;
-            if (PlaybackState != PlaybackState.Stopped)
-            {
-                Stop();
-            }
-            
-            //Close previous audio track if it was not closed by the player thread.
-            if (_audioTrack != null)
-                CloseDevice();
-
+            CleanupPlayer();
             _disposed = true;
-        }
-
-        private static AudioTrack CreateAudioTrack(AudioManager audioManager, IWaveProvider waveProvider,
-            int desiredLatency, AudioUsageKind usage, AudioContentType content, string? deviceName)
-        {
-            //Initialize the wave provider
-            Encoding encoding;
-            if (waveProvider.WaveFormat.Encoding is WaveFormatEncoding.Pcm or WaveFormatEncoding.IeeeFloat)
-            {
-                encoding = waveProvider.WaveFormat.BitsPerSample switch
-                {
-                    8 => Encoding.Pcm8bit,
-                    16 => Encoding.Pcm16bit,
-                    32 => Encoding.PcmFloat,
-                    _ => throw new ArgumentException(Locales.Locales.Android_AudioPlayer_Exception_Encoding,
-                        nameof(waveProvider))
-                };
-            }
-            else
-            {
-                throw new ArgumentException(Locales.Locales.Android_AudioPlayer_Exception_Format, nameof(waveProvider));
-            }
-
-            //Determine the channel mask
-            var channelMask = waveProvider.WaveFormat.Channels switch
-            {
-                1 => ChannelOut.Mono,
-                2 => ChannelOut.Stereo,
-                _ => throw new ArgumentException(Locales.Locales.Android_AudioPlayer_Exception_ChannelMask, nameof(waveProvider))
-            };
-
-            //Determine the buffer size
-            var minBufferSize = AudioTrack.GetMinBufferSize(waveProvider.WaveFormat.SampleRate, channelMask, encoding);
-            var bufferSize = waveProvider.WaveFormat.ConvertLatencyToByteSize(desiredLatency);
-            if (bufferSize < minBufferSize)
-            {
-                bufferSize = minBufferSize;
-            }
-
-            var audioAttributes = new AudioAttributes.Builder().SetUsage(usage)?.SetContentType(content)?.Build();
-            var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)
-                ?.SetSampleRate(waveProvider.WaveFormat.SampleRate)?.SetChannelMask(channelMask).Build();
-
-            if (audioAttributes == null || audioFormat == null)
-                throw new InvalidOperationException(Locales.Locales.Android_AudioPlayer_Exception_CreateAudioTrack);
-
-            var audioTrack = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
-                .SetBufferSizeInBytes(bufferSize).SetTransferMode(AudioTrackMode.Stream).Build();
-            audioTrack.SetVolume(1.0f);
-
-            var selectedDevice = audioManager.GetDevices(GetDevicesTargets.Outputs)
-                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == deviceName);
-            audioTrack.SetPreferredDevice(selectedDevice);
-
-            return audioTrack;
-        }
-        
-        private void CloseDevice()
-        {
-            if (_audioTrack is not { State: AudioTrackState.Initialized }) return;
-            _audioTrack.Stop();
-            _audioTrack.Dispose();
-            _audioTrack = null;
         }
     }
 }

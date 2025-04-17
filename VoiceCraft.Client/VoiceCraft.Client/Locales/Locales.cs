@@ -45,15 +45,7 @@ namespace VoiceCraft.Client.Locales
         public static string SelectedServer_ServerInfo => Localizer.Get("SelectedServer.ServerInfo");
         public static string SelectedServer_ServerInfo_Status => Localizer.Get("SelectedServer.ServerInfo.Status");
         public static string SelectedServer_ServerInfo_Status_Pinging => Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
-
-        public static string Android_AudioPlayer_Exception_ChannelMask => Localizer.Get("Android.AudioPlayer.Exception.ChannelMask");
-        public static string Android_AudioPlayer_Exception_CreateAudioTrack => Localizer.Get("Android.AudioPlayer.Exception.CreateAudioTrack");
-        public static string Android_AudioPlayer_Exception_Encoding => Localizer.Get("Android.AudioPlayer.Exception.Encoding");
-        public static string Android_AudioPlayer_Exception_Format => Localizer.Get("Android.AudioPlayer.Exception.Format");
-        public static string Android_AudioPlayer_Exception_Init => Localizer.Get("Android.AudioPlayer.Exception.Init");
-        public static string Android_AudioPlayer_Exception_Reinit => Localizer.Get("Android.AudioPlayer.Exception.Reinit");
-        public static string Android_AudioPlayer_Exception_Write => Localizer.Get("Android.AudioPlayer.Exception.Write");
-        public static string Android_AudioRecorder_Exception_Capture => Localizer.Get("Android.AudioRecorder.Exception.Capture");
+        
         public static string Android_NativeAEC_Exception_AndroidRecorder => Localizer.Get("Android.NativeAEC.Exception.AndroidRecorder");
         public static string Android_NativeAEC_Exception_Init => Localizer.Get("Android.NativeAEC.Exception.Init");
         public static string Android_NativeAGC_Exception_AndroidRecorder => Localizer.Get("Android.NativeAGC.Exception.AndroidRecorder");

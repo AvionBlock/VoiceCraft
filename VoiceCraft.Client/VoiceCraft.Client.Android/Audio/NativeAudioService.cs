@@ -2,9 +2,10 @@ using Android.Media;
 using System.Collections.Generic;
 using System.Linq;
 using Android.OS;
-using VoiceCraft.Client.Audio.Interfaces;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
+using AudioFormat = VoiceCraft.Core.AudioFormat;
 
 namespace VoiceCraft.Client.Android.Audio
 {
@@ -46,14 +47,14 @@ namespace VoiceCraft.Client.Android.Audio
             #pragma warning restore CA1416
         }
 
-        public override IAudioRecorder CreateAudioRecorder()
+        public override IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format)
         {
-            return new AudioRecorder(_audioManager);
+            return new AudioRecorder(_audioManager, sampleRate, channels, format);
         }
 
-        public override IAudioPlayer CreateAudioPlayer()
+        public override IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format)
         {
-            return new AudioPlayer(_audioManager);
+            return new AudioPlayer(_audioManager, sampleRate, channels, format);
         }
 
         public override List<string> GetInputDevices()

@@ -14,8 +14,6 @@ namespace VoiceCraft.Client.Windows.Audio
             get => _sampleRate;
             set
             {
-                if(CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot set sample rate when recording!");
                 if(value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
@@ -28,8 +26,6 @@ namespace VoiceCraft.Client.Windows.Audio
             get => _channels;
             set
             {
-                if(CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot set channels when recording!");
                 if(value < 1)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
 
@@ -51,25 +47,13 @@ namespace VoiceCraft.Client.Windows.Audio
             }
         }
 
-        public AudioFormat Format
-        {
-            get => _format;
-            set
-            {
-                if(CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot set audio format when recording!");
-                
-                _format = value;
-            }
-        }
+        public AudioFormat Format { get; set; }
 
         public int BufferMilliseconds
         {
             get => _bufferMilliseconds;
             set
             {
-                if(CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot set buffer milliseconds when recording!");
                 if(value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
 
@@ -77,17 +61,7 @@ namespace VoiceCraft.Client.Windows.Audio
             }
         }
 
-        public string? SelectedDevice
-        {
-            get => _selectedDevice;
-            set
-            {
-                if(CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot set selected device when recording!");
-                
-                _selectedDevice = value;
-            }
-        }
+        public string? SelectedDevice { get; set; }
 
         public CaptureState CaptureState { get; private set; }
 
@@ -98,9 +72,7 @@ namespace VoiceCraft.Client.Windows.Audio
         private WaveInEvent? _nativeRecorder;
         private int _sampleRate;
         private int _channels;
-        private AudioFormat _format;
         private int _bufferMilliseconds;
-        private string? _selectedDevice;
         private bool _disposed;
 
         public AudioRecorder(int sampleRate, int channels, AudioFormat format)
@@ -173,7 +145,11 @@ namespace VoiceCraft.Client.Windows.Audio
             {
                 CaptureState = CaptureState.Starting;
                 _nativeRecorder?.StartRecording();
-                CaptureState = CaptureState.Capturing;
+                
+                while (CaptureState == CaptureState.Starting)
+                {
+                    Thread.Sleep(1); //Wait until started.
+                }
             }
             catch
             {
@@ -222,7 +198,7 @@ namespace VoiceCraft.Client.Windows.Audio
         private void ThrowIfNotInitialized()
         {
             if(_nativeRecorder == null)
-                throw new InvalidOperationException("You must initialize the recorder before calling starting!");
+                throw new InvalidOperationException("Audio recorder is not initialized!");
         }
 
         private void InvokeDataAvailable(object? sender, WaveInEventArgs e)

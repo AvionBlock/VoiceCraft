@@ -15,8 +15,6 @@ namespace VoiceCraft.Client.Windows.Audio
             get => _sampleRate;
             set
             {
-                if(PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set sample rate when recording!");
                 if(value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
@@ -29,8 +27,6 @@ namespace VoiceCraft.Client.Windows.Audio
             get => _channels;
             set
             {
-                if(PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set channels when recording!");
                 if(value < 1)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
 
@@ -52,25 +48,13 @@ namespace VoiceCraft.Client.Windows.Audio
             }
         }
 
-        public AudioFormat Format
-        {
-            get => _format;
-            set
-            {
-                if(PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set audio format when recording!");
-                
-                _format = value;
-            }
-        }
-        
+        public AudioFormat Format { get; set; }
+
         public int BufferMilliseconds
         {
             get => _bufferMilliseconds;
             set
             {
-                if(PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set buffer milliseconds when recording!");
                 if(value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
 
@@ -78,29 +62,18 @@ namespace VoiceCraft.Client.Windows.Audio
             }
         }
 
-        public string? SelectedDevice
-        {
-            get => _selectedDevice;
-            set
-            {
-                if(PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot set selected device when recording!");
-                
-                _selectedDevice = value;
-            }
-        }
-        
+        public string? SelectedDevice { get; set; }
+
         public PlaybackState PlaybackState { get; private set; }
 
         public event Action<Exception?>? OnPlaybackStopped;
         
         //Privates
+        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private WaveOutEvent? _nativePlayer;
         private int _sampleRate;
         private int _channels;
-        private AudioFormat _format;
         private int _bufferMilliseconds;
-        private string? _selectedDevice;
         private bool _disposed;
         
         public AudioPlayer(int sampleRate, int channels, AudioFormat format)
@@ -235,13 +208,22 @@ namespace VoiceCraft.Client.Windows.Audio
         private void ThrowIfNotInitialized()
         {
             if(_nativePlayer == null)
-                throw new InvalidOperationException("You must initialize the player before calling starting!");
+                throw new InvalidOperationException("Audio player is not intialized!");
         }
         
         private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)
         {
             PlaybackState = PlaybackState.Stopped;
-            OnPlaybackStopped?.Invoke(e.Exception);
+            var handler = OnPlaybackStopped;
+            if (handler == null) return;
+            if (_synchronizationContext == null)
+            {
+                handler(e.Exception);
+            }
+            else
+            {
+                _synchronizationContext.Post(_ => handler(e.Exception), null);
+            }
         }
         
         private void Dispose(bool disposing)
@@ -262,11 +244,7 @@ namespace VoiceCraft.Client.Windows.Audio
 
             public int Read(byte[] buffer, int offset, int count)
             {
-                var read = callback(buffer, offset, count);
-                if (read >= count) return read;
-                
-                Array.Clear(buffer, offset + read, count - read);
-                return count;
+                return callback(buffer, offset, count);
             }
         }
     }
