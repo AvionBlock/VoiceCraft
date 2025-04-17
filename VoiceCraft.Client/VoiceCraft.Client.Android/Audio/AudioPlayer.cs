@@ -199,7 +199,6 @@ namespace VoiceCraft.Client.Android.Audio
                         {
                             Thread.Sleep(1); //Wait until started.
                         }
-
                         break;
                     case PlaybackState.Paused:
                         Resume();
