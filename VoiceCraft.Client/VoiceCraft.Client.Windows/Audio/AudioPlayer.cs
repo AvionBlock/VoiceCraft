@@ -38,7 +38,7 @@ namespace VoiceCraft.Client.Windows.Audio
         {
             get
             {
-                return (Format) switch
+                return Format switch
                 {
                     AudioFormat.Pcm8 => 8,
                     AudioFormat.Pcm16 => 16,
@@ -69,6 +69,7 @@ namespace VoiceCraft.Client.Windows.Audio
         public event Action<Exception?>? OnPlaybackStopped;
         
         //Privates
+        private readonly Lock _lockObj = new();
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private WaveOutEvent? _nativePlayer;
         private int _sampleRate;
@@ -91,17 +92,19 @@ namespace VoiceCraft.Client.Windows.Audio
 
         public void Initialize(Func<byte[], int, int, int> playerCallback)
         {
-            //Disposed? DIE!
-            ThrowIfDisposed(); 
+            _lockObj.Enter();
             
-            if(PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException("Cannot initialize when playing!");
-            
-            //Cleanup previous player.
-            CleanupPlayer();
-
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed(); 
+            
+                if(PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot initialize when playing!");
+            
+                //Cleanup previous player.
+                CleanupPlayer();
+                
                 //Select Device.
                 var selectedDevice = -1;
                 for (var n = 0; n < WaveOut.DeviceCount; n++)
@@ -120,9 +123,9 @@ namespace VoiceCraft.Client.Windows.Audio
                     AudioFormat.PcmFloat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels),
                     _ => throw new NotSupportedException("Input format is not supported!")
                 };
-                
+
                 var callbackProvider = new CallbackWaveProvider(waveFormat, playerCallback);
-                
+
                 //Setup Player
                 _nativePlayer = new WaveOutEvent();
                 _nativePlayer.DesiredLatency = BufferMilliseconds;
@@ -136,17 +139,24 @@ namespace VoiceCraft.Client.Windows.Audio
                 CleanupPlayer();
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
         
         public void Play()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (PlaybackState != PlaybackState.Stopped) return;
-
+            _lockObj.Enter();
+            
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+
+                if (PlaybackState != PlaybackState.Stopped) return;
+
                 PlaybackState = PlaybackState.Starting;
                 _nativePlayer?.Play();
                 PlaybackState = PlaybackState.Playing;
@@ -156,39 +166,70 @@ namespace VoiceCraft.Client.Windows.Audio
                 PlaybackState = PlaybackState.Stopped;
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Pause()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (PlaybackState != PlaybackState.Playing) return;
+            _lockObj.Enter();
             
-            PlaybackState = PlaybackState.Paused;
-            _nativePlayer?.Pause();
+            try
+            {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (PlaybackState != PlaybackState.Playing) return;
+
+                PlaybackState = PlaybackState.Paused;
+                _nativePlayer?.Pause();
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Stop()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (PlaybackState is not (PlaybackState.Playing or PlaybackState.Paused)) return;
+            _lockObj.Enter();
             
-            PlaybackState = PlaybackState.Stopping;
-            _nativePlayer?.Stop();
-
-            while (PlaybackState == PlaybackState.Stopping)
+            try
             {
-                Thread.Sleep(1); //Wait until stopped.
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (PlaybackState is not (PlaybackState.Playing or PlaybackState.Paused)) return;
+
+                PlaybackState = PlaybackState.Stopping;
+                _nativePlayer?.Stop();
+                
+                while (PlaybackState == PlaybackState.Stopping)
+                {
+                    Thread.Sleep(1); //Wait until stopped.
+                }
+            }
+            finally
+            {
+                _lockObj.Exit();
             }
         }
         
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+            
+            try
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         private void CleanupPlayer()
@@ -228,13 +269,8 @@ namespace VoiceCraft.Client.Windows.Audio
         
         private void Dispose(bool disposing)
         {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                CleanupPlayer();
-            }
-            
+            if (!disposing || _disposed) return;
+            CleanupPlayer();
             _disposed = true;
         }
 

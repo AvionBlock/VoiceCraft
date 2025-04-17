@@ -40,7 +40,7 @@ namespace VoiceCraft.Client.Linux.Audio
         {
             get
             {
-                return (Format) switch
+                return Format switch
                 {
                     AudioFormat.Pcm8 => 8,
                     AudioFormat.Pcm16 => 16,
@@ -70,6 +70,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public event Action<Exception?>? OnPlaybackStopped;
 
+        private readonly Lock _lockObj = new();
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private Func<byte[], int, int, int>? _playerCallback;
         private ALDevice _nativePlayer;
@@ -102,20 +103,21 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public void Initialize(Func<byte[], int, int, int> playerCallback)
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-
-            //Check if already playing.
-            if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException("Cannot initialize when playing!");
-
-            //Cleanup previous player.
-            CleanupPlayer();
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+
+                //Check if already playing.
+                if (PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot initialize when playing!");
+
+                //Cleanup previous player.
+                CleanupPlayer();
+
                 _playerCallback = playerCallback;
-                //Create/Open new audio device.
                 //Check if the format is supported first.
                 _alFormat = (Format, Channels) switch
                 {
@@ -123,13 +125,9 @@ namespace VoiceCraft.Client.Linux.Audio
                     (AudioFormat.Pcm8, 2) => ALFormat.Stereo8,
                     (AudioFormat.Pcm16, 1) => ALFormat.Mono16,
                     (AudioFormat.Pcm16, 2) => ALFormat.Stereo16,
-                    (AudioFormat.PcmFloat, 1) => AL.IsExtensionPresent("AL_EXT_float32")
-                        ? ALFormat.MonoFloat32Ext
-                        : throw new NotSupportedException("Input format is not supported!"),
-                    (AudioFormat.PcmFloat, 2) => AL.IsExtensionPresent("AL_EXT_float32")
-                        ? ALFormat.StereoFloat32Ext
-                        : throw new NotSupportedException("Input format is not supported!"),
-                    _ => throw new NotSupportedException("Input format is not supported!")
+                    (AudioFormat.PcmFloat, 1) => ALFormat.MonoFloat32Ext,
+                    (AudioFormat.PcmFloat, 2) => ALFormat.StereoFloat32Ext,
+                    _ => throw new NotSupportedException()
                 };
 
                 _setSampleRate = SampleRate;
@@ -178,22 +176,32 @@ namespace VoiceCraft.Client.Linux.Audio
                 CleanupPlayer();
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Play()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+
                 //Resume or start playback.
                 switch (PlaybackState)
                 {
                     case PlaybackState.Stopped:
                         PlaybackState = PlaybackState.Starting;
                         ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
+                        while (PlaybackState == PlaybackState.Starting)
+                        {
+                            Thread.Sleep(1); //Wait until started.
+                        }
                         break;
                     case PlaybackState.Paused:
                         Resume();
@@ -210,40 +218,71 @@ namespace VoiceCraft.Client.Linux.Audio
                 PlaybackState = PlaybackState.Stopped;
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Pause()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (PlaybackState != PlaybackState.Playing) return;
+            _lockObj.Enter();
 
-            PlaybackState = PlaybackState.Paused;
-            AL.SourcePause(_source);
+            try
+            {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (PlaybackState != PlaybackState.Playing) return;
+
+                AL.SourcePause(_source);
+                PlaybackState = PlaybackState.Paused;
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Stop()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (PlaybackState != PlaybackState.Playing) return;
+            _lockObj.Enter();
 
-            PlaybackState = PlaybackState.Stopping;
-            AL.SourceStop(_source);
-
-            while (PlaybackState == PlaybackState.Stopping)
+            try
             {
-                Thread.Sleep(1); //Wait until stopped.
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (PlaybackState != PlaybackState.Playing) return;
+
+                PlaybackState = PlaybackState.Stopping;
+                AL.SourceStop(_source);
+
+                while (PlaybackState == PlaybackState.Stopping)
+                {
+                    Thread.Sleep(1); //Wait until stopped.
+                }
+            }
+            finally
+            {
+                _lockObj.Exit();
             }
         }
 
         public void Dispose()
         {
-            //Dispose of this object
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+
+            try
+            {
+                //Dispose of this object
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         private void CleanupPlayer()
@@ -326,8 +365,8 @@ namespace VoiceCraft.Client.Linux.Audio
             }
             finally
             {
-                Stop();
-                PlaybackState = PlaybackState.Stopped;
+                if ((ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState) != ALSourceState.Stopped)
+                    AL.SourceStop(_source);
                 InvokePlaybackStopped(exception);
             }
         }
@@ -365,14 +404,14 @@ namespace VoiceCraft.Client.Linux.Audio
             PlaybackState = PlaybackState.Playing;
             while (PlaybackState != PlaybackState.Stopped)
             {
+                if (State() == ALSourceState.Stopped)
+                    break; //Reached the end of the playback buffer or the audio player has stopped.
+
                 if (PlaybackState != PlaybackState.Playing)
                 {
                     Thread.Sleep(1);
                     continue;
                 }
-
-                if (State() == ALSourceState.Stopped)
-                    break; //Reached the end of the playback buffer or the audio player has stopped.
 
                 //Get all buffers that have been processed.
                 var processedBuffers = AL.GetSource(_source, ALGetSourcei.BuffersProcessed);
@@ -399,7 +438,6 @@ namespace VoiceCraft.Client.Linux.Audio
 
             return;
 
-            //If state is newly created or has been stopped. Fill buffers and queue them.
             ALSourceState State() => (ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState);
         }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core;
@@ -15,7 +14,7 @@ namespace VoiceCraft.Client.Linux.Audio
             get => _sampleRate;
             set
             {
-                if(value < 0)
+                if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
                 _sampleRate = value;
@@ -27,7 +26,7 @@ namespace VoiceCraft.Client.Linux.Audio
             get => _channels;
             set
             {
-                if(value < 1)
+                if (value < 1)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
 
                 _channels = value;
@@ -38,7 +37,7 @@ namespace VoiceCraft.Client.Linux.Audio
         {
             get
             {
-                return (Format) switch
+                return Format switch
                 {
                     AudioFormat.Pcm8 => 8,
                     AudioFormat.Pcm16 => 16,
@@ -55,7 +54,7 @@ namespace VoiceCraft.Client.Linux.Audio
             get => _bufferMilliseconds;
             set
             {
-                if(value < 0)
+                if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
 
                 _bufferMilliseconds = value;
@@ -65,11 +64,12 @@ namespace VoiceCraft.Client.Linux.Audio
         public string? SelectedDevice { get; set; }
 
         public CaptureState CaptureState { get; private set; }
-        
+
         public event Action<byte[], int>? OnDataAvailable;
         public event Action<Exception?>? OnRecordingStopped;
-        
+
         //Privates
+        private readonly Lock _lockObj = new();
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private ALCaptureDevice _nativeRecorder = ALCaptureDevice.Null;
         private int _sampleRate;
@@ -80,7 +80,7 @@ namespace VoiceCraft.Client.Linux.Audio
         private int _blockAlign;
         private byte[] _buffer = [];
         private bool _disposed;
-        
+
         public AudioRecorder(int sampleRate, int channels, AudioFormat format)
         {
             SampleRate = sampleRate;
@@ -92,21 +92,23 @@ namespace VoiceCraft.Client.Linux.Audio
         {
             Dispose(false);
         }
-        
+
         public void Initialize()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            
-            if(CaptureState != CaptureState.Stopped)
-                throw new InvalidOperationException("Cannot initialize when recording!");
-            
-            //Cleanup previous recorder.
-            CleanupRecorder();
+            _lockObj.Enter();
 
             try
             {
-                //AL.IsExtensionPresent("AL_EXT_float32")
+                //Disposed? DIE!
+                ThrowIfDisposed();
+
+                if (CaptureState != CaptureState.Stopped)
+                    throw new InvalidOperationException("Cannot initialize when recording!");
+
+                //Cleanup previous recorder.
+                CleanupRecorder();
+
+                //AL.IsExtensionPresent("AL_EXT_float32") I don't know why this extension checker doesn't work properly.
                 //Select Device.
                 var format = (Format, Channels) switch
                 {
@@ -114,12 +116,8 @@ namespace VoiceCraft.Client.Linux.Audio
                     (AudioFormat.Pcm8, 2) => ALFormat.Stereo8,
                     (AudioFormat.Pcm16, 1) => ALFormat.Mono16,
                     (AudioFormat.Pcm16, 2) => ALFormat.Stereo16,
-                    (AudioFormat.PcmFloat, 1) => true
-                        ? ALFormat.MonoFloat32Ext
-                        : throw new NotSupportedException(),
-                    (AudioFormat.PcmFloat, 2) => true
-                        ? ALFormat.StereoFloat32Ext
-                        : throw new NotSupportedException(),
+                    (AudioFormat.PcmFloat, 1) => ALFormat.MonoFloat32Ext,
+                    (AudioFormat.PcmFloat, 2) => ALFormat.StereoFloat32Ext,
                     _ => throw new NotSupportedException()
                 };
 
@@ -131,8 +129,9 @@ namespace VoiceCraft.Client.Linux.Audio
                 {
                     _bufferBytes -= _bufferBytes % _blockAlign;
                 }
+
                 _buffer = new byte[_bufferBytes];
-                
+
                 _nativeRecorder = ALC.CaptureOpenDevice(SelectedDevice, SampleRate, format, _bufferSamples);
                 if (_nativeRecorder == ALCaptureDevice.Null)
                 {
@@ -144,21 +143,26 @@ namespace VoiceCraft.Client.Linux.Audio
                 CleanupRecorder();
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Start()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (CaptureState != CaptureState.Stopped) return;
+            _lockObj.Enter();
 
-            //Open Capture Device
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (CaptureState != CaptureState.Stopped) return;
+
                 CaptureState = CaptureState.Starting;
                 ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
-                
+
                 while (CaptureState == CaptureState.Starting)
                 {
                     Thread.Sleep(1); //Wait until started.
@@ -169,38 +173,61 @@ namespace VoiceCraft.Client.Linux.Audio
                 CaptureState = CaptureState.Stopped;
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Stop()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            
-            if (CaptureState != CaptureState.Capturing) return;
+            _lockObj.Enter();
 
-            CaptureState = CaptureState.Stopping;
-            ALC.CaptureStop(_nativeRecorder);
-            
-            while (CaptureState == CaptureState.Stopping)
+            try
             {
-                Thread.Sleep(1); //Wait until stopped.
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+
+                if (CaptureState != CaptureState.Capturing) return;
+
+                CaptureState = CaptureState.Stopping;
+                ALC.CaptureStop(_nativeRecorder);
+
+                while (CaptureState == CaptureState.Stopping)
+                {
+                    Thread.Sleep(1); //Wait until stopped.
+                }
+            }
+            finally
+            {
+                _lockObj.Exit();
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+
+            try
+            {
+                //Dispose of this object
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
-        
+
         private void CleanupRecorder()
         {
             if (_nativeRecorder == ALCaptureDevice.Null) return;
             ALC.CaptureStop(_nativeRecorder);
             ALC.CaptureCloseDevice(_nativeRecorder);
         }
-        
+
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
@@ -209,10 +236,10 @@ namespace VoiceCraft.Client.Linux.Audio
 
         private void ThrowIfNotInitialized()
         {
-            if(_nativeRecorder == ALCaptureDevice.Null)
+            if (_nativeRecorder == ALCaptureDevice.Null)
                 throw new InvalidOperationException("Audio recorder is not initialized!");
         }
-        
+
         private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)
         {
             CaptureState = CaptureState.Capturing;
@@ -248,7 +275,6 @@ namespace VoiceCraft.Client.Linux.Audio
             finally
             {
                 ALC.CaptureStop(_nativeRecorder);
-                CaptureState = CaptureState.Stopped;
                 InvokeRecordingStopped(exception);
             }
         }
@@ -269,18 +295,18 @@ namespace VoiceCraft.Client.Linux.Audio
                 Array.Clear(_buffer);
                 fixed (void* bufferPtr = _buffer)
                     ALC.CaptureSamples(_nativeRecorder, bufferPtr, _bufferSamples);
-                
+
                 InvokeDataAvailable(_buffer, _bufferBytes);
             }
         }
 
         private void Dispose(bool _)
         {
-            if(_disposed) return;
-            
+            if (_disposed) return;
+
             //Recorder isn't managed.
             CleanupRecorder();
-            
+
             _disposed = true;
         }
     }

@@ -41,7 +41,7 @@ namespace VoiceCraft.Client.Android.Audio
         {
             get
             {
-                return (Format) switch
+                return Format switch
                 {
                     Core.AudioFormat.Pcm8 => 8,
                     Core.AudioFormat.Pcm16 => 16,
@@ -77,6 +77,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public event Action<Exception?>? OnPlaybackStopped;
 
+        private readonly Lock _lockObj = new();
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private readonly AudioManager _audioManager;
         private Func<byte[], int, int, int>? _playerCallback;
@@ -107,20 +108,21 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void Initialize(Func<byte[], int, int, int> playerCallback)
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-
-            //Check if already playing.
-            if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException("Cannot initialize when playing!");
-
-            //Cleanup previous player.
-            CleanupPlayer();
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+
+                //Check if already playing.
+                if (PlaybackState != PlaybackState.Stopped)
+                    throw new InvalidOperationException("Cannot initialize when playing!");
+
+                //Cleanup previous player.
+                CleanupPlayer();
+
                 _playerCallback = playerCallback;
-                //Create/Open new audio device.
                 //Check if the format is supported first.
                 var encoding = (BitDepth, Format) switch
                 {
@@ -171,22 +173,33 @@ namespace VoiceCraft.Client.Android.Audio
                 CleanupPlayer();
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Play()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+
                 //Resume or start playback.
                 switch (PlaybackState)
                 {
                     case PlaybackState.Stopped:
                         PlaybackState = PlaybackState.Starting;
                         ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
+                        while (PlaybackState == PlaybackState.Starting)
+                        {
+                            Thread.Sleep(1); //Wait until started.
+                        }
+
                         break;
                     case PlaybackState.Paused:
                         Resume();
@@ -203,42 +216,73 @@ namespace VoiceCraft.Client.Android.Audio
                 PlaybackState = PlaybackState.Stopped;
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Pause()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
+            _lockObj.Enter();
 
-            if (PlaybackState != PlaybackState.Playing) return;
+            try
+            {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
 
-            PlaybackState = PlaybackState.Paused;
-            _nativePlayer?.Pause();
+                if (PlaybackState != PlaybackState.Playing) return;
+
+                _nativePlayer?.Pause();
+                PlaybackState = PlaybackState.Paused;
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Stop()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
+            _lockObj.Enter();
 
-            if (PlaybackState != PlaybackState.Playing) return;
-
-            PlaybackState = PlaybackState.Stopping;
-            _nativePlayer?.Stop();
-
-            while (PlaybackState == PlaybackState.Stopping)
+            try
             {
-                Thread.Sleep(1); //Wait until stopped.
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+
+                if (PlaybackState != PlaybackState.Playing) return;
+
+                PlaybackState = PlaybackState.Stopping;
+                _nativePlayer?.Stop();
+
+                while (PlaybackState == PlaybackState.Stopping)
+                {
+                    Thread.Sleep(1); //Wait until stopped.
+                }
+            }
+            finally
+            {
+                _lockObj.Exit();
             }
         }
 
         public void Dispose()
         {
-            //Dispose of this object
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+
+            try
+            {
+                //Dispose of this object
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         private void CleanupPlayer()
@@ -296,8 +340,8 @@ namespace VoiceCraft.Client.Android.Audio
             }
             finally
             {
-                Stop();
-                PlaybackState = PlaybackState.Stopped;
+                if (_nativePlayer == null && _nativePlayer?.PlayState != PlayState.Stopped)
+                    _nativePlayer?.Stop();
                 InvokePlaybackStopped(exception);
             }
         }
@@ -313,15 +357,13 @@ namespace VoiceCraft.Client.Android.Audio
             PlaybackState = PlaybackState.Playing;
             while (PlaybackState != PlaybackState.Stopped && _nativePlayer != null)
             {
-                //Check the playback state
-                if (PlaybackState != PlaybackState.Playing)
+                if (_nativePlayer.PlayState == PlayState.Stopped)
+                    break;
+                if (_nativePlayer.PlayState == PlayState.Paused) //Paused, Sleep then recheck.
                 {
                     Thread.Sleep(1);
                     continue;
                 }
-
-                if (_nativePlayer.PlayState == PlayState.Stopped)
-                    break;
 
                 Array.Clear(_byteBuffer);
                 Array.Clear(_floatBuffer);

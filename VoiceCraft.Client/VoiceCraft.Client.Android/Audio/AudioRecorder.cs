@@ -39,7 +39,7 @@ namespace VoiceCraft.Client.Android.Audio
         {
             get
             {
-                return (Format) switch
+                return Format switch
                 {
                     AudioFormat.Pcm8 => 8,
                     AudioFormat.Pcm16 => 16,
@@ -75,6 +75,7 @@ namespace VoiceCraft.Client.Android.Audio
         public event Action<Exception?>? OnRecordingStopped;
 
         //Privates
+        private readonly Lock _lockObj = new();
         private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private readonly AudioManager _audioManager;
         private AudioRecord? _nativeRecorder;
@@ -103,17 +104,19 @@ namespace VoiceCraft.Client.Android.Audio
 
         public void Initialize()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-
-            if (CaptureState != CaptureState.Stopped)
-                throw new InvalidOperationException("Cannot initialize when recording!");
-
-            //Cleanup previous recorder.
-            CleanupRecorder();
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+
+                if (CaptureState != CaptureState.Stopped)
+                    throw new InvalidOperationException("Cannot initialize when recording!");
+
+                //Cleanup previous recorder.
+                CleanupRecorder();
+
                 //Set the encoding
                 var encoding = (BitDepth, Format) switch
                 {
@@ -145,9 +148,9 @@ namespace VoiceCraft.Client.Android.Audio
 
                 //Create the AudioRecord Object.
                 _nativeRecorder = new AudioRecord(AudioSource, SampleRate, channelMask, encoding, _bufferBytes);
-                if(_nativeRecorder.State != State.Initialized)
+                if (_nativeRecorder.State != State.Initialized)
                     throw new InvalidOperationException("Could not initialize device!");
-                
+
                 var device = _audioManager.GetDevices(GetDevicesTargets.Inputs)
                     ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
                 _nativeRecorder.SetPreferredDevice(device);
@@ -157,21 +160,26 @@ namespace VoiceCraft.Client.Android.Audio
                 CleanupRecorder();
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Start()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (CaptureState != CaptureState.Stopped) return;
+            _lockObj.Enter();
 
-            //Open Capture Device
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (CaptureState != CaptureState.Stopped) return;
+
                 CaptureState = CaptureState.Starting;
                 ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
-                
+
                 while (CaptureState == CaptureState.Starting)
                 {
                     Thread.Sleep(1); //Wait until started.
@@ -182,31 +190,50 @@ namespace VoiceCraft.Client.Android.Audio
                 CaptureState = CaptureState.Stopped;
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Stop()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (CaptureState != CaptureState.Capturing) return;
+            _lockObj.Enter();
 
-            CaptureState = CaptureState.Stopping;
-            _nativeRecorder?.Stop();
-
-            while (CaptureState == CaptureState.Stopping)
+            try
             {
-                Thread.Sleep(1); //Wait until stopped.
-            }
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (CaptureState != CaptureState.Capturing) return;
 
-            //Disposed? DIE!
-            ThrowIfDisposed();
+                CaptureState = CaptureState.Stopping;
+                _nativeRecorder?.Stop();
+
+                while (CaptureState == CaptureState.Stopping)
+                {
+                    Thread.Sleep(1); //Wait until stopped.
+                }
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+
+            try
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         private void CleanupRecorder()
@@ -214,6 +241,7 @@ namespace VoiceCraft.Client.Android.Audio
             if (_nativeRecorder == null) return;
             _nativeRecorder.Stop();
             _nativeRecorder.Dispose();
+            _nativeRecorder = null;
         }
 
         private void ThrowIfDisposed()
@@ -262,8 +290,8 @@ namespace VoiceCraft.Client.Android.Audio
             }
             finally
             {
-                _nativeRecorder?.Stop();
-                CaptureState = CaptureState.Stopped;
+                if (_nativeRecorder != null && _nativeRecorder.RecordingState != RecordState.Stopped)
+                    _nativeRecorder?.Stop();
                 InvokeRecordingStopped(exception);
             }
         }
@@ -278,14 +306,14 @@ namespace VoiceCraft.Client.Android.Audio
             {
                 Array.Clear(_byteBuffer);
                 Array.Clear(_floatBuffer);
-                
+
                 switch (_nativeRecorder.AudioFormat)
                 {
                     case Encoding.Pcm8bit:
                     case Encoding.Pcm16bit:
                     {
                         var bytesRead = _nativeRecorder.Read(_byteBuffer, 0, _byteBuffer.Length);
-                        if(bytesRead > 0)
+                        if (bytesRead > 0)
                             InvokeDataAvailable(_byteBuffer, bytesRead);
                         break;
                     }
@@ -297,6 +325,7 @@ namespace VoiceCraft.Client.Android.Audio
                             Buffer.BlockCopy(_floatBuffer, 0, _byteBuffer, 0, _byteBuffer.Length);
                             InvokeDataAvailable(_byteBuffer, floatsRead * sizeof(float));
                         }
+
                         break;
                     }
                     default:
@@ -309,7 +338,6 @@ namespace VoiceCraft.Client.Android.Audio
         {
             if (_disposed || !disposing) return;
             CleanupRecorder();
-
             _disposed = true;
         }
     }

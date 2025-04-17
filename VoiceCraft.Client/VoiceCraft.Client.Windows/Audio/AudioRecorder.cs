@@ -37,7 +37,7 @@ namespace VoiceCraft.Client.Windows.Audio
         {
             get
             {
-                return (Format) switch
+                return Format switch
                 {
                     AudioFormat.Pcm8 => 8,
                     AudioFormat.Pcm16 => 16,
@@ -69,6 +69,7 @@ namespace VoiceCraft.Client.Windows.Audio
         public event Action<Exception?>? OnRecordingStopped;
         
         //Privates
+        private readonly Lock _lockObj = new();
         private WaveInEvent? _nativeRecorder;
         private int _sampleRate;
         private int _channels;
@@ -90,17 +91,19 @@ namespace VoiceCraft.Client.Windows.Audio
 
         public void Initialize()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            
-            if(CaptureState != CaptureState.Stopped)
-                throw new InvalidOperationException("Cannot initialize when recording!");
-            
-            //Cleanup previous recorder.
-            CleanupRecorder();
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+
+                if (CaptureState != CaptureState.Stopped)
+                    throw new InvalidOperationException("Cannot initialize when recording!");
+
+                //Cleanup previous recorder.
+                CleanupRecorder();
+
                 //Select Device.
                 var selectedDevice = -1;
                 for (var n = 0; n < WaveIn.DeviceCount; n++)
@@ -132,23 +135,30 @@ namespace VoiceCraft.Client.Windows.Audio
                 CleanupRecorder();
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Start()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (CaptureState != CaptureState.Stopped) return;
+            _lockObj.Enter();
 
             try
             {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (CaptureState != CaptureState.Stopped) return;
+
                 CaptureState = CaptureState.Starting;
                 _nativeRecorder?.StartRecording();
-                
+
+                //Wait until started.
                 while (CaptureState == CaptureState.Starting)
                 {
-                    Thread.Sleep(1); //Wait until started.
+                    Thread.Sleep(1);
                 }
             }
             catch
@@ -156,28 +166,50 @@ namespace VoiceCraft.Client.Windows.Audio
                 CaptureState = CaptureState.Stopped;
                 throw;
             }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Stop()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (CaptureState != CaptureState.Capturing) return;
+            _lockObj.Enter();
             
-            CaptureState = CaptureState.Stopping;
-            _nativeRecorder?.StopRecording();
-            
-            while (CaptureState == CaptureState.Stopping)
+            try
             {
-                Thread.Sleep(1); //Wait until stopped.
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (CaptureState != CaptureState.Capturing) return;
+
+                CaptureState = CaptureState.Stopping;
+                _nativeRecorder?.StopRecording();
+
+                while (CaptureState == CaptureState.Stopping)
+                {
+                    Thread.Sleep(1); //Wait until stopped.
+                }
+            }
+            finally
+            {
+                _lockObj.Exit();
             }
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+            
+            try
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         private void CleanupRecorder()
