@@ -49,6 +49,9 @@ namespace VoiceCraft.Client.ViewModels.Home
         [ObservableProperty] private bool _isPlaying;
         [ObservableProperty] private float _microphoneValue;
         [ObservableProperty] private bool _detectingVoiceActivity;
+        
+        //Advanced
+        [ObservableProperty] private bool _advancedSettingsExpanded;
 
         public SettingsViewModel(
             ThemesService themesService,
@@ -120,6 +123,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                 
                 _player = _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
                 _player.BufferMilliseconds = 100;
+                _player.OnPlaybackStopped += OnPlaybackStopped;
                 _player.Initialize(_sineWaveGenerator.Read);
                 _player.Play();
                 IsPlaying = true;
@@ -131,7 +135,23 @@ namespace VoiceCraft.Client.ViewModels.Home
                 _notificationService.SendErrorNotification(ex.Message);
             }
         }
-        
+
+        [RelayCommand]
+        private void TriggerGc()
+        {
+            try
+            {
+                var previousSnapshot = GC.GetTotalMemory(false);
+                GC.Collect();
+                _notificationService.SendNotification(
+                    $"Garbage Collection Triggered. Memory Cleared: {Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}mb");
+            }
+            catch (Exception ex)
+            {
+                _notificationService.SendErrorNotification(ex.Message);
+            }
+        }
+
         private unsafe void OnDataAvailable(byte[] data, int count)
         {
             float max = 0;
@@ -161,6 +181,12 @@ namespace VoiceCraft.Client.ViewModels.Home
             MicrophoneValue = 0;
         }
         
+        private void OnPlaybackStopped(Exception? obj)
+        {
+            CleanupPlayer();
+            IsPlaying = false;
+        }
+        
         private bool CleanupRecorder()
         {
             if (_recorder == null) return false;
@@ -174,6 +200,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         private bool CleanupPlayer()
         {
             if (_player == null) return false;
+            _player.OnPlaybackStopped -= OnPlaybackStopped;
             _player.Dispose();
             _player = null;
             return true;

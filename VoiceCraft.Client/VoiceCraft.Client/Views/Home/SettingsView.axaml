@@ -206,6 +206,18 @@
                     </ToggleButton>
                 </StackPanel>
             </Expander>
+            
+            <Expander HorizontalAlignment="Stretch" IsExpanded="{Binding AdvancedSettingsExpanded}">
+                <Expander.Header>
+                    <TextBlock FontWeight="Bold" Text="{locale:Localize Settings.Advanced}" />
+                </Expander.Header>
+                <StackPanel Spacing="10">
+                    <Button HorizontalAlignment="Stretch"
+                                  Command="{Binding TriggerGcCommand}">
+                        <TextBlock Text="{locale:Localize Settings.Advanced.TriggerGc}" />
+                    </Button>
+                </StackPanel>
+            </Expander>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

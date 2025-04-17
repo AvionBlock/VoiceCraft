@@ -40,6 +40,9 @@ namespace VoiceCraft.Client.Locales
         public static string Settings_Audio_OutputDevices => Localizer.Get("Settings.Audio.OutputDevices");
         public static string Settings_Audio_TestOutput => Localizer.Get("Settings.Audio.TestOutput");
         
+        public static string Settings_Advanced => Localizer.Get("Settings.Advanced");
+        public static string Settings_Advanced_TriggerGc => Localizer.Get("Settings.Advanced.TriggerGc");
+        
         public static string SelectedServer_PingInformation => Localizer.Get("SelectedServer.PingInformation");
         public static string SelectedServer_Latency => Localizer.Get("SelectedServer.Latency");
         public static string SelectedServer_ServerInfo => Localizer.Get("SelectedServer.ServerInfo");
