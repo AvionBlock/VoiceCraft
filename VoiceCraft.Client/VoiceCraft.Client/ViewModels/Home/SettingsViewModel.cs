@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +8,7 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.ViewModels.Home
@@ -18,6 +18,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         private readonly AudioService _audioService;
         private readonly NotificationService _notificationService;
         private readonly PermissionsService _permissionsService;
+        private readonly SineWaveGenerator _sineWaveGenerator;
         private IAudioRecorder? _recorder;
         private IAudioPlayer? _player;
         
@@ -59,6 +60,7 @@ namespace VoiceCraft.Client.ViewModels.Home
             _audioService = audioService;
             _notificationService = notificationService;
             _permissionsService = permissionsService;
+            _sineWaveGenerator = new SineWaveGenerator(Constants.SampleRate);
 
             _locales = new ObservableCollection<string>(Localizer.Languages);
             _themes = new ObservableCollection<RegisteredTheme>(themesService.RegisteredThemes);
@@ -103,6 +105,31 @@ namespace VoiceCraft.Client.ViewModels.Home
             }
         }
 
+        [RelayCommand]
+        private void TestPlayer()
+        {
+            try
+            {
+                if (CleanupPlayer())
+                {
+                    IsPlaying = false;
+                    return;
+                }
+                
+                _player = _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
+                _player.BufferMilliseconds = 100;
+                _player.Initialize(_sineWaveGenerator.Read);
+                _player.Play();
+                IsPlaying = true;
+            }
+            catch (Exception ex)
+            {
+                CleanupPlayer();
+                IsPlaying = false;
+                _notificationService.SendErrorNotification(ex.Message);
+            }
+        }
+        
         private unsafe void OnDataAvailable(byte[] data, int count)
         {
             float max = 0;
@@ -123,18 +150,6 @@ namespace VoiceCraft.Client.ViewModels.Home
             
             MicrophoneValue = max;
         }
-
-        [RelayCommand]
-        private void TestPlayer()
-        {
-            try
-            {
-            }
-            catch (Exception ex)
-            {
-                _notificationService.SendErrorNotification(ex.Message);
-            }
-        }
         
         private bool CleanupRecorder()
         {
@@ -143,6 +158,14 @@ namespace VoiceCraft.Client.ViewModels.Home
             _recorder.OnDataAvailable -= OnDataAvailable;
             _recorder.Dispose();
             _recorder = null;
+            return true;
+        }
+
+        private bool CleanupPlayer()
+        {
+            if (_player == null) return false;
+            _player.Dispose();
+            _player = null;
             return true;
         }
 

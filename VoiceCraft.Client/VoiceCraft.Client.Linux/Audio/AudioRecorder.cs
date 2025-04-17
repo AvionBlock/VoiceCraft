@@ -162,11 +162,6 @@ namespace VoiceCraft.Client.Linux.Audio
 
                 CaptureState = CaptureState.Starting;
                 ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
-
-                while (CaptureState == CaptureState.Starting)
-                {
-                    Thread.Sleep(1); //Wait until started.
-                }
             }
             catch
             {
@@ -193,11 +188,6 @@ namespace VoiceCraft.Client.Linux.Audio
 
                 CaptureState = CaptureState.Stopping;
                 ALC.CaptureStop(_nativeRecorder);
-
-                while (CaptureState == CaptureState.Stopping)
-                {
-                    Thread.Sleep(1); //Wait until stopped.
-                }
             }
             finally
             {

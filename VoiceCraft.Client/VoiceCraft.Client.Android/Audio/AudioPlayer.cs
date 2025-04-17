@@ -195,10 +195,6 @@ namespace VoiceCraft.Client.Android.Audio
                     case PlaybackState.Stopped:
                         PlaybackState = PlaybackState.Starting;
                         ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
-                        while (PlaybackState == PlaybackState.Starting)
-                        {
-                            Thread.Sleep(1); //Wait until started.
-                        }
                         break;
                     case PlaybackState.Paused:
                         Resume();
@@ -256,11 +252,6 @@ namespace VoiceCraft.Client.Android.Audio
 
                 PlaybackState = PlaybackState.Stopping;
                 _nativePlayer?.Stop();
-
-                while (PlaybackState == PlaybackState.Stopping)
-                {
-                    Thread.Sleep(1); //Wait until stopped.
-                }
             }
             finally
             {

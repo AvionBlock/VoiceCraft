@@ -154,12 +154,6 @@ namespace VoiceCraft.Client.Windows.Audio
 
                 CaptureState = CaptureState.Starting;
                 _nativeRecorder?.StartRecording();
-
-                //Wait until started.
-                while (CaptureState == CaptureState.Starting)
-                {
-                    Thread.Sleep(1);
-                }
             }
             catch
             {
@@ -185,11 +179,6 @@ namespace VoiceCraft.Client.Windows.Audio
 
                 CaptureState = CaptureState.Stopping;
                 _nativeRecorder?.StopRecording();
-
-                while (CaptureState == CaptureState.Stopping)
-                {
-                    Thread.Sleep(1); //Wait until stopped.
-                }
             }
             finally
             {

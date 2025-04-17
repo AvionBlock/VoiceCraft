@@ -205,11 +205,6 @@ namespace VoiceCraft.Client.Windows.Audio
 
                 PlaybackState = PlaybackState.Stopping;
                 _nativePlayer?.Stop();
-                
-                while (PlaybackState == PlaybackState.Stopping)
-                {
-                    Thread.Sleep(1); //Wait until stopped.
-                }
             }
             finally
             {

@@ -179,11 +179,6 @@ namespace VoiceCraft.Client.Android.Audio
 
                 CaptureState = CaptureState.Starting;
                 ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
-
-                while (CaptureState == CaptureState.Starting)
-                {
-                    Thread.Sleep(1); //Wait until started.
-                }
             }
             catch
             {
@@ -209,11 +204,6 @@ namespace VoiceCraft.Client.Android.Audio
 
                 CaptureState = CaptureState.Stopping;
                 _nativeRecorder?.Stop();
-
-                while (CaptureState == CaptureState.Stopping)
-                {
-                    Thread.Sleep(1); //Wait until stopped.
-                }
             }
             finally
             {

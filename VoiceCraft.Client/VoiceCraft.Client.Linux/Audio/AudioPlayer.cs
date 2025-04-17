@@ -76,7 +76,6 @@ namespace VoiceCraft.Client.Linux.Audio
         private ALDevice _nativePlayer;
         private ALContext _nativePlayerContext;
         private ALFormat _alFormat;
-        private int _setSampleRate;
         private int _bufferSamples;
         private int _bufferBytes;
         private int _blockAlign;
@@ -129,8 +128,7 @@ namespace VoiceCraft.Client.Linux.Audio
                     (AudioFormat.PcmFloat, 2) => ALFormat.StereoFloat32Ext,
                     _ => throw new NotSupportedException()
                 };
-
-                _setSampleRate = SampleRate;
+                
                 _bufferSamples = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers * (SampleRate / 1000); //Calculate buffer size IN SAMPLES!
                 _bufferBytes = BitDepth / 8 * Channels * _bufferSamples;
                 _blockAlign = Channels * (BitDepth / 8);
@@ -138,38 +136,33 @@ namespace VoiceCraft.Client.Linux.Audio
                 {
                     _bufferBytes = _bufferBytes + _blockAlign - _bufferBytes % _blockAlign;
                 }
+                
+                //Open and setup device.
+                _nativePlayer = ALC.OpenDevice(SelectedDevice);
+                if (_nativePlayer == ALDevice.Null)
+                    throw new InvalidOperationException($"Failed to open device {SelectedDevice ?? "(default device)"}!");
 
-                //Generate Buffers
-                AL.GetError(); //Clear possible previous error
-                var buffers = AL.GenBuffers(NumberOfBuffers);
-                if (AL.GetError() != ALError.NoError)
-                    throw new InvalidOperationException("Failed to generate buffers!");
-                _buffers = new AudioBuffer[NumberOfBuffers];
-                for (var i = 0; i < NumberOfBuffers; i++)
-                    _buffers[i] = new AudioBuffer(buffers[i], _bufferBytes);
+                _nativePlayerContext = ALC.CreateContext(_nativePlayer, (int[]?)null);
+                if (_nativePlayerContext == ALContext.Null)
+                    throw new InvalidOperationException("Failed to create device context!");
+                
+                ALC.MakeContextCurrent(_nativePlayerContext);
+                ALC.ProcessContext(_nativePlayerContext);
 
                 //Generate Source
-                AL.GetError(); //Clear possible previous error
                 _source = AL.GenSource();
                 AL.Source(_source, ALSourcef.Pitch, 1);
                 AL.Source(_source, ALSourcef.Gain, 1.0f);
                 AL.Source(_source, ALSourceb.Looping, false);
                 AL.Source(_source, ALSource3f.Position, 0, 0, 0);
                 AL.Source(_source, ALSource3f.Velocity, 0, 0, 0);
-                if (AL.GetError() != ALError.NoError)
-                    throw new InvalidOperationException("Failed to generate source!");
+                
+                //Generate Buffers
+                var buffers = AL.GenBuffers(NumberOfBuffers);
 
-                //Open and setup device.
-                _nativePlayer = ALC.OpenDevice(SelectedDevice);
-                if (_nativePlayer == ALDevice.Null)
-                    throw new InvalidOperationException($"Failed to open device {SelectedDevice ?? "(default device)"}!");
-
-                var context = ALC.CreateContext(_nativePlayer, (int[]?)null);
-                if (context == ALContext.Null)
-                    throw new InvalidOperationException("Failed to create device context!");
-
-                ALC.MakeContextCurrent(context);
-                ALC.ProcessContext(context);
+                _buffers = new AudioBuffer[NumberOfBuffers];
+                for (var i = 0; i < NumberOfBuffers; i++)
+                    _buffers[i] = new AudioBuffer(buffers[i], _bufferBytes, SampleRate, _alFormat);
             }
             catch
             {
@@ -198,10 +191,6 @@ namespace VoiceCraft.Client.Linux.Audio
                     case PlaybackState.Stopped:
                         PlaybackState = PlaybackState.Starting;
                         ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
-                        while (PlaybackState == PlaybackState.Starting)
-                        {
-                            Thread.Sleep(1); //Wait until started.
-                        }
                         break;
                     case PlaybackState.Paused:
                         Resume();
@@ -253,15 +242,11 @@ namespace VoiceCraft.Client.Linux.Audio
                 //Disposed? DIE!
                 ThrowIfDisposed();
                 ThrowIfNotInitialized();
+                
                 if (PlaybackState != PlaybackState.Playing) return;
 
                 PlaybackState = PlaybackState.Stopping;
                 AL.SourceStop(_source);
-
-                while (PlaybackState == PlaybackState.Stopping)
-                {
-                    Thread.Sleep(1); //Wait until stopped.
-                }
             }
             finally
             {
@@ -381,7 +366,7 @@ namespace VoiceCraft.Client.Linux.Audio
             _disposed = true;
         }
 
-        private unsafe void PlaybackLogic()
+        private void PlaybackLogic()
         {
             //This shouldn't happen...
             if (_playerCallback == null)
@@ -392,10 +377,7 @@ namespace VoiceCraft.Client.Linux.Audio
             {
                 var read = _playerCallback(buffer.Data, 0, _bufferBytes);
                 if (read > 0)
-                {
-                    fixed (byte* byteBufferPtr = buffer.Data)
-                        AL.BufferData(buffer.Id, _alFormat, byteBufferPtr, read, _setSampleRate);
-                }
+                    buffer.FillBuffer(read);
 
                 buffer.SourceQueue(_source);
             }
@@ -404,7 +386,8 @@ namespace VoiceCraft.Client.Linux.Audio
             PlaybackState = PlaybackState.Playing;
             while (PlaybackState != PlaybackState.Stopped)
             {
-                if (State() == ALSourceState.Stopped)
+                var state = State(); //This can sometimes return 0.
+                if (state is ALSourceState.Stopped or 0)
                     break; //Reached the end of the playback buffer or the audio player has stopped.
 
                 if (PlaybackState != PlaybackState.Playing)
@@ -427,10 +410,7 @@ namespace VoiceCraft.Client.Linux.Audio
                     //Fill buffers with more data
                     var read = _playerCallback(audioBuffer.Data, 0, _bufferBytes);
                     if (read > 0)
-                    {
-                        fixed (byte* byteBufferPtr = audioBuffer.Data)
-                            AL.BufferData(audioBuffer.Id, _alFormat, byteBufferPtr, read, _setSampleRate);
-                    }
+                        audioBuffer.FillBuffer(read);
 
                     audioBuffer.SourceQueue(_source);
                 }
@@ -441,7 +421,7 @@ namespace VoiceCraft.Client.Linux.Audio
             ALSourceState State() => (ALSourceState)AL.GetSource(_source, ALGetSourcei.SourceState);
         }
 
-        private class AudioBuffer(int id, int size)
+        private class AudioBuffer(int id, int size, int sampleRate, ALFormat format)
         {
             public int Id { get; } = id;
             public byte[] Data { get; } = GC.AllocateArray<byte>(size, true);
@@ -449,6 +429,12 @@ namespace VoiceCraft.Client.Linux.Audio
             public void Clear()
             {
                 Array.Clear(Data, 0, Data.Length);
+            }
+
+            public unsafe void FillBuffer(int read)
+            {
+                fixed (byte* byteBufferPtr = Data)
+                    AL.BufferData(Id, format, byteBufferPtr, read, sampleRate);
             }
 
             public void SourceQueue(int sourceId)
