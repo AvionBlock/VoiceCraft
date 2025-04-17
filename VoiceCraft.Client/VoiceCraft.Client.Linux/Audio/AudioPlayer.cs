@@ -70,6 +70,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
         public event Action<Exception?>? OnPlaybackStopped;
 
+        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private Func<byte[], int, int, int>? _playerCallback;
         private ALDevice _nativePlayer;
         private ALContext _nativePlayerContext;
@@ -300,7 +301,16 @@ namespace VoiceCraft.Client.Linux.Audio
         private void InvokePlaybackStopped(Exception? exception = null)
         {
             PlaybackState = PlaybackState.Stopped;
-            OnPlaybackStopped?.Invoke(exception);
+            var handler = OnPlaybackStopped;
+            if (handler == null) return;
+            if (_synchronizationContext == null)
+            {
+                handler(exception);
+            }
+            else
+            {
+                _synchronizationContext.Post(_ => handler(exception), null);
+            }
         }
 
         private void PlaybackThread()
