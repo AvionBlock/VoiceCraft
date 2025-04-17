@@ -36,7 +36,7 @@ namespace VoiceCraft.Client.Network
         private readonly OpusEncoder _encoder = new(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         
         //Buffers
-        private readonly NetDataWriter _dataWriter = new NetDataWriter();
+        private readonly NetDataWriter _dataWriter = new();
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
         
@@ -145,6 +145,16 @@ namespace VoiceCraft.Client.Network
         {
             _netManager.PollEvents();
             // if (ConnectionState == ConnectionState.Disconnected) return; //Not connected.
+        }
+
+        public int Read(byte[] buffer, int offset, int count)
+        {
+            return 0;
+        }
+
+        public void Write(byte[] buffer, int bytesRead)
+        {
+            
         }
 
         public void Disconnect()

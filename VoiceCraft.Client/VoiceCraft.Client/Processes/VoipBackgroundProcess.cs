@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using LiteNetLib;
-using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
@@ -80,9 +79,6 @@ namespace VoiceCraft.Client.Processes
         //Audio
         private IAudioRecorder? _audioRecorder;
         private IAudioPlayer? _audioPlayer;
-        private IAutomaticGainController? _automaticGainController;
-
-        private IDenoiser? _denoiser;
 
         //Displays
         private string _title = string.Empty;
@@ -90,14 +86,14 @@ namespace VoiceCraft.Client.Processes
         private bool _muted;
         private bool _deafened;
 
-        public void Start()
+        public void Start(CancellationToken token)
         {
             try
             {
                 Title = Locales.Locales.VoiceCraft_Status_Title;
                 Description = Locales.Locales.VoiceCraft_Status_Initializing;
-                
-                var audioSettings = settingsService.Get<AudioSettings>();
+
+                var audioSettings = settingsService.AudioSettings;
 
                 _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
                 _voiceCraftClient.OnConnected += ClientOnConnected;
@@ -107,32 +103,20 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.NetworkSystem.OnSetTitle += ClientOnSetTitle;
 
                 //Setup audio recorder.
-                _audioRecorder = audioService.CreateAudioRecorder();
-                _audioRecorder.WaveFormat = VoiceCraftClient.RecordWaveFormat;
+                _audioRecorder = audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
                 _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioRecorder.SelectedDevice = audioSettings.InputDevice == "Default" ? null : audioSettings.InputDevice;
-                _audioRecorder.DataAvailable += DataAvailable;
+                _audioRecorder.OnDataAvailable += OnDataAvailable;
 
                 //Setup audio player.
-                _audioPlayer = audioService.CreateAudioPlayer();
+                _audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
+                _audioPlayer.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioPlayer.SelectedDevice = audioSettings.OutputDevice == "Default" ? null : audioSettings.OutputDevice;
 
-                //Setup Audio Processors.
-                var automaticGainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController);
-                _automaticGainController = automaticGainController?.Type == null ? null : automaticGainController.Instantiate();
-                var echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler);
-                _echoCanceler = echoCanceler?.Type == null
-                    ? null
-                    : new EchoCancellationSampleProvider(_audioRecorder.BufferMilliseconds, _voiceCraftClient, echoCanceler.Instantiate());
-                var denoiser = audioService.GetDenoiser(audioSettings.Denoiser);
-                _denoiser = denoiser?.Type == null ? null : denoiser.Instantiate();
-
                 //Start audio stuff.
-                _audioPlayer.Init((ISampleProvider?)_echoCanceler ?? _voiceCraftClient);
-                _automaticGainController?.Init(_audioRecorder);
-                _denoiser?.Init(_audioRecorder);
-                _echoCanceler?.Init(_audioRecorder, _audioPlayer);
-                _audioRecorder.StartRecording();
+                _audioRecorder.Initialize();
+                _audioPlayer.Initialize(_voiceCraftClient.Read);
+                _audioRecorder.Start();
                 _audioPlayer.Play();
 
                 _voiceCraftClient.Connect(ip, port, LoginType.Login);
@@ -154,7 +138,7 @@ namespace VoiceCraft.Client.Processes
                 if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
                     _voiceCraftClient.Disconnect();
 
-                _audioRecorder.DataAvailable -= DataAvailable;
+                _audioRecorder.OnDataAvailable -= OnDataAvailable;
                 _voiceCraftClient.OnConnected -= ClientOnConnected;
                 _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
                 _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
@@ -192,7 +176,7 @@ namespace VoiceCraft.Client.Processes
         {
             _voiceCraftClient.Dispose();
             if (_audioRecorder?.CaptureState != CaptureState.Stopped)
-                _audioRecorder?.StopRecording();
+                _audioRecorder?.Stop();
             _audioRecorder?.Dispose();
             _audioRecorder = null;
 
@@ -201,12 +185,6 @@ namespace VoiceCraft.Client.Processes
             _audioPlayer?.Dispose();
             _audioPlayer = null;
             
-            _automaticGainController?.Dispose();
-            _automaticGainController = null;
-            _denoiser?.Dispose();
-            _denoiser = null;
-            _echoCanceler?.Dispose();
-            _echoCanceler = null;
             GC.SuppressFinalize(this);
         }
 
@@ -247,12 +225,9 @@ namespace VoiceCraft.Client.Processes
             Description = title;
         }
 
-        private void DataAvailable(object? sender, WaveInEventArgs e)
+        private void OnDataAvailable(byte[] buffer, int bytesRead)
         {
-            _automaticGainController?.Process(e.Buffer);
-            _echoCanceler?.Cancel(e.Buffer);
-            _denoiser?.Denoise(e.Buffer);
-            _voiceCraftClient.Write(e.Buffer, 0, e.BytesRecorded);
+            _voiceCraftClient.Write(buffer, bytesRead);
         }
     }
 }

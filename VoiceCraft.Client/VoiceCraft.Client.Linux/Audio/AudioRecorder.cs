@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core;
@@ -105,6 +106,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
             try
             {
+                //AL.IsExtensionPresent("AL_EXT_float32")
                 //Select Device.
                 var format = (Format, Channels) switch
                 {
@@ -112,10 +114,10 @@ namespace VoiceCraft.Client.Linux.Audio
                     (AudioFormat.Pcm8, 2) => ALFormat.Stereo8,
                     (AudioFormat.Pcm16, 1) => ALFormat.Mono16,
                     (AudioFormat.Pcm16, 2) => ALFormat.Stereo16,
-                    (AudioFormat.PcmFloat, 1) => AL.IsExtensionPresent("AL_EXT_float32")
+                    (AudioFormat.PcmFloat, 1) => true
                         ? ALFormat.MonoFloat32Ext
                         : throw new NotSupportedException(),
-                    (AudioFormat.PcmFloat, 2) => AL.IsExtensionPresent("AL_EXT_float32")
+                    (AudioFormat.PcmFloat, 2) => true
                         ? ALFormat.StereoFloat32Ext
                         : throw new NotSupportedException(),
                     _ => throw new NotSupportedException()
@@ -174,6 +176,7 @@ namespace VoiceCraft.Client.Linux.Audio
             //Disposed? DIE!
             ThrowIfDisposed();
             ThrowIfNotInitialized();
+            
             if (CaptureState != CaptureState.Capturing) return;
 
             CaptureState = CaptureState.Stopping;

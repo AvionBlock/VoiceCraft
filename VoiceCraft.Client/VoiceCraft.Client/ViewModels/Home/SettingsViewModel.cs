@@ -7,6 +7,8 @@ using Jeek.Avalonia.Localization;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {
@@ -15,7 +17,10 @@ namespace VoiceCraft.Client.ViewModels.Home
         private readonly AudioService _audioService;
         private readonly NotificationService _notificationService;
         private readonly PermissionsService _permissionsService;
-
+        private IAudioRecorder? _recorder;
+        private IAudioPlayer? _player;
+        
+        //General Settings
         [ObservableProperty] private bool _generalSettingsExpanded;
 
         //Language Settings
@@ -73,14 +78,49 @@ namespace VoiceCraft.Client.ViewModels.Home
                         "VoiceCraft requires the microphone permission to be granted in order to test recording!") !=
                     PermissionStatus.Granted)
                 {
+                    throw new InvalidOperationException("Could not create recorder, Microphone permission not granted.");
+                }
+
+                if (CleanupRecorder())
+                {
                     IsRecording = false;
                     return;
                 }
+
+                _recorder = _audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
+                _recorder.BufferMilliseconds = Constants.FrameSizeMs;
+                _recorder.OnDataAvailable += OnDataAvailable;
+                _recorder.Initialize();
+                _recorder.Start();
+                IsRecording = true;
             }
             catch (Exception ex)
             {
+                CleanupRecorder();
+                IsRecording = false;
                 _notificationService.SendErrorNotification(ex.Message);
             }
+        }
+
+        private unsafe void OnDataAvailable(byte[] data, int count)
+        {
+            float max = 0;
+            // interpret as 32 bit floating point audio
+            fixed (byte* dataPtr = &data[0])
+            {
+                var floatDataPtr = (float*)dataPtr;
+                for (var index = 0; index < count / sizeof(float); index++)
+                {
+                    var sample = floatDataPtr[index];
+
+                    // absolute value 
+                    if (sample < 0) sample = -sample;
+                    // is this the max value?
+                    if (sample > max) max = sample;
+                }
+            }
+
+            MicrophoneValue = max;
         }
 
         [RelayCommand]
@@ -93,6 +133,14 @@ namespace VoiceCraft.Client.ViewModels.Home
             {
                 _notificationService.SendErrorNotification(ex.Message);
             }
+        }
+        
+        private bool CleanupRecorder()
+        {
+            if (_recorder == null) return false;
+            _recorder.Dispose();
+            _recorder = null;
+            return true;
         }
 
         public override void OnAppearing()

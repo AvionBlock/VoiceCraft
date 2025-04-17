@@ -20,38 +20,25 @@ namespace VoiceCraft.Client.Services
         
         private bool _writing;
         private bool _queueWrite;
-        private readonly SettingsStructure _settings = new();
+        private SettingsStructure _settings = new();
 
-        public SettingsService(NotificationService notificationService)
+        public void Load()
         {
-            try
-            {
-                if (!File.Exists(SettingsPath))
-                {
-                    return;
-                }
-
-                var result = File.ReadAllText(SettingsPath);
-                var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result);
-                if (loadedSettings == null)
-                {
-                    notificationService.SendErrorNotification("Failed to load settings file, Reverting to default.");
-                    return;
-                }
-                
-                loadedSettings.AudioSettings.OnLoading();
-                loadedSettings.LocaleSettings.OnLoading();
-                loadedSettings.NotificationSettings.OnLoading();
-                loadedSettings.ServersSettings.OnLoading();
-                loadedSettings.ThemeSettings.OnLoading();
-
-                _settings = loadedSettings;
-            }
-            catch
-            {
-                notificationService.SendErrorNotification("Failed to load settings file, Reverting to default.");
-            }
+            if (!File.Exists(SettingsPath))
+                throw new FileNotFoundException("Settings file not found, Reverting to default.");
             
+            var result = File.ReadAllText(SettingsPath);
+            var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result);
+            if (loadedSettings == null)
+                throw new Exception("Failed to load settings file, Reverting to default.");
+            
+            loadedSettings.AudioSettings.OnLoading();
+            loadedSettings.LocaleSettings.OnLoading();
+            loadedSettings.NotificationSettings.OnLoading();
+            loadedSettings.ServersSettings.OnLoading();
+            loadedSettings.ThemeSettings.OnLoading();
+            
+            _settings = loadedSettings;
         }
 
         public async Task SaveImmediate()

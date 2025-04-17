@@ -14,6 +14,7 @@ namespace VoiceCraft.Core
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
         
         //Audio
+        public const AudioFormat Format = AudioFormat.PcmFloat;
         public const int BitDepth = 32;
         public const int SampleRate = 48000;
         public const int Channels = 1;

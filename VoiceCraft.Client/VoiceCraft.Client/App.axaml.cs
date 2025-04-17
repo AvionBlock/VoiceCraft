@@ -16,7 +16,6 @@ using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
 using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client;
 
@@ -135,6 +134,16 @@ public class App : Application
     private static void SetupServices(IServiceProvider serviceProvider)
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
+
+        var settingsService = serviceProvider.GetRequiredService<SettingsService>();
+        try
+        {
+            settingsService.Load();
+        }
+        catch (Exception ex)
+        {
+            serviceProvider.GetRequiredService<NotificationService>().SendErrorNotification(ex.Message);
+        }
 
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
         themesService.RegisterTheme(Constants.DarkThemeGuid, "Dark",
