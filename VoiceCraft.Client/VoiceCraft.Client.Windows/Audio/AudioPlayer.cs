@@ -70,7 +70,6 @@ namespace VoiceCraft.Client.Windows.Audio
         
         //Privates
         private readonly Lock _lockObj = new();
-        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
         private WaveOutEvent? _nativePlayer;
         private int _sampleRate;
         private int _channels;
@@ -132,6 +131,7 @@ namespace VoiceCraft.Client.Windows.Audio
                 _nativePlayer.DeviceNumber = selectedDevice;
                 _nativePlayer.Volume = 1.0f;
                 _nativePlayer.NumberOfBuffers = 3;
+                _nativePlayer.PlaybackStopped += InvokePlaybackStopped;
                 _nativePlayer.Init(callbackProvider);
             }
             catch
@@ -250,16 +250,7 @@ namespace VoiceCraft.Client.Windows.Audio
         private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)
         {
             PlaybackState = PlaybackState.Stopped;
-            var handler = OnPlaybackStopped;
-            if (handler == null) return;
-            if (_synchronizationContext == null)
-            {
-                handler(e.Exception);
-            }
-            else
-            {
-                _synchronizationContext.Post(_ => handler(e.Exception), null);
-            }
+            OnPlaybackStopped?.Invoke(e.Exception);
         }
         
         private void Dispose(bool disposing)

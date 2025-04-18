@@ -129,6 +129,8 @@ namespace VoiceCraft.Client.Windows.Audio
                 _nativeRecorder.BufferMilliseconds = BufferMilliseconds;
                 _nativeRecorder.DeviceNumber = selectedDevice;
                 _nativeRecorder.NumberOfBuffers = 3;
+                _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
+                _nativeRecorder.DataAvailable += InvokeDataAvailable;
             }
             catch
             {
