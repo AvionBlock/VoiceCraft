@@ -99,7 +99,7 @@ namespace VoiceCraft.Client.Linux
             }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.Invoke(() => notificationService.SendErrorNotification($"Background Error: {ex}"));
+                notificationService.SendErrorNotification($"Background Error: {ex}");
             }
         }
     }

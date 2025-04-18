@@ -1,5 +1,6 @@
 using Avalonia.Notification;
 using System;
+using Avalonia.Threading;
 using VoiceCraft.Client.Models.Settings;
 
 namespace VoiceCraft.Client.Services
@@ -8,53 +9,62 @@ namespace VoiceCraft.Client.Services
     {
         public void SendNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
         {
-            var notificationSettings = settingsService.NotificationSettings;
-            if (!notificationSettings.DisableNotifications)
+            Dispatcher.UIThread.Invoke(() =>
             {
-                notificationMessageManager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("NotificationAccentBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("NotificationBackgroundBrush"))
-                    .HasBadge("Server")
-                    .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
-                    .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => {}))
-                    .Queue();
-            }
+                var notificationSettings = settingsService.NotificationSettings;
+                if (!notificationSettings.DisableNotifications)
+                {
+                    notificationMessageManager.CreateMessage()
+                        .Accent(ThemesService.GetBrushResource("NotificationAccentBrush"))
+                        .Animates(true)
+                        .Background(ThemesService.GetBrushResource("NotificationBackgroundBrush"))
+                        .HasBadge("Server")
+                        .HasMessage(message)
+                        .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
+                        .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
+                        .Queue();
+                }
+            });
         }
 
         public void SendSuccessNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
         {
-            var notificationSettings = settingsService.NotificationSettings;
-            if (!notificationSettings.DisableNotifications)
+            Dispatcher.UIThread.Invoke(() =>
             {
-                notificationMessageManager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("NotificationAccentSuccessBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("NotificationBackgroundSuccessBrush"))
-                    .HasBadge("Server")
-                    .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
-                    .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => {}))
-                    .Queue();
-            }
+                var notificationSettings = settingsService.NotificationSettings;
+                if (!notificationSettings.DisableNotifications)
+                {
+                    notificationMessageManager.CreateMessage()
+                        .Accent(ThemesService.GetBrushResource("NotificationAccentSuccessBrush"))
+                        .Animates(true)
+                        .Background(ThemesService.GetBrushResource("NotificationBackgroundSuccessBrush"))
+                        .HasBadge("Server")
+                        .HasMessage(message)
+                        .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
+                        .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
+                        .Queue();
+                }
+            });
         }
 
         public void SendErrorNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
         {
-            var notificationSettings = settingsService.NotificationSettings;
-            if (!notificationSettings.DisableNotifications)
+            Dispatcher.UIThread.Invoke(() =>
             {
-                notificationMessageManager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("NotificationAccentErrorBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("NotificationBackgroundErrorBrush"))
-                    .HasBadge("Error")
-                    .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
-                    .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => {}))
-                    .Queue();
-            }
+                var notificationSettings = settingsService.NotificationSettings;
+                if (!notificationSettings.DisableNotifications)
+                {
+                    notificationMessageManager.CreateMessage()
+                        .Accent(ThemesService.GetBrushResource("NotificationAccentErrorBrush"))
+                        .Animates(true)
+                        .Background(ThemesService.GetBrushResource("NotificationBackgroundErrorBrush"))
+                        .HasBadge("Error")
+                        .HasMessage(message)
+                        .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
+                        .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
+                        .Queue();
+                }
+            });
         }
     }
 }

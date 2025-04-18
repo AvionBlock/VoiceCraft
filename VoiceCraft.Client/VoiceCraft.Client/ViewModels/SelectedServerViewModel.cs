@@ -6,7 +6,6 @@ using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Settings;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels
 {
@@ -89,7 +88,7 @@ namespace VoiceCraft.Client.ViewModels
                 DisableBackButton = true;
                 await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
                 await backgroundService.StartBackgroundProcess(process);
-                if(process.Status == BackgroundProcessStatus.Started)
+                if(process.Started)
                     navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
             }
             catch

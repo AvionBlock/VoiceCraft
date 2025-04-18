@@ -9,7 +9,6 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using VoiceCraft.Client.Utils;
 
 namespace VoiceCraft.Client.Services
 {
@@ -154,14 +153,14 @@ namespace VoiceCraft.Client.Services
             {
                 using (var fileStream = File.OpenRead(Path))
                 {
-                    BackgroundImageBitmap = ImageHelper.LoadFromFileStream(fileStream);
+                    BackgroundImageBitmap = new Bitmap(fileStream);
                 }
                 return BackgroundImageBitmap;
             }
 
             if (AssetLoader.Exists(new Uri(Path)))
             {
-                return BackgroundImageBitmap = ImageHelper.LoadFromResource(new Uri(Path));
+                return BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
             }
 
             throw new FileNotFoundException("Could not find image file.", Path);
