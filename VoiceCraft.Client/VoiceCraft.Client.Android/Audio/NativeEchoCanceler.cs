@@ -49,7 +49,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _echoCanceler = null;
             }
             
-            _echoCanceler = AcousticEchoCanceler.Create((int)_recorder.SessionId);
+            _echoCanceler = AcousticEchoCanceler.Create(_recorder.SessionId);
             _initialized = true;
         }
 
@@ -68,7 +68,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _echoCanceler = null;
             }
             
-            _echoCanceler = AcousticEchoCanceler.Create((int)_recorder.SessionId);
+            _echoCanceler = AcousticEchoCanceler.Create(_recorder.SessionId);
             _initialized = true;
         }
 

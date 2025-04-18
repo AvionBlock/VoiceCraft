@@ -50,7 +50,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _noiseSuppressor = null;
             }
             
-            _noiseSuppressor = NoiseSuppressor.Create((int)_recorder.SessionId);
+            _noiseSuppressor = NoiseSuppressor.Create(_recorder.SessionId);
             _initialized = true;
         }
 

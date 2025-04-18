@@ -242,6 +242,7 @@ namespace VoiceCraft.Core
         public bool VisibleTo(VoiceCraftEntity entity)
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
+            //TODO, IMPLEMENT PROXIMITY CHECKING LOGIC!
             return (TalkBitmask & entity.ListenBitmask) != 0; //Check talk and listen bitmask.
         }
 

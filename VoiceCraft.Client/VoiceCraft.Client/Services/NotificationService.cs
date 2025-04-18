@@ -1,7 +1,6 @@
 using Avalonia.Notification;
 using System;
 using Avalonia.Threading;
-using VoiceCraft.Client.Models.Settings;
 
 namespace VoiceCraft.Client.Services
 {

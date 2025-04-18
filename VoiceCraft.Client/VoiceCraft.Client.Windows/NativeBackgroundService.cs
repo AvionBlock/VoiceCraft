@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;

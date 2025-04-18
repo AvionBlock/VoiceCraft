@@ -51,7 +51,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _automaticGainControl = null;
             }
             
-            _automaticGainControl = AutomaticGainControl.Create((int)_recorder.SessionId);
+            _automaticGainControl = AutomaticGainControl.Create(_recorder.SessionId);
             _initialized = true;
         }
 
