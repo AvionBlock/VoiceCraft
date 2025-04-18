@@ -22,7 +22,7 @@ namespace VoiceCraft.Core
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
         
         //Audio Calculations
-        public const int SamplesPerFrame = SampleRate / (1000 / FrameSizeMs) * Channels; //960 samples per frame.
+        public const int SamplesPerFrame = SampleRate / (1000 / FrameSizeMs); //960 samples per frame.
         public const int FloatsPerFrame = BitDepth / 32 * Channels * SamplesPerFrame; //32-bit float audio, this works out to 960
         public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //32-bit byte audio. this works out to 3840
         public const int BlockAlign = Channels * (BitDepth / 8);

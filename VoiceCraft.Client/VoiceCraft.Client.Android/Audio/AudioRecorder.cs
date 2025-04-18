@@ -118,11 +118,11 @@ namespace VoiceCraft.Client.Android.Audio
                 CleanupRecorder();
 
                 //Set the encoding
-                var encoding = (BitDepth, Format) switch
+                var encoding = Format switch
                 {
-                    (8, AudioFormat.Pcm8) => Encoding.Pcm8bit,
-                    (16, AudioFormat.Pcm16) => Encoding.Pcm16bit,
-                    (32, AudioFormat.PcmFloat) => Encoding.PcmFloat,
+                    AudioFormat.Pcm8 => Encoding.Pcm8bit,
+                    AudioFormat.Pcm16 => Encoding.Pcm16bit,
+                    AudioFormat.PcmFloat => Encoding.PcmFloat,
                     _ => throw new NotSupportedException()
                 };
 

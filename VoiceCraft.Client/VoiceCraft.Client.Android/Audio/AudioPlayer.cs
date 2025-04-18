@@ -124,11 +124,11 @@ namespace VoiceCraft.Client.Android.Audio
 
                 _playerCallback = playerCallback;
                 //Check if the format is supported first.
-                var encoding = (BitDepth, Format) switch
+                var encoding = Format switch
                 {
-                    (8, Core.AudioFormat.Pcm8) => Encoding.Pcm8bit,
-                    (16, Core.AudioFormat.Pcm16) => Encoding.Pcm16bit,
-                    (32, Core.AudioFormat.PcmFloat) => Encoding.PcmFloat,
+                    Core.AudioFormat.Pcm8 => Encoding.Pcm8bit,
+                    Core.AudioFormat.Pcm16 => Encoding.Pcm16bit,
+                    Core.AudioFormat.PcmFloat => Encoding.PcmFloat,
                     _ => throw new NotSupportedException()
                 };
 
@@ -158,8 +158,11 @@ namespace VoiceCraft.Client.Android.Audio
                 if (audioAttributes == null || audioFormat == null)
                     throw new InvalidOperationException();
 
+                //Calculate total buffer bytes.
+                var totalBufferSamples = SampleRate / (1000 / BufferMilliseconds);
+                var totalBufferBytes = BitDepth / 8 * Channels * totalBufferSamples;
                 _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
-                    .SetBufferSizeInBytes(BufferMilliseconds).SetTransferMode(AudioTrackMode.Stream).Build();
+                    .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
                 if (_nativePlayer.State != AudioTrackState.Initialized)
                     throw new InvalidOperationException("Could not initialize device!");
 
@@ -356,7 +359,6 @@ namespace VoiceCraft.Client.Android.Audio
                 }
 
                 Array.Clear(_byteBuffer);
-                Array.Clear(_floatBuffer);
 
                 //Fill the wave buffer with new samples
                 var read = _playerCallback(_byteBuffer, 0, _byteBuffer.Length);
@@ -372,6 +374,7 @@ namespace VoiceCraft.Client.Android.Audio
                     }
                     case Encoding.PcmFloat:
                     {
+                        Array.Clear(_floatBuffer);
                         Buffer.BlockCopy(_byteBuffer, 0, _floatBuffer, 0, read);
                         _nativePlayer.Write(_floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
                         break;
