@@ -27,6 +27,7 @@
         <PackageReference Include="Microsoft.Maui.Essentials" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />
+        <PackageReference Include="SpeexDSPSharp" />
     </ItemGroup>
 
     <ItemGroup>

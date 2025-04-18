@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Windows.Audio;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.Windows
 {
@@ -22,10 +22,12 @@ namespace VoiceCraft.Client.Windows
             App.ServiceCollection.AddSingleton<AudioService>(_ =>
             {
                 var audioService = new NativeAudioService();
-                audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
-                audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid, "SpeexDsp Automatic Gain Controller");
-                audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
                 
+                //Register Speex Preprocessors
+                audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
+                audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid,
+                    "SpeexDsp Automatic Gain Controller");
+                audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
                 return audioService;
             });
             

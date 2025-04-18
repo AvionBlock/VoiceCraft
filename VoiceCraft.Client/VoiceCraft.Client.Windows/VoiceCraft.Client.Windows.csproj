@@ -22,7 +22,6 @@
         </PackageReference>
         <PackageReference Include="NAudio.WinForms" />
         <PackageReference Include="NAudio.WinMM" />
-        <PackageReference Include="OpenTK.Audio.OpenAL" />
     </ItemGroup>
 
     <ItemGroup>

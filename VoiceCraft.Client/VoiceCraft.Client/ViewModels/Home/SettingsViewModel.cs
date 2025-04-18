@@ -21,6 +21,8 @@ namespace VoiceCraft.Client.ViewModels.Home
         private readonly SineWaveGenerator _sineWaveGenerator;
         private IAudioRecorder? _recorder;
         private IAudioPlayer? _player;
+        private IDenoiser? _denoiser;
+        private IAutomaticGainController? _gainController;
         
         //General Settings
         [ObservableProperty] private bool _generalSettingsExpanded;
@@ -91,14 +93,22 @@ namespace VoiceCraft.Client.ViewModels.Home
                 {
                     IsRecording = false;
                     MicrophoneValue = 0;
+                    DetectingVoiceActivity = false;
                     return;
                 }
-
+                
                 _recorder = _audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
                 _recorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _recorder.OnDataAvailable += OnDataAvailable;
                 _recorder.OnRecordingStopped += OnRecordingStopped;
                 _recorder.Initialize();
+
+                _gainController = _audioService.GetAutomaticGainController(AudioSettings.AutomaticGainController)?.Instantiate();
+                _gainController?.Initialize(_recorder);
+                
+                _denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser)?.Instantiate();
+                _denoiser?.Initialize(_recorder);
+                
                 _recorder.Start();
                 IsRecording = true;
             }
@@ -152,39 +162,45 @@ namespace VoiceCraft.Client.ViewModels.Home
             }
         }
 
-        private unsafe void OnDataAvailable(byte[] data, int count)
+        private void OnDataAvailable(byte[] data, int count)
         {
+            _gainController?.Process(data);
+            _denoiser?.Denoise(data);
+            
             float max = 0;
-            // interpret as 32 bit floating point audio
-            fixed (byte* dataPtr = &data[0])
+            // interpret as 16-bit audio
+            for (var index = 0; index < data.Length; index += 2)
             {
-                var floatDataPtr = (float*)dataPtr;
-                for (var index = 0; index < count / sizeof(float); index++)
-                {
-                    var sample = floatDataPtr[index];
-
-                    // absolute value 
-                    if (sample < 0) sample = -sample;
-                    // is this the max value?
-                    if (sample > max) max = sample;
-                }
+                var sample = (short)((data[index + 1] << 8) |
+                                     data[index + 0]);
+                // to floating point
+                var sample32 = sample / 32768f;
+                // absolute value 
+                if (sample32 < 0) sample32 = -sample32;
+                if (sample32 > max) max = sample32;
             }
             
             MicrophoneValue = max;
             DetectingVoiceActivity = max >= AudioSettings.MicrophoneSensitivity;
         }
         
-        private void OnRecordingStopped(Exception? obj)
+        private void OnRecordingStopped(Exception? ex)
         {
             CleanupRecorder();
             IsRecording = false;
             MicrophoneValue = 0;
+            
+            if(ex != null)
+                _notificationService.SendErrorNotification(ex.Message);
         }
         
-        private void OnPlaybackStopped(Exception? obj)
+        private void OnPlaybackStopped(Exception? ex)
         {
             CleanupPlayer();
             IsPlaying = false;
+            
+            if(ex != null)
+                _notificationService.SendErrorNotification(ex.Message);
         }
         
         private bool CleanupRecorder()
@@ -193,7 +209,11 @@ namespace VoiceCraft.Client.ViewModels.Home
             _recorder.OnRecordingStopped -= OnRecordingStopped;
             _recorder.OnDataAvailable -= OnDataAvailable;
             _recorder.Dispose();
+            _gainController?.Dispose();
+            _denoiser?.Dispose();
             _recorder = null;
+            _gainController = null;
+            _denoiser = null;
             return true;
         }
 

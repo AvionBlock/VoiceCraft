@@ -22,18 +22,24 @@ namespace VoiceCraft.Core.Audio
             SampleRate = sampleRate;
         }
 
+        //This works somehow...
         public int Read(byte[] buffer, int offset, int count)
         {
             // Calculate the phase increment per sample based on the frequency
             _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
-
-            var floatBuffer = MemoryMarshal.Cast<byte, float>(buffer);
-            for (var i = 0; i < count / sizeof(float); i++)
+            
+            var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
+            for (var i = 0; i < shortBuffer.Length; i++)
             {
-                floatBuffer[i] = GenerateSample();
+                shortBuffer[i] = FloatToShort(GenerateSample());
             }
 
             return count;
+        }
+
+        private short FloatToShort(float value)
+        {
+            return (short)(value * short.MaxValue);
         }
 
         private float GenerateSample()

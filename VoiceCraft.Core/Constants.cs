@@ -14,17 +14,16 @@ namespace VoiceCraft.Core
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
         
         //Audio
-        public const AudioFormat Format = AudioFormat.PcmFloat;
-        public const int BitDepth = 32;
+        public const AudioFormat Format = AudioFormat.Pcm16;
+        public const int BitDepth = 16;
         public const int SampleRate = 48000;
         public const int Channels = 1;
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
         
         //Audio Calculations
-        public const int SamplesPerFrame = SampleRate / (1000 / FrameSizeMs); //960 samples per frame.
-        public const int FloatsPerFrame = BitDepth / 32 * Channels * SamplesPerFrame; //32-bit float audio, this works out to 960
-        public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //32-bit byte audio. this works out to 3840
+        public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
+        public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
         public const int BlockAlign = Channels * (BitDepth / 8);
         
         //Settings GUIDS.

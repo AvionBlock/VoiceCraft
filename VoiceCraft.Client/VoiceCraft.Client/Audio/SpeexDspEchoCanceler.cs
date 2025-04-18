@@ -2,15 +2,14 @@ using System;
 using SpeexDSPSharp.Core;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Core.Audio
+namespace VoiceCraft.Client.Audio
 {
     public class SpeexDspEchoCanceler : IEchoCanceler
     {
-        private const int FilterLengthMs = 100;
+        public int FilterLengthMs { get; set; } = 100;
 
         public bool IsNative => false;
         private bool _disposed;
-        private int _bytesPerFrame;
         private byte[]? _outputBuffer;
         private SpeexDSPEchoCanceler? _echoCanceler;
         
@@ -26,13 +25,7 @@ namespace VoiceCraft.Core.Audio
             if(recorder.SampleRate != player.SampleRate)
                 throw new ArgumentException("The specified audio recorder and audio player sample rate do not match!");
             
-            if (_echoCanceler != null)
-            {
-                _echoCanceler.Dispose();
-                _echoCanceler = null;
-            }
-            
-            _bytesPerFrame = recorder.BufferMilliseconds;
+            CleanupEchoCanceler();
 
             _echoCanceler = new SpeexDSPEchoCanceler(
                 recorder.BufferMilliseconds * recorder.SampleRate / 1000,
@@ -47,18 +40,14 @@ namespace VoiceCraft.Core.Audio
         public void EchoCancel(Span<byte> buffer)
         {
             ThrowIfDisposed();
-
-            if (_echoCanceler == null)
-                throw new InvalidOperationException("Speex echo canceller must be intialized with a recorder!");
-            if (buffer.Length < _bytesPerFrame)
-                throw new InvalidOperationException($"Input buffer must be {_bytesPerFrame} in length or higher!");
+            ThrowIfNotIntialized();
             
             if(_outputBuffer == null || _outputBuffer.Length != buffer.Length)
                 _outputBuffer = new byte[buffer.Length];
             else
                 Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
             
-            _echoCanceler.EchoCapture(buffer, _outputBuffer);
+            _echoCanceler?.EchoCapture(buffer, _outputBuffer);
             _outputBuffer.CopyTo(buffer);
         }
 
@@ -67,11 +56,9 @@ namespace VoiceCraft.Core.Audio
         public void EchoPlayback(Span<byte> buffer)
         {
             ThrowIfDisposed();
+            ThrowIfNotIntialized();
 
-            if (_echoCanceler == null)
-                throw new InvalidOperationException("Speex echo canceller must be intialized with a recorder!");
-
-            _echoCanceler.EchoPlayback(buffer);
+            _echoCanceler?.EchoPlayback(buffer);
         }
 
         public void EchoPlayback(byte[] buffer) => EchoPlayback(buffer.AsSpan());
@@ -82,26 +69,30 @@ namespace VoiceCraft.Core.Audio
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        private void CleanupEchoCanceler()
         {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                if (_echoCanceler != null)
-                {
-                    _echoCanceler.Dispose();
-                    _echoCanceler = null;
-                }
-            }
-
-            _disposed = true;
+            if (_echoCanceler == null) return;
+            _echoCanceler.Dispose();
+            _echoCanceler = null;
         }
-
+        
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
             throw new ObjectDisposedException(nameof(SpeexDspEchoCanceler));
+        }
+
+        private void ThrowIfNotIntialized()
+        {
+            if(_echoCanceler == null)
+                throw new InvalidOperationException("Echo canceler is not initialized!");
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed || !disposing) return;
+            CleanupEchoCanceler();
+            _disposed = true;
         }
     }
 }

@@ -82,13 +82,12 @@ namespace VoiceCraft.Client.Services
     {
         public Guid Id { get; } = id;
         public string Name { get; } = name;
-        public Type? Type { get; } = type;
 
-        public IEchoCanceler Instantiate()
+        public IEchoCanceler? Instantiate()
         {
-            if (Type != null)
-                return Activator.CreateInstance(Type) as IEchoCanceler ?? throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
-            throw new InvalidOperationException("Cannot instantiate a null echo canceler type!");
+            if (type != null)
+                return Activator.CreateInstance(type) as IEchoCanceler;
+            return null;
         }
     }
 
@@ -96,14 +95,12 @@ namespace VoiceCraft.Client.Services
     {
         public Guid Id { get; } = id;
         public string Name { get; } = name;
-        public Type? Type { get; } = type;
 
-        public IAutomaticGainController Instantiate()
+        public IAutomaticGainController? Instantiate()
         {
-            if (Type != null)
-                return Activator.CreateInstance(Type) as IAutomaticGainController ??
-                       throw new InvalidOperationException("Cannot instantiate a null automatic gain controller type!");
-            throw new InvalidOperationException("Cannot instantiate a null automatic gain controller type!");
+            if (type != null)
+                return Activator.CreateInstance(type) as IAutomaticGainController;
+            return null;
         }
     }
 
@@ -111,13 +108,12 @@ namespace VoiceCraft.Client.Services
     {
         public Guid Id { get; } = id;
         public string Name { get; } = name;
-        public Type? Type { get; } = type;
 
-        public IDenoiser Instantiate()
+        public IDenoiser? Instantiate()
         {
-            if (Type != null)
-                return Activator.CreateInstance(Type) as IDenoiser ?? throw new InvalidOperationException("Cannot instantiate a null denoiser type!");
-            throw new InvalidOperationException("Cannot instantiate a null denoiser type!");
+            if (type != null)
+                return Activator.CreateInstance(type) as IDenoiser;
+            return null;
         }
     }
 }

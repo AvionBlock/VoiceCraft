@@ -159,7 +159,7 @@ namespace VoiceCraft.Client.Android.Audio
                     throw new InvalidOperationException();
 
                 //Calculate total buffer bytes.
-                var totalBufferSamples = SampleRate / (1000 / BufferMilliseconds);
+                var totalBufferSamples = BufferMilliseconds * SampleRate / 1000;
                 var totalBufferBytes = BitDepth / 8 * Channels * totalBufferSamples;
                 _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
                     .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();

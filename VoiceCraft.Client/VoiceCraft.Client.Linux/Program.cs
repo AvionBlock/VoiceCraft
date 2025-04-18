@@ -2,11 +2,11 @@
 using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Linux.Audio;
 using VoiceCraft.Client.Linux.Permissions;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.Linux
 {
@@ -18,23 +18,24 @@ namespace VoiceCraft.Client.Linux
         [STAThread]
         public static void Main(string[] args)
         {
-                CrashLogService.Load();
-                AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-                App.ServiceCollection.AddSingleton<AudioService>(_ =>
-                {
-                    var audioService = new NativeAudioService();
-                    audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
-                    audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid, "SpeexDsp Automatic Gain Controller");
-                    audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
-                
-                    return audioService;
-                });
-                
-                App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
-                App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
+            CrashLogService.Load();
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            App.ServiceCollection.AddSingleton<AudioService>(_ =>
+            {
+                var audioService = new NativeAudioService();
+                audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
+                audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid,
+                    "SpeexDsp Automatic Gain Controller");
+                audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
 
-                BuildAvaloniaApp()
-                    .StartWithClassicDesktopLifetime(args);
+                return audioService;
+            });
+
+            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+            App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
+
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.
@@ -43,7 +44,7 @@ namespace VoiceCraft.Client.Linux
                 .UsePlatformDetect()
                 .WithInterFont()
                 .LogToTrace();
-        
+
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             try
