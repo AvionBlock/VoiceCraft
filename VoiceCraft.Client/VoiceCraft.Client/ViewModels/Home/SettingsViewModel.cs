@@ -22,6 +22,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         private IAudioRecorder? _recorder;
         private IAudioPlayer? _player;
         private IDenoiser? _denoiser;
+        private IEchoCanceler? _echoCanceler;
         private IAutomaticGainController? _gainController;
         
         //General Settings
@@ -89,16 +90,11 @@ namespace VoiceCraft.Client.ViewModels.Home
                     throw new InvalidOperationException("Could not create recorder, Microphone permission not granted.");
                 }
 
-                if (CleanupRecorder())
-                {
-                    IsRecording = false;
-                    MicrophoneValue = 0;
-                    DetectingVoiceActivity = false;
-                    return;
-                }
+                if (CleanupRecorder()) return;
                 
                 _recorder = _audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
                 _recorder.BufferMilliseconds = Constants.FrameSizeMs;
+                _recorder.SelectedDevice = AudioSettings.InputDevice == "Default" ? null : AudioSettings.InputDevice;
                 _recorder.OnDataAvailable += OnDataAvailable;
                 _recorder.OnRecordingStopped += OnRecordingStopped;
                 _recorder.Initialize();
@@ -108,14 +104,19 @@ namespace VoiceCraft.Client.ViewModels.Home
                 
                 _denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser)?.Instantiate();
                 _denoiser?.Initialize(_recorder);
-                
+
+                if (_player != null)
+                {
+                    _echoCanceler = _audioService.GetEchoCanceler(AudioSettings.EchoCanceler)?.Instantiate();
+                    _echoCanceler?.Initialize(_recorder, _player);
+                }
+
                 _recorder.Start();
                 IsRecording = true;
             }
             catch (Exception ex)
             {
                 CleanupRecorder();
-                IsRecording = false;
                 _notificationService.SendErrorNotification(ex.Message);
             }
         }
@@ -125,16 +126,13 @@ namespace VoiceCraft.Client.ViewModels.Home
         {
             try
             {
-                if (CleanupPlayer())
-                {
-                    IsPlaying = false;
-                    return;
-                }
+                if (CleanupPlayer()) return;
                 
                 _player = _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
+                _player.SelectedDevice = AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
                 _player.BufferMilliseconds = 100;
                 _player.OnPlaybackStopped += OnPlaybackStopped;
-                _player.Initialize(_sineWaveGenerator.Read);
+                _player.Initialize(Read);
                 _player.Play();
                 IsPlaying = true;
             }
@@ -144,6 +142,13 @@ namespace VoiceCraft.Client.ViewModels.Home
                 IsPlaying = false;
                 _notificationService.SendErrorNotification(ex.Message);
             }
+        }
+
+        private int Read(byte[] buffer, int offset, int count)
+        {
+            var read = _sineWaveGenerator.Read(buffer, offset, count);
+            _echoCanceler?.EchoPlayback(buffer, count);
+            return read;
         }
 
         [RelayCommand]
@@ -164,6 +169,7 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private void OnDataAvailable(byte[] data, int count)
         {
+            _echoCanceler?.EchoCancel(data, count);
             _gainController?.Process(data);
             _denoiser?.Denoise(data);
             
@@ -187,8 +193,6 @@ namespace VoiceCraft.Client.ViewModels.Home
         private void OnRecordingStopped(Exception? ex)
         {
             CleanupRecorder();
-            IsRecording = false;
-            MicrophoneValue = 0;
             
             if(ex != null)
                 _notificationService.SendErrorNotification(ex.Message);
@@ -197,7 +201,6 @@ namespace VoiceCraft.Client.ViewModels.Home
         private void OnPlaybackStopped(Exception? ex)
         {
             CleanupPlayer();
-            IsPlaying = false;
             
             if(ex != null)
                 _notificationService.SendErrorNotification(ex.Message);
@@ -206,23 +209,32 @@ namespace VoiceCraft.Client.ViewModels.Home
         private bool CleanupRecorder()
         {
             if (_recorder == null) return false;
-            _recorder.OnRecordingStopped -= OnRecordingStopped;
-            _recorder.OnDataAvailable -= OnDataAvailable;
-            _recorder.Dispose();
+            var recorder = _recorder;
+            _recorder = null;
+            
+            recorder.OnRecordingStopped -= OnRecordingStopped;
+            recorder.OnDataAvailable -= OnDataAvailable;
+            recorder.Dispose();
             _gainController?.Dispose();
             _denoiser?.Dispose();
             _recorder = null;
             _gainController = null;
             _denoiser = null;
+            IsRecording = false;
+            MicrophoneValue = 0;
+            DetectingVoiceActivity = false;
             return true;
         }
 
         private bool CleanupPlayer()
         {
             if (_player == null) return false;
-            _player.OnPlaybackStopped -= OnPlaybackStopped;
-            _player.Dispose();
+            var player = _player;
             _player = null;
+            
+            player.OnPlaybackStopped -= OnPlaybackStopped;
+            player.Dispose();
+            IsPlaying = false;
             return true;
         }
 
@@ -230,6 +242,13 @@ namespace VoiceCraft.Client.ViewModels.Home
         {
             base.OnAppearing();
             AudioSettings.ReloadAvailableDevices();
+        }
+
+        public override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            CleanupRecorder();
+            CleanupPlayer();
         }
 
         public void Dispose()

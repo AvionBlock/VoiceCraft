@@ -28,7 +28,7 @@ namespace VoiceCraft.Client.Audio
             
             var @false = 0;
             var @true = 1;
-            var targetGain = 18000;
+            var targetGain = 21000;
             _gainController.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_AGC, ref @true);
             _gainController.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_DEREVERB, ref @false);
             _gainController.Ctl(PreprocessorCtl.SPEEX_PREPROCESS_SET_VAD, ref @false);

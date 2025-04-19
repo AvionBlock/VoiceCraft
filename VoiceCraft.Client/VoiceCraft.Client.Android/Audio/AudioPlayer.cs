@@ -85,9 +85,7 @@ namespace VoiceCraft.Client.Android.Audio
         private int _sampleRate;
         private int _channels;
         private int _bufferMilliseconds;
-        private int _bufferSamples;
         private int _bufferBytes;
-        private int _blockAlign;
         private byte[] _byteBuffer = [];
         private float[] _floatBuffer = [];
         private bool _disposed;
@@ -141,14 +139,14 @@ namespace VoiceCraft.Client.Android.Audio
                 };
 
                 //Determine the buffer size
-                _bufferSamples = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers * (SampleRate / 1000); //Calculate buffer size IN SAMPLES!
-                _bufferBytes = BitDepth / 8 * Channels * _bufferSamples;
-                _blockAlign = Channels * (BitDepth / 8);
-                if (_bufferBytes % _blockAlign != 0)
+                var blockAlign = Channels * (BitDepth / 8);
+                var bytesPerSecond = _sampleRate * blockAlign;
+                var bufferMs = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers;
+                _bufferBytes = (int) (bytesPerSecond / 1000.0 * bufferMs);
+                if (_bufferBytes % blockAlign != 0)
                 {
-                    _bufferBytes -= _bufferBytes % _blockAlign;
+                    _bufferBytes = _bufferBytes + blockAlign - _bufferBytes % blockAlign;
                 }
-
                 _byteBuffer = new byte[_bufferBytes];
                 _floatBuffer = new float[_bufferBytes / sizeof(float)];
 
@@ -159,8 +157,13 @@ namespace VoiceCraft.Client.Android.Audio
                     throw new InvalidOperationException();
 
                 //Calculate total buffer bytes.
-                var totalBufferSamples = BufferMilliseconds * SampleRate / 1000;
-                var totalBufferBytes = BitDepth / 8 * Channels * totalBufferSamples;
+                var totalBufferBytes = (int)(bytesPerSecond / 1000.0 * BufferMilliseconds);
+                if (totalBufferBytes % blockAlign != 0)
+                {
+                    totalBufferBytes = totalBufferBytes + blockAlign - totalBufferBytes % blockAlign;
+                }
+                totalBufferBytes = Math.Max(totalBufferBytes, AudioTrack.GetMinBufferSize(SampleRate, channelMask, encoding));
+                
                 _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
                     .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
                 if (_nativePlayer.State != AudioTrackState.Initialized)

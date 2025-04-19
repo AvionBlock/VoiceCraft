@@ -35,7 +35,7 @@ namespace VoiceCraft.Client.Android.Audio
             _initialized = false;
         }
 
-        public void EchoPlayback(Span<byte> buffer)
+        public void EchoPlayback(Span<byte> buffer, int count)
         {
             ThrowIfDisposed();
 
@@ -53,9 +53,9 @@ namespace VoiceCraft.Client.Android.Audio
             _initialized = true;
         }
 
-        public void EchoPlayback(byte[] buffer) => EchoPlayback(buffer.AsSpan());
+        public void EchoPlayback(byte[] buffer, int count) => EchoPlayback(buffer.AsSpan(), count);
 
-        public void EchoCancel(Span<byte> buffer)
+        public void EchoCancel(Span<byte> buffer, int count)
         {
             ThrowIfDisposed();
 
@@ -72,7 +72,7 @@ namespace VoiceCraft.Client.Android.Audio
             _initialized = true;
         }
 
-        public void EchoCancel(byte[] buffer) => EchoCancel(buffer.AsSpan());
+        public void EchoCancel(byte[] buffer, int count) => EchoCancel(buffer.AsSpan(), count);
 
         public void Dispose()
         {
