@@ -25,6 +25,7 @@
         <PackageReference Include="Jeek.Avalonia.Localization" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Maui.Essentials" />
+        <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />
         <PackageReference Include="SpeexDSPSharp" />

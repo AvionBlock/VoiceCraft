@@ -35,6 +35,10 @@ public class App : Application
     {
         try
         {
+            // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
+            // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
+            DisableAvaloniaDataAnnotationValidation();
+            
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
             DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
@@ -42,9 +46,6 @@ public class App : Application
             switch (ApplicationLifetime)
             {
                 case IClassicDesktopStyleApplicationLifetime desktop:
-                    // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-                    // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-                    DisableAvaloniaDataAnnotationValidation();
                     desktop.MainWindow = new MainWindow
                     {
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
@@ -67,9 +68,6 @@ public class App : Application
             switch (ApplicationLifetime)
             {
                 case IClassicDesktopStyleApplicationLifetime desktop:
-                    // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-                    // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-                    DisableAvaloniaDataAnnotationValidation();
                     desktop.MainWindow = new ErrorMainWindow
                     {
                         DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }

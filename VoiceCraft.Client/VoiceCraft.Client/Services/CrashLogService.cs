@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace VoiceCraft.Client.Services
 {
@@ -16,7 +17,7 @@ namespace VoiceCraft.Client.Services
         public static void Log(Exception exception)
         {
             _crashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
-            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs));
+            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
         }
 
         public static void Load()
@@ -30,7 +31,7 @@ namespace VoiceCraft.Client.Services
 
                 var result = File.ReadAllText(CrashLogsPath);
                 var loadedCrashLogs =
-                    JsonSerializer.Deserialize<Dictionary<DateTime, string>>(result);
+                    JsonSerializer.Deserialize<Dictionary<DateTime, string>>(result, CrashLogGenerationContext.Default.DictionaryDateTimeString);
                 if (loadedCrashLogs == null) return;
 
                 if (loadedCrashLogs.Count > Limit)
@@ -52,7 +53,11 @@ namespace VoiceCraft.Client.Services
         public static void Clear()
         {
             _crashLogs.Clear();
-            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs));
+            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
         }
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(Dictionary<DateTime, string>), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class CrashLogGenerationContext : JsonSerializerContext;
 }

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Core;
@@ -28,7 +29,7 @@ namespace VoiceCraft.Client.Services
                 throw new FileNotFoundException("Settings file not found, Reverting to default.");
             
             var result = File.ReadAllText(SettingsPath);
-            var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result);
+            var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
             if (loadedSettings == null)
                 throw new Exception("Failed to load settings file, Reverting to default.");
             
@@ -75,17 +76,7 @@ namespace VoiceCraft.Client.Services
             ThemeSettings.OnSaving();
             
             await File.WriteAllTextAsync(SettingsPath,
-                JsonSerializer.Serialize(_settings));
-        }
-
-        // ReSharper disable PropertyCanBeMadeInitOnly.Local
-        private class SettingsStructure
-        {
-            public AudioSettings AudioSettings { get; set; } = new();
-            public LocaleSettings LocaleSettings { get; set; } = new();
-            public NotificationSettings NotificationSettings { get; set; } = new();
-            public ServersSettings ServersSettings { get; set; } = new();
-            public ThemeSettings ThemeSettings { get; set; } = new();
+                JsonSerializer.Serialize(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
         }
     }
 
@@ -107,4 +98,17 @@ namespace VoiceCraft.Client.Services
 
         void OnSaving();
     }
+    
+    public class SettingsStructure
+    {
+        public AudioSettings AudioSettings { get; set; } = new();
+        public LocaleSettings LocaleSettings { get; set; } = new();
+        public NotificationSettings NotificationSettings { get; set; } = new();
+        public ServersSettings ServersSettings { get; set; } = new();
+        public ThemeSettings ThemeSettings { get; set; } = new();
+    }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(SettingsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class SettingsStructureGenerationContext : JsonSerializerContext;
 }

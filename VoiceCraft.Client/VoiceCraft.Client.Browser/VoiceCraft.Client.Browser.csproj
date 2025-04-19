@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Browser"/>
+        <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
     </ItemGroup>
 
     <ItemGroup>

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jeek.Avalonia.Localization;
 
 namespace VoiceCraft.Client.Locales
@@ -12,7 +13,7 @@ namespace VoiceCraft.Client.Locales
     {
         private readonly string _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
         private Dictionary<string, string>? _languageStrings;
-        
+
         public override void Reload()
         {
             _languageStrings = null;
@@ -44,7 +45,8 @@ namespace VoiceCraft.Client.Locales
                 using (var reader = new StreamReader(stream))
                 {
                     var jsonContent = reader.ReadToEnd();
-                    _languageStrings = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent);
+                    _languageStrings =
+                        JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent, LocalesGenerationContext.Default.DictionaryStringString);
                 }
             }
 
@@ -52,7 +54,7 @@ namespace VoiceCraft.Client.Locales
 
             UpdateDisplayLanguages();
         }
-        
+
         protected override void OnLanguageChanged()
         {
             Reload();
@@ -69,4 +71,8 @@ namespace VoiceCraft.Client.Locales
             return _languageStrings.TryGetValue(key, out var langStr) ? langStr.Replace("\\n", "\n") : $"{Language}:{key}";
         }
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(Dictionary<string, string>), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class LocalesGenerationContext : JsonSerializerContext;
 }

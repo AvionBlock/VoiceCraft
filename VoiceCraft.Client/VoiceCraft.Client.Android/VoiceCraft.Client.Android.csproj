@@ -23,6 +23,7 @@
     <ItemGroup>
         <PackageReference Include="Avalonia.Android"/>
         <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen"/>
+        <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
     </ItemGroup>
 
     <ItemGroup>
