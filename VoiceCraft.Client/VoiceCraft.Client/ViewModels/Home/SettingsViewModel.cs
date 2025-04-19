@@ -22,7 +22,6 @@ namespace VoiceCraft.Client.ViewModels.Home
         private IAudioRecorder? _recorder;
         private IAudioPlayer? _player;
         private IDenoiser? _denoiser;
-        private IEchoCanceler? _echoCanceler;
         private IAutomaticGainController? _gainController;
         
         //General Settings
@@ -104,13 +103,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                 
                 _denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser)?.Instantiate();
                 _denoiser?.Initialize(_recorder);
-
-                if (_player != null)
-                {
-                    _echoCanceler = _audioService.GetEchoCanceler(AudioSettings.EchoCanceler)?.Instantiate();
-                    _echoCanceler?.Initialize(_recorder, _player);
-                }
-
+                
                 _recorder.Start();
                 IsRecording = true;
             }
@@ -132,7 +125,7 @@ namespace VoiceCraft.Client.ViewModels.Home
                 _player.SelectedDevice = AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
                 _player.BufferMilliseconds = 100;
                 _player.OnPlaybackStopped += OnPlaybackStopped;
-                _player.Initialize(Read);
+                _player.Initialize(_sineWaveGenerator.Read);
                 _player.Play();
                 IsPlaying = true;
             }
@@ -142,13 +135,6 @@ namespace VoiceCraft.Client.ViewModels.Home
                 IsPlaying = false;
                 _notificationService.SendErrorNotification(ex.Message);
             }
-        }
-
-        private int Read(byte[] buffer, int offset, int count)
-        {
-            var read = _sineWaveGenerator.Read(buffer, offset, count);
-            _echoCanceler?.EchoPlayback(buffer, count);
-            return read;
         }
 
         [RelayCommand]
@@ -169,7 +155,6 @@ namespace VoiceCraft.Client.ViewModels.Home
 
         private void OnDataAvailable(byte[] data, int count)
         {
-            _echoCanceler?.EchoCancel(data, count);
             _gainController?.Process(data);
             _denoiser?.Denoise(data);
             

@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.Styling;
@@ -15,6 +16,7 @@ using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.Views;
 using VoiceCraft.Client.Views.Error;
+using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client;
@@ -35,6 +37,7 @@ public class App : Application
         {
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
+            DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
 
             switch (ApplicationLifetime)
             {
@@ -100,6 +103,7 @@ public class App : Application
     private static ServiceProvider BuildServiceProvider()
     {
         //Service Registry
+        ServiceCollection.AddSingleton<ViewLocatorService>(x => new ViewLocatorService(x.GetKeyedService<Control>));
         ServiceCollection.AddSingleton<NavigationService>(x =>
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
@@ -124,9 +128,19 @@ public class App : Application
         ServiceCollection.AddSingleton<SettingsViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
         ServiceCollection.AddSingleton<CrashLogViewModel>();
-
-        //Add Available Permissions
-        ServiceCollection.AddTransient<Permissions.PostNotifications>();
+        
+        //Views
+        ServiceCollection.AddKeyedTransient<Control, ErrorView>(typeof(ErrorView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, VoiceView>(typeof(VoiceView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, CrashLogView>(typeof(CrashLogView).FullName);
 
         return ServiceCollection.BuildServiceProvider();
     }

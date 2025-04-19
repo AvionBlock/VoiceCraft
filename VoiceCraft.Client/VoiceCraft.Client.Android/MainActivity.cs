@@ -71,6 +71,7 @@ namespace VoiceCraft.Client.Android
             });
             
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+            App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
 
             Platform.Init(this, app);
