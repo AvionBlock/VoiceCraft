@@ -150,7 +150,7 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet)
         {
-            _world.AddEntity(packet.Entity); //TODO Need to change this
+            _world.AddEntity(packet.Entity); //TODO Need to change this so it adds a custom client entity.
         }
 
         private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
