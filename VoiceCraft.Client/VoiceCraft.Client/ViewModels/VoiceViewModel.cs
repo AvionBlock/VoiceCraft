@@ -61,7 +61,7 @@ namespace VoiceCraft.Client.ViewModels
             _process.OnEntityAdded += OnEntityAdded;
             _process.OnEntityRemoved += OnEntityRemoved;
 
-            StatusText = _process.Description;
+            StatusText = _process.Title;
             IsMuted = _process.Muted;
             IsDeafened = _process.Deafened;
         }

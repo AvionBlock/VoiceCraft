@@ -19,7 +19,7 @@ namespace VoiceCraft.Core
         {
             Process = process;
             _cts = new CancellationTokenSource();
-            _backgroundTask = new Task(() => process.Start(_cts.Token), _cts.Token);
+            _backgroundTask = new Task(() => process.Start(_cts.Token));
         }
 
         public void Start()
@@ -57,9 +57,19 @@ namespace VoiceCraft.Core
 
         private BackgroundProcessStatus GetStatus()
         {
-            if (_backgroundTask.IsFaulted)
-                return BackgroundProcessStatus.Error;
-            return _backgroundTask.IsCompleted ? BackgroundProcessStatus.Completed : BackgroundProcessStatus.Started;
+            switch (_backgroundTask.Status)
+            {
+                case TaskStatus.Created: return BackgroundProcessStatus.Stopped;
+                case TaskStatus.Running: return BackgroundProcessStatus.Started;
+                case TaskStatus.Faulted: return BackgroundProcessStatus.Error;
+                case TaskStatus.RanToCompletion:
+                case TaskStatus.Canceled:
+                case TaskStatus.WaitingForActivation:
+                case TaskStatus.WaitingForChildrenToComplete:
+                case TaskStatus.WaitingToRun:
+                default:
+                    return BackgroundProcessStatus.Completed;
+            }
         }
 
         private void Dispose(bool disposing)
@@ -68,6 +78,8 @@ namespace VoiceCraft.Core
 
             if (disposing)
             {
+                if(!_cts.IsCancellationRequested)
+                    _cts.Cancel();
                 _cts.Dispose();
                 _backgroundTask.Dispose();
                 Process.Dispose();
