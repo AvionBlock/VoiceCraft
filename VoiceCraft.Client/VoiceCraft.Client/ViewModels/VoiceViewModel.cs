@@ -47,7 +47,7 @@ namespace VoiceCraft.Client.ViewModels
         public override void OnAppearing()
         {
             if (_process == null) return;
-            if (!_process.Running)
+            if (!_process.IsStarted || _process.HasEnded)
             {
                 navigationService.Back();
                 return;

@@ -88,12 +88,20 @@ namespace VoiceCraft.Client.ViewModels
                 DisableBackButton = true;
                 await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
                 await backgroundService.StartBackgroundProcess(process);
-                if(process.Running)
-                    navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
+                var startTime = DateTime.UtcNow;
+                while (!process.IsStarted)
+                {
+                    if ((DateTime.UtcNow - startTime).TotalMilliseconds >= 5000)
+                        throw new TimeoutException(); //Taking longer than it should.
+                    
+                    Task.Delay(10).Wait();
+                }
+                navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
             }
             catch
             {
                 notificationService.SendNotification("Background worker failed to start VOIP process!");
+                _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
             }
             DisableBackButton = false;
         }

@@ -26,7 +26,9 @@ namespace VoiceCraft.Client.Processes
         public event Action<EntityViewModel>? OnEntityRemoved;
 
         //Public Variables
-        public bool Running { get; private set; }
+        public bool IsStarted { get; private set; }
+        public bool HasEnded { get; private set; }
+        
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
 
         public string Title
@@ -90,12 +92,11 @@ namespace VoiceCraft.Client.Processes
 
         public void Start(CancellationToken token)
         {
-            Running = true;
-
+            IsStarted = true;
+            
             try
             {
                 Title = Locales.Locales.VoiceCraft_Status_Initializing;
-
                 var audioSettings = settingsService.AudioSettings;
 
                 _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
@@ -120,7 +121,7 @@ namespace VoiceCraft.Client.Processes
                 _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
                 _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)?.Instantiate();
                 _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
-                
+
                 //Initialize and start.
                 _audioRecorder.Initialize();
                 _audioPlayer.Initialize(Read);
@@ -161,7 +162,7 @@ namespace VoiceCraft.Client.Processes
             }
             finally
             {
-                Running = false;
+                HasEnded = true;
             }
         }
 
