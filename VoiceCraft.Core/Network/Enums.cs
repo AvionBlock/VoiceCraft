@@ -28,6 +28,8 @@ namespace VoiceCraft.Core.Network
         SetName,
         SetTalkBitmask,
         SetListenBitmask,
+        SetMinRange,
+        SetMaxRange,
         SetPosition,
         SetRotation,
         SetProperty,

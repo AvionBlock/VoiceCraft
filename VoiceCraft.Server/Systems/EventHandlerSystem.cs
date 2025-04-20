@@ -92,6 +92,8 @@ namespace VoiceCraft.Server.Systems
             newEntity.OnNameUpdated += OnEntityNameUpdated;
             newEntity.OnTalkBitmaskUpdated += OnEntityTalkBitmaskUpdated;
             newEntity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
+            newEntity.OnMinRangeUpdated += OnEntityMinRangeUpdated;
+            newEntity.OnMaxRangeUpdated += OnEntityMaxRangeUpdated;
             newEntity.OnPositionUpdated += OnEntityPositionUpdated;
             newEntity.OnRotationUpdated += OnEntityRotationUpdated;
             newEntity.OnPropertySet += OnEntityPropertySet;
@@ -113,6 +115,8 @@ namespace VoiceCraft.Server.Systems
             entity.OnNameUpdated -= OnEntityNameUpdated;
             entity.OnTalkBitmaskUpdated -= OnEntityTalkBitmaskUpdated;
             entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
+            entity.OnMinRangeUpdated -= OnEntityMinRangeUpdated;
+            entity.OnMaxRangeUpdated -= OnEntityMaxRangeUpdated;
             entity.OnPositionUpdated -= OnEntityPositionUpdated;
             entity.OnRotationUpdated -= OnEntityRotationUpdated;
             entity.OnPropertySet -= OnEntityPropertySet;
@@ -146,6 +150,24 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
+                _server.Broadcast(packet);
+            });
+        }
+
+        private void OnEntityMinRangeUpdated(int minRange, VoiceCraftEntity entity)
+        {
+            _tasks.Add(() =>
+            {
+                var packet = new SetMinRangePacket(entity.Id, minRange);
+                _server.Broadcast(packet);
+            });
+        }
+        
+        private void OnEntityMaxRangeUpdated(int maxRange, VoiceCraftEntity entity)
+        {
+            _tasks.Add(() =>
+            {
+                var packet = new SetMaxRangePacket(entity.Id, maxRange);
                 _server.Broadcast(packet);
             });
         }
