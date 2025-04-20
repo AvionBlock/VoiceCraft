@@ -103,7 +103,7 @@ namespace VoiceCraft.Client.Linux.Audio
                 ThrowIfDisposed();
 
                 if (CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot initialize when recording!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
 
                 //Cleanup previous recorder.
                 CleanupRecorder();
@@ -135,7 +135,7 @@ namespace VoiceCraft.Client.Linux.Audio
                 _nativeRecorder = ALC.CaptureOpenDevice(SelectedDevice, SampleRate, format, _bufferSamples);
                 if (_nativeRecorder == ALCaptureDevice.Null)
                 {
-                    throw new InvalidOperationException("Could not create device!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
                 }
             }
             catch
@@ -228,7 +228,7 @@ namespace VoiceCraft.Client.Linux.Audio
         private void ThrowIfNotInitialized()
         {
             if (_nativeRecorder == ALCaptureDevice.Null)
-                throw new InvalidOperationException("Audio recorder is not initialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
         }
 
         private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)

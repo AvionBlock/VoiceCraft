@@ -69,7 +69,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public AudioSource AudioSource { get; set; } = AudioSource.Default;
 
-        public int SessionId => _nativeRecorder?.AudioSessionId ?? throw new InvalidOperationException("Recorder not intialized!");
+        public int SessionId => _nativeRecorder?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
 
         public event Action<byte[], int>? OnDataAvailable;
         public event Action<Exception?>? OnRecordingStopped;
@@ -112,7 +112,7 @@ namespace VoiceCraft.Client.Android.Audio
                 ThrowIfDisposed();
 
                 if (CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot initialize when recording!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
 
                 //Cleanup previous recorder.
                 CleanupRecorder();
@@ -149,7 +149,7 @@ namespace VoiceCraft.Client.Android.Audio
                 //Create the AudioRecord Object.
                 _nativeRecorder = new AudioRecord(AudioSource, SampleRate, channelMask, encoding, _bufferBytes);
                 if (_nativeRecorder.State != State.Initialized)
-                    throw new InvalidOperationException("Could not initialize device!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
 
                 var device = _audioManager.GetDevices(GetDevicesTargets.Inputs)
                     ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
@@ -243,7 +243,7 @@ namespace VoiceCraft.Client.Android.Audio
         private void ThrowIfNotInitialized()
         {
             if (_nativeRecorder == null)
-                throw new InvalidOperationException("Audio recorder is not initialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
         }
 
         private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)

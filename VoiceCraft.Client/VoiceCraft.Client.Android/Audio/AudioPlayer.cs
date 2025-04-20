@@ -73,7 +73,7 @@ namespace VoiceCraft.Client.Android.Audio
 
         public AudioContentType ContentType { get; set; } = AudioContentType.Music;
 
-        public int SessionId => _nativePlayer?.AudioSessionId ?? throw new InvalidOperationException("Recorder not intialized!");
+        public int SessionId => _nativePlayer?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
 
         public event Action<Exception?>? OnPlaybackStopped;
 
@@ -115,7 +115,7 @@ namespace VoiceCraft.Client.Android.Audio
 
                 //Check if already playing.
                 if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot initialize when playing!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
 
                 //Cleanup previous player.
                 CleanupPlayer();
@@ -167,7 +167,7 @@ namespace VoiceCraft.Client.Android.Audio
                 _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
                     .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
                 if (_nativePlayer.State != AudioTrackState.Initialized)
-                    throw new InvalidOperationException("Could not initialize device!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
 
                 _nativePlayer.SetVolume(1.0f);
                 var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Outputs)
@@ -298,7 +298,7 @@ namespace VoiceCraft.Client.Android.Audio
         private void ThrowIfNotInitialized()
         {
             if (_nativePlayer == null)
-                throw new InvalidOperationException("Audio player is not intialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
         }
 
         private void Resume()
@@ -346,7 +346,7 @@ namespace VoiceCraft.Client.Android.Audio
         {
             //This shouldn't happen...
             if (_playerCallback == null)
-                throw new InvalidOperationException("Player callback was not found!");
+                throw new InvalidOperationException();
 
             //Run the playback loop
             _nativePlayer?.Play();

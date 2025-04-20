@@ -99,7 +99,7 @@ namespace VoiceCraft.Client.Windows.Audio
                 ThrowIfDisposed();
 
                 if (CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException("Cannot initialize when recording!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
 
                 //Cleanup previous recorder.
                 CleanupRecorder();
@@ -120,7 +120,7 @@ namespace VoiceCraft.Client.Windows.Audio
                     AudioFormat.Pcm8 => new WaveFormat(SampleRate, 8, Channels),
                     AudioFormat.Pcm16 => new WaveFormat(SampleRate, 16, Channels),
                     AudioFormat.PcmFloat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels),
-                    _ => throw new NotSupportedException("Input format is not supported!")
+                    _ => throw new NotSupportedException()
                 };
 
                 //Setup Recorder.
@@ -221,7 +221,7 @@ namespace VoiceCraft.Client.Windows.Audio
         private void ThrowIfNotInitialized()
         {
             if(_nativeRecorder == null)
-                throw new InvalidOperationException("Audio recorder is not initialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
         }
 
         private void InvokeDataAvailable(object? sender, WaveInEventArgs e)

@@ -149,7 +149,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(ServerViewModel));
+            throw new ObjectDisposedException(typeof(AudioSettingsViewModel).ToString());
         }
         
         public void Dispose()

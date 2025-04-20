@@ -109,7 +109,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
                 //Check if already playing.
                 if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot initialize when playing!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
 
                 //Cleanup previous player.
                 CleanupPlayer();
@@ -139,11 +139,11 @@ namespace VoiceCraft.Client.Linux.Audio
                 //Open and setup device.
                 _nativePlayer = ALC.OpenDevice(SelectedDevice);
                 if (_nativePlayer == ALDevice.Null)
-                    throw new InvalidOperationException($"Failed to open device {SelectedDevice ?? "(default device)"}!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
 
                 _nativePlayerContext = ALC.CreateContext(_nativePlayer, (int[]?)null);
                 if (_nativePlayerContext == ALContext.Null)
-                    throw new InvalidOperationException("Failed to create device context!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
                 
                 ALC.MakeContextCurrent(_nativePlayerContext);
                 ALC.ProcessContext(_nativePlayerContext);
@@ -311,7 +311,7 @@ namespace VoiceCraft.Client.Linux.Audio
         private void ThrowIfNotInitialized()
         {
             if (_nativePlayer == ALDevice.Null || _nativePlayerContext == ALContext.Null || _playerCallback == null)
-                throw new InvalidOperationException("Audio player is not intialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
         }
 
         private void Resume()
@@ -369,7 +369,7 @@ namespace VoiceCraft.Client.Linux.Audio
         {
             //This shouldn't happen...
             if (_playerCallback == null)
-                throw new InvalidOperationException("Player callback was not found!");
+                throw new InvalidOperationException();
 
             //Fill Buffers.
             foreach (var buffer in _buffers)
@@ -438,7 +438,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
             public unsafe void FillBuffer(int read)
             {
-                ObjectDisposedException.ThrowIf(_isDisposed, nameof(AudioBuffer));
+                ObjectDisposedException.ThrowIf(_isDisposed, typeof(AudioBuffer).ToString());
                 
                 fixed (byte* byteBufferPtr = Data)
                     AL.BufferData(Id, format, byteBufferPtr, read, sampleRate);
@@ -446,7 +446,7 @@ namespace VoiceCraft.Client.Linux.Audio
 
             public void SourceQueue(int sourceId)
             {
-                ObjectDisposedException.ThrowIf(_isDisposed, nameof(AudioBuffer));
+                ObjectDisposedException.ThrowIf(_isDisposed, typeof(AudioBuffer).ToString());
                 
                 AL.SourceQueueBuffer(sourceId, Id);
             }

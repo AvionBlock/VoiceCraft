@@ -20,7 +20,7 @@ namespace VoiceCraft.Client.Audio
             ThrowIfDisposed();
             
             if(recorder.Channels != 1)
-                throw new InvalidOperationException("Speex denoiser can only support mono audio channels!");
+                throw new InvalidOperationException(Locales.Locales.Audio_AGC_InitFailed);
             
             CleanupGainController();
             
@@ -41,7 +41,7 @@ namespace VoiceCraft.Client.Audio
         public void Process(Span<byte> buffer)
         {
             ThrowIfDisposed();
-            ThrowIfNotIntialized();
+            ThrowIfNotInitialized();
             _gainController?.Run(buffer);
         }
         
@@ -64,10 +64,10 @@ namespace VoiceCraft.Client.Audio
             throw new ObjectDisposedException(typeof(SpeexDspAutomaticGainController).ToString());
         }
         
-        private void ThrowIfNotIntialized()
+        private void ThrowIfNotInitialized()
         {
             if(_gainController == null)
-                throw new InvalidOperationException("Automatic gain controller is not initialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_AGC_Init);
         }
 
         private void Dispose(bool disposing)
