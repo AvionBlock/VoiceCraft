@@ -25,7 +25,7 @@ namespace VoiceCraft.Client.Network.Systems
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
         }
-        
+
         public void Dispose()
         {
             _listener.ConnectionRequestEvent -= OnConnectionRequestEvent;
@@ -76,12 +76,8 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.SetListenBitmask:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
-                    case PacketType.SetIntProperty:
-                    case PacketType.SetBoolProperty:
-                    case PacketType.SetFloatProperty:
-                    case PacketType.RemoveIntProperty:
-                    case PacketType.RemoveBoolProperty:
-                    case PacketType.RemoveFloatProperty:
+                    case PacketType.SetProperty:
+                    case PacketType.RemoveProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -91,7 +87,7 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 Debug.WriteLine(ex);
             }
-            
+
             reader.Recycle();
         }
 
@@ -121,12 +117,8 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.SetListenBitmask:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
-                    case PacketType.SetIntProperty:
-                    case PacketType.SetBoolProperty:
-                    case PacketType.SetFloatProperty:
-                    case PacketType.RemoveIntProperty:
-                    case PacketType.RemoveBoolProperty:
-                    case PacketType.RemoveFloatProperty:
+                    case PacketType.SetProperty:
+                    case PacketType.RemoveProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -136,7 +128,7 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 Debug.WriteLine(ex);
             }
-            
+
             reader.Recycle();
         }
 
@@ -144,11 +136,11 @@ namespace VoiceCraft.Client.Network.Systems
         {
             OnServerInfo?.Invoke(new ServerInfo(infoPacket));
         }
-        
+
         private void HandleAudioPacket(AudioPacket packet)
         {
-            if (!_world.Entities.TryGetValue(packet.Id, out var entity)) return;
-            entity.ReceiveAudio(packet.Data, packet.Timestamp);
+            var entity = _world.GetEntity(packet.Id);
+            entity?.ReceiveAudio(packet.Data, packet.Timestamp);
         }
 
         private void HandleSetTitlePacket(SetTitlePacket packet)
@@ -158,15 +150,7 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet)
         {
-            try
-            {
-                if (_world.Entities.ContainsKey(packet.Id)) return;
-                _world.AddEntity(packet.Entity); //Could crash the application, this shouldn't happen though.
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
+            _world.AddEntity(packet.Entity); //TODO Need to change this
         }
 
         private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)

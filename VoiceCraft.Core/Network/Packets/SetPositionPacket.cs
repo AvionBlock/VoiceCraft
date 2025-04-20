@@ -6,10 +6,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetPositionPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetPosition;
-        public int Id { get; private set; }
+        public byte Id { get; private set; }
         public Vector3 Position { get; private set; }
 
-        public SetPositionPacket(int id = 0, Vector3 position = new Vector3())
+        public SetPositionPacket(byte id = 0, Vector3 position = new Vector3())
         {
             Id = id;
             Position = position;
@@ -25,7 +25,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetInt();
+            Id = reader.GetByte();
             var x = reader.GetFloat();
             var y = reader.GetFloat();
             var z = reader.GetFloat();

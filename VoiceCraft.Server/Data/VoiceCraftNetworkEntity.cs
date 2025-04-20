@@ -1,12 +1,13 @@
 using LiteNetLib;
+using VoiceCraft.Core;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Server.Data
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
         public NetPeer NetPeer { get; }
         
-        public VoiceCraftNetworkEntity(NetPeer netPeer) : base((short)netPeer.Id)
+        public VoiceCraftNetworkEntity(NetPeer netPeer) : base((byte)netPeer.Id)
         {
             NetPeer = netPeer;
             AddVisibleEntity(this); //Should always be visible to itself.

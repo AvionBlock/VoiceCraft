@@ -2,28 +2,28 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class SetTalkBitmaskPacket : VoiceCraftPacket
+    public class RemovePropertyPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetTalkBitmask;
+        public override PacketType PacketType => PacketType.RemoveProperty;
         public byte Id { get; private set; }
-        public ulong Bitmask { get; private set; }
+        public string Key { get; private set; }
 
-        public SetTalkBitmaskPacket(byte id = 0, ulong bitmask = 0)
+        public RemovePropertyPacket(byte id = 0, string key = "")
         {
             Id = id;
-            Bitmask = bitmask;
+            Key = key;
         }
-        
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put(Bitmask);
+            writer.Put(Key, Constants.MaxStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetByte();
-            Bitmask = reader.GetULong();
+            Key = reader.GetString(Constants.MaxStringLength);
         }
     }
 }

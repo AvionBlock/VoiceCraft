@@ -1,57 +1,49 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using LiteNetLib;
 
 namespace VoiceCraft.Core
 {
     public class VoiceCraftWorld : IDisposable //Make this disposable BECAUSE WHY THE FUCK NOT?!
     {
-        private int _idIndex = -1;
-        private readonly ConcurrentQueue<int> _recycledIds = new ConcurrentQueue<int>();
-
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
+        public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
 
-        public Dictionary<int, VoiceCraftEntity> Entities { get; } = new Dictionary<int, VoiceCraftEntity>();
+        private readonly Dictionary<byte, VoiceCraftEntity> _entities = new Dictionary<byte, VoiceCraftEntity>();
 
         public VoiceCraftEntity CreateEntity()
         {
-            var id = GetNextNegativeId();
+            var id = GetLowestAvailableId();
             var entity = new VoiceCraftEntity(id);
-            if (!Entities.TryAdd(id, entity)) throw new InvalidOperationException($"An entity with the id of {id} already exists!");
+            if (!_entities.TryAdd(id, entity))
+                throw new InvalidOperationException("Failed to create entity!");
             
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
 
-        public VoiceCraftNetworkEntity CreateEntity(NetPeer netPeer)
+        public bool AddEntity(VoiceCraftEntity entity)
         {
-            var entity = new VoiceCraftNetworkEntity(netPeer);
-            if (!Entities.TryAdd(entity.Id, entity))
-                throw new InvalidOperationException($"An entity with the id of {netPeer.Id} already exists!");
+            if (!_entities.TryAdd(entity.Id, entity))
+                return false;
             
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
+            return true;
+        }
+
+        public VoiceCraftEntity? GetEntity(byte id)
+        {
+            _entities.TryGetValue(id, out var entity);
             return entity;
         }
 
-        public void AddEntity(VoiceCraftEntity entity)
+        public bool DestroyEntity(byte id)
         {
-            if(!Entities.TryAdd(entity.Id, entity))
-                throw new InvalidOperationException($"An entity with the id of {entity.Id} already exists!");
-            
-            entity.OnDestroyed += DestroyEntity;
-            OnEntityCreated?.Invoke(entity);
-        }
-
-        public bool DestroyEntity(int id)
-        {
-            if (!Entities.Remove(id, out var entity)) return false;
+            if (!_entities.Remove(id, out var entity)) return false;
             entity.Destroy();
             OnEntityDestroyed?.Invoke(entity);
-            _recycledIds.Enqueue(id);
             return true;
         }
 
@@ -59,14 +51,14 @@ namespace VoiceCraft.Core
         {
             foreach (var entity in Entities)
             {
-                entity.Value.OnDestroyed -= DestroyEntity; //Don't trigger the events!
-                entity.Value.Destroy();
+                entity.OnDestroyed -= DestroyEntity; //Don't trigger the events!
+                entity.Destroy();
             }
             
-            Entities.Clear();
+            _entities.Clear();
 
             //Deregister all events.
-            OnEntityDestroyed = null;
+            OnEntityCreated = null;
             OnEntityDestroyed = null;
         }
 
@@ -75,12 +67,15 @@ namespace VoiceCraft.Core
             entity.OnDestroyed -= DestroyEntity;
             DestroyEntity(entity.Id);
         }
-
-        private int GetNextNegativeId()
+        
+        private byte GetLowestAvailableId()
         {
-            if (_recycledIds.TryDequeue(out var id)) return id;
-            if (_idIndex <= int.MinValue) throw new InvalidOperationException("Cannot allocate a new entity Id, max negative Id has been reached!");
-            return _idIndex--;
+            for(var i = byte.MinValue; i < byte.MaxValue; ++i)
+            {
+                if(!_entities.ContainsKey(i)) return i;
+            }
+
+            throw new InvalidOperationException("Could not find an available id!");
         }
     }
 }
