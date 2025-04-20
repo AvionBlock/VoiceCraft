@@ -48,6 +48,7 @@ namespace VoiceCraft.Client.Android
         {
             CrashLogService.Load();
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>(_ =>
             {
                 var audioService = new NativeAudioService((AudioManager?)GetSystemService(AudioService) ?? throw new Exception(
@@ -73,10 +74,9 @@ namespace VoiceCraft.Client.Android
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
-
+            
             Platform.Init(this, app);
             base.OnCreate(app);
-            OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
