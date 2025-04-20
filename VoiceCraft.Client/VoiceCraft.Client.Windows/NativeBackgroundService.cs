@@ -90,7 +90,8 @@ namespace VoiceCraft.Client.Windows
                             continue;
                         }
 
-                        if (process.Value.IsCompleted && _processes.Remove(process.Key, out _)) continue;
+                        if (!process.Value.IsCompleted) continue;
+                        if (!_processes.Remove(process.Key, out _)) continue;
                         process.Value.Dispose();
                         OnProcessStopped?.Invoke(process.Value.Process);
                     }

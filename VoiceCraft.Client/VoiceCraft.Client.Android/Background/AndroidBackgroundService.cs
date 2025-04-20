@@ -58,8 +58,8 @@ namespace VoiceCraft.Client.Android.Background
                                 WeakReferenceMessenger.Default.Send(new ProcessStarted(process.Value.Process));
                                 continue;
                             }
-
-                            if (process.Value.IsCompleted && Processes.Remove(process.Key, out _)) continue;
+                            if (!process.Value.IsCompleted) continue;
+                            if (!Processes.Remove(process.Key, out _)) continue;
                             process.Value.Process.OnUpdateTitle -= ProcessOnUpdateTitle;
                             process.Value.Process.OnUpdateDescription -= ProcessOnUpdateDescription;
                             process.Value.Dispose();
