@@ -23,25 +23,30 @@ namespace VoiceCraft.Core.Network
         RemoveEffect,
         //Entity stuff
         EntityCreated,
+        EntityReset,
         EntityDestroyed,
         SetName,
         SetTalkBitmask,
         SetListenBitmask,
         SetPosition,
         SetRotation,
-        SetIntProperty,
-        SetBoolProperty,
-        SetFloatProperty,
-        RemoveIntProperty,
-        RemoveBoolProperty,
-        RemoveFloatProperty,
+        SetProperty,
+        RemoveProperty,
         
-        Unknown //C# does a thing where any number higher than this will always result to this value.
+        Unknown
     }
 
     public enum EffectType : byte
     {
-        Proximity,
-        Unknown //C# does a thing where any number higher than this will always result to this value.
+        Unknown
+    }
+
+    public enum PropertyType : byte
+    {
+        Byte,
+        Int,
+        UInt,
+        Float,
+        Unknown
     }
 }

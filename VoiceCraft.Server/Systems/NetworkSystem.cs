@@ -1,18 +1,18 @@
 using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
-using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Config;
+using VoiceCraft.Server.Data;
 
 namespace VoiceCraft.Server.Systems
 {
     public class NetworkSystem : IDisposable
     {
-        private readonly NetDataWriter _dataWriter;
+        private readonly VoiceCraftServer _server;
         private readonly VoiceCraftWorld _world;
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
@@ -20,7 +20,7 @@ namespace VoiceCraft.Server.Systems
 
         public NetworkSystem(VoiceCraftServer server, NetManager netManager)
         {
-            _dataWriter = new NetDataWriter();
+            _server = server;
             _world = server.World;
             _listener = server.Listener;
             _config = server.Config;
@@ -30,69 +30,6 @@ namespace VoiceCraft.Server.Systems
             _listener.ConnectionRequestEvent += OnConnectionRequest;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
-        }
-
-        public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            lock (_dataWriter)
-            {
-                var networkEntities = _world.Entities.Values.OfType<VoiceCraftNetworkEntity>();
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-                foreach (var networkEntity in networkEntities)
-                {
-                    networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
-                }
-            }
-        }
-
-        public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            if (peer.ConnectionState != ConnectionState.Connected) return false;
-
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-                peer.Send(_dataWriter, deliveryMethod);
-                return true;
-            }
-        }
-
-        public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
-        {
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-
-                var status = true;
-                foreach (var peer in peers)
-                {
-                    if (peer.ConnectionState != ConnectionState.Connected)
-                    {
-                        status = false;
-                        continue;
-                    }
-
-                    peer.Send(_dataWriter, deliveryMethod);
-                }
-                return status;
-            }
-        }
-        
-        public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
-        {
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-                return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
-            }
         }
         
         public void Dispose()
@@ -104,10 +41,10 @@ namespace VoiceCraft.Server.Systems
             GC.SuppressFinalize(this);
         }
         
-        private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectinfo)
+        private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             if (peer.Tag is not VoiceCraftNetworkEntity) return;
-            _world.DestroyEntity(peer.Id);
+            _world.DestroyEntity((byte)peer.Id);
         }
 
         private void OnConnectionRequest(ConnectionRequest request)
@@ -150,7 +87,12 @@ namespace VoiceCraft.Server.Systems
                 switch (loginPacket.LoginType)
                 {
                     case LoginType.Login:
-                        peer.Tag = _world.CreateEntity(peer);
+                        if (peer.Id > byte.MaxValue)
+                            throw new InvalidOperationException();
+                        
+                        var entity = new VoiceCraftNetworkEntity(peer);
+                        _world.AddEntity(entity);
+                        peer.Tag = entity;
                         break;
                     case LoginType.Discovery:
                         peer.Tag = LoginType.Discovery;
@@ -167,7 +109,7 @@ namespace VoiceCraft.Server.Systems
             }
         }
 
-        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliverymethod)
+        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
         {
             try
             {
@@ -183,6 +125,7 @@ namespace VoiceCraft.Server.Systems
                     // Will need to implement these for client sided mode later.
                     case PacketType.Info:
                     case PacketType.Login:
+                    case PacketType.SetTitle:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
@@ -192,12 +135,8 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetListenBitmask:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
-                    case PacketType.SetIntProperty:
-                    case PacketType.SetBoolProperty:
-                    case PacketType.SetFloatProperty:
-                    case PacketType.RemoveIntProperty:
-                    case PacketType.RemoveBoolProperty:
-                    case PacketType.RemoveFloatProperty:
+                    case PacketType.SetProperty:
+                    case PacketType.RemoveProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -209,7 +148,7 @@ namespace VoiceCraft.Server.Systems
             }
         }
 
-        private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteendpoint, NetPacketReader reader, UnconnectedMessageType messagetype)
+        private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
         {
             try
             {
@@ -220,11 +159,12 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Info:
                         var infoPacket = new InfoPacket();
                         infoPacket.Deserialize(reader);
-                        HandleInfoPacket(infoPacket, remoteendpoint);
+                        HandleInfoPacket(infoPacket, remoteEndPoint);
                         break;
                     //Unused
                     case PacketType.Login:
                     case PacketType.Audio:
+                    case PacketType.SetTitle:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
@@ -234,12 +174,8 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetListenBitmask:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
-                    case PacketType.SetIntProperty:
-                    case PacketType.SetBoolProperty:
-                    case PacketType.SetFloatProperty:
-                    case PacketType.RemoveIntProperty:
-                    case PacketType.RemoveBoolProperty:
-                    case PacketType.RemoveFloatProperty:
+                    case PacketType.SetProperty:
+                    case PacketType.RemoveProperty:
                     case PacketType.Unknown:
                     default:
                         break;
@@ -252,15 +188,16 @@ namespace VoiceCraft.Server.Systems
         }
         
         //Packet Handling
-        private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteendpoint)
+        private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
         {
             var packet = new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);
-            SendUnconnectedPacket(remoteendpoint, packet);
+            _server.SendUnconnectedPacket(remoteEndPoint, packet);
         }
 
         private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
         {
-            if (!_world.Entities.TryGetValue(peer.Id, out var entity) || entity is not VoiceCraftNetworkEntity networkEntity) return;
+            var entity = _world.GetEntity((byte)peer.Id);
+            if (entity is not VoiceCraftNetworkEntity networkEntity) return;
             networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
         }
     }

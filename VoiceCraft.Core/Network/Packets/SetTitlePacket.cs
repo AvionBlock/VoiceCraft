@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -6,7 +5,6 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetTitlePacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetTitle;
-        [StringLength(Constants.MaxStringLength)]
         public string Title { get; private set; }
 
         public SetTitlePacket(string title = "")
@@ -16,12 +14,12 @@ namespace VoiceCraft.Core.Network.Packets
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(Title);
+            writer.Put(Title, Constants.MaxStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            Title = reader.GetString();
+            Title = reader.GetString(Constants.MaxStringLength);
         }
     }
 }

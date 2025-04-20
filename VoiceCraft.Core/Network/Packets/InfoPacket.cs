@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -6,7 +5,6 @@ namespace VoiceCraft.Core.Network.Packets
     public class InfoPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Info;
-        [StringLength(Constants.MaxStringLength)]
         public string Motd { get; private set; }
         public int Clients { get; private set; }
         public bool Discovery  { get; private set; }
@@ -25,7 +23,7 @@ namespace VoiceCraft.Core.Network.Packets
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(Motd);
+            writer.Put(Motd, Constants.MaxStringLength);
             writer.Put(Clients);
             writer.Put(Discovery);
             writer.Put((byte)PositioningType);
@@ -34,7 +32,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Motd = reader.GetString();
+            Motd = reader.GetString(Constants.MaxStringLength);
             Clients = reader.GetInt();
             Discovery = reader.GetBool();
             PositioningType = (PositioningType)reader.GetByte();

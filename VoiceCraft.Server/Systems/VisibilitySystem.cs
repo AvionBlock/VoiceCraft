@@ -1,26 +1,16 @@
 using VoiceCraft.Core;
 using VoiceCraft.Server.Application;
+using VoiceCraft.Server.Data;
 
 namespace VoiceCraft.Server.Systems
 {
     public class VisibilitySystem(VoiceCraftServer server)
     {
         private readonly VoiceCraftWorld _world = server.World;
-        private readonly List<Task> _tasks = [];
 
         public void Update()
         {
-            foreach (var entity in _world.Entities)
-            {
-                _tasks.Add(Task.Run(() =>
-                {
-                    UpdateVisibleNetworkEntities(entity.Value);
-                }));
-            }
-            
-            var task = Task.WhenAll(_tasks);
-            task.Wait();
-            _tasks.Clear();
+            Parallel.ForEach(_world.Entities, UpdateVisibleNetworkEntities);
         }
 
         private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
@@ -29,16 +19,17 @@ namespace VoiceCraft.Server.Systems
             entity.TrimVisibleDeadEntities();
             
             //Add any new possible entities.
-            foreach (var possibleEntity in _world.Entities)
+            var visibleNetworkEntities = _world.Entities.OfType<VoiceCraftNetworkEntity>();
+            foreach (var possibleEntity in visibleNetworkEntities)
             {
-                if(possibleEntity.Key == entity.Id || possibleEntity.Value is not VoiceCraftNetworkEntity possibleNetworkEntity) continue;
-                if (!entity.VisibleTo(possibleNetworkEntity))
+                if(possibleEntity.Id == entity.Id) continue;
+                if (!entity.VisibleTo(possibleEntity))
                 {
-                    entity.RemoveVisibleEntity(possibleNetworkEntity);
+                    entity.RemoveVisibleEntity(possibleEntity);
                     continue;
                 }
                 
-                entity.AddVisibleEntity(possibleNetworkEntity);
+                entity.AddVisibleEntity(possibleEntity);
             }
         }
     }

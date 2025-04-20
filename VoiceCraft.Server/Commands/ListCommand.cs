@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Spectre.Console;
 using VoiceCraft.Server.Application;
+using VoiceCraft.Server.Data;
 
 namespace VoiceCraft.Server.Commands
 {
@@ -24,20 +25,21 @@ namespace VoiceCraft.Server.Commands
                         .AddColumn("Position")
                         .AddColumn("Rotation");
 
-                    var list = server.World.Entities.Where(x => !clientsOnly || x.Key >= 0).ToArray();
-                    var total = list.Length;
+                    var list = server.World.Entities;
+                    if (clientsOnly)
+                        list = list.OfType<VoiceCraftNetworkEntity>();
 
-                    AnsiConsole.WriteLine($"Showing {Math.Min(limit, total)} out of {total} entities.");
+                    AnsiConsole.WriteLine($"Showing {limit} entities.");
                     foreach (var entity in list)
                     {
                         if (limit <= 0)
                             break;
                         limit--;
                         table.AddRow(
-                            entity.Key.ToString(),
-                            entity.Value.Name,
-                            $"[red]{entity.Value.Position.X}[/], [green]{entity.Value.Position.Y}[/], [blue]{entity.Value.Position.Z}[/]",
-                            $"[red]{entity.Value.Rotation.X}[/], [green]{entity.Value.Rotation.Y}[/], [blue]{entity.Value.Rotation.Z}[/], [yellow]{entity.Value.Rotation.W}[/]");
+                            entity.Id.ToString(),
+                            entity.Name,
+                            $"[red]{entity.Position.X}[/], [green]{entity.Position.Y}[/], [blue]{entity.Position.Z}[/]",
+                            $"[red]{entity.Rotation.X}[/], [green]{entity.Rotation.Y}[/], [blue]{entity.Rotation.Z}[/], [yellow]{entity.Rotation.W}[/]");
                     }
 
                     AnsiConsole.Write(table);
