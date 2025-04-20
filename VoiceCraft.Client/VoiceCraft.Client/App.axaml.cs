@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -41,7 +42,6 @@ public class App : Application
             
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
-            DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
 
             switch (ApplicationLifetime)
             {
@@ -70,6 +70,7 @@ public class App : Application
                 case IClassicDesktopStyleApplicationLifetime desktop:
                     desktop.MainWindow = new ErrorMainWindow
                     {
+                        Content = new ErrorView(),
                         DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
                     };
                     break;
@@ -128,7 +129,6 @@ public class App : Application
         ServiceCollection.AddSingleton<CrashLogViewModel>();
         
         //Views
-        ServiceCollection.AddKeyedTransient<Control, ErrorView>(typeof(ErrorView).FullName);
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
@@ -143,9 +143,11 @@ public class App : Application
         return ServiceCollection.BuildServiceProvider();
     }
 
-    private static void SetupServices(IServiceProvider serviceProvider)
+    private void SetupServices(IServiceProvider serviceProvider)
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
+        
+        DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
 
         var settingsService = serviceProvider.GetRequiredService<SettingsService>();
         try
