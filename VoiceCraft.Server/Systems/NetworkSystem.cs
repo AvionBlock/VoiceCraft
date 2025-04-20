@@ -64,6 +64,11 @@ namespace VoiceCraft.Server.Systems
                     request.Reject("Incompatible client/server version!"u8.ToArray());
                     return;
                 }
+                if (_world.Entities.Count() >= byte.MaxValue)
+                {
+                    request.Reject("Server full!"u8.ToArray());
+                    return;
+                }
 
                 HandleLogin(loginPacket, request);
             }
