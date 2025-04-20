@@ -20,7 +20,7 @@ namespace VoiceCraft.Client.Audio
             ThrowIfDisposed();
             
             if(recorder.Channels != 1)
-                throw new InvalidOperationException("Speex denoiser can only support mono audio channels!");
+                throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
 
             CleanupDenoiser();
             
@@ -39,7 +39,7 @@ namespace VoiceCraft.Client.Audio
         public void Denoise(Span<byte> buffer)
         {
             ThrowIfDisposed();
-            ThrowIfNotIntialized();
+            ThrowIfNotInitialized();
             _denoiser?.Run(buffer);
         }
         
@@ -62,10 +62,10 @@ namespace VoiceCraft.Client.Audio
             throw new ObjectDisposedException(typeof(SpeexDspDenoiser).ToString());
         }
 
-        private void ThrowIfNotIntialized()
+        private void ThrowIfNotInitialized()
         {
             if(_denoiser == null)
-                throw new InvalidOperationException("Denoiser is not initialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_DN_Init);
         }
 
         private void Dispose(bool disposing)

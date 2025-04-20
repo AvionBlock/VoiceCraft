@@ -26,7 +26,7 @@ namespace VoiceCraft.Client.Processes
         public event Action<EntityViewModel>? OnEntityRemoved;
 
         //Public Variables
-        public bool Started { get; private set; }
+        public bool Running { get; private set; }
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
 
         public string Title
@@ -85,8 +85,8 @@ namespace VoiceCraft.Client.Processes
 
         public void Start(CancellationToken token)
         {
-            Started = true;
-            
+            Running = true;
+
             try
             {
                 Title = Locales.Locales.VoiceCraft_Status_Title;
@@ -121,7 +121,7 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.Connect(ip, port, LoginType.Login);
                 Title = Locales.Locales.VoiceCraft_Status_Title;
                 Description = Locales.Locales.VoiceCraft_Status_Connecting;
-                
+
                 var startTime = DateTime.UtcNow;
                 while (!token.IsCancellationRequested && _voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
                 {
@@ -142,12 +142,15 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Started = false;
                 notificationService.SendErrorNotification($"Voip Background Error: {ex.Message}");
                 OnDisconnected?.Invoke(ex.Message);
                 throw;
+            }
+            finally
+            {
+                Running = false;
             }
         }
 

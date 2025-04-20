@@ -8,9 +8,7 @@ namespace VoiceCraft.Client.Android.Audio
     {
         public bool IsNative => true;
 
-        private NoiseSuppressor? _noiseSuppressor;
-        private AudioRecorder? _recorder;
-        private bool _initialized;
+        private NoiseSuppressor? _denoiser;
         private bool _disposed;
 
         ~NativeDenoiser()
@@ -23,16 +21,13 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (recorder is not AudioRecorder audioRecorder)
-                throw new ArgumentException(Locales.Locales.Android_NativeDN_Exception_AndroidRecorder, nameof(recorder));
-            if (_noiseSuppressor != null)
-            {
-                _noiseSuppressor.Release();
-                _noiseSuppressor.Dispose();
-                _noiseSuppressor = null;
-            }
-
-            _recorder = audioRecorder;
-            _initialized = false;
+                throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
+            
+            CleanupDenoiser();
+            _denoiser = NoiseSuppressor.Create(audioRecorder.SessionId);
+            
+            if(_denoiser == null)
+                throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
         }
 
         public void Denoise(byte[] buffer) => Denoise(buffer.AsSpan());
@@ -40,18 +35,7 @@ namespace VoiceCraft.Client.Android.Audio
         public void Denoise(Span<byte> buffer)
         {
             ThrowIfDisposed();
-
-            if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Locales.Android_NativeDN_Exception_Init);
-            if (_noiseSuppressor != null)
-            {
-                _noiseSuppressor.Release();
-                _noiseSuppressor.Dispose();
-                _noiseSuppressor = null;
-            }
-            
-            _noiseSuppressor = NoiseSuppressor.Create(_recorder.SessionId);
-            _initialized = true;
+            ThrowIfNotInitialized();
         }
 
         public void Dispose()
@@ -59,28 +43,31 @@ namespace VoiceCraft.Client.Android.Audio
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        private void Dispose(bool disposing)
+        
+        private void CleanupDenoiser()
         {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                if (_noiseSuppressor != null)
-                {
-                    _noiseSuppressor.Release();
-                    _noiseSuppressor.Dispose();
-                    _noiseSuppressor = null;
-                }
-            }
-
-            _disposed = true;
+            if (_denoiser == null) return;
+            _denoiser.Dispose();
+            _denoiser = null;
         }
-
+        
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(NativeDenoiser));
+            throw new ObjectDisposedException(typeof(NativeDenoiser).ToString());
+        }
+
+        private void ThrowIfNotInitialized()
+        {
+            if(_denoiser == null)
+                throw new InvalidOperationException(Locales.Locales.Audio_DN_Init);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed || !disposing) return;
+            CleanupDenoiser();
+            _disposed = true;
         }
     }
 }

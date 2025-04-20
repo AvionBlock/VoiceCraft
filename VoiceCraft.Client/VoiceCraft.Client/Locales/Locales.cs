@@ -48,14 +48,18 @@ namespace VoiceCraft.Client.Locales
         public static string SelectedServer_ServerInfo => Localizer.Get("SelectedServer.ServerInfo");
         public static string SelectedServer_ServerInfo_Status => Localizer.Get("SelectedServer.ServerInfo.Status");
         public static string SelectedServer_ServerInfo_Status_Pinging => Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
-        
-        public static string Android_NativeAEC_Exception_AndroidRecorder => Localizer.Get("Android.NativeAEC.Exception.AndroidRecorder");
-        public static string Android_NativeAEC_Exception_Init => Localizer.Get("Android.NativeAEC.Exception.Init");
-        public static string Android_NativeAGC_Exception_AndroidRecorder => Localizer.Get("Android.NativeAGC.Exception.AndroidRecorder");
-        public static string Android_NativeAGC_Exception_Init => Localizer.Get("Android.NativeAGC.Exception.Init");
-        public static string Android_NativeDN_Exception_AndroidRecorder => Localizer.Get("Android.NativeDN.Exception.AndroidRecorder");
-        public static string Android_NativeDN_Exception_Init => Localizer.Get("Android.NativeDN.Exception.Init");
   
+        public static string Audio_Recorder_InitFailed => Localizer.Get("Audio.Recorder.InitFailed");
+        public static string Audio_Recorder_Init => Localizer.Get("Audio.Recorder.Init");
+        public static string Audio_Player_InitFailed => Localizer.Get("Audio.Recorder.InitFailed");
+        public static string Audio_Player_Init => Localizer.Get("Audio.Player.Init");
+        public static string Audio_AEC_InitFailed => Localizer.Get("Audio.AEC.InitFailed");
+        public static string Audio_AEC_Init => Localizer.Get("Audio.AEC.Init");
+        public static string Audio_AGC_InitFailed => Localizer.Get("Audio.AGC.InitFailed");
+        public static string Audio_AGC_Init => Localizer.Get("Audio.AGC.Init");
+        public static string Audio_DN_InitFailed => Localizer.Get("Audio.DN.InitFailed");
+        public static string Audio_DN_Init => Localizer.Get("Audio.DN.Init");
+        
         public static string VoiceCraft_Status_Title => Localizer.Get("VoiceCraft.Status.Title");
         public static string VoiceCraft_Status_Initializing => Localizer.Get("VoiceCraft.Status.Initializing");
         public static string VoiceCraft_Status_Connecting => Localizer.Get("VoiceCraft.Status.Connecting");

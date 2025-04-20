@@ -99,7 +99,7 @@ namespace VoiceCraft.Client.Windows.Audio
                 ThrowIfDisposed(); 
             
                 if(PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException("Cannot initialize when playing!");
+                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
             
                 //Cleanup previous player.
                 CleanupPlayer();
@@ -120,7 +120,7 @@ namespace VoiceCraft.Client.Windows.Audio
                     AudioFormat.Pcm8 => new WaveFormat(SampleRate, 8, Channels),
                     AudioFormat.Pcm16 => new WaveFormat(SampleRate, 16, Channels),
                     AudioFormat.PcmFloat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels),
-                    _ => throw new NotSupportedException("Input format is not supported!")
+                    _ => throw new NotSupportedException()
                 };
 
                 var callbackProvider = new CallbackWaveProvider(waveFormat, playerCallback);
@@ -244,7 +244,7 @@ namespace VoiceCraft.Client.Windows.Audio
         private void ThrowIfNotInitialized()
         {
             if(_nativePlayer == null)
-                throw new InvalidOperationException("Audio player is not intialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
         }
         
         private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)

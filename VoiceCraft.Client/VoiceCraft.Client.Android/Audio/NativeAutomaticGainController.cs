@@ -8,9 +8,7 @@ namespace VoiceCraft.Client.Android.Audio
     {
         public bool IsNative => true;
 
-        private AutomaticGainControl? _automaticGainControl;
-        private AudioRecorder? _recorder;
-        private bool _initialized;
+        private AutomaticGainControl? _gainController;
         private bool _disposed;
 
         ~NativeAutomaticGainController()
@@ -23,16 +21,13 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (recorder is not AudioRecorder audioRecorder)
-                throw new ArgumentException(Locales.Locales.Android_NativeAGC_Exception_AndroidRecorder, nameof(recorder));
-            if (_automaticGainControl != null)
-            {
-                _automaticGainControl.Release();
-                _automaticGainControl.Dispose();
-                _automaticGainControl = null;
-            }
-
-            _recorder = audioRecorder;
-            _initialized = false;
+                throw new InvalidOperationException(Locales.Locales.Audio_AGC_InitFailed);
+            
+            CleanupGainController();
+            _gainController = AutomaticGainControl.Create(audioRecorder.SessionId);
+            
+            if(_gainController == null)
+                throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
         }
 
         public void Process(byte[] buffer) => Process(buffer.AsSpan());
@@ -40,19 +35,7 @@ namespace VoiceCraft.Client.Android.Audio
         public void Process(Span<byte> buffer)
         {
             ThrowIfDisposed();
-
-            if (_initialized) return;
-            if (_recorder?.SessionId == null)
-                throw new InvalidOperationException(Locales.Locales.Android_NativeAGC_Exception_Init);
-            if (_automaticGainControl != null)
-            {
-                _automaticGainControl.Release();
-                _automaticGainControl.Dispose();
-                _automaticGainControl = null;
-            }
-            
-            _automaticGainControl = AutomaticGainControl.Create(_recorder.SessionId);
-            _initialized = true;
+            ThrowIfNotInitialized();
         }
 
         public void Dispose()
@@ -60,28 +43,31 @@ namespace VoiceCraft.Client.Android.Audio
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        private void Dispose(bool disposing)
+        
+        private void CleanupGainController()
         {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                if (_automaticGainControl != null)
-                {
-                    _automaticGainControl.Release();
-                    _automaticGainControl.Dispose();
-                    _automaticGainControl = null;
-                }
-            }
-
-            _disposed = true;
+            if (_gainController == null) return;
+            _gainController.Dispose();
+            _gainController = null;
         }
-
+        
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(NativeDenoiser));
+            throw new ObjectDisposedException(typeof(NativeAutomaticGainController).ToString());
+        }
+
+        private void ThrowIfNotInitialized()
+        {
+            if(_gainController == null)
+                throw new InvalidOperationException(Locales.Locales.Audio_AGC_Init);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed || !disposing) return;
+            CleanupGainController();
+            _disposed = true;
         }
     }
 }

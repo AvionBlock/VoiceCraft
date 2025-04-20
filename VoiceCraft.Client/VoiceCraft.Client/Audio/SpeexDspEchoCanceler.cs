@@ -25,7 +25,7 @@ namespace VoiceCraft.Client.Audio
             ThrowIfDisposed();
             
             if(recorder.SampleRate != player.SampleRate)
-                throw new ArgumentException("The specified audio recorder and audio player sample rate do not match!");
+                throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
             
             CleanupEchoCanceler();
 
@@ -47,7 +47,7 @@ namespace VoiceCraft.Client.Audio
         public void EchoCancel(Span<byte> buffer, int count)
         {
             ThrowIfDisposed();
-            ThrowIfNotIntialized();
+            ThrowIfNotInitialized();
             ArgumentOutOfRangeException.ThrowIfLessThan(count, _outputBuffer.Length);
             Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
             
@@ -60,7 +60,7 @@ namespace VoiceCraft.Client.Audio
         public void EchoPlayback(Span<byte> buffer, int count)
         {
             ThrowIfDisposed();
-            ThrowIfNotIntialized();
+            ThrowIfNotInitialized();
             var offset = 0;
 
             while (offset != count)
@@ -103,13 +103,13 @@ namespace VoiceCraft.Client.Audio
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(SpeexDspEchoCanceler));
+            throw new ObjectDisposedException(typeof(SpeexDspEchoCanceler).ToString());
         }
 
-        private void ThrowIfNotIntialized()
+        private void ThrowIfNotInitialized()
         {
             if(_echoCanceler == null)
-                throw new InvalidOperationException("Echo canceler is not initialized!");
+                throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
         }
 
         private void Dispose(bool disposing)

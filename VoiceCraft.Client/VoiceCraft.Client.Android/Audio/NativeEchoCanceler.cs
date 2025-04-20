@@ -9,8 +9,6 @@ namespace VoiceCraft.Client.Android.Audio
         public bool IsNative => true;
 
         private AcousticEchoCanceler? _echoCanceler;
-        private AudioRecorder? _recorder;
-        private bool _initialized;
         private bool _disposed;
 
         ~NativeEchoCanceler()
@@ -23,34 +21,19 @@ namespace VoiceCraft.Client.Android.Audio
             ThrowIfDisposed();
 
             if (recorder is not AudioRecorder audioRecorder)
-                throw new ArgumentException(Locales.Locales.Android_NativeAEC_Exception_AndroidRecorder, nameof(recorder));
-            if (_echoCanceler != null)
-            {
-                _echoCanceler.Release();
-                _echoCanceler.Dispose();
-                _echoCanceler = null;
-            }
+                throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
 
-            _recorder = audioRecorder;
-            _initialized = false;
+            CleanupEchoCanceler();
+            _echoCanceler = AcousticEchoCanceler.Create(audioRecorder.SessionId);
+            
+            if(_echoCanceler == null)
+                throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
         }
 
         public void EchoPlayback(Span<byte> buffer, int count)
         {
             ThrowIfDisposed();
-
-            if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Locales.Android_NativeAEC_Exception_Init);
-
-            if (_echoCanceler != null)
-            {
-                _echoCanceler.Release();
-                _echoCanceler.Dispose();
-                _echoCanceler = null;
-            }
-            
-            _echoCanceler = AcousticEchoCanceler.Create(_recorder.SessionId);
-            _initialized = true;
+            ThrowIfNotInitialized();
         }
 
         public void EchoPlayback(byte[] buffer, int count) => EchoPlayback(buffer.AsSpan(), count);
@@ -58,18 +41,7 @@ namespace VoiceCraft.Client.Android.Audio
         public void EchoCancel(Span<byte> buffer, int count)
         {
             ThrowIfDisposed();
-
-            if (_initialized) return;
-            if (_recorder?.SessionId == null) throw new InvalidOperationException(Locales.Locales.Android_NativeAEC_Exception_Init);
-            if (_echoCanceler != null)
-            {
-                _echoCanceler.Release();
-                _echoCanceler.Dispose();
-                _echoCanceler = null;
-            }
-            
-            _echoCanceler = AcousticEchoCanceler.Create(_recorder.SessionId);
-            _initialized = true;
+            ThrowIfNotInitialized();
         }
 
         public void EchoCancel(byte[] buffer, int count) => EchoCancel(buffer.AsSpan(), count);
@@ -79,28 +51,31 @@ namespace VoiceCraft.Client.Android.Audio
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        private void Dispose(bool disposing)
+        
+        private void CleanupEchoCanceler()
         {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                if (_echoCanceler != null)
-                {
-                    _echoCanceler.Release();
-                    _echoCanceler.Dispose();
-                    _echoCanceler = null;
-                }
-            }
-
-            _disposed = true;
+            if (_echoCanceler == null) return;
+            _echoCanceler.Dispose();
+            _echoCanceler = null;
         }
-
+        
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(nameof(NativeEchoCanceler));
+            throw new ObjectDisposedException(typeof(NativeEchoCanceler).ToString());
+        }
+
+        private void ThrowIfNotInitialized()
+        {
+            if(_echoCanceler == null)
+                throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (_disposed || !disposing) return;
+            CleanupEchoCanceler();
+            _disposed = true;
         }
     }
 }
