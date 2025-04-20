@@ -11,6 +11,8 @@ namespace VoiceCraft.Core
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
+        public event Action<int, VoiceCraftEntity>? OnMinRangeUpdated;
+        public event Action<int, VoiceCraftEntity>? OnMaxRangeUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<string, object, VoiceCraftEntity>? OnPropertySet;
@@ -26,6 +28,8 @@ namespace VoiceCraft.Core
         private string _worldId = string.Empty;
         private ulong _talkBitmask = 1;
         private ulong _listenBitmask = 1;
+        private int _minRange;
+        private int _maxRange;
         private Vector3 _position;
         private Quaternion _rotation;
         private readonly Dictionary<string, object> _properties = new Dictionary<string, object>();
@@ -83,7 +87,29 @@ namespace VoiceCraft.Core
                 OnTalkBitmaskUpdated?.Invoke(_listenBitmask, this);
             }
         }
-        
+
+        public int MinRange
+        {
+            get => _minRange;
+            set
+            {
+                if (_minRange == value) return;
+                _minRange = value;
+                OnMinRangeUpdated?.Invoke(_minRange, this);
+            }
+        }
+
+        public int MaxRange
+        {
+            get => _maxRange;
+            set
+            {
+                if (_maxRange == value) return;
+                _maxRange = value;
+                OnMaxRangeUpdated?.Invoke(_maxRange, this);
+            }
+        }
+
         public Vector3 Position
         {
             get => _position;
@@ -170,8 +196,13 @@ namespace VoiceCraft.Core
         public bool VisibleTo(VoiceCraftEntity entity)
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
-            //TODO, IMPLEMENT PROXIMITY CHECKING LOGIC!
-            return (TalkBitmask & entity.ListenBitmask) != 0; //Check talk and listen bitmask.
+            var bitmask = TalkBitmask & entity.ListenBitmask;
+            if (bitmask == 0) return false;
+            if ((bitmask & 1ul) == 0) return true; //Proximity checking disabled.
+
+            var maxRange = Math.Max(_maxRange, entity.MaxRange);
+            var distance = Vector3.Distance(Position, entity.Position);
+            return distance <= maxRange;
         }
 
         public void Serialize(NetDataWriter writer)
@@ -179,6 +210,8 @@ namespace VoiceCraft.Core
             writer.Put(Name);
             writer.Put(TalkBitmask);
             writer.Put(ListenBitmask);
+            writer.Put(MinRange);
+            writer.Put(MaxRange);
         }
 
         public void Deserialize(NetDataReader reader)
@@ -186,10 +219,14 @@ namespace VoiceCraft.Core
             var name = reader.GetString();
             var talkBitmask = reader.GetULong();
             var listenBitmask = reader.GetULong();
+            var minRange = reader.GetInt();
+            var maxRange = reader.GetInt();
             
             Name = name;
             TalkBitmask = talkBitmask;
             ListenBitmask = listenBitmask;
+            MinRange = minRange;
+            MaxRange = maxRange;
         }
 
         public void Destroy()
@@ -202,6 +239,8 @@ namespace VoiceCraft.Core
             OnNameUpdated = null;
             OnTalkBitmaskUpdated = null;
             OnListenBitmaskUpdated = null;
+            OnMinRangeUpdated = null;
+            OnMaxRangeUpdated = null;
             OnPositionUpdated = null;
             OnRotationUpdated = null;
             OnPropertySet = null;

@@ -1,5 +1,5 @@
+using System;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.Exceptions;
 
 namespace VoiceCraft.Core.Network.Packets
 {
@@ -41,7 +41,7 @@ namespace VoiceCraft.Core.Network.Packets
                     writer.Put(floatValue);
                     break;
                 default:
-                    throw new CorruptedPacketException();
+                    throw new InvalidOperationException();
             }
         }
 
@@ -67,7 +67,7 @@ namespace VoiceCraft.Core.Network.Packets
                     break;
                 case PropertyType.Unknown:
                 default:
-                    throw new CorruptedPacketException();
+                    throw new InvalidOperationException();
             }
         }
     }

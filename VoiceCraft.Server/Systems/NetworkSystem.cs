@@ -25,13 +25,13 @@ namespace VoiceCraft.Server.Systems
             _listener = server.Listener;
             _config = server.Config;
             _netManager = netManager;
-            
+
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
             _listener.ConnectionRequestEvent += OnConnectionRequest;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
         }
-        
+
         public void Dispose()
         {
             _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
@@ -40,7 +40,7 @@ namespace VoiceCraft.Server.Systems
             _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
             GC.SuppressFinalize(this);
         }
-        
+
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             if (peer.Tag is not VoiceCraftNetworkEntity) return;
@@ -64,7 +64,7 @@ namespace VoiceCraft.Server.Systems
                     request.Reject("Incompatible client/server version!"u8.ToArray());
                     return;
                 }
-                
+
                 HandleLogin(loginPacket, request);
             }
             catch
@@ -89,7 +89,7 @@ namespace VoiceCraft.Server.Systems
                     case LoginType.Login:
                         if (peer.Id > byte.MaxValue)
                             throw new InvalidOperationException();
-                        
+
                         var entity = new VoiceCraftNetworkEntity(peer);
                         _world.AddEntity(entity);
                         peer.Tag = entity;
@@ -129,10 +129,13 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
+                    case PacketType.EntityReset:
                     case PacketType.EntityDestroyed:
                     case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:
+                    case PacketType.SetMinRange:
+                    case PacketType.SetMaxRange:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
                     case PacketType.SetProperty:
@@ -168,10 +171,13 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
+                    case PacketType.EntityReset:
                     case PacketType.EntityDestroyed:
                     case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:
+                    case PacketType.SetMinRange:
+                    case PacketType.SetMaxRange:
                     case PacketType.SetPosition:
                     case PacketType.SetRotation:
                     case PacketType.SetProperty:
@@ -186,7 +192,7 @@ namespace VoiceCraft.Server.Systems
                 Debug.WriteLine(ex);
             }
         }
-        
+
         //Packet Handling
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
         {
