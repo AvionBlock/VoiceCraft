@@ -40,6 +40,7 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
         
+        private string? _disconnectReason;
         private bool _isDisposed;
 
         public VoiceCraftClient() : base(0)
@@ -53,25 +54,8 @@ namespace VoiceCraft.Client.Network
             NetworkSystem = new NetworkSystem(this);
             _netManager.Start();
 
-            Listener.PeerConnectedEvent += peer =>
-            {
-                if (!Equals(peer, _serverPeer)) return;
-                OnConnected?.Invoke();
-            };
-
-            Listener.PeerDisconnectedEvent += (peer, info) =>
-            {
-                if (!Equals(peer, _serverPeer)) return;
-                try
-                {
-                    var reason = !info.AdditionalData.IsNull ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan()) : info.Reason.ToString();
-                    OnDisconnected?.Invoke(reason);
-                }
-                catch
-                {
-                    OnDisconnected?.Invoke(info.Reason.ToString());
-                }
-            };
+            Listener.PeerConnectedEvent += InvokeConnected;
+            Listener.PeerDisconnectedEvent += InvokeDisconnected;
         }
 
         ~VoiceCraftClient()
@@ -157,24 +141,50 @@ namespace VoiceCraft.Client.Network
             
         }
 
-        public void Disconnect()
+        public void Disconnect(string? reason = null)
         {
             if (_isDisposed || ConnectionState == ConnectionState.Disconnected) return;
+            _disconnectReason = reason;
             _netManager.DisconnectAll();
-        }
-
-        #region Dispose
-
-        private void ThrowIfDisposed()
-        {
-            if (!_isDisposed) return;
-            throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
         }
 
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+        
+        private void ThrowIfDisposed()
+        {
+            if (!_isDisposed) return;
+            throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
+        }
+
+        private void InvokeConnected(NetPeer peer)
+        {
+            if (!Equals(peer, _serverPeer)) return;
+            OnConnected?.Invoke();
+        }
+
+        private void InvokeDisconnected(NetPeer peer, DisconnectInfo info)
+        {
+            if (!Equals(peer, _serverPeer)) return;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_disconnectReason))
+                {
+                    var reason = !info.AdditionalData.IsNull
+                        ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan())
+                        : info.Reason.ToString();
+                    OnDisconnected?.Invoke(reason);
+                    return;
+                }
+                OnDisconnected?.Invoke(_disconnectReason);
+            }
+            catch
+            {
+                OnDisconnected?.Invoke(info.Reason.ToString());
+            }
         }
 
         private void Dispose(bool disposing)
@@ -190,8 +200,6 @@ namespace VoiceCraft.Client.Network
 
             _isDisposed = true;
         }
-
-        #endregion
 
         private static float GetFrameLoudness(byte[] data)
         {

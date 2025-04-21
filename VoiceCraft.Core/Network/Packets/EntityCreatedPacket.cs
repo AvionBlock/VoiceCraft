@@ -23,8 +23,6 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetByte();
-            Entity = new VoiceCraftEntity(Id);
-            Entity.Deserialize(reader);
         }
     }
 }

@@ -111,11 +111,13 @@ namespace VoiceCraft.Client.Processes
                 _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioRecorder.SelectedDevice = audioSettings.InputDevice == "Default" ? null : audioSettings.InputDevice;
                 _audioRecorder.OnDataAvailable += Write;
+                _audioRecorder.OnRecordingStopped += OnRecordingStopped;
 
                 //Setup audio player.
                 _audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
                 _audioPlayer.BufferMilliseconds = Constants.FrameSizeMs;
                 _audioPlayer.SelectedDevice = audioSettings.OutputDevice == "Default" ? null : audioSettings.OutputDevice;
+                _audioPlayer.OnPlaybackStopped += OnPlaybackStopped;
 
                 //Setup Preprocessors
                 _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
@@ -147,8 +149,10 @@ namespace VoiceCraft.Client.Processes
 
                 if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
                     _voiceCraftClient.Disconnect();
-
+                
                 _audioRecorder.OnDataAvailable -= Write;
+                _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
+                _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
                 _voiceCraftClient.OnConnected -= ClientOnConnected;
                 _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
                 _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
@@ -184,6 +188,20 @@ namespace VoiceCraft.Client.Processes
 
         public void Dispose()
         {
+            if (_audioRecorder != null)
+            {
+                _audioRecorder.OnDataAvailable -= Write;
+                _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
+            }
+
+            if (_audioPlayer != null)
+                _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
+            
+            _voiceCraftClient.OnConnected -= ClientOnConnected;
+            _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
+            _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
+            _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
+            
             _voiceCraftClient.Dispose();
             _audioRecorder?.Dispose();
             _audioRecorder = null;
@@ -243,6 +261,28 @@ namespace VoiceCraft.Client.Processes
             _gainController?.Process(buffer);
             _denoiser?.Denoise(buffer);
             _voiceCraftClient.Write(buffer, bytesRead);
+        }
+
+        private void OnRecordingStopped(Exception? ex)
+        {
+            if (ex != null)
+            {
+                _voiceCraftClient.Disconnect(ex.Message);
+                return;
+            }
+
+            _audioRecorder?.Start(); //Try restart recorder.
+        }
+
+        private void OnPlaybackStopped(Exception? ex)
+        {
+            if (ex != null)
+            {
+                _voiceCraftClient.Disconnect(ex.Message);
+                return;
+            }
+            
+            _audioPlayer?.Play(); //Restart player.
         }
     }
 }
