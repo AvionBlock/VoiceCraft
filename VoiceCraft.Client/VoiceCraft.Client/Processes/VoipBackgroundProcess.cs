@@ -26,7 +26,6 @@ namespace VoiceCraft.Client.Processes
         public event Action<EntityViewModel>? OnEntityRemoved;
 
         //Public Variables
-        public bool IsStarted { get; private set; }
         public bool HasEnded { get; private set; }
         
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
@@ -92,8 +91,6 @@ namespace VoiceCraft.Client.Processes
 
         public void Start(CancellationToken token)
         {
-            IsStarted = true;
-            
             try
             {
                 Title = Locales.Locales.VoiceCraft_Status_Initializing;

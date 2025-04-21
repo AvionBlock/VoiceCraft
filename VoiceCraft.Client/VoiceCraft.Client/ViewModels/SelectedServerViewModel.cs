@@ -88,14 +88,6 @@ namespace VoiceCraft.Client.ViewModels
                 DisableBackButton = true;
                 await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
                 await backgroundService.StartBackgroundProcess(process);
-                var startTime = DateTime.UtcNow;
-                while (!process.IsStarted)
-                {
-                    if ((DateTime.UtcNow - startTime).TotalMilliseconds >= 5000)
-                        throw new TimeoutException(); //Taking longer than it should.
-                    
-                    Task.Delay(10).Wait();
-                }
                 navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
             }
             catch
