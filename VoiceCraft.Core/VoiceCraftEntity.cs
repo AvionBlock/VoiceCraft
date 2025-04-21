@@ -192,7 +192,7 @@ namespace VoiceCraft.Core
             _visibleEntities.RemoveAll(x => x.Destroyed);
         }
 
-        public void ReceiveAudio(byte[] buffer, uint timestamp)
+        public virtual void ReceiveAudio(byte[] buffer, uint timestamp)
         {
             LastSpoke = DateTime.UtcNow;
             OnAudioReceived?.Invoke(buffer, timestamp, this);
