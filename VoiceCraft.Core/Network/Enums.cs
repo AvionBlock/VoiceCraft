@@ -19,6 +19,7 @@ namespace VoiceCraft.Core.Network
         Login,
         Audio,
         SetTitle,
+        SetDescription,
         SetEffect,
         RemoveEffect,
         //Entity stuff

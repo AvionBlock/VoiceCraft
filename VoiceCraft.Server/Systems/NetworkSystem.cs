@@ -131,6 +131,7 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Info:
                     case PacketType.Login:
                     case PacketType.SetTitle:
+                    case PacketType.SetDescription:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
@@ -173,6 +174,7 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.Login:
                     case PacketType.Audio:
                     case PacketType.SetTitle:
+                    case PacketType.SetDescription:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:

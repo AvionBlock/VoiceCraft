@@ -16,6 +16,7 @@ namespace VoiceCraft.Client.Network.Systems
 
         public event Action<ServerInfo>? OnServerInfo;
         public event Action<string>? OnSetTitle;
+        public event Action<string>? OnSetDescription;
 
         public NetworkSystem(VoiceCraftClient client)
         {
@@ -57,6 +58,11 @@ namespace VoiceCraft.Client.Network.Systems
                         var setTitlePacket = new SetTitlePacket();
                         setTitlePacket.Deserialize(reader);
                         HandleSetTitlePacket(setTitlePacket);
+                        break;
+                    case PacketType.SetDescription:
+                        var setDescriptionPacket = new SetDescriptionPacket();
+                        setDescriptionPacket.Deserialize(reader);
+                        HandleSetDescriptionPacket(setDescriptionPacket);
                         break;
                     case PacketType.EntityCreated:
                         var entityCreatedPacket = new EntityCreatedPacket();
@@ -152,6 +158,7 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.Login:
                     case PacketType.Audio:
                     case PacketType.SetTitle:
+                    case PacketType.SetDescription:
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
@@ -193,6 +200,11 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleSetTitlePacket(SetTitlePacket packet)
         {
             OnSetTitle?.Invoke(packet.Title);
+        }
+
+        private void HandleSetDescriptionPacket(SetDescriptionPacket packet)
+        {
+            OnSetDescription?.Invoke(packet.Description);
         }
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
