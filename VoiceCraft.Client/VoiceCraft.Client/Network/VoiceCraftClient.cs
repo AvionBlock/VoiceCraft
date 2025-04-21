@@ -4,6 +4,7 @@ using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using OpusSharp.Core;
+using OpusSharp.Core.Extensions;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
@@ -33,13 +34,14 @@ namespace VoiceCraft.Client.Network
         //Privates
         private NetPeer? _serverPeer;
         private readonly NetManager _netManager;
-        private readonly OpusEncoder _encoder = new(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
-        
+        private readonly OpusEncoder _encoder;
+
         //Buffers
         private readonly NetDataWriter _dataWriter = new();
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
-        
+        private uint _sendTimestamp;
+
         private string? _disconnectReason;
         private bool _isDisposed;
 
@@ -52,6 +54,9 @@ namespace VoiceCraft.Client.Network
                 UnconnectedMessagesEnabled = true
             };
             NetworkSystem = new NetworkSystem(this);
+            _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
+            _encoder.SetPacketLostPercent(50); //Expected packet loss, might make this change over time later.
+            _encoder.SetBitRate(32000);
             _netManager.Start();
 
             Listener.PeerConnectedEvent += InvokeConnected;
@@ -88,7 +93,7 @@ namespace VoiceCraft.Client.Network
             loginPacket.Serialize(dataWriter);
             _serverPeer = _netManager.Connect(ip, port, dataWriter) ?? throw new InvalidOperationException("A connection request is awaiting!");
         }
-        
+
         public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (ConnectionState != ConnectionState.Connected) return false;
@@ -102,7 +107,7 @@ namespace VoiceCraft.Client.Network
                 return true;
             }
         }
-        
+
         public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
         {
             lock (_dataWriter)
@@ -113,7 +118,7 @@ namespace VoiceCraft.Client.Network
                 return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
             }
         }
-        
+
         public bool SendUnconnectedPacket<T>(string ip, uint port, T packet) where T : VoiceCraftPacket
         {
             lock (_dataWriter)
@@ -127,20 +132,28 @@ namespace VoiceCraft.Client.Network
 
         public void Update()
         {
-            _netManager.PollEvents();
+            _netManager.PollEvents(); //Need to do audio processing on this thread and buffer it.
             // if (ConnectionState == ConnectionState.Disconnected) return; //Not connected.
         }
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            return 0;
+            return 0; //Return the buffer.
         }
 
         public void Write(byte[] buffer, int bytesRead)
         {
             var frameLoudness = GetFrameLoudness(buffer, bytesRead);
-            
+            if (frameLoudness >= MicrophoneSensitivity)
+                _lastAudioPeakTime = DateTime.UtcNow;
+
+            _sendTimestamp += Constants.SamplesPerFrame; //Add to timestamp even though we aren't really connected.
+            if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs || _serverPeer == null ||
+                ConnectionState != ConnectionState.Connected) return;
+            Array.Clear(_encodeBuffer);
             var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
+            var packet = new AudioPacket((byte)_serverPeer.RemoteId, _sendTimestamp, bytesEncoded, _encodeBuffer);
+            SendPacket(packet);
         }
 
         public void Disconnect(string? reason = null)
@@ -155,7 +168,7 @@ namespace VoiceCraft.Client.Network
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        
+
         private void ThrowIfDisposed()
         {
             if (!_isDisposed) return;
@@ -181,6 +194,7 @@ namespace VoiceCraft.Client.Network
                     OnDisconnected?.Invoke(reason);
                     return;
                 }
+
                 OnDisconnected?.Invoke(_disconnectReason);
             }
             catch
@@ -210,7 +224,7 @@ namespace VoiceCraft.Client.Network
             for (var index = 0; index < bytesRead; index += 2)
             {
                 var sample = (short)((data[index + 1] << 8) |
-                                       data[index + 0]);
+                                     data[index + 0]);
                 // to floating point
                 var sample32 = sample / 32768f;
                 // absolute value 
