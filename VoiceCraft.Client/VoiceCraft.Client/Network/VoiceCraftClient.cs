@@ -138,7 +138,9 @@ namespace VoiceCraft.Client.Network
 
         public void Write(byte[] buffer, int bytesRead)
         {
+            var frameLoudness = GetFrameLoudness(buffer, bytesRead);
             
+            var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
         }
 
         public void Disconnect(string? reason = null)
@@ -201,11 +203,11 @@ namespace VoiceCraft.Client.Network
             _isDisposed = true;
         }
 
-        private static float GetFrameLoudness(byte[] data)
+        private static float GetFrameLoudness(byte[] data, int bytesRead)
         {
             float max = 0;
             // interpret as 16-bit audio
-            for (var index = 0; index < data.Length; index += 2)
+            for (var index = 0; index < bytesRead; index += 2)
             {
                 var sample = (short)((data[index + 1] << 8) |
                                        data[index + 0]);

@@ -122,17 +122,17 @@ namespace VoiceCraft.Client.Linux.Audio
                 };
 
                 //Setup recorder.
-                _bufferSamples = BufferMilliseconds * SampleRate / 1000; //Calculate buffer size IN SAMPLES!
+                _bufferSamples = BufferMilliseconds * SampleRate / 1000;
                 _bufferBytes = BitDepth / 8 * Channels * _bufferSamples;
                 _blockAlign = Channels * (BitDepth / 8);
                 if (_bufferBytes % _blockAlign != 0)
                 {
                     _bufferBytes -= _bufferBytes % _blockAlign;
                 }
-
                 _buffer = new byte[_bufferBytes];
 
-                _nativeRecorder = ALC.CaptureOpenDevice(SelectedDevice, SampleRate, format, _bufferSamples);
+                //Triple sample size so we don't skip any recorder audio.
+                _nativeRecorder = ALC.CaptureOpenDevice(SelectedDevice, SampleRate, format, _bufferSamples * 3);
                 if (_nativeRecorder == ALCaptureDevice.Null)
                 {
                     throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
