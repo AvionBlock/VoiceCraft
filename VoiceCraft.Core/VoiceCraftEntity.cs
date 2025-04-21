@@ -142,10 +142,10 @@ namespace VoiceCraft.Core
             Id = id;
         }
         
-        public void SetProperty(string name, object value)
+        public void SetProperty(string key, object value)
         {
-            if (name.Length > Constants.MaxStringLength)
-                throw new ArgumentOutOfRangeException(nameof(name));
+            if (key.Length > Constants.MaxStringLength)
+                throw new ArgumentOutOfRangeException(nameof(key));
 
             switch (value)
             {
@@ -158,15 +158,20 @@ namespace VoiceCraft.Core
                     throw new ArgumentException("Invalid argument type!", nameof(value));
             }
             
-            if(!_properties.TryAdd(name, value)) 
-                _properties[name] = value;
-            OnPropertySet?.Invoke(name, value, this);
+            if(!_properties.TryAdd(key, value)) 
+                _properties[key] = value;
+            OnPropertySet?.Invoke(key, value, this);
         }
 
-        public void RemoveProperty(string name)
+        public void RemoveProperty(string key)
         {
-            if(_properties.Remove(name, out var value))
-                OnPropertyRemoved?.Invoke(name, value, this);
+            if(_properties.Remove(key, out var value))
+                OnPropertyRemoved?.Invoke(key, value, this);
+        }
+        
+        public void ResetProperties()
+        {
+            _properties.Clear();
         }
         
         public void AddVisibleEntity(VoiceCraftEntity entity)
