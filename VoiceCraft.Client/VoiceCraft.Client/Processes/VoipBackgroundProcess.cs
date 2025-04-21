@@ -102,6 +102,7 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
                 _voiceCraftClient.NetworkSystem.OnSetTitle += ClientOnSetTitle;
+                _voiceCraftClient.NetworkSystem.OnSetDescription += ClientOnSetDescription;
 
                 //Setup audio recorder.
                 _audioRecorder = audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
@@ -154,6 +155,8 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
                 _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
+                _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
+                _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
             }
             catch (Exception ex)
             {
@@ -198,6 +201,8 @@ namespace VoiceCraft.Client.Processes
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
             _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
+            _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
+            _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
             
             _voiceCraftClient.Dispose();
             _audioRecorder?.Dispose();
@@ -243,6 +248,11 @@ namespace VoiceCraft.Client.Processes
         private void ClientOnSetTitle(string title)
         {
             Title = title;
+        }
+
+        private void ClientOnSetDescription(string description)
+        {
+            Description = description;
         }
 
         private int Read(byte[] buffer, int offset, int count)
