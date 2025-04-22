@@ -6,7 +6,7 @@ namespace VoiceCraft.Client.Audio
 {
     public class SpeexDspEchoCanceler : IEchoCanceler
     {
-        public int FilterLengthMs { get; set; } = 100;
+        public int FilterLengthMs { get; set; } = 200;
 
         public bool IsNative => false;
         private bool _disposed;

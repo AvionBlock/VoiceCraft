@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using NAudio.Wave;
 using OpusSharp.Core;
 using OpusSharp.Core.Extensions;
 using VoiceCraft.Client.Network.Systems;
@@ -37,6 +39,13 @@ namespace VoiceCraft.Client.Network
         private readonly OpusEncoder _encoder;
 
         //Buffers
+        private readonly BufferedWaveProvider _outputBuffer = new(new WaveFormat(Constants.SampleRate, Constants.Channels))
+        {
+            ReadFully = true,
+            DiscardOnBufferOverflow = true,
+            BufferDuration = TimeSpan.FromSeconds(1)
+        };
+
         private readonly NetDataWriter _dataWriter = new();
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
@@ -132,13 +141,21 @@ namespace VoiceCraft.Client.Network
 
         public void Update()
         {
-            _netManager.PollEvents(); //Need to do audio processing on this thread and buffer it.
-            // if (ConnectionState == ConnectionState.Disconnected) return; //Not connected.
+            _netManager.PollEvents();
+            if (ConnectionState == ConnectionState.Disconnected) return;
         }
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            return 0; //Return the buffer.
+            var clientEntities = World.Entities.OfType<VoiceCraftClientEntity>();
+            foreach (var clientEntity in clientEntities)
+            {
+                var read = clientEntity.Read(buffer, 0, buffer.Length);
+                if(read > 0)
+                    _outputBuffer.AddSamples(buffer, 0, read);
+            }
+            
+            return _outputBuffer.Read(buffer, offset, count);
         }
 
         public void Write(byte[] buffer, int bytesRead)
@@ -149,7 +166,7 @@ namespace VoiceCraft.Client.Network
 
             _sendTimestamp += Constants.SamplesPerFrame; //Add to timestamp even though we aren't really connected.
             if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs || _serverPeer == null ||
-                ConnectionState != ConnectionState.Connected) return;
+                ConnectionState != ConnectionState.Connected || Muted) return;
             Array.Clear(_encodeBuffer);
             var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
             var packet = new AudioPacket((byte)_serverPeer.RemoteId, _sendTimestamp, bytesEncoded, _encodeBuffer);
@@ -186,6 +203,9 @@ namespace VoiceCraft.Client.Network
             if (!Equals(peer, _serverPeer)) return;
             try
             {
+                _outputBuffer.ClearBuffer();
+                World.Clear();
+
                 if (string.IsNullOrWhiteSpace(_disconnectReason))
                 {
                     var reason = !info.AdditionalData.IsNull

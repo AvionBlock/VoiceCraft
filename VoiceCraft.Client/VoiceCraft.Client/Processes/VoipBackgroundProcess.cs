@@ -113,7 +113,7 @@ namespace VoiceCraft.Client.Processes
 
                 //Setup audio player.
                 _audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
-                _audioPlayer.BufferMilliseconds = Constants.FrameSizeMs;
+                _audioPlayer.BufferMilliseconds = 100;
                 _audioPlayer.SelectedDevice = audioSettings.OutputDevice == "Default" ? null : audioSettings.OutputDevice;
                 _audioPlayer.OnPlaybackStopped += OnPlaybackStopped;
 

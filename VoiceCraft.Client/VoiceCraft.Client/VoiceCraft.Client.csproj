@@ -26,6 +26,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Maui.Essentials" />
         <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
+        <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />
         <PackageReference Include="SpeexDSPSharp" />
