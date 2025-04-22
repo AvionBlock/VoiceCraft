@@ -234,7 +234,7 @@ namespace VoiceCraft.Core
             MaxRange = maxRange;
         }
 
-        public void Destroy()
+        public virtual void Destroy()
         {
             if (Destroyed) return;
             Destroyed = true;

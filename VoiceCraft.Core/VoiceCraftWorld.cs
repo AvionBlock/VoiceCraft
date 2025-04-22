@@ -47,7 +47,7 @@ namespace VoiceCraft.Core
             return true;
         }
 
-        public void Dispose()
+        public void Clear()
         {
             foreach (var entity in Entities)
             {
@@ -56,8 +56,11 @@ namespace VoiceCraft.Core
             }
             
             _entities.Clear();
+        }
 
-            //Deregister all events.
+        public void Dispose()
+        {
+            Clear();
             OnEntityCreated = null;
             OnEntityDestroyed = null;
         }
