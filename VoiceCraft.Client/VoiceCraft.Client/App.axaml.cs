@@ -101,6 +101,7 @@ public class App : Application
     private static ServiceProvider BuildServiceProvider()
     {
         //Service Registry
+        ServiceCollection.AddSingleton<DiscordRpcService>();
         ServiceCollection.AddSingleton<ViewLocatorService>(x => new ViewLocatorService(x.GetKeyedService<Control>));
         ServiceCollection.AddSingleton<NavigationService>(x =>
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
@@ -145,8 +146,10 @@ public class App : Application
     private void SetupServices(IServiceProvider serviceProvider)
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
-        
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
+        
+        var discordRpcService = serviceProvider.GetRequiredService<DiscordRpcService>();
+        discordRpcService.Initialize();
 
         var settingsService = serviceProvider.GetRequiredService<SettingsService>();
         try

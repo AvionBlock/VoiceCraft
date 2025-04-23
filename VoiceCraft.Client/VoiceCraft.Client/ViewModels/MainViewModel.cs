@@ -15,7 +15,7 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private INotificationMessageManager _manager;
 
         public MainViewModel(NavigationService navigationService, INotificationMessageManager manager, ThemesService themesService,
-            SettingsService settingsService, BackgroundService backgroundService)
+            SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService)
         {
             _manager = manager;
             themesService.OnBackgroundImageChanged += (backgroundImage) => { BackgroundImage = backgroundImage?.BackgroundImageBitmap; };
@@ -27,6 +27,7 @@ namespace VoiceCraft.Client.ViewModels
                     previousViewModel.OnDisappearing();
                 Content = viewModel;
                 viewModel.OnAppearing();
+                discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
             };
             var themeSettings = settingsService.ThemeSettings;
             themesService.SwitchTheme(themeSettings.SelectedTheme);
