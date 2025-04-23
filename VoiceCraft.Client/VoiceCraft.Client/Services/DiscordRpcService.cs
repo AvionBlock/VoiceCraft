@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using DiscordRPC;
-using DiscordRPC.Logging;
 
 namespace VoiceCraft.Client.Services
 {
