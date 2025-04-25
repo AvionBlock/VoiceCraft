@@ -35,7 +35,7 @@ namespace VoiceCraft.Core
         private readonly Dictionary<string, object> _properties = new Dictionary<string, object>();
 
         //Properties
-        public byte Id { get; }
+        public int Id { get; }
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
@@ -137,7 +137,7 @@ namespace VoiceCraft.Core
 
         //Modifiers for modifying data for later?
 
-        public VoiceCraftEntity(byte id)
+        public VoiceCraftEntity(int id)
         {
             Id = id;
         }

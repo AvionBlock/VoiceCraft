@@ -6,10 +6,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetRotationPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetRotation;
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
         public Quaternion Rotation { get; private set; }
 
-        public SetRotationPacket(byte id = 0, Quaternion rotation = new Quaternion())
+        public SetRotationPacket(int id = 0, Quaternion rotation = new Quaternion())
         {
             Id = id;
             Rotation = rotation;
@@ -26,7 +26,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetByte();
+            Id = reader.GetInt();
             var x = reader.GetFloat();
             var y = reader.GetFloat();
             var z = reader.GetFloat();

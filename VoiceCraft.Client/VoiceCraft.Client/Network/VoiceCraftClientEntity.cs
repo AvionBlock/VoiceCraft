@@ -16,7 +16,7 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
         private DateTime _lastPacket = DateTime.MinValue;
 
-        public VoiceCraftClientEntity(byte id) : base(id)
+        public VoiceCraftClientEntity(int id) : base(id)
         {
             StartJitterThread();
         }

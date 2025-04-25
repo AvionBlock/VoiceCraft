@@ -5,10 +5,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class RemovePropertyPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.RemoveProperty;
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
         public string Key { get; private set; }
 
-        public RemovePropertyPacket(byte id = 0, string key = "")
+        public RemovePropertyPacket(int id = 0, string key = "")
         {
             Id = id;
             Key = key;
@@ -22,7 +22,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetByte();
+            Id = reader.GetInt();
             Key = reader.GetString(Constants.MaxStringLength);
         }
     }

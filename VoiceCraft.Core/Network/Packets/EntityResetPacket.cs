@@ -5,9 +5,9 @@ namespace VoiceCraft.Core.Network.Packets
     public class EntityResetPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.EntityReset;
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
 
-        public EntityResetPacket(byte id = 0)
+        public EntityResetPacket(int id = 0)
         {
             Id = id;
         }
@@ -19,7 +19,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetByte();
+            Id = reader.GetInt();
         }
     }
 }

@@ -44,7 +44,7 @@ namespace VoiceCraft.Server.Systems
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             if (peer.Tag is not VoiceCraftNetworkEntity) return;
-            _world.DestroyEntity((byte)peer.Id);
+            _world.DestroyEntity(peer.Id);
         }
 
         private void OnConnectionRequest(ConnectionRequest request)
@@ -62,11 +62,6 @@ namespace VoiceCraft.Server.Systems
                 if (Version.Parse(loginPacket.Version).Major != VoiceCraftServer.Version.Major)
                 {
                     request.Reject("Incompatible client/server version!"u8.ToArray());
-                    return;
-                }
-                if (_world.Entities.Count() >= byte.MaxValue)
-                {
-                    request.Reject("Server full!"u8.ToArray());
                     return;
                 }
 
@@ -92,9 +87,6 @@ namespace VoiceCraft.Server.Systems
                 switch (loginPacket.LoginType)
                 {
                     case LoginType.Login:
-                        if (peer.Id > byte.MaxValue)
-                            throw new InvalidOperationException();
-
                         var entity = new VoiceCraftNetworkEntity(peer);
                         _world.AddEntity(entity);
                         peer.Tag = entity;
@@ -209,7 +201,7 @@ namespace VoiceCraft.Server.Systems
 
         private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
         {
-            var entity = _world.GetEntity((byte)peer.Id);
+            var entity = _world.GetEntity(peer.Id);
             if (entity is not VoiceCraftNetworkEntity networkEntity) return;
             networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
         }

@@ -5,10 +5,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetListenBitmaskPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetListenBitmask;
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
         public ulong Bitmask { get; private set; }
 
-        public SetListenBitmaskPacket(byte id = 0, ulong bitmask = 0)
+        public SetListenBitmaskPacket(int id = 0, ulong bitmask = 0)
         {
             Id = id;
             Bitmask = bitmask;
@@ -22,7 +22,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetByte();
+            Id = reader.GetInt();
             Bitmask = reader.GetULong();
         }
     }
