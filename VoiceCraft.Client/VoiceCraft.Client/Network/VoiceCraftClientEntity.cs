@@ -12,22 +12,23 @@ namespace VoiceCraft.Client.Network
     public class VoiceCraftClientEntity : VoiceCraftEntity
     {
         public bool IsVisible { get; set; }
-
+        
         private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
         private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
         private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
+        private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
         private DateTime _lastPacket = DateTime.MinValue;
+        private readonly BufferedWaveProvider _outputBuffer = new BufferedWaveProvider(new WaveFormat(Constants.SamplesPerFrame, Constants.Channels))
+        {
+            ReadFully = false,
+            DiscardOnBufferOverflow = true
+        };
 
         public VoiceCraftClientEntity(int id) : base(id)
         {
             StartJitterThread();
         }
 
-        private readonly BufferedWaveProvider _outputBuffer = new(new WaveFormat(Constants.SampleRate, Constants.Channels))
-        {
-            ReadFully = false,
-            DiscardOnBufferOverflow = true
-        };
 
         public int Read(byte[] buffer, int offset, int count)
         {
@@ -85,7 +86,6 @@ namespace VoiceCraft.Client.Network
             Task.Run(async () =>
             {
                 var startTick = Environment.TickCount64;
-                var readBuffer = new byte[Constants.BytesPerFrame];
                 while (!Destroyed)
                 {
                     try
@@ -99,10 +99,10 @@ namespace VoiceCraft.Client.Network
                         }
 
                         startTick += Constants.FrameSizeMs;
-                        Array.Clear(readBuffer);
-                        var read = Read(readBuffer);
+                        Array.Clear(_readBuffer);
+                        var read = Read(_readBuffer);
                         if (read > 0)
-                            _outputBuffer.AddSamples(readBuffer, 0, readBuffer.Length);
+                            _outputBuffer.AddSamples(_readBuffer, 0, _readBuffer.Length);
                     }
                     catch (Exception ex)
                     {

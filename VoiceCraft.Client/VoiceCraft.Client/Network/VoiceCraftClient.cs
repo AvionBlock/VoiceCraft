@@ -150,7 +150,7 @@ namespace VoiceCraft.Client.Network
                 var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
                 if(read <= 0) continue;
                 bytesRead = Math.Max(bytesRead, read);
-                //Change bit's to 32bit-IEEEFloat & Process Effects
+                //Change bits to 32bit-IEEE Float & Process Effects then mix and convert to 16bit.
             }
             
             Array.Copy(_outputBuffer, 0, buffer, offset, count - offset);
