@@ -4,12 +4,10 @@ using System.Net;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using NAudio.Wave;
 using OpusSharp.Core;
 using OpusSharp.Core.Extensions;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network
@@ -39,15 +37,9 @@ namespace VoiceCraft.Client.Network
         private readonly OpusEncoder _encoder;
 
         //Buffers
-        private readonly BufferedWaveProvider _outputBuffer = new(new WaveFormat(Constants.SampleRate, Constants.Channels))
-        {
-            ReadFully = true,
-            DiscardOnBufferOverflow = true,
-            BufferDuration = TimeSpan.FromSeconds(1)
-        };
-
         private readonly NetDataWriter _dataWriter = new();
         private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
+        private byte[] _outputBuffer = [];
         private DateTime _lastAudioPeakTime = DateTime.MinValue;
         private uint _sendTimestamp;
 
@@ -147,15 +139,25 @@ namespace VoiceCraft.Client.Network
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            var clientEntities = World.Entities.OfType<VoiceCraftClientEntity>();
+            if (_outputBuffer.Length < count)
+                _outputBuffer = new byte[count];
+            
+            //Only enumerate over visible entities.
+            var bytesRead = 0;
+            var clientEntities = World.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible);
             foreach (var clientEntity in clientEntities)
             {
-                var read = clientEntity.Read(buffer, 0, buffer.Length);
-                if(read > 0)
-                    _outputBuffer.AddSamples(buffer, 0, read);
+                var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
+                if(read <= 0) continue;
+                bytesRead = Math.Max(bytesRead, read);
+                //Change bit's to 32bit-IEEEFloat & Process Effects
             }
             
-            return _outputBuffer.Read(buffer, offset, count);
+            Array.Copy(_outputBuffer, 0, buffer, offset, count - offset);
+            if (bytesRead >= count) return bytesRead;
+            Array.Clear(_outputBuffer, offset + bytesRead, count - bytesRead);
+            bytesRead = count;
+            return bytesRead;
         }
 
         public void Write(byte[] buffer, int bytesRead)
@@ -203,7 +205,6 @@ namespace VoiceCraft.Client.Network
             if (!Equals(peer, _serverPeer)) return;
             try
             {
-                _outputBuffer.ClearBuffer();
                 World.Clear();
 
                 if (string.IsNullOrWhiteSpace(_disconnectReason))
