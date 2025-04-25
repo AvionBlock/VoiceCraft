@@ -72,7 +72,7 @@ namespace VoiceCraft.Core
         
         private int GetLowestAvailableId()
         {
-            for(var i = 0; i < int.MaxValue; ++i)
+            for(var i = 0; i < int.MaxValue; i++)
             {
                 if(!_entities.ContainsKey(i)) return i;
             }
