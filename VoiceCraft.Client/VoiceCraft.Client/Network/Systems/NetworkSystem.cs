@@ -107,6 +107,9 @@ namespace VoiceCraft.Client.Network.Systems
                     HandleEntityDestroyedPacket(entityDestroyedPacket);
                     break;
                 case PacketType.SetVisibility:
+                    var setVisibilityPacket = new SetVisibilityPacket();
+                    setVisibilityPacket.Deserialize(reader);
+                    HandleSetVisibilityPacket(setVisibilityPacket);
                     break;
                 case PacketType.SetName:
                     var setNamePacket = new SetNamePacket();
@@ -187,6 +190,15 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
         {
             _world.DestroyEntity(packet.Id);
+        }
+
+        private void HandleSetVisibilityPacket(SetVisibilityPacket packet)
+        {
+            var entity = _world.GetEntity(packet.Id);
+            if (entity is not VoiceCraftClientEntity clientEntity) return;
+            clientEntity.IsVisible = packet.Visibility;
+            if(!clientEntity.IsVisible) //Clear properties when entity is not visible.
+                clientEntity.ClearProperties();
         }
 
         private void HandleSetNamePacket(SetNamePacket packet)
