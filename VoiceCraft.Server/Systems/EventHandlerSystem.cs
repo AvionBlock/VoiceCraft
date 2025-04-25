@@ -249,7 +249,7 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityVisibleEntityRemoved(VoiceCraftEntity removedEntity, VoiceCraftEntity entity)
         {
             if (removedEntity is not VoiceCraftNetworkEntity networkEntity) return;
-            _server.SendPacket(networkEntity.NetPeer, new EntityResetPacket(entity.Id)); //This is so simple that threading isn't needed.
+            _server.SendPacket(networkEntity.NetPeer, new SetVisibilityPacket(entity.Id)); //This is so simple that threading isn't needed.
         }
         
         private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)

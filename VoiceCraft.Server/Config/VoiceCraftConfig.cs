@@ -1,4 +1,4 @@
-using VoiceCraft.Core.Network;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Server.Config
 {
