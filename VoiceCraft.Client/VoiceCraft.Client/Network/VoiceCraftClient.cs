@@ -169,7 +169,7 @@ namespace VoiceCraft.Client.Network
                 ConnectionState != ConnectionState.Connected || Muted) return;
             Array.Clear(_encodeBuffer);
             var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-            var packet = new AudioPacket(_serverPeer.RemoteId, _sendTimestamp, bytesEncoded, _encodeBuffer);
+            var packet = new AudioPacket(_serverPeer.RemoteId, _sendTimestamp, frameLoudness, bytesEncoded, _encodeBuffer);
             SendPacket(packet);
         }
 

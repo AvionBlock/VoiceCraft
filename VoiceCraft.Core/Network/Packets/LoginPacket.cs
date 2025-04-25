@@ -1,3 +1,4 @@
+using System;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -9,7 +10,7 @@ namespace VoiceCraft.Core.Network.Packets
         public LoginType LoginType { get; private set; }
         public PositioningType PositioningType { get; private set; }
 
-        public LoginPacket(string version = "", LoginType loginType = LoginType.Login, PositioningType positioningType = PositioningType.Server)
+        public LoginPacket(string version = "", LoginType loginType = LoginType.Unknown, PositioningType positioningType = PositioningType.Server)
         {
             Version = version;
             LoginType = loginType;
@@ -26,8 +27,10 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Version = reader.GetString(Constants.MaxStringLength);
-            LoginType = (LoginType)reader.GetByte();
-            PositioningType = (PositioningType)reader.GetByte();
+            var loginTypeValue = reader.GetByte();
+            LoginType = Enum.IsDefined(typeof(LoginType), loginTypeValue) ? (LoginType)loginTypeValue : LoginType.Unknown;
+            var positioningTypeValue = reader.GetByte();
+            PositioningType = Enum.IsDefined(typeof(PositioningType), positioningTypeValue) ? (PositioningType)positioningTypeValue : PositioningType.Unknown;
         }
     }
 }
