@@ -46,88 +46,7 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 var packetType = reader.GetByte();
                 var pt = (PacketType)packetType;
-                switch (pt)
-                {
-                    case PacketType.Audio:
-                        var audioPacket = new AudioPacket();
-                        audioPacket.Deserialize(reader);
-                        HandleAudioPacket(audioPacket);
-                        break;
-                    case PacketType.SetTitle:
-                        var setTitlePacket = new SetTitlePacket();
-                        setTitlePacket.Deserialize(reader);
-                        HandleSetTitlePacket(setTitlePacket);
-                        break;
-                    case PacketType.SetDescription:
-                        var setDescriptionPacket = new SetDescriptionPacket();
-                        setDescriptionPacket.Deserialize(reader);
-                        HandleSetDescriptionPacket(setDescriptionPacket);
-                        break;
-                    case PacketType.EntityCreated:
-                        var entityCreatedPacket = new EntityCreatedPacket();
-                        entityCreatedPacket.Deserialize(reader);
-                        HandleEntityCreatedPacket(entityCreatedPacket, reader);
-                        break;
-                    case PacketType.EntityDestroyed:
-                        var entityDestroyedPacket = new EntityDestroyedPacket();
-                        entityDestroyedPacket.Deserialize(reader);
-                        HandleEntityDestroyedPacket(entityDestroyedPacket);
-                        break;
-                    case PacketType.SetVisibility:
-                        break;
-                    case PacketType.SetName:
-                        var setNamePacket = new SetNamePacket();
-                        setNamePacket.Deserialize(reader);
-                        HandleSetNamePacket(setNamePacket);
-                        break;
-                    case PacketType.SetTalkBitmask:
-                        var setTalkBitmaskPacket = new SetTalkBitmaskPacket();
-                        setTalkBitmaskPacket.Deserialize(reader);
-                        HandleSetTalkBitmaskPacket(setTalkBitmaskPacket);
-                        break;
-                    case PacketType.SetListenBitmask:
-                        var setListenBitmaskPacket = new SetListenBitmaskPacket();
-                        setListenBitmaskPacket.Deserialize(reader);
-                        HandleSetListenBitmaskPacket(setListenBitmaskPacket);
-                        break;
-                    case PacketType.SetMinRange:
-                        var setMinRangePacket = new SetMinRangePacket();
-                        setMinRangePacket.Deserialize(reader);
-                        HandleSetMinRangePacket(setMinRangePacket);
-                        break;
-                    case PacketType.SetMaxRange:
-                        var setMaxRangePacket = new SetMaxRangePacket();
-                        setMaxRangePacket.Deserialize(reader);
-                        HandleSetMaxRangePacket(setMaxRangePacket);
-                        break;
-                    case PacketType.SetPosition:
-                        var setPositionPacket = new SetPositionPacket();
-                        setPositionPacket.Deserialize(reader);
-                        HandleSetPositionPacket(setPositionPacket);
-                        break;
-                    case PacketType.SetRotation:
-                        var setRotationPacket = new SetRotationPacket();
-                        setRotationPacket.Deserialize(reader);
-                        HandleSetRotationPacket(setRotationPacket);
-                        break;
-                    case PacketType.SetProperty:
-                        var setPropertyPacket = new SetPropertyPacket();
-                        setPropertyPacket.Deserialize(reader);
-                        HandleSetPropertyPacket(setPropertyPacket);
-                        break;
-                    case PacketType.RemoveProperty:
-                        var removePropertyPacket = new RemovePropertyPacket();
-                        removePropertyPacket.Deserialize(reader);
-                        HandleRemovePropertyPacket(removePropertyPacket);
-                        break;
-                    case PacketType.Info:
-                    case PacketType.Login:
-                    case PacketType.SetEffect:
-                    case PacketType.RemoveEffect:
-                    case PacketType.Unknown:
-                    default:
-                        break;
-                }
+                ProcessPacket(pt, reader);
             }
             catch (Exception ex)
             {
@@ -143,36 +62,7 @@ namespace VoiceCraft.Client.Network.Systems
             {
                 var packetType = reader.GetByte();
                 var pt = (PacketType)packetType;
-                switch (pt)
-                {
-                    case PacketType.Info:
-                        var infoPacket = new InfoPacket();
-                        infoPacket.Deserialize(reader);
-                        HandleInfoPacket(infoPacket);
-                        break;
-                    //Unused
-                    case PacketType.Login:
-                    case PacketType.Audio:
-                    case PacketType.SetTitle:
-                    case PacketType.SetDescription:
-                    case PacketType.SetEffect:
-                    case PacketType.RemoveEffect:
-                    case PacketType.EntityCreated:
-                    case PacketType.EntityDestroyed:
-                    case PacketType.SetVisibility:
-                    case PacketType.SetName:
-                    case PacketType.SetTalkBitmask:
-                    case PacketType.SetListenBitmask:
-                    case PacketType.SetMinRange:
-                    case PacketType.SetMaxRange:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
-                    case PacketType.SetProperty:
-                    case PacketType.RemoveProperty:
-                    case PacketType.Unknown:
-                    default:
-                        break;
-                }
+                ProcessPacket(pt, reader);
             }
             catch (Exception ex)
             {
@@ -180,6 +70,95 @@ namespace VoiceCraft.Client.Network.Systems
             }
 
             reader.Recycle();
+        }
+
+        private void ProcessPacket(PacketType packetType, NetPacketReader reader)
+        {
+            switch (packetType)
+            {
+                case PacketType.Info:
+                    var infoPacket = new InfoPacket();
+                    infoPacket.Deserialize(reader);
+                    HandleInfoPacket(infoPacket);
+                    break;
+                case PacketType.Audio:
+                    var audioPacket = new AudioPacket();
+                    audioPacket.Deserialize(reader);
+                    HandleAudioPacket(audioPacket);
+                    break;
+                case PacketType.SetTitle:
+                    var setTitlePacket = new SetTitlePacket();
+                    setTitlePacket.Deserialize(reader);
+                    HandleSetTitlePacket(setTitlePacket);
+                    break;
+                case PacketType.SetDescription:
+                    var setDescriptionPacket = new SetDescriptionPacket();
+                    setDescriptionPacket.Deserialize(reader);
+                    HandleSetDescriptionPacket(setDescriptionPacket);
+                    break;
+                case PacketType.EntityCreated:
+                    var entityCreatedPacket = new EntityCreatedPacket();
+                    entityCreatedPacket.Deserialize(reader);
+                    HandleEntityCreatedPacket(entityCreatedPacket, reader);
+                    break;
+                case PacketType.EntityDestroyed:
+                    var entityDestroyedPacket = new EntityDestroyedPacket();
+                    entityDestroyedPacket.Deserialize(reader);
+                    HandleEntityDestroyedPacket(entityDestroyedPacket);
+                    break;
+                case PacketType.SetVisibility:
+                    break;
+                case PacketType.SetName:
+                    var setNamePacket = new SetNamePacket();
+                    setNamePacket.Deserialize(reader);
+                    HandleSetNamePacket(setNamePacket);
+                    break;
+                case PacketType.SetTalkBitmask:
+                    var setTalkBitmaskPacket = new SetTalkBitmaskPacket();
+                    setTalkBitmaskPacket.Deserialize(reader);
+                    HandleSetTalkBitmaskPacket(setTalkBitmaskPacket);
+                    break;
+                case PacketType.SetListenBitmask:
+                    var setListenBitmaskPacket = new SetListenBitmaskPacket();
+                    setListenBitmaskPacket.Deserialize(reader);
+                    HandleSetListenBitmaskPacket(setListenBitmaskPacket);
+                    break;
+                case PacketType.SetMinRange:
+                    var setMinRangePacket = new SetMinRangePacket();
+                    setMinRangePacket.Deserialize(reader);
+                    HandleSetMinRangePacket(setMinRangePacket);
+                    break;
+                case PacketType.SetMaxRange:
+                    var setMaxRangePacket = new SetMaxRangePacket();
+                    setMaxRangePacket.Deserialize(reader);
+                    HandleSetMaxRangePacket(setMaxRangePacket);
+                    break;
+                case PacketType.SetPosition:
+                    var setPositionPacket = new SetPositionPacket();
+                    setPositionPacket.Deserialize(reader);
+                    HandleSetPositionPacket(setPositionPacket);
+                    break;
+                case PacketType.SetRotation:
+                    var setRotationPacket = new SetRotationPacket();
+                    setRotationPacket.Deserialize(reader);
+                    HandleSetRotationPacket(setRotationPacket);
+                    break;
+                case PacketType.SetProperty:
+                    var setPropertyPacket = new SetPropertyPacket();
+                    setPropertyPacket.Deserialize(reader);
+                    HandleSetPropertyPacket(setPropertyPacket);
+                    break;
+                case PacketType.RemoveProperty:
+                    var removePropertyPacket = new RemovePropertyPacket();
+                    removePropertyPacket.Deserialize(reader);
+                    HandleRemovePropertyPacket(removePropertyPacket);
+                    break;
+                case PacketType.Login:
+                case PacketType.SetEffect:
+                case PacketType.Unknown:
+                default:
+                    break;
+            }
         }
 
         private void HandleInfoPacket(InfoPacket infoPacket)

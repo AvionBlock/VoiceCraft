@@ -58,13 +58,7 @@ namespace VoiceCraft.Server.Systems
             {
                 var loginPacket = new LoginPacket();
                 loginPacket.Deserialize(request.Data);
-                if (Version.Parse(loginPacket.Version).Major != VoiceCraftServer.Version.Major)
-                {
-                    request.Reject("Incompatible client/server version!"u8.ToArray());
-                    return;
-                }
-
-                HandleLogin(loginPacket, request);
+                HandleLoginPacket(loginPacket, request);
             }
             catch
             {
@@ -72,11 +66,85 @@ namespace VoiceCraft.Server.Systems
             }
         }
 
-        private void HandleLogin(LoginPacket loginPacket, ConnectionRequest request)
+        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
         {
-            if (loginPacket.LoginType == LoginType.Unknown)
+            try
+            {
+                var packetType = reader.GetByte();
+                var pt = (PacketType)packetType;
+                ProcessPacket(pt, reader, peer: peer);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+        {
+            try
+            {
+                var packetType = reader.GetByte();
+                var pt = (PacketType)packetType;
+                ProcessPacket(pt, reader, remoteEndPoint: remoteEndPoint);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private void ProcessPacket(PacketType packetType, NetPacketReader reader, NetPeer? peer = null, IPEndPoint? remoteEndPoint = null)
+        {
+            switch (packetType)
+            {
+                case PacketType.Info:
+                    if (remoteEndPoint == null) return;
+                    var infoPacket = new InfoPacket();
+                    infoPacket.Deserialize(reader);
+                    HandleInfoPacket(infoPacket, remoteEndPoint);
+                    break;
+                case PacketType.Audio:
+                    if(peer == null) return;
+                    var audioPacket = new AudioPacket();
+                    audioPacket.Deserialize(reader);
+                    HandleAudioPacket(audioPacket, peer);
+                    break;
+                // Will need to implement these for client sided mode later.
+                case PacketType.Unknown:
+                case PacketType.Login:
+                case PacketType.SetTitle:
+                case PacketType.SetDescription:
+                case PacketType.SetEffect:
+                case PacketType.EntityCreated:
+                case PacketType.EntityDestroyed:
+                case PacketType.SetVisibility:
+                case PacketType.SetName:
+                case PacketType.SetTalkBitmask:
+                case PacketType.SetListenBitmask:
+                case PacketType.SetMinRange:
+                case PacketType.SetMaxRange:
+                case PacketType.SetPosition:
+                case PacketType.SetRotation:
+                case PacketType.SetProperty:
+                case PacketType.RemoveProperty:
+                default:
+                    break;
+            }
+        }
+
+        //Packet Handling
+        private void HandleLoginPacket(LoginPacket loginPacket, ConnectionRequest request)
+        {
+            if (!Enum.IsDefined(loginPacket.LoginType))
             {
                 request.Reject("Unknown login type!"u8.ToArray());
+                return;
+            }
+            
+            if (Version.Parse(loginPacket.Version).Major != VoiceCraftServer.Version.Major)
+            {
+                request.Reject("Incompatible client/server version!"u8.ToArray());
                 return;
             }
 
@@ -93,7 +161,6 @@ namespace VoiceCraft.Server.Systems
                     case LoginType.Discovery:
                         peer.Tag = LoginType.Discovery;
                         break;
-                    case LoginType.Unknown:
                     default:
                         request.Reject();
                         break;
@@ -104,94 +171,7 @@ namespace VoiceCraft.Server.Systems
                 peer.Disconnect("An error occurred on the server while trying to parse the login!"u8.ToArray());
             }
         }
-
-        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
-        {
-            try
-            {
-                var packetType = reader.GetByte();
-                var pt = (PacketType)packetType;
-                switch (pt)
-                {
-                    case PacketType.Audio:
-                        var audioPacket = new AudioPacket();
-                        audioPacket.Deserialize(reader);
-                        HandleAudioPacket(audioPacket, peer);
-                        break;
-                    // Will need to implement these for client sided mode later.
-                    case PacketType.Info:
-                    case PacketType.Login:
-                    case PacketType.SetTitle:
-                    case PacketType.SetDescription:
-                    case PacketType.SetEffect:
-                    case PacketType.RemoveEffect:
-                    case PacketType.EntityCreated:
-                    case PacketType.EntityDestroyed:
-                    case PacketType.SetVisibility:
-                    case PacketType.SetName:
-                    case PacketType.SetTalkBitmask:
-                    case PacketType.SetListenBitmask:
-                    case PacketType.SetMinRange:
-                    case PacketType.SetMaxRange:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
-                    case PacketType.SetProperty:
-                    case PacketType.RemoveProperty:
-                    case PacketType.Unknown:
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-        }
-
-        private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
-        {
-            try
-            {
-                var packetType = reader.GetByte();
-                var pt = (PacketType)packetType;
-                switch (pt)
-                {
-                    case PacketType.Info:
-                        var infoPacket = new InfoPacket();
-                        infoPacket.Deserialize(reader);
-                        HandleInfoPacket(infoPacket, remoteEndPoint);
-                        break;
-                    //Unused
-                    case PacketType.Login:
-                    case PacketType.Audio:
-                    case PacketType.SetTitle:
-                    case PacketType.SetDescription:
-                    case PacketType.SetEffect:
-                    case PacketType.RemoveEffect:
-                    case PacketType.EntityCreated:
-                    case PacketType.EntityDestroyed:
-                    case PacketType.SetVisibility:
-                    case PacketType.SetName:
-                    case PacketType.SetTalkBitmask:
-                    case PacketType.SetListenBitmask:
-                    case PacketType.SetMinRange:
-                    case PacketType.SetMaxRange:
-                    case PacketType.SetPosition:
-                    case PacketType.SetRotation:
-                    case PacketType.SetProperty:
-                    case PacketType.RemoveProperty:
-                    case PacketType.Unknown:
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-        }
-
-        //Packet Handling
+        
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
         {
             var packet = new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);

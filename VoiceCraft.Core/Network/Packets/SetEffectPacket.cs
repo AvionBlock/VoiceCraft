@@ -1,3 +1,4 @@
+using System;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 
@@ -28,7 +29,8 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Index = reader.GetByte();
-            EffectType = (EffectType)reader.GetByte();
+            var effectTypeValue = reader.GetByte();
+            EffectType = Enum.IsDefined(typeof(EffectType), effectTypeValue) ? (EffectType)effectTypeValue : EffectType.Unknown;
         }
     }
 }
