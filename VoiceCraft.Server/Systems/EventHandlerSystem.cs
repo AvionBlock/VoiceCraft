@@ -200,7 +200,7 @@ namespace VoiceCraft.Server.Systems
         }
 
         //Properties
-        private void OnEntityPropertySet(string key, object value, VoiceCraftEntity entity)
+        private void OnEntityPropertySet(PropertyKey key, object value, VoiceCraftEntity entity)
         {
             _tasks.Add(() =>
             {
@@ -214,7 +214,7 @@ namespace VoiceCraft.Server.Systems
             });
         }
 
-        private void OnEntityPropertyRemoved(string key, object value, VoiceCraftEntity entity)
+        private void OnEntityPropertyRemoved(PropertyKey key, object value, VoiceCraftEntity entity)
         {
             _tasks.Add(() =>
             {

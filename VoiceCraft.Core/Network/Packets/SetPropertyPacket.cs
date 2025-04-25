@@ -7,10 +7,10 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.SetProperty;
         public int Id { get; private set; }
-        public string Key { get; private set; }
+        public PropertyKey Key { get; private set; }
         public object? Value { get; private set; }
 
-        public SetPropertyPacket(int id = 0, string key = "", object? value = null)
+        public SetPropertyPacket(int id = 0, PropertyKey key = PropertyKey.Unknown, object? value = null)
         {
             Id = id;
             Key = key;
@@ -20,7 +20,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put(Key, Constants.MaxStringLength);
+            writer.Put((ushort)Key);
             
             switch (Value)
             {
@@ -48,7 +48,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Key = reader.GetString(Constants.MaxStringLength);
+            Key = (PropertyKey)reader.GetUShort();
             var propertyType = (PropertyType)reader.GetByte();
 
             switch (propertyType)

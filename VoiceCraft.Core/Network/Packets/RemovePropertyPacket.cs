@@ -6,9 +6,9 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.RemoveProperty;
         public int Id { get; private set; }
-        public string Key { get; private set; }
+        public PropertyKey Key { get; private set; }
 
-        public RemovePropertyPacket(int id = 0, string key = "")
+        public RemovePropertyPacket(int id = 0, PropertyKey key = PropertyKey.Unknown)
         {
             Id = id;
             Key = key;
@@ -17,13 +17,13 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put(Key, Constants.MaxStringLength);
+            writer.Put((ushort)Key);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Key = reader.GetString(Constants.MaxStringLength);
+            Key = (PropertyKey)reader.GetUShort();
         }
     }
 }
