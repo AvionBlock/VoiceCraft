@@ -233,8 +233,10 @@ namespace VoiceCraft.Server.Systems
             if (addedEntity is not VoiceCraftNetworkEntity networkEntity) return;
             _tasks.Add(() =>
             {
+                var visibilityPacket = new SetVisibilityPacket(entity.Id, true);
                 var positionPacket = new SetPositionPacket(entity.Id, entity.Position);
                 var rotationPacket = new SetRotationPacket(entity.Id, entity.Rotation);
+                _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
                 _server.SendPacket(networkEntity.NetPeer, positionPacket);
                 _server.SendPacket(networkEntity.NetPeer, rotationPacket);
 
@@ -249,7 +251,10 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityVisibleEntityRemoved(VoiceCraftEntity removedEntity, VoiceCraftEntity entity)
         {
             if (removedEntity is not VoiceCraftNetworkEntity networkEntity) return;
-            _server.SendPacket(networkEntity.NetPeer, new SetVisibilityPacket(entity.Id)); //This is so simple that threading isn't needed.
+            _tasks.Add(() =>
+            {
+                _server.SendPacket(networkEntity.NetPeer, new SetVisibilityPacket(entity.Id));
+            });
         }
         
         private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
