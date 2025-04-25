@@ -7,7 +7,7 @@ namespace VoiceCraft.Server.Data
     {
         public NetPeer NetPeer { get; }
         
-        public VoiceCraftNetworkEntity(NetPeer netPeer) : base((byte)netPeer.Id)
+        public VoiceCraftNetworkEntity(NetPeer netPeer) : base(netPeer.Id)
         {
             NetPeer = netPeer;
             AddVisibleEntity(this); //Should always be visible to itself.

@@ -5,10 +5,10 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetMinRangePacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetMinRange;
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
         public int MinRange { get; private set; }
 
-        public SetMinRangePacket(byte id = 0, int minRange = 0)
+        public SetMinRangePacket(int id = 0, int minRange = 0)
         {
             Id = id;
             MinRange = minRange;
@@ -22,7 +22,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetByte();
+            Id = reader.GetInt();
             MinRange = reader.GetInt();
         }
     }

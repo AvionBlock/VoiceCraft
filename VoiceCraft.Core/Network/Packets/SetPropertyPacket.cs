@@ -6,11 +6,11 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetPropertyPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetProperty;
-        public byte Id { get; private set; }
+        public int Id { get; private set; }
         public string Key { get; private set; }
         public object? Value { get; private set; }
 
-        public SetPropertyPacket(byte id = 0, string key = "", object? value = null)
+        public SetPropertyPacket(int id = 0, string key = "", object? value = null)
         {
             Id = id;
             Key = key;
@@ -47,7 +47,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetByte();
+            Id = reader.GetInt();
             Key = reader.GetString(Constants.MaxStringLength);
             var propertyType = (PropertyType)reader.GetByte();
 

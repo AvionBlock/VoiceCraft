@@ -9,7 +9,7 @@ namespace VoiceCraft.Core
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
 
-        private readonly Dictionary<byte, VoiceCraftEntity> _entities = new Dictionary<byte, VoiceCraftEntity>();
+        private readonly Dictionary<int, VoiceCraftEntity> _entities = new Dictionary<int, VoiceCraftEntity>();
 
         public VoiceCraftEntity CreateEntity()
         {
@@ -23,28 +23,27 @@ namespace VoiceCraft.Core
             return entity;
         }
 
-        public bool AddEntity(VoiceCraftEntity entity)
+        public void AddEntity(VoiceCraftEntity entity)
         {
             if (!_entities.TryAdd(entity.Id, entity))
-                return false;
+                throw new InvalidOperationException("Failed to add entity!");
             
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
-            return true;
         }
 
-        public VoiceCraftEntity? GetEntity(byte id)
+        public VoiceCraftEntity? GetEntity(int id)
         {
             _entities.TryGetValue(id, out var entity);
             return entity;
         }
 
-        public bool DestroyEntity(byte id)
+        public void DestroyEntity(int id)
         {
-            if (!_entities.Remove(id, out var entity)) return false;
+            if (!_entities.Remove(id, out var entity))
+                throw new InvalidOperationException("Failed to destroy entity!");
             entity.Destroy();
             OnEntityDestroyed?.Invoke(entity);
-            return true;
         }
 
         public void Clear()
@@ -71,9 +70,9 @@ namespace VoiceCraft.Core
             DestroyEntity(entity.Id);
         }
         
-        private byte GetLowestAvailableId()
+        private int GetLowestAvailableId()
         {
-            for(var i = byte.MinValue; i < byte.MaxValue; ++i)
+            for(var i = 0; i < int.MaxValue; ++i)
             {
                 if(!_entities.ContainsKey(i)) return i;
             }

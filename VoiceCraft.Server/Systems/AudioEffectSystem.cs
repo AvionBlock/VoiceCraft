@@ -24,11 +24,11 @@ namespace VoiceCraft.Server.Systems
             OnEffectSet?.Invoke(index, effect);
         }
 
-        public bool RemoveEffect(byte index)
+        public void RemoveEffect(byte index)
         {
-            if (!_audioEffects.Remove(index, out var effect)) return false;
+            if (!_audioEffects.Remove(index, out var effect))
+                throw new InvalidOperationException("Failed to remove effect!");
             OnEffectRemoved?.Invoke(index, effect);
-            return true;
         }
         
         private byte GetLowestAvailableId()
