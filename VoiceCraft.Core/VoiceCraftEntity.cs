@@ -15,8 +15,8 @@ namespace VoiceCraft.Core
         public event Action<int, VoiceCraftEntity>? OnMaxRangeUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<string, object, VoiceCraftEntity>? OnPropertySet;
-        public event Action<string, object, VoiceCraftEntity>? OnPropertyRemoved;
+        public event Action<PropertyKey, object, VoiceCraftEntity>? OnPropertySet;
+        public event Action<PropertyKey, object, VoiceCraftEntity>? OnPropertyRemoved;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
         public event Action<byte[], uint, VoiceCraftEntity>? OnAudioReceived;
@@ -32,7 +32,7 @@ namespace VoiceCraft.Core
         private int _maxRange;
         private Vector3 _position;
         private Quaternion _rotation;
-        private readonly Dictionary<string, object> _properties = new Dictionary<string, object>();
+        private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
 
         //Properties
         public int Id { get; }
@@ -40,8 +40,10 @@ namespace VoiceCraft.Core
         public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
+        public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
         
         #region Updatable Properties
+        
         public string WorldId
         {
             get => _worldId;
@@ -132,7 +134,6 @@ namespace VoiceCraft.Core
             }
         }
         
-        public IEnumerable<KeyValuePair<string, object>> Properties => _properties;
         #endregion
 
         //Modifiers for modifying data for later?
@@ -142,9 +143,9 @@ namespace VoiceCraft.Core
             Id = id;
         }
         
-        public void SetProperty(string key, object value)
+        public void SetProperty(PropertyKey key, object value)
         {
-            if (key.Length > Constants.MaxStringLength)
+            if (key == PropertyKey.Unknown)
                 throw new ArgumentOutOfRangeException(nameof(key));
 
             switch (value)
@@ -163,7 +164,7 @@ namespace VoiceCraft.Core
             OnPropertySet?.Invoke(key, value, this);
         }
 
-        public void RemoveProperty(string key)
+        public void RemoveProperty(PropertyKey key)
         {
             if(_properties.Remove(key, out var value))
                 OnPropertyRemoved?.Invoke(key, value, this);

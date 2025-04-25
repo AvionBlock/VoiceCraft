@@ -1,5 +1,7 @@
 namespace VoiceCraft.Core
 {
+    #region Network
+    
     public enum PositioningType : byte
     {
         Server,
@@ -22,6 +24,7 @@ namespace VoiceCraft.Core
         SetDescription,
         SetEffect,
         RemoveEffect,
+
         //Entity stuff
         EntityCreated,
         EntityDestroyed,
@@ -35,11 +38,15 @@ namespace VoiceCraft.Core
         SetRotation,
         SetProperty,
         RemoveProperty,
-        
+
         Unknown
     }
+    
+    #endregion
 
-    public enum EffectType : byte
+    #region Properties
+    
+    public enum PropertyKey : ushort
     {
         Unknown
     }
@@ -53,10 +60,13 @@ namespace VoiceCraft.Core
         Unknown
     }
     
-    public enum EffectBitmask : ulong
+    #endregion
+
+    #region Audio
+
+    public enum EffectType : byte
     {
-        ProximityEffect = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0001,
-        DirectionalEffect = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010
+        Unknown
     }
 
     public enum AudioFormat
@@ -82,6 +92,16 @@ namespace VoiceCraft.Core
         Paused,
         Stopping
     }
+
+    #endregion
+
+    #region Other
+
+    public enum Bitmasks : ulong
+    {
+        ProximityEffect = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0001,
+        DirectionalEffect = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0010
+    }
     
     public enum BackgroundProcessStatus
     {
@@ -90,4 +110,6 @@ namespace VoiceCraft.Core
         Completed,
         Error
     }
+
+    #endregion
 }
