@@ -4,12 +4,14 @@ namespace VoiceCraft.Core
     
     public enum PositioningType : byte
     {
+        Unknown,
         Server,
         Client
     }
 
     public enum LoginType : byte
     {
+        Unknown,
         Login,
         Discovery
     }
@@ -35,8 +37,7 @@ namespace VoiceCraft.Core
         SetMaxRange,
         SetPosition,
         SetRotation,
-        SetProperty,
-        RemoveProperty
+        SetProperty
     }
     
     #endregion
@@ -50,7 +51,7 @@ namespace VoiceCraft.Core
 
     public enum PropertyType : byte
     {
-        Unknown,
+        Null,
         Byte,
         Int,
         UInt,

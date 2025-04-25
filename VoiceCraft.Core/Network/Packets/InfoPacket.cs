@@ -1,3 +1,4 @@
+using System;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
@@ -35,7 +36,8 @@ namespace VoiceCraft.Core.Network.Packets
             Motd = reader.GetString(Constants.MaxStringLength);
             Clients = reader.GetInt();
             Discovery = reader.GetBool();
-            PositioningType = (PositioningType)reader.GetByte();
+            var positioningTypeValue = reader.GetByte();
+            PositioningType = Enum.IsDefined(typeof(PositioningType), positioningTypeValue) ? (PositioningType)positioningTypeValue : PositioningType.Unknown;
             Tick = reader.GetInt();
         }
     }

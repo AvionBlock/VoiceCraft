@@ -40,6 +40,9 @@ namespace VoiceCraft.Core.Network.Packets
                     writer.Put((byte)PropertyType.Float);
                     writer.Put(floatValue);
                     break;
+                case null:
+                    writer.Put((byte)PropertyType.Null);
+                    break;
                 default:
                     throw new InvalidOperationException();
             }
@@ -48,7 +51,8 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Key = (PropertyKey)reader.GetUShort();
+            var propertyKeyValue = reader.GetByte();
+            Key = Enum.IsDefined(typeof(PropertyKey), propertyKeyValue) ? (PropertyKey)propertyKeyValue : PropertyKey.Unknown;
             var propertyType = (PropertyType)reader.GetByte();
 
             switch (propertyType)
@@ -65,9 +69,10 @@ namespace VoiceCraft.Core.Network.Packets
                 case PropertyType.Float:
                     Value = reader.GetFloat();
                     break;
-                case PropertyType.Unknown:
+                case PropertyType.Null:
                 default:
-                    throw new InvalidOperationException();
+                    Value = null;
+                    break;
             }
         }
     }

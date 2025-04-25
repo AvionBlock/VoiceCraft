@@ -15,11 +15,10 @@ namespace VoiceCraft.Core
         public event Action<int, VoiceCraftEntity>? OnMaxRangeUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<PropertyKey, object, VoiceCraftEntity>? OnPropertySet;
-        public event Action<PropertyKey, object, VoiceCraftEntity>? OnPropertyRemoved;
+        public event Action<PropertyKey, object?, VoiceCraftEntity>? OnPropertySet;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
-        public event Action<byte[], uint, VoiceCraftEntity>? OnAudioReceived;
+        public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
         
         //Privates
@@ -36,11 +35,12 @@ namespace VoiceCraft.Core
 
         //Properties
         public int Id { get; }
+        public float Loudness { get; private set; }
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
-        public bool Destroyed { get; private set; }
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
         public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
+        public bool Destroyed { get; private set; }
         
         #region Updatable Properties
         
@@ -143,9 +143,9 @@ namespace VoiceCraft.Core
             Id = id;
         }
         
-        public void SetProperty(PropertyKey key, object value)
+        public void SetProperty(PropertyKey key, object? value)
         {
-            if (key == PropertyKey.Unknown || !Enum.IsDefined(typeof(PropertyKey), value))
+            if (key == PropertyKey.Unknown)
                 throw new ArgumentOutOfRangeException(nameof(key));
 
             switch (value)
@@ -154,20 +154,23 @@ namespace VoiceCraft.Core
                 case int _:
                 case uint _:
                 case float _:
+                case null:
                     break;
                 default:
                     throw new ArgumentException("Invalid argument type!", nameof(value));
+            }
+
+            //Null values aren't stored.
+            if (value == null)
+            {
+                if(_properties.Remove(key))
+                    OnPropertySet?.Invoke(key, null, this);
+                return;
             }
             
             if(!_properties.TryAdd(key, value)) 
                 _properties[key] = value;
             OnPropertySet?.Invoke(key, value, this);
-        }
-
-        public void RemoveProperty(PropertyKey key)
-        {
-            if(_properties.Remove(key, out var value))
-                OnPropertyRemoved?.Invoke(key, value, this);
         }
         
         public void ResetProperties()
@@ -193,10 +196,11 @@ namespace VoiceCraft.Core
             _visibleEntities.RemoveAll(x => x.Destroyed);
         }
 
-        public virtual void ReceiveAudio(byte[] buffer, uint timestamp)
+        public virtual void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
         {
+            Loudness = frameLoudness;
             LastSpoke = DateTime.UtcNow;
-            OnAudioReceived?.Invoke(buffer, timestamp, this);
+            OnAudioReceived?.Invoke(buffer, timestamp, frameLoudness, this);
         }
 
         public bool VisibleTo(VoiceCraftEntity entity)
@@ -213,26 +217,13 @@ namespace VoiceCraft.Core
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(Name);
-            writer.Put(TalkBitmask);
-            writer.Put(ListenBitmask);
-            writer.Put(MinRange);
-            writer.Put(MaxRange);
+            writer.Put(Name, Constants.MaxStringLength);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            var name = reader.GetString();
-            var talkBitmask = reader.GetULong();
-            var listenBitmask = reader.GetULong();
-            var minRange = reader.GetInt();
-            var maxRange = reader.GetInt();
-            
+            var name = reader.GetString(Constants.MaxStringLength);
             Name = name;
-            TalkBitmask = talkBitmask;
-            ListenBitmask = listenBitmask;
-            MinRange = minRange;
-            MaxRange = maxRange;
         }
 
         public virtual void Destroy()
@@ -250,7 +241,6 @@ namespace VoiceCraft.Core
             OnPositionUpdated = null;
             OnRotationUpdated = null;
             OnPropertySet = null;
-            OnPropertyRemoved = null;
             OnVisibleEntityAdded = null;
             OnVisibleEntityRemoved = null;
             OnAudioReceived = null;

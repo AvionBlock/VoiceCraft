@@ -148,11 +148,6 @@ namespace VoiceCraft.Client.Network.Systems
                     setPropertyPacket.Deserialize(reader);
                     HandleSetPropertyPacket(setPropertyPacket);
                     break;
-                case PacketType.RemoveProperty:
-                    var removePropertyPacket = new RemovePropertyPacket();
-                    removePropertyPacket.Deserialize(reader);
-                    HandleRemovePropertyPacket(removePropertyPacket);
-                    break;
                 case PacketType.Login:
                 case PacketType.SetEffect:
                 case PacketType.Unknown:
@@ -169,7 +164,7 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleAudioPacket(AudioPacket packet)
         {
             var entity = _world.GetEntity(packet.Id);
-            entity?.ReceiveAudio(packet.Data, packet.Timestamp);
+            entity?.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
         }
 
         private void HandleSetTitlePacket(SetTitlePacket packet)
@@ -246,14 +241,8 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleSetPropertyPacket(SetPropertyPacket packet)
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null || packet.Value == null) return;
+            if (entity == null) return;
             entity.SetProperty(packet.Key, packet.Value);
-        }
-
-        private void HandleRemovePropertyPacket(RemovePropertyPacket packet)
-        {
-            var entity = _world.GetEntity(packet.Id);
-            entity?.RemoveProperty(packet.Key);
         }
     }
 }

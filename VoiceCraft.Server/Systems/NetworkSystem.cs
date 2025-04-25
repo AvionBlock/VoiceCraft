@@ -127,7 +127,6 @@ namespace VoiceCraft.Server.Systems
                 case PacketType.SetPosition:
                 case PacketType.SetRotation:
                 case PacketType.SetProperty:
-                case PacketType.RemoveProperty:
                 default:
                     break;
             }
@@ -182,7 +181,7 @@ namespace VoiceCraft.Server.Systems
         {
             var entity = _world.GetEntity(peer.Id);
             if (entity is not VoiceCraftNetworkEntity networkEntity) return;
-            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp);
+            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp, audioPacket.FrameLoudness);
         }
     }
 }

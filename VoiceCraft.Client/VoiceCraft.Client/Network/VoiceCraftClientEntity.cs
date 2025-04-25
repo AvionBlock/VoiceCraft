@@ -11,6 +11,8 @@ namespace VoiceCraft.Client.Network
 {
     public class VoiceCraftClientEntity : VoiceCraftEntity
     {
+        public bool IsVisible { get; set; }
+
         private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
         private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
         private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
@@ -32,7 +34,7 @@ namespace VoiceCraft.Client.Network
             return _outputBuffer.Read(buffer, offset, count);
         }
 
-        public override void ReceiveAudio(byte[] buffer, uint timestamp)
+        public override void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
         {
             var inPacket = new SpeexDSPJitterBufferPacket(buffer, (uint)buffer.Length)
             {
@@ -40,7 +42,7 @@ namespace VoiceCraft.Client.Network
                 span = Constants.SamplesPerFrame
             };
             _jitterBuffer.Put(ref inPacket);
-            base.ReceiveAudio(buffer, timestamp);
+            base.ReceiveAudio(buffer, timestamp, frameLoudness);
         }
 
         public override void Destroy()
@@ -64,10 +66,9 @@ namespace VoiceCraft.Client.Network
                     return (DateTime.UtcNow - _lastPacket).TotalMilliseconds > Constants.SilenceThresholdMs
                         ? 0
                         : _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
-                
+
                 _lastPacket = DateTime.UtcNow;
                 return _decoder.Decode(_encodedData, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
-
             }
             catch
             {

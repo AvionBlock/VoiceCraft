@@ -97,7 +97,6 @@ namespace VoiceCraft.Server.Systems
             newEntity.OnPositionUpdated += OnEntityPositionUpdated;
             newEntity.OnRotationUpdated += OnEntityRotationUpdated;
             newEntity.OnPropertySet += OnEntityPropertySet;
-            newEntity.OnPropertyRemoved += OnEntityPropertyRemoved;
             newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
             newEntity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
             newEntity.OnAudioReceived += OnEntityAudioReceived;
@@ -120,7 +119,6 @@ namespace VoiceCraft.Server.Systems
             entity.OnPositionUpdated -= OnEntityPositionUpdated;
             entity.OnRotationUpdated -= OnEntityRotationUpdated;
             entity.OnPropertySet -= OnEntityPropertySet;
-            entity.OnPropertyRemoved -= OnEntityPropertyRemoved;
             entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
             entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
             entity.OnAudioReceived -= OnEntityAudioReceived;
@@ -141,7 +139,11 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetTalkBitmaskPacket(entity.Id, bitmask);
-                _server.Broadcast(packet);
+                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+                foreach (var visibleEntity in visibleNetworkEntities)
+                {
+                    _server.SendPacket(visibleEntity.NetPeer, packet);
+                }
             });
         }
 
@@ -150,7 +152,11 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
-                _server.Broadcast(packet);
+                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+                foreach (var visibleEntity in visibleNetworkEntities)
+                {
+                    _server.SendPacket(visibleEntity.NetPeer, packet);
+                }
             });
         }
 
@@ -159,7 +165,11 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetMinRangePacket(entity.Id, minRange);
-                _server.Broadcast(packet);
+                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+                foreach (var visibleEntity in visibleNetworkEntities)
+                {
+                    _server.SendPacket(visibleEntity.NetPeer, packet);
+                }
             });
         }
         
@@ -168,7 +178,11 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetMaxRangePacket(entity.Id, maxRange);
-                _server.Broadcast(packet);
+                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+                foreach (var visibleEntity in visibleNetworkEntities)
+                {
+                    _server.SendPacket(visibleEntity.NetPeer, packet);
+                }
             });
         }
 
@@ -200,26 +214,12 @@ namespace VoiceCraft.Server.Systems
         }
 
         //Properties
-        private void OnEntityPropertySet(PropertyKey key, object value, VoiceCraftEntity entity)
+        private void OnEntityPropertySet(PropertyKey key, object? value, VoiceCraftEntity entity)
         {
             _tasks.Add(() =>
             {
                 //Only send updates to visible entities.
                 var packet = new SetPropertyPacket(entity.Id, key, value);
-                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-                foreach (var visibleEntity in visibleNetworkEntities)
-                {
-                    _server.SendPacket(visibleEntity.NetPeer, packet);
-                }
-            });
-        }
-
-        private void OnEntityPropertyRemoved(PropertyKey key, object value, VoiceCraftEntity entity)
-        {
-            _tasks.Add(() =>
-            {
-                //Only send updates to visible entities.
-                var packet = new RemovePropertyPacket(entity.Id, key);
                 var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
                 foreach (var visibleEntity in visibleNetworkEntities)
                 {
@@ -234,9 +234,18 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var visibilityPacket = new SetVisibilityPacket(entity.Id, true);
+                var talkBitmaskPacket = new SetTalkBitmaskPacket(entity.Id, entity.TalkBitmask);
+                var listenBitmaskPacket = new SetListenBitmaskPacket(entity.Id, entity.ListenBitmask);
+                var maxRangePacket = new SetMaxRangePacket(entity.Id, entity.MaxRange);
+                var minRangePacket = new SetMinRangePacket(entity.Id, entity.MinRange);
                 var positionPacket = new SetPositionPacket(entity.Id, entity.Position);
                 var rotationPacket = new SetRotationPacket(entity.Id, entity.Rotation);
+                
                 _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
+                _server.SendPacket(networkEntity.NetPeer, talkBitmaskPacket);
+                _server.SendPacket(networkEntity.NetPeer, listenBitmaskPacket);
+                _server.SendPacket(networkEntity.NetPeer, maxRangePacket);
+                _server.SendPacket(networkEntity.NetPeer, minRangePacket);
                 _server.SendPacket(networkEntity.NetPeer, positionPacket);
                 _server.SendPacket(networkEntity.NetPeer, rotationPacket);
 
@@ -257,12 +266,12 @@ namespace VoiceCraft.Server.Systems
             });
         }
         
-        private void OnEntityAudioReceived(byte[] data, uint timestamp, VoiceCraftEntity entity)
+        private void OnEntityAudioReceived(byte[] data, uint timestamp, float frameLoudness, VoiceCraftEntity entity)
         {
             _tasks.Add(() =>
             {
                 //Only send updates to visible entities.
-                var packet = new AudioPacket(entity.Id, timestamp, data.Length, data);
+                var packet = new AudioPacket(entity.Id, timestamp, frameLoudness, data.Length, data);
                 var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>().Where(x => x != entity);
                 foreach (var visibleEntity in visibleNetworkEntities)
                 {
