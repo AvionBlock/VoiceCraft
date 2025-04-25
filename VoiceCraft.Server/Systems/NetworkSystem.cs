@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Config;
@@ -127,8 +126,8 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
-                    case PacketType.EntityReset:
                     case PacketType.EntityDestroyed:
+                    case PacketType.SetVisibility:
                     case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:
@@ -170,8 +169,8 @@ namespace VoiceCraft.Server.Systems
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
-                    case PacketType.EntityReset:
                     case PacketType.EntityDestroyed:
+                    case PacketType.SetVisibility:
                     case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:

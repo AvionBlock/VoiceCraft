@@ -4,7 +4,6 @@ using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network.Systems
@@ -69,15 +68,12 @@ namespace VoiceCraft.Client.Network.Systems
                         entityCreatedPacket.Deserialize(reader);
                         HandleEntityCreatedPacket(entityCreatedPacket, reader);
                         break;
-                    case PacketType.EntityReset:
-                        var entityResetPacket = new EntityResetPacket();
-                        entityResetPacket.Deserialize(reader);
-                        HandleEntityResetPacket(entityResetPacket);
-                        break;
                     case PacketType.EntityDestroyed:
                         var entityDestroyedPacket = new EntityDestroyedPacket();
                         entityDestroyedPacket.Deserialize(reader);
                         HandleEntityDestroyedPacket(entityDestroyedPacket);
+                        break;
+                    case PacketType.SetVisibility:
                         break;
                     case PacketType.SetName:
                         var setNamePacket = new SetNamePacket();
@@ -162,8 +158,8 @@ namespace VoiceCraft.Client.Network.Systems
                     case PacketType.SetEffect:
                     case PacketType.RemoveEffect:
                     case PacketType.EntityCreated:
-                    case PacketType.EntityReset:
                     case PacketType.EntityDestroyed:
+                    case PacketType.SetVisibility:
                     case PacketType.SetName:
                     case PacketType.SetTalkBitmask:
                     case PacketType.SetListenBitmask:
@@ -212,12 +208,6 @@ namespace VoiceCraft.Client.Network.Systems
             var entity = new VoiceCraftClientEntity(packet.Id);
             entity.Deserialize(reader);
             _world.AddEntity(entity);
-        }
-
-        private void HandleEntityResetPacket(EntityResetPacket packet)
-        {
-            var entity = _world.GetEntity(packet.Id);
-            entity?.ResetProperties();
         }
 
         private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
