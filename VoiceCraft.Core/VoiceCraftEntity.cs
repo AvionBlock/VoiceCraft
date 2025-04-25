@@ -173,7 +173,7 @@ namespace VoiceCraft.Core
             OnPropertySet?.Invoke(key, value, this);
         }
         
-        public void ResetProperties()
+        public void ClearProperties()
         {
             _properties.Clear();
         }
