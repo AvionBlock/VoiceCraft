@@ -26,7 +26,7 @@ namespace VoiceCraft.Core
         public void AddEntity(VoiceCraftEntity entity)
         {
             if (!_entities.TryAdd(entity.Id, entity))
-                throw new InvalidOperationException("Failed to add entity!");
+                throw new InvalidOperationException("Failed to add entity! An entity with the same id already exists!");
             
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
@@ -41,9 +41,8 @@ namespace VoiceCraft.Core
         public void DestroyEntity(int id)
         {
             if (!_entities.Remove(id, out var entity))
-                throw new InvalidOperationException("Failed to destroy entity!");
+                throw new InvalidOperationException("Failed to destroy entity! Entity not found!");
             entity.Destroy();
-            OnEntityDestroyed?.Invoke(entity);
         }
 
         public void Clear()
@@ -67,7 +66,8 @@ namespace VoiceCraft.Core
         private void DestroyEntity(VoiceCraftEntity entity)
         {
             entity.OnDestroyed -= DestroyEntity;
-            DestroyEntity(entity.Id);
+            if (_entities.Remove(entity.Id))
+                OnEntityDestroyed?.Invoke(entity);
         }
         
         private int GetLowestAvailableId()
