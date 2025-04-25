@@ -56,7 +56,7 @@ namespace VoiceCraft.Server.Systems
         {
             _tasks.Add(() =>
             {
-                var packet = new RemoveEffectPacket(index);
+                var packet = new SetEffectPacket(index);
                 _server.Broadcast(packet);
             });
         }

@@ -11,19 +11,18 @@ namespace VoiceCraft.Core
     public enum LoginType : byte
     {
         Login,
-        Discovery,
-        Unknown
+        Discovery
     }
 
     public enum PacketType : byte
     {
+        Unknown,
         Info,
         Login,
         Audio,
         SetTitle,
         SetDescription,
         SetEffect,
-        RemoveEffect,
 
         //Entity stuff
         EntityCreated,
@@ -37,9 +36,7 @@ namespace VoiceCraft.Core
         SetPosition,
         SetRotation,
         SetProperty,
-        RemoveProperty,
-
-        Unknown
+        RemoveProperty
     }
     
     #endregion
@@ -53,11 +50,11 @@ namespace VoiceCraft.Core
 
     public enum PropertyType : byte
     {
+        Unknown,
         Byte,
         Int,
         UInt,
-        Float,
-        Unknown
+        Float
     }
     
     #endregion

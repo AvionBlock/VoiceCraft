@@ -145,7 +145,7 @@ namespace VoiceCraft.Core
         
         public void SetProperty(PropertyKey key, object value)
         {
-            if (key == PropertyKey.Unknown)
+            if (key == PropertyKey.Unknown || !Enum.IsDefined(typeof(PropertyKey), value))
                 throw new ArgumentOutOfRangeException(nameof(key));
 
             switch (value)
