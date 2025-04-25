@@ -33,7 +33,7 @@ namespace VoiceCraft.Server.Systems
         
         private byte GetLowestAvailableId()
         {
-            for(var i = byte.MinValue; i < byte.MaxValue; ++i)
+            for(var i = byte.MinValue; i < byte.MaxValue; i++)
             {
                 if(!_audioEffects.ContainsKey(i)) return i;
             }
