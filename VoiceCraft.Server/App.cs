@@ -57,7 +57,7 @@ namespace VoiceCraft.Server
                         await FlushCommand(rootCommand);
                         
                         var dist = DateTime.UtcNow - startTime;
-                        var delay = Constants.FrameSizeMs - dist.TotalMilliseconds;
+                        var delay = Constants.TickRate - dist.TotalMilliseconds;
                         if (delay > 0)
                             await Task.Delay((int)delay);
                         startTime = DateTime.UtcNow;

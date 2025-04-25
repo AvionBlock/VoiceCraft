@@ -139,7 +139,7 @@ namespace VoiceCraft.Client.Processes
                 {
                     _voiceCraftClient.Update(); //Update all networking processes.
                     var dist = DateTime.UtcNow - startTime;
-                    var delay = Constants.FrameSizeMs - dist.TotalMilliseconds;
+                    var delay = Constants.TickRate - dist.TotalMilliseconds;
                     if (delay > 0)
                         Task.Delay((int)delay, token).GetAwaiter().GetResult();
                     startTime = DateTime.UtcNow;
