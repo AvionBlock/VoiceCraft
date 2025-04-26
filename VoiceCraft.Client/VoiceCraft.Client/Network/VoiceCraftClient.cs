@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using LiteNetLib;
@@ -22,6 +23,7 @@ namespace VoiceCraft.Client.Network
         public event Action<string>? OnDisconnected;
 
         //Public Properties
+        public override int Id => _serverPeer?.RemoteId ?? -1;
         public ConnectionState ConnectionState => _serverPeer?.ConnectionState ?? ConnectionState.Disconnected;
         public bool Muted { get; set; }
         public bool Deafened { get; set; }
@@ -135,7 +137,7 @@ namespace VoiceCraft.Client.Network
         public void Update()
         {
             _netManager.PollEvents();
-            if (ConnectionState == ConnectionState.Disconnected) return;
+            //if (ConnectionState == ConnectionState.Disconnected) return;
         }
 
         public int Read(byte[] buffer, int _, int count)
@@ -146,13 +148,16 @@ namespace VoiceCraft.Client.Network
             //Only enumerate over visible entities.
             var bytesRead = 0;
             var clientEntities = World.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible);
+            var bufferShort = MemoryMarshal.Cast<byte, short>(buffer);
+            var outputBufferShort = MemoryMarshal.Cast<byte, short>(_outputBuffer);
             foreach (var clientEntity in clientEntities)
             {
                 var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
                 if(read <= 0) continue;
                 bytesRead = Math.Max(bytesRead, read);
                 //Process Effects;
-                Pcm16Mix(_outputBuffer, read, buffer);
+                Pcm16ProximityVolume(outputBufferShort, read, clientEntity, this);
+                Pcm16Mix(outputBufferShort, read, bufferShort);
             }
             
             Buffer.BlockCopy(_outputBuffer, 0, buffer, 0, count);
@@ -239,15 +244,34 @@ namespace VoiceCraft.Client.Network
             _isDisposed = true;
         }
 
-        private static void Pcm16Mix(byte[] srcBuffer, int count, byte[] dstBuffer)
+        private static void Pcm16ProximityVolume(Span<short> srcBuffer, int count, VoiceCraftEntity from, VoiceCraftEntity to)
         {
-            var srcBufferShort = MemoryMarshal.Cast<byte, short>(srcBuffer);
-            var dstBufferShort = MemoryMarshal.Cast<byte, short>(dstBuffer);
+            var bitmask = from.TalkBitmask & to.ListenBitmask;
+            if ((bitmask & 1ul) == 0) return; //Not enabled.
+            var range = Math.Max(from.MaxRange, to.MaxRange) - Math.Min(from.MinRange, to.MinRange);
+            var distance = Vector3.Distance(from.Position, to.Position);
+            if(range == 0) return; //Range is 0. Do not calculate division.
+            var factor = 1f - Math.Clamp(distance / range, 0f, 1.0f);
             
             for (var i = 0; i < count / sizeof(short); i++)
             {
-                var mixed = srcBufferShort[i] + dstBufferShort[i];
-                dstBufferShort[i] = (short)Math.Clamp(mixed, short.MinValue, short.MaxValue);
+                var sample = srcBuffer[i] * factor;
+                sample = sample switch
+                {
+                    > short.MaxValue => short.MaxValue,
+                    < short.MinValue => short.MinValue,
+                    _ => sample
+                };
+                srcBuffer[i] = (short)sample;
+            }
+        }
+
+        private static void Pcm16Mix(Span<short> srcBuffer, int count, Span<short> dstBuffer)
+        {
+            for (var i = 0; i < count / sizeof(short); i++)
+            {
+                var mixed = srcBuffer[i] + dstBuffer[i];
+                dstBuffer[i] = (short)Math.Clamp(mixed, short.MinValue, short.MaxValue);
             }
         }
 

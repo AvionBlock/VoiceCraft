@@ -28,13 +28,13 @@ namespace VoiceCraft.Core
         private ulong _talkBitmask = 1;
         private ulong _listenBitmask = 1;
         private int _minRange;
-        private int _maxRange;
+        private int _maxRange = 30;
         private Vector3 _position;
         private Quaternion _rotation;
         private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
 
         //Properties
-        public int Id { get; }
+        public virtual int Id { get; }
         public float Loudness { get; private set; }
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;

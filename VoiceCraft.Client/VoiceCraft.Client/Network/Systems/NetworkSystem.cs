@@ -10,6 +10,7 @@ namespace VoiceCraft.Client.Network.Systems
 {
     public class NetworkSystem : IDisposable
     {
+        private readonly VoiceCraftClient _client;
         private readonly EventBasedNetListener _listener;
         private readonly VoiceCraftWorld _world;
 
@@ -19,6 +20,7 @@ namespace VoiceCraft.Client.Network.Systems
 
         public NetworkSystem(VoiceCraftClient client)
         {
+            _client = client;
             _listener = client.Listener;
             _world = client.World;
 
@@ -203,6 +205,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetNamePacket(SetNamePacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.Name = packet.Name;
+                return;
+            }
+
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Name = packet.Name;
@@ -210,6 +218,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetTalkBitmaskPacket(SetTalkBitmaskPacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.TalkBitmask = packet.Bitmask;
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.TalkBitmask = packet.Bitmask;
@@ -217,6 +231,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetListenBitmaskPacket(SetListenBitmaskPacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.ListenBitmask = packet.Bitmask;
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.ListenBitmask = packet.Bitmask;
@@ -224,6 +244,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetMinRangePacket(SetMinRangePacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.MinRange = packet.MinRange;
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.MinRange = packet.MinRange;
@@ -231,6 +257,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetMaxRangePacket(SetMaxRangePacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.MaxRange = packet.MaxRange;
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.MaxRange = packet.MaxRange;
@@ -238,6 +270,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetPositionPacket(SetPositionPacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.Position = packet.Position;
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Position = packet.Position;
@@ -245,6 +283,12 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetRotationPacket(SetRotationPacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.Rotation = packet.Rotation;
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Rotation = packet.Rotation;
@@ -252,9 +296,14 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetPropertyPacket(SetPropertyPacket packet)
         {
+            if (packet.Id == _client.Id)
+            {
+                _client.SetProperty(packet.Key, packet.Value);
+                return;
+            }
+            
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
-            entity.SetProperty(packet.Key, packet.Value);
+            entity?.SetProperty(packet.Key, packet.Value);
         }
     }
 }
