@@ -51,7 +51,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            var propertyKeyValue = reader.GetByte();
+            var propertyKeyValue = reader.GetUShort();
             Key = Enum.IsDefined(typeof(PropertyKey), propertyKeyValue) ? (PropertyKey)propertyKeyValue : PropertyKey.Unknown;
             var propertyType = (PropertyType)reader.GetByte();
 
