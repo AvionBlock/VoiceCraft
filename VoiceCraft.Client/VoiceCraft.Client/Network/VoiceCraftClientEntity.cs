@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
         private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
         private DateTime _lastPacket = DateTime.MinValue;
-        private readonly BufferedWaveProvider _outputBuffer = new BufferedWaveProvider(new WaveFormat(Constants.SamplesPerFrame, Constants.Channels))
+        private readonly BufferedWaveProvider _outputBuffer = new(new WaveFormat(Constants.SamplesPerFrame, Constants.Channels))
         {
             ReadFully = false,
             DiscardOnBufferOverflow = true

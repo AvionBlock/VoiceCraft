@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -137,9 +138,9 @@ namespace VoiceCraft.Client.Network
             if (ConnectionState == ConnectionState.Disconnected) return;
         }
 
-        public int Read(byte[] buffer, int offset, int count)
+        public int Read(byte[] buffer, int _, int count)
         {
-            if (_outputBuffer.Length < count)
+            if(_outputBuffer.Length < count)
                 _outputBuffer = new byte[count];
             
             //Only enumerate over visible entities.
@@ -150,14 +151,14 @@ namespace VoiceCraft.Client.Network
                 var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
                 if(read <= 0) continue;
                 bytesRead = Math.Max(bytesRead, read);
-                //Change bits to 32bit-IEEE Float & Process Effects then mix and convert to 16bit.
+                //Process Effects;
+                Pcm16Mix(_outputBuffer, read, buffer);
             }
             
-            Array.Copy(_outputBuffer, 0, buffer, offset, count - offset);
+            Buffer.BlockCopy(_outputBuffer, 0, buffer, 0, count);
             if (bytesRead >= count) return bytesRead;
-            Array.Clear(_outputBuffer, offset + bytesRead, count - bytesRead);
-            bytesRead = count;
-            return bytesRead;
+            Array.Clear(_outputBuffer, bytesRead, count - bytesRead);
+            return count;
         }
 
         public void Write(byte[] buffer, int bytesRead)
@@ -236,6 +237,18 @@ namespace VoiceCraft.Client.Network
             }
 
             _isDisposed = true;
+        }
+
+        private static void Pcm16Mix(byte[] srcBuffer, int count, byte[] dstBuffer)
+        {
+            var srcBufferShort = MemoryMarshal.Cast<byte, short>(srcBuffer);
+            var dstBufferShort = MemoryMarshal.Cast<byte, short>(dstBuffer);
+            
+            for (var i = 0; i < count / sizeof(short); i++)
+            {
+                var mixed = srcBufferShort[i] + dstBufferShort[i];
+                dstBufferShort[i] = (short)Math.Clamp(mixed, short.MinValue, short.MaxValue);
+            }
         }
 
         private static float GetFrameLoudness(byte[] data, int bytesRead)

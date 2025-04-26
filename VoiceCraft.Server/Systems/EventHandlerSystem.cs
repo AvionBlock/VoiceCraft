@@ -105,11 +105,11 @@ namespace VoiceCraft.Server.Systems
         private void OnEntityDestroyed(VoiceCraftEntity entity)
         {
             var entityDestroyedPacket = new EntityDestroyedPacket(entity.Id);
-            _server.Broadcast(entityDestroyedPacket);
             if (entity is VoiceCraftNetworkEntity networkEntity)
             {
                 networkEntity.NetPeer.Disconnect(); //Disconnect the entity if it's a network entity.
             }
+            _server.Broadcast(entityDestroyedPacket);
 
             entity.OnNameUpdated -= OnEntityNameUpdated;
             entity.OnTalkBitmaskUpdated -= OnEntityTalkBitmaskUpdated;

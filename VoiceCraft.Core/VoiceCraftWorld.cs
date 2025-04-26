@@ -42,7 +42,9 @@ namespace VoiceCraft.Core
         {
             if (!_entities.Remove(id, out var entity))
                 throw new InvalidOperationException("Failed to destroy entity! Entity not found!");
+            entity.OnDestroyed -= DestroyEntity; //No need to listen anymore.
             entity.Destroy();
+            OnEntityDestroyed?.Invoke(entity);
         }
 
         public void Clear()
