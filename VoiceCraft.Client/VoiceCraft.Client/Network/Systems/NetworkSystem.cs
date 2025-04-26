@@ -199,8 +199,9 @@ namespace VoiceCraft.Client.Network.Systems
             var entity = _world.GetEntity(packet.Id);
             if (entity is not VoiceCraftClientEntity clientEntity) return;
             clientEntity.IsVisible = packet.Visibility;
-            if(!clientEntity.IsVisible) //Clear properties when entity is not visible.
-                clientEntity.ClearProperties();
+            if (clientEntity.IsVisible) return; //Clear properties and the audio buffer when entity is not visible.
+            clientEntity.ClearBuffer();
+            clientEntity.ClearProperties();
         }
 
         private void HandleSetNamePacket(SetNamePacket packet)
