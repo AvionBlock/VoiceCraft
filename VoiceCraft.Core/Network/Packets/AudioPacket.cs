@@ -33,7 +33,7 @@ namespace VoiceCraft.Core.Network.Packets
         {
             Id = reader.GetInt();
             Timestamp = reader.GetUInt();
-            FrameLoudness = reader.GetFloat();
+            FrameLoudness = Math.Clamp(reader.GetFloat(), 0f, 1f);
             Length = reader.AvailableBytes;
             //Fuck no. we aren't allocating anything higher than the expected amount of bytes (WHICH SHOULD BE COMPRESSED!).
             if (Length > Constants.MaximumEncodedBytes)

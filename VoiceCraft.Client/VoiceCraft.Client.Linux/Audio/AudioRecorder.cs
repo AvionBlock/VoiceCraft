@@ -282,7 +282,12 @@ namespace VoiceCraft.Client.Linux.Audio
                 // Query the number of captured samples
                 ALC.GetInteger(_nativeRecorder, AlcGetInteger.CaptureSamples, sizeof(int), &capturedSamples);
 
-                if (capturedSamples < _bufferSamples) continue;
+                if (capturedSamples < _bufferSamples)
+                {
+                    Thread.Sleep(1); //So we don't exactly burn the CPU. Small hack but it works.
+                    continue;
+                }
+                
                 Array.Clear(_buffer);
                 fixed (void* bufferPtr = _buffer)
                     ALC.CaptureSamples(_nativeRecorder, bufferPtr, _bufferSamples);

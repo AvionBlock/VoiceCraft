@@ -7,14 +7,40 @@ namespace VoiceCraft.Core
     {
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
+        public event Action<int>? OnMinRangeUpdated;
+        public event Action<int>? OnMaxRangeUpdated;
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
-
+        
+        private int _minRange;
+        private int _maxRange = 30;
         private readonly Dictionary<int, VoiceCraftEntity> _entities = new Dictionary<int, VoiceCraftEntity>();
+        
+        public int MinRange
+        {
+            get => _minRange;
+            set
+            {
+                if (_minRange == value) return;
+                _minRange = value;
+                OnMinRangeUpdated?.Invoke(_minRange);
+            }
+        }
+
+        public int MaxRange
+        {
+            get => _maxRange;
+            set
+            {
+                if (_maxRange == value) return;
+                _maxRange = value;
+                OnMaxRangeUpdated?.Invoke(_maxRange);
+            }
+        }
 
         public VoiceCraftEntity CreateEntity()
         {
             var id = GetLowestAvailableId();
-            var entity = new VoiceCraftEntity(id);
+            var entity = new VoiceCraftEntity(id, this);
             if (!_entities.TryAdd(id, entity))
                 throw new InvalidOperationException("Failed to create entity!");
             
@@ -27,6 +53,8 @@ namespace VoiceCraft.Core
         {
             if (!_entities.TryAdd(entity.Id, entity))
                 throw new InvalidOperationException("Failed to add entity! An entity with the same id already exists!");
+            if(entity.World != this)
+                throw new InvalidOperationException("Failed to add entity! The entity is not associated with this world!");
             
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);

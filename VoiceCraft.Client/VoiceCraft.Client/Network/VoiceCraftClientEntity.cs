@@ -12,12 +12,14 @@ namespace VoiceCraft.Client.Network
     public class VoiceCraftClientEntity : VoiceCraftEntity
     {
         public bool IsVisible { get; set; }
+        public float Volume { get; set; }
 
         private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
         private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
         private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
         private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
         private DateTime _lastPacket = DateTime.MinValue;
+        private bool _isReady;
 
         private readonly BufferedWaveProvider _outputBuffer = new(new WaveFormat(Constants.SamplesPerFrame, Constants.Channels))
         {
@@ -25,7 +27,7 @@ namespace VoiceCraft.Client.Network
             DiscardOnBufferOverflow = true
         };
 
-        public VoiceCraftClientEntity(int id) : base(id)
+        public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
         {
             StartJitterThread();
         }
@@ -41,7 +43,11 @@ namespace VoiceCraft.Client.Network
 
         public int Read(byte[] buffer, int offset, int count)
         {
-            return _outputBuffer.Read(buffer, offset, count);
+            if (!_isReady) return 0;
+            var read = _outputBuffer.Read(buffer, offset, count);
+            if (read == 0)
+                _isReady = false;
+            return read;
         }
 
         public override void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
@@ -126,6 +132,9 @@ namespace VoiceCraft.Client.Network
                         var read = Read(_readBuffer);
                         if (read > 0)
                             _outputBuffer.AddSamples(_readBuffer, 0, _readBuffer.Length);
+                        
+                        if(_outputBuffer.BufferedDuration >= TimeSpan.FromMilliseconds(Constants.DecodeBufferSizeThresholdMs))
+                            _isReady = true;
                     }
                     catch (Exception ex)
                     {

@@ -23,12 +23,14 @@ namespace VoiceCraft.Server
             //Commands
             var rootCommand = new RootCommand("VoiceCraft commands.");
             serviceCollection.AddSingleton(rootCommand);
+            serviceCollection.AddSingleton<SetPropertyCommand>();
             serviceCollection.AddSingleton<SetPositionCommand>();
             serviceCollection.AddSingleton<SetWorldIdCommand>();
             serviceCollection.AddSingleton<ListCommand>();
             serviceCollection.AddSingleton<SetTitleCommand>();
             
             var serviceProvider = serviceCollection.BuildServiceProvider();
+            rootCommand.AddCommand(serviceProvider.GetRequiredService<SetPropertyCommand>());
             rootCommand.AddCommand(serviceProvider.GetRequiredService<SetPositionCommand>());
             rootCommand.AddCommand(serviceProvider.GetRequiredService<SetWorldIdCommand>());
             rootCommand.AddCommand(serviceProvider.GetRequiredService<ListCommand>());

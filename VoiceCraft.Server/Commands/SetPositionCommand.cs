@@ -13,7 +13,7 @@ namespace VoiceCraft.Server.Commands
             var yPosArgument = new Argument<float>("y", "The Y position.");
             var zPosArgument = new Argument<float>("z", "The Z position.");
             AddArgument(idArgument);
-            AddArgument(yPosArgument);
+            AddArgument(xPosArgument);
             AddArgument(yPosArgument);
             AddArgument(zPosArgument);
 

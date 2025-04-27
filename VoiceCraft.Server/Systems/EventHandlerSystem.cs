@@ -23,6 +23,8 @@ namespace VoiceCraft.Server.Systems
 
             _world.OnEntityCreated += OnEntityCreated;
             _world.OnEntityDestroyed += OnEntityDestroyed;
+            _world.OnMinRangeUpdated += OnMinRangeUpdated;
+            _world.OnMaxRangeUpdated += OnMaxRangeUpdated;
             _audioEffectSystem.OnEffectSet += OnAudioEffectSet;
             _audioEffectSystem.OnEffectRemoved += OnAudioEffectRemoved;
         }
@@ -37,6 +39,8 @@ namespace VoiceCraft.Server.Systems
         {
             _world.OnEntityCreated -= OnEntityCreated;
             _world.OnEntityDestroyed -= OnEntityDestroyed;
+            _world.OnMinRangeUpdated -= OnMinRangeUpdated;
+            _world.OnMaxRangeUpdated -= OnMaxRangeUpdated;
             _audioEffectSystem.OnEffectSet -= OnAudioEffectSet;
             _audioEffectSystem.OnEffectRemoved -= OnAudioEffectRemoved;
             GC.SuppressFinalize(this);
@@ -68,16 +72,20 @@ namespace VoiceCraft.Server.Systems
         {
             //Broadcast entity creation.
             var networkEntity = newEntity as VoiceCraftNetworkEntity;
-            var newEntityCreatedPacket = new EntityCreatedPacket(newEntity);
+            var newEntityCreatedPacket = new EntityCreatedPacket(newEntity.Id, newEntity);
             _server.Broadcast(newEntityCreatedPacket, DeliveryMethod.ReliableOrdered, networkEntity?.NetPeer);
             
             if (networkEntity != null)
             {
+                //Send Min/Max range packets.
+                _server.SendPacket(networkEntity.NetPeer, new SetMinRangePacket(_world.MinRange));
+                _server.SendPacket(networkEntity.NetPeer, new SetMaxRangePacket(_world.MaxRange));
+                
                 //Send other entities.
                 foreach (var entity in _world.Entities)
                 {
                     if(entity == newEntity) continue;
-                    var entityCreatedPacket = new EntityCreatedPacket(entity);
+                    var entityCreatedPacket = new EntityCreatedPacket(entity.Id, entity);
                     _server.SendPacket(networkEntity.NetPeer, entityCreatedPacket);
                 }
 
@@ -92,8 +100,6 @@ namespace VoiceCraft.Server.Systems
             newEntity.OnNameUpdated += OnEntityNameUpdated;
             newEntity.OnTalkBitmaskUpdated += OnEntityTalkBitmaskUpdated;
             newEntity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
-            newEntity.OnMinRangeUpdated += OnEntityMinRangeUpdated;
-            newEntity.OnMaxRangeUpdated += OnEntityMaxRangeUpdated;
             newEntity.OnPositionUpdated += OnEntityPositionUpdated;
             newEntity.OnRotationUpdated += OnEntityRotationUpdated;
             newEntity.OnPropertySet += OnEntityPropertySet;
@@ -114,14 +120,30 @@ namespace VoiceCraft.Server.Systems
             entity.OnNameUpdated -= OnEntityNameUpdated;
             entity.OnTalkBitmaskUpdated -= OnEntityTalkBitmaskUpdated;
             entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
-            entity.OnMinRangeUpdated -= OnEntityMinRangeUpdated;
-            entity.OnMaxRangeUpdated -= OnEntityMaxRangeUpdated;
             entity.OnPositionUpdated -= OnEntityPositionUpdated;
             entity.OnRotationUpdated -= OnEntityRotationUpdated;
             entity.OnPropertySet -= OnEntityPropertySet;
             entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
             entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
             entity.OnAudioReceived -= OnEntityAudioReceived;
+        }
+        
+        private void OnMinRangeUpdated(int minRange)
+        {
+            _tasks.Add(() =>
+            {
+                var packet = new SetMinRangePacket(minRange);
+                _server.Broadcast(packet);
+            });
+        }
+        
+        private void OnMaxRangeUpdated(int maxRange)
+        {
+            _tasks.Add(() =>
+            {
+                var packet = new SetMaxRangePacket(maxRange);
+                _server.Broadcast(packet);
+            });
         }
 
         //Data
@@ -152,32 +174,6 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
-                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-                foreach (var visibleEntity in visibleNetworkEntities)
-                {
-                    _server.SendPacket(visibleEntity.NetPeer, packet);
-                }
-            });
-        }
-
-        private void OnEntityMinRangeUpdated(int minRange, VoiceCraftEntity entity)
-        {
-            _tasks.Add(() =>
-            {
-                var packet = new SetMinRangePacket(entity.Id, minRange);
-                var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-                foreach (var visibleEntity in visibleNetworkEntities)
-                {
-                    _server.SendPacket(visibleEntity.NetPeer, packet);
-                }
-            });
-        }
-        
-        private void OnEntityMaxRangeUpdated(int maxRange, VoiceCraftEntity entity)
-        {
-            _tasks.Add(() =>
-            {
-                var packet = new SetMaxRangePacket(entity.Id, maxRange);
                 var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
                 foreach (var visibleEntity in visibleNetworkEntities)
                 {
@@ -236,16 +232,12 @@ namespace VoiceCraft.Server.Systems
                 var visibilityPacket = new SetVisibilityPacket(entity.Id, true);
                 var talkBitmaskPacket = new SetTalkBitmaskPacket(entity.Id, entity.TalkBitmask);
                 var listenBitmaskPacket = new SetListenBitmaskPacket(entity.Id, entity.ListenBitmask);
-                var maxRangePacket = new SetMaxRangePacket(entity.Id, entity.MaxRange);
-                var minRangePacket = new SetMinRangePacket(entity.Id, entity.MinRange);
                 var positionPacket = new SetPositionPacket(entity.Id, entity.Position);
                 var rotationPacket = new SetRotationPacket(entity.Id, entity.Rotation);
                 
                 _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
                 _server.SendPacket(networkEntity.NetPeer, talkBitmaskPacket);
                 _server.SendPacket(networkEntity.NetPeer, listenBitmaskPacket);
-                _server.SendPacket(networkEntity.NetPeer, maxRangePacket);
-                _server.SendPacket(networkEntity.NetPeer, minRangePacket);
                 _server.SendPacket(networkEntity.NetPeer, positionPacket);
                 _server.SendPacket(networkEntity.NetPeer, rotationPacket);
 
