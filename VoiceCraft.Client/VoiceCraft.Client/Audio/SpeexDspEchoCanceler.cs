@@ -1,18 +1,19 @@
 using System;
 using SpeexDSPSharp.Core;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Audio
 {
     public class SpeexDspEchoCanceler : IEchoCanceler
     {
-        public int FilterLengthMs { get; set; } = 200;
+        public int FilterLengthMs { get; set; } = 100;
 
         public bool IsNative => false;
         private bool _disposed;
         private byte[] _outputBuffer = [];
-        private byte[] _captureBuffer = [];
-        private int _captureBufferIndex;
+        private CircularBuffer<byte>? _captureBuffer;
+        private byte[] _captureBufferFrame = [];
         private SpeexDSPEchoCanceler? _echoCanceler;
         
         ~SpeexDspEchoCanceler()
@@ -28,17 +29,19 @@ namespace VoiceCraft.Client.Audio
                 throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
             
             CleanupEchoCanceler();
-
+            
             var bufferSamples = recorder.BufferMilliseconds * recorder.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
             var bufferBytes = recorder.BitDepth / 8 * recorder.Channels * bufferSamples;
+            var filterLengthSamples = FilterLengthMs * recorder.SampleRate / 1000;
+            var filterLengthBytes = player.BitDepth / 8 * player.Channels * filterLengthSamples;
             _echoCanceler = new SpeexDSPEchoCanceler(
                 bufferSamples,
-                FilterLengthMs * recorder.SampleRate / 1000,
+                filterLengthSamples,
                 recorder.Channels,
                 player.Channels);
-            _captureBuffer = new byte[bufferBytes];
+            _captureBuffer = new CircularBuffer<byte>(filterLengthBytes);
+            _captureBufferFrame = new byte[filterLengthBytes];
             _outputBuffer = new byte[bufferBytes];
-            _captureBufferIndex = 0;
             
             var sampleRate = recorder.SampleRate;
             _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
@@ -50,8 +53,8 @@ namespace VoiceCraft.Client.Audio
             ThrowIfNotInitialized();
             ArgumentOutOfRangeException.ThrowIfLessThan(count, _outputBuffer.Length);
             Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
-            
-            _echoCanceler?.EchoCapture(buffer, _outputBuffer);
+
+            _echoCanceler?.EchoCancel(buffer, GetCaptureBufferFrame(), _outputBuffer);
             _outputBuffer.CopyTo(buffer);
         }
 
@@ -61,30 +64,38 @@ namespace VoiceCraft.Client.Audio
         {
             ThrowIfDisposed();
             ThrowIfNotInitialized();
-            var offset = 0;
-
-            while (offset != count)
+            if (_captureBuffer == null) return;
+            
+            lock (_captureBuffer)
             {
-                var bytesAdded = AddBytes(buffer, offset, count);
-                if (_captureBufferIndex >= _captureBuffer.Length)
+                for (var i = 0; i < count; i++)
                 {
-                    _echoCanceler?.EchoPlayback(_captureBuffer); //Add the full audio frame.
-                    Array.Clear(_captureBuffer, 0, _captureBuffer.Length);
-                    _captureBufferIndex = 0;
+                    _captureBuffer.PushBack(buffer[i]);
                 }
-                offset += bytesAdded;
             }
         }
 
         public void EchoPlayback(byte[] buffer, int count) => EchoPlayback(buffer.AsSpan(), count);
 
-        private int AddBytes(Span<byte> buffer, int offset, int count)
+        private byte[] GetCaptureBufferFrame()
         {
-            if(offset == count) return 0;
-            var amountToCopy = Math.Min(_captureBuffer.Length - _captureBufferIndex, count - offset);
-            buffer.Slice(offset, amountToCopy).CopyTo(_captureBuffer.AsSpan()[_captureBufferIndex..]);
-            _captureBufferIndex += amountToCopy;
-            return amountToCopy;
+            if (_captureBuffer == null) 
+                return _captureBufferFrame;
+            
+            lock (_captureBuffer)
+            {
+                Array.Clear(_captureBufferFrame);
+                if (_captureBuffer.Size < _captureBufferFrame.Length)
+                    return _captureBufferFrame;
+
+                for (var i = 0; i < _captureBufferFrame.Length; i++)
+                {
+                    _captureBufferFrame[i] = _captureBuffer.Front();
+                    _captureBuffer.PopFront();
+                }
+
+                return _captureBufferFrame;
+            }
         }
 
         public void Dispose()
@@ -98,6 +109,10 @@ namespace VoiceCraft.Client.Audio
             if (_echoCanceler == null) return;
             _echoCanceler.Dispose();
             _echoCanceler = null;
+            
+            if (_captureBuffer == null) return;
+            lock (_captureBuffer)
+                _captureBuffer = null;
         }
         
         private void ThrowIfDisposed()
@@ -108,7 +123,7 @@ namespace VoiceCraft.Client.Audio
 
         private void ThrowIfNotInitialized()
         {
-            if(_echoCanceler == null)
+            if(_echoCanceler == null || _captureBuffer == null)
                 throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
         }
 
