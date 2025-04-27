@@ -98,6 +98,16 @@ namespace VoiceCraft.Client.Network.Systems
                     setDescriptionPacket.Deserialize(reader);
                     HandleSetDescriptionPacket(setDescriptionPacket);
                     break;
+                case PacketType.SetMinRange:
+                    var setMinRangePacket = new SetMinRangePacket();
+                    setMinRangePacket.Deserialize(reader);
+                    HandleSetMinRangePacket(setMinRangePacket);
+                    break;
+                case PacketType.SetMaxRange:
+                    var setMaxRangePacket = new SetMaxRangePacket();
+                    setMaxRangePacket.Deserialize(reader);
+                    HandleSetMaxRangePacket(setMaxRangePacket);
+                    break;
                 case PacketType.EntityCreated:
                     var entityCreatedPacket = new EntityCreatedPacket();
                     entityCreatedPacket.Deserialize(reader);
@@ -127,16 +137,6 @@ namespace VoiceCraft.Client.Network.Systems
                     var setListenBitmaskPacket = new SetListenBitmaskPacket();
                     setListenBitmaskPacket.Deserialize(reader);
                     HandleSetListenBitmaskPacket(setListenBitmaskPacket);
-                    break;
-                case PacketType.SetMinRange:
-                    var setMinRangePacket = new SetMinRangePacket();
-                    setMinRangePacket.Deserialize(reader);
-                    HandleSetMinRangePacket(setMinRangePacket);
-                    break;
-                case PacketType.SetMaxRange:
-                    var setMaxRangePacket = new SetMaxRangePacket();
-                    setMaxRangePacket.Deserialize(reader);
-                    HandleSetMaxRangePacket(setMaxRangePacket);
                     break;
                 case PacketType.SetPosition:
                     var setPositionPacket = new SetPositionPacket();
@@ -181,10 +181,20 @@ namespace VoiceCraft.Client.Network.Systems
         {
             OnSetDescription?.Invoke(packet.Description);
         }
+        
+        private void HandleSetMinRangePacket(SetMinRangePacket packet)
+        {
+            _world.MinRange = packet.MinRange;
+        }
+
+        private void HandleSetMaxRangePacket(SetMaxRangePacket packet)
+        {
+            _world.MaxRange = packet.MaxRange;
+        }
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
         {
-            var entity = new VoiceCraftClientEntity(packet.Id);
+            var entity = new VoiceCraftClientEntity(packet.Id, _world);
             entity.Deserialize(reader);
             _world.AddEntity(entity);
         }
@@ -241,32 +251,6 @@ namespace VoiceCraft.Client.Network.Systems
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.ListenBitmask = packet.Bitmask;
-        }
-
-        private void HandleSetMinRangePacket(SetMinRangePacket packet)
-        {
-            if (packet.Id == _client.Id)
-            {
-                _client.MinRange = packet.MinRange;
-                return;
-            }
-            
-            var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
-            entity.MinRange = packet.MinRange;
-        }
-
-        private void HandleSetMaxRangePacket(SetMaxRangePacket packet)
-        {
-            if (packet.Id == _client.Id)
-            {
-                _client.MaxRange = packet.MaxRange;
-                return;
-            }
-            
-            var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
-            entity.MaxRange = packet.MaxRange;
         }
 
         private void HandleSetPositionPacket(SetPositionPacket packet)

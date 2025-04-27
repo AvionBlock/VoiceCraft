@@ -31,7 +31,6 @@ namespace VoiceCraft.Client.Network
 
         //Systems
         public EventBasedNetListener Listener { get; } = new();
-        public VoiceCraftWorld World { get; } = new();
         public NetworkSystem NetworkSystem { get; }
 
         //Privates
@@ -49,7 +48,7 @@ namespace VoiceCraft.Client.Network
         private string? _disconnectReason;
         private bool _isDisposed;
 
-        public VoiceCraftClient() : base(0)
+        public VoiceCraftClient() : base(0, new VoiceCraftWorld())
         {
             _netManager = new NetManager(Listener)
             {
@@ -248,7 +247,23 @@ namespace VoiceCraft.Client.Network
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask;
             if ((bitmask & 1ul) == 0) return; //Not enabled.
-            var range = Math.Max(from.MaxRange, to.MaxRange) - Math.Min(from.MinRange, to.MinRange);
+            
+            int? minRange = null;
+            if(from.TryGetProperty<int>(PropertyKey.MinRange, out var fromMinRange))
+                minRange = (int)fromMinRange;
+            if(to.TryGetProperty<int>(PropertyKey.MinRange, out var toMinRange))
+                minRange = Math.Max(minRange ?? 0, (int)toMinRange);
+            
+            int? maxRange = null;
+            if(from.TryGetProperty<int>(PropertyKey.MaxRange, out var fromMaxRange))
+                maxRange = (int)fromMaxRange;
+            if(to.TryGetProperty<int>(PropertyKey.MaxRange, out var toMaxRange))
+                maxRange = Math.Max(maxRange ?? 0, (int)toMaxRange);
+            
+            maxRange ??= from.World.MaxRange; //If maxRange is still null, use the world max range.
+            minRange ??= from.World.MinRange; //If min range is still null, use the world min range.
+            var range = (int)(maxRange - minRange);
+            
             var distance = Vector3.Distance(from.Position, to.Position);
             if(range == 0) return; //Range is 0. Do not calculate division.
             var factor = 1f - Math.Clamp(distance / range, 0f, 1.0f);

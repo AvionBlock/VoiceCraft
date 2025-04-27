@@ -153,13 +153,14 @@ namespace VoiceCraft.Server.Systems
                 switch (loginPacket.LoginType)
                 {
                     case LoginType.Login:
-                        var entity = new VoiceCraftNetworkEntity(peer);
+                        var entity = new VoiceCraftNetworkEntity(peer, _world);
                         _world.AddEntity(entity);
                         peer.Tag = entity;
                         break;
                     case LoginType.Discovery:
                         peer.Tag = LoginType.Discovery;
                         break;
+                    case LoginType.Unknown:
                     default:
                         request.Reject();
                         break;

@@ -6,18 +6,19 @@ namespace VoiceCraft.Core.Network.Packets
     {
         public override PacketType PacketType => PacketType.EntityCreated;
         public int Id { get; private set; }
-        public VoiceCraftEntity Entity { get; private set; }
+        public VoiceCraftEntity? Entity { get; private set; }
 
-        public EntityCreatedPacket(VoiceCraftEntity? entity = null)
+        public EntityCreatedPacket(int id = 0, VoiceCraftEntity? entity = null)
         {
-            Entity = entity ?? new VoiceCraftEntity(0);
-            Id = Entity.Id;
+            Id = id;
+            Entity = entity;
         }
 
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(Entity.Id);
-            writer.Put(Entity);
+            writer.Put(Id);
+            if(Entity != null)
+                writer.Put(Entity);
         }
 
         public override void Deserialize(NetDataReader reader)

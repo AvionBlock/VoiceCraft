@@ -397,7 +397,11 @@ namespace VoiceCraft.Client.Linux.Audio
 
                 //Get all buffers that have been processed.
                 var processedBuffers = AL.GetSource(_source, ALGetSourcei.BuffersProcessed);
-                if (processedBuffers <= 0) continue;
+                if (processedBuffers <= 0)
+                {
+                    Thread.Sleep(1); //So we don't exactly burn the CPU. Small hack but it works.
+                    continue;
+                }
 
                 //Unqueue the processed buffers.
                 var buffers = AL.SourceUnqueueBuffers(_source, processedBuffers);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using LiteNetLib.Utils;
 
@@ -11,8 +12,6 @@ namespace VoiceCraft.Core
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
-        public event Action<int, VoiceCraftEntity>? OnMinRangeUpdated;
-        public event Action<int, VoiceCraftEntity>? OnMaxRangeUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<PropertyKey, object?, VoiceCraftEntity>? OnPropertySet;
@@ -22,20 +21,20 @@ namespace VoiceCraft.Core
         public event Action<VoiceCraftEntity>? OnDestroyed;
         
         //Privates
+        private float _loudness;
         private readonly List<VoiceCraftEntity> _visibleEntities = new List<VoiceCraftEntity>();
         private string _name = "New Entity";
         private string _worldId = string.Empty;
         private ulong _talkBitmask = 1;
         private ulong _listenBitmask = 1;
-        private int _minRange;
-        private int _maxRange = 30;
         private Vector3 _position;
         private Quaternion _rotation;
         private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
 
         //Properties
         public virtual int Id { get; }
-        public float Loudness { get; private set; }
+        public VoiceCraftWorld World { get; }
+        public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
@@ -90,28 +89,6 @@ namespace VoiceCraft.Core
             }
         }
 
-        public int MinRange
-        {
-            get => _minRange;
-            set
-            {
-                if (_minRange == value) return;
-                _minRange = value;
-                OnMinRangeUpdated?.Invoke(_minRange, this);
-            }
-        }
-
-        public int MaxRange
-        {
-            get => _maxRange;
-            set
-            {
-                if (_maxRange == value) return;
-                _maxRange = value;
-                OnMaxRangeUpdated?.Invoke(_maxRange, this);
-            }
-        }
-
         public Vector3 Position
         {
             get => _position;
@@ -138,9 +115,10 @@ namespace VoiceCraft.Core
 
         //Modifiers for modifying data for later?
 
-        public VoiceCraftEntity(int id)
+        public VoiceCraftEntity(int id, VoiceCraftWorld world)
         {
             Id = id;
+            World = world;
         }
         
         public void SetProperty(PropertyKey key, object? value)
@@ -172,6 +150,28 @@ namespace VoiceCraft.Core
                 _properties[key] = value;
             OnPropertySet?.Invoke(key, value, this);
         }
+
+        public T GetProperty<T>(PropertyKey key) where T : unmanaged
+        {
+            if(key == PropertyKey.Unknown)
+                throw new ArgumentOutOfRangeException(nameof(key));
+            
+            if(_properties.TryGetValue(key, out var value) && value is T typeValue)
+                return typeValue;
+            throw new KeyNotFoundException($"Property {key} not found!");
+        }
+        
+        public bool TryGetProperty<T>(PropertyKey key, [NotNullWhen(true)] out T? result) where T : unmanaged
+        {
+            if(key == PropertyKey.Unknown)
+                throw new ArgumentOutOfRangeException(nameof(key));
+
+            if (_properties.TryGetValue(key, out var value) && value is T typeValue)
+                result = typeValue;
+            else
+                result = null;
+            return result != null;
+        }
         
         public void ClearProperties()
         {
@@ -198,7 +198,7 @@ namespace VoiceCraft.Core
 
         public virtual void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
         {
-            Loudness = frameLoudness;
+            _loudness = frameLoudness;
             LastSpoke = DateTime.UtcNow;
             OnAudioReceived?.Invoke(buffer, timestamp, frameLoudness, this);
         }
@@ -210,7 +210,13 @@ namespace VoiceCraft.Core
             if (bitmask == 0) return false;
             if ((bitmask & 1ul) == 0) return true; //Proximity checking disabled.
 
-            var maxRange = Math.Max(_maxRange, entity.MaxRange);
+            int? maxRange = null;
+            if(TryGetProperty<int>(PropertyKey.MaxRange, out var fromMaxRange))
+                maxRange = (int)fromMaxRange;
+            if(entity.TryGetProperty<int>(PropertyKey.MaxRange, out var toMaxRange))
+                maxRange = Math.Max(maxRange ?? 0, (int)toMaxRange);
+            maxRange ??= World.MaxRange; //If maxRange is still null, use the world max range.
+            
             var distance = Vector3.Distance(Position, entity.Position);
             return distance <= maxRange;
         }
@@ -236,8 +242,6 @@ namespace VoiceCraft.Core
             OnNameUpdated = null;
             OnTalkBitmaskUpdated = null;
             OnListenBitmaskUpdated = null;
-            OnMinRangeUpdated = null;
-            OnMaxRangeUpdated = null;
             OnPositionUpdated = null;
             OnRotationUpdated = null;
             OnPropertySet = null;
