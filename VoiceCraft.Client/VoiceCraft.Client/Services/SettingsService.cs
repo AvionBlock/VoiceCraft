@@ -25,10 +25,10 @@ namespace VoiceCraft.Client.Services
 
         public void Load()
         {
-            if (!storageService.Exists(Constants.SettingsDirectory))
+            if (!storageService.Exists(Constants.SettingsFile))
                 throw new FileNotFoundException("Settings file not found, Reverting to default.");
             
-            var result = storageService.Load(Constants.SettingsDirectory);
+            var result = storageService.Load(Constants.SettingsFile);
             var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
             if (loadedSettings == null)
                 throw new Exception("Failed to load settings file, Reverting to default.");
@@ -75,7 +75,7 @@ namespace VoiceCraft.Client.Services
             ServersSettings.OnSaving();
             ThemeSettings.OnSaving();
             
-            await storageService.SaveAsync(Constants.SettingsDirectory,
+            await storageService.SaveAsync(Constants.SettingsFile,
                 JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
         }
     }

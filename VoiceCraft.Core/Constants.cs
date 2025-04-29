@@ -28,8 +28,9 @@ namespace VoiceCraft.Core
         public const int BlockAlign = Channels * (BitDepth / 8);
         
         //Storage
-        public const string SettingsDirectory = "Settings.json";
-        public const string CrashLogsDirectory = "CrashLogs.json";
+        public const string ApplicationDirectory = "voicecraft";
+        public const string SettingsFile = "Settings.json";
+        public const string CrashLogsFile = "CrashLogs.json";
         
         //Settings GUIDS.
         //Speex DSP

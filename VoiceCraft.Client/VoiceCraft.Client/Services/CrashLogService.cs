@@ -18,7 +18,7 @@ namespace VoiceCraft.Client.Services
         public static void Log(Exception exception)
         {
             _crashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
-            NativeStorageService?.Save(Constants.CrashLogsDirectory,
+            NativeStorageService?.Save(Constants.CrashLogsFile,
                 JsonSerializer.SerializeToUtf8Bytes(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
         }
 
@@ -26,10 +26,10 @@ namespace VoiceCraft.Client.Services
         {
             try
             {
-                if (!NativeStorageService?.Exists(Constants.CrashLogsDirectory) ?? false)
+                if (!NativeStorageService?.Exists(Constants.CrashLogsFile) ?? false)
                     return;
 
-                var result = NativeStorageService?.Load(Constants.CrashLogsDirectory);
+                var result = NativeStorageService?.Load(Constants.CrashLogsFile);
                 var loadedCrashLogs =
                     JsonSerializer.Deserialize<Dictionary<DateTime, string>>(result, CrashLogGenerationContext.Default.DictionaryDateTimeString);
                 if (loadedCrashLogs == null) return;
@@ -53,7 +53,7 @@ namespace VoiceCraft.Client.Services
         public static void Clear()
         {
             _crashLogs.Clear();
-            NativeStorageService?.Save(Constants.CrashLogsDirectory,
+            NativeStorageService?.Save(Constants.CrashLogsFile,
                 JsonSerializer.SerializeToUtf8Bytes(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
         }
     }
