@@ -85,14 +85,14 @@ namespace VoiceCraft.Client.Network
             }
         }
 
-        public void Connect(string ip, int port, LoginType loginType)
+        public void Connect(Guid userGuid, string ip, int port, LoginType loginType)
         {
             ThrowIfDisposed();
             if (ConnectionState != ConnectionState.Disconnected)
                 throw new InvalidOperationException("This client is already connected or is connecting to a server!");
 
             var dataWriter = new NetDataWriter();
-            var loginPacket = new LoginPacket(Version.ToString(), loginType);
+            var loginPacket = new LoginPacket(userGuid, Version.ToString(), loginType);
             loginPacket.Serialize(dataWriter);
             _serverPeer = _netManager.Connect(ip, port, dataWriter) ?? throw new InvalidOperationException("A connection request is awaiting!");
         }
