@@ -9,10 +9,9 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Services
 {
-    public class SettingsService
+    public class SettingsService(StorageService storageService)
     {
         // ReSharper disable once InconsistentNaming
-        private static readonly string SettingsPath = Path.Combine(AppContext.BaseDirectory, "Settings.json");
         public AudioSettings AudioSettings => _settings.AudioSettings;
         public LocaleSettings LocaleSettings => _settings.LocaleSettings;
         public NotificationSettings NotificationSettings => _settings.NotificationSettings;
@@ -25,10 +24,10 @@ namespace VoiceCraft.Client.Services
 
         public void Load()
         {
-            if (!File.Exists(SettingsPath))
+            if (!storageService.Exists(Constants.SettingsDirectory))
                 throw new FileNotFoundException("Settings file not found, Reverting to default.");
             
-            var result = File.ReadAllText(SettingsPath);
+            var result = storageService.Load(Constants.SettingsDirectory);
             var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
             if (loadedSettings == null)
                 throw new Exception("Failed to load settings file, Reverting to default.");
@@ -75,8 +74,8 @@ namespace VoiceCraft.Client.Services
             ServersSettings.OnSaving();
             ThemeSettings.OnSaving();
             
-            await File.WriteAllTextAsync(SettingsPath,
-                JsonSerializer.Serialize(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
+            await storageService.SaveAsync(Constants.SettingsDirectory,
+                JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
         }
     }
 

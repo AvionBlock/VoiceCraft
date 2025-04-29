@@ -1,35 +1,35 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Services
 {
     public static class CrashLogService
     {
         private const int Limit = 50;
-        private static readonly string CrashLogsPath = Path.Combine(AppContext.BaseDirectory, "CrashLogs.json");
+        public static StorageService? NativeStorageService;
+
         private static Dictionary<DateTime, string> _crashLogs = new();
         public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs => _crashLogs;
 
         public static void Log(Exception exception)
         {
             _crashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
-            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
+            NativeStorageService?.Save(Constants.CrashLogsDirectory,
+                JsonSerializer.SerializeToUtf8Bytes(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
         }
 
         public static void Load()
         {
             try
             {
-                if (!File.Exists(CrashLogsPath))
-                {
+                if (!NativeStorageService?.Exists(Constants.CrashLogsDirectory) ?? false)
                     return;
-                }
 
-                var result = File.ReadAllText(CrashLogsPath);
+                var result = NativeStorageService?.Load(Constants.CrashLogsDirectory);
                 var loadedCrashLogs =
                     JsonSerializer.Deserialize<Dictionary<DateTime, string>>(result, CrashLogGenerationContext.Default.DictionaryDateTimeString);
                 if (loadedCrashLogs == null) return;
@@ -53,7 +53,8 @@ namespace VoiceCraft.Client.Services
         public static void Clear()
         {
             _crashLogs.Clear();
-            File.WriteAllText(CrashLogsPath, JsonSerializer.Serialize(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
+            NativeStorageService?.Save(Constants.CrashLogsDirectory,
+                JsonSerializer.SerializeToUtf8Bytes(_crashLogs, CrashLogGenerationContext.Default.DictionaryDateTimeString));
         }
     }
 

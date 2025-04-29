@@ -17,8 +17,11 @@ namespace VoiceCraft.Client.Windows
         [STAThread]
         public static void Main(string[] args)
         {
+            var nativeStorage = new NativeStorageService();
+            CrashLogService.NativeStorageService = nativeStorage;
             CrashLogService.Load();
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            
             App.ServiceCollection.AddSingleton<AudioService>(_ =>
             {
                 var audioService = new NativeAudioService();
@@ -31,6 +34,7 @@ namespace VoiceCraft.Client.Windows
                 return audioService;
             });
             
+            App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Permissions.Microphone>();
 

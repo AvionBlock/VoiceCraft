@@ -46,8 +46,11 @@ namespace VoiceCraft.Client.Android
 
         protected override void OnCreate(Bundle? app)
         {
+            var nativeStorage = new NativeStorageService();
+            CrashLogService.NativeStorageService = nativeStorage;
             CrashLogService.Load();
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+            
             OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>(_ =>
             {
@@ -71,6 +74,7 @@ namespace VoiceCraft.Client.Android
                 return audioService;
             });
             
+            App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
             App.ServiceCollection.AddTransient<Permissions.Microphone>();
