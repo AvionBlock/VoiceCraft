@@ -2,14 +2,14 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class SetTalkBitmaskPacket : VoiceCraftPacket
+    public class SetDeafenPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetTalkBitmask;
+        public override PacketType PacketType => PacketType.SetDeafen;
         
         public int Id { get; private set; }
-        public ulong Value { get; private set; }
+        public bool Value { get; private set; }
 
-        public SetTalkBitmaskPacket(int id = 0, ulong value = 0)
+        public SetDeafenPacket(int id = 0, bool value = true)
         {
             Id = id;
             Value = value;
@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetULong();
+            Value = reader.GetBool();
         }
     }
 }

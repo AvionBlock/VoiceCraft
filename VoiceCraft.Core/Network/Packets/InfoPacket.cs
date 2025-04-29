@@ -6,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class InfoPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Info;
+        
         public string Motd { get; private set; }
         public int Clients { get; private set; }
         public bool Discovery  { get; private set; }

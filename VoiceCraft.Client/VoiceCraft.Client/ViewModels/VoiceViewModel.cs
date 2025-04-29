@@ -20,16 +20,14 @@ namespace VoiceCraft.Client.ViewModels
         [ObservableProperty] private bool _isDeafened;
         [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
 
-        [RelayCommand]
-        private void ToggleMute()
+        partial void OnIsMutedChanging(bool value)
         {
-            _process?.ToggleMute();
+            _process?.ToggleMute(value);
         }
-
-        [RelayCommand]
-        private void ToggleDeafen()
+        
+        partial void OnIsDeafenedChanged(bool value)
         {
-            _process?.ToggleDeafen();
+            _process?.ToggleDeafen(value);
         }
 
         [RelayCommand]

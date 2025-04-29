@@ -6,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class AudioPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Audio;
+        
         public int Id { get; private set; }
         public uint Timestamp { get; private set; }
         public float FrameLoudness { get; private set; }

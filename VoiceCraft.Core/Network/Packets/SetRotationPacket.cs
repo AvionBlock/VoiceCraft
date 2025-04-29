@@ -6,22 +6,23 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetRotationPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetRotation;
+        
         public int Id { get; private set; }
-        public Quaternion Rotation { get; private set; }
+        public Quaternion Value { get; private set; }
 
-        public SetRotationPacket(int id = 0, Quaternion rotation = new Quaternion())
+        public SetRotationPacket(int id = 0, Quaternion value = new Quaternion())
         {
             Id = id;
-            Rotation = rotation;
+            Value = value;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put(Rotation.X);
-            writer.Put(Rotation.Y);
-            writer.Put(Rotation.Z);
-            writer.Put(Rotation.W);
+            writer.Put(Value.X);
+            writer.Put(Value.Y);
+            writer.Put(Value.Z);
+            writer.Put(Value.W);
         }
 
         public override void Deserialize(NetDataReader reader)
@@ -31,7 +32,7 @@ namespace VoiceCraft.Core.Network.Packets
             var y = reader.GetFloat();
             var z = reader.GetFloat();
             var w = reader.GetFloat();
-            Rotation = new Quaternion(x, y, z, w);
+            Value = new Quaternion(x, y, z, w);
         }
     }
 }

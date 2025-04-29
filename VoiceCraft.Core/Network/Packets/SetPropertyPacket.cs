@@ -6,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetPropertyPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetProperty;
+        
         public int Id { get; private set; }
         public PropertyKey Key { get; private set; }
         public object? Value { get; private set; }

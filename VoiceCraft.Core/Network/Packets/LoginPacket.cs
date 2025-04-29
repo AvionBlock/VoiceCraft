@@ -6,6 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class LoginPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.Login;
+        
         public Guid UserGuid { get; private set; }
         public string Version { get; private set; }
         public LoginType LoginType { get; private set; }

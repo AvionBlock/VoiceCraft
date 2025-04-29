@@ -8,6 +8,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes
 {
@@ -17,10 +18,10 @@ namespace VoiceCraft.Client.Processes
         //Events
         public event Action<string>? OnUpdateTitle;
         public event Action<string>? OnUpdateDescription;
-        public event Action<bool>? OnUpdateMute;
-        public event Action<bool>? OnUpdateDeafen;
         public event Action? OnConnected;
         public event Action<string>? OnDisconnected;
+        public event Action<bool>? OnUpdateMute;
+        public event Action<bool>? OnUpdateDeafen;
         public event Action<EntityViewModel>? OnEntityAdded;
         public event Action<EntityViewModel>? OnEntityRemoved;
 
@@ -28,6 +29,10 @@ namespace VoiceCraft.Client.Processes
         public bool HasEnded { get; private set; }
         
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
+        
+        public bool Muted => _voiceCraftClient.Muted;
+        
+        public bool Deafened => _voiceCraftClient.Deafened;
 
         public string Title
         {
@@ -49,26 +54,6 @@ namespace VoiceCraft.Client.Processes
             }
         }
 
-        public bool Muted
-        {
-            get => _muted;
-            private set
-            {
-                _muted = value;
-                OnUpdateMute?.Invoke(value);
-            }
-        }
-
-        public bool Deafened
-        {
-            get => _deafened;
-            private set
-            {
-                _deafened = value;
-                OnUpdateDeafen?.Invoke(value);
-            }
-        }
-
         //Client
         private readonly VoiceCraftClient _voiceCraftClient = new();
         private readonly Dictionary<VoiceCraftEntity, EntityViewModel> _entityViewModels = new();
@@ -83,8 +68,6 @@ namespace VoiceCraft.Client.Processes
         //Displays
         private string _title = string.Empty;
         private string _description = string.Empty;
-        private bool _muted;
-        private bool _deafened;
         
         private bool _stop;
 
@@ -98,6 +81,8 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
                 _voiceCraftClient.OnConnected += ClientOnConnected;
                 _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
+                _voiceCraftClient.OnMuteUpdated += ClientOnMuteUpdated;
+                _voiceCraftClient.OnDeafenUpdated += ClientOnDeafenUpdated;
                 _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
                 _voiceCraftClient.NetworkSystem.OnSetTitle += ClientOnSetTitle;
@@ -152,6 +137,8 @@ namespace VoiceCraft.Client.Processes
                 _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
                 _voiceCraftClient.OnConnected -= ClientOnConnected;
                 _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
+                _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
+                _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
                 _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
                 _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
                 _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
@@ -169,15 +156,14 @@ namespace VoiceCraft.Client.Processes
             }
         }
 
-        public void ToggleMute()
+        public void ToggleMute(bool value)
         {
-            Muted = !Muted;
-            _voiceCraftClient.Muted = Muted;
+            _voiceCraftClient.SendPacket(new SetMutePacket(value: value));
         }
 
-        public void ToggleDeafen()
+        public void ToggleDeafen(bool value)
         {
-            Deafened = !Deafened;
+            _voiceCraftClient.SendPacket(new SetDeafenPacket(value: value));
         }
 
         public void Disconnect()
@@ -198,6 +184,8 @@ namespace VoiceCraft.Client.Processes
             
             _voiceCraftClient.OnConnected -= ClientOnConnected;
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
+            _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
+            _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
             _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
             _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
@@ -230,6 +218,10 @@ namespace VoiceCraft.Client.Processes
             notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}");
             OnDisconnected?.Invoke(reason);
         }
+
+        private void ClientOnMuteUpdated(bool mute, VoiceCraftEntity entity) => OnUpdateMute?.Invoke(mute);
+        
+        private void ClientOnDeafenUpdated(bool deafen, VoiceCraftEntity entity) => OnUpdateDeafen?.Invoke(deafen);
 
         private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
         {

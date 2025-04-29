@@ -98,6 +98,8 @@ namespace VoiceCraft.Server.Systems
             }
             
             newEntity.OnNameUpdated += OnEntityNameUpdated;
+            newEntity.OnMuteUpdated += OnEntityMuteUpdated;
+            newEntity.OnDeafenUpdated += OnEntityDeafenUpdated;
             newEntity.OnTalkBitmaskUpdated += OnEntityTalkBitmaskUpdated;
             newEntity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
             newEntity.OnPositionUpdated += OnEntityPositionUpdated;
@@ -118,6 +120,8 @@ namespace VoiceCraft.Server.Systems
             _server.Broadcast(entityDestroyedPacket);
 
             entity.OnNameUpdated -= OnEntityNameUpdated;
+            entity.OnMuteUpdated -= OnEntityMuteUpdated;
+            entity.OnDeafenUpdated -= OnEntityDeafenUpdated;
             entity.OnTalkBitmaskUpdated -= OnEntityTalkBitmaskUpdated;
             entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
             entity.OnPositionUpdated -= OnEntityPositionUpdated;
@@ -152,6 +156,24 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetNamePacket(entity.Id, name);
+                _server.Broadcast(packet);
+            });
+        }
+
+        private void OnEntityMuteUpdated(bool mute, VoiceCraftEntity entity)
+        {
+            _tasks.Add(() =>
+            {
+                var packet = new SetMutePacket(entity.Id, mute);
+                _server.Broadcast(packet);
+            });
+        }
+        
+        private void OnEntityDeafenUpdated(bool deafen, VoiceCraftEntity entity)
+        {
+            _tasks.Add(() =>
+            {
+                var packet = new SetDeafenPacket(entity.Id, deafen);
                 _server.Broadcast(packet);
             });
         }
