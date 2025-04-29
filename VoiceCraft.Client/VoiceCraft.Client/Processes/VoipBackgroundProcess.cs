@@ -8,7 +8,6 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Client.Processes
 {
@@ -131,7 +130,7 @@ namespace VoiceCraft.Client.Processes
                 _audioRecorder.Start();
                 _audioPlayer.Play();
 
-                _voiceCraftClient.Connect(ip, port, LoginType.Login);
+                _voiceCraftClient.Connect(settingsService.UserGuid, ip, port, LoginType.Login);
                 Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
                 var startTime = DateTime.UtcNow;

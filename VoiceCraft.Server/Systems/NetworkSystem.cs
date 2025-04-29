@@ -105,7 +105,7 @@ namespace VoiceCraft.Server.Systems
                     HandleInfoPacket(infoPacket, remoteEndPoint);
                     break;
                 case PacketType.Audio:
-                    if(peer == null) return;
+                    if (peer == null) return;
                     var audioPacket = new AudioPacket();
                     audioPacket.Deserialize(reader);
                     HandleAudioPacket(audioPacket, peer);
@@ -140,7 +140,7 @@ namespace VoiceCraft.Server.Systems
                 request.Reject("Unknown login type!"u8.ToArray());
                 return;
             }
-            
+
             if (Version.Parse(loginPacket.Version).Major != VoiceCraftServer.Version.Major)
             {
                 request.Reject("Incompatible client/server version!"u8.ToArray());
@@ -153,7 +153,7 @@ namespace VoiceCraft.Server.Systems
                 switch (loginPacket.LoginType)
                 {
                     case LoginType.Login:
-                        var entity = new VoiceCraftNetworkEntity(peer, _world);
+                        var entity = new VoiceCraftNetworkEntity(peer, loginPacket.UserGuid, loginPacket.PositioningType, _world);
                         _world.AddEntity(entity);
                         peer.Tag = entity;
                         break;
@@ -171,7 +171,7 @@ namespace VoiceCraft.Server.Systems
                 peer.Disconnect("An error occurred on the server while trying to parse the login!"u8.ToArray());
             }
         }
-        
+
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
         {
             var packet = new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);
