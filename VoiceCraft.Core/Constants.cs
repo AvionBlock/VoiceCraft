@@ -27,6 +27,10 @@ namespace VoiceCraft.Core
         public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
         public const int BlockAlign = Channels * (BitDepth / 8);
         
+        //Storage
+        public const string SettingsDirectory = "Settings.json";
+        public const string CrashLogsDirectory = "CrashLogs.json";
+        
         //Settings GUIDS.
         //Speex DSP
         public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
