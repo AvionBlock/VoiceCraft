@@ -98,6 +98,16 @@ namespace VoiceCraft.Client.Network.Systems
                     setDescriptionPacket.Deserialize(reader);
                     HandleSetDescriptionPacket(setDescriptionPacket);
                     break;
+                case PacketType.SetMute:
+                    var setMutePacket = new SetMutePacket();
+                    setMutePacket.Deserialize(reader);
+                    HandleSetMutePacket(setMutePacket);
+                    break;
+                case PacketType.SetDeafen:
+                    var setDeafen = new SetDeafenPacket();
+                    setDeafen.Deserialize(reader);
+                    HandleSetDeafenPacket(setDeafen);
+                    break;
                 case PacketType.SetMinRange:
                     var setMinRangePacket = new SetMinRangePacket();
                     setMinRangePacket.Deserialize(reader);
@@ -174,22 +184,22 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetTitlePacket(SetTitlePacket packet)
         {
-            OnSetTitle?.Invoke(packet.Title);
+            OnSetTitle?.Invoke(packet.Value);
         }
 
         private void HandleSetDescriptionPacket(SetDescriptionPacket packet)
         {
-            OnSetDescription?.Invoke(packet.Description);
+            OnSetDescription?.Invoke(packet.Value);
         }
         
         private void HandleSetMinRangePacket(SetMinRangePacket packet)
         {
-            _world.MinRange = packet.MinRange;
+            _world.MinRange = packet.Value;
         }
 
         private void HandleSetMaxRangePacket(SetMaxRangePacket packet)
         {
-            _world.MaxRange = packet.MaxRange;
+            _world.MaxRange = packet.Value;
         }
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
@@ -208,7 +218,7 @@ namespace VoiceCraft.Client.Network.Systems
         {
             var entity = _world.GetEntity(packet.Id);
             if (entity is not VoiceCraftClientEntity clientEntity) return;
-            clientEntity.IsVisible = packet.Visibility;
+            clientEntity.IsVisible = packet.Value;
             if (clientEntity.IsVisible) return; //Clear properties and the audio buffer when entity is not visible.
             clientEntity.ClearBuffer();
             clientEntity.ClearProperties();
@@ -218,65 +228,91 @@ namespace VoiceCraft.Client.Network.Systems
         {
             if (packet.Id == _client.Id)
             {
-                _client.Name = packet.Name;
+                _client.Name = packet.Value;
                 return;
             }
 
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
-            entity.Name = packet.Name;
+            entity.Name = packet.Value;
+        }
+
+        private void HandleSetMutePacket(SetMutePacket packet)
+        {
+            if (packet.Id == _client.Id)
+            {
+                _client.Muted = packet.Value;
+                return;
+            }
+            
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.Muted = packet.Value;
+        }
+        
+        private void HandleSetDeafenPacket(SetDeafenPacket packet)
+        {
+            if (packet.Id == _client.Id)
+            {
+                _client.Deafened = packet.Value;
+                return;
+            }
+            
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.Deafened = packet.Value;
         }
 
         private void HandleSetTalkBitmaskPacket(SetTalkBitmaskPacket packet)
         {
             if (packet.Id == _client.Id)
             {
-                _client.TalkBitmask = packet.Bitmask;
+                _client.TalkBitmask = packet.Value;
                 return;
             }
             
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
-            entity.TalkBitmask = packet.Bitmask;
+            entity.TalkBitmask = packet.Value;
         }
 
         private void HandleSetListenBitmaskPacket(SetListenBitmaskPacket packet)
         {
             if (packet.Id == _client.Id)
             {
-                _client.ListenBitmask = packet.Bitmask;
+                _client.ListenBitmask = packet.Value;
                 return;
             }
             
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
-            entity.ListenBitmask = packet.Bitmask;
+            entity.ListenBitmask = packet.Value;
         }
 
         private void HandleSetPositionPacket(SetPositionPacket packet)
         {
             if (packet.Id == _client.Id)
             {
-                _client.Position = packet.Position;
+                _client.Position = packet.Value;
                 return;
             }
             
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
-            entity.Position = packet.Position;
+            entity.Position = packet.Value;
         }
 
         private void HandleSetRotationPacket(SetRotationPacket packet)
         {
             if (packet.Id == _client.Id)
             {
-                _client.Rotation = packet.Rotation;
+                _client.Rotation = packet.Value;
                 return;
             }
             
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
-            entity.Rotation = packet.Rotation;
+            entity.Rotation = packet.Value;
         }
 
         private void HandleSetPropertyPacket(SetPropertyPacket packet)

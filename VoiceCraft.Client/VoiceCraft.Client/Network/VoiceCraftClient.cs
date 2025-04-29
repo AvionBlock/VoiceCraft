@@ -25,8 +25,6 @@ namespace VoiceCraft.Client.Network
         //Public Properties
         public override int Id => _serverPeer?.RemoteId ?? -1;
         public ConnectionState ConnectionState => _serverPeer?.ConnectionState ?? ConnectionState.Disconnected;
-        public bool Muted { get; set; }
-        public bool Deafened { get; set; }
         public float MicrophoneSensitivity { get; set; }
 
         //Systems
@@ -238,6 +236,9 @@ namespace VoiceCraft.Client.Network
                 _encoder.Dispose();
                 World.Dispose();
                 NetworkSystem.Dispose();
+
+                OnConnected = null;
+                OnDisconnected = null;
             }
 
             _isDisposed = true;

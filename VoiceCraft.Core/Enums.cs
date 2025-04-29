@@ -33,6 +33,8 @@ namespace VoiceCraft.Core
         EntityDestroyed,
         SetVisibility,
         SetName,
+        SetMute,
+        SetDeafen,
         SetTalkBitmask,
         SetListenBitmask,
         SetPosition,

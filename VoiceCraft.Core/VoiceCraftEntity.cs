@@ -9,7 +9,10 @@ namespace VoiceCraft.Core
     public class VoiceCraftEntity : INetSerializable
     {
         //Entity events.
+        public event Action<string, VoiceCraftEntity>? OnWorldIdUpdated;
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
+        public event Action<bool, VoiceCraftEntity>? OnMuteUpdated;
+        public event Action<bool, VoiceCraftEntity>? OnDeafenUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
@@ -23,13 +26,15 @@ namespace VoiceCraft.Core
         //Privates
         private float _loudness;
         private readonly List<VoiceCraftEntity> _visibleEntities = new List<VoiceCraftEntity>();
-        private string _name = "New Entity";
+        private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
         private string _worldId = string.Empty;
+        private string _name = "New Entity";
+        private bool _muted;
+        private bool _deafened;
         private ulong _talkBitmask = 1;
         private ulong _listenBitmask = 1;
         private Vector3 _position;
         private Quaternion _rotation;
-        private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
 
         //Properties
         public virtual int Id { get; }
@@ -37,11 +42,14 @@ namespace VoiceCraft.Core
         public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
-        public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
-        public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
         public bool Destroyed { get; private set; }
         
         #region Updatable Properties
+        
+        public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
+        
+        public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
+        
         
         public string WorldId
         {
@@ -51,10 +59,10 @@ namespace VoiceCraft.Core
                 if (_worldId == value) return;
                 if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException();
                 _worldId = value;
-                OnNameUpdated?.Invoke(_worldId, this);
+                OnWorldIdUpdated?.Invoke(_worldId, this);
             }
         }
-        
+
         public string Name
         {
             get => _name;
@@ -66,7 +74,29 @@ namespace VoiceCraft.Core
                 OnNameUpdated?.Invoke(_name, this);
             }
         }
-        
+
+        public bool Muted
+        {
+            get => _muted;
+            set
+            {
+                if (_muted == value) return;
+                _muted = value;
+                OnMuteUpdated?.Invoke(_muted, this);
+            }
+        }
+
+        public bool Deafened
+        {
+            get => _deafened;
+            set
+            {
+                if (_deafened == value) return;
+                _deafened = value;
+                OnDeafenUpdated?.Invoke(_deafened, this);
+            }
+        }
+
         public ulong TalkBitmask
         {
             get => _talkBitmask;
@@ -224,12 +254,18 @@ namespace VoiceCraft.Core
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(Name, Constants.MaxStringLength);
+            writer.Put(Muted);
+            writer.Put(Deafened);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             var name = reader.GetString(Constants.MaxStringLength);
             Name = name;
+            var muted = reader.GetBool();
+            Muted = muted;
+            var deafened = reader.GetBool();
+            Deafened = deafened;
         }
 
         public virtual void Destroy()
@@ -239,7 +275,10 @@ namespace VoiceCraft.Core
             OnDestroyed?.Invoke(this);
             
             //Deregister all events.
+            OnWorldIdUpdated = null;
             OnNameUpdated = null;
+            OnMuteUpdated = null;
+            OnDeafenUpdated = null;
             OnTalkBitmaskUpdated = null;
             OnListenBitmaskUpdated = null;
             OnPositionUpdated = null;

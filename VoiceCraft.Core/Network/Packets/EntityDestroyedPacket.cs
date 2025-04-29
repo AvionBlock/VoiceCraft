@@ -5,6 +5,7 @@ namespace VoiceCraft.Core.Network.Packets
     public class EntityDestroyedPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.EntityDestroyed;
+        
         public int Id { get; private set; }
 
         public EntityDestroyedPacket(int id = 0)

@@ -5,21 +5,22 @@ namespace VoiceCraft.Core.Network.Packets
     public class SetDescriptionPacket : VoiceCraftPacket
     {
         public override PacketType PacketType => PacketType.SetDescription;
-        public string Description { get; private set; }
+        
+        public string Value { get; private set; }
 
-        public SetDescriptionPacket(string description = "")
+        public SetDescriptionPacket(string value = "")
         {
-            Description = description;
+            Value = value;
         }
         
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(Description, Constants.MaxStringLength);
+            writer.Put(Value, Constants.MaxStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            Description = reader.GetString(Constants.MaxStringLength);
+            Value = reader.GetString(Constants.MaxStringLength);
         }
     }
 }

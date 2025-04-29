@@ -110,6 +110,18 @@ namespace VoiceCraft.Server.Systems
                     audioPacket.Deserialize(reader);
                     HandleAudioPacket(audioPacket, peer);
                     break;
+                case PacketType.SetMute:
+                    if (peer == null) return;
+                    var setMutePacket = new SetMutePacket();
+                    setMutePacket.Deserialize(reader);
+                    HandleSetMutePacket(setMutePacket, peer);
+                    break;
+                case PacketType.SetDeafen:
+                    if (peer == null) return;
+                    var setDeafenPacket = new SetDeafenPacket();
+                    setDeafenPacket.Deserialize(reader);
+                    HandleSetDeafenPacket(setDeafenPacket, peer);
+                    break;
                 // Will need to implement these for client sided mode later.
                 case PacketType.Unknown:
                 case PacketType.Login:
@@ -133,15 +145,15 @@ namespace VoiceCraft.Server.Systems
         }
 
         //Packet Handling
-        private void HandleLoginPacket(LoginPacket loginPacket, ConnectionRequest request)
+        private void HandleLoginPacket(LoginPacket packet, ConnectionRequest request)
         {
-            if (!Enum.IsDefined(loginPacket.LoginType))
+            if (!Enum.IsDefined(packet.LoginType))
             {
                 request.Reject("Unknown login type!"u8.ToArray());
                 return;
             }
 
-            if (Version.Parse(loginPacket.Version).Major != VoiceCraftServer.Version.Major)
+            if (Version.Parse(packet.Version).Major != VoiceCraftServer.Version.Major)
             {
                 request.Reject("Incompatible client/server version!"u8.ToArray());
                 return;
@@ -150,10 +162,10 @@ namespace VoiceCraft.Server.Systems
             var peer = request.Accept();
             try
             {
-                switch (loginPacket.LoginType)
+                switch (packet.LoginType)
                 {
                     case LoginType.Login:
-                        var entity = new VoiceCraftNetworkEntity(peer, loginPacket.UserGuid, loginPacket.PositioningType, _world);
+                        var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.PositioningType, _world);
                         _world.AddEntity(entity);
                         peer.Tag = entity;
                         break;
@@ -174,15 +186,29 @@ namespace VoiceCraft.Server.Systems
 
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
         {
-            var packet = new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick);
-            _server.SendUnconnectedPacket(remoteEndPoint, packet);
+            _server.SendUnconnectedPacket(remoteEndPoint,
+                new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick));
         }
 
-        private void HandleAudioPacket(AudioPacket audioPacket, NetPeer peer)
+        private void HandleAudioPacket(AudioPacket packet, NetPeer peer)
         {
             var entity = _world.GetEntity(peer.Id);
             if (entity is not VoiceCraftNetworkEntity networkEntity) return;
-            networkEntity.ReceiveAudio(audioPacket.Data, audioPacket.Timestamp, audioPacket.FrameLoudness);
+            networkEntity.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
+        }
+
+        private void HandleSetMutePacket(SetMutePacket packet, NetPeer peer)
+        {
+            var entity = _world.GetEntity(peer.Id);
+            if (entity is not VoiceCraftNetworkEntity) return;
+            entity.Muted = packet.Value;
+        }
+
+        private void HandleSetDeafenPacket(SetDeafenPacket packet, NetPeer peer)
+        {
+            var entity = _world.GetEntity(peer.Id);
+            if (entity is not VoiceCraftNetworkEntity) return;
+            entity.Deafened = packet.Value;
         }
     }
 }
