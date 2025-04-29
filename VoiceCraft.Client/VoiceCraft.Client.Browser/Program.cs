@@ -25,14 +25,12 @@ namespace VoiceCraft.Client.Browser
     {
         private static Task Main(string[] _) {
             OpenALLibraryNameContainer.OverridePath = "openal";
-            // OpenALLibraryNameContainer.OverridePath = "libalol";
-            // OpenALLibraryNameContainer.OverridePath = "__Internal";
-            // OpenALLibraryNameContainer.OverridePath = "__Internal_emscripten";
 
             Trace.Listeners.Add(new ConsoleTraceListener());
 
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+            App.ServiceCollection.AddSingleton<StorageService, NativeStorageService>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 
             return BuildAvaloniaApp()

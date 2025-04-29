@@ -23,10 +23,11 @@ const dotnetRuntime = await dotnet
 // const assemblyBytes = await response.arrayBuffer();
 // const isPdb = dotnetRuntime.Module._mono_wasm_add_assembly(assemblyName, assemblyBytes, assemblyBytes.byteLength);
 
-dotnetRuntime.setModuleImports('audio_player.js', await import('/audio_player.js'));
-dotnetRuntime.setModuleImports('audio_recorder.js', await import('/audio_recorder.js'));
-dotnetRuntime.setModuleImports('permissions.js', await import('/permissions.js'));
-dotnetRuntime.setModuleImports('proc.js', await import('/proc.js'));
+dotnetRuntime.setModuleImports('audio_player.js', await import('./audio_player.js'));
+dotnetRuntime.setModuleImports('audio_recorder.js', await import('./audio_recorder.js'));
+dotnetRuntime.setModuleImports('permissions.js', await import('./permissions.js'));
+dotnetRuntime.setModuleImports('proc.js', await import('./proc.js'));
+dotnetRuntime.setModuleImports('storage.js', await import('./storage.js'));
 
 const config = dotnetRuntime.getConfig();
 

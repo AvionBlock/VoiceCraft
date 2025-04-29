@@ -1,14 +1,10 @@
-using NAudio.Wave;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
-using NAudio.CoreAudioApi;
+using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core;
 using OpenTK.Audio.OpenAL;
-using VoiceCraft.Client.Audio.Interfaces;
 
 using System.Runtime.InteropServices;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace VoiceCraft.Client.Browser.Audio
 {
@@ -31,78 +27,248 @@ namespace VoiceCraft.Client.Browser.Audio
         [DllImport(Lib, EntryPoint = "alcCaptureCloseDevice", ExactSpelling = true, CallingConvention = AlcCallingConv)]
         public static extern bool CaptureCloseDevice([In] ALCaptureDevice device);
 
-        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private ALCaptureDevice _device = ALCaptureDevice.Null;
-        private bool _disposed;
+        //Public Properties
+        public int SampleRate
+        {
+            get => _sampleRate;
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
-        public WaveFormat WaveFormat { get; set; } = new(8000, 16, 1);
-        public CaptureState CaptureState { get; private set; } = CaptureState.Stopped;
-        public int BufferMilliseconds { get; set; } = 100;
+                _sampleRate = value;
+            }
+        }
+
+        public int Channels
+        {
+            get => _channels;
+            set
+            {
+                if (value < 1)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+
+                _channels = value;
+            }
+        }
+
+        public int BitDepth
+        {
+            get
+            {
+                return Format switch
+                {
+                    AudioFormat.Pcm8 => 8,
+                    AudioFormat.Pcm16 => 16,
+                    AudioFormat.PcmFloat => 32,
+                    _ => throw new ArgumentOutOfRangeException(nameof(Format))
+                };
+            }
+        }
+
+        public AudioFormat Format { get; set; }
+
+        public int BufferMilliseconds
+        {
+            get => _bufferMilliseconds;
+            set
+            {
+                if (value < 0)
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+
+                _bufferMilliseconds = value;
+            }
+        }
+
         public string? SelectedDevice { get; set; }
 
-        public event EventHandler<WaveInEventArgs>? DataAvailable;
-        public event EventHandler<StoppedEventArgs>? RecordingStopped;
+        public CaptureState CaptureState { get; private set; }
+
+        public event Action<byte[], int>? OnDataAvailable;
+        public event Action<Exception?>? OnRecordingStopped;
+
+        //Privates
+        private readonly Lock _lockObj = new();
+        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
+        private ALCaptureDevice _nativeRecorder = ALCaptureDevice.Null;
+        private int _sampleRate;
+        private int _channels;
+        private int _bufferMilliseconds;
+        private int _bufferSamples;
+        private int _bufferBytes;
+        private int _blockAlign;
+        private byte[] _buffer = [];
+        private bool _disposed;
+
+        public AudioRecorder(int sampleRate, int channels, AudioFormat format)
+        {
+            SampleRate = sampleRate;
+            Channels = channels;
+            Format = format;
+        }
 
         ~AudioRecorder()
         {
             Dispose(false);
         }
 
-        public void StartRecording()
+        public void Initialize()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
+            _lockObj.Enter();
 
-            //Check if we are already recording or starting to record.
-            if (CaptureState is CaptureState.Capturing or CaptureState.Starting) return;
+            try
+            {
+                //Disposed? DIE!
+                ThrowIfDisposed();
 
-            while (CaptureState is CaptureState.Stopping) //If stopping, wait.
-                Task.Delay(1).GetAwaiter().GetResult();
+                if (CaptureState != CaptureState.Stopped)
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
 
-            //Open Capture Device
-            CaptureState = CaptureState.Starting;
-            _device = OpenCaptureDevice(WaveFormat, BufferMilliseconds, SelectedDevice);
-            ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
+                //Cleanup previous recorder.
+                CleanupRecorder();
+
+                //AL.IsExtensionPresent("AL_EXT_float32") I don't know why this extension checker doesn't work properly.
+                //Select Device.
+                var format = (Format, Channels) switch
+                {
+                    (AudioFormat.Pcm8, 1) => ALFormat.Mono8,
+                    (AudioFormat.Pcm8, 2) => ALFormat.Stereo8,
+                    (AudioFormat.Pcm16, 1) => ALFormat.Mono16,
+                    (AudioFormat.Pcm16, 2) => ALFormat.Stereo16,
+                    (AudioFormat.PcmFloat, 1) => ALFormat.MonoFloat32Ext,
+                    (AudioFormat.PcmFloat, 2) => ALFormat.StereoFloat32Ext,
+                    _ => throw new NotSupportedException()
+                };
+
+                //Setup recorder.
+                _bufferSamples = BufferMilliseconds * SampleRate / 1000;
+                _bufferBytes = BitDepth / 8 * Channels * _bufferSamples;
+                _blockAlign = Channels * (BitDepth / 8);
+                if (_bufferBytes % _blockAlign != 0)
+                {
+                    _bufferBytes -= _bufferBytes % _blockAlign;
+                }
+                _buffer = new byte[_bufferBytes];
+
+                //Triple sample size so we don't skip any recorder audio.
+                _nativeRecorder = ALC.CaptureOpenDevice(SelectedDevice, SampleRate, format, _bufferSamples * 3);
+                if (_nativeRecorder == ALCaptureDevice.Null)
+                {
+                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+                }
+            }
+            catch
+            {
+                CleanupRecorder();
+                throw;
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
-        public void StopRecording()
+        public void Start()
         {
-            //Disposed? DIE!
-            ThrowIfDisposed();
+            _lockObj.Enter();
 
-            //Check if device is already closed/null.
-            if (_device == ALCaptureDevice.Null) return;
+            try
+            {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+                if (CaptureState != CaptureState.Stopped) return;
 
-            //Check if it has already been stopped or is stopping.
-            if (CaptureState is CaptureState.Stopped or CaptureState.Stopping) return;
-            CaptureState = CaptureState.Stopping;
+                CaptureState = CaptureState.Starting;
+                ThreadPool.QueueUserWorkItem(_ => RecordThread(), null);
+            }
+            catch
+            {
+                CaptureState = CaptureState.Stopped;
+                throw;
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
+        }
 
-            //Block thread until it's fully stopped.
-            while (CaptureState is CaptureState.Stopping)
-                Task.Delay(1).GetAwaiter().GetResult();
+        public void Stop()
+        {
+            _lockObj.Enter();
+
+            try
+            {
+                //Disposed? DIE!
+                ThrowIfDisposed();
+                ThrowIfNotInitialized();
+
+                if (CaptureState != CaptureState.Capturing) return;
+
+                CaptureState = CaptureState.Stopping;
+                ALC.CaptureStop(_nativeRecorder);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            _lockObj.Enter();
+
+            try
+            {
+                //Dispose of this object
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            finally
+            {
+                _lockObj.Exit();
+            }
         }
 
-        private void Dispose(bool disposing)
+        private void CleanupRecorder()
         {
-            if (_disposed || !disposing) return;
-            if (CaptureState != CaptureState.Stopped)
-            {
-                StopRecording();
-            }
-
-            _disposed = true;
+            if (_nativeRecorder == ALCaptureDevice.Null) return;
+            ALC.CaptureStop(_nativeRecorder);
+            ALC.CaptureCloseDevice(_nativeRecorder);
+            _nativeRecorder = ALCaptureDevice.Null;
         }
 
         private void ThrowIfDisposed()
         {
             if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(AudioRecorder).ToString());
+            throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
+        }
+
+        private void ThrowIfNotInitialized()
+        {
+            if (_nativeRecorder == ALCaptureDevice.Null)
+                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
+        }
+
+        private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)
+        {
+            CaptureState = CaptureState.Capturing;
+            OnDataAvailable?.Invoke(buffer, bytesRecorded);
+        }
+
+        private void InvokeRecordingStopped(Exception? exception = null)
+        {
+            CaptureState = CaptureState.Stopped;
+            var handler = OnRecordingStopped;
+            if (handler == null) return;
+            if (_synchronizationContext == null)
+            {
+                handler(exception);
+            }
+            else
+            {
+                _synchronizationContext.Post(_ => handler(exception), null);
+            }
         }
 
         private void RecordThread()
@@ -118,82 +284,45 @@ namespace VoiceCraft.Client.Browser.Audio
             }
             finally
             {
-                CloseCaptureDevice(_device);
-                _device = ALCaptureDevice.Null;
-                CaptureState = CaptureState.Stopped;
-                RaiseRecordingStoppedEvent(exception);
-            }
-        }
-
-        private void RaiseRecordingStoppedEvent(Exception? e)
-        {
-            var handler = RecordingStopped;
-            if (handler == null) return;
-            if (_synchronizationContext == null)
-            {
-                handler(this, new StoppedEventArgs(e));
-            }
-            else
-            {
-                _synchronizationContext.Post(_ => handler(this, new StoppedEventArgs(e)), null);
+                ALC.CaptureStop(_nativeRecorder);
+                InvokeRecordingStopped(exception);
             }
         }
 
         private unsafe void RecordingLogic()
         {
-            //Initialize the wave buffer
-            var bufferSize = BufferMilliseconds * WaveFormat.AverageBytesPerSecond / 1000;
-            if (bufferSize % WaveFormat.BlockAlign != 0)
-            {
-                bufferSize -= bufferSize % WaveFormat.BlockAlign;
-            }
-
+            ALC.CaptureStart(_nativeRecorder);
             CaptureState = CaptureState.Capturing;
             var capturedSamples = 0;
-            var targetSamples = BufferMilliseconds * WaveFormat.SampleRate / 1000;
 
             //Run the record loop
-            while (CaptureState == CaptureState.Capturing && _device != ALCaptureDevice.Null)
+            while (CaptureState == CaptureState.Capturing && _nativeRecorder != ALCaptureDevice.Null)
             {
                 // Query the number of captured samples
-                ALC.GetInteger(_device, AlcGetInteger.CaptureSamples, sizeof(int), &capturedSamples);
+                ALC.GetInteger(_nativeRecorder, AlcGetInteger.CaptureSamples, sizeof(int), &capturedSamples);
 
-                if (capturedSamples < targetSamples) continue;
-                var buffer = new byte[bufferSize];
-                fixed (void* bufferPtr = buffer)
-                    ALC.CaptureSamples(_device, bufferPtr, targetSamples);
+                if (capturedSamples < _bufferSamples)
+                {
+                    Thread.Sleep(1); //So we don't exactly burn the CPU. Small hack but it works.
+                    continue;
+                }
+                
+                Array.Clear(_buffer);
+                fixed (void* bufferPtr = _buffer)
+                    ALC.CaptureSamples(_nativeRecorder, bufferPtr, _bufferSamples);
 
-                DataAvailable?.Invoke(this, new WaveInEventArgs(buffer, bufferSize));
+                InvokeDataAvailable(_buffer, _bufferBytes);
             }
         }
 
-        private static ALCaptureDevice OpenCaptureDevice(WaveFormat waveFormat, int bufferSizeMs, string? selectedDevice = null)
+        private void Dispose(bool _)
         {
-            var format = (waveFormat.BitsPerSample, waveFormat.Channels) switch
-            {
-                (8, 1) => ALFormat.Mono8,
-                (8, 2) => ALFormat.Stereo8,
-                (16, 1) => ALFormat.Mono16,
-                (16, 2) => ALFormat.Stereo16,
-                _ => throw new NotSupportedException()
-            };
+            if (_disposed) return;
 
-            var bufferSize = bufferSizeMs * waveFormat.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
-            var device = ALC.CaptureOpenDevice(selectedDevice, waveFormat.SampleRate, format, bufferSize);
-            if (device == ALCaptureDevice.Null)
-            {
-                throw new InvalidOperationException("Could not create device!");
-            }
+            //Recorder isn't managed.
+            CleanupRecorder();
 
-            ALC.CaptureStart(device);
-            return device;
-        }
-
-        private static void CloseCaptureDevice(ALCaptureDevice device)
-        {
-            if (device == ALCaptureDevice.Null) return;
-            ALC.CaptureStop(device);
-            ALC.CaptureCloseDevice(device);
+            _disposed = true;
         }
     }
 }
