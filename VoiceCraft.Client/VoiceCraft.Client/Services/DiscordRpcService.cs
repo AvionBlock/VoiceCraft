@@ -11,14 +11,18 @@ namespace VoiceCraft.Client.Services
         private const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
         private const string LargeImageKey = "vc";
         private const string LargeImageText = "VoiceCraft";
-        private readonly DiscordRpcClient _rpcClient = new(ApplicationId);
+        private readonly DiscordRpcClient? _rpcClient;
+
         private readonly RichPresence _richPresence = new()
         {
-            Buttons = [ new Button()
-            {
-                Label = GithubButton,
-                Url = GithubButtonUrl
-            }],
+            Buttons =
+            [
+                new Button()
+                {
+                    Label = GithubButton,
+                    Url = GithubButtonUrl
+                }
+            ],
             Assets = new Assets()
             {
                 LargeImageKey = LargeImageKey,
@@ -28,6 +32,9 @@ namespace VoiceCraft.Client.Services
 
         public DiscordRpcService()
         {
+            if (OperatingSystem.IsBrowser()) return;
+            
+            _rpcClient = new DiscordRpcClient(ApplicationId);
             _rpcClient.OnReady += (_, _) =>
             {
                 Debug.WriteLine("RPC Ready");
@@ -70,18 +77,18 @@ namespace VoiceCraft.Client.Services
         public void SetState(string state)
         {
             _richPresence.State = state;
-            _rpcClient.SetPresence(_richPresence);
+            _rpcClient?.SetPresence(_richPresence);
         }
 
         public void Initialize()
         {
-            _rpcClient.Initialize();
-            _rpcClient.SetPresence(_richPresence);
+            _rpcClient?.Initialize();
+            _rpcClient?.SetPresence(_richPresence);
         }
 
         public void Dispose()
         {
-            _rpcClient.Dispose();
+            _rpcClient?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
