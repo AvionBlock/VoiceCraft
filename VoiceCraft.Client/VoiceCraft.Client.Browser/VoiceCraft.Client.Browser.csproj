@@ -4,6 +4,7 @@
         <OutputType>Exe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Nullable>enable</Nullable>
+        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,5 +14,9 @@
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <NativeFileReference Include="opus.a" />
     </ItemGroup>
 </Project>
