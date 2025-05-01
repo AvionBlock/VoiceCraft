@@ -1,34 +1,69 @@
 using System.Collections.Generic;
-using VoiceCraft.Client.Browser.Audio;
+using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Browser.Audio;
-
-public class NativeAudioService : AudioService
+namespace VoiceCraft.Client.Browser.Audio
 {
-    public override IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format)
+    public class NativeAudioService(PermissionsService permissionsService) : AudioService
     {
-        return new AudioRecorder(sampleRate, channels, format);
+        public override IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format)
+        {
+            return new AudioRecorder(sampleRate, channels, format);
+        }
+
+        public override IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format)
+        {
+            return new AudioPlayer(sampleRate, channels, format);
+        }
+
+        public override async Task<List<string>> GetInputDevicesAsync()
+        {
+            await permissionsService.CheckAndRequestPermission<Microsoft.Maui.ApplicationModel.Permissions.Microphone>(); //I HATE WEB
+            var list = new List<string>();
+            var devices = JsonSerializer.Deserialize(await JsNativeAudio.GetInputDevicesAsync(),
+                MediaDevicesSerializationContext.Default.ListJsMediaDeviceInfo);
+            if(devices == null) return list;
+            list.AddRange(devices.Select(device => device.label));
+            return list;
+        }
+
+        public override async Task<List<string>> GetOutputDevicesAsync()
+        {
+            await permissionsService.CheckAndRequestPermission<Microsoft.Maui.ApplicationModel.Permissions.Microphone>(); //I HATE WEB
+            var list = new List<string>();
+            var devices = JsonSerializer.Deserialize(await JsNativeAudio.GetOutputDevicesAsync(),
+                MediaDevicesSerializationContext.Default.ListJsMediaDeviceInfo);
+            if(devices == null) return list;
+            list.AddRange(devices.Select(device => device.label));
+            return list;
+        }
     }
 
-    public override IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format)
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(List<JsMediaDeviceInfo>), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class MediaDevicesSerializationContext : JsonSerializerContext;
+
+    public class JsMediaDeviceInfo
     {
-        return new AudioPlayer(sampleRate, channels, format);
+        // ReSharper disable InconsistentNaming
+        public string deviceId { get; set; } = string.Empty;
+        public string groupId { get; set; } = string.Empty;
+        public string kind { get; set; } = string.Empty;
+        public string label { get; set; } = string.Empty;
     }
 
-    public override List<string> GetInputDevices()
+    internal static partial class JsNativeAudio
     {
-        var list = new List<string>();
-        
-        return list;
-    }
+        [JSImport("getInputDevicesAsync", "audio.js")]
+        public static partial Task<string> GetInputDevicesAsync();
 
-    public override List<string> GetOutputDevices()
-    {
-        var list = new List<string>();
-        
-        return list;
+        [JSImport("getOutputDevicesAsync", "audio.js")]
+        public static partial Task<string> GetOutputDevicesAsync();
     }
 }

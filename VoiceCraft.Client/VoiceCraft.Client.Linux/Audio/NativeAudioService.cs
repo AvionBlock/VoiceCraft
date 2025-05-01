@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -18,23 +19,23 @@ public class NativeAudioService : AudioService
         return new AudioPlayer(sampleRate, channels, format);
     }
 
-    public override List<string> GetInputDevices()
+    public override Task<List<string>> GetInputDevicesAsync()
     {
         var list = new List<string>();
 
         var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.CaptureDeviceSpecifier);
         list.AddRange(devices);
         
-        return list;
+        return Task.FromResult(list);
     }
 
-    public override List<string> GetOutputDevices()
+    public override Task<List<string>> GetOutputDevicesAsync()
     {
         var list = new List<string>();
         
         var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.AllDevicesSpecifier);
         list.AddRange(devices);
         
-        return list;
+        return Task.FromResult(list);
     }
 }

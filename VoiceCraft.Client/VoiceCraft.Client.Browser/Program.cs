@@ -25,6 +25,7 @@ namespace VoiceCraft.Client.Browser
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             
             await BuildAvaloniaApp()
@@ -50,6 +51,7 @@ namespace VoiceCraft.Client.Browser
 
         private static async Task BuildJsInterops()
         {
+            await JSHost.ImportAsync("audio.js", "/Exports/audio.js");
             await JSHost.ImportAsync("microphonePermission.js", "/Exports/microphonePermission.js");
             await JSHost.ImportAsync("storage.js", "/Exports/storage.js");
         }

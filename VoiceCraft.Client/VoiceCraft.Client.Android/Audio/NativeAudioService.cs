@@ -1,6 +1,7 @@
 using Android.Media;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Android.OS;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -57,12 +58,12 @@ namespace VoiceCraft.Client.Android.Audio
             return new AudioPlayer(_audioManager, sampleRate, channels, format);
         }
 
-        public override List<string> GetInputDevices()
+        public override Task<List<string>> GetInputDevicesAsync()
         {
             var devices = new List<string>();
 
             var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Inputs)?.Where(x => !DeniedDeviceTypes.Contains(x.Type)); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
-            if (audioDevices == null) return devices;
+            if (audioDevices == null) return Task.FromResult(devices);
 
             foreach (var audioDevice in audioDevices)
             {
@@ -70,15 +71,15 @@ namespace VoiceCraft.Client.Android.Audio
                 if (!devices.Contains(deviceName))
                     devices.Add(deviceName);
             }
-            return devices;
+            return Task.FromResult(devices);
         }
 
-        public override List<string> GetOutputDevices()
+        public override Task<List<string>> GetOutputDevicesAsync()
         {
             var devices = new List<string>();
 
             var audioDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs)?.Where(x => !DeniedDeviceTypes.Contains(x.Type)); //Don't ask. this is the only way to stop users from selecting a device that completely annihilates the app.
-            if (audioDevices == null) return devices;
+            if (audioDevices == null) return Task.FromResult(devices);
 
             foreach (var audioDevice in audioDevices)
             {
@@ -86,7 +87,7 @@ namespace VoiceCraft.Client.Android.Audio
                 if (!devices.Contains(deviceName))
                     devices.Add(deviceName);
             }
-            return devices;
+            return Task.FromResult(devices);
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
@@ -69,9 +70,9 @@ namespace VoiceCraft.Client.Services
             return _registeredEchoCancelers.GetValueOrDefault(id);
         }
 
-        public abstract List<string> GetInputDevices();
+        public abstract Task<List<string>> GetInputDevicesAsync();
 
-        public abstract List<string> GetOutputDevices();
+        public abstract Task<List<string>> GetOutputDevicesAsync();
 
         public abstract IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format);
 

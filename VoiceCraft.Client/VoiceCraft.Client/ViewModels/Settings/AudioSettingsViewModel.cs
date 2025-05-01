@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -42,13 +43,13 @@ namespace VoiceCraft.Client.ViewModels.Settings
             _echoCanceler = _audioSettings.EchoCanceler;
             _microphoneSensitivity = _audioSettings.MicrophoneSensitivity;
             
-            ReloadAvailableDevices();
+            _ = ReloadAvailableDevices();
         }
 
-        public void ReloadAvailableDevices()
+        public async Task ReloadAvailableDevices()
         {
-            InputDevices = ["Default", .._audioService.GetInputDevices()];
-            OutputDevices = ["Default", .._audioService.GetOutputDevices()];
+            InputDevices = ["Default", ..await _audioService.GetInputDevicesAsync()];
+            OutputDevices = ["Default", ..await _audioService.GetOutputDevicesAsync()];
             Denoisers = new ObservableCollection<RegisteredDenoiser>(_audioService.RegisteredDenoisers);
             AutomaticGainControllers = new ObservableCollection<RegisteredAutomaticGainController>(_audioService.RegisteredAutomaticGainControllers);
             EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);

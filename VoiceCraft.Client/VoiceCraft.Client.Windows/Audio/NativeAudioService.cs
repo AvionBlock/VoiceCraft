@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NAudio.Wave;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Client.Services;
@@ -18,7 +19,7 @@ public class NativeAudioService : AudioService
         return new AudioPlayer(sampleRate, channels, format);
     }
     
-    public override List<string> GetInputDevices()
+    public override Task<List<string>> GetInputDevicesAsync()
     {
         var devices = new List<string>();
         for (var n = 0; n < WaveIn.DeviceCount; n++)
@@ -28,10 +29,10 @@ public class NativeAudioService : AudioService
                 devices.Add(caps.ProductName);
         }
 
-        return devices;
+        return Task.FromResult(devices);
     }
 
-    public override List<string> GetOutputDevices()
+    public override Task<List<string>> GetOutputDevicesAsync()
     {
         var devices = new List<string>();
         for (var n = 0; n < WaveOut.DeviceCount; n++)
@@ -41,6 +42,6 @@ public class NativeAudioService : AudioService
                 devices.Add(caps.ProductName);
         }
 
-        return devices;
+        return Task.FromResult(devices);
     }
 }

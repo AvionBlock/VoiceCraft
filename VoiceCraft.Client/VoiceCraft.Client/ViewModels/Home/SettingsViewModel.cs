@@ -226,7 +226,7 @@ namespace VoiceCraft.Client.ViewModels.Home
         public override void OnAppearing()
         {
             base.OnAppearing();
-            AudioSettings.ReloadAvailableDevices();
+            _ = AudioSettings.ReloadAvailableDevices();
         }
 
         public override void OnDisappearing()
