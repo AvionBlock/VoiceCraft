@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using LiteNetLib;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
@@ -68,8 +67,8 @@ namespace VoiceCraft.Client.Processes
         //Displays
         private string _title = string.Empty;
         private string _description = string.Empty;
-        
-        private bool _stop;
+        private bool _stopRequested;
+        private bool _stopping;
 
         public void Start(CancellationToken token)
         {
@@ -119,18 +118,21 @@ namespace VoiceCraft.Client.Processes
                 Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
                 var startTime = DateTime.UtcNow;
-                while (!token.IsCancellationRequested && !_stop)
+                while (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
                 {
+                    if (token.IsCancellationRequested && !_stopping || _stopRequested && !_stopping)
+                    {
+                        _stopping = true;
+                        _voiceCraftClient.Disconnect();
+                    }
+                    
                     _voiceCraftClient.Update(); //Update all networking processes.
                     var dist = DateTime.UtcNow - startTime;
                     var delay = Constants.TickRate - dist.TotalMilliseconds;
                     if (delay > 0)
-                        Task.Delay((int)delay, token).GetAwaiter().GetResult();
+                        Thread.Sleep((int)delay);
                     startTime = DateTime.UtcNow;
                 }
-
-                if (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
-                    _voiceCraftClient.Disconnect();
                 
                 _audioRecorder.OnDataAvailable -= Write;
                 _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
@@ -213,7 +215,7 @@ namespace VoiceCraft.Client.Processes
 
         private void ClientOnDisconnected(string reason)
         {
-            _stop = true;
+            _stopRequested = true;
             Title = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}";
             notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}");
             OnDisconnected?.Invoke(reason);
@@ -265,6 +267,7 @@ namespace VoiceCraft.Client.Processes
         {
             if (ex != null)
             {
+                _stopRequested = true;
                 _voiceCraftClient.Disconnect(ex.Message);
                 return;
             }
@@ -276,6 +279,7 @@ namespace VoiceCraft.Client.Processes
         {
             if (ex != null)
             {
+                _stopRequested = true;
                 _voiceCraftClient.Disconnect(ex.Message);
                 return;
             }
