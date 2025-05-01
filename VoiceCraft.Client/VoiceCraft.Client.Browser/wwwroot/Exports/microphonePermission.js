@@ -7,11 +7,12 @@ export async function checkStatusAsync() {
 
 export async function requestAsync() {
     try {
-        await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+        if(await checkStatusAsync()) return true; //If granted, return true.
+        await navigator.mediaDevices.getUserMedia({audio: true, video: false}); //Request it.
         return true;
     }
     catch (error) {
-        return false;
+        return false; //We know it's been blocked so false.
     }
 }
 

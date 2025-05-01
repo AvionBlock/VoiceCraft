@@ -11,7 +11,6 @@ namespace VoiceCraft.Client.Browser.Permissions
 
         public override async Task<PermissionStatus> CheckStatusAsync()
         {
-            EnsureDeclared();
             return await JsNativeMicrophonePermission.CheckStatusAsync() ? PermissionStatus.Granted : PermissionStatus.Denied;
         }
     
