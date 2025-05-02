@@ -2,7 +2,7 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class AudioEffectSystem
+    public class AudioEffectSystem : IDisposable
     {
         public event Action<byte, IAudioEffect>? OnEffectSet;
         public event Action<byte, IAudioEffect>? OnEffectRemoved;
@@ -28,6 +28,7 @@ namespace VoiceCraft.Server.Systems
         {
             if (!_audioEffects.Remove(index, out var effect))
                 throw new InvalidOperationException("Failed to remove effect!");
+            effect.Dispose();
             OnEffectRemoved?.Invoke(index, effect);
         }
         
@@ -39,6 +40,18 @@ namespace VoiceCraft.Server.Systems
             }
 
             throw new InvalidOperationException("Could not find an available id!");
+        }
+        
+        public void Dispose()
+        {
+            OnEffectSet = null;
+            OnEffectRemoved = null;
+            foreach (var effect in Effects)
+            {
+                effect.Value.Dispose();
+            }
+            _audioEffects.Clear();
+            GC.SuppressFinalize(this);
         }
     }
 }
