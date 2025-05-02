@@ -26,11 +26,11 @@ namespace VoiceCraft.Client.Processes
 
         //Public Variables
         public bool HasEnded { get; private set; }
-        
+
         public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
-        
+
         public bool Muted => _voiceCraftClient.Muted;
-        
+
         public bool Deafened => _voiceCraftClient.Deafened;
 
         public string Title
@@ -69,6 +69,7 @@ namespace VoiceCraft.Client.Processes
         private string _description = string.Empty;
         private bool _stopRequested;
         private bool _stopping;
+        private bool _disconnected;
 
         public void Start(CancellationToken token)
         {
@@ -118,14 +119,14 @@ namespace VoiceCraft.Client.Processes
                 Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
                 var startTime = DateTime.UtcNow;
-                while (_voiceCraftClient.ConnectionState != ConnectionState.Disconnected)
+                while (!_disconnected)
                 {
                     if (token.IsCancellationRequested && !_stopping || _stopRequested && !_stopping)
                     {
                         _stopping = true;
                         _voiceCraftClient.Disconnect();
                     }
-                    
+
                     _voiceCraftClient.Update(); //Update all networking processes.
                     var dist = DateTime.UtcNow - startTime;
                     var delay = Constants.TickRate - dist.TotalMilliseconds;
@@ -133,7 +134,7 @@ namespace VoiceCraft.Client.Processes
                         Thread.Sleep((int)delay);
                     startTime = DateTime.UtcNow;
                 }
-                
+
                 _audioRecorder.OnDataAvailable -= Write;
                 _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
                 _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
@@ -160,11 +161,13 @@ namespace VoiceCraft.Client.Processes
 
         public void ToggleMute(bool value)
         {
+            _voiceCraftClient.Muted = value;
             _voiceCraftClient.SendPacket(new SetMutePacket(value: value));
         }
 
         public void ToggleDeafen(bool value)
         {
+            _voiceCraftClient.Deafened = value;
             _voiceCraftClient.SendPacket(new SetDeafenPacket(value: value));
         }
 
@@ -183,7 +186,7 @@ namespace VoiceCraft.Client.Processes
 
             if (_audioPlayer != null)
                 _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
-            
+
             _voiceCraftClient.OnConnected -= ClientOnConnected;
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
             _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
@@ -192,7 +195,7 @@ namespace VoiceCraft.Client.Processes
             _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
             _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
             _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
-            
+
             _voiceCraftClient.Dispose();
             _audioRecorder?.Dispose();
             _audioRecorder = null;
@@ -216,13 +219,14 @@ namespace VoiceCraft.Client.Processes
         private void ClientOnDisconnected(string reason)
         {
             _stopRequested = true;
+            _disconnected = true;
             Title = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}";
             notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}");
             OnDisconnected?.Invoke(reason);
         }
 
         private void ClientOnMuteUpdated(bool mute, VoiceCraftEntity entity) => OnUpdateMute?.Invoke(mute);
-        
+
         private void ClientOnDeafenUpdated(bool deafen, VoiceCraftEntity entity) => OnUpdateDeafen?.Invoke(deafen);
 
         private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
@@ -283,7 +287,7 @@ namespace VoiceCraft.Client.Processes
                 _voiceCraftClient.Disconnect(ex.Message);
                 return;
             }
-            
+
             _audioPlayer?.Play(); //Restart player.
         }
     }

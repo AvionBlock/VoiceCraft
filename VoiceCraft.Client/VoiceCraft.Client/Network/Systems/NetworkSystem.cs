@@ -13,6 +13,7 @@ namespace VoiceCraft.Client.Network.Systems
         private readonly VoiceCraftClient _client;
         private readonly EventBasedNetListener _listener;
         private readonly VoiceCraftWorld _world;
+        private readonly AudioEffectSystem _audioEffectSystem;
 
         public event Action<ServerInfo>? OnServerInfo;
         public event Action<string>? OnSetTitle;
@@ -23,6 +24,7 @@ namespace VoiceCraft.Client.Network.Systems
             _client = client;
             _listener = client.Listener;
             _world = client.World;
+            _audioEffectSystem = _client.AudioEffectSystem;
 
             _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
             _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
@@ -98,15 +100,10 @@ namespace VoiceCraft.Client.Network.Systems
                     setDescriptionPacket.Deserialize(reader);
                     HandleSetDescriptionPacket(setDescriptionPacket);
                     break;
-                case PacketType.SetMute:
-                    var setMutePacket = new SetMutePacket();
-                    setMutePacket.Deserialize(reader);
-                    HandleSetMutePacket(setMutePacket);
-                    break;
-                case PacketType.SetDeafen:
-                    var setDeafen = new SetDeafenPacket();
-                    setDeafen.Deserialize(reader);
-                    HandleSetDeafenPacket(setDeafen);
+                case PacketType.SetEffect:
+                    var setEffectPacket = new SetEffectPacket();
+                    setEffectPacket.Deserialize(reader);
+                    HandleSetEffectPacket(setEffectPacket);
                     break;
                 case PacketType.SetMinRange:
                     var setMinRangePacket = new SetMinRangePacket();
@@ -138,6 +135,16 @@ namespace VoiceCraft.Client.Network.Systems
                     setNamePacket.Deserialize(reader);
                     HandleSetNamePacket(setNamePacket);
                     break;
+                case PacketType.SetMute:
+                    var setMutePacket = new SetMutePacket();
+                    setMutePacket.Deserialize(reader);
+                    HandleSetMutePacket(setMutePacket);
+                    break;
+                case PacketType.SetDeafen:
+                    var setDeafen = new SetDeafenPacket();
+                    setDeafen.Deserialize(reader);
+                    HandleSetDeafenPacket(setDeafen);
+                    break;
                 case PacketType.SetTalkBitmask:
                     var setTalkBitmaskPacket = new SetTalkBitmaskPacket();
                     setTalkBitmaskPacket.Deserialize(reader);
@@ -164,7 +171,6 @@ namespace VoiceCraft.Client.Network.Systems
                     HandleSetPropertyPacket(setPropertyPacket);
                     break;
                 case PacketType.Login:
-                case PacketType.SetEffect:
                 case PacketType.Unknown:
                 default:
                     break;
@@ -190,6 +196,17 @@ namespace VoiceCraft.Client.Network.Systems
         private void HandleSetDescriptionPacket(SetDescriptionPacket packet)
         {
             OnSetDescription?.Invoke(packet.Value);
+        }
+
+        private void HandleSetEffectPacket(SetEffectPacket packet)
+        {
+            switch (packet.EffectType)
+            {
+                case EffectType.Unknown:
+                default:
+                    _audioEffectSystem.RemoveEffect(packet.Index);
+                    break;
+            }
         }
         
         private void HandleSetMinRangePacket(SetMinRangePacket packet)
@@ -239,12 +256,6 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleSetMutePacket(SetMutePacket packet)
         {
-            if (packet.Id == _client.Id)
-            {
-                _client.Muted = packet.Value;
-                return;
-            }
-            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Muted = packet.Value;
@@ -252,12 +263,6 @@ namespace VoiceCraft.Client.Network.Systems
         
         private void HandleSetDeafenPacket(SetDeafenPacket packet)
         {
-            if (packet.Id == _client.Id)
-            {
-                _client.Deafened = packet.Value;
-                return;
-            }
-            
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Deafened = packet.Value;

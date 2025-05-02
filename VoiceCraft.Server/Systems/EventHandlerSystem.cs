@@ -165,7 +165,10 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetMutePacket(entity.Id, mute);
-                _server.Broadcast(packet);
+                if(entity is VoiceCraftNetworkEntity networkEntity)
+                    _server.Broadcast(packet, excludes: networkEntity.NetPeer);
+                else
+                    _server.Broadcast(packet);
             });
         }
         
@@ -174,7 +177,10 @@ namespace VoiceCraft.Server.Systems
             _tasks.Add(() =>
             {
                 var packet = new SetDeafenPacket(entity.Id, deafen);
-                _server.Broadcast(packet);
+                if(entity is VoiceCraftNetworkEntity networkEntity)
+                    _server.Broadcast(packet, excludes: networkEntity.NetPeer);
+                else
+                    _server.Broadcast(packet);
             });
         }
 

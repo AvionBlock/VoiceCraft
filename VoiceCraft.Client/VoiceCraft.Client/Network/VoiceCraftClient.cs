@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Net;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using LiteNetLib;
@@ -30,6 +29,7 @@ namespace VoiceCraft.Client.Network
         //Systems
         public EventBasedNetListener Listener { get; } = new();
         public NetworkSystem NetworkSystem { get; }
+        public AudioEffectSystem AudioEffectSystem { get; }
 
         //Privates
         private NetPeer? _serverPeer;
@@ -54,7 +54,10 @@ namespace VoiceCraft.Client.Network
                 IPv6Enabled = false,
                 UnconnectedMessagesEnabled = true
             };
+            
+            AudioEffectSystem = new AudioEffectSystem(this);
             NetworkSystem = new NetworkSystem(this);
+            
             _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
             _encoder.SetPacketLostPercent(50); //Expected packet loss, might make this change over time later.
             _encoder.SetBitRate(32000);
@@ -152,8 +155,7 @@ namespace VoiceCraft.Client.Network
                 var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
                 if(read <= 0) continue;
                 bytesRead = Math.Max(bytesRead, read);
-                //Process Effects;
-                Pcm16ProximityVolume(outputBufferShort, read, clientEntity, this);
+                AudioEffectSystem.ProcessEffects(outputBufferShort, read / sizeof(short), clientEntity);
                 Pcm16Mix(outputBufferShort, read, bufferShort);
             }
             
@@ -242,44 +244,6 @@ namespace VoiceCraft.Client.Network
             }
 
             _isDisposed = true;
-        }
-
-        private static void Pcm16ProximityVolume(Span<short> srcBuffer, int count, VoiceCraftEntity from, VoiceCraftEntity to)
-        {
-            var bitmask = from.TalkBitmask & to.ListenBitmask;
-            if ((bitmask & 1ul) == 0) return; //Not enabled.
-            
-            int? minRange = null;
-            if(from.TryGetProperty<int>(PropertyKey.MinRange, out var fromMinRange))
-                minRange = (int)fromMinRange;
-            if(to.TryGetProperty<int>(PropertyKey.MinRange, out var toMinRange))
-                minRange = Math.Max(minRange ?? 0, (int)toMinRange);
-            
-            int? maxRange = null;
-            if(from.TryGetProperty<int>(PropertyKey.MaxRange, out var fromMaxRange))
-                maxRange = (int)fromMaxRange;
-            if(to.TryGetProperty<int>(PropertyKey.MaxRange, out var toMaxRange))
-                maxRange = Math.Max(maxRange ?? 0, (int)toMaxRange);
-            
-            maxRange ??= from.World.MaxRange; //If maxRange is still null, use the world max range.
-            minRange ??= from.World.MinRange; //If min range is still null, use the world min range.
-            var range = (int)(maxRange - minRange);
-            
-            var distance = Vector3.Distance(from.Position, to.Position);
-            if(range == 0) return; //Range is 0. Do not calculate division.
-            var factor = 1f - Math.Clamp(distance / range, 0f, 1.0f);
-            
-            for (var i = 0; i < count / sizeof(short); i++)
-            {
-                var sample = srcBuffer[i] * factor;
-                sample = sample switch
-                {
-                    > short.MaxValue => short.MaxValue,
-                    < short.MinValue => short.MinValue,
-                    _ => sample
-                };
-                srcBuffer[i] = (short)sample;
-            }
         }
 
         private static void Pcm16Mix(Span<short> srcBuffer, int count, Span<short> dstBuffer)

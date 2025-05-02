@@ -1,14 +1,14 @@
+using System;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.Network;
 
 namespace VoiceCraft.Core.Interfaces
 {
-    public interface IAudioEffect : INetSerializable
+    public interface IAudioEffect : INetSerializable, IDisposable
     {
         public ulong Bitmask { get; }
         
         EffectType EffectType { get; }
 
-        void Process(VoiceCraftEntity from, VoiceCraftEntity to, float[] data, int count);
+        void Process(VoiceCraftEntity from, VoiceCraftEntity to, Span<float> data, int count);
     }
 }
