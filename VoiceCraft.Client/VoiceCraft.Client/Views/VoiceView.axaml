@@ -29,7 +29,14 @@
                                    VerticalAlignment="Center"
                                    FontSize="16"
                                    FontWeight="Bold"
-                                   Text="{Binding DisplayName}" />
+                                   Text="{Binding DisplayName}"
+                                   Classes.IsNotVisible="{Binding !IsVisible}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.IsNotVisible">
+                                    <Setter Property="Foreground" Value="Gray" />
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
 
                         <StackPanel Grid.Column="1"
                                     HorizontalAlignment="Right"
