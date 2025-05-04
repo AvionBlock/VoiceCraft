@@ -1,16 +1,14 @@
 using VoiceCraft.Core;
-using VoiceCraft.Server.Application;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Server.Data;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class VisibilitySystem(VoiceCraftServer server)
+    public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
     {
-        private readonly VoiceCraftWorld _world = server.World;
-
         public void Update()
         {
-            Parallel.ForEach(_world.Entities, UpdateVisibleNetworkEntities);
+            Parallel.ForEach(world.Entities, UpdateVisibleNetworkEntities);
         }
 
         private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
@@ -19,11 +17,11 @@ namespace VoiceCraft.Server.Systems
             entity.TrimVisibleDeadEntities();
             
             //Add any new possible entities.
-            var visibleNetworkEntities = _world.Entities.OfType<VoiceCraftNetworkEntity>();
+            var visibleNetworkEntities = world.Entities.OfType<VoiceCraftNetworkEntity>();
             foreach (var possibleEntity in visibleNetworkEntities)
             {
                 if(possibleEntity.Id == entity.Id) continue;
-                if (!entity.VisibleTo(possibleEntity))
+                if (!EntityVisibility(entity, possibleEntity))
                 {
                     entity.RemoveVisibleEntity(possibleEntity);
                     continue;
@@ -31,6 +29,17 @@ namespace VoiceCraft.Server.Systems
                 
                 entity.AddVisibleEntity(possibleEntity);
             }
+        }
+
+        private bool EntityVisibility(VoiceCraftEntity from, VoiceCraftNetworkEntity to)
+        {
+            if(!from.VisibleTo(to)) return false;
+            foreach (var effect in audioEffectSystem.Effects)
+            {
+                if(effect.Value is not IVisible visibleEffect) continue;
+                if(!visibleEffect.Visibility(from, to)) return false;
+            }
+            return true;
         }
     }
 }

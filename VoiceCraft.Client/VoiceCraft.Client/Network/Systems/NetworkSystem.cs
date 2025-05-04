@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Client.Audio.Effects;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
 
@@ -103,17 +104,7 @@ namespace VoiceCraft.Client.Network.Systems
                 case PacketType.SetEffect:
                     var setEffectPacket = new SetEffectPacket();
                     setEffectPacket.Deserialize(reader);
-                    HandleSetEffectPacket(setEffectPacket);
-                    break;
-                case PacketType.SetMinRange:
-                    var setMinRangePacket = new SetMinRangePacket();
-                    setMinRangePacket.Deserialize(reader);
-                    HandleSetMinRangePacket(setMinRangePacket);
-                    break;
-                case PacketType.SetMaxRange:
-                    var setMaxRangePacket = new SetMaxRangePacket();
-                    setMaxRangePacket.Deserialize(reader);
-                    HandleSetMaxRangePacket(setMaxRangePacket);
+                    HandleSetEffectPacket(setEffectPacket, reader);
                     break;
                 case PacketType.EntityCreated:
                     var entityCreatedPacket = new EntityCreatedPacket();
@@ -198,25 +189,26 @@ namespace VoiceCraft.Client.Network.Systems
             OnSetDescription?.Invoke(packet.Value);
         }
 
-        private void HandleSetEffectPacket(SetEffectPacket packet)
+        private void HandleSetEffectPacket(SetEffectPacket packet, NetDataReader reader)
         {
+            if (_audioEffectSystem.TryGetEffect(packet.Index, out var effect) && effect.EffectType == packet.EffectType)
+            {
+                effect.Deserialize(reader); //Do not recreate the effect instance! Could hold audio instance data!
+                return;
+            }
+
             switch (packet.EffectType)
             {
+                case EffectType.Proximity:
+                    var proximityEffect = new ClientProximityEffect();
+                    proximityEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Index, proximityEffect);
+                    break;
                 case EffectType.Unknown:
                 default:
                     _audioEffectSystem.RemoveEffect(packet.Index);
                     break;
             }
-        }
-        
-        private void HandleSetMinRangePacket(SetMinRangePacket packet)
-        {
-            _world.MinRange = packet.Value;
-        }
-
-        private void HandleSetMaxRangePacket(SetMaxRangePacket packet)
-        {
-            _world.MaxRange = packet.Value;
         }
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)

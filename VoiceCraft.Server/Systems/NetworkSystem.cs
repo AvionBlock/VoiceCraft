@@ -12,17 +12,17 @@ namespace VoiceCraft.Server.Systems
     public class NetworkSystem : IDisposable
     {
         private readonly VoiceCraftServer _server;
+        private readonly VoiceCraftConfig _config;
         private readonly VoiceCraftWorld _world;
         private readonly EventBasedNetListener _listener;
         private readonly NetManager _netManager;
-        private readonly VoiceCraftConfig _config;
 
-        public NetworkSystem(VoiceCraftServer server, NetManager netManager)
+        public NetworkSystem(VoiceCraftServer server, VoiceCraftWorld world, EventBasedNetListener listener, NetManager netManager)
         {
             _server = server;
-            _world = server.World;
-            _listener = server.Listener;
             _config = server.Config;
+            _world = world;
+            _listener = listener;
             _netManager = netManager;
 
             _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
@@ -134,8 +134,6 @@ namespace VoiceCraft.Server.Systems
                 case PacketType.SetName:
                 case PacketType.SetTalkBitmask:
                 case PacketType.SetListenBitmask:
-                case PacketType.SetMinRange:
-                case PacketType.SetMaxRange:
                 case PacketType.SetPosition:
                 case PacketType.SetRotation:
                 case PacketType.SetProperty:
