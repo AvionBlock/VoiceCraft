@@ -11,8 +11,30 @@ namespace VoiceCraft.Client.Network
 {
     public class VoiceCraftClientEntity : VoiceCraftEntity
     {
-        public bool IsVisible { get; set; }
-        public float Volume { get; set; }
+        public event Action<bool, VoiceCraftEntity>? OnIsVisibleUpdated;
+        public event Action<float, VoiceCraftEntity>? OnVolumeUpdated;
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (_isVisible == value) return;
+                _isVisible = value;
+                OnIsVisibleUpdated?.Invoke(_isVisible, this);
+            }
+        }
+
+        public float Volume
+        {
+            get => _volume;
+            set
+            {
+                if(Math.Abs(_volume - value) < Constants.FloatingPointTolerance) return;
+                _volume = value;
+                OnVolumeUpdated?.Invoke(_volume, this);
+            }
+    }
 
         private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
         private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
@@ -20,6 +42,8 @@ namespace VoiceCraft.Client.Network
         private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
         private DateTime _lastPacket = DateTime.MinValue;
         private bool _isReady;
+        private bool _isVisible;
+        private float _volume = 1f;
 
         private readonly BufferedWaveProvider _outputBuffer = new(new WaveFormat(Constants.SamplesPerFrame, Constants.Channels))
         {
@@ -74,6 +98,9 @@ namespace VoiceCraft.Client.Network
 
             _decoder.Dispose();
             base.Destroy();
+            
+            OnIsVisibleUpdated = null;
+            OnVolumeUpdated = null;
         }
 
         private int Read(byte[] buffer)

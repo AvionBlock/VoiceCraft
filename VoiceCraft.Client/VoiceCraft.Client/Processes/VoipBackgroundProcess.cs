@@ -231,7 +231,8 @@ namespace VoiceCraft.Client.Processes
 
         private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
         {
-            var entityViewModel = new EntityViewModel(entity);
+            if (entity is not VoiceCraftClientEntity clientEntity) return;
+            var entityViewModel = new EntityViewModel(clientEntity);
             if (!_entityViewModels.TryAdd(entity, entityViewModel)) return;
             OnEntityAdded?.Invoke(entityViewModel);
         }
