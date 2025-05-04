@@ -202,6 +202,16 @@ namespace VoiceCraft.Core
                 result = null;
             return result != null;
         }
+
+        public T? GetPropertyOrDefault<T>(PropertyKey key, T? defaultValue = null) where T : unmanaged
+        {
+            if(key == PropertyKey.Unknown)
+                throw new ArgumentOutOfRangeException(nameof(key));
+            
+            if (_properties.TryGetValue(key, out var value) && value is T typeValue)
+                return typeValue;
+            return defaultValue;
+        }
         
         public void ClearProperties()
         {
@@ -237,18 +247,7 @@ namespace VoiceCraft.Core
         {
             if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
             var bitmask = TalkBitmask & entity.ListenBitmask;
-            if (bitmask == 0) return false;
-            if ((bitmask & 1ul) == 0) return true; //Proximity checking disabled.
-
-            int? maxRange = null;
-            if(TryGetProperty<int>(PropertyKey.MaxRange, out var fromMaxRange))
-                maxRange = (int)fromMaxRange;
-            if(entity.TryGetProperty<int>(PropertyKey.MaxRange, out var toMaxRange))
-                maxRange = Math.Max(maxRange ?? 0, (int)toMaxRange);
-            maxRange ??= World.MaxRange; //If maxRange is still null, use the world max range.
-            
-            var distance = Vector3.Distance(Position, entity.Position);
-            return distance <= maxRange;
+            return bitmask != 0;
         }
 
         public void Serialize(NetDataWriter writer)

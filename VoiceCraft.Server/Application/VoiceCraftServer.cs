@@ -15,33 +15,38 @@ namespace VoiceCraft.Server.Application
 
         //Public Properties
         public VoiceCraftConfig Config { get; set; }
-        public EventBasedNetListener Listener { get; }
-        public VoiceCraftWorld World { get; } = new();
-        public NetworkSystem NetworkSystem { get; }
-        public AudioEffectSystem AudioEffectSystem { get; }
-        
+        public VoiceCraftWorld World { get; set; }
+
         //Privates
-        private readonly NetDataWriter _dataWriter = new();
+        //Networking
+        private readonly NetDataWriter _dataWriter;
+        private readonly NetManager _netManager;
+
+
+        //Systems
+        private readonly NetworkSystem _networkSystem;
+        private readonly AudioEffectSystem _audioEffectSystem;
         private readonly VisibilitySystem _visibilitySystem;
         private readonly EventHandlerSystem _eventHandlerSystem;
-        private readonly NetManager _netManager;
         private bool _isDisposed;
 
         public VoiceCraftServer(VoiceCraftConfig? config = null)
         {
             Config = config ?? new VoiceCraftConfig();
-            Listener = new EventBasedNetListener();
-            _netManager = new NetManager(Listener)
+            World = new VoiceCraftWorld();
+
+            _dataWriter = new NetDataWriter();
+            var listener = new EventBasedNetListener();
+            _netManager = new NetManager(listener)
             {
                 AutoRecycle = true,
                 UnconnectedMessagesEnabled = true
             };
 
-            //Has to be initialized in this order otherwise shit falls apart.
-            NetworkSystem = new NetworkSystem(this, _netManager);
-            AudioEffectSystem = new AudioEffectSystem();
-            _visibilitySystem = new VisibilitySystem(this);
-            _eventHandlerSystem = new EventHandlerSystem(this); //This should always be last!
+            _audioEffectSystem = new AudioEffectSystem();
+            _networkSystem = new NetworkSystem(this, World, listener, _netManager);
+            _eventHandlerSystem = new EventHandlerSystem(this, World, _audioEffectSystem);
+            _visibilitySystem = new VisibilitySystem(World, _audioEffectSystem);
         }
 
         ~VoiceCraftServer()
@@ -50,11 +55,12 @@ namespace VoiceCraft.Server.Application
         }
 
         #region Public Methods
+
         public bool Start()
         {
             return _netManager.IsRunning || _netManager.Start((int)Config.Port);
         }
-        
+
         public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
         {
             if (peer.ConnectionState != ConnectionState.Connected) return false;
@@ -88,10 +94,11 @@ namespace VoiceCraft.Server.Application
 
                     peer.Send(_dataWriter, deliveryMethod);
                 }
+
                 return status;
             }
         }
-        
+
         public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
         {
             lock (_dataWriter)
@@ -102,8 +109,9 @@ namespace VoiceCraft.Server.Application
                 return _netManager.SendUnconnectedMessage(_dataWriter, remoteEndPoint);
             }
         }
-        
-        public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, params NetPeer?[] excludes) where T : VoiceCraftPacket
+
+        public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered, params NetPeer?[] excludes)
+            where T : VoiceCraftPacket
         {
             lock (_dataWriter)
             {
@@ -113,7 +121,7 @@ namespace VoiceCraft.Server.Application
                 packet.Serialize(_dataWriter);
                 foreach (var networkEntity in networkEntities)
                 {
-                    if(excludes.Contains(networkEntity.NetPeer)) continue;
+                    if (excludes.Contains(networkEntity.NetPeer)) continue;
                     networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
                 }
             }
@@ -142,9 +150,10 @@ namespace VoiceCraft.Server.Application
             if (_isDisposed) return;
             if (disposing)
             {
-                _netManager.Stop();
                 World.Dispose();
-                NetworkSystem.Dispose();
+                _netManager.Stop();
+                _networkSystem.Dispose();
+                _audioEffectSystem.Dispose();
                 _eventHandlerSystem.Dispose();
             }
 

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Diagnostics.CodeAnalysis;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
@@ -26,7 +26,7 @@ namespace VoiceCraft.Client.Network.Systems
         {
             if(_floatBuffer.Length < count)
                 _floatBuffer = new float[count];
-            Pcm16ToFloat(buffer, count, _floatBuffer);
+            Pcm16ToFloat(buffer, count, _floatBuffer); //To float
             
             lock (_audioEffects)
             {
@@ -35,8 +35,8 @@ namespace VoiceCraft.Client.Network.Systems
                     effect.Value.Process(entity, client, _floatBuffer, count);
                 }
             }
-            PcmFloatProximityVolume(_floatBuffer, count, entity, client);
-            PcmFloatTo16(_floatBuffer, count, buffer);
+            
+            PcmFloatTo16(_floatBuffer, count, buffer); //To 16bit
         }
 
         public void AddEffect(IAudioEffect effect)
@@ -49,13 +49,22 @@ namespace VoiceCraft.Client.Network.Systems
             }
         }
 
-        public void SetEffect(IAudioEffect effect, byte index)
+        public void SetEffect(byte index, IAudioEffect effect)
         {
             lock (_audioEffects)
             {
                 if (!_audioEffects.TryAdd(index, effect))
                     _audioEffects[index] = effect;
                 OnEffectSet?.Invoke(index, effect);
+            }
+        }
+
+        public bool TryGetEffect(byte index, [NotNullWhen(true)] out IAudioEffect? effect)
+        {
+            lock (_audioEffects)
+            {
+                effect = _audioEffects.GetValueOrDefault(index);
+                return effect != null;
             }
         }
 
@@ -105,37 +114,6 @@ namespace VoiceCraft.Client.Network.Systems
             for (var i = 0; i < count; i++)
             {
                 buffer[i] = (short)(floatBuffer[i] * short.MaxValue);
-            }
-        }
-        
-        private static void PcmFloatProximityVolume(Span<float> srcBuffer, int count, VoiceCraftEntity from, VoiceCraftEntity to)
-        {
-            var bitmask = from.TalkBitmask & to.ListenBitmask;
-            if ((bitmask & 1ul) == 0) return; //Not enabled.
-            
-            int? minRange = null;
-            if(from.TryGetProperty<int>(PropertyKey.MinRange, out var fromMinRange))
-                minRange = (int)fromMinRange;
-            if(to.TryGetProperty<int>(PropertyKey.MinRange, out var toMinRange))
-                minRange = Math.Max(minRange ?? 0, (int)toMinRange);
-            
-            int? maxRange = null;
-            if(from.TryGetProperty<int>(PropertyKey.MaxRange, out var fromMaxRange))
-                maxRange = (int)fromMaxRange;
-            if(to.TryGetProperty<int>(PropertyKey.MaxRange, out var toMaxRange))
-                maxRange = Math.Max(maxRange ?? 0, (int)toMaxRange);
-            
-            maxRange ??= from.World.MaxRange; //If maxRange is still null, use the world max range.
-            minRange ??= from.World.MinRange; //If min range is still null, use the world min range.
-            var range = (int)(maxRange - minRange);
-            
-            var distance = Vector3.Distance(from.Position, to.Position);
-            if(range == 0) return; //Range is 0. Do not calculate division.
-            var factor = 1f - Math.Clamp(distance / range, 0f, 1.0f);
-            
-            for (var i = 0; i < count; i++)
-            {
-                srcBuffer[i] = Math.Clamp(srcBuffer[i] * factor, -1f, 1f);
             }
         }
     }

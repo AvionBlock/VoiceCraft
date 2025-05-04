@@ -24,8 +24,6 @@ namespace VoiceCraft.Core
         Audio,
         SetTitle,
         SetDescription,
-        SetMinRange,
-        SetMaxRange,
         SetEffect,
 
         //Entity stuff
@@ -49,8 +47,8 @@ namespace VoiceCraft.Core
     public enum PropertyKey : ushort
     {
         Unknown,
-        MinRange,
-        MaxRange
+        ProximityEffectMinRange,
+        ProximityEffectMaxRange
     }
 
     public enum PropertyType : byte
@@ -68,7 +66,8 @@ namespace VoiceCraft.Core
 
     public enum EffectType : byte
     {
-        Unknown
+        Unknown,
+        Proximity,
     }
 
     public enum AudioFormat

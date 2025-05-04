@@ -15,16 +15,14 @@ namespace VoiceCraft.Server.Systems
         private readonly AudioEffectSystem _audioEffectSystem;
         private readonly List<Action> _tasks = [];
 
-        public EventHandlerSystem(VoiceCraftServer server)
+        public EventHandlerSystem(VoiceCraftServer server, VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
         {
             _server = server;
-            _world = server.World;
-            _audioEffectSystem = server.AudioEffectSystem;
+            _world = world;
+            _audioEffectSystem = audioEffectSystem;
 
             _world.OnEntityCreated += OnEntityCreated;
             _world.OnEntityDestroyed += OnEntityDestroyed;
-            _world.OnMinRangeUpdated += OnMinRangeUpdated;
-            _world.OnMaxRangeUpdated += OnMaxRangeUpdated;
             _audioEffectSystem.OnEffectSet += OnAudioEffectSet;
             _audioEffectSystem.OnEffectRemoved += OnAudioEffectRemoved;
         }
@@ -39,8 +37,6 @@ namespace VoiceCraft.Server.Systems
         {
             _world.OnEntityCreated -= OnEntityCreated;
             _world.OnEntityDestroyed -= OnEntityDestroyed;
-            _world.OnMinRangeUpdated -= OnMinRangeUpdated;
-            _world.OnMaxRangeUpdated -= OnMaxRangeUpdated;
             _audioEffectSystem.OnEffectSet -= OnAudioEffectSet;
             _audioEffectSystem.OnEffectRemoved -= OnAudioEffectRemoved;
             GC.SuppressFinalize(this);
@@ -77,9 +73,12 @@ namespace VoiceCraft.Server.Systems
             
             if (networkEntity != null)
             {
-                //Send Min/Max range packets.
-                _server.SendPacket(networkEntity.NetPeer, new SetMinRangePacket(_world.MinRange));
-                _server.SendPacket(networkEntity.NetPeer, new SetMaxRangePacket(_world.MaxRange));
+                //Send Effects
+                foreach (var effect in _audioEffectSystem.Effects)
+                {
+                    var packet = new SetEffectPacket(effect.Key, effect.Value);
+                    _server.SendPacket(networkEntity.NetPeer, packet);
+                }
                 
                 //Send other entities.
                 foreach (var entity in _world.Entities)
@@ -87,13 +86,6 @@ namespace VoiceCraft.Server.Systems
                     if(entity == newEntity) continue;
                     var entityCreatedPacket = new EntityCreatedPacket(entity.Id, entity);
                     _server.SendPacket(networkEntity.NetPeer, entityCreatedPacket);
-                }
-
-                //Send Effects
-                foreach (var effect in _audioEffectSystem.Effects)
-                {
-                    var packet = new SetEffectPacket(effect.Key, effect.Value);
-                    _server.SendPacket(networkEntity.NetPeer, packet);
                 }
             }
             
@@ -130,24 +122,6 @@ namespace VoiceCraft.Server.Systems
             entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
             entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
             entity.OnAudioReceived -= OnEntityAudioReceived;
-        }
-        
-        private void OnMinRangeUpdated(int minRange)
-        {
-            _tasks.Add(() =>
-            {
-                var packet = new SetMinRangePacket(minRange);
-                _server.Broadcast(packet);
-            });
-        }
-        
-        private void OnMaxRangeUpdated(int maxRange)
-        {
-            _tasks.Add(() =>
-            {
-                var packet = new SetMaxRangePacket(maxRange);
-                _server.Broadcast(packet);
-            });
         }
 
         //Data

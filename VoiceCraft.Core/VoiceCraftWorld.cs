@@ -7,35 +7,9 @@ namespace VoiceCraft.Core
     {
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
-        public event Action<int>? OnMinRangeUpdated;
-        public event Action<int>? OnMaxRangeUpdated;
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
         
-        private int _minRange;
-        private int _maxRange = 30;
         private readonly Dictionary<int, VoiceCraftEntity> _entities = new Dictionary<int, VoiceCraftEntity>();
-        
-        public int MinRange
-        {
-            get => _minRange;
-            set
-            {
-                if (_minRange == value) return;
-                _minRange = value;
-                OnMinRangeUpdated?.Invoke(_minRange);
-            }
-        }
-
-        public int MaxRange
-        {
-            get => _maxRange;
-            set
-            {
-                if (_maxRange == value) return;
-                _maxRange = value;
-                OnMaxRangeUpdated?.Invoke(_maxRange);
-            }
-        }
 
         public VoiceCraftEntity CreateEntity()
         {
