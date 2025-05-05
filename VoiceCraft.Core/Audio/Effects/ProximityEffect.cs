@@ -9,9 +9,9 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         public EffectType EffectType => EffectType.Proximity;
 
+        public ulong Bitmask { get; set; } = ulong.MaxValue;
         public int MinRange { get; set; }
         public int MaxRange { get; set; }
-        public ulong Bitmask { get; set; }
         
 
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to)
