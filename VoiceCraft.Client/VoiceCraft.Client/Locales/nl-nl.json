@@ -34,19 +34,26 @@
   "Settings.Audio.OutputDevices": "Uitvoerapparaten",
   "Settings.Audio.TestOutput": "Test Uitvoer",
 
+  "Settings.Advanced": "Geavanceerde instellingen",
+  "Settings.Advanced.TriggerGc": "Trigger Garbage Collector",
+
   "SelectedServer.Address": "Adres",
   "SelectedServer.PingInformation": "Ping informatie",
   "SelectedServer.Latency": "Latentie",
   "SelectedServer.ServerInfo": "Server info",
   "SelectedServer.ServerInfo.Status": "Motd: {motd}\nOntdekking: {discovery}\nPositioneringstype: {positioningType}\nVerbonden clients: {clients}",
   "SelectedServer.ServerInfo.Status.Pinging": "Pingen...",
-  
-  "Android.NativeAEC.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
-  "Android.NativeAEC.Exception.Init": "Native echo-onderdrukking moet worden geïnitialiseerd met een recorder!",
-  "Android.NativeAGC.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
-  "Android.NativeAGC.Exception.Init": "Native denoiser moet worden geïnitialiseerd met een recorder!",
-  "Android.NativeDN.Exception.AndroidRecorder": "De recorder moet een native Android-audiorecorder zijn!",
-  "Android.NativeDN.Exception.Init": "Native denoiser moet worden geïnitialiseerd met een recorder!",
+
+  "Audio.Recorder.InitFailed": "Recorder kan niet worden geïnitialiseerd!",
+  "Audio.Recorder.Init": "Recorder is niet geïnitialiseerd!",
+  "Audio.Player.InitFailed": "Audiospeler kan niet worden geïnitialiseerd!",
+  "Audio.Player.Init": "Audiospeler is niet geïnitialiseerd!",
+  "Audio.AEC.InitFailed": "Echo-onderdrukker kan niet worden geïnitialiseerd!",
+  "Audio.AEC.Init": "Echo-onderdrukker is niet geïnitialiseerd!",
+  "Audio.AGC.InitFailed": "Gain-controller kan niet worden geïnitialiseerd!",
+  "Audio.AGC.Init": "Gain-controller is niet geïnitialiseerd!",
+  "Audio.DN.InitFailed": "Denoiser kan niet worden geïnitialiseerd!",
+  "Audio.DN.Init": "Denoiser is niet geïnitialiseerd!",
 
   "VoiceCraft.Status.Title": "VoiceCraft Client is draaiende",
   "VoiceCraft.Status.Initializing": "Initialiseren...",
