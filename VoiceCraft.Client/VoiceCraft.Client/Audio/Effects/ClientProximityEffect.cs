@@ -15,7 +15,7 @@ namespace VoiceCraft.Client.Audio.Effects
             var minRange = from.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMinRange);
             var toMinRange = to.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMinRange);
             if (minRange == null && toMinRange == null)
-                minRange = MaxRange;
+                minRange = MinRange;
             else
                 minRange = Math.Min(minRange ?? int.MaxValue, toMinRange ?? int.MaxValue);
             

@@ -1,3 +1,4 @@
+using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems
@@ -9,6 +10,11 @@ namespace VoiceCraft.Server.Systems
 
         public IEnumerable<KeyValuePair<byte, IAudioEffect>> Effects => _audioEffects;
         private readonly Dictionary<byte, IAudioEffect> _audioEffects = new();
+
+        public AudioEffectSystem()
+        {
+            _audioEffects.Add(0, new ProximityEffect() { MaxRange = 10 });
+        }
 
         public void AddEffect(IAudioEffect effect)
         {

@@ -31,8 +31,8 @@ namespace VoiceCraft.Core
         private string _name = "New Entity";
         private bool _muted;
         private bool _deafened;
-        private ulong _talkBitmask = 1;
-        private ulong _listenBitmask = 1;
+        private ulong _talkBitmask = ulong.MaxValue;
+        private ulong _listenBitmask = ulong.MaxValue;
         private Vector3 _position;
         private Quaternion _rotation;
 
