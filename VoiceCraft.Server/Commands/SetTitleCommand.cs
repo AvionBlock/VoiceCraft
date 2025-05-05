@@ -7,20 +7,20 @@ namespace VoiceCraft.Server.Commands
 {
     public class SetTitleCommand : Command
     {
-        public SetTitleCommand(VoiceCraftServer server) : base("settitle", "Sets a title for a client.")
+        public SetTitleCommand(VoiceCraftServer server) : base(Locales.Locales.Commands_SetTitle_Name, Locales.Locales.Commands_SetTitle_Description)
         {
-            var idArgument = new Argument<byte>("id", "The entity client Id.");
-            var titleArgument = new Argument<string>("title", "The title to set.");
+            var idArgument = new Argument<byte>(Locales.Locales.Commands_Options_id_Name, Locales.Locales.Commands_Options_id_Description);
+            var titleArgument = new Argument<string>(Locales.Locales.Commands_SetTitle_Options_title_Name, Locales.Locales.Commands_SetTitle_Options_title_Description);
             AddArgument(idArgument);
             AddArgument(titleArgument);
             
             this.SetHandler((id, title) =>
             {
                 var entity = server.World.GetEntity(id);
-                if (entity == null)
-                    throw new Exception($"Could not find entity with id: {id}");
-                if(entity is not VoiceCraftNetworkEntity networkEntity)
-                    throw new Exception($"Entity with id {id} is not a client entity!");
+                if (entity is null)
+                    throw new Exception(string.Format(Locales.Locales.Commands_Exceptions_CannotFindEntity, id));
+                if (entity is not VoiceCraftNetworkEntity networkEntity)
+                    throw new Exception(string.Format(Locales.Locales.Commands_SetTitle_Exceptions_NotAClientEntity, id));
 
                 var packet = new SetTitlePacket(title);
                 server.SendPacket(networkEntity.NetPeer, packet);

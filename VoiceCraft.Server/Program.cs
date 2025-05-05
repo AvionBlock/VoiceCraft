@@ -1,16 +1,21 @@
 using System.CommandLine;
+using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Commands;
+using VoiceCraft.Server.Locales;
 
 namespace VoiceCraft.Server
 {
     public static class Program
     {
         public static readonly IServiceProvider ServiceProvider = BuildServiceProvider();
-        
+
         public static void Main(string[] args)
         {
+            Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales"));
+            Localizer.Language = "en-us";
+            //Localizer.Language = "nl-nl";
             App.Start().GetAwaiter().GetResult();
         }
 
@@ -21,7 +26,7 @@ namespace VoiceCraft.Server
             serviceCollection.AddSingleton<VoiceCraftServer>();
             
             //Commands
-            var rootCommand = new RootCommand("VoiceCraft commands.");
+            var rootCommand = new RootCommand(Locales.Locales.Commands_Root_Description);
             serviceCollection.AddSingleton(rootCommand);
             serviceCollection.AddSingleton<SetPropertyCommand>();
             serviceCollection.AddSingleton<SetPositionCommand>();
