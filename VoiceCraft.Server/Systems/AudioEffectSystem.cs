@@ -14,7 +14,7 @@ namespace VoiceCraft.Server.Systems
         {
             var id = GetLowestAvailableId();
             if(_audioEffects.TryAdd(id, effect))
-                throw new InvalidOperationException("Failed to add effect!");
+                throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_FailedToAddEffect);
         }
 
         public void SetEffect(IAudioEffect effect, byte index)
@@ -27,7 +27,7 @@ namespace VoiceCraft.Server.Systems
         public void RemoveEffect(byte index)
         {
             if (!_audioEffects.Remove(index, out var effect))
-                throw new InvalidOperationException("Failed to remove effect!");
+                throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_FailedToRemoveEffect);
             effect.Dispose();
             OnEffectRemoved?.Invoke(index, effect);
         }
@@ -39,7 +39,7 @@ namespace VoiceCraft.Server.Systems
                 if(!_audioEffects.ContainsKey(i)) return i;
             }
 
-            throw new InvalidOperationException("Could not find an available id!");
+            throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_NoAvailableIdFound);
         }
         
         public void Dispose()

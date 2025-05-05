@@ -18,7 +18,7 @@ namespace VoiceCraft.Server
             if (files.Length == 0)
             {
                 AnsiConsole.MarkupLine(
-                    "[yellow]ServerProperties.json was not found in the current and/or sub directories! Falling back to default server properties![/]");
+                    "[yellow]" + Locales.Locales.ServerProperties_LoadFile_NotFound + "[/]");
                 return CreateConfigFile();
             }
 
@@ -30,16 +30,16 @@ namespace VoiceCraft.Server
         {
             try
             {
-                AnsiConsole.MarkupLine($"[yellow]Loading ServerProperties.json file at {path}...[/]");
+                AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_LoadFile_Loading, path)}[/]");
                 var text = File.ReadAllText(path);
                 var properties = JsonSerializer.Deserialize<ServerProperties>(text);
                 if (properties == null)
-                    throw new Exception("JSON parsing failed.");
+                    throw new Exception(Locales.Locales.ServerProperties_LoadFile_JSONFailed);
                 return properties;
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[yellow]Failed to load server properties! Falling back to default properties! Error: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_LoadFile_Failed, ex.Message)}[/]");
             }
 
             return new ServerProperties();
@@ -50,18 +50,18 @@ namespace VoiceCraft.Server
             var properties = new ServerProperties();
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath);
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath, FileName);
-            AnsiConsole.MarkupLine($"[yellow]Generating ServerProperties.json file at {path}...[/]");
+            AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_CreateFile_Generating, path)}[/]");
             try
             {
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
 
                 File.WriteAllText(filePath, JsonSerializer.Serialize(properties, JsonSerializerOptions.Web));
-                AnsiConsole.MarkupLine($"[green]Sucessfully generated ServerProperties.json file at {path}[/]");
+                AnsiConsole.MarkupLine($"[green]{string.Format(Locales.Locales.ServerProperties_CreateFile_Success, path)}[/]");
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[red]Failed to generate ServerProperties.json file at {path}! Error: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[red]{string.Format(Locales.Locales.ServerProperties_CreateFile_Failed, path, ex.Message)}[/]");
             }
 
             return properties;

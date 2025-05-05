@@ -1,0 +1,76 @@
+{
+  "Startup.Title.Starting": "Starten...",
+  "Startup.ServerSetupTable.Server": "Server",
+  "Startup.ServerSetupTable.Port": "Poort",
+  "Startup.ServerSetupTable.Protocol": "Protocol",
+  "Startup.ServerProperties.Loading": "Server Properties Laden...",
+  "Startup.ServerProperties.Success": "Succesvol server properties geladen!",
+  "Startup.VoiceCraftServer.Starting": "VoiceCraft Server Starten...",
+  "Startup.VoiceCraftServer.Failed": "Het starten van VoiceCraft Server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!",
+  "Startup.VoiceCraftServer.Success": "VoiceCraft server gestart!",
+  "Startup.Finished": "Server gestart!",
+  "Startup.Exception": "Er is een fout opgetreden bij het opstarten van de server!",
+
+  "Command.Exception": "Er is een fout opgetreden bij het uitvoeren van de opdracht {0}!",
+
+  "Shutdown.StartingIn": "Server wordt afgesloten over {0}ms...",
+  "Shutdown.Starting": "Server wordt afgesloten...",
+  "Shutdown.Success": "Server succesvol afgesloten!",
+
+  "ServerProperties.LoadFile.NotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen! Terug naar standaard servereigenschappen!",
+  "ServerProperties.LoadFile.Loading": "Bestand ServerProperties.json laden op {0}...",
+  "ServerProperties.LoadFile.JSONFailed": "JSON-parsing mislukt.",
+  "ServerProperties.LoadFile.Failed": "Servereigenschappen laden mislukt! Terug naar standaardeigenschappen! Fout: {0}",
+  "ServerProperties.CreateFile.Generating": "Bestand ServerProperties.json genereren op {0}...",
+  "ServerProperties.CreateFile.Success": "Bestand ServerProperties.json succesvol gegenereerd op {0}",
+  "ServerProperties.CreateFile.Failed": "Het is niet gelukt om het bestand ServerProperties.json te genereren op {0}! Fout: {1}",
+
+
+  "Commands.Exceptions.CannotFindEntity": "Kan entiteit met id: {0} niet vinden",
+
+  "Commands.Root.Description": "VoiceCraft opdrachten.",
+  "Commands.Options.id.Name": "id",
+  "Commands.Options.id.Description": "De entiteit id.",
+
+  "Commands.SetProperty.Name": "seteigenschap",
+  "Commands.SetProperty.Description": "Stel een eigenschap in voor een bepaalde entiteit.",
+  "Commands.SetProperty.Options.key.Name": "sleutel",
+  "Commands.SetProperty.Options.key.Description": "The eigenschap sleutel.",
+  "Commands.SetProperty.Options.value.Name": "waarde",
+  "Commands.SetProperty.Options.value.Description": "The eigenschap waarde.",
+
+  "Commands.SetPosition.Name": "setpositie",
+  "Commands.SetPosition.Description": "Stel de positie in op een bepaalde entiteit.",
+  "Commands.SetPosition.Options.x.Description": "De X positie.",
+  "Commands.SetPosition.Options.y.Description": "De Y positie.",
+  "Commands.SetPosition.Options.z.Description": "De Z positie.",
+
+  "Commands.SetWorldId.Name": "setwereldid",
+  "Commands.SetWorldId.Description": "Stel de wereld-ID in op een bepaalde entiteit.",
+  "Commands.SetWorldId.Options.world.Name": "wereld",
+  "Commands.SetWorldId.Options.world.Description": "De wereld ID om in te stellen.",
+
+  "Commands.List.Name": "lijst",
+  "Commands.List.Description": "Geeft een overzicht van alle entiteiten.",
+  "Commands.List.Options.clientsOnly.Name": "clientsAlleen",
+  "Commands.List.Options.clientsOnly.Description": "Toon alleen clients.",
+  "Commands.List.Options.limit.Name": "limiet",
+  "Commands.List.Options.limit.Description": "Beperk het aantal weergegeven entiteiten.",
+  "Commands.List.Exceptions.Limit": "Limiet mag niet kleiner zijn dan nul!",
+  "Commands.List.EntityTable.Id": "Id",
+  "Commands.List.EntityTable.Name": "Naam",
+  "Commands.List.EntityTable.Position": "Positie",
+  "Commands.List.EntityTable.Rotation": "Rotatie",
+  "Commands.List.Showing": "{0} entiteiten worden weergegeven.",
+
+  "Commands.SetTitle.Name": "settitel",
+  "Commands.SetTitle.Description": "Stelt een titel in voor een client.",
+  "Commands.SetTitle.Options.title.Name": "titel",
+  "Commands.SetTitle.Options.title.Description": "De in te stellen titel.",
+  "Commands.SetTitle.Exceptions.NotAClientEntity": "Entiteit met id {0} is geen cliententiteit!",
+
+
+  "AudioEffectSystem.FailedToAddEffect": "Effect toevoegen mislukt!",
+  "AudioEffectSystem.FailedToRemoveEffect": "Effect verwijderen mislukt!",
+  "AudioEffectSystem.NoAvailableIdFound": "Kan geen beschikbare ID vinden!"
+}

@@ -5,19 +5,19 @@ namespace VoiceCraft.Server.Commands
 {
     public class SetWorldIdCommand : Command
     {
-        public SetWorldIdCommand(VoiceCraftServer server) : base("setworldid", "Set the world ID to a given entity.")
+        public SetWorldIdCommand(VoiceCraftServer server) : base(Locales.Locales.Commands_SetWorldId_Name, Locales.Locales.Commands_SetWorldId_Description)
         {
-            var idArgument = new Argument<byte>("id", "The entity Id.");
-            var worldIdArgument = new Argument<string?>("world", "The world ID to set.");
+            var idArgument = new Argument<byte>(Locales.Locales.Commands_Options_id_Name, Locales.Locales.Commands_Options_id_Description);
+            var worldIdArgument = new Argument<string?>(Locales.Locales.Commands_SetWorldId_Options_world_Name, Locales.Locales.Commands_SetWorldId_Options_world_Description);
             AddArgument(idArgument);
             AddArgument(worldIdArgument);
 
             this.SetHandler((id, worldId) =>
                 {
                     var entity = server.World.GetEntity(id);
-                    if (entity == null)
-                        throw new Exception($"Could not find entity with id: {id}");
-                    
+                    if (entity is null)
+                        throw new Exception(string.Format(Locales.Locales.Commands_Exceptions_CannotFindEntity, id));
+
                     entity.WorldId = worldId ?? string.Empty;
                 },
                 idArgument, worldIdArgument);

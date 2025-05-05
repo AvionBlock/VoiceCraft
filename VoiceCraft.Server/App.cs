@@ -20,33 +20,33 @@ namespace VoiceCraft.Server
                 var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
 
                 //Startup.
-                Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Starting...";
+                Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Startup_Title_Starting}";
                 AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
                 
                 //Table for Server Setup Display
                 var serverSetupTable = new Table()
-                    .AddColumn("Server")
-                    .AddColumn("Port")
-                    .AddColumn("Protocol");
+                    .AddColumn(Locales.Locales.Startup_ServerSetupTable_Server)
+                    .AddColumn(Locales.Locales.Startup_ServerSetupTable_Port)
+                    .AddColumn(Locales.Locales.Startup_ServerSetupTable_Protocol);
 
                 //Properties
-                AnsiConsole.WriteLine("Loading Server Properties...");
+                AnsiConsole.WriteLine(Locales.Locales.Startup_ServerProperties_Loading);
                 var properties = ServerProperties.Load().VoiceCraftConfig;
-                AnsiConsole.MarkupLine("[green]Successfully loaded server properties![/]");
+                AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_ServerProperties_Success + "[/]");
                 //Server Startup
-                AnsiConsole.WriteLine("Starting VoiceCraft Server...");
+                AnsiConsole.WriteLine(Locales.Locales.Startup_VoiceCraftServer_Starting);
                 server.Config = properties;
                 if (!server.Start())
-                    throw new Exception("Failed to start VoiceCraft Server! Please check if another process is using the same port!");
+                    throw new Exception(Locales.Locales.Startup_VoiceCraftServer_Failed);
                 
                 //Server Started
-                AnsiConsole.MarkupLine("[green]VoiceCraft server started![/]");
+                AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_VoiceCraftServer_Success + "[/]");
                 serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
                 
                 //Server finished.
-                AnsiConsole.MarkupLine("[bold green]Server started![/]");
+                AnsiConsole.MarkupLine("[bold green]" + Locales.Locales.Startup_Finished + "[/]");
                 AnsiConsole.Write(serverSetupTable);
-                
+
                 StartCommandTask();
                 var startTime = DateTime.UtcNow;
                 while (!Cts.IsCancellationRequested)
@@ -71,11 +71,11 @@ namespace VoiceCraft.Server
                 server.Stop();
                 server.Dispose();
                 Cts.Dispose();
-                AnsiConsole.MarkupLine("[green]Server shut down successfully![/]");
+                AnsiConsole.MarkupLine("[green]" + Locales.Locales.Shutdown_Success + "[/]");
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine("[red]An error occurred while trying to startup the server![/]");
+                AnsiConsole.MarkupLine("[red]" + Locales.Locales.Startup_Exception + "[/]");
                 AnsiConsole.WriteException(ex);
                 Shutdown(10000);
             }
@@ -90,7 +90,7 @@ namespace VoiceCraft.Server
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[red]An error occurred while trying to execute the command {_bufferedCommand}![/]");
+                AnsiConsole.MarkupLine($"[red]{string.Format(Locales.Locales.Command_Exception, _bufferedCommand)}[/]");
                 AnsiConsole.WriteException(ex);
             }
             _bufferedCommand = null;
@@ -117,7 +117,7 @@ namespace VoiceCraft.Server
         {
             if (Cts.IsCancellationRequested || _shuttingDown) return;
             _shuttingDown = true;
-            AnsiConsole.MarkupLine(delayMs > 0 ? $"[bold yellow]Shutting down server in {delayMs}ms...[/]" : $"[bold yellow]Shutting down server...[/]");
+            AnsiConsole.MarkupLine(delayMs > 0 ? $"[bold yellow]{string.Format(Locales.Locales.Shutdown_StartingIn, delayMs)}[/]" : $"[bold yellow]{Locales.Locales.Shutdown_Starting}[/]");
             Task.Delay((int)delayMs).Wait();
             Cts.Cancel();
         }
