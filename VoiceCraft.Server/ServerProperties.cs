@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Spectre.Console;
 using VoiceCraft.Server.Config;
 
@@ -9,62 +10,74 @@ namespace VoiceCraft.Server
         private const string FileName = "ServerProperties.json";
         private const string ConfigPath = "config";
 
-        public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
-        public McConfig McConfig { get; set; } = new();
+        public VoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
+        public McLinkConfig McLinkConfig => _properties.McLinkConfig;
 
-        public static ServerProperties Load()
+        private ServerPropertiesStructure _properties = new();
+
+        public void Load()
         {
             var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName, SearchOption.AllDirectories);
             if (files.Length == 0)
             {
-                AnsiConsole.MarkupLine(
-                    "[yellow]ServerProperties.json was not found in the current and/or sub directories! Falling back to default server properties![/]");
-                return CreateConfigFile();
+                AnsiConsole.MarkupLine("[yellow]" + Locales.Locales.ServerProperties_LoadFile_NotFound + "[/]");
+                _properties = CreateConfigFile();
+                return;
             }
 
             var file = files[0];
-            return LoadFile(file);
+            _properties = LoadFile(file);
         }
 
-        private static ServerProperties LoadFile(string path)
+        private static ServerPropertiesStructure LoadFile(string path)
         {
             try
             {
-                AnsiConsole.MarkupLine($"[yellow]Loading ServerProperties.json file at {path}...[/]");
+                AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_LoadFile_Loading, path)}[/]");
                 var text = File.ReadAllText(path);
-                var properties = JsonSerializer.Deserialize<ServerProperties>(text);
+                var properties = JsonSerializer.Deserialize<ServerPropertiesStructure>(text, ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
                 if (properties == null)
-                    throw new Exception("JSON parsing failed.");
+                    throw new Exception(Locales.Locales.ServerProperties_LoadFile_JSONFailed);
                 return properties;
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[yellow]Failed to load server properties! Falling back to default properties! Error: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_LoadFile_Failed, ex.Message)}[/]");
             }
 
-            return new ServerProperties();
+            return new ServerPropertiesStructure();
         }
 
-        private static ServerProperties CreateConfigFile()
+        private static ServerPropertiesStructure CreateConfigFile()
         {
-            var properties = new ServerProperties();
+            var properties = new ServerPropertiesStructure();
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath);
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath, FileName);
-            AnsiConsole.MarkupLine($"[yellow]Generating ServerProperties.json file at {path}...[/]");
+            AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_CreateFile_Generating, path)}[/]");
             try
             {
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
 
-                File.WriteAllText(filePath, JsonSerializer.Serialize(properties, JsonSerializerOptions.Web));
-                AnsiConsole.MarkupLine($"[green]Sucessfully generated ServerProperties.json file at {path}[/]");
+                File.WriteAllText(filePath, JsonSerializer.Serialize(properties, ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
+                AnsiConsole.MarkupLine($"[green]{string.Format(Locales.Locales.ServerProperties_CreateFile_Success, path)}[/]");
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[red]Failed to generate ServerProperties.json file at {path}! Error: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[red]{string.Format(Locales.Locales.ServerProperties_CreateFile_Failed, path, ex.Message)}[/]");
             }
 
             return properties;
         }
     }
+
+    public class ServerPropertiesStructure
+    {
+        public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
+        public McLinkConfig McLinkConfig { get; set; } = new();
+    }
+
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(ServerPropertiesStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class ServerPropertiesStructureGenerationContext : JsonSerializerContext;
 }
