@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;
@@ -18,28 +19,31 @@ namespace VoiceCraft.Server
             {
                 var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
                 var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
+                var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
 
                 //Startup.
-                Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Startup_Title_Starting}";
                 AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
+
+                //Properties
+                AnsiConsole.WriteLine(Locales.Locales.Startup_ServerProperties_Loading);
+                properties.Load();
+                Localizer.Language = properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
+                Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Startup_Title_Starting}"; //Loaded, Set the title.
+                AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_ServerProperties_Success + "[/]");
                 
+                //Server Startup
+                AnsiConsole.WriteLine(Locales.Locales.Startup_VoiceCraftServer_Starting);
+                server.Config = properties.VoiceCraftConfig;
+                if (!server.Start())
+                    throw new Exception(Locales.Locales.Startup_VoiceCraftServer_Failed);
+                
+                //Server Started
                 //Table for Server Setup Display
                 var serverSetupTable = new Table()
                     .AddColumn(Locales.Locales.Startup_ServerSetupTable_Server)
                     .AddColumn(Locales.Locales.Startup_ServerSetupTable_Port)
                     .AddColumn(Locales.Locales.Startup_ServerSetupTable_Protocol);
-
-                //Properties
-                AnsiConsole.WriteLine(Locales.Locales.Startup_ServerProperties_Loading);
-                var properties = ServerProperties.Load().VoiceCraftConfig;
-                AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_ServerProperties_Success + "[/]");
-                //Server Startup
-                AnsiConsole.WriteLine(Locales.Locales.Startup_VoiceCraftServer_Starting);
-                server.Config = properties;
-                if (!server.Start())
-                    throw new Exception(Locales.Locales.Startup_VoiceCraftServer_Failed);
                 
-                //Server Started
                 AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_VoiceCraftServer_Success + "[/]");
                 serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
                 
