@@ -14,8 +14,7 @@ namespace VoiceCraft.Server
         public static void Main(string[] args)
         {
             Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales"));
-            Localizer.Language = "en-us";
-            //Localizer.Language = "nl-nl";
+            Localizer.Language = "en-us"; //Default
             App.Start().GetAwaiter().GetResult();
         }
 
@@ -24,6 +23,7 @@ namespace VoiceCraft.Server
             var serviceCollection = new ServiceCollection();
             
             serviceCollection.AddSingleton<VoiceCraftServer>();
+            serviceCollection.AddSingleton<ServerProperties>();
             
             //Commands
             var rootCommand = new RootCommand(Locales.Locales.Commands_Root_Description);
