@@ -16,6 +16,13 @@ namespace VoiceCraft.Core
         Discovery
     }
 
+    public enum EntityType : byte
+    {
+        Unknown,
+        Server,
+        Network
+    }
+
     public enum PacketType : byte
     {
         Unknown,
@@ -38,6 +45,13 @@ namespace VoiceCraft.Core
         SetPosition,
         SetRotation,
         SetProperty
+    }
+
+    public enum McLinkPacketType : byte
+    {
+        Unknown,
+        Login,
+        Logout,
     }
     
     #endregion
