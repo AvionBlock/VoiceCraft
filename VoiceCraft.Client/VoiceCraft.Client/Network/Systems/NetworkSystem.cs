@@ -213,7 +213,7 @@ namespace VoiceCraft.Client.Network.Systems
 
         private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
         {
-            var entity = new VoiceCraftClientEntity(packet.Id, _world);
+            var entity = new VoiceCraftClientEntity(packet.Id, packet.EntityType, _world);
             entity.Deserialize(reader);
             _world.AddEntity(entity);
         }

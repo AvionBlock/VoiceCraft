@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using LiteNetLib.Utils;
 using NAudio.Wave;
 using OpusSharp.Core;
 using SpeexDSPSharp.Core;
@@ -13,6 +14,8 @@ namespace VoiceCraft.Client.Network
     {
         public event Action<bool, VoiceCraftEntity>? OnIsVisibleUpdated;
         public event Action<float, VoiceCraftEntity>? OnVolumeUpdated;
+        
+        public Guid UserGuid { get; private set; } = Guid.Empty;
 
         public bool IsVisible
         {
@@ -34,8 +37,9 @@ namespace VoiceCraft.Client.Network
                 _volume = value;
                 OnVolumeUpdated?.Invoke(_volume, this);
             }
-    }
+        }
 
+        private readonly EntityType _entityType;
         private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
         private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
         private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
@@ -51,9 +55,18 @@ namespace VoiceCraft.Client.Network
             DiscardOnBufferOverflow = true
         };
 
-        public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
+        public VoiceCraftClientEntity(int id, EntityType entityType, VoiceCraftWorld world) : base(id, world)
         {
+            _entityType = entityType;
             StartJitterThread();
+        }
+
+        public override void Deserialize(NetDataReader reader)
+        {
+            if (_entityType == EntityType.Network)
+                UserGuid = reader.GetGuid();
+            
+            base.Deserialize(reader);
         }
 
         public void ClearBuffer()

@@ -22,7 +22,7 @@ namespace VoiceCraft.Core
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
         public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
-        
+
         //Privates
         private float _loudness;
         private readonly List<VoiceCraftEntity> _visibleEntities = new List<VoiceCraftEntity>();
@@ -39,18 +39,19 @@ namespace VoiceCraft.Core
         //Properties
         public virtual int Id { get; }
         public VoiceCraftWorld World { get; }
+        public virtual EntityType EntityType => EntityType.Server;
         public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public bool Destroyed { get; private set; }
-        
+
         #region Updatable Properties
-        
+
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
-        
+
         public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
-        
-        
+
+
         public string WorldId
         {
             get => _worldId;
@@ -129,7 +130,7 @@ namespace VoiceCraft.Core
                 OnPositionUpdated?.Invoke(_position, this);
             }
         }
-        
+
         public Quaternion Rotation
         {
             get => _rotation;
@@ -140,7 +141,7 @@ namespace VoiceCraft.Core
                 OnRotationUpdated?.Invoke(_rotation, this);
             }
         }
-        
+
         #endregion
 
         //Modifiers for modifying data for later?
@@ -150,7 +151,7 @@ namespace VoiceCraft.Core
             Id = id;
             World = world;
         }
-        
+
         public void SetProperty(PropertyKey key, object? value)
         {
             if (key == PropertyKey.Unknown)
@@ -171,29 +172,29 @@ namespace VoiceCraft.Core
             //Null values aren't stored.
             if (value == null)
             {
-                if(_properties.Remove(key))
+                if (_properties.Remove(key))
                     OnPropertySet?.Invoke(key, null, this);
                 return;
             }
-            
-            if(!_properties.TryAdd(key, value)) 
+
+            if (!_properties.TryAdd(key, value))
                 _properties[key] = value;
             OnPropertySet?.Invoke(key, value, this);
         }
 
         public T GetProperty<T>(PropertyKey key) where T : unmanaged
         {
-            if(key == PropertyKey.Unknown)
+            if (key == PropertyKey.Unknown)
                 throw new ArgumentOutOfRangeException(nameof(key));
-            
-            if(_properties.TryGetValue(key, out var value) && value is T typeValue)
+
+            if (_properties.TryGetValue(key, out var value) && value is T typeValue)
                 return typeValue;
             throw new KeyNotFoundException($"Property {key} not found!");
         }
-        
+
         public bool TryGetProperty<T>(PropertyKey key, [NotNullWhen(true)] out T? result) where T : unmanaged
         {
-            if(key == PropertyKey.Unknown)
+            if (key == PropertyKey.Unknown)
                 throw new ArgumentOutOfRangeException(nameof(key));
 
             if (_properties.TryGetValue(key, out var value) && value is T typeValue)
@@ -205,29 +206,29 @@ namespace VoiceCraft.Core
 
         public T? GetPropertyOrDefault<T>(PropertyKey key, T? defaultValue = null) where T : unmanaged
         {
-            if(key == PropertyKey.Unknown)
+            if (key == PropertyKey.Unknown)
                 throw new ArgumentOutOfRangeException(nameof(key));
-            
+
             if (_properties.TryGetValue(key, out var value) && value is T typeValue)
                 return typeValue;
             return defaultValue;
         }
-        
+
         public void ClearProperties()
         {
             _properties.Clear();
         }
-        
+
         public void AddVisibleEntity(VoiceCraftEntity entity)
         {
-            if(_visibleEntities.Contains(entity)) return;
+            if (_visibleEntities.Contains(entity)) return;
             _visibleEntities.Add(entity);
             OnVisibleEntityAdded?.Invoke(entity, this);
         }
 
         public void RemoveVisibleEntity(VoiceCraftEntity entity)
         {
-            if(!_visibleEntities.Remove(entity)) return;
+            if (!_visibleEntities.Remove(entity)) return;
             OnVisibleEntityRemoved?.Invoke(entity, this);
         }
 
@@ -250,20 +251,21 @@ namespace VoiceCraft.Core
             return bitmask != 0;
         }
 
-        public void Serialize(NetDataWriter writer)
+        public virtual void Serialize(NetDataWriter writer)
         {
             writer.Put(Name, Constants.MaxStringLength);
             writer.Put(Muted);
             writer.Put(Deafened);
         }
 
-        public void Deserialize(NetDataReader reader)
+        public virtual void Deserialize(NetDataReader reader)
         {
             var name = reader.GetString(Constants.MaxStringLength);
-            Name = name;
             var muted = reader.GetBool();
-            Muted = muted;
             var deafened = reader.GetBool();
+
+            Name = name;
+            Muted = muted;
             Deafened = deafened;
         }
 
@@ -272,7 +274,7 @@ namespace VoiceCraft.Core
             if (Destroyed) return;
             Destroyed = true;
             OnDestroyed?.Invoke(this);
-            
+
             //Deregister all events.
             OnWorldIdUpdated = null;
             OnNameUpdated = null;
