@@ -102,7 +102,6 @@ namespace VoiceCraft.Client.ViewModels
         {
             var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status
                 .Replace("{motd}", info.Motd)
-                .Replace("{discovery}", info.Discovery.ToString())
                 .Replace("{positioningType}", info.PositioningType.ToString())
                 .Replace("{clients}", info.Clients.ToString());
             StatusInfo = statusInfo;
