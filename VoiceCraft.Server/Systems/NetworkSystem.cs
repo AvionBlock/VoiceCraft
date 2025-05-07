@@ -153,7 +153,13 @@ namespace VoiceCraft.Server.Systems
 
             if (Version.Parse(packet.Version).Major != VoiceCraftServer.Version.Major)
             {
-                request.Reject("Incompatible client/server version!"u8.ToArray());
+                request.Reject("Incompatible client/server version!"u8.ToArray()); //Will need to change these so it displays as a locale on the client.
+                return;
+            }
+
+            if (_netManager.ConnectedPeersCount >= _config.MaxClients)
+            {
+                request.Reject("Server is full! Maximum clients reached!"u8.ToArray());
                 return;
             }
 
