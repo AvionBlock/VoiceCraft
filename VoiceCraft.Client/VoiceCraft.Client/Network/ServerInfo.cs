@@ -7,7 +7,6 @@ namespace VoiceCraft.Client.Network
     {
         public string Motd { get; set; }
         public int Clients { get; set; }
-        public bool Discovery  { get; set; }
         public PositioningType PositioningType { get; set; }
         public int Tick { get; set; }
 
@@ -15,7 +14,6 @@ namespace VoiceCraft.Client.Network
         {
             Motd = infoPacket.Motd;
             Clients = infoPacket.Clients;
-            Discovery = infoPacket.Discovery;
             PositioningType = infoPacket.PositioningType;
             Tick = infoPacket.Tick;
         }

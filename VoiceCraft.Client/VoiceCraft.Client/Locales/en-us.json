@@ -41,7 +41,7 @@
   "SelectedServer.PingInformation" : "Ping Information",
   "SelectedServer.Latency" : "Latency",
   "SelectedServer.ServerInfo" : "Server Info",
-  "SelectedServer.ServerInfo.Status" : "Motd: {motd}\nDiscovery: {discovery}\nPositioning Type: {positioningType}\nConnected Clients: {clients}",
+  "SelectedServer.ServerInfo.Status" : "Motd: {motd}\nPositioning Type: {positioningType}\nConnected Clients: {clients}",
   "SelectedServer.ServerInfo.Status.Pinging" : "Pinging...",
   
   "Audio.Recorder.InitFailed": "Recorder failed to initialize!",

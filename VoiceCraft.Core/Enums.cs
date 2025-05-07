@@ -52,6 +52,7 @@ namespace VoiceCraft.Core
         Unknown,
         Login,
         Logout,
+        Ping,
     }
     
     #endregion

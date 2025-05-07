@@ -41,7 +41,7 @@
   "SelectedServer.PingInformation": "Ping informatie",
   "SelectedServer.Latency": "Latentie",
   "SelectedServer.ServerInfo": "Server info",
-  "SelectedServer.ServerInfo.Status": "Motd: {motd}\nOntdekking: {discovery}\nPositioneringstype: {positioningType}\nVerbonden clients: {clients}",
+  "SelectedServer.ServerInfo.Status": "Motd: {motd}\nPositioneringstype: {positioningType}\nVerbonden clients: {clients}",
   "SelectedServer.ServerInfo.Status.Pinging": "Pingen...",
 
   "Audio.Recorder.InitFailed": "Recorder kan niet worden geïnitialiseerd!",

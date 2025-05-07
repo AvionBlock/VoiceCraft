@@ -185,7 +185,7 @@ namespace VoiceCraft.Server.Systems
         private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
         {
             _server.SendUnconnectedPacket(remoteEndPoint,
-                new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.Discovery, _config.PositioningType, infoPacket.Tick));
+                new InfoPacket(_config.Motd, _netManager.ConnectedPeersCount, _config.PositioningType, infoPacket.Tick));
         }
 
         private void HandleAudioPacket(AudioPacket packet, NetPeer peer)

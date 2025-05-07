@@ -6,7 +6,7 @@ namespace VoiceCraft.Server.Config
     {
         public string Language { get; set; } = "en-us";
         public uint Port { get; set; } = 9050;
-        public bool Discovery { get; set; }
+        public uint MaxClients { get; set; } = 100;
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public PositioningType PositioningType { get; set; } = PositioningType.Server;
     }
