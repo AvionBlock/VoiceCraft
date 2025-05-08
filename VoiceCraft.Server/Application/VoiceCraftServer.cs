@@ -15,8 +15,8 @@ namespace VoiceCraft.Server.Application
         public static readonly Version Version = new(1, 1, 0);
 
         //Public Properties
-        public VoiceCraftConfig Config { get; set; }
-        public VoiceCraftWorld World { get; set; }
+        public VoiceCraftConfig Config { get; private set; }
+        public VoiceCraftWorld World { get; }
 
         //Privates
         //Networking
@@ -30,9 +30,9 @@ namespace VoiceCraft.Server.Application
         private readonly EventHandlerSystem _eventHandlerSystem;
         private bool _isDisposed;
 
-        public VoiceCraftServer(VoiceCraftConfig? config = null)
+        public VoiceCraftServer()
         {
-            Config = config ?? new VoiceCraftConfig();
+            Config = new VoiceCraftConfig();
             World = new VoiceCraftWorld();
 
             _dataWriter = new NetDataWriter();
@@ -54,8 +54,9 @@ namespace VoiceCraft.Server.Application
             Dispose(false);
         }
         
-        public bool Start()
+        public bool Start(VoiceCraftConfig? config = null)
         {
+            Config = config ?? new VoiceCraftConfig();
             return _netManager.IsRunning || _netManager.Start((int)Config.Port);
         }
 
