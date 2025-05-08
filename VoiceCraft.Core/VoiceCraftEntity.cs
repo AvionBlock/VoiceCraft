@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Numerics;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core
 {
-    public class VoiceCraftEntity : INetSerializable
+    public class VoiceCraftEntity : INetSerializable, IResettable
     {
         //Entity events.
         public event Action<string, VoiceCraftEntity>? OnWorldIdUpdated;
@@ -216,7 +218,12 @@ namespace VoiceCraft.Core
 
         public void ClearProperties()
         {
+            var properties = _properties.ToArray(); //Copy the properties.
             _properties.Clear();
+            foreach (var property in properties)
+            {
+                OnPropertySet?.Invoke(property.Key, null, this);
+            }
         }
 
         public void AddVisibleEntity(VoiceCraftEntity entity)
@@ -267,6 +274,11 @@ namespace VoiceCraft.Core
             Name = name;
             Muted = muted;
             Deafened = deafened;
+        }
+
+        public virtual void Reset()
+        {
+            Destroy();
         }
 
         public virtual void Destroy()

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core
 {
-    public class VoiceCraftWorld : IDisposable //Make this disposable BECAUSE WHY THE FUCK NOT?!
+    public class VoiceCraftWorld : IResettable, IDisposable
     {
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
@@ -49,20 +51,25 @@ namespace VoiceCraft.Core
             OnEntityDestroyed?.Invoke(entity);
         }
 
-        public void Clear()
+        public void ClearEntities()
         {
-            foreach (var entity in Entities)
-            {
-                entity.OnDestroyed -= DestroyEntity; //Don't trigger the events!
-                entity.Destroy();
-            }
-            
+            var entities = _entities.ToArray();
             _entities.Clear();
+            foreach (var entity in entities)
+            {
+                entity.Value.OnDestroyed -= DestroyEntity; //Don't trigger the events!
+                entity.Value.Destroy();
+            }
+        }
+
+        public void Reset()
+        {
+            ClearEntities();
         }
 
         public void Dispose()
         {
-            Clear();
+            ClearEntities();
             OnEntityCreated = null;
             OnEntityDestroyed = null;
         }
