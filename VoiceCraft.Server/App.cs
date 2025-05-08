@@ -33,8 +33,7 @@ namespace VoiceCraft.Server
                 
                 //Server Startup
                 AnsiConsole.WriteLine(Locales.Locales.Startup_VoiceCraftServer_Starting);
-                server.Config = properties.VoiceCraftConfig;
-                if (!server.Start())
+                if (!server.Start(properties.VoiceCraftConfig))
                     throw new Exception(Locales.Locales.Startup_VoiceCraftServer_Failed);
                 
                 //Server Started
