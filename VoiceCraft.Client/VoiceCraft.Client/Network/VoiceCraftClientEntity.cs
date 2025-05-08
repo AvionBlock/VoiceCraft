@@ -15,7 +15,7 @@ namespace VoiceCraft.Client.Network
         public event Action<bool, VoiceCraftEntity>? OnIsVisibleUpdated;
         public event Action<float, VoiceCraftEntity>? OnVolumeUpdated;
         
-        public Guid UserGuid { get; private set; } = Guid.Empty;
+        public Guid? UserGuid { get; private set; }
 
         public bool IsVisible
         {

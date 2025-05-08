@@ -210,7 +210,7 @@ namespace VoiceCraft.Client.Network
             if (!Equals(peer, _serverPeer)) return;
             try
             {
-                World.Clear();
+                World.ClearEntities();
 
                 if (string.IsNullOrWhiteSpace(_disconnectReason))
                 {

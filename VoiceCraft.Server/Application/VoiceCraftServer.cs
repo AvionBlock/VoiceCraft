@@ -2,6 +2,7 @@ using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Data;
@@ -9,7 +10,7 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Application
 {
-    public class VoiceCraftServer : IDisposable
+    public class VoiceCraftServer : IResettable, IDisposable
     {
         public static readonly Version Version = new(1, 1, 0);
 
@@ -21,7 +22,6 @@ namespace VoiceCraft.Server.Application
         //Networking
         private readonly NetDataWriter _dataWriter;
         private readonly NetManager _netManager;
-
 
         //Systems
         private readonly NetworkSystem _networkSystem;
@@ -53,9 +53,7 @@ namespace VoiceCraft.Server.Application
         {
             Dispose(false);
         }
-
-        #region Public Methods
-
+        
         public bool Start()
         {
             return _netManager.IsRunning || _netManager.Start((int)Config.Port);
@@ -141,10 +139,18 @@ namespace VoiceCraft.Server.Application
             _netManager.Stop();
         }
 
-        #endregion
+        public void Reset()
+        {
+            World.Reset();
+            _audioEffectSystem.Reset();
+        }
 
-        #region Dispose
-
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        
         private void Dispose(bool disposing)
         {
             if (_isDisposed) return;
@@ -159,13 +165,5 @@ namespace VoiceCraft.Server.Application
 
             _isDisposed = true;
         }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }

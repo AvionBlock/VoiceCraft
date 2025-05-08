@@ -1,3 +1,4 @@
+using System.Numerics;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
@@ -13,6 +14,7 @@ namespace VoiceCraft.Server.Data
 
         public VoiceCraftNetworkEntity(NetPeer netPeer, Guid userGuid, PositioningType positioningType, VoiceCraftWorld world) : base(netPeer.Id, world)
         {
+            Name = "New Client";
             NetPeer = netPeer;
             UserGuid = userGuid;
             PositioningType = positioningType;
@@ -30,6 +32,18 @@ namespace VoiceCraft.Server.Data
             var userGuid = reader.GetGuid();
             base.Deserialize(reader);
             UserGuid = userGuid;
+        }
+
+        public override void Reset()
+        {
+            //Doesn't remove the entity from the world.
+            Name = "New Client";
+            WorldId = string.Empty;
+            Position = Vector3.Zero;
+            Rotation = Quaternion.Zero;
+            TalkBitmask = ulong.MaxValue;
+            ListenBitmask = ulong.MaxValue;
+            ClearProperties();
         }
     }
 }

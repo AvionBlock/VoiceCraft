@@ -1,20 +1,14 @@
-using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems
 {
-    public class AudioEffectSystem : IDisposable
+    public class AudioEffectSystem : IResettable, IDisposable
     {
         public event Action<byte, IAudioEffect>? OnEffectSet;
         public event Action<byte, IAudioEffect>? OnEffectRemoved;
 
         public IEnumerable<KeyValuePair<byte, IAudioEffect>> Effects => _audioEffects;
         private readonly Dictionary<byte, IAudioEffect> _audioEffects = new();
-
-        public AudioEffectSystem()
-        {
-            _audioEffects.Add(0, new ProximityEffect() { MaxRange = 10 });
-        }
 
         public void AddEffect(IAudioEffect effect)
         {
@@ -37,6 +31,30 @@ namespace VoiceCraft.Server.Systems
             effect.Dispose();
             OnEffectRemoved?.Invoke(index, effect);
         }
+
+        public void ClearEffects()
+        {
+            var effects = _audioEffects.ToArray(); //Copy the effects.
+            _audioEffects.Clear();
+            foreach (var effect in effects)
+            {
+                effect.Value.Dispose();
+                OnEffectRemoved?.Invoke(effect.Key, effect.Value);
+            }
+        }
+
+        public void Reset()
+        {
+            ClearEffects();
+        }
+        
+        public void Dispose()
+        {
+            ClearEffects();
+            OnEffectSet = null;
+            OnEffectRemoved = null;
+            GC.SuppressFinalize(this);
+        }
         
         private byte GetLowestAvailableId()
         {
@@ -46,18 +64,6 @@ namespace VoiceCraft.Server.Systems
             }
 
             throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_NoAvailableIdFound);
-        }
-        
-        public void Dispose()
-        {
-            OnEffectSet = null;
-            OnEffectRemoved = null;
-            foreach (var effect in Effects)
-            {
-                effect.Value.Dispose();
-            }
-            _audioEffects.Clear();
-            GC.SuppressFinalize(this);
         }
     }
 }
