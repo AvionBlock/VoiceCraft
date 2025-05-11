@@ -14,9 +14,11 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
+using VoiceCraft.Client.ViewModels.Settings;
 using VoiceCraft.Client.Views;
 using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
+using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Client;
@@ -120,6 +122,9 @@ public class App : Application
         ServiceCollection.AddTransient<EditServerViewModel>();
         ServiceCollection.AddTransient<SelectedServerViewModel>();
         ServiceCollection.AddTransient<VoiceViewModel>();
+        ServiceCollection.AddTransient<GeneralSettingsViewModel>();
+        ServiceCollection.AddTransient<AudioSettingsViewModel>();
+        ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
 
         //Home Pages
         ServiceCollection.AddSingleton<AddServerViewModel>();
@@ -139,6 +144,9 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CrashLogView>(typeof(CrashLogView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, GeneralSettingsView>(typeof(GeneralSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, AudioSettingsView>(typeof(AudioSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
 
         return ServiceCollection.BuildServiceProvider();
     }

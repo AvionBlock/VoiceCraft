@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Models.Settings;
-using VoiceCraft.Client.ViewModels.Settings;
+using VoiceCraft.Client.ViewModels.Data;
 
 namespace VoiceCraft.Client.ViewModels.Home
 {

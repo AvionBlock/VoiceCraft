@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.ViewModels.Settings
+namespace VoiceCraft.Client.ViewModels.Data
 {
     public partial class ServersSettingsViewModel : ObservableObject, IDisposable
     {
