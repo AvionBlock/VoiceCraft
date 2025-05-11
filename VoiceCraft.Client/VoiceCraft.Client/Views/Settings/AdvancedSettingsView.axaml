@@ -1,15 +1,14 @@
-<UserControl x:Class="VoiceCraft.Client.Views.AddServerView"
-             xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:server="clr-namespace:VoiceCraft.Client.Models.Settings"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
              xmlns:locale="using:Jeek.Avalonia.Localization"
-             d:DesignHeight="450"
+             mc:Ignorable="d"
              d:DesignWidth="800"
-             x:DataType="vm:AddServerViewModel"
-             mc:Ignorable="d">
+             d:DesignHeight="450"
+             x:DataType="vm:Settings.AdvancedSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.AdvancedSettingsView">
     <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0"
               Margin="0,0,0,10"
@@ -18,7 +17,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{locale:Localize AddServer.AddServer}"
+                       Text="{locale:Localize Settings.Advanced}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"
@@ -28,28 +27,17 @@
                 <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
             </Button>
         </Grid>
-    <ScrollViewer Grid.Row="1"
-                  Margin="10,0,10,10">
-        <Border Padding="15"
+        <Border Grid.Row="1"
                 VerticalAlignment="Top"
+                Margin="10,0,10,10"
+                Padding="15"
                 Classes="card">
             <StackPanel Spacing="10">
-                <TextBlock Text="{locale:Localize AddServer.Name}" />
-                <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding Server.Name}" />
-                <TextBlock Text="{locale:Localize AddServer.IP}" />
-                <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding Server.Ip}" />
-                <TextBlock Text="{locale:Localize AddServer.Port}" />
-                <NumericUpDown Increment="1"
-                               Maximum="65535"
-                               Minimum="0"
-                               Value="{Binding Server.Port}" />
                 <Button HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding AddServerCommand}">
-                    <TextBlock Text="{locale:Localize AddServer.AddServer}" TextAlignment="Center" />
+                        Command="{Binding TriggerGcCommand}">
+                    <TextBlock Text="{locale:Localize Settings.Advanced.TriggerGc}" />
                 </Button>
             </StackPanel>
         </Border>
-    </ScrollViewer>
-        </Grid>
+    </Grid>
 </UserControl>

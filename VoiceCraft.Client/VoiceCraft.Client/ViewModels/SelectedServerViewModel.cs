@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.ViewModels.Settings;
+using VoiceCraft.Client.ViewModels.Data;
 
 namespace VoiceCraft.Client.ViewModels
 {

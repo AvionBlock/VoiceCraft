@@ -88,7 +88,9 @@ namespace VoiceCraft.Client.Services
         {
             //IL 2077 warning here.
             if (type != null)
+                #pragma warning disable IL2067
                 return Activator.CreateInstance(type) as IEchoCanceler;
+                #pragma warning restore IL2067
             return null;
         }
     }
@@ -100,9 +102,10 @@ namespace VoiceCraft.Client.Services
 
         public IAutomaticGainController? Instantiate()
         {
-            //IL 2077 warning here.
             if (type != null)
+                #pragma warning disable IL2067
                 return Activator.CreateInstance(type) as IAutomaticGainController;
+                #pragma warning restore IL2067
             return null;
         }
     }
@@ -116,7 +119,9 @@ namespace VoiceCraft.Client.Services
         {
             //IL 2077 warning here.
             if (type != null)
+                #pragma warning disable IL2067
                 return Activator.CreateInstance(type) as IDenoiser;
+                #pragma warning restore IL2067
             return null;
         }
     }

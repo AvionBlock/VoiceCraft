@@ -1,164 +1,205 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using VoiceCraft.Client.Models.Settings;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.ViewModels.Settings
 {
-    public partial class AudioSettingsViewModel : ObservableObject, IDisposable
+    public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
     {
-        private bool _updating;
-        private bool _disposed;
-        private readonly AudioSettings _audioSettings;
-        private readonly SettingsService _settingsService;
+        private readonly NavigationService _navigationService;
         private readonly AudioService _audioService;
+        private readonly NotificationService _notificationService;
+        private readonly PermissionsService _permissionsService;
+        private readonly SineWaveGenerator _sineWaveGenerator;
+        private IAudioRecorder? _recorder;
+        private IAudioPlayer? _player;
+        private IDenoiser? _denoiser;
+        private IAutomaticGainController? _gainController;
+        
+        [ObservableProperty] private Data.AudioSettingsViewModel _audioSettings;
 
-        [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
-        [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
-        [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
-        [ObservableProperty] private ObservableCollection<RegisteredAutomaticGainController> _automaticGainControllers = [];
-        [ObservableProperty] private ObservableCollection<RegisteredDenoiser> _denoisers = [];
-
-        [ObservableProperty] private string _inputDevice;
-        [ObservableProperty] private string _outputDevice;
-        [ObservableProperty] private Guid _denoiser;
-        [ObservableProperty] private Guid _echoCanceler;
-        [ObservableProperty] private Guid _automaticGainController;
-        [ObservableProperty] private float _microphoneSensitivity;
-
-        public AudioSettingsViewModel(SettingsService settingsService, AudioService audioService)
+        //Testers
+        [ObservableProperty] private bool _isRecording;
+        [ObservableProperty] private bool _isPlaying;
+        [ObservableProperty] private float _microphoneValue;
+        [ObservableProperty] private bool _detectingVoiceActivity;
+        
+        public AudioSettingsViewModel(
+            NavigationService navigationService,
+            AudioService audioService,
+            NotificationService notificationService,
+            PermissionsService permissionsService,
+            SettingsService settingsService)
         {
-            _audioSettings = settingsService.AudioSettings;
-            _settingsService = settingsService;
+            _navigationService = navigationService;
             _audioService = audioService;
+            _notificationService = notificationService;
+            _permissionsService = permissionsService;
+            _sineWaveGenerator = new SineWaveGenerator(Constants.SampleRate);
             
-            _audioSettings.OnUpdated += Update;
-            _inputDevice = _audioSettings.InputDevice;
-            _outputDevice = _audioSettings.OutputDevice;
-            _denoiser = _audioSettings.Denoiser;
-            _automaticGainController = _audioSettings.AutomaticGainController;
-            _echoCanceler = _audioSettings.EchoCanceler;
-            _microphoneSensitivity = _audioSettings.MicrophoneSensitivity;
-            
-            _ = ReloadAvailableDevices();
-        }
-
-        public async Task ReloadAvailableDevices()
-        {
-            InputDevices = ["Default", ..await _audioService.GetInputDevicesAsync()];
-            OutputDevices = ["Default", ..await _audioService.GetOutputDevicesAsync()];
-            Denoisers = new ObservableCollection<RegisteredDenoiser>(_audioService.RegisteredDenoisers);
-            AutomaticGainControllers = new ObservableCollection<RegisteredAutomaticGainController>(_audioService.RegisteredAutomaticGainControllers);
-            EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);
-            
-            if(!InputDevices.Contains(InputDevice))
-                InputDevice = "Default";
-            if(!OutputDevices.Contains(OutputDevice))
-                OutputDevice = "Default";
-            if(Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
-                Denoiser = Guid.Empty;
-            if(AutomaticGainControllers.FirstOrDefault(x => x.Id == AutomaticGainController) == null)
-                AutomaticGainController = Guid.Empty;
-            if(EchoCancelers.FirstOrDefault(x => x.Id == EchoCanceler) == null)
-                EchoCanceler = Guid.Empty;
-        }
-
-        partial void OnInputDeviceChanging(string value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.InputDevice = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
-        partial void OnOutputDeviceChanging(string value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.OutputDevice = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
-        partial void OnDenoiserChanging(Guid value)
-        {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.Denoiser = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
-        }
-
-        partial void OnAutomaticGainControllerChanging(Guid value)
-        {
-            ThrowIfDisposed();
-            
-            if(_updating) return;
-            _updating = true;
-            _audioSettings.AutomaticGainController = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
+            _audioSettings = new Data.AudioSettingsViewModel(settingsService, _audioService);
         }
         
-        partial void OnEchoCancelerChanging(Guid value)
+        [RelayCommand]
+        private async Task TestRecorder()
         {
-            ThrowIfDisposed();
-            
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.EchoCanceler = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
+            try
+            {
+                if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
+                        "VoiceCraft requires the microphone permission to be granted in order to test recording!") !=
+                    PermissionStatus.Granted)
+                {
+                    throw new InvalidOperationException("Could not create recorder, Microphone permission not granted.");
+                }
+
+                if (CleanupRecorder()) return;
+                
+                _recorder = _audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
+                _recorder.BufferMilliseconds = Constants.FrameSizeMs;
+                _recorder.SelectedDevice = AudioSettings.InputDevice == "Default" ? null : AudioSettings.InputDevice;
+                _recorder.OnDataAvailable += OnDataAvailable;
+                _recorder.OnRecordingStopped += OnRecordingStopped;
+                _recorder.Initialize();
+
+                _gainController = _audioService.GetAutomaticGainController(AudioSettings.AutomaticGainController)?.Instantiate();
+                _gainController?.Initialize(_recorder);
+                
+                _denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser)?.Instantiate();
+                _denoiser?.Initialize(_recorder);
+                
+                _recorder.Start();
+                IsRecording = true;
+            }
+            catch (Exception ex)
+            {
+                CleanupRecorder();
+                _notificationService.SendErrorNotification(ex.Message);
+            }
         }
 
-        partial void OnMicrophoneSensitivityChanging(float value)
+        [RelayCommand]
+        private void TestPlayer()
         {
-            ThrowIfDisposed();
+            try
+            {
+                if (CleanupPlayer()) return;
+                
+                _player = _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
+                _player.SelectedDevice = AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
+                _player.BufferMilliseconds = 100;
+                _player.OnPlaybackStopped += OnPlaybackStopped;
+                _player.Initialize(_sineWaveGenerator.Read);
+                _player.Play();
+                IsPlaying = true;
+            }
+            catch (Exception ex)
+            {
+                CleanupPlayer();
+                IsPlaying = false;
+                _notificationService.SendErrorNotification(ex.Message);
+            }
+        }
+        
+        [RelayCommand]
+        private void Cancel()
+        {
+            _navigationService.Back();
+        }
+        
+        private void OnDataAvailable(byte[] data, int count)
+        {
+            _gainController?.Process(data);
+            _denoiser?.Denoise(data);
             
-            if (_updating) return;
-            _updating = true;
-            _audioSettings.MicrophoneSensitivity = value;
-            _ = _settingsService.SaveAsync();
-            _updating = false;
+            float max = 0;
+            // interpret as 16-bit audio
+            for (var index = 0; index < data.Length; index += 2)
+            {
+                var sample = (short)((data[index + 1] << 8) |
+                                     data[index + 0]);
+                // to floating point
+                var sample32 = sample / 32768f;
+                // absolute value 
+                if (sample32 < 0) sample32 = -sample32;
+                if (sample32 > max) max = sample32;
+            }
+            
+            MicrophoneValue = max;
+            DetectingVoiceActivity = max >= AudioSettings.MicrophoneSensitivity;
+        }
+        
+        private void OnRecordingStopped(Exception? ex)
+        {
+            CleanupRecorder();
+            
+            if(ex != null)
+                _notificationService.SendErrorNotification(ex.Message);
+        }
+        
+        private void OnPlaybackStopped(Exception? ex)
+        {
+            CleanupPlayer();
+            
+            if(ex != null)
+                _notificationService.SendErrorNotification(ex.Message);
+        }
+        
+        private bool CleanupRecorder()
+        {
+            if (_recorder == null) return false;
+            var recorder = _recorder;
+            _recorder = null;
+            
+            recorder.OnRecordingStopped -= OnRecordingStopped;
+            recorder.OnDataAvailable -= OnDataAvailable;
+            recorder.Dispose();
+            _gainController?.Dispose();
+            _denoiser?.Dispose();
+            _recorder = null;
+            _gainController = null;
+            _denoiser = null;
+            IsRecording = false;
+            MicrophoneValue = 0;
+            DetectingVoiceActivity = false;
+            return true;
         }
 
-        private void Update(AudioSettings audioSettings)
+        private bool CleanupPlayer()
         {
-            if (_updating) return;
-            _updating = true;
+            if (_player == null) return false;
+            var player = _player;
+            _player = null;
             
-            InputDevice = audioSettings.InputDevice;
-            OutputDevice = audioSettings.OutputDevice;
-            Denoiser = audioSettings.Denoiser;
-            AutomaticGainController = audioSettings.AutomaticGainController;
-            EchoCanceler = audioSettings.EchoCanceler;
-            MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
-            
-            _updating = false;
+            player.OnPlaybackStopped -= OnPlaybackStopped;
+            player.Dispose();
+            IsPlaying = false;
+            return true;
         }
-        
-        private void ThrowIfDisposed()
+
+        public override void OnAppearing()
         {
-            if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(AudioSettingsViewModel).ToString());
+            base.OnAppearing();
+            _ = AudioSettings.ReloadAvailableDevices();
         }
-        
+
+        public override void OnDisappearing()
+        {
+            base.OnDisappearing();
+            CleanupRecorder();
+            CleanupPlayer();
+        }
+
         public void Dispose()
         {
-            if(_disposed) return;
-            _audioSettings.OnUpdated -= Update;
-            
-            _disposed = true;
+            CleanupRecorder();
+            CleanupPlayer();
+            AudioSettings.Dispose();
             GC.SuppressFinalize(this);
         }
     }

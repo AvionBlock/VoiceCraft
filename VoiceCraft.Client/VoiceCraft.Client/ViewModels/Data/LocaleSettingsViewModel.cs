@@ -4,7 +4,7 @@ using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.ViewModels.Settings
+namespace VoiceCraft.Client.ViewModels.Data
 {
     public partial class LocaleSettingsViewModel : ObservableObject, IDisposable
     {
