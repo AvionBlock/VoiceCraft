@@ -27,17 +27,18 @@
                 <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
             </Button>
         </Grid>
-        <Border Grid.Row="1"
-                VerticalAlignment="Top"
-                Margin="10,0,10,10"
-                Padding="15"
-                Classes="card">
-            <StackPanel Spacing="10">
-                <Button HorizontalAlignment="Stretch"
-                        Command="{Binding TriggerGcCommand}">
-                    <TextBlock Text="{locale:Localize Settings.Advanced.TriggerGc}" />
-                </Button>
-            </StackPanel>
-        </Border>
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border VerticalAlignment="Top"
+                    Padding="15"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <Button HorizontalAlignment="Stretch"
+                            Command="{Binding TriggerGcCommand}">
+                        <TextBlock Text="{locale:Localize Settings.Advanced.TriggerGc}" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
     </Grid>
 </UserControl>

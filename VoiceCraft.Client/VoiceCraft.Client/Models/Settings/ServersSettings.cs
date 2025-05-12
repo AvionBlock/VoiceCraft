@@ -76,8 +76,7 @@ namespace VoiceCraft.Client.Models.Settings
         
         private string _name = string.Empty;
         private string _ip = string.Empty;
-        private ushort _port;
-        private string _token = string.Empty;
+        private ushort _port = 9050;
         
         public string Name
         {
@@ -110,16 +109,6 @@ namespace VoiceCraft.Client.Models.Settings
             {
                 _port = value;
                 OnUpdated?.Invoke(this);   
-            }
-        }
-
-        public string Token
-        {
-            get => _token;
-            set
-            {
-                _token = value;
-                OnUpdated?.Invoke(this);
             }
         }
 

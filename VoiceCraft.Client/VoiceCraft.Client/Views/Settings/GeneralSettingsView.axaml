@@ -28,74 +28,75 @@
                 <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
             </Button>
         </Grid>
-        <Border Grid.Row="1"
-                VerticalAlignment="Top"
-                Margin="10,0,10,10"
-                Padding="15"
-                Classes="card">
-            <StackPanel Spacing="10">
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="15"
-                           Text="{locale:Localize Settings.General.Language}" />
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border VerticalAlignment="Top"
+                    Padding="15"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.General.Language}" />
 
-                <ComboBox HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding Locales}"
-                          SelectedItem="{Binding LocaleSettings.Culture}">
-                </ComboBox>
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Locales}"
+                              SelectedItem="{Binding LocaleSettings.Culture}">
+                    </ComboBox>
 
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="15"
-                           Text="{locale:Localize Settings.General.Theme}" />
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.General.Theme}" />
 
-                <ComboBox HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding Themes}"
-                          SelectedValue="{Binding ThemeSettings.SelectedTheme}"
-                          SelectedValueBinding="{Binding Id}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type registered:RegisteredTheme}">
-                            <TextBlock Text="{Binding Name}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Themes}"
+                              SelectedValue="{Binding ThemeSettings.SelectedTheme}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredTheme}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="15"
-                           Text="{locale:Localize Settings.General.BackgroundImage}" />
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.General.BackgroundImage}" />
 
-                <ComboBox HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding BackgroundImages}"
-                          SelectedValue="{Binding ThemeSettings.SelectedBackgroundImage}"
-                          SelectedValueBinding="{Binding Id}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate DataType="{x:Type registered:RegisteredBackgroundImage}">
-                            <TextBlock Text="{Binding Name}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding BackgroundImages}"
+                              SelectedValue="{Binding ThemeSettings.SelectedBackgroundImage}"
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type registered:RegisteredBackgroundImage}">
+                                <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                <TextBlock HorizontalAlignment="Left"
-                           VerticalAlignment="Center"
-                           FontSize="15"
-                           Text="{locale:Localize Settings.General.NotificationDismiss}" />
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.General.NotificationDismiss}" />
 
-                <NumericUpDown Increment="1"
-                               Maximum="65535"
-                               Minimum="0"
-                               Value="{Binding NotificationSettings.DismissDelayMs}" />
+                    <NumericUpDown Increment="1"
+                                   Maximum="65535"
+                                   Minimum="0"
+                                   Value="{Binding NotificationSettings.DismissDelayMs}" />
 
-                <ToggleButton HorizontalAlignment="Stretch"
-                              IsChecked="{Binding ServersSettings.HideServerAddresses}">
-                    <TextBlock Text="{locale:Localize Settings.General.HideServerAddresses}" />
-                </ToggleButton>
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding ServersSettings.HideServerAddresses}">
+                        <TextBlock Text="{locale:Localize Settings.General.HideServerAddresses}" />
+                    </ToggleButton>
 
-                <ToggleButton HorizontalAlignment="Stretch"
-                              IsChecked="{Binding NotificationSettings.DisableNotifications}">
-                    <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
-                </ToggleButton>
-            </StackPanel>
-        </Border>
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding NotificationSettings.DisableNotifications}">
+                        <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
+                    </ToggleButton>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
     </Grid>
 </UserControl>
