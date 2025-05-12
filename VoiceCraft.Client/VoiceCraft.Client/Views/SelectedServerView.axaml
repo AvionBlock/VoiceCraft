@@ -16,7 +16,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{Binding SelectedServer.Name}"
+                       Text="{Binding SelectedServer.Name, FallbackValue='N.A'}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"
@@ -27,7 +27,8 @@
             </Button>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" Margin="10,0,10,10">
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
             <Border Padding="15"
                     VerticalAlignment="Top"
                     Classes="card">
@@ -45,8 +46,8 @@
                                     <Setter Property="Text">
                                         <Setter.Value>
                                             <MultiBinding StringFormat="{}{0}:{1}">
-                                                <Binding Path="SelectedServer.Ip" />
-                                                <Binding Path="SelectedServer.Port" />
+                                                <Binding Path="SelectedServer.Ip" FallbackValue="N.A" />
+                                                <Binding Path="SelectedServer.Port" FallbackValue="N.A" />
                                             </MultiBinding>
                                         </Setter.Value>
                                     </Setter>

@@ -28,7 +28,8 @@
             </Button>
         </Grid>
 
-        <ScrollViewer Grid.Row="1" Margin="10,0,10,10">
+        <ScrollViewer Grid.Row="1" 
+                      Margin="10,0,10,10">
             <Border Padding="15"
                     VerticalAlignment="Top"
                     Classes="card">
