@@ -12,6 +12,10 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>
+
+        <PublishAot>true</PublishAot>
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        <TrimMode>link</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>

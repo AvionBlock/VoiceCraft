@@ -5,7 +5,11 @@
         One for Windows with net9.0-windows TFM, one for MacOS with net9.0-macos and one with net9.0 TFM for Linux.-->
         <TargetFramework>net9.0-macos</TargetFramework>
         <Nullable>enable</Nullable>
-        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+        <PublishAot>true</PublishAot>
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        <TrimMode>link</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>
