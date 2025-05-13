@@ -78,6 +78,7 @@ namespace VoiceCraft.Client.ViewModels.Settings
             }
             catch (Exception ex)
             {
+                IsRecording = false;
                 CleanupRecorder();
                 _notificationService.SendErrorNotification(ex.Message);
             }
@@ -100,8 +101,8 @@ namespace VoiceCraft.Client.ViewModels.Settings
             }
             catch (Exception ex)
             {
-                CleanupPlayer();
                 IsPlaying = false;
+                CleanupPlayer();
                 _notificationService.SendErrorNotification(ex.Message);
             }
         }
