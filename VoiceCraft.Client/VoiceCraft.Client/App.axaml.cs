@@ -40,7 +40,7 @@ public class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            
+
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
 
@@ -61,7 +61,7 @@ public class App : Application
                     };
                     break;
             }
-            
+
             ServiceProvider = serviceProvider;
         }
         catch (Exception ex)
@@ -89,15 +89,16 @@ public class App : Application
 
     private static void DisableAvaloniaDataAnnotationValidation()
     {
+#pragma warning disable IL2026
         // Get an array of plugins to remove
-        var dataValidationPluginsToRemove =
-            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+        var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
         foreach (var plugin in dataValidationPluginsToRemove)
         {
             BindingPlugins.DataValidators.Remove(plugin);
         }
+#pragma warning restore IL2026
     }
 
     private static ServiceProvider BuildServiceProvider()
@@ -132,7 +133,7 @@ public class App : Application
         ServiceCollection.AddSingleton<SettingsViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
         ServiceCollection.AddSingleton<CrashLogViewModel>();
-        
+
         //Views
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
@@ -155,7 +156,7 @@ public class App : Application
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
-        
+
         var discordRpcService = serviceProvider.GetRequiredService<DiscordRpcService>();
         discordRpcService.Initialize();
 
@@ -179,7 +180,7 @@ public class App : Application
                 new Themes.Dark.Resources()
             ],
             ThemeVariant.Dark);
-        
+
         themesService.RegisterTheme(Constants.LightThemeGuid, "Light",
             [
                 new Themes.Light.Styles()
@@ -189,7 +190,7 @@ public class App : Application
                 new Themes.Light.Resources()
             ],
             ThemeVariant.Light);
-        
+
         themesService.RegisterTheme(Constants.DarkPurpleThemeGuid, "Dark Purple",
             [
                 new Themes.DarkPurple.Styles()
@@ -199,7 +200,7 @@ public class App : Application
                 new Themes.DarkPurple.Resources()
             ],
             ThemeVariant.Dark);
-        
+
         themesService.RegisterTheme(Constants.DarkGreenThemeGuid, "Dark Green",
             [
                 new Themes.DarkGreen.Styles()
@@ -209,7 +210,7 @@ public class App : Application
                 new Themes.DarkGreen.Resources()
             ],
             ThemeVariant.Dark);
-        
+
         themesService.RegisterBackgroundImage(Constants.DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
         themesService.RegisterBackgroundImage(Constants.DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
         themesService.RegisterBackgroundImage(Constants.LethalCraftGuid, "Lethal Craft", "avares://VoiceCraft.Client/Assets/lethalCraft.png");
