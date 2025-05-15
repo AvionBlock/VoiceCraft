@@ -35,7 +35,8 @@
   "Settings.Audio.TestOutput" : "Test Output",
   
   "Settings.Advanced" : "Advanced Settings",
-  "Settings.Advanced.TriggerGc": "Trigger Garbage Collector",
+  "Settings.Advanced.TriggerGc" : "Trigger Garbage Collector",
+  "Settings.Advanced.Crash" : "Test Crash",
   
   "SelectedServer.Address" : "Address",
   "SelectedServer.PingInformation" : "Ping Information",
