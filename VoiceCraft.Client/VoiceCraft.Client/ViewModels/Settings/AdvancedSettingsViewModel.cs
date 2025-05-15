@@ -23,6 +23,12 @@ namespace VoiceCraft.Client.ViewModels.Settings
         }
 
         [RelayCommand]
+        private static void Crash()
+        {
+            throw new Exception("Task failed successfully.");
+        }
+
+        [RelayCommand]
         private void Cancel()
         {
             navigationService.Back();
