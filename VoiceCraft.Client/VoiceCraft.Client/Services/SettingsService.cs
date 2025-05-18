@@ -44,9 +44,7 @@ namespace VoiceCraft.Client.Services
 
         public async Task SaveImmediate()
         {
-#if DEBUG
             Debug.WriteLine("Saving immediately. Only use this function if necessary!");
-#endif
             await SaveSettingsAsync();
         }
 
