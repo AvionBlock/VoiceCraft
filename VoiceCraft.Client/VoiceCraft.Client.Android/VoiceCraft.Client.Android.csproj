@@ -12,9 +12,7 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>
-
-        <PublishAot>true</PublishAot>
-        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        
         <TrimMode>link</TrimMode>
     </PropertyGroup>
 
@@ -31,7 +29,6 @@
     <ItemGroup>
         <PackageReference Include="Avalonia.Android"/>
         <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen"/>
-        <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
     </ItemGroup>
 
     <ItemGroup>

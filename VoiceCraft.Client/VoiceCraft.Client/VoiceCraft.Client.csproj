@@ -5,6 +5,7 @@
         <LangVersion>latest</LangVersion>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,7 +30,6 @@
         <PackageReference Include="Jeek.Avalonia.Localization" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Maui.Essentials" />
-        <PackageReference Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
         <PackageReference Include="NAudio.Core" />
         <PackageReference Include="Notification.Avalonia" />
         <PackageReference Include="OpusSharp" />
