@@ -4,13 +4,8 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Network;
 
-public class VoiceCraftClientNetworkEntity: VoiceCraftClientEntity
+public class VoiceCraftClientNetworkEntity(int id, VoiceCraftWorld world) : VoiceCraftClientEntity(id, world)
 {
-    public VoiceCraftClientNetworkEntity(int id, VoiceCraftWorld world) : base(id, world)
-    {
-        Name = "New Client";
-    }
-
     public override EntityType EntityType => EntityType.Network;
 
     public Guid UserGuid { get; private set; } = Guid.Empty;
