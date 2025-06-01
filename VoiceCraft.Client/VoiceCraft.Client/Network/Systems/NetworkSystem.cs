@@ -213,9 +213,22 @@ public class NetworkSystem : IDisposable
 
     private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
     {
-        var entity = new VoiceCraftClientEntity(packet.Id, packet.EntityType, _world);
-        entity.Deserialize(reader);
-        _world.AddEntity(entity);
+        switch (packet.EntityType)
+        {
+            case EntityType.Server:
+                var entity = new VoiceCraftClientEntity(packet.Id, _world);
+                entity.Deserialize(reader);
+                _world.AddEntity(entity);
+                break;
+            case EntityType.Network:
+                var networkEntity = new VoiceCraftClientNetworkEntity(packet.Id, _world);
+                networkEntity.Deserialize(reader);
+                _world.AddEntity(networkEntity);
+                break;
+            case EntityType.Unknown:
+            default:
+                break;    
+        }
     }
 
     private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
