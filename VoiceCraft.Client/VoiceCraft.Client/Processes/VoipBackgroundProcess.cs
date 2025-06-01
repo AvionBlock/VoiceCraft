@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Jeek.Avalonia.Localization;
 using LiteNetLib;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
@@ -24,11 +25,13 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
     private IAudioRecorder? _audioRecorder;
     private IDenoiser? _denoiser;
     private string _description = string.Empty;
-    private bool _disconnected;
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
+    
     private bool _stopping;
     private bool _stopRequested;
+    private bool _disconnected;
+    private string _disconnectReason = "VoiceCraft.Status.Disconnected";
 
     //Displays
     private string _title = string.Empty;
@@ -110,6 +113,12 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
             _audioRecorder.Start();
             _audioPlayer.Play();
 
+            while (_audioRecorder.CaptureState == CaptureState.Starting || _audioPlayer.PlaybackState == PlaybackState.Starting)
+            {
+                if (_stopRequested)
+                    return;
+            }
+
             _voiceCraftClient.Connect(settingsService.UserGuid, ip, port, LoginType.Login);
             Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
@@ -129,18 +138,6 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
                     Thread.Sleep((int)delay);
                 startTime = DateTime.UtcNow;
             }
-
-            _audioRecorder.OnDataAvailable -= Write;
-            _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
-            _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
-            _voiceCraftClient.OnConnected -= ClientOnConnected;
-            _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
-            _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
-            _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
-            _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
-            _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
-            _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
-            _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
         }
         catch (Exception ex)
         {
@@ -151,29 +148,36 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
         finally
         {
             HasEnded = true;
+            notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {Localizer.Get(_disconnectReason)}");
+
+            if (_audioRecorder != null)
+            {
+                _audioRecorder.OnDataAvailable -= Write;
+                _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
+                if (_audioRecorder.CaptureState == CaptureState.Capturing)
+                    _audioRecorder.Stop();
+            }
+
+            if (_audioPlayer != null)
+            {
+                _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
+                if (_audioPlayer.PlaybackState == PlaybackState.Playing)
+                    _audioPlayer.Stop();
+            }
+
+            _voiceCraftClient.OnConnected -= ClientOnConnected;
+            _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
+            _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
+            _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
+            _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
+            _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
+            _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
+            _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
         }
     }
 
     public void Dispose()
     {
-        if (_audioRecorder != null)
-        {
-            _audioRecorder.OnDataAvailable -= Write;
-            _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
-        }
-
-        if (_audioPlayer != null)
-            _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
-
-        _voiceCraftClient.OnConnected -= ClientOnConnected;
-        _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
-        _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
-        _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
-        _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
-        _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
-        _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
-        _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
-
         _voiceCraftClient.Dispose();
         _audioRecorder?.Dispose();
         _audioRecorder = null;
@@ -209,7 +213,7 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
 
     public void Disconnect()
     {
-        _voiceCraftClient.Disconnect();
+        _stopRequested = true;
     }
 
     private void ClientOnConnected()
@@ -220,10 +224,10 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
 
     private void ClientOnDisconnected(string reason)
     {
-        _stopRequested = true;
         _disconnected = true;
-        Title = $"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}";
-        notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected} {reason}");
+        _disconnectReason = reason;
+        Title = Locales.Locales.VoiceCraft_Status_Disconnected;
+        Description = reason;
         OnDisconnected?.Invoke(reason);
     }
 
@@ -281,7 +285,7 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
         if (ex != null)
         {
             _stopRequested = true;
-            _voiceCraftClient.Disconnect(ex.Message);
+            _disconnectReason = ex.Message;
             return;
         }
 
@@ -293,7 +297,7 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
         if (ex != null)
         {
             _stopRequested = true;
-            _voiceCraftClient.Disconnect(ex.Message);
+            _disconnectReason = ex.Message;
             return;
         }
 

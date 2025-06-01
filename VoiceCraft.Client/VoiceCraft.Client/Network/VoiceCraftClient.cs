@@ -23,7 +23,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private readonly OpusEncoder _encoder;
     private readonly NetManager _netManager;
 
-    private string? _disconnectReason;
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
     private byte[] _outputBuffer = [];
@@ -186,10 +185,9 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         SendPacket(packet);
     }
 
-    public void Disconnect(string? reason = null)
+    public void Disconnect()
     {
         if (_isDisposed || ConnectionState == ConnectionState.Disconnected) return;
-        _disconnectReason = reason;
         _netManager.DisconnectAll();
     }
 
@@ -212,16 +210,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         {
             World.ClearEntities();
 
-            if (string.IsNullOrWhiteSpace(_disconnectReason))
-            {
-                var reason = !info.AdditionalData.IsNull
-                    ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan())
-                    : info.Reason.ToString();
-                OnDisconnected?.Invoke(reason);
-                return;
-            }
-
-            OnDisconnected?.Invoke(_disconnectReason);
+            var reason = !info.AdditionalData.IsNull
+                ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan())
+                : info.Reason.ToString();
+            OnDisconnected?.Invoke(reason);
         }
         catch
         {

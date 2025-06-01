@@ -71,7 +71,7 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
         if (_languageStrings == null)
             return key;
 
-        return _languageStrings.TryGetValue(key, out var langStr) ? langStr.Replace("\\n", "\n") : $"{Language}:{key}";
+        return _languageStrings.TryGetValue(key, out var langStr) ? langStr.Replace("\\n", "\n") : key;
     }
 }
 
