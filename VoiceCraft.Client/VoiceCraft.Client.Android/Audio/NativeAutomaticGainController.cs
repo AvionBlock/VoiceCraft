@@ -1,73 +1,75 @@
-using Android.Media.Audiofx;
 using System;
+using Android.Media.Audiofx;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Android.Audio
+namespace VoiceCraft.Client.Android.Audio;
+
+public class NativeAutomaticGainController : IAutomaticGainController
 {
-    public class NativeAutomaticGainController : IAutomaticGainController
+    private bool _disposed;
+
+    private AutomaticGainControl? _gainController;
+    public bool IsNative => true;
+
+    public void Initialize(IAudioRecorder recorder)
     {
-        public bool IsNative => true;
+        ThrowIfDisposed();
 
-        private AutomaticGainControl? _gainController;
-        private bool _disposed;
+        if (recorder is not AudioRecorder audioRecorder)
+            throw new InvalidOperationException(Locales.Locales.Audio_AGC_InitFailed);
 
-        ~NativeAutomaticGainController()
-        {
-            Dispose(false);
-        }
+        CleanupGainController();
+        _gainController = AutomaticGainControl.Create(audioRecorder.SessionId);
 
-        public void Initialize(IAudioRecorder recorder)
-        {
-            ThrowIfDisposed();
+        if (_gainController == null)
+            throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
+    }
 
-            if (recorder is not AudioRecorder audioRecorder)
-                throw new InvalidOperationException(Locales.Locales.Audio_AGC_InitFailed);
-            
-            CleanupGainController();
-            _gainController = AutomaticGainControl.Create(audioRecorder.SessionId);
-            
-            if(_gainController == null)
-                throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
-        }
+    public void Process(byte[] buffer)
+    {
+        Process(buffer.AsSpan());
+    }
 
-        public void Process(byte[] buffer) => Process(buffer.AsSpan());
+    public void Process(Span<byte> buffer)
+    {
+        ThrowIfDisposed();
+        ThrowIfNotInitialized();
+    }
 
-        public void Process(Span<byte> buffer)
-        {
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-        }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        
-        private void CleanupGainController()
-        {
-            if (_gainController == null) return;
-            _gainController.Dispose();
-            _gainController = null;
-        }
-        
-        private void ThrowIfDisposed()
-        {
-            if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(NativeAutomaticGainController).ToString());
-        }
+    ~NativeAutomaticGainController()
+    {
+        Dispose(false);
+    }
 
-        private void ThrowIfNotInitialized()
-        {
-            if(_gainController == null)
-                throw new InvalidOperationException(Locales.Locales.Audio_AGC_Init);
-        }
+    private void CleanupGainController()
+    {
+        if (_gainController == null) return;
+        _gainController.Dispose();
+        _gainController = null;
+    }
 
-        private void Dispose(bool disposing)
-        {
-            if (_disposed || !disposing) return;
-            CleanupGainController();
-            _disposed = true;
-        }
+    private void ThrowIfDisposed()
+    {
+        if (!_disposed) return;
+        throw new ObjectDisposedException(typeof(NativeAutomaticGainController).ToString());
+    }
+
+    private void ThrowIfNotInitialized()
+    {
+        if (_gainController == null)
+            throw new InvalidOperationException(Locales.Locales.Audio_AGC_Init);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed || !disposing) return;
+        CleanupGainController();
+        _disposed = true;
     }
 }

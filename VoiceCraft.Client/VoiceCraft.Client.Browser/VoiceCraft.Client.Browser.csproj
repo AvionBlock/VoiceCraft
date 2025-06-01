@@ -16,6 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <NativeFileReference Include="opus.a" />
+        <NativeFileReference Include="opus.a"/>
     </ItemGroup>
 </Project>

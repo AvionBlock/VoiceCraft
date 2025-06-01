@@ -1,7 +1,7 @@
 namespace VoiceCraft.Core
 {
     #region Network
-    
+
     public enum PositioningType : byte
     {
         Unknown,
@@ -52,13 +52,13 @@ namespace VoiceCraft.Core
         Unknown,
         Login,
         Logout,
-        Ping,
+        Ping
     }
-    
+
     #endregion
 
     #region Properties
-    
+
     public enum PropertyKey : ushort
     {
         Unknown,
@@ -74,7 +74,7 @@ namespace VoiceCraft.Core
         UInt,
         Float
     }
-    
+
     #endregion
 
     #region Audio
@@ -82,14 +82,14 @@ namespace VoiceCraft.Core
     public enum EffectType : byte
     {
         Unknown,
-        Proximity,
+        Proximity
     }
 
     public enum AudioFormat
     {
         Pcm8,
         Pcm16,
-        PcmFloat,
+        PcmFloat
     }
 
     public enum CaptureState
@@ -97,7 +97,7 @@ namespace VoiceCraft.Core
         Stopped,
         Starting,
         Capturing,
-        Stopping,
+        Stopping
     }
 
     public enum PlaybackState
@@ -112,7 +112,7 @@ namespace VoiceCraft.Core
     #endregion
 
     #region Other
-    
+
     public enum BackgroundProcessStatus
     {
         Stopped,

@@ -5,13 +5,13 @@ namespace VoiceCraft.Core.Network.McLinkPackets
 {
     public class PingPacket : McLinkPacket
     {
-        public override McLinkPacketType PacketType => McLinkPacketType.Ping;
-        public Guid Token { get; private set; }
-
         public PingPacket(Guid token = new Guid())
         {
             Token = token;
         }
+
+        public override McLinkPacketType PacketType => McLinkPacketType.Ping;
+        public Guid Token { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NAudio.Wave;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Windows.Audio;
 
@@ -18,7 +18,7 @@ public class NativeAudioService : AudioService
     {
         return new AudioPlayer(sampleRate, channels, format);
     }
-    
+
     public override Task<List<string>> GetInputDevicesAsync()
     {
         var devices = new List<string>();

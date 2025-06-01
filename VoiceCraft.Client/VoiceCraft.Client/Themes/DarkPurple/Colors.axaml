@@ -1,4 +1,5 @@
-<ResourceDictionary x:Class="VoiceCraft.Client.Themes.DarkPurple.Colors" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary x:Class="VoiceCraft.Client.Themes.DarkPurple.Colors" xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
             <!--  Accents  -->

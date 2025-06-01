@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
              xmlns:locale="using:Jeek.Avalonia.Localization"
-             xmlns:registered="clr-namespace:VoiceCraft.Client.Services"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
@@ -58,14 +57,9 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.Denoisers}"
+                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding AudioSettings.Denoiser}"
-                              SelectedValueBinding="{Binding Id}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type registered:RegisteredDenoiser}">
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                              SelectedValueBinding="{Binding Id}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -74,14 +68,9 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.AutomaticGainControllers}"
+                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding AudioSettings.AutomaticGainController}"
-                              SelectedValueBinding="{Binding Id}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type registered:RegisteredAutomaticGainController}">
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                              SelectedValueBinding="{Binding Id}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -90,14 +79,9 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding AudioSettings.EchoCancelers}"
+                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding AudioSettings.EchoCanceler}"
-                              SelectedValueBinding="{Binding Id}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type registered:RegisteredEchoCanceler}">
-                                <TextBlock Text="{Binding Name}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                              SelectedValueBinding="{Binding Id}" />
 
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">

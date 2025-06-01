@@ -5,13 +5,6 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class LoginPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.Login;
-        
-        public Guid UserGuid { get; private set; }
-        public string Version { get; private set; }
-        public LoginType LoginType { get; private set; }
-        public PositioningType PositioningType { get; private set; }
-
         public LoginPacket(Guid userGuid = new Guid(), string version = "", LoginType loginType = LoginType.Unknown,
             PositioningType positioningType = PositioningType.Server)
         {
@@ -20,6 +13,13 @@ namespace VoiceCraft.Core.Network.Packets
             LoginType = loginType;
             PositioningType = positioningType;
         }
+
+        public override PacketType PacketType => PacketType.Login;
+
+        public Guid UserGuid { get; private set; }
+        public string Version { get; private set; }
+        public LoginType LoginType { get; private set; }
+        public PositioningType PositioningType { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {

@@ -8,69 +8,91 @@ using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 
-namespace VoiceCraft.Client.ViewModels
+namespace VoiceCraft.Client.ViewModels;
+
+public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
 {
-    public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
+    [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
+    [ObservableProperty] private bool _isDeafened;
+    [ObservableProperty] private bool _isMuted;
+    private VoipBackgroundProcess? _process;
+
+    [ObservableProperty] private string _statusText = string.Empty;
+    public override bool DisableBackButton { get; set; } = true;
+
+    public void Dispose()
     {
-        public override bool DisableBackButton { get; set; } = true;
-        private VoipBackgroundProcess? _process;
-
-        [ObservableProperty] private string _statusText = string.Empty;
-        [ObservableProperty] private bool _isMuted;
-        [ObservableProperty] private bool _isDeafened;
-        [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
-
-        partial void OnIsMutedChanging(bool value)
+        if (_process != null)
         {
-            _process?.ToggleMute(value);
-        }
-        
-        partial void OnIsDeafenedChanged(bool value)
-        {
-            _process?.ToggleDeafen(value);
+            _process.OnDisconnected -= OnDisconnected;
+            _process.OnUpdateTitle -= OnUpdateTitle;
+            _process.OnUpdateMute -= OnUpdateMute;
+            _process.OnUpdateDeafen -= OnUpdateDeafen;
+            _process.OnEntityAdded -= OnEntityAdded;
+            _process.OnEntityRemoved -= OnEntityRemoved;
         }
 
-        [RelayCommand]
-        private void Disconnect()
-        {
-            if (_process?.ConnectionState == ConnectionState.Disconnected)
-            {
-                navigationService.Back(); //If disconnected. Return to previous page.
-                return;
-            }
+        GC.SuppressFinalize(this);
+    }
 
-            _process?.Disconnect();
+    partial void OnIsMutedChanging(bool value)
+    {
+        _process?.ToggleMute(value);
+    }
+
+    partial void OnIsDeafenedChanged(bool value)
+    {
+        _process?.ToggleDeafen(value);
+    }
+
+    [RelayCommand]
+    private void Disconnect()
+    {
+        if (_process?.ConnectionState == ConnectionState.Disconnected)
+        {
+            navigationService.Back(); //If disconnected. Return to previous page.
+            return;
         }
 
-        public override void OnAppearing()
+        _process?.Disconnect();
+    }
+
+    public override void OnAppearing()
+    {
+        if (_process == null) return;
+        if (_process.HasEnded)
         {
-            if (_process == null) return;
-            if (_process.HasEnded)
-            {
-                navigationService.Back();
-                return;
-            }
-
-            //Register events first.
-            _process.OnDisconnected += OnDisconnected;
-            _process.OnUpdateTitle += OnUpdateTitle;
-            _process.OnUpdateMute += OnUpdateMute;
-            _process.OnUpdateDeafen += OnUpdateDeafen;
-            _process.OnEntityAdded += OnEntityAdded;
-            _process.OnEntityRemoved += OnEntityRemoved;
-
-            StatusText = _process.Title;
-            IsMuted = _process.Muted;
-            IsDeafened = _process.Deafened;
+            navigationService.Back();
+            return;
         }
 
-        public void AttachToProcess(VoipBackgroundProcess process)
-        {
-            _process = process;
-            OnAppearing();
-        }
+        //Register events first.
+        _process.OnDisconnected += OnDisconnected;
+        _process.OnUpdateTitle += OnUpdateTitle;
+        _process.OnUpdateMute += OnUpdateMute;
+        _process.OnUpdateDeafen += OnUpdateDeafen;
+        _process.OnEntityAdded += OnEntityAdded;
+        _process.OnEntityRemoved += OnEntityRemoved;
 
-        public void Dispose()
+        StatusText = _process.Title;
+        IsMuted = _process.Muted;
+        IsDeafened = _process.Deafened;
+    }
+
+    public void AttachToProcess(VoipBackgroundProcess process)
+    {
+        _process = process;
+        OnAppearing();
+    }
+
+    private void OnUpdateTitle(string title)
+    {
+        Dispatcher.UIThread.Invoke(() => { StatusText = title; });
+    }
+
+    private void OnDisconnected(string reason)
+    {
+        Dispatcher.UIThread.Invoke(() =>
         {
             if (_process != null)
             {
@@ -82,50 +104,27 @@ namespace VoiceCraft.Client.ViewModels
                 _process.OnEntityRemoved -= OnEntityRemoved;
             }
 
-            GC.SuppressFinalize(this);
-        }
+            navigationService.Back();
+        });
+    }
 
-        private void OnUpdateTitle(string title)
-        {
-            Dispatcher.UIThread.Invoke(() => { StatusText = title; });
-        }
+    private void OnUpdateMute(bool muted)
+    {
+        Dispatcher.UIThread.Invoke(() => { IsMuted = muted; });
+    }
 
-        private void OnDisconnected(string reason)
-        {
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                if (_process != null)
-                {
-                    _process.OnDisconnected -= OnDisconnected;
-                    _process.OnUpdateTitle -= OnUpdateTitle;
-                    _process.OnUpdateMute -= OnUpdateMute;
-                    _process.OnUpdateDeafen -= OnUpdateDeafen;
-                    _process.OnEntityAdded -= OnEntityAdded;
-                    _process.OnEntityRemoved -= OnEntityRemoved;
-                }
+    private void OnUpdateDeafen(bool deafened)
+    {
+        Dispatcher.UIThread.Invoke(() => { IsDeafened = deafened; });
+    }
 
-                navigationService.Back();
-            });
-        }
+    private void OnEntityAdded(EntityViewModel entity)
+    {
+        Dispatcher.UIThread.Invoke(() => { EntityViewModels.Add(entity); });
+    }
 
-        private void OnUpdateMute(bool muted)
-        {
-            Dispatcher.UIThread.Invoke(() => { IsMuted = muted; });
-        }
-
-        private void OnUpdateDeafen(bool deafened)
-        {
-            Dispatcher.UIThread.Invoke(() => { IsDeafened = deafened; });
-        }
-
-        private void OnEntityAdded(EntityViewModel entity)
-        {
-            Dispatcher.UIThread.Invoke(() => { EntityViewModels.Add(entity); });
-        }
-
-        private void OnEntityRemoved(EntityViewModel entity)
-        {
-            Dispatcher.UIThread.Invoke(() => { EntityViewModels.Remove(entity); });
-        }
+    private void OnEntityRemoved(EntityViewModel entity)
+    {
+        Dispatcher.UIThread.Invoke(() => { EntityViewModels.Remove(entity); });
     }
 }

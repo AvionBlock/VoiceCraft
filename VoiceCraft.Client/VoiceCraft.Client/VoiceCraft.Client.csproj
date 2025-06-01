@@ -10,118 +10,118 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>
-        <AvaloniaResource Include="Themes\Dark\Colors.axaml.cs" />
+        <AvaloniaResource Include="Themes\Dark\Colors.axaml.cs"/>
 
-        <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
-        <TrimmerRootAssembly Include="Avalonia.Themes.Default" />
+        <TrimmerRootAssembly Include="Avalonia.Themes.Fluent"/>
+        <TrimmerRootAssembly Include="Avalonia.Themes.Default"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" />
-        <PackageReference Include="Avalonia.Themes.Fluent" />
-        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <PackageReference Include="Avalonia"/>
+        <PackageReference Include="Avalonia.Themes.Fluent"/>
+        <PackageReference Include="Avalonia.Fonts.Inter"/>
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Include="Avalonia.Diagnostics">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" />
-        <PackageReference Include="DiscordRichPresence" />
-        <PackageReference Include="Jeek.Avalonia.Localization" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-        <PackageReference Include="Microsoft.Maui.Essentials" />
-        <PackageReference Include="NAudio.Core" />
-        <PackageReference Include="Notification.Avalonia" />
-        <PackageReference Include="OpusSharp" />
-        <PackageReference Include="SpeexDSPSharp" />
+        <PackageReference Include="CommunityToolkit.Mvvm"/>
+        <PackageReference Include="DiscordRichPresence"/>
+        <PackageReference Include="Jeek.Avalonia.Localization"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+        <PackageReference Include="Microsoft.Maui.Essentials"/>
+        <PackageReference Include="NAudio.Core"/>
+        <PackageReference Include="Notification.Avalonia"/>
+        <PackageReference Include="OpusSharp"/>
+        <PackageReference Include="SpeexDSPSharp"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Models\" />
+        <Folder Include="Models\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+        <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml" />
-      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml.cs" />
-      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCIcons.axaml" />
-      <UpToDateCheckInput Remove="Assets\Themes\Dark\VCStyles.axaml" />
-      <UpToDateCheckInput Remove="Themes\Lavender Dark\Colors.axaml" />
+        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml"/>
+        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml.cs"/>
+        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCIcons.axaml"/>
+        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCStyles.axaml"/>
+        <UpToDateCheckInput Remove="Themes\Lavender Dark\Colors.axaml"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Themes\Light\Colors.axaml.cs">
-        <DependentUpon>VcColors.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\Light\Resources.axaml.cs">
-        <DependentUpon>VcResources.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\Light\Styles.axaml.cs">
-        <DependentUpon>VcStyles.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Views\Error\ErrorMainWindow.axaml.cs">
-        <DependentUpon>ErrorMainWindow.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkPurple\Colors.axaml.cs">
-        <DependentUpon>Colors.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkPurple\Resources.axaml.cs">
-        <DependentUpon>Resources.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkPurple\Styles.axaml.cs">
-        <DependentUpon>Styles.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
-        <DependentUpon>Colors.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
-        <DependentUpon>Colors.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
-        <DependentUpon>Resources.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
-        <DependentUpon>Resources.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
-        <DependentUpon>Styles.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
-        <DependentUpon>Styles.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Views\AddServerView.axaml.cs">
-        <DependentUpon>AddServerView.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
+        <Compile Update="Themes\Light\Colors.axaml.cs">
+            <DependentUpon>VcColors.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\Light\Resources.axaml.cs">
+            <DependentUpon>VcResources.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\Light\Styles.axaml.cs">
+            <DependentUpon>VcStyles.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Error\ErrorMainWindow.axaml.cs">
+            <DependentUpon>ErrorMainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkPurple\Colors.axaml.cs">
+            <DependentUpon>Colors.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkPurple\Resources.axaml.cs">
+            <DependentUpon>Resources.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkPurple\Styles.axaml.cs">
+            <DependentUpon>Styles.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
+            <DependentUpon>Colors.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
+            <DependentUpon>Colors.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
+            <DependentUpon>Resources.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
+            <DependentUpon>Resources.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
+            <DependentUpon>Styles.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
+            <DependentUpon>Styles.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\AddServerView.axaml.cs">
+            <DependentUpon>AddServerView.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="Locales\nl-nl.json" />
-      <None Remove="Locales\Resources.json" />
-      <EmbeddedResource Include="Locales\en-us.json" />
-      <EmbeddedResource Include="Locales\zh-cn.json" />
-      <EmbeddedResource Include="Locales\zh-tw.json" />
+        <EmbeddedResource Include="Locales\nl-nl.json"/>
+        <None Remove="Locales\Resources.json"/>
+        <EmbeddedResource Include="Locales\en-us.json"/>
+        <EmbeddedResource Include="Locales\zh-cn.json"/>
+        <EmbeddedResource Include="Locales\zh-tw.json"/>
     </ItemGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="Themes\DarkGreen\Colors.axaml" />
-      <AdditionalFiles Include="Themes\DarkGreen\Resources.axaml" />
-      <AdditionalFiles Include="Themes\DarkGreen\Styles.axaml" />
+        <AdditionalFiles Include="Themes\DarkGreen\Colors.axaml"/>
+        <AdditionalFiles Include="Themes\DarkGreen\Resources.axaml"/>
+        <AdditionalFiles Include="Themes\DarkGreen\Styles.axaml"/>
     </ItemGroup>
 </Project>

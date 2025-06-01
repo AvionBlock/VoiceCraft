@@ -5,14 +5,14 @@ namespace VoiceCraft.Core.Network.McLinkPackets
 {
     public class LoginPacket : McLinkPacket
     {
-        public override McLinkPacketType PacketType => McLinkPacketType.Login;
-        public Guid LoginKey { get; private set; }
-
         public LoginPacket(Guid loginKey = new Guid())
         {
             LoginKey = loginKey;
         }
-        
+
+        public override McLinkPacketType PacketType => McLinkPacketType.Login;
+        public Guid LoginKey { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(LoginKey);

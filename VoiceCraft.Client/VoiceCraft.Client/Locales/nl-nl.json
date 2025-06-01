@@ -3,18 +3,15 @@
   "Home.Servers": "Servers",
   "Home.Settings": "Instellingen",
   "Home.CrashLogs": "Crashlogboeken",
-
   "AddServer.AddServer": "Server Toevoegen",
   "AddServer.IP": "IP",
   "AddServer.Name": "Naam",
   "AddServer.Port": "Poort",
-
   "Credits.AppVersion": "App Versie",
   "Credits.Author": "Auteur",
   "Credits.Codec": "Codec",
   "Credits.Contributors": "Bijdragers",
   "Credits.Version": "Versie",
-
   "Settings.General": "Algemene Instellingen",
   "Settings.General.BackgroundImage": "Achtergrondafbeelding",
   "Settings.General.DisableNotifications": "Notificaties Uitschakelen",
@@ -22,7 +19,6 @@
   "Settings.General.Language": "Taal",
   "Settings.General.NotificationDismiss": "Meldingen Afwijzen(ms)",
   "Settings.General.Theme": "Thema",
-
   "Settings.Audio": "Audio Instellingen",
   "Settings.Audio.AutomaticGainControllers": "Automatische versterkingsregelaars",
   "Settings.Audio.Denoisers": "Ruis-onderdrukkers",
@@ -33,17 +29,14 @@
   "Settings.Audio.MicrophoneTest.Test": "Test",
   "Settings.Audio.OutputDevices": "Uitvoerapparaten",
   "Settings.Audio.TestOutput": "Test Uitvoer",
-
   "Settings.Advanced": "Geavanceerde instellingen",
   "Settings.Advanced.TriggerGc": "Trigger Garbage Collector",
-
   "SelectedServer.Address": "Adres",
   "SelectedServer.PingInformation": "Ping informatie",
   "SelectedServer.Latency": "Latentie",
   "SelectedServer.ServerInfo": "Server info",
   "SelectedServer.ServerInfo.Status": "Motd: {motd}\nPositioneringstype: {positioningType}\nVerbonden clients: {clients}",
   "SelectedServer.ServerInfo.Status.Pinging": "Pingen...",
-
   "Audio.Recorder.InitFailed": "Recorder kan niet worden geïnitialiseerd!",
   "Audio.Recorder.Init": "Recorder is niet geïnitialiseerd!",
   "Audio.Player.InitFailed": "Audiospeler kan niet worden geïnitialiseerd!",
@@ -54,7 +47,6 @@
   "Audio.AGC.Init": "Gain-controller is niet geïnitialiseerd!",
   "Audio.DN.InitFailed": "Denoiser kan niet worden geïnitialiseerd!",
   "Audio.DN.Init": "Denoiser is niet geïnitialiseerd!",
-
   "VoiceCraft.Status.Title": "VoiceCraft Client is draaiende",
   "VoiceCraft.Status.Initializing": "Initialiseren...",
   "VoiceCraft.Status.Connecting": "Verbinden...",

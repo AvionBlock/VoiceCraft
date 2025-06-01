@@ -6,30 +6,29 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.ViewModels.Home
-{
-    public partial class CrashLogViewModel(NotificationService notificationService) : ViewModelBase
-    {
-        [ObservableProperty] private ObservableCollection<KeyValuePair<DateTime, string>> _crashLogs = [];
+namespace VoiceCraft.Client.ViewModels.Home;
 
-        [RelayCommand]
-        private void ClearLogs()
+public partial class CrashLogViewModel(NotificationService notificationService) : ViewModelBase
+{
+    [ObservableProperty] private ObservableCollection<KeyValuePair<DateTime, string>> _crashLogs = [];
+
+    [RelayCommand]
+    private void ClearLogs()
+    {
+        try
         {
-            try
-            {
-                CrashLogService.Clear();
-                CrashLogs.Clear();
-                notificationService.SendSuccessNotification("Successfully cleared all logs.");
-            }
-            catch (Exception ex)
-            {
-                notificationService.SendErrorNotification(ex.Message);
-            }
+            CrashLogService.Clear();
+            CrashLogs.Clear();
+            notificationService.SendSuccessNotification("Successfully cleared all logs.");
         }
-        
-        public override void OnAppearing()
+        catch (Exception ex)
         {
-            CrashLogs = new ObservableCollection<KeyValuePair<DateTime, string>>(CrashLogService.CrashLogs.OrderByDescending(x => x.Key));
+            notificationService.SendErrorNotification(ex.Message);
         }
+    }
+
+    public override void OnAppearing()
+    {
+        CrashLogs = new ObservableCollection<KeyValuePair<DateTime, string>>(CrashLogService.CrashLogs.OrderByDescending(x => x.Key));
     }
 }

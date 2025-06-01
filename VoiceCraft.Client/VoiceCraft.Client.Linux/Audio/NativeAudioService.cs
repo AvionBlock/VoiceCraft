@@ -25,17 +25,17 @@ public class NativeAudioService : AudioService
 
         var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.CaptureDeviceSpecifier);
         list.AddRange(devices);
-        
+
         return Task.FromResult(list);
     }
 
     public override Task<List<string>> GetOutputDevicesAsync()
     {
         var list = new List<string>();
-        
+
         var devices = ALC.GetString(ALDevice.Null, AlcGetStringList.AllDevicesSpecifier);
         list.AddRange(devices);
-        
+
         return Task.FromResult(list);
     }
 }

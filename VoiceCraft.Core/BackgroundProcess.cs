@@ -7,10 +7,6 @@ namespace VoiceCraft.Core
 {
     public class BackgroundProcess : IDisposable
     {
-        public bool IsCompleted => Status == BackgroundProcessStatus.Completed || Status == BackgroundProcessStatus.Error;
-        public BackgroundProcessStatus Status => GetStatus();
-        public IBackgroundProcess Process { get; }
-
         private readonly Task _backgroundTask;
         private readonly CancellationTokenSource _cts;
         private bool _disposed;
@@ -20,6 +16,16 @@ namespace VoiceCraft.Core
             Process = process;
             _cts = new CancellationTokenSource();
             _backgroundTask = new Task(() => process.Start(_cts.Token));
+        }
+
+        public bool IsCompleted => Status == BackgroundProcessStatus.Completed || Status == BackgroundProcessStatus.Error;
+        public BackgroundProcessStatus Status => GetStatus();
+        public IBackgroundProcess Process { get; }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public void Start()
@@ -36,17 +42,8 @@ namespace VoiceCraft.Core
 
             if (_cts.IsCancellationRequested) return;
             _cts.Cancel();
-            
-            while (!IsCompleted)
-            {
-                Thread.Sleep(10);
-            }
-        }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            while (!IsCompleted) Thread.Sleep(10);
         }
 
         private void ThrowIfDisposed()
@@ -78,7 +75,7 @@ namespace VoiceCraft.Core
 
             if (disposing)
             {
-                if(!_cts.IsCancellationRequested)
+                if (!_cts.IsCancellationRequested)
                     _cts.Cancel();
                 _cts.Dispose();
                 _backgroundTask.Dispose();

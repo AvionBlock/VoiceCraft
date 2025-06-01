@@ -1,20 +1,16 @@
 using System;
-using CommunityToolkit.Mvvm.ComponentModel;
 using System.Reflection;
+using CommunityToolkit.Mvvm.ComponentModel;
 using OpusSharp.Core;
 using VoiceCraft.Client.Network;
 
-namespace VoiceCraft.Client.ViewModels.Home
+namespace VoiceCraft.Client.ViewModels.Home;
+
+public partial class CreditsViewModel : ViewModelBase
 {
-    public partial class CreditsViewModel : ViewModelBase
-    {
-        [ObservableProperty]
-        private Version _voicecraftVersion = VoiceCraftClient.Version;
+    [ObservableProperty] private string _appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.";
 
-        [ObservableProperty]
-        private string _appVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.";
+    [ObservableProperty] private string _opusVersion = OpusInfo.Version();
 
-        [ObservableProperty]
-        private string _opusVersion = OpusInfo.Version();
-    }
+    [ObservableProperty] private Version _voicecraftVersion = VoiceCraftClient.Version;
 }

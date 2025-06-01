@@ -7,107 +7,110 @@ using System.Threading.Tasks;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Core;
 
-namespace VoiceCraft.Client.Services
+namespace VoiceCraft.Client.Services;
+
+public class SettingsService(StorageService storageService)
 {
-    public class SettingsService(StorageService storageService)
+    private bool _queueWrite;
+    private SettingsStructure _settings = new();
+
+    private bool _writing;
+
+    // ReSharper disable once InconsistentNaming
+    public Guid UserGuid => _settings.UserGuid;
+    public AudioSettings AudioSettings => _settings.AudioSettings;
+    public LocaleSettings LocaleSettings => _settings.LocaleSettings;
+    public NotificationSettings NotificationSettings => _settings.NotificationSettings;
+    public ServersSettings ServersSettings => _settings.ServersSettings;
+    public ThemeSettings ThemeSettings => _settings.ThemeSettings;
+
+    public void Load()
     {
-        // ReSharper disable once InconsistentNaming
-        public Guid UserGuid => _settings.UserGuid;
-        public AudioSettings AudioSettings => _settings.AudioSettings;
-        public LocaleSettings LocaleSettings => _settings.LocaleSettings;
-        public NotificationSettings NotificationSettings => _settings.NotificationSettings;
-        public ServersSettings ServersSettings => _settings.ServersSettings;
-        public ThemeSettings ThemeSettings => _settings.ThemeSettings;
-        
-        private bool _writing;
-        private bool _queueWrite;
-        private SettingsStructure _settings = new();
+        if (!storageService.Exists(Constants.SettingsFile))
+            throw new FileNotFoundException("Settings file not found, Reverting to default.");
 
-        public void Load()
-        {
-            if (!storageService.Exists(Constants.SettingsFile))
-                throw new FileNotFoundException("Settings file not found, Reverting to default.");
-            
-            var result = storageService.Load(Constants.SettingsFile);
-            var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
-            if (loadedSettings == null)
-                throw new Exception("Failed to load settings file, Reverting to default.");
-            
-            loadedSettings.AudioSettings.OnLoading();
-            loadedSettings.LocaleSettings.OnLoading();
-            loadedSettings.NotificationSettings.OnLoading();
-            loadedSettings.ServersSettings.OnLoading();
-            loadedSettings.ThemeSettings.OnLoading();
-            
-            _settings = loadedSettings;
-        }
+        var result = storageService.Load(Constants.SettingsFile);
+        var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
+        if (loadedSettings == null)
+            throw new Exception("Failed to load settings file, Reverting to default.");
 
-        public async Task SaveImmediate()
+        loadedSettings.AudioSettings.OnLoading();
+        loadedSettings.LocaleSettings.OnLoading();
+        loadedSettings.NotificationSettings.OnLoading();
+        loadedSettings.ServersSettings.OnLoading();
+        loadedSettings.ThemeSettings.OnLoading();
+
+        _settings = loadedSettings;
+    }
+
+    public async Task SaveImmediate()
+    {
+        Debug.WriteLine("Saving immediately. Only use this function if necessary!");
+        await SaveSettingsAsync();
+    }
+
+    public async Task SaveAsync()
+    {
+        _queueWrite = true;
+        //Writing boolean is so we don't get multiple loop instances.
+        if (_writing) return;
+
+        _writing = true;
+        while (_queueWrite)
         {
-            Debug.WriteLine("Saving immediately. Only use this function if necessary!");
+            _queueWrite = false;
+            await Task.Delay(Constants.FileWritingDelay);
             await SaveSettingsAsync();
         }
 
-        public async Task SaveAsync()
-        {
-            _queueWrite = true;
-            //Writing boolean is so we don't get multiple loop instances.
-            if (_writing) return;
-            
-            _writing = true;
-            while (_queueWrite)
-            {
-                _queueWrite = false;
-                await Task.Delay(Constants.FileWritingDelay);
-                await SaveSettingsAsync();
-            }
-
-            _writing = false;
-        }
-
-        private async Task SaveSettingsAsync()
-        {
-            AudioSettings.OnSaving();
-            LocaleSettings.OnSaving();
-            NotificationSettings.OnSaving();
-            ServersSettings.OnSaving();
-            ThemeSettings.OnSaving();
-            
-            await storageService.SaveAsync(Constants.SettingsFile,
-                JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
-        }
+        _writing = false;
     }
 
-    public abstract class Setting<T> : ISetting where T : Setting<T>
+    private async Task SaveSettingsAsync()
     {
-        public abstract event Action<T>? OnUpdated;
-        public virtual bool OnLoading() => true;
+        AudioSettings.OnSaving();
+        LocaleSettings.OnSaving();
+        NotificationSettings.OnSaving();
+        ServersSettings.OnSaving();
+        ThemeSettings.OnSaving();
 
-        public virtual void OnSaving()
-        {
-        }
-
-        public abstract object Clone();
+        await storageService.SaveAsync(Constants.SettingsFile,
+            JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
     }
-
-    public interface ISetting : ICloneable
-    {
-        bool OnLoading();
-
-        void OnSaving();
-    }
-    
-    public class SettingsStructure
-    {
-        public Guid UserGuid { get; set; } = Guid.NewGuid();
-        public AudioSettings AudioSettings { get; set; } = new();
-        public LocaleSettings LocaleSettings { get; set; } = new();
-        public NotificationSettings NotificationSettings { get; set; } = new();
-        public ServersSettings ServersSettings { get; set; } = new();
-        public ThemeSettings ThemeSettings { get; set; } = new();
-    }
-    
-    [JsonSourceGenerationOptions(WriteIndented = true)]
-    [JsonSerializable(typeof(SettingsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
-    public partial class SettingsStructureGenerationContext : JsonSerializerContext;
 }
+
+public abstract class Setting<T> : ISetting where T : Setting<T>
+{
+    public virtual bool OnLoading()
+    {
+        return true;
+    }
+
+    public virtual void OnSaving()
+    {
+    }
+
+    public abstract object Clone();
+    public abstract event Action<T>? OnUpdated;
+}
+
+public interface ISetting : ICloneable
+{
+    bool OnLoading();
+
+    void OnSaving();
+}
+
+public class SettingsStructure
+{
+    public Guid UserGuid { get; set; } = Guid.NewGuid();
+    public AudioSettings AudioSettings { get; set; } = new();
+    public LocaleSettings LocaleSettings { get; set; } = new();
+    public NotificationSettings NotificationSettings { get; set; } = new();
+    public ServersSettings ServersSettings { get; set; } = new();
+    public ThemeSettings ThemeSettings { get; set; } = new();
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(SettingsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
+public partial class SettingsStructureGenerationContext : JsonSerializerContext;

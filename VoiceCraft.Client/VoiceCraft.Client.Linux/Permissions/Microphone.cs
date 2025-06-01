@@ -6,15 +6,22 @@ namespace VoiceCraft.Client.Linux.Permissions;
 public class Microphone : Microsoft.Maui.ApplicationModel.Permissions.Microphone
 {
     public override void EnsureDeclared()
-    {} //Legit do nothing
+    {
+    } //Legit do nothing
 
     public override Task<PermissionStatus> CheckStatusAsync()
     {
         EnsureDeclared();
         return Task.FromResult(PermissionStatus.Granted);
     }
-    
-    public override Task<PermissionStatus> RequestAsync() => CheckStatusAsync();
 
-    public override bool ShouldShowRationale() => false;
+    public override Task<PermissionStatus> RequestAsync()
+    {
+        return CheckStatusAsync();
+    }
+
+    public override bool ShouldShowRationale()
+    {
+        return false;
+    }
 }

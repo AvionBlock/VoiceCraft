@@ -37,7 +37,7 @@
                 </ListBox.ItemsPanel>
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:ListItemTemplate}">
-                        <PathIcon Data="{Binding Icon}"/>
+                        <PathIcon Data="{Binding Icon}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

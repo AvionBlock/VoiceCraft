@@ -17,8 +17,8 @@
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     </Style>
-    
+
     <Style Selector="Image.background">
-        <Setter Property="Opacity" Value="150"></Setter>
+        <Setter Property="Opacity" Value="150" />
     </Style>
 </Styles>

@@ -22,7 +22,8 @@
             <!--  Notification Background Brushes  -->
             <SolidColorBrush x:Key="NotificationBackgroundBrush" Color="{DynamicResource NotificationBackgroundColor}" />
             <SolidColorBrush x:Key="NotificationBackgroundErrorBrush" Color="{DynamicResource ErrorBackgroundColor}" />
-            <SolidColorBrush x:Key="NotificationBackgroundSuccessBrush" Color="{DynamicResource SuccessBackgroundColor}" />
+            <SolidColorBrush x:Key="NotificationBackgroundSuccessBrush"
+                             Color="{DynamicResource SuccessBackgroundColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

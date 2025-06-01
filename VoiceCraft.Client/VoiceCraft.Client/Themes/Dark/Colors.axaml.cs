@@ -1,7 +1,7 @@
-namespace VoiceCraft.Client.Themes.Dark
+using Avalonia.Controls;
+
+namespace VoiceCraft.Client.Themes.Dark;
+
+public class VcColors : ResourceDictionary
 {
-    public class VcColors : Avalonia.Controls.ResourceDictionary
-    {
-        
-    }
 }

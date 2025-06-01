@@ -11,9 +11,9 @@ namespace VoiceCraft.Core.Interfaces
         int BufferMilliseconds { get; set; }
         public string? SelectedDevice { get; set; }
         PlaybackState PlaybackState { get; }
-        
+
         event Action<Exception?>? OnPlaybackStopped;
-        
+
         void Initialize(Func<byte[], int, int, int> playerCallback);
         void Play();
         void Pause();

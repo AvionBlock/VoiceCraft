@@ -1,400 +1,389 @@
-using Android.Media;
 using System;
 using System.Linq;
 using System.Threading;
+using Android.Media;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using AudioFormat = Android.Media.AudioFormat;
 
-namespace VoiceCraft.Client.Android.Audio
+namespace VoiceCraft.Client.Android.Audio;
+
+public class AudioPlayer : IAudioPlayer
 {
-    public class AudioPlayer : IAudioPlayer
+    private const int NumberOfBuffers = 3;
+    private readonly AudioManager _audioManager;
+
+    private readonly Lock _lockObj = new();
+    private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
+    private int _bufferBytes;
+    private int _bufferMilliseconds;
+    private byte[] _byteBuffer = [];
+    private int _channels;
+    private bool _disposed;
+    private float[] _floatBuffer = [];
+    private AudioTrack? _nativePlayer;
+    private Func<byte[], int, int, int>? _playerCallback;
+    private int _sampleRate;
+
+    public AudioPlayer(AudioManager audioManager, int sampleRate, int channels, Core.AudioFormat format)
     {
-        private const int NumberOfBuffers = 3;
+        _audioManager = audioManager;
+        SampleRate = sampleRate;
+        Channels = channels;
+        Format = format;
+    }
 
-        //Public Properties
-        public int SampleRate
+    public AudioUsageKind Usage { get; set; } = AudioUsageKind.Media;
+
+    public AudioContentType ContentType { get; set; } = AudioContentType.Music;
+
+    public int SessionId => _nativePlayer?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+
+    //Public Properties
+    public int SampleRate
+    {
+        get => _sampleRate;
+        set
         {
-            get => _sampleRate;
-            set
-            {
-                if (value < 0)
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
-                _sampleRate = value;
-            }
+            _sampleRate = value;
         }
+    }
 
-        public int Channels
+    public int Channels
+    {
+        get => _channels;
+        set
         {
-            get => _channels;
-            set
-            {
-                if (value < 1)
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+            if (value < 1)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
 
-                _channels = value;
-            }
+            _channels = value;
         }
+    }
 
-        public int BitDepth
+    public int BitDepth
+    {
+        get
         {
-            get
+            return Format switch
             {
-                return Format switch
-                {
-                    Core.AudioFormat.Pcm8 => 8,
-                    Core.AudioFormat.Pcm16 => 16,
-                    Core.AudioFormat.PcmFloat => 32,
-                    _ => throw new ArgumentOutOfRangeException(nameof(Format))
-                };
-            }
+                Core.AudioFormat.Pcm8 => 8,
+                Core.AudioFormat.Pcm16 => 16,
+                Core.AudioFormat.PcmFloat => 32,
+                _ => throw new ArgumentOutOfRangeException(nameof(Format))
+            };
         }
+    }
 
-        public Core.AudioFormat Format { get; set; }
+    public Core.AudioFormat Format { get; set; }
 
-        public int BufferMilliseconds
+    public int BufferMilliseconds
+    {
+        get => _bufferMilliseconds;
+        set
         {
-            get => _bufferMilliseconds;
-            set
-            {
-                if (value < 0)
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
 
-                _bufferMilliseconds = value;
-            }
+            _bufferMilliseconds = value;
         }
+    }
 
-        public string? SelectedDevice { get; set; }
+    public string? SelectedDevice { get; set; }
 
-        public PlaybackState PlaybackState { get; private set; }
+    public PlaybackState PlaybackState { get; private set; }
 
-        public AudioUsageKind Usage { get; set; } = AudioUsageKind.Media;
+    public event Action<Exception?>? OnPlaybackStopped;
 
-        public AudioContentType ContentType { get; set; } = AudioContentType.Music;
+    public void Initialize(Func<byte[], int, int, int> playerCallback)
+    {
+        _lockObj.Enter();
 
-        public int SessionId => _nativePlayer?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
-
-        public event Action<Exception?>? OnPlaybackStopped;
-
-        private readonly Lock _lockObj = new();
-        private readonly SynchronizationContext? _synchronizationContext = SynchronizationContext.Current;
-        private readonly AudioManager _audioManager;
-        private Func<byte[], int, int, int>? _playerCallback;
-        private AudioTrack? _nativePlayer;
-        private int _sampleRate;
-        private int _channels;
-        private int _bufferMilliseconds;
-        private int _bufferBytes;
-        private byte[] _byteBuffer = [];
-        private float[] _floatBuffer = [];
-        private bool _disposed;
-
-        public AudioPlayer(AudioManager audioManager, int sampleRate, int channels, Core.AudioFormat format)
+        try
         {
-            _audioManager = audioManager;
-            SampleRate = sampleRate;
-            Channels = channels;
-            Format = format;
-        }
+            //Disposed? DIE!
+            ThrowIfDisposed();
 
-        ~AudioPlayer()
-        {
-            //Dispose of this object
-            Dispose(false);
-        }
+            //Check if already playing.
+            if (PlaybackState != PlaybackState.Stopped)
+                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
 
-        public void Initialize(Func<byte[], int, int, int> playerCallback)
-        {
-            _lockObj.Enter();
+            //Cleanup previous player.
+            CleanupPlayer();
 
-            try
+            _playerCallback = playerCallback;
+            //Check if the format is supported first.
+            var encoding = Format switch
             {
-                //Disposed? DIE!
-                ThrowIfDisposed();
+                Core.AudioFormat.Pcm8 => Encoding.Pcm8bit,
+                Core.AudioFormat.Pcm16 => Encoding.Pcm16bit,
+                Core.AudioFormat.PcmFloat => Encoding.PcmFloat,
+                _ => throw new NotSupportedException()
+            };
 
-                //Check if already playing.
-                if (PlaybackState != PlaybackState.Stopped)
-                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
-
-                //Cleanup previous player.
-                CleanupPlayer();
-
-                _playerCallback = playerCallback;
-                //Check if the format is supported first.
-                var encoding = Format switch
-                {
-                    Core.AudioFormat.Pcm8 => Encoding.Pcm8bit,
-                    Core.AudioFormat.Pcm16 => Encoding.Pcm16bit,
-                    Core.AudioFormat.PcmFloat => Encoding.PcmFloat,
-                    _ => throw new NotSupportedException()
-                };
-
-                //Set the channel type. Only accepts Mono or Stereo
-                var channelMask = Channels switch
-                {
-                    1 => ChannelOut.Mono,
-                    2 => ChannelOut.Stereo,
-                    _ => throw new NotSupportedException()
-                };
-
-                //Determine the buffer size
-                var blockAlign = Channels * (BitDepth / 8);
-                var bytesPerSecond = _sampleRate * blockAlign;
-                var bufferMs = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers;
-                _bufferBytes = (int) (bytesPerSecond / 1000.0 * bufferMs);
-                if (_bufferBytes % blockAlign != 0)
-                {
-                    _bufferBytes = _bufferBytes + blockAlign - _bufferBytes % blockAlign;
-                }
-                _byteBuffer = new byte[_bufferBytes];
-                _floatBuffer = new float[_bufferBytes / sizeof(float)];
-
-                var audioAttributes = new AudioAttributes.Builder().SetUsage(Usage)?.SetContentType(ContentType)?.Build();
-                var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)?.SetSampleRate(SampleRate)?.SetChannelMask(channelMask).Build();
-
-                if (audioAttributes == null || audioFormat == null)
-                    throw new InvalidOperationException();
-
-                //Calculate total buffer bytes.
-                var totalBufferBytes = (int)(bytesPerSecond / 1000.0 * BufferMilliseconds);
-                if (totalBufferBytes % blockAlign != 0)
-                {
-                    totalBufferBytes = totalBufferBytes + blockAlign - totalBufferBytes % blockAlign;
-                }
-                totalBufferBytes = Math.Max(totalBufferBytes, AudioTrack.GetMinBufferSize(SampleRate, channelMask, encoding));
-                
-                _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
-                    .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
-                if (_nativePlayer.State != AudioTrackState.Initialized)
-                    throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
-
-                _nativePlayer.SetVolume(1.0f);
-                var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Outputs)
-                    ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
-                _nativePlayer.SetPreferredDevice(selectedDevice);
-            }
-            catch
+            //Set the channel type. Only accepts Mono or Stereo
+            var channelMask = Channels switch
             {
-                CleanupPlayer();
-                throw;
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
+                1 => ChannelOut.Mono,
+                2 => ChannelOut.Stereo,
+                _ => throw new NotSupportedException()
+            };
 
-        public void Play()
-        {
-            _lockObj.Enter();
+            //Determine the buffer size
+            var blockAlign = Channels * (BitDepth / 8);
+            var bytesPerSecond = _sampleRate * blockAlign;
+            var bufferMs = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers;
+            _bufferBytes = (int)(bytesPerSecond / 1000.0 * bufferMs);
+            if (_bufferBytes % blockAlign != 0) _bufferBytes = _bufferBytes + blockAlign - _bufferBytes % blockAlign;
+            _byteBuffer = new byte[_bufferBytes];
+            _floatBuffer = new float[_bufferBytes / sizeof(float)];
 
-            try
-            {
-                //Disposed? DIE!
-                ThrowIfDisposed();
-                ThrowIfNotInitialized();
+            var audioAttributes = new AudioAttributes.Builder().SetUsage(Usage)?.SetContentType(ContentType)?.Build();
+            var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)?.SetSampleRate(SampleRate)?.SetChannelMask(channelMask).Build();
 
-                //Resume or start playback.
-                switch (PlaybackState)
-                {
-                    case PlaybackState.Stopped:
-                        PlaybackState = PlaybackState.Starting;
-                        ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
-                        break;
-                    case PlaybackState.Paused:
-                        Resume();
-                        break;
-                    case PlaybackState.Starting:
-                    case PlaybackState.Playing:
-                    case PlaybackState.Stopping:
-                    default:
-                        break;
-                }
-            }
-            catch
-            {
-                PlaybackState = PlaybackState.Stopped;
-                throw;
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
-
-        public void Pause()
-        {
-            _lockObj.Enter();
-
-            try
-            {
-                //Disposed? DIE!
-                ThrowIfDisposed();
-                ThrowIfNotInitialized();
-
-                if (PlaybackState != PlaybackState.Playing) return;
-
-                _nativePlayer?.Pause();
-                PlaybackState = PlaybackState.Paused;
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
-
-        public void Stop()
-        {
-            _lockObj.Enter();
-
-            try
-            {
-                //Disposed? DIE!
-                ThrowIfDisposed();
-                ThrowIfNotInitialized();
-
-                if (PlaybackState != PlaybackState.Playing) return;
-
-                PlaybackState = PlaybackState.Stopping;
-                _nativePlayer?.Stop();
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
-
-        public void Dispose()
-        {
-            _lockObj.Enter();
-
-            try
-            {
-                //Dispose of this object
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
-
-        private void CleanupPlayer()
-        {
-            if (_nativePlayer == null) return;
-            _nativePlayer.Stop();
-            _nativePlayer.Dispose();
-            _nativePlayer = null;
-        }
-
-        private void ThrowIfDisposed()
-        {
-            if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
-        }
-
-        private void ThrowIfNotInitialized()
-        {
-            if (_nativePlayer == null)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
-        }
-
-        private void Resume()
-        {
-            if (PlaybackState != PlaybackState.Paused) return;
-            _nativePlayer?.Play();
-            PlaybackState = PlaybackState.Playing;
-        }
-
-        private void InvokePlaybackStopped(Exception? exception = null)
-        {
-            PlaybackState = PlaybackState.Stopped;
-            var handler = OnPlaybackStopped;
-            if (handler == null) return;
-            if (_synchronizationContext == null)
-            {
-                handler(exception);
-            }
-            else
-            {
-                _synchronizationContext.Post(_ => handler(exception), null);
-            }
-        }
-
-        private void PlaybackThread()
-        {
-            Exception? exception = null;
-            try
-            {
-                PlaybackLogic();
-            }
-            catch (Exception e)
-            {
-                exception = e;
-            }
-            finally
-            {
-                if (_nativePlayer == null && _nativePlayer?.PlayState != PlayState.Stopped)
-                    _nativePlayer?.Stop();
-                InvokePlaybackStopped(exception);
-            }
-        }
-
-        private void PlaybackLogic()
-        {
-            //This shouldn't happen...
-            if (_playerCallback == null)
+            if (audioAttributes == null || audioFormat == null)
                 throw new InvalidOperationException();
 
-            //Run the playback loop
-            _nativePlayer?.Play();
-            PlaybackState = PlaybackState.Playing;
-            while (PlaybackState != PlaybackState.Stopped && _nativePlayer != null)
+            //Calculate total buffer bytes.
+            var totalBufferBytes = (int)(bytesPerSecond / 1000.0 * BufferMilliseconds);
+            if (totalBufferBytes % blockAlign != 0) totalBufferBytes = totalBufferBytes + blockAlign - totalBufferBytes % blockAlign;
+            totalBufferBytes = Math.Max(totalBufferBytes, AudioTrack.GetMinBufferSize(SampleRate, channelMask, encoding));
+
+            _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
+                .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
+            if (_nativePlayer.State != AudioTrackState.Initialized)
+                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+
+            _nativePlayer.SetVolume(1.0f);
+            var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Outputs)
+                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
+            _nativePlayer.SetPreferredDevice(selectedDevice);
+        }
+        catch
+        {
+            CleanupPlayer();
+            throw;
+        }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    public void Play()
+    {
+        _lockObj.Enter();
+
+        try
+        {
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+
+            //Resume or start playback.
+            switch (PlaybackState)
             {
-                if (_nativePlayer.PlayState == PlayState.Stopped)
+                case PlaybackState.Stopped:
+                    PlaybackState = PlaybackState.Starting;
+                    ThreadPool.QueueUserWorkItem(_ => PlaybackThread(), null);
                     break;
-                if (_nativePlayer.PlayState == PlayState.Paused) //Paused, Sleep then recheck.
-                {
-                    Thread.Sleep(1);
-                    continue;
-                }
-
-                Array.Clear(_byteBuffer);
-
-                //Fill the wave buffer with new samples
-                var read = _playerCallback(_byteBuffer, 0, _byteBuffer.Length);
-                if (read <= 0) break;
-                switch (_nativePlayer.AudioFormat)
-                {
-                    //Write the specified wave buffer to the audio track
-                    case Encoding.Pcm8bit:
-                    case Encoding.Pcm16bit:
-                    {
-                        _nativePlayer.Write(_byteBuffer, 0, read);
-                        break;
-                    }
-                    case Encoding.PcmFloat:
-                    {
-                        Array.Clear(_floatBuffer);
-                        Buffer.BlockCopy(_byteBuffer, 0, _floatBuffer, 0, read);
-                        _nativePlayer.Write(_floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
-                        break;
-                    }
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-
-                _nativePlayer.Flush();
+                case PlaybackState.Paused:
+                    Resume();
+                    break;
+                case PlaybackState.Starting:
+                case PlaybackState.Playing:
+                case PlaybackState.Stopping:
+                default:
+                    break;
             }
         }
-
-        private void Dispose(bool disposing)
+        catch
         {
-            if (!disposing || _disposed) return;
-            CleanupPlayer();
-            _disposed = true;
+            PlaybackState = PlaybackState.Stopped;
+            throw;
         }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    public void Pause()
+    {
+        _lockObj.Enter();
+
+        try
+        {
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+
+            if (PlaybackState != PlaybackState.Playing) return;
+
+            _nativePlayer?.Pause();
+            PlaybackState = PlaybackState.Paused;
+        }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    public void Stop()
+    {
+        _lockObj.Enter();
+
+        try
+        {
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+
+            if (PlaybackState != PlaybackState.Playing) return;
+
+            PlaybackState = PlaybackState.Stopping;
+            _nativePlayer?.Stop();
+        }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    public void Dispose()
+    {
+        _lockObj.Enter();
+
+        try
+        {
+            //Dispose of this object
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    ~AudioPlayer()
+    {
+        //Dispose of this object
+        Dispose(false);
+    }
+
+    private void CleanupPlayer()
+    {
+        if (_nativePlayer == null) return;
+        _nativePlayer.Stop();
+        _nativePlayer.Dispose();
+        _nativePlayer = null;
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (!_disposed) return;
+        throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
+    }
+
+    private void ThrowIfNotInitialized()
+    {
+        if (_nativePlayer == null)
+            throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+    }
+
+    private void Resume()
+    {
+        if (PlaybackState != PlaybackState.Paused) return;
+        _nativePlayer?.Play();
+        PlaybackState = PlaybackState.Playing;
+    }
+
+    private void InvokePlaybackStopped(Exception? exception = null)
+    {
+        PlaybackState = PlaybackState.Stopped;
+        var handler = OnPlaybackStopped;
+        if (handler == null) return;
+        if (_synchronizationContext == null)
+            handler(exception);
+        else
+            _synchronizationContext.Post(_ => handler(exception), null);
+    }
+
+    private void PlaybackThread()
+    {
+        Exception? exception = null;
+        try
+        {
+            PlaybackLogic();
+        }
+        catch (Exception e)
+        {
+            exception = e;
+        }
+        finally
+        {
+            if (_nativePlayer == null && _nativePlayer?.PlayState != PlayState.Stopped)
+                _nativePlayer?.Stop();
+            InvokePlaybackStopped(exception);
+        }
+    }
+
+    private void PlaybackLogic()
+    {
+        //This shouldn't happen...
+        if (_playerCallback == null)
+            throw new InvalidOperationException();
+
+        //Run the playback loop
+        _nativePlayer?.Play();
+        PlaybackState = PlaybackState.Playing;
+        while (PlaybackState != PlaybackState.Stopped && _nativePlayer != null)
+        {
+            if (_nativePlayer.PlayState == PlayState.Stopped)
+                break;
+            if (_nativePlayer.PlayState == PlayState.Paused) //Paused, Sleep then recheck.
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            Array.Clear(_byteBuffer);
+
+            //Fill the wave buffer with new samples
+            var read = _playerCallback(_byteBuffer, 0, _byteBuffer.Length);
+            if (read <= 0) break;
+            switch (_nativePlayer.AudioFormat)
+            {
+                //Write the specified wave buffer to the audio track
+                case Encoding.Pcm8bit:
+                case Encoding.Pcm16bit:
+                {
+                    _nativePlayer.Write(_byteBuffer, 0, read);
+                    break;
+                }
+                case Encoding.PcmFloat:
+                {
+                    Array.Clear(_floatBuffer);
+                    Buffer.BlockCopy(_byteBuffer, 0, _floatBuffer, 0, read);
+                    _nativePlayer.Write(_floatBuffer, 0, read / sizeof(float), WriteMode.Blocking);
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            _nativePlayer.Flush();
+        }
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!disposing || _disposed) return;
+        CleanupPlayer();
+        _disposed = true;
     }
 }

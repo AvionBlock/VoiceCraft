@@ -7,11 +7,23 @@ namespace VoiceCraft.Core
 {
     public class VoiceCraftWorld : IResettable, IDisposable
     {
+        private readonly Dictionary<int, VoiceCraftEntity> _entities = new Dictionary<int, VoiceCraftEntity>();
+        public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
+
+        public void Dispose()
+        {
+            ClearEntities();
+            OnEntityCreated = null;
+            OnEntityDestroyed = null;
+        }
+
+        public void Reset()
+        {
+            ClearEntities();
+        }
+
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
-        public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
-        
-        private readonly Dictionary<int, VoiceCraftEntity> _entities = new Dictionary<int, VoiceCraftEntity>();
 
         public VoiceCraftEntity CreateEntity()
         {
@@ -19,7 +31,7 @@ namespace VoiceCraft.Core
             var entity = new VoiceCraftEntity(id, this);
             if (!_entities.TryAdd(id, entity))
                 throw new InvalidOperationException("Failed to create entity!");
-            
+
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
             return entity;
@@ -29,9 +41,9 @@ namespace VoiceCraft.Core
         {
             if (!_entities.TryAdd(entity.Id, entity))
                 throw new InvalidOperationException("Failed to add entity! An entity with the same id already exists!");
-            if(entity.World != this)
+            if (entity.World != this)
                 throw new InvalidOperationException("Failed to add entity! The entity is not associated with this world!");
-            
+
             entity.OnDestroyed += DestroyEntity;
             OnEntityCreated?.Invoke(entity);
         }
@@ -62,31 +74,18 @@ namespace VoiceCraft.Core
             }
         }
 
-        public void Reset()
-        {
-            ClearEntities();
-        }
-
-        public void Dispose()
-        {
-            ClearEntities();
-            OnEntityCreated = null;
-            OnEntityDestroyed = null;
-        }
-
         private void DestroyEntity(VoiceCraftEntity entity)
         {
             entity.OnDestroyed -= DestroyEntity;
             if (_entities.Remove(entity.Id))
                 OnEntityDestroyed?.Invoke(entity);
         }
-        
+
         private int GetLowestAvailableId()
         {
-            for(var i = 0; i < int.MaxValue; i++)
-            {
-                if(!_entities.ContainsKey(i)) return i;
-            }
+            for (var i = 0; i < int.MaxValue; i++)
+                if (!_entities.ContainsKey(i))
+                    return i;
 
             throw new InvalidOperationException("Could not find an available id!");
         }

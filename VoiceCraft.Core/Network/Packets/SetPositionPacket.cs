@@ -5,17 +5,17 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetPositionPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetPosition;
-        
-        public int Id { get; private set; }
-        public Vector3 Value { get; private set; }
-
         public SetPositionPacket(int id = 0, Vector3 value = new Vector3())
         {
             Id = id;
             Value = value;
         }
-        
+
+        public override PacketType PacketType => PacketType.SetPosition;
+
+        public int Id { get; private set; }
+        public Vector3 Value { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);

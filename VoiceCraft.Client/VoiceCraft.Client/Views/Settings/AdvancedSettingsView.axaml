@@ -37,7 +37,7 @@
                             Command="{Binding TriggerGcCommand}">
                         <TextBlock Text="{locale:Localize Settings.Advanced.TriggerGc}" />
                     </Button>
-                    
+
                     <Button HorizontalAlignment="Stretch"
                             Command="{Binding CrashCommand}">
                         <TextBlock Text="{locale:Localize Settings.Advanced.Crash}" />

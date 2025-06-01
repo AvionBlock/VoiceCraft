@@ -5,14 +5,6 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class AudioPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.Audio;
-        
-        public int Id { get; private set; }
-        public uint Timestamp { get; private set; }
-        public float FrameLoudness { get; private set; }
-        public int Length { get; private set; }
-        public byte[] Data { get; private set; }
-        
         public AudioPacket(int id = 0, uint timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
         {
             Id = id;
@@ -21,7 +13,15 @@ namespace VoiceCraft.Core.Network.Packets
             Length = length;
             Data = data ?? Array.Empty<byte>();
         }
-        
+
+        public override PacketType PacketType => PacketType.Audio;
+
+        public int Id { get; private set; }
+        public uint Timestamp { get; private set; }
+        public float FrameLoudness { get; private set; }
+        public int Length { get; private set; }
+        public byte[] Data { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
