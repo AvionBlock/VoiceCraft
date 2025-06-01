@@ -43,7 +43,7 @@
                                     Orientation="Horizontal"
                                     Spacing="10">
                             <PathIcon IsVisible="{Binding IsMuted}" Data="{StaticResource MicOffRegular}" />
-                            <PathIcon IsVisible="{Binding IsDeafened}" Data="{StaticResource SpeakerOffRegular}"></PathIcon>
+                            <PathIcon IsVisible="{Binding IsDeafened}" Data="{StaticResource SpeakerOffRegular}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

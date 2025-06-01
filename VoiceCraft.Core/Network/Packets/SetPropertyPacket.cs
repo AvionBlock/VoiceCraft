@@ -5,24 +5,24 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetPropertyPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetProperty;
-        
-        public int Id { get; private set; }
-        public PropertyKey Key { get; private set; }
-        public object? Value { get; private set; }
-
         public SetPropertyPacket(int id = 0, PropertyKey key = PropertyKey.Unknown, object? value = null)
         {
             Id = id;
             Key = key;
             Value = value;
         }
-        
+
+        public override PacketType PacketType => PacketType.SetProperty;
+
+        public int Id { get; private set; }
+        public PropertyKey Key { get; private set; }
+        public object? Value { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
             writer.Put((ushort)Key);
-            
+
             switch (Value)
             {
                 case byte byteValue:

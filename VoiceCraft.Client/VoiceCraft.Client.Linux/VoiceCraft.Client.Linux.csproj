@@ -16,7 +16,7 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="OpenTK.Audio.OpenAL" />
+        <PackageReference Include="OpenTK.Audio.OpenAL"/>
     </ItemGroup>
 
     <ItemGroup>

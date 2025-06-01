@@ -28,28 +28,28 @@
                 <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
             </Button>
         </Grid>
-    <ScrollViewer Grid.Row="1"
-                  Margin="10,0,10,10">
-        <Border Padding="15"
-                VerticalAlignment="Top"
-                Classes="card">
-            <StackPanel Spacing="10">
-                <TextBlock Text="{locale:Localize AddServer.Name}" />
-                <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding Server.Name}" />
-                <TextBlock Text="{locale:Localize AddServer.IP}" />
-                <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding Server.Ip}" />
-                <TextBlock Text="{locale:Localize AddServer.Port}" />
-                <NumericUpDown Increment="1"
-                               Maximum="65535"
-                               Minimum="0"
-                               Value="{Binding Server.Port}" />
-                <Button HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding AddServerCommand}">
-                    <TextBlock Text="{locale:Localize AddServer.AddServer}" TextAlignment="Center" />
-                </Button>
-            </StackPanel>
-        </Border>
-    </ScrollViewer>
-        </Grid>
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border Padding="15"
+                    VerticalAlignment="Top"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{locale:Localize AddServer.Name}" />
+                    <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding Server.Name}" />
+                    <TextBlock Text="{locale:Localize AddServer.IP}" />
+                    <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding Server.Ip}" />
+                    <TextBlock Text="{locale:Localize AddServer.Port}" />
+                    <NumericUpDown Increment="1"
+                                   Maximum="65535"
+                                   Minimum="0"
+                                   Value="{Binding Server.Port}" />
+                    <Button HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Command="{Binding AddServerCommand}">
+                        <TextBlock Text="{locale:Localize AddServer.AddServer}" TextAlignment="Center" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

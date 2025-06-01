@@ -7,105 +7,102 @@ using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 
-namespace VoiceCraft.Client.ViewModels
+namespace VoiceCraft.Client.ViewModels;
+
+public partial class SelectedServerViewModel(
+    NavigationService navigationService,
+    SettingsService settingsService,
+    BackgroundService backgroundService,
+    NotificationService notificationService,
+    AudioService audioService)
+    : ViewModelBase, IDisposable
 {
-    public partial class SelectedServerViewModel(
-        NavigationService navigationService,
-        SettingsService settingsService,
-        BackgroundService backgroundService,
-        NotificationService notificationService,
-        AudioService audioService)
-        : ViewModelBase, IDisposable
+    [ObservableProperty] private int _latency = -1;
+    private Task? _pinger;
+
+    [ObservableProperty] private ServerViewModel? _selectedServer;
+
+    [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
+
+    [ObservableProperty] private string _statusInfo = string.Empty;
+    private bool _stopPinger;
+
+    public void Dispose()
     {
-        private bool _stopPinger;
-        private Task? _pinger;
+        SelectedServer?.Dispose();
+        ServersSettings.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
-        [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
-
-        [ObservableProperty] private ServerViewModel? _selectedServer;
-
-        [ObservableProperty] private string _statusInfo = string.Empty;
-
-        [ObservableProperty] private int _latency = -1;
-
-        public override void OnAppearing()
-        {
-            if (_pinger != null)
-                _stopPinger = true;
-            while (_pinger is { IsCompleted: false })
-            {
-                Task.Delay(10).Wait(); //Don't burn the CPU!.
-            }
-            
-            _stopPinger = false;
-            StatusInfo = Locales.Locales.SelectedServer_ServerInfo_Status_Pinging;
-            _pinger = Task.Run(async () =>
-            {
-                var client = new VoiceCraftClient();
-                client.NetworkSystem.OnServerInfo += OnServerInfo;
-                var startTime = DateTime.UtcNow;
-                while (!_stopPinger)
-                {
-                    await Task.Delay(2);
-                    if(SelectedServer == null) continue;
-                    client.Update();
-                    
-                    if ((DateTime.UtcNow - startTime).TotalMilliseconds < 2000) continue;
-                    client.Ping(SelectedServer.Ip, SelectedServer.Port);
-                    startTime = DateTime.UtcNow;
-                }
-                client.NetworkSystem.OnServerInfo -= OnServerInfo;
-                client.Dispose();
-            });
-        }
-
-        public override void OnDisappearing()
-        {
+    public override void OnAppearing()
+    {
+        if (_pinger != null)
             _stopPinger = true;
-        }
+        while (_pinger is { IsCompleted: false }) Task.Delay(10).Wait(); //Don't burn the CPU!.
 
-        public void Dispose()
+        _stopPinger = false;
+        StatusInfo = Locales.Locales.SelectedServer_ServerInfo_Status_Pinging;
+        _pinger = Task.Run(async () =>
         {
-            SelectedServer?.Dispose();
-            ServersSettings.Dispose();
-            GC.SuppressFinalize(this);
-        }
-
-        [RelayCommand]
-        private void Cancel()
-        {
-            if (DisableBackButton) return;
-            navigationService.Back();
-        }
-
-        [RelayCommand]
-        private async Task Connect()
-        {
-            if (SelectedServer == null) return;
-            var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService, settingsService);
-            try
+            var client = new VoiceCraftClient();
+            client.NetworkSystem.OnServerInfo += OnServerInfo;
+            var startTime = DateTime.UtcNow;
+            while (!_stopPinger)
             {
-                DisableBackButton = true;
-                await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
-                await backgroundService.StartBackgroundProcess(process);
-                navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
+                await Task.Delay(2);
+                if (SelectedServer == null) continue;
+                client.Update();
+
+                if ((DateTime.UtcNow - startTime).TotalMilliseconds < 2000) continue;
+                client.Ping(SelectedServer.Ip, SelectedServer.Port);
+                startTime = DateTime.UtcNow;
             }
-            catch
-            {
-                notificationService.SendNotification("Background worker failed to start VOIP process!");
-                _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
-            }
-            DisableBackButton = false;
-        }
-        
-        private void OnServerInfo(ServerInfo info)
+
+            client.NetworkSystem.OnServerInfo -= OnServerInfo;
+            client.Dispose();
+        });
+    }
+
+    public override void OnDisappearing()
+    {
+        _stopPinger = true;
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        if (DisableBackButton) return;
+        navigationService.Back();
+    }
+
+    [RelayCommand]
+    private async Task Connect()
+    {
+        if (SelectedServer == null) return;
+        var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService, settingsService);
+        try
         {
-            var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status
-                .Replace("{motd}", info.Motd)
-                .Replace("{positioningType}", info.PositioningType.ToString())
-                .Replace("{clients}", info.Clients.ToString());
-            StatusInfo = statusInfo;
-            Latency = Environment.TickCount - info.Tick;
+            DisableBackButton = true;
+            await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
+            await backgroundService.StartBackgroundProcess(process);
+            navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
         }
+        catch
+        {
+            notificationService.SendNotification("Background worker failed to start VOIP process!");
+            _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
+        }
+
+        DisableBackButton = false;
+    }
+
+    private void OnServerInfo(ServerInfo info)
+    {
+        var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status
+            .Replace("{motd}", info.Motd)
+            .Replace("{positioningType}", info.PositioningType.ToString())
+            .Replace("{clients}", info.Clients.ToString());
+        StatusInfo = statusInfo;
+        Latency = Environment.TickCount - info.Tick;
     }
 }

@@ -6,101 +6,99 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Windows
+namespace VoiceCraft.Client.Windows;
+
+public class NativeBackgroundService(NotificationService notificationService) : BackgroundService
 {
-        public class NativeBackgroundService(NotificationService notificationService) : BackgroundService
+    private readonly ConcurrentDictionary<Type, BackgroundProcess> _processes = [];
+    private Task? _backgroundWorker;
+    public override event Action<IBackgroundProcess>? OnProcessStarted;
+    public override event Action<IBackgroundProcess>? OnProcessStopped;
+
+    public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
     {
-        private Task? _backgroundWorker;
-        
-        private readonly ConcurrentDictionary<Type, BackgroundProcess> _processes = [];
-        public override event Action<IBackgroundProcess>? OnProcessStarted;
-        public override event Action<IBackgroundProcess>? OnProcessStopped;
+        var processType = typeof(T);
+        if (_processes.ContainsKey(processType))
+            throw new InvalidOperationException("A background process of this type has already been queued/started!");
 
-        public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
+        var backgroundProcess = new BackgroundProcess(process);
+        _processes.TryAdd(processType, backgroundProcess);
+        if (!StartBackgroundWorker())
         {
-            var processType = typeof(T);
-            if (_processes.ContainsKey(processType))
-                throw new InvalidOperationException("A background process of this type has already been queued/started!");
+            _processes.Clear();
+            throw new Exception("Failed to start background process! Background worker failed to start!");
+        }
 
-            var backgroundProcess = new BackgroundProcess(process);
-            _processes.TryAdd(processType, backgroundProcess);
-            if (!StartBackgroundWorker())
+        var startTime = DateTime.UtcNow;
+        while (backgroundProcess.Status == BackgroundProcessStatus.Stopped)
+        {
+            if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
             {
-                _processes.Clear();
-                throw new Exception("Failed to start background process! Background worker failed to start!");
+                _processes.TryRemove(processType, out _);
+                backgroundProcess.Dispose();
+                throw new Exception("Failed to start background process!");
             }
 
-            var startTime = DateTime.UtcNow;
-            while (backgroundProcess.Status == BackgroundProcessStatus.Stopped)
+            await Task.Delay(10); //Don't burn the CPU!
+        }
+    }
+
+    public override Task StopBackgroundProcess<T>()
+    {
+        var processType = typeof(T);
+        if (!_processes.TryRemove(processType, out var process)) return Task.CompletedTask;
+        process.Stop();
+        process.Dispose();
+        OnProcessStopped?.Invoke(process.Process);
+        return Task.CompletedTask;
+    }
+
+    public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
+    {
+        var processType = typeof(T);
+        if (!_processes.TryGetValue(processType, out var value))
+        {
+            process = default;
+            return false;
+        }
+
+        process = (T?)value.Process;
+        return process != null;
+    }
+
+    private bool StartBackgroundWorker()
+    {
+        if (_backgroundWorker is { IsCompleted: false }) return true;
+        _backgroundWorker = Task.Run(BackgroundLogic);
+        return true;
+    }
+
+    private async Task BackgroundLogic()
+    {
+        try
+        {
+            while (!_processes.IsEmpty)
             {
-                if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
+                await Task.Delay(500);
+                foreach (var process in _processes)
                 {
-                    _processes.TryRemove(processType, out _);
-                    backgroundProcess.Dispose();
-                    throw new Exception("Failed to start background process!");
-                }
-
-                await Task.Delay(10); //Don't burn the CPU!
-            }
-        }
-
-        public override Task StopBackgroundProcess<T>()
-        {
-            var processType = typeof(T);
-            if (!_processes.TryRemove(processType, out var process)) return Task.CompletedTask;
-            process.Stop();
-            process.Dispose();
-            OnProcessStopped?.Invoke(process.Process);
-            return Task.CompletedTask;
-        }
-
-        public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
-        {
-            var processType = typeof(T);
-            if (!_processes.TryGetValue(processType, out var value))
-            {
-                process = default;
-                return false;
-            }
-            
-            process = (T?)value.Process;
-            return process != null;
-        }
-        
-        private bool StartBackgroundWorker()
-        {
-            if (_backgroundWorker is { IsCompleted: false }) return true;
-            _backgroundWorker = Task.Run(BackgroundLogic);
-            return true;
-        }
-
-        private async Task BackgroundLogic()
-        {
-            try
-            {
-                while (!_processes.IsEmpty)
-                {
-                    await Task.Delay(500);
-                    foreach (var process in _processes)
+                    if (process.Value.Status == BackgroundProcessStatus.Stopped)
                     {
-                        if (process.Value.Status == BackgroundProcessStatus.Stopped)
-                        {
-                            process.Value.Start();
-                            OnProcessStarted?.Invoke(process.Value.Process);
-                            continue;
-                        }
-
-                        if (!process.Value.IsCompleted) continue;
-                        if (!_processes.Remove(process.Key, out _)) continue;
-                        process.Value.Dispose();
-                        OnProcessStopped?.Invoke(process.Value.Process);
+                        process.Value.Start();
+                        OnProcessStarted?.Invoke(process.Value.Process);
+                        continue;
                     }
+
+                    if (!process.Value.IsCompleted) continue;
+                    if (!_processes.Remove(process.Key, out _)) continue;
+                    process.Value.Dispose();
+                    OnProcessStopped?.Invoke(process.Value.Process);
                 }
             }
-            catch (Exception ex)
-            {
-                notificationService.SendErrorNotification($"Background Error: {ex}");
-            }
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification($"Background Error: {ex}");
         }
     }
 }

@@ -1,251 +1,247 @@
-using NAudio.Wave;
 using System;
 using System.Threading;
-using VoiceCraft.Core.Interfaces;
+using NAudio.Wave;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Windows.Audio
+namespace VoiceCraft.Client.Windows.Audio;
+
+public class AudioRecorder : IAudioRecorder
 {
-    public class AudioRecorder : IAudioRecorder
+    //Privates
+    private readonly Lock _lockObj = new();
+    private int _bufferMilliseconds;
+    private int _channels;
+    private bool _disposed;
+    private WaveInEvent? _nativeRecorder;
+    private int _sampleRate;
+
+    public AudioRecorder(int sampleRate, int channels, AudioFormat format)
     {
-        //Public Properties
-        public int SampleRate
+        SampleRate = sampleRate;
+        Channels = channels;
+        Format = format;
+    }
+
+    //Public Properties
+    public int SampleRate
+    {
+        get => _sampleRate;
+        set
         {
-            get => _sampleRate;
-            set
-            {
-                if(value < 0)
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
 
-                _sampleRate = value;
-            }
+            _sampleRate = value;
         }
+    }
 
-        public int Channels
+    public int Channels
+    {
+        get => _channels;
+        set
         {
-            get => _channels;
-            set
-            {
-                if(value < 1)
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+            if (value < 1)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
 
-                _channels = value;
-            }
+            _channels = value;
         }
+    }
 
-        public int BitDepth
+    public int BitDepth
+    {
+        get
         {
-            get
+            return Format switch
             {
-                return Format switch
-                {
-                    AudioFormat.Pcm8 => 8,
-                    AudioFormat.Pcm16 => 16,
-                    AudioFormat.PcmFloat => 32,
-                    _ => throw new ArgumentOutOfRangeException(nameof(Format))
-                };
-            }
+                AudioFormat.Pcm8 => 8,
+                AudioFormat.Pcm16 => 16,
+                AudioFormat.PcmFloat => 32,
+                _ => throw new ArgumentOutOfRangeException(nameof(Format))
+            };
         }
+    }
 
-        public AudioFormat Format { get; set; }
+    public AudioFormat Format { get; set; }
 
-        public int BufferMilliseconds
+    public int BufferMilliseconds
+    {
+        get => _bufferMilliseconds;
+        set
         {
-            get => _bufferMilliseconds;
-            set
-            {
-                if(value < 0)
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+            if (value < 0)
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
 
-                _bufferMilliseconds = value;
-            }
+            _bufferMilliseconds = value;
         }
+    }
 
-        public string? SelectedDevice { get; set; }
+    public string? SelectedDevice { get; set; }
 
-        public CaptureState CaptureState { get; private set; }
+    public CaptureState CaptureState { get; private set; }
 
-        public event Action<byte[], int>? OnDataAvailable;
-        public event Action<Exception?>? OnRecordingStopped;
-        
-        //Privates
-        private readonly Lock _lockObj = new();
-        private WaveInEvent? _nativeRecorder;
-        private int _sampleRate;
-        private int _channels;
-        private int _bufferMilliseconds;
-        private bool _disposed;
+    public event Action<byte[], int>? OnDataAvailable;
+    public event Action<Exception?>? OnRecordingStopped;
 
-        public AudioRecorder(int sampleRate, int channels, AudioFormat format)
+    public void Initialize()
+    {
+        _lockObj.Enter();
+
+        try
         {
-            SampleRate = sampleRate;
-            Channels = channels;
-            Format = format;
+            //Disposed? DIE!
+            ThrowIfDisposed();
+
+            if (CaptureState != CaptureState.Stopped)
+                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+
+            //Cleanup previous recorder.
+            CleanupRecorder();
+
+            //Select Device.
+            var selectedDevice = -1;
+            for (var n = 0; n < WaveIn.DeviceCount; n++)
+            {
+                var caps = WaveIn.GetCapabilities(n);
+                if (caps.ProductName != SelectedDevice) continue;
+                selectedDevice = n;
+                break;
+            }
+
+            //Setup WaveFormat
+            var waveFormat = Format switch
+            {
+                AudioFormat.Pcm8 => new WaveFormat(SampleRate, 8, Channels),
+                AudioFormat.Pcm16 => new WaveFormat(SampleRate, 16, Channels),
+                AudioFormat.PcmFloat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels),
+                _ => throw new NotSupportedException()
+            };
+
+            //Setup Recorder.
+            _nativeRecorder = new WaveInEvent();
+            _nativeRecorder.WaveFormat = waveFormat;
+            _nativeRecorder.BufferMilliseconds = BufferMilliseconds;
+            _nativeRecorder.DeviceNumber = selectedDevice;
+            _nativeRecorder.NumberOfBuffers = 3;
+            _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
+            _nativeRecorder.DataAvailable += InvokeDataAvailable;
         }
-        
-        ~AudioRecorder()
+        catch
         {
-            //Dispose of this object.
-            Dispose(false);
+            CleanupRecorder();
+            throw;
         }
-
-        public void Initialize()
+        finally
         {
-            _lockObj.Enter();
-
-            try
-            {
-                //Disposed? DIE!
-                ThrowIfDisposed();
-
-                if (CaptureState != CaptureState.Stopped)
-                    throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
-
-                //Cleanup previous recorder.
-                CleanupRecorder();
-
-                //Select Device.
-                var selectedDevice = -1;
-                for (var n = 0; n < WaveIn.DeviceCount; n++)
-                {
-                    var caps = WaveIn.GetCapabilities(n);
-                    if (caps.ProductName != SelectedDevice) continue;
-                    selectedDevice = n;
-                    break;
-                }
-
-                //Setup WaveFormat
-                var waveFormat = Format switch
-                {
-                    AudioFormat.Pcm8 => new WaveFormat(SampleRate, 8, Channels),
-                    AudioFormat.Pcm16 => new WaveFormat(SampleRate, 16, Channels),
-                    AudioFormat.PcmFloat => WaveFormat.CreateIeeeFloatWaveFormat(SampleRate, Channels),
-                    _ => throw new NotSupportedException()
-                };
-
-                //Setup Recorder.
-                _nativeRecorder = new WaveInEvent();
-                _nativeRecorder.WaveFormat = waveFormat;
-                _nativeRecorder.BufferMilliseconds = BufferMilliseconds;
-                _nativeRecorder.DeviceNumber = selectedDevice;
-                _nativeRecorder.NumberOfBuffers = 3;
-                _nativeRecorder.RecordingStopped += InvokeRecordingStopped;
-                _nativeRecorder.DataAvailable += InvokeDataAvailable;
-            }
-            catch
-            {
-                CleanupRecorder();
-                throw;
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
+            _lockObj.Exit();
         }
+    }
 
-        public void Start()
+    public void Start()
+    {
+        _lockObj.Enter();
+
+        try
         {
-            _lockObj.Enter();
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+            if (CaptureState != CaptureState.Stopped) return;
 
-            try
-            {
-                //Disposed? DIE!
-                ThrowIfDisposed();
-                ThrowIfNotInitialized();
-                if (CaptureState != CaptureState.Stopped) return;
-
-                CaptureState = CaptureState.Starting;
-                _nativeRecorder?.StartRecording();
-            }
-            catch
-            {
-                CaptureState = CaptureState.Stopped;
-                throw;
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
+            CaptureState = CaptureState.Starting;
+            _nativeRecorder?.StartRecording();
         }
-
-        public void Stop()
-        {
-            _lockObj.Enter();
-            
-            try
-            {
-                //Disposed? DIE!
-                ThrowIfDisposed();
-                ThrowIfNotInitialized();
-                if (CaptureState != CaptureState.Capturing) return;
-
-                CaptureState = CaptureState.Stopping;
-                _nativeRecorder?.StopRecording();
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
-
-        public void Dispose()
-        {
-            _lockObj.Enter();
-            
-            try
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-            finally
-            {
-                _lockObj.Exit();
-            }
-        }
-
-        private void CleanupRecorder()
-        {
-            if (_nativeRecorder == null) return;
-            _nativeRecorder.RecordingStopped -= InvokeRecordingStopped;
-            _nativeRecorder.DataAvailable -= InvokeDataAvailable;
-            _nativeRecorder.Dispose();
-            _nativeRecorder = null;
-        }
-        
-        private void ThrowIfDisposed()
-        {
-            if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
-        }
-
-        private void ThrowIfNotInitialized()
-        {
-            if(_nativeRecorder == null)
-                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
-        }
-
-        private void InvokeDataAvailable(object? sender, WaveInEventArgs e)
-        {
-            CaptureState = CaptureState.Capturing;
-            OnDataAvailable?.Invoke(e.Buffer, e.BytesRecorded);
-        }
-
-        private void InvokeRecordingStopped(object? sender, StoppedEventArgs e)
+        catch
         {
             CaptureState = CaptureState.Stopped;
-            OnRecordingStopped?.Invoke(e.Exception);
+            throw;
         }
-
-        private void Dispose(bool disposing)
+        finally
         {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                CleanupRecorder();
-            }
-            
-            _disposed = true;
+            _lockObj.Exit();
         }
+    }
+
+    public void Stop()
+    {
+        _lockObj.Enter();
+
+        try
+        {
+            //Disposed? DIE!
+            ThrowIfDisposed();
+            ThrowIfNotInitialized();
+            if (CaptureState != CaptureState.Capturing) return;
+
+            CaptureState = CaptureState.Stopping;
+            _nativeRecorder?.StopRecording();
+        }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    public void Dispose()
+    {
+        _lockObj.Enter();
+
+        try
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        finally
+        {
+            _lockObj.Exit();
+        }
+    }
+
+    ~AudioRecorder()
+    {
+        //Dispose of this object.
+        Dispose(false);
+    }
+
+    private void CleanupRecorder()
+    {
+        if (_nativeRecorder == null) return;
+        _nativeRecorder.RecordingStopped -= InvokeRecordingStopped;
+        _nativeRecorder.DataAvailable -= InvokeDataAvailable;
+        _nativeRecorder.Dispose();
+        _nativeRecorder = null;
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (!_disposed) return;
+        throw new ObjectDisposedException(typeof(AudioPlayer).ToString());
+    }
+
+    private void ThrowIfNotInitialized()
+    {
+        if (_nativeRecorder == null)
+            throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
+    }
+
+    private void InvokeDataAvailable(object? sender, WaveInEventArgs e)
+    {
+        CaptureState = CaptureState.Capturing;
+        OnDataAvailable?.Invoke(e.Buffer, e.BytesRecorded);
+    }
+
+    private void InvokeRecordingStopped(object? sender, StoppedEventArgs e)
+    {
+        CaptureState = CaptureState.Stopped;
+        OnRecordingStopped?.Invoke(e.Exception);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing) CleanupRecorder();
+
+        _disposed = true;
     }
 }

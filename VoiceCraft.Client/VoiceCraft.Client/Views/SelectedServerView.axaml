@@ -52,7 +52,7 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
-                                
+
                                 <Style Selector="TextBlock.HideAddress">
                                     <Setter Property="Text" Value="****:****" />
                                 </Style>
@@ -65,7 +65,7 @@
                                FontSize="17"
                                FontWeight="Bold"
                                Text="Ping Information" />
-                    
+
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"
@@ -75,7 +75,7 @@
                                    FontSize="15"
                                    Text="{Binding Latency}" />
                     </StackPanel>
-                    
+
                     <StackPanel Orientation="Vertical">
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"

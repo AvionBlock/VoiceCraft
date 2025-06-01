@@ -4,18 +4,17 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetNamePacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetName;
-        
-        public int Id { get; private set; }
-        public string Value { get; private set; }
-        
-
         public SetNamePacket(int id = 0, string value = "")
         {
             Id = id;
             Value = value;
         }
-        
+
+        public override PacketType PacketType => PacketType.SetName;
+
+        public int Id { get; private set; }
+        public string Value { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);

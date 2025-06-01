@@ -12,7 +12,7 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>
-        
+
         <TrimMode>link</TrimMode>
     </PropertyGroup>
 
@@ -21,7 +21,7 @@
             <Link>Resources\drawable\Icon.png</Link>
         </AndroidResource>
     </ItemGroup>
-    
+
     <PropertyGroup Condition="'$([MSBuild]::IsOSUnixLike())' == 'true'">
         <AndroidSDKDirectory>$(HOME)/Android/Sdk</AndroidSDKDirectory>
     </PropertyGroup>

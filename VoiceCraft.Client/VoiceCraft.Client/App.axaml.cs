@@ -1,17 +1,19 @@
 using System;
+using System.Linq;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
-using System.Linq;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.Styling;
 using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
-using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Locales;
+using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Themes.Dark;
+using VoiceCraft.Client.Themes.Light;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.ViewModels.Settings;
@@ -20,6 +22,8 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
+using Resources = VoiceCraft.Client.Themes.Dark.Resources;
+using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
 namespace VoiceCraft.Client;
 
@@ -94,10 +98,7 @@ public class App : Application
         var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            BindingPlugins.DataValidators.Remove(plugin);
-        }
+        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
 #pragma warning restore IL2026
     }
 
@@ -173,11 +174,11 @@ public class App : Application
         var themesService = serviceProvider.GetRequiredService<ThemesService>();
         themesService.RegisterTheme(Constants.DarkThemeGuid, "Dark",
             [
-                new Themes.Dark.Styles()
+                new Styles()
             ],
             [
-                new Themes.Dark.VcColors(),
-                new Themes.Dark.Resources()
+                new VcColors(),
+                new Resources()
             ],
             ThemeVariant.Dark);
 
@@ -186,7 +187,7 @@ public class App : Application
                 new Themes.Light.Styles()
             ],
             [
-                new Themes.Light.Colors(),
+                new Colors(),
                 new Themes.Light.Resources()
             ],
             ThemeVariant.Light);

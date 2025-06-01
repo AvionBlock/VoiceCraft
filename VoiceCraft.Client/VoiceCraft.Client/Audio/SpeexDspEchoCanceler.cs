@@ -3,135 +3,139 @@ using SpeexDSPSharp.Core;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Audio
+namespace VoiceCraft.Client.Audio;
+
+public class SpeexDspEchoCanceler : IEchoCanceler
 {
-    public class SpeexDspEchoCanceler : IEchoCanceler
+    private CircularBuffer<byte>? _captureBuffer;
+    private byte[] _captureBufferFrame = [];
+    private bool _disposed;
+    private SpeexDSPEchoCanceler? _echoCanceler;
+    private byte[] _outputBuffer = [];
+    public int FilterLengthMs { get; set; } = 100;
+
+    public bool IsNative => false;
+
+    public void Initialize(IAudioRecorder recorder, IAudioPlayer player)
     {
-        public int FilterLengthMs { get; set; } = 100;
+        ThrowIfDisposed();
 
-        public bool IsNative => false;
-        private bool _disposed;
-        private byte[] _outputBuffer = [];
-        private CircularBuffer<byte>? _captureBuffer;
-        private byte[] _captureBufferFrame = [];
-        private SpeexDSPEchoCanceler? _echoCanceler;
-        
-        ~SpeexDspEchoCanceler()
+        if (recorder.SampleRate != player.SampleRate)
+            throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
+
+        CleanupEchoCanceler();
+
+        var bufferSamples = recorder.BufferMilliseconds * recorder.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
+        var bufferBytes = recorder.BitDepth / 8 * recorder.Channels * bufferSamples;
+        var filterLengthSamples = FilterLengthMs * recorder.SampleRate / 1000;
+        var filterLengthBytes = player.BitDepth / 8 * player.Channels * filterLengthSamples;
+        _echoCanceler = new SpeexDSPEchoCanceler(
+            bufferSamples,
+            filterLengthSamples,
+            recorder.Channels,
+            player.Channels);
+        _captureBuffer = new CircularBuffer<byte>(filterLengthBytes);
+        _captureBufferFrame = new byte[filterLengthBytes];
+        _outputBuffer = new byte[bufferBytes];
+
+        var sampleRate = recorder.SampleRate;
+        _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
+    }
+
+    public void EchoCancel(Span<byte> buffer, int count)
+    {
+        ThrowIfDisposed();
+        ThrowIfNotInitialized();
+        ArgumentOutOfRangeException.ThrowIfLessThan(count, _outputBuffer.Length);
+        Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
+
+        _echoCanceler?.EchoCancel(buffer, GetCaptureBufferFrame(), _outputBuffer);
+        _outputBuffer.CopyTo(buffer);
+    }
+
+    public void EchoCancel(byte[] buffer, int count)
+    {
+        EchoCancel(buffer.AsSpan(), count);
+    }
+
+    public void EchoPlayback(Span<byte> buffer, int count)
+    {
+        ThrowIfDisposed();
+        ThrowIfNotInitialized();
+        if (_captureBuffer == null) return;
+
+        lock (_captureBuffer)
         {
-            Dispose(false);
+            for (var i = 0; i < count; i++) _captureBuffer.PushBack(buffer[i]);
         }
+    }
 
-        public void Initialize(IAudioRecorder recorder, IAudioPlayer player)
+    public void EchoPlayback(byte[] buffer, int count)
+    {
+        EchoPlayback(buffer.AsSpan(), count);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~SpeexDspEchoCanceler()
+    {
+        Dispose(false);
+    }
+
+    private byte[] GetCaptureBufferFrame()
+    {
+        if (_captureBuffer == null)
+            return _captureBufferFrame;
+
+        lock (_captureBuffer)
         {
-            ThrowIfDisposed();
-            
-            if(recorder.SampleRate != player.SampleRate)
-                throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
-            
-            CleanupEchoCanceler();
-            
-            var bufferSamples = recorder.BufferMilliseconds * recorder.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
-            var bufferBytes = recorder.BitDepth / 8 * recorder.Channels * bufferSamples;
-            var filterLengthSamples = FilterLengthMs * recorder.SampleRate / 1000;
-            var filterLengthBytes = player.BitDepth / 8 * player.Channels * filterLengthSamples;
-            _echoCanceler = new SpeexDSPEchoCanceler(
-                bufferSamples,
-                filterLengthSamples,
-                recorder.Channels,
-                player.Channels);
-            _captureBuffer = new CircularBuffer<byte>(filterLengthBytes);
-            _captureBufferFrame = new byte[filterLengthBytes];
-            _outputBuffer = new byte[bufferBytes];
-            
-            var sampleRate = recorder.SampleRate;
-            _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
-        }
-
-        public void EchoCancel(Span<byte> buffer, int count)
-        {
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            ArgumentOutOfRangeException.ThrowIfLessThan(count, _outputBuffer.Length);
-            Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
-
-            _echoCanceler?.EchoCancel(buffer, GetCaptureBufferFrame(), _outputBuffer);
-            _outputBuffer.CopyTo(buffer);
-        }
-
-        public void EchoCancel(byte[] buffer, int count) => EchoCancel(buffer.AsSpan(), count);
-
-        public void EchoPlayback(Span<byte> buffer, int count)
-        {
-            ThrowIfDisposed();
-            ThrowIfNotInitialized();
-            if (_captureBuffer == null) return;
-            
-            lock (_captureBuffer)
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    _captureBuffer.PushBack(buffer[i]);
-                }
-            }
-        }
-
-        public void EchoPlayback(byte[] buffer, int count) => EchoPlayback(buffer.AsSpan(), count);
-
-        private byte[] GetCaptureBufferFrame()
-        {
-            if (_captureBuffer == null) 
+            Array.Clear(_captureBufferFrame);
+            if (_captureBuffer.Size < _captureBufferFrame.Length)
                 return _captureBufferFrame;
-            
-            lock (_captureBuffer)
+
+            for (var i = 0; i < _captureBufferFrame.Length; i++)
             {
-                Array.Clear(_captureBufferFrame);
-                if (_captureBuffer.Size < _captureBufferFrame.Length)
-                    return _captureBufferFrame;
-
-                for (var i = 0; i < _captureBufferFrame.Length; i++)
-                {
-                    _captureBufferFrame[i] = _captureBuffer.Front();
-                    _captureBuffer.PopFront();
-                }
-
-                return _captureBufferFrame;
+                _captureBufferFrame[i] = _captureBuffer.Front();
+                _captureBuffer.PopFront();
             }
-        }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            return _captureBufferFrame;
         }
+    }
 
-        private void CleanupEchoCanceler()
-        {
-            if (_echoCanceler == null) return;
-            _echoCanceler.Dispose();
-            _echoCanceler = null;
-            
-            if (_captureBuffer == null) return;
-            lock (_captureBuffer)
-                _captureBuffer = null;
-        }
-        
-        private void ThrowIfDisposed()
-        {
-            if (!_disposed) return;
-            throw new ObjectDisposedException(typeof(SpeexDspEchoCanceler).ToString());
-        }
+    private void CleanupEchoCanceler()
+    {
+        if (_echoCanceler == null) return;
+        _echoCanceler.Dispose();
+        _echoCanceler = null;
 
-        private void ThrowIfNotInitialized()
+        if (_captureBuffer == null) return;
+        lock (_captureBuffer)
         {
-            if(_echoCanceler == null || _captureBuffer == null)
-                throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
+            _captureBuffer = null;
         }
+    }
 
-        private void Dispose(bool disposing)
-        {
-            if (_disposed || !disposing) return;
-            CleanupEchoCanceler();
-            _disposed = true;
-        }
+    private void ThrowIfDisposed()
+    {
+        if (!_disposed) return;
+        throw new ObjectDisposedException(typeof(SpeexDspEchoCanceler).ToString());
+    }
+
+    private void ThrowIfNotInitialized()
+    {
+        if (_echoCanceler == null || _captureBuffer == null)
+            throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed || !disposing) return;
+        CleanupEchoCanceler();
+        _disposed = true;
     }
 }

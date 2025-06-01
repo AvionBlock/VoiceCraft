@@ -6,13 +6,13 @@ namespace VoiceCraft.Core
     {
         //Tick
         public const int TickRate = 50;
-        
+
         //Limits
         public const int FileWritingDelay = 2000;
         public const int MaxStringLength = 100; //100 characters.
         public const float FloatingPointTolerance = 0.001f;
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
-        
+
         //Audio
         public const AudioFormat Format = AudioFormat.Pcm16;
         public const int BitDepth = 16;
@@ -21,17 +21,17 @@ namespace VoiceCraft.Core
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
         public const int DecodeBufferSizeThresholdMs = FrameSizeMs * 3; //Enough to hold 3 full packets.
-        
+
         //Audio Calculations
         public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
         public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
         public const int BlockAlign = Channels * (BitDepth / 8);
-        
+
         //Storage
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
         public const string CrashLogsFile = "CrashLogs.json";
-        
+
         //Settings GUIDS.
         //Speex DSP
         public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");

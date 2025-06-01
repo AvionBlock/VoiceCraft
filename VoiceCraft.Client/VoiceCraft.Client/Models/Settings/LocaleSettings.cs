@@ -1,29 +1,28 @@
 using System;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.Models.Settings
+namespace VoiceCraft.Client.Models.Settings;
+
+public class LocaleSettings : Setting<LocaleSettings>
 {
-    public class LocaleSettings : Setting<LocaleSettings>
+    private string _culture = "en-us";
+
+    public string Culture
     {
-        public override event Action<LocaleSettings>? OnUpdated;
-
-        public string Culture
+        get => _culture;
+        set
         {
-            get => _culture;
-            set
-            {
-                _culture = value;
-                OnUpdated?.Invoke(this);
-            }
+            _culture = value;
+            OnUpdated?.Invoke(this);
         }
+    }
 
-        private string _culture = "en-us";
+    public override event Action<LocaleSettings>? OnUpdated;
 
-        public override object Clone()
-        {
-            var clone = (LocaleSettings)MemberwiseClone();
-            clone.OnUpdated = null;
-            return clone;
-        }
+    public override object Clone()
+    {
+        var clone = (LocaleSettings)MemberwiseClone();
+        clone.OnUpdated = null;
+        return clone;
     }
 }

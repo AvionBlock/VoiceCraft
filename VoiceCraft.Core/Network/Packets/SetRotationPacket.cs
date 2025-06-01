@@ -5,17 +5,17 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetRotationPacket : VoiceCraftPacket
     {
-        public override PacketType PacketType => PacketType.SetRotation;
-        
-        public int Id { get; private set; }
-        public Quaternion Value { get; private set; }
-
         public SetRotationPacket(int id = 0, Quaternion value = new Quaternion())
         {
             Id = id;
             Value = value;
         }
-        
+
+        public override PacketType PacketType => PacketType.SetRotation;
+
+        public int Id { get; private set; }
+        public Quaternion Value { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
