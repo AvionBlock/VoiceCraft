@@ -9,7 +9,7 @@ public class VoiceCraftNetworkEntity : VoiceCraftEntity
 {
     public VoiceCraftNetworkEntity(NetPeer netPeer, Guid userGuid, PositioningType positioningType, VoiceCraftWorld world) : base(netPeer.Id, world)
     {
-        Name = "New Client";
+        Name = "New Entity";
         NetPeer = netPeer;
         UserGuid = userGuid;
         PositioningType = positioningType;
