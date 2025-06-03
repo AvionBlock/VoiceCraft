@@ -19,7 +19,7 @@
   "ServerProperties.LoadFile.JSONFailed": "JSON parsing failed.",
   "ServerProperties.LoadFile.Failed": "Failed to load server properties! Falling back to default properties! Error: {0}",
   "ServerProperties.CreateFile.Generating": "Generating ServerProperties.json file at {0}...",
-  "ServerProperties.CreateFile.Success": "Sucessfully generated ServerProperties.json file at {0}",
+  "ServerProperties.CreateFile.Success": "Successfully generated ServerProperties.json file at {0}",
   "ServerProperties.CreateFile.Failed": "Failed to generate ServerProperties.json file at {0}! Error: {1}",
   "Commands.Exceptions.CannotFindEntity": "Could not find entity with id: {0}",
   "Commands.Root.Description": "VoiceCraft commands.",
