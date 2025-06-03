@@ -6,7 +6,6 @@ namespace VoiceCraft.Client.Network.Systems;
 
 public class EntityTickSystem(VoiceCraftClient client)
 {
-    private readonly VoiceCraftClient _client = client;
     private readonly VoiceCraftWorld _world = client.World;
 
     public void TickEntities()
