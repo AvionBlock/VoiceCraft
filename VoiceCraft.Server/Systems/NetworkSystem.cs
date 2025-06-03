@@ -151,7 +151,7 @@ public class NetworkSystem : IDisposable
             return;
         }
 
-        if (Version.Parse(packet.Version).Major != VoiceCraftServer.Version.Major)
+        if (!Version.TryParse(packet.Version, out var version) || version.Major != VoiceCraftServer.Version.Major)
         {
             request.Reject("Incompatible client/server version!"u8.ToArray()); //Will need to change these so it displays as a locale on the client.
             return;
@@ -163,13 +163,19 @@ public class NetworkSystem : IDisposable
             return;
         }
 
+        if (packet.LoginType == LoginType.Unknown)
+        {
+            request.Reject("Unknown login type!"u8.ToArray());
+            return;
+        }
+
         var peer = request.Accept();
         try
         {
             switch (packet.LoginType)
             {
                 case LoginType.Login:
-                    var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.PositioningType, _world);
+                    var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.Locale, packet.PositioningType, _world);
                     _world.AddEntity(entity);
                     peer.Tag = entity;
                     break;
@@ -178,7 +184,7 @@ public class NetworkSystem : IDisposable
                     break;
                 case LoginType.Unknown:
                 default:
-                    request.Reject();
+                    peer.Disconnect("Unknown login type!"u8.ToArray());
                     break;
             }
         }

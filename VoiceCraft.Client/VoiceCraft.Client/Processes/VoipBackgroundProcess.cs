@@ -12,7 +12,13 @@ using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes;
 
-public class VoipBackgroundProcess(string ip, int port, NotificationService notificationService, AudioService audioService, SettingsService settingsService)
+public class VoipBackgroundProcess(
+    string ip,
+    int port,
+    string locale,
+    NotificationService notificationService,
+    AudioService audioService,
+    SettingsService settingsService)
     : IBackgroundProcess
 {
     private readonly Dictionary<VoiceCraftEntity, EntityViewModel> _entityViewModels = new();
@@ -27,7 +33,7 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
     private string _description = string.Empty;
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
-    
+
     private bool _stopping;
     private bool _stopRequested;
     private bool _disconnected;
@@ -120,7 +126,7 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
                 Thread.Sleep(1); //Don't burn the CPU.
             }
 
-            _voiceCraftClient.Connect(settingsService.UserGuid, ip, port, LoginType.Login);
+            _voiceCraftClient.Connect(settingsService.UserGuid, ip, port, locale);
             Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
             var startTime = DateTime.UtcNow;

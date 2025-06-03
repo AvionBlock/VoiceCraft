@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
@@ -79,7 +80,7 @@ public partial class SelectedServerViewModel(
     private async Task Connect()
     {
         if (SelectedServer == null) return;
-        var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, notificationService, audioService, settingsService);
+        var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, Localizer.Language, notificationService, audioService, settingsService);
         try
         {
             DisableBackButton = true;
