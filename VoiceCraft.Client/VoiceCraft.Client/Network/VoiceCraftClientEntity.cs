@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using NAudio.Wave;
 using OpusSharp.Core;
 using SpeexDSPSharp.Core;
@@ -9,7 +7,7 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Network;
 
-public class VoiceCraftClientEntity : VoiceCraftEntity
+public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftEntity(id, world)
 {
     private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
     private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
@@ -21,16 +19,12 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         DiscardOnBufferOverflow = true
     };
 
+    private long _startTick = Environment.TickCount64;
     private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
     private bool _isReady;
     private bool _isVisible;
     private DateTime _lastPacket = DateTime.MinValue;
     private float _volume = 1f;
-
-    public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
-    {
-        StartJitterThread();
-    }
 
     public bool IsVisible
     {
@@ -56,6 +50,24 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public event Action<bool, VoiceCraftEntity>? OnIsVisibleUpdated;
     public event Action<float, VoiceCraftEntity>? OnVolumeUpdated;
+
+    public void Tick()
+    {
+        if (Destroyed) return;
+        
+        var currentTick = Environment.TickCount;
+        while (_startTick - currentTick <= 0)
+        {
+            _startTick += Constants.FrameSizeMs;
+            Array.Clear(_readBuffer);
+            var read = Read(_readBuffer);
+            if (read > 0)
+                _outputBuffer.AddSamples(_readBuffer, 0, _readBuffer.Length);
+
+            if (_outputBuffer.BufferedDuration >= TimeSpan.FromMilliseconds(Constants.DecodeBufferSizeThresholdMs))
+                _isReady = true;
+        }
+    }
 
     public void ClearBuffer()
     {
@@ -136,37 +148,5 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 _jitterBuffer.Tick();
             }
         }
-    }
-
-    private void StartJitterThread()
-    {
-        Task.Run(async () =>
-        {
-            var startTick = Environment.TickCount64;
-            while (!Destroyed)
-                try
-                {
-                    var tick = Environment.TickCount;
-                    var dist = startTick - tick;
-                    if (dist > 0)
-                    {
-                        await Task.Delay((int)dist).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    startTick += Constants.FrameSizeMs;
-                    Array.Clear(_readBuffer);
-                    var read = Read(_readBuffer);
-                    if (read > 0)
-                        _outputBuffer.AddSamples(_readBuffer, 0, _readBuffer.Length);
-
-                    if (_outputBuffer.BufferedDuration >= TimeSpan.FromMilliseconds(Constants.DecodeBufferSizeThresholdMs))
-                        _isReady = true;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                }
-        });
     }
 }
