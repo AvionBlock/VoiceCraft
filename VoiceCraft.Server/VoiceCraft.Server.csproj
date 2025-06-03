@@ -21,6 +21,8 @@
     <ItemGroup>
         <EmbeddedResource Include="Locales\nl-nl.json"/>
         <EmbeddedResource Include="Locales\en-us.json"/>
+        <EmbeddedResource Include="Locales\zh-cn.json"/>
+        <EmbeddedResource Include="Locales\zh-tw.json"/>
     </ItemGroup>
 
 </Project>
