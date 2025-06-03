@@ -22,6 +22,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
     private readonly OpusEncoder _encoder;
     private readonly NetManager _netManager;
+    private readonly EntityTickSystem _tickSystem;
 
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
@@ -40,16 +41,22 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             UnconnectedMessagesEnabled = true
         };
 
-        AudioEffectSystem = new AudioEffectSystem(this);
-        NetworkSystem = new NetworkSystem(this);
 
         _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         _encoder.SetPacketLostPercent(50); //Expected packet loss, might make this change over time later.
         _encoder.SetBitRate(32000);
-        _netManager.Start();
-
+        
+        //Setup Systems.
+        AudioEffectSystem = new AudioEffectSystem(this);
+        NetworkSystem = new NetworkSystem(this);
+        _tickSystem = new EntityTickSystem(this);
+        
+        //Setup Listeners
         Listener.PeerConnectedEvent += InvokeConnected;
         Listener.PeerDisconnectedEvent += InvokeDisconnected;
+        
+        //Start
+        _netManager.Start();
     }
 
     //Public Properties
@@ -142,6 +149,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public void Update()
     {
         _netManager.PollEvents();
+        _tickSystem.TickEntities();
         //if (ConnectionState == ConnectionState.Disconnected) return;
     }
 

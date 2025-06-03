@@ -117,6 +117,7 @@ public class VoipBackgroundProcess(string ip, int port, NotificationService noti
             {
                 if (_stopRequested)
                     return;
+                Thread.Sleep(1); //Don't burn the CPU.
             }
 
             _voiceCraftClient.Connect(settingsService.UserGuid, ip, port, LoginType.Login);

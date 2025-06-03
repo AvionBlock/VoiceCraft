@@ -326,8 +326,8 @@ public class AudioPlayer : IAudioPlayer
         }
         finally
         {
-            if (_nativePlayer == null && _nativePlayer?.PlayState != PlayState.Stopped)
-                _nativePlayer?.Stop();
+            if (_nativePlayer != null && _nativePlayer.PlayState != PlayState.Stopped)
+                _nativePlayer.Stop();
             InvokePlaybackStopped(exception);
         }
     }
@@ -335,11 +335,11 @@ public class AudioPlayer : IAudioPlayer
     private void PlaybackLogic()
     {
         //This shouldn't happen...
-        if (_playerCallback == null)
+        if (_playerCallback == null || _nativePlayer == null)
             throw new InvalidOperationException();
 
         //Run the playback loop
-        _nativePlayer?.Play();
+        _nativePlayer.Play();
         PlaybackState = PlaybackState.Playing;
         while (PlaybackState != PlaybackState.Stopped && _nativePlayer != null)
         {
