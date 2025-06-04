@@ -45,13 +45,18 @@
         "Test": "Test"
       }
     },
+    "Network": {
+      "Network": "Network Settings",
+      "PacketCompression": "Packet Compression",
+      "McWssHostPort": "MCWSS Host Port"
+    },
     "Advanced": {
       "Advanced": "Advanced Settings",
       "TriggerGc": "Trigger Garbage Collector",
       "Crash": "Test Crash"
     }
   },
-  "Selected Server": {
+  "SelectedServer": {
     "Address": "Address",
     "PingInformation": "Ping Information",
     "Latency": "Latency",
