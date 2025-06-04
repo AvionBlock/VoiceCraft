@@ -44,7 +44,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             UnconnectedMessagesEnabled = true
         };
 
-
         _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         _encoder.SetPacketLostPercent(50); //Expected packet loss, might make this change over time later.
         _encoder.SetBitRate(32000);
