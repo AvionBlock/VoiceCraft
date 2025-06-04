@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using Jeek.Avalonia.Localization;
 
 namespace VoiceCraft.Client.Locales;
@@ -12,7 +10,7 @@ namespace VoiceCraft.Client.Locales;
 public class EmbeddedJsonLocalizer : BaseLocalizer
 {
     private readonly string _languageJsonDirectory;
-    private Dictionary<string, string>? _languageStrings;
+    private JsonNode? _languageStrings;
 
     public EmbeddedJsonLocalizer(string languageJsonDirectory = "")
     {
@@ -48,8 +46,7 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
             using (var reader = new StreamReader(stream))
             {
                 var jsonContent = reader.ReadToEnd();
-                _languageStrings =
-                    JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent, LocalesGenerationContext.Default.DictionaryStringString);
+                _languageStrings = JsonNode.Parse(jsonContent);
             }
         }
 
@@ -71,10 +68,26 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
         if (_languageStrings == null)
             return key;
 
-        return _languageStrings.TryGetValue(key, out var langStr) ? langStr.Replace("\\n", "\n") : key;
+        try
+        {
+            var keys = key.Split('.');
+            var value = _languageStrings;
+            for (var i = 0; i < keys.Length; i++)
+            {
+                if (i == keys.Length - 1)
+                {
+                    var langStr = value?[keys[i]]?.GetValue<string>();
+                    return langStr?.Replace("\\n", "\n") ?? key;
+                }
+
+                value = value?[keys[i]];
+            }
+        }
+        catch
+        {
+            // ignored
+        }
+
+        return key;
     }
 }
-
-[JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(Dictionary<string, string>), GenerationMode = JsonSourceGenerationMode.Metadata)]
-public partial class LocalesGenerationContext : JsonSerializerContext;

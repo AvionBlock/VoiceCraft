@@ -20,7 +20,7 @@
                 <TextBlock FontSize="16"
                            VerticalAlignment="Center"
                            FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.General'}" />
+                           Text="{locale:Localize 'Settings.General.General'}" />
             </Button>
             
             <Button HorizontalAlignment="Stretch"
@@ -32,7 +32,7 @@
                 <TextBlock FontSize="16"
                            VerticalAlignment="Center"
                            FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Appearance'}" />
+                           Text="{locale:Localize 'Settings.Appearance.Appearance'}" />
             </Button>
 
             <Button HorizontalAlignment="Stretch"
@@ -44,7 +44,7 @@
                 <TextBlock FontSize="16"
                            VerticalAlignment="Center"
                            FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Audio'}" />
+                           Text="{locale:Localize 'Settings.Audio.Audio'}" />
             </Button>
 
             <Button HorizontalAlignment="Stretch"
@@ -56,7 +56,7 @@
                 <TextBlock FontSize="16"
                            VerticalAlignment="Center"
                            FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Advanced'}" />
+                           Text="{locale:Localize 'Settings.Advanced.Advanced'}" />
             </Button>
         </StackPanel>
     </ScrollViewer>

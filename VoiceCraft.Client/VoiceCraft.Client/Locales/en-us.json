@@ -1,56 +1,97 @@
 {
-  "Home.Credits": "Credits",
-  "Home.Servers": "Servers",
-  "Home.Settings": "Settings",
-  "Home.CrashLogs": "Crash Logs",
-  "AddServer.AddServer": "Add Server",
-  "AddServer.IP": "IP",
-  "AddServer.Name": "Name",
-  "AddServer.Port": "Port",
-  "Credits.AppVersion": "App Version",
-  "Credits.Author": "Author",
-  "Credits.Codec": "Codec",
-  "Credits.Contributors": "Contributors",
-  "Credits.Version": "Version",
-  "Settings.General": "General Settings",
-  "Settings.General.BackgroundImage": "Background Image",
-  "Settings.General.DisableNotifications": "Disable Notifications",
-  "Settings.General.HideServerAddresses": "Hide Server Addresses",
-  "Settings.General.Language": "Language",
-  "Settings.General.NotificationDismiss": "Notification Dismiss(ms)",
-  "Settings.General.Theme": "Theme",
-  "Settings.Audio": "Audio Settings",
-  "Settings.Audio.AutomaticGainControllers": "Automatic Gain Controllers",
-  "Settings.Audio.Denoisers": "Denoisers",
-  "Settings.Audio.EchoCancelers": "Echo Cancelers",
-  "Settings.Audio.InputDevices": "Input Devices",
-  "Settings.Audio.MicrophoneSensitivity": "Microphone Sensitivity",
-  "Settings.Audio.MicrophoneTest": "Microphone Test",
-  "Settings.Audio.MicrophoneTest.Test": "Test",
-  "Settings.Audio.OutputDevices": "Output Devices",
-  "Settings.Audio.TestOutput": "Test Output",
-  "Settings.Advanced": "Advanced Settings",
-  "Settings.Advanced.TriggerGc": "Trigger Garbage Collector",
-  "Settings.Advanced.Crash": "Test Crash",
-  "SelectedServer.Address": "Address",
-  "SelectedServer.PingInformation": "Ping Information",
-  "SelectedServer.Latency": "Latency",
-  "SelectedServer.ServerInfo": "Server Info",
-  "SelectedServer.ServerInfo.Status": "Motd: {motd}\nPositioning Type: {positioningType}\nConnected Clients: {clients}",
-  "SelectedServer.ServerInfo.Status.Pinging": "Pinging...",
-  "Audio.Recorder.InitFailed": "Recorder failed to initialize!",
-  "Audio.Recorder.Init": "Recorder is not initialized!",
-  "Audio.Player.InitFailed": "Player failed to initialize!",
-  "Audio.Player.Init": "Player is not initialized!",
-  "Audio.AEC.InitFailed": "Echo canceler failed to initialize!",
-  "Audio.AEC.Init": "Echo canceler is not initialized!",
-  "Audio.AGC.InitFailed": "Gain controller failed to initialize!",
-  "Audio.AGC.Init": "Gain controller is not initialized!",
-  "Audio.DN.InitFailed": "Denoiser failed to initialize!",
-  "Audio.DN.Init": "Denoiser is not initialized!",
-  "VoiceCraft.Status.Title": "VoiceCraft Client Is Running",
-  "VoiceCraft.Status.Initializing": "Initializing...",
-  "VoiceCraft.Status.Connecting": "Connecting...",
-  "VoiceCraft.Status.Connected": "Connected!",
-  "VoiceCraft.Status.Disconnected": "Disconnected! Reason:"
+  "Home": {
+    "Servers": "Servers",
+    "Settings": "Settings",
+    "Credits": "Credits",
+    "CrashLogs": "Crash Logs"
+  },
+  "AddServer": {
+    "AddServer": "Add Server",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port"
+  },
+  "Credits": {
+    "AppVersion": "App Version",
+    "Author": "Author",
+    "Codec": "Codec",
+    "Contributors": "Contributors",
+    "Version": "Version"
+  },
+  "Settings": {
+    "General": {
+      "General": "General Settings",
+      "Language": "Language",
+      "NotificationDismiss": "Notification Dismiss(ms)",
+      "DisableNotifications": "Disable Notifications",
+      "HideServerAddresses": "Hide Server Addresses"
+    },
+    "Appearance": {
+      "Appearance": "Appearance",
+      "Theme": "Theme",
+      "BackgroundImage": "Background Image"
+    },
+    "Audio": {
+      "Audio": "Audio Settings",
+      "AutomaticGainControllers": "Automatic Gain Controllers",
+      "Denoisers": "Denoisers",
+      "EchoCancelers": "Echo Cancelers",
+      "InputDevices": "Input Devices",
+      "MicrophoneSensitivity": "Microphone Sensitivity",
+      "OutputDevices": "Output Devices",
+      "TestOutput": "Test Output",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Microphone Test",
+        "Test": "Test"
+      }
+    },
+    "Advanced": {
+      "Advanced": "Advanced Settings",
+      "TriggerGc": "Trigger Garbage Collector",
+      "Crash": "Test Crash"
+    }
+  },
+  "Selected Server": {
+    "Address": "Address",
+    "PingInformation": "Ping Information",
+    "Latency": "Latency",
+    "ServerInfo": {
+      "ServerInfo": "Server Info",
+      "Status": {
+        "Status": "Motd: {motd}\nPositioning Type: {positioningType}\nConnected Clients: {clients}",
+        "Pinging": "Pinging..."
+      }
+    }
+  },
+  "Audio": {
+    "Recorder": {
+      "InitFailed": "Recorder failed to initialize!",
+      "Init": "Recorder is not initialized!"
+    },
+    "Player": {
+      "InitFailed": "Player failed to initialize!",
+      "Init": "Player is not initialized!"
+    },
+    "AEC": {
+      "InitFailed": "Echo canceler failed to initialize!",
+      "Init": "Echo canceler is not initialized!"
+    },
+    "AGC": {
+      "InitFailed": "Gain controller failed to initialize!",
+      "Init": "Gain controller is not initialized!"
+    },
+    "DN": {
+      "InitFailed": "Denoiser failed to initialize!",
+      "Init": "Denoiser is not initialized!"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Title": "VoiceCraft Client Is Running",
+      "Initializing": "Initializing...",
+      "Connecting": "Connecting...",
+      "Connected": "Connected!",
+      "Disconnected": "Disconnected! Reason:"
+    }
+  }
 }
