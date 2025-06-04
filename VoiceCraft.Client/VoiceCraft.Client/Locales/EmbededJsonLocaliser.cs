@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Jeek.Avalonia.Localization;
 
@@ -20,9 +21,9 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
 
     public override void Reload()
     {
-        if(_hasLoaded)
+        if (_hasLoaded)
             return;
-        
+
         _languageStrings = null;
         _languages.Clear();
 
@@ -72,20 +73,14 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
 
         var dict = _languageStrings;
 
-        try
+        int start = 0, end;
+        while ((end = key.IndexOf('.', start)) != -1)
         {
-            int start = 0, end;
-            while ((end = key.IndexOf('.', start)) != -1)
-            {
-                dict = dict?[key[start..end]];
-                start = end + 1;
-            }
+            dict = dict?[key[start..end]];
+            start = end + 1;
+        }
 
-            return dict?[key[start..]]?.GetValue<string>().Replace("\\n", "\n") ?? key;
-        }
-        catch
-        {
-            return key;
-        }
+        var node = dict?[key[start..]];
+        return node?.GetValueKind() != JsonValueKind.String ? key : node.GetValue<string>().Replace("\\n", "\n");
     }
 }
