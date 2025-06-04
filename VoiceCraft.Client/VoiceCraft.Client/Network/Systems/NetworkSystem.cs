@@ -11,17 +11,17 @@ namespace VoiceCraft.Client.Network.Systems;
 
 public class NetworkSystem : IDisposable
 {
-    private readonly AudioEffectSystem _audioEffectSystem;
     private readonly VoiceCraftClient _client;
+    private readonly AudioEffectSystem _audioEffectSystem;
     private readonly EventBasedNetListener _listener;
     private readonly VoiceCraftWorld _world;
 
-    public NetworkSystem(VoiceCraftClient client)
+    public NetworkSystem(VoiceCraftClient client, EventBasedNetListener listener, VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
     {
         _client = client;
-        _listener = client.Listener;
-        _world = client.World;
-        _audioEffectSystem = _client.AudioEffectSystem;
+        _listener = listener;
+        _world = world;
+        _audioEffectSystem = audioEffectSystem;
 
         _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
