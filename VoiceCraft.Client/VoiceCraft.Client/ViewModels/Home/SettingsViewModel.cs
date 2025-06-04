@@ -13,6 +13,12 @@ public partial class SettingsViewModel(NavigationService navigationService) : Vi
     }
 
     [RelayCommand]
+    private void GoToAppearanceSettings()
+    {
+        navigationService.NavigateTo<AppearanceSettingsViewModel>();
+    }
+
+    [RelayCommand]
     private void GoToAudioSettings()
     {
         navigationService.NavigateTo<AudioSettingsViewModel>();

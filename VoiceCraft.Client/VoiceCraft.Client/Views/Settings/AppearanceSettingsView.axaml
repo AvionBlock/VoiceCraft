@@ -7,8 +7,8 @@
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
-             x:DataType="vm:Settings.GeneralSettingsViewModel"
-             x:Class="VoiceCraft.Client.Views.Settings.GeneralSettingsView">
+             x:DataType="vm:Settings.AppearanceSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.AppearanceSettingsView">
     <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0"
               Margin="0,0,0,10"
@@ -17,7 +17,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{locale:Localize Settings.General}"
+                       Text="{locale:Localize Settings.Appearance}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"
@@ -36,33 +36,24 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="{locale:Localize Settings.General.Language}" />
-
+                               Text="{locale:Localize Settings.General.Theme}" />
+                    
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding Locales}"
-                              DisplayMemberBinding="{Binding Key}"
-                              SelectedValue="{Binding LocaleSettings.Culture}"
-                              SelectedValueBinding="{Binding Value}" />
-
+                              ItemsSource="{Binding Themes}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding ThemeSettings.SelectedTheme}"
+                              SelectedValueBinding="{Binding Id}" />
+                    
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="{locale:Localize Settings.General.NotificationDismiss}" />
-
-                    <NumericUpDown Increment="1"
-                                   Maximum="65535"
-                                   Minimum="0"
-                                   Value="{Binding NotificationSettings.DismissDelayMs}" />
-
-                    <ToggleButton HorizontalAlignment="Stretch"
-                                  IsChecked="{Binding ServersSettings.HideServerAddresses}">
-                        <TextBlock Text="{locale:Localize Settings.General.HideServerAddresses}" />
-                    </ToggleButton>
-
-                    <ToggleButton HorizontalAlignment="Stretch"
-                                  IsChecked="{Binding NotificationSettings.DisableNotifications}">
-                        <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
-                    </ToggleButton>
+                               Text="{locale:Localize Settings.General.BackgroundImage}" />
+                    
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding BackgroundImages}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding ThemeSettings.SelectedBackgroundImage}"
+                              SelectedValueBinding="{Binding Id}" />
                 </StackPanel>
             </Border>
         </ScrollViewer>
