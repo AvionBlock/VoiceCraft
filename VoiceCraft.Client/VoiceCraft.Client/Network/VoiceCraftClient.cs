@@ -22,7 +22,9 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
     private readonly OpusEncoder _encoder;
     private readonly NetManager _netManager;
+    private readonly EventBasedNetListener _listener;
     private readonly EntityTickSystem _tickSystem;
+    private readonly AudioEffectSystem _audioEffectSystem;
 
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
@@ -34,7 +36,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public VoiceCraftClient() : base(0, new VoiceCraftWorld())
     {
-        _netManager = new NetManager(Listener)
+        _listener = new EventBasedNetListener();
+        _netManager = new NetManager(_listener)
         {
             AutoRecycle = true,
             IPv6Enabled = false,
@@ -45,16 +48,16 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         _encoder.SetPacketLostPercent(50); //Expected packet loss, might make this change over time later.
         _encoder.SetBitRate(32000);
-        
+
         //Setup Systems.
-        AudioEffectSystem = new AudioEffectSystem(this);
-        NetworkSystem = new NetworkSystem(this);
+        _audioEffectSystem = new AudioEffectSystem(this);
+        NetworkSystem = new NetworkSystem(this, _listener, World, _audioEffectSystem);
         _tickSystem = new EntityTickSystem(this);
-        
+
         //Setup Listeners
-        Listener.PeerConnectedEvent += InvokeConnected;
-        Listener.PeerDisconnectedEvent += InvokeDisconnected;
-        
+        _listener.PeerConnectedEvent += InvokeConnected;
+        _listener.PeerDisconnectedEvent += InvokeDisconnected;
+
         //Start
         _netManager.Start();
     }
@@ -65,9 +68,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public float MicrophoneSensitivity { get; set; }
 
     //Systems
-    public EventBasedNetListener Listener { get; } = new();
     public NetworkSystem NetworkSystem { get; }
-    public AudioEffectSystem AudioEffectSystem { get; }
 
     public void Dispose()
     {
@@ -98,7 +99,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    public void Connect(Guid userGuid, string ip, int port, string locale = "en-us")
+    public void Connect(Guid userGuid, string ip, int port, string locale)
     {
         ThrowIfDisposed();
         if (ConnectionState != ConnectionState.Disconnected)
@@ -168,7 +169,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
             if (read <= 0) continue;
             bytesRead = Math.Max(bytesRead, read);
-            AudioEffectSystem.ProcessEffects(outputBufferShort, read / sizeof(short), clientEntity);
+            _audioEffectSystem.ProcessEffects(outputBufferShort, read / sizeof(short), clientEntity);
             Pcm16Mix(outputBufferShort, read, bufferShort);
         }
 
