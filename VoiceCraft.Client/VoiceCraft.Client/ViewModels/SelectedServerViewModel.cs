@@ -99,7 +99,7 @@ public partial class SelectedServerViewModel(
 
     private void OnServerInfo(ServerInfo info)
     {
-        var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status
+        var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status_Status
             .Replace("{motd}", info.Motd)
             .Replace("{positioningType}", info.PositioningType.ToString())
             .Replace("{clients}", info.Clients.ToString());
