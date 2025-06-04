@@ -20,6 +20,9 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
 
     public override void Reload()
     {
+        if(_hasLoaded)
+            return;
+        
         _languageStrings = null;
         _languages.Clear();
 
@@ -51,43 +54,38 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
         }
 
         _hasLoaded = true;
-
         UpdateDisplayLanguages();
     }
 
     protected override void OnLanguageChanged()
     {
+        _hasLoaded = false;
         Reload();
     }
 
     public override string Get(string key)
     {
-        if (!_hasLoaded)
-            Reload();
+        Reload();
 
-        if (_languageStrings == null)
+        if (_languageStrings is null)
             return key;
+
+        var dict = _languageStrings;
 
         try
         {
-            var keys = key.Split('.');
-            var value = _languageStrings;
-            for (var i = 0; i < keys.Length; i++)
+            int start = 0, end;
+            while ((end = key.IndexOf('.', start)) != -1)
             {
-                if (i == keys.Length - 1)
-                {
-                    var langStr = value?[keys[i]]?.GetValue<string>();
-                    return langStr?.Replace("\\n", "\n") ?? key;
-                }
-
-                value = value?[keys[i]];
+                dict = dict?[key[start..end]];
+                start = end + 1;
             }
+
+            return dict?[key[start..]]?.GetValue<string>().Replace("\\n", "\n") ?? key;
         }
         catch
         {
-            // ignored
+            return key;
         }
-
-        return key;
     }
 }
