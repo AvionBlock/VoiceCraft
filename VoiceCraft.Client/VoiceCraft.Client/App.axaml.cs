@@ -127,6 +127,7 @@ public class App : Application
         ServiceCollection.AddTransient<GeneralSettingsViewModel>();
         ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
         ServiceCollection.AddTransient<AudioSettingsViewModel>();
+        ServiceCollection.AddTransient<NetworkSettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
 
         //Home Pages
@@ -150,6 +151,7 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, GeneralSettingsView>(typeof(GeneralSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AppearanceSettingsView>(typeof(AppearanceSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AudioSettingsView>(typeof(AudioSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, NetworkSettingsView>(typeof(NetworkSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
 
         return ServiceCollection.BuildServiceProvider();

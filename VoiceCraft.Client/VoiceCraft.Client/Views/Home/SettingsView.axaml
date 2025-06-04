@@ -46,6 +46,18 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.Audio.Audio'}" />
             </Button>
+            
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding GoToNetworkSettingsCommand}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Margin="0"
+                    Height="50">
+                <TextBlock FontSize="16"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Text="{locale:Localize 'Settings.Network.Network'}" />
+            </Button>
 
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToAdvancedSettingsCommand}"

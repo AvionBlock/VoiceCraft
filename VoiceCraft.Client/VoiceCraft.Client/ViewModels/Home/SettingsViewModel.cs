@@ -25,6 +25,12 @@ public partial class SettingsViewModel(NavigationService navigationService) : Vi
     }
 
     [RelayCommand]
+    private void GoToNetworkSettings()
+    {
+        navigationService.NavigateTo<NetworkSettingsViewModel>();
+    }
+
+    [RelayCommand]
     private void GoToAdvancedSettings()
     {
         navigationService.NavigateTo<AdvancedSettingsViewModel>();

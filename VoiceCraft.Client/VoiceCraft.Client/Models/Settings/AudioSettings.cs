@@ -10,9 +10,39 @@ public class AudioSettings : Setting<AudioSettings>
     private Guid _echoCanceler = Guid.Empty;
 
     private string _inputDevice = "Default";
-    private float _microphoneSensitivity = 0.04f;
     private string _outputDevice = "Default";
+    private float _microphoneSensitivity = 0.04f;
 
+    public Guid AutomaticGainController
+    {
+        get => _automaticGainController;
+        set
+        {
+            _automaticGainController = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+    
+    public Guid Denoiser
+    {
+        get => _denoiser;
+        set
+        {
+            _denoiser = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+    
+    public Guid EchoCanceler
+    {
+        get => _echoCanceler;
+        set
+        {
+            _echoCanceler = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+    
     public string InputDevice
     {
         get => _inputDevice;
@@ -33,35 +63,6 @@ public class AudioSettings : Setting<AudioSettings>
         }
     }
 
-    public Guid Denoiser
-    {
-        get => _denoiser;
-        set
-        {
-            _denoiser = value;
-            OnUpdated?.Invoke(this);
-        }
-    }
-
-    public Guid AutomaticGainController
-    {
-        get => _automaticGainController;
-        set
-        {
-            _automaticGainController = value;
-            OnUpdated?.Invoke(this);
-        }
-    }
-
-    public Guid EchoCanceler
-    {
-        get => _echoCanceler;
-        set
-        {
-            _echoCanceler = value;
-            OnUpdated?.Invoke(this);
-        }
-    }
 
     public float MicrophoneSensitivity
     {
