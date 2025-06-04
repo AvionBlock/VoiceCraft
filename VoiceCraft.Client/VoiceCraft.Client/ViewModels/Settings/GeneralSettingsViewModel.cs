@@ -10,13 +10,9 @@ namespace VoiceCraft.Client.ViewModels.Settings;
 
 public partial class GeneralSettingsViewModel(
     NavigationService navigationService,
-    ThemesService themesService,
     SettingsService settingsService)
     : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private ObservableCollection<RegisteredBackgroundImage> _backgroundImages = new(themesService.RegisteredBackgroundImages);
-
-    //Theme Settings
     [ObservableProperty] private ObservableCollection<KeyValuePair<string, string>> _locales =
     [
         new("English (US)", "en-us"),
@@ -33,12 +29,9 @@ public partial class GeneralSettingsViewModel(
 
     //Server Settings
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
-    [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
-    [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService, themesService);
 
     public void Dispose()
     {
-        ThemeSettings.Dispose();
         NotificationSettings.Dispose();
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);

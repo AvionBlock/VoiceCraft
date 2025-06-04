@@ -22,6 +22,18 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.General'}" />
             </Button>
+            
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding GoToAppearanceSettingsCommand}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Margin="0"
+                    Height="50">
+                <TextBlock FontSize="16"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Text="{locale:Localize 'Settings.Appearance'}" />
+            </Button>
 
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToAudioSettingsCommand}"

@@ -125,6 +125,7 @@ public class App : Application
         ServiceCollection.AddTransient<SelectedServerViewModel>();
         ServiceCollection.AddTransient<VoiceViewModel>();
         ServiceCollection.AddTransient<GeneralSettingsViewModel>();
+        ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
         ServiceCollection.AddTransient<AudioSettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
 
@@ -147,6 +148,7 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CrashLogView>(typeof(CrashLogView).FullName);
         ServiceCollection.AddKeyedTransient<Control, GeneralSettingsView>(typeof(GeneralSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, AppearanceSettingsView>(typeof(AppearanceSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AudioSettingsView>(typeof(AudioSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
 
