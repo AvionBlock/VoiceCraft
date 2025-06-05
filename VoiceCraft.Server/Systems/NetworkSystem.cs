@@ -62,7 +62,7 @@ public class NetworkSystem : IDisposable
         }
         catch
         {
-            request.Reject("An error occurred on the server while trying to parse the login!"u8.ToArray());
+            request.Reject("VoiceCraft.DisconnectReason.Error"u8.ToArray());
         }
     }
 
@@ -147,25 +147,27 @@ public class NetworkSystem : IDisposable
     {
         if (!Enum.IsDefined(packet.LoginType))
         {
-            request.Reject("Unknown login type!"u8.ToArray());
+            request.Reject("VoiceCraft.DisconnectReason.UnknownLogin"u8.ToArray());
             return;
         }
 
-        if (!Version.TryParse(packet.Version, out var version) || version.Major != VoiceCraftServer.Version.Major)
+        if (!Version.TryParse(packet.Version, out var version) ||
+            version.Minor != VoiceCraftServer.Version.Minor ||
+            version.Major != VoiceCraftServer.Version.Major)
         {
-            request.Reject("Incompatible client/server version!"u8.ToArray()); //Will need to change these so it displays as a locale on the client.
+            request.Reject("VoiceCraft.DisconnectReason.IncompatibleVersion"u8.ToArray());
             return;
         }
 
         if (_netManager.ConnectedPeersCount >= _config.MaxClients)
         {
-            request.Reject("Server is full! Maximum clients reached!"u8.ToArray());
+            request.Reject("VoiceCraft.DisconnectReason.ServerFull"u8.ToArray());
             return;
         }
 
         if (packet.LoginType == LoginType.Unknown)
         {
-            request.Reject("Unknown login type!"u8.ToArray());
+            request.Reject("VoiceCraft.DisconnectReason.UnknownLogin"u8.ToArray());
             return;
         }
 
@@ -184,13 +186,13 @@ public class NetworkSystem : IDisposable
                     break;
                 case LoginType.Unknown:
                 default:
-                    peer.Disconnect("Unknown login type!"u8.ToArray());
+                    peer.Disconnect("VoiceCraft.DisconnectReason.UnknownLogin"u8.ToArray());
                     break;
             }
         }
         catch
         {
-            peer.Disconnect("An error occurred on the server while trying to parse the login!"u8.ToArray());
+            peer.Disconnect("VoiceCraft.DisconnectReason.Error"u8.ToArray());
         }
     }
 
