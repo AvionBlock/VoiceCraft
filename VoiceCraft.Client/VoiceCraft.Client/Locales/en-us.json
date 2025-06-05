@@ -96,7 +96,14 @@
       "Initializing": "Initializing...",
       "Connecting": "Connecting...",
       "Connected": "Connected!",
-      "Disconnected": "Disconnected! Reason:"
+      "Disconnected": "Disconnected! Reason: "
+    },
+    "DisconnectReason":
+    {
+      "UnknownLogin": "Unknown login type!",
+      "IncompatibleVersion": "Incompatible client/server version!",
+      "ServerFull": "Server is full!",
+      "Error": "An error occurred while trying to login!"
     }
   }
 }
