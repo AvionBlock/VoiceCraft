@@ -2,6 +2,7 @@
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jeek.Avalonia.Localization;
+using VoiceCraft.Client.Data;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 
@@ -23,10 +24,7 @@ public partial class MainViewModel : ObservableObject
         // a route changes
         navigationService.OnViewModelChanged += viewModel =>
         {
-            if (Content is ViewModelBase previousViewModel)
-                previousViewModel.OnDisappearing();
             Content = viewModel;
-            viewModel.OnAppearing();
             discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
         };
         var themeSettings = settingsService.ThemeSettings;
@@ -47,6 +45,6 @@ public partial class MainViewModel : ObservableObject
 
         backgroundService.TryGetBackgroundProcess<VoipBackgroundProcess>(out var process);
         if (process == null) return;
-        navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
+        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(process));
     }
 }

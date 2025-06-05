@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiteNetLib;
+using VoiceCraft.Client.Data;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
@@ -18,7 +19,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     private VoipBackgroundProcess? _process;
 
     [ObservableProperty] private string _statusText = string.Empty;
-    public override bool DisableBackButton { get; set; } = true;
+    public override bool DisableBackButton { get; protected set; } = true;
 
     public void Dispose()
     {
@@ -57,8 +58,11 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         _process?.Disconnect();
     }
 
-    public override void OnAppearing()
+    public override void OnAppearing(object? data = null)
     {
+        if (data is VoiceNavigationData navigationData)
+            _process = navigationData.Process;
+        
         if (_process == null) return;
         if (_process.HasEnded)
         {
@@ -77,12 +81,6 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         StatusText = _process.Title;
         IsMuted = _process.Muted;
         IsDeafened = _process.Deafened;
-    }
-
-    public void AttachToProcess(VoipBackgroundProcess process)
-    {
-        _process = process;
-        OnAppearing();
     }
 
     private void OnUpdateTitle(string title)

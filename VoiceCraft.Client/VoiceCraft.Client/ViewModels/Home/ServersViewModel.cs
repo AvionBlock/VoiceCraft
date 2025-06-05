@@ -1,7 +1,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Data;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 
@@ -23,8 +23,7 @@ public partial class ServersViewModel(NavigationService navigationService, Notif
     partial void OnSelectedServerChanged(ServerViewModel? value)
     {
         if (value == null) return;
-        var vm = navigationService.NavigateTo<SelectedServerViewModel>();
-        vm.SelectedServer = value;
+        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(value.Server));
         SelectedServer = null;
     }
 
@@ -46,8 +45,6 @@ public partial class ServersViewModel(NavigationService navigationService, Notif
     private void EditServer(ServerViewModel? server)
     {
         if (server == null) return;
-        var vm = navigationService.NavigateTo<EditServerViewModel>();
-        vm.Server = server.Server;
-        vm.EditableServer = (Server)server.Server.Clone();
+        navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(server.Server));
     }
 }

@@ -7,19 +7,9 @@ namespace VoiceCraft.Client.Services;
 
 public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel, uint historyMaxSize = 100)
 {
-    private ViewModelBase _currentViewModel = default!;
+    private ViewModelBase? _currentViewModel;
     private List<ViewModelBase> _history = [];
     private int _historyIndex = -1;
-
-    private ViewModelBase CurrentViewModel
-    {
-        set
-        {
-            if (value == _currentViewModel) return;
-            _currentViewModel = value;
-            OnViewModelChanged?.Invoke(value);
-        }
-    }
 
     // ReSharper disable once MemberCanBePrivate.Global
     public bool HasNext => _history.Count > 0 && _historyIndex < _history.Count - 1;
@@ -49,10 +39,19 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
         _history.RemoveAt(0);
     }
 
+    private void SetCurrentViewModel(ViewModelBase viewModel, object? data = null)
+    {
+        if (viewModel == _currentViewModel) return;
+        _currentViewModel?.OnDisappearing();
+        _currentViewModel = viewModel;
+        _currentViewModel.OnAppearing(data);
+        OnViewModelChanged?.Invoke(viewModel);
+    }
+
     // ReSharper disable once MemberCanBePrivate.Global
     public ViewModelBase? Go(int offset = 0, bool checkBackButton = false)
     {
-        if (checkBackButton && _currentViewModel.DisableBackButton)
+        if (checkBackButton && (_currentViewModel?.DisableBackButton ?? false))
             return _currentViewModel;
 
         if (offset == 0)
@@ -64,7 +63,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
 
         _historyIndex = newIndex;
         var viewModel = _history.ElementAt(_historyIndex);
-        CurrentViewModel = viewModel;
+        SetCurrentViewModel(viewModel);
         return viewModel;
     }
 
@@ -78,12 +77,11 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
         return HasNext ? Go(1) : null;
     }
 
-    public T NavigateTo<T>() where T : ViewModelBase
+    public void NavigateTo<T>(object? data = null) where T : ViewModelBase
     {
         var viewModel = InstantiateViewModel<T>();
-        CurrentViewModel = viewModel;
+        SetCurrentViewModel(viewModel, data);
         Push(viewModel);
-        return viewModel;
     }
 
     private T InstantiateViewModel<T>() where T : ViewModelBase

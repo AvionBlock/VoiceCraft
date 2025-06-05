@@ -27,7 +27,7 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
         }
     }
 
-    public override void OnAppearing()
+    public override void OnAppearing(object? data = null)
     {
         CrashLogs = new ObservableCollection<KeyValuePair<DateTime, string>>(CrashLogService.CrashLogs.OrderByDescending(x => x.Key));
     }
