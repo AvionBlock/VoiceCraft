@@ -1,6 +1,8 @@
 using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using VoiceCraft.Client.Data;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 
@@ -11,6 +13,13 @@ public partial class EditServerViewModel(NavigationService navigationService, No
 {
     [ObservableProperty] private Server _editableServer = new();
     [ObservableProperty] private Server _server = new();
+
+    public override void OnAppearing(object? data = null)
+    {
+        if (data is not EditServerNavigationData navigationData) return;
+        Server = navigationData.Server;
+        EditableServer = (Server)navigationData.Server.Clone();
+    }
 
     [RelayCommand]
     private void Cancel()

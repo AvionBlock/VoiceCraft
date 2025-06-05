@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jeek.Avalonia.Localization;
+using VoiceCraft.Client.Data;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
@@ -35,8 +36,11 @@ public partial class SelectedServerViewModel(
         GC.SuppressFinalize(this);
     }
 
-    public override void OnAppearing()
+    public override void OnAppearing(object? data = null)
     {
+        if(data is SelectedServerNavigationData navigationData)
+            SelectedServer = new ServerViewModel(navigationData.Server, settingsService);
+        
         if (_pinger != null)
             _stopPinger = true;
         while (_pinger is { IsCompleted: false }) Task.Delay(10).Wait(); //Don't burn the CPU!.
@@ -86,7 +90,7 @@ public partial class SelectedServerViewModel(
             DisableBackButton = true;
             await backgroundService.StopBackgroundProcess<VoipBackgroundProcess>();
             await backgroundService.StartBackgroundProcess(process);
-            navigationService.NavigateTo<VoiceViewModel>().AttachToProcess(process);
+            navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(process));
         }
         catch
         {
