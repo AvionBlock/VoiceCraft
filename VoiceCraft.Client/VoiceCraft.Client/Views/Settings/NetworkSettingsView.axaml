@@ -42,11 +42,6 @@
                                    Maximum="65535"
                                    Minimum="0"
                                    Value="{Binding NetworkSettings.McWssHostPort}" />
-                    
-                    <ToggleButton HorizontalAlignment="Stretch"
-                                  IsChecked="{Binding NetworkSettings.PacketCompression}">
-                        <TextBlock Text="{locale:Localize Settings.Network.PacketCompression}" />
-                    </ToggleButton>
                 </StackPanel>
             </Border>
         </ScrollViewer>

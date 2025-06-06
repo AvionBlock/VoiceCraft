@@ -9,8 +9,7 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
 {
     private readonly NetworkSettings _networkSettings;
     private readonly SettingsService _settingsService;
-
-    [ObservableProperty] private bool _packetCompression;
+    
     [ObservableProperty] private ushort _mcWssHostPort;
     private bool _disposed;
     private bool _updating;
@@ -20,7 +19,6 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
         _networkSettings = settingsService.NetworkSettings;
         _settingsService = settingsService;
         _networkSettings.OnUpdated += Update;
-        _packetCompression = _networkSettings.PacketCompression;
         _mcWssHostPort = _networkSettings.McWssHostPort;
     }
 
@@ -31,17 +29,6 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
 
         _disposed = true;
         GC.SuppressFinalize(this);
-    }
-
-    partial void OnPacketCompressionChanging(bool value)
-    {
-        ThrowIfDisposed();
-
-        if (_updating) return;
-        _updating = true;
-        _networkSettings.PacketCompression = value;
-        _ = _settingsService.SaveAsync();
-        _updating = false;
     }
 
     partial void OnMcWssHostPortChanging(ushort value)
@@ -59,8 +46,7 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     {
         if (_updating) return;
         _updating = true;
-
-        PacketCompression = networkSettings.PacketCompression;
+        
         McWssHostPort = networkSettings.McWssHostPort;
 
         _updating = false;

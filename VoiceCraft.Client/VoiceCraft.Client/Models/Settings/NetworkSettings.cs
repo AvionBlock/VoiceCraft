@@ -5,18 +5,7 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class NetworkSettings : Setting<NetworkSettings>
 {
-    private bool _packetCompression;
     private ushort _mcWssHostPort = 8080;
-    
-    public bool PacketCompression
-    {
-        get => _packetCompression;
-        set
-        {
-            _packetCompression = value;
-            OnUpdated?.Invoke(this);
-        }
-    }
 
     public ushort McWssHostPort
     {
