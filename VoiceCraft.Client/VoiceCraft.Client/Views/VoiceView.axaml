@@ -9,7 +9,6 @@
              x:DataType="vm:VoiceViewModel">
     <Grid RowDefinitions="Auto, *">
         <Border Grid.Row="0"
-                Margin="0,0,0,10"
                 Background="{DynamicResource BackgroundBrush}">
             <TextBlock Margin="10"
                        VerticalAlignment="Center"
@@ -18,7 +17,9 @@
                        Text="{Binding StatusText}"
                        TextAlignment="Center" />
         </Border>
-        <ListBox Grid.Row="1" Background="Transparent"
+        <ListBox Grid.Row="1"
+                 Margin="0,10,0,0"
+                 Background="Transparent"
                  ItemsSource="{Binding EntityViewModels}"
                  SelectionMode="Single">
             <ListBox.ItemTemplate>
@@ -112,5 +113,32 @@
                 <PathIcon Data="{StaticResource CallEndRegular}" />
             </Button>
         </StackPanel>
+
+        <Border Grid.Row="1"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Background="{DynamicResource BackgroundBrush}">
+            <Border Classes="card"
+                    MaxWidth="400"
+                    VerticalAlignment="Center"
+                    Padding="15"
+                    Margin="10">
+                <StackPanel>
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Top"
+                               FontSize="15">
+                        Entity Name
+                    </TextBlock>
+                    <Grid ColumnDefinitions="Auto, Auto">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                   Text="Volume" />
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                   Text="100%" />
+                    </Grid>
+                    <Slider Maximum="2.0"
+                            Minimum="0.0" />
+                </StackPanel>
+            </Border>
+        </Border>
     </Grid>
 </UserControl>
