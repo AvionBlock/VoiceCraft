@@ -13,9 +13,11 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
 {
+    [ObservableProperty] private EntityViewModel? _selectedEntity;
     [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
+    [ObservableProperty] private bool _showModal;
     private VoipBackgroundProcess? _process;
 
     [ObservableProperty] private string _statusText = string.Empty;
@@ -36,7 +38,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         GC.SuppressFinalize(this);
     }
 
-    partial void OnIsMutedChanging(bool value)
+    partial void OnIsMutedChanged(bool value)
     {
         _process?.ToggleMute(value);
     }
@@ -44,6 +46,17 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     partial void OnIsDeafenedChanged(bool value)
     {
         _process?.ToggleDeafen(value);
+    }
+
+    partial void OnSelectedEntityChanged(EntityViewModel? value)
+    {
+        if (value == null)
+        {
+            ShowModal = false;
+            return;
+        }
+
+        ShowModal = true;
     }
 
     [RelayCommand]
@@ -62,7 +75,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     {
         if (data is VoiceNavigationData navigationData)
             _process = navigationData.Process;
-        
+
         if (_process == null) return;
         if (_process.HasEnded)
         {
