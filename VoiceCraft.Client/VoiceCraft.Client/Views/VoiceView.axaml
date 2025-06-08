@@ -119,8 +119,9 @@
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
                 Background="{DynamicResource BackgroundBrush}"
-                IsVisible="{Binding ShowModal}"
-                PointerPressed="ModalBackgroundOnPointerPressed">
+                PointerPressed="ModalBackgroundOnPointerPressed"
+                Classes.ShowModal="{Binding ShowModal}"
+                Classes.HideModal="{Binding !ShowModal}">
             <Border Classes="card"
                     MaxWidth="500"
                     VerticalAlignment="Center"
@@ -142,6 +143,24 @@
                             Value="{Binding SelectedEntity.Volume, FallbackValue=0}"/>
                 </StackPanel>
             </Border>
+            
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                </Transitions>
+            </Border.Transitions>
+            <Border.Styles>
+                <Style Selector="Border.ShowModal">
+                    <Setter Property="IsHitTestVisible" Value="True" />
+                    <Setter Property="Opacity" Value="1"/>
+                </Style>
+            </Border.Styles>
+            <Border.Styles>
+                <Style Selector="Border.HideModal">
+                    <Setter Property="IsHitTestVisible" Value="False" />
+                    <Setter Property="Opacity" Value="0"/>
+                </Style>
+            </Border.Styles>
         </Border>
     </Grid>
 </UserControl>
