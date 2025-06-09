@@ -26,14 +26,21 @@ public partial class EntityViewModel : ObservableObject
         _entity = entity;
         _entitySettings = settingsService.EntitySettings;
         _settingsService = settingsService;
+
+        if (entity is VoiceCraftClientNetworkEntity networkEntity)
+        {
+            _entityUserId = networkEntity.UserGuid;
+            if (_entitySettings.Entities.TryGetValue((Guid)_entityUserId, out var entitySetting))
+            {
+                entity.Volume = entitySetting.Volume;
+            }
+        }
+        
         _displayName = entity.Name;
         _isMuted = entity.Muted;
         _isDeafened = entity.Deafened;
         _isVisible = entity.IsVisible;
         _volume = entity.Volume;
-
-        if (entity is VoiceCraftClientNetworkEntity networkEntity)
-            _entityUserId = networkEntity.UserGuid;
 
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;
@@ -47,7 +54,6 @@ public partial class EntityViewModel : ObservableObject
         if (_volumeUpdating) return;
         _volumeUpdating = true;
         Volume = volume;
-        SaveSettings();
         _volumeUpdating = false;
     }
 
@@ -56,6 +62,7 @@ public partial class EntityViewModel : ObservableObject
         if (_volumeUpdating) return;
         _volumeUpdating = true;
         _entity.Volume = value;
+        SaveSettings();
         _volumeUpdating = false;
     }
 
@@ -68,7 +75,7 @@ public partial class EntityViewModel : ObservableObject
             _entitySettings.Entities.Add((Guid)_entityUserId, entity);
         }
 
-        entity.Volume = Volume;
+        entity.Volume = _entity.Volume;
 
         _ = _settingsService.SaveAsync();
     }
