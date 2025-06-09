@@ -11,7 +11,7 @@ namespace VoiceCraft.Core
     public class VoiceCraftEntity : INetSerializable, IResettable
     {
         private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
-        private readonly List<VoiceCraftEntity> _visibleEntities = new List<VoiceCraftEntity>();
+        private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
         private bool _deafened;
         private ulong _listenBitmask = ulong.MaxValue;
 
@@ -150,20 +150,22 @@ namespace VoiceCraft.Core
 
         public void AddVisibleEntity(VoiceCraftEntity entity)
         {
-            if (_visibleEntities.Contains(entity)) return;
-            _visibleEntities.Add(entity);
+            if (!_visibleEntities.TryAdd(entity.Id, entity)) return;
             OnVisibleEntityAdded?.Invoke(entity, this);
         }
 
         public void RemoveVisibleEntity(VoiceCraftEntity entity)
         {
-            if (!_visibleEntities.Remove(entity)) return;
+            if (!_visibleEntities.Remove(entity.Id)) return;
             OnVisibleEntityRemoved?.Invoke(entity, this);
         }
 
         public void TrimVisibleDeadEntities()
         {
-            _visibleEntities.RemoveAll(x => x.Destroyed);
+            foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed).ToArray())
+            {
+                _visibleEntities.Remove(entity.Key);
+            }
         }
 
         public virtual void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
@@ -204,7 +206,7 @@ namespace VoiceCraft.Core
 
         #region Updatable Properties
 
-        public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities;
+        public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities.Values;
 
         public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
 
