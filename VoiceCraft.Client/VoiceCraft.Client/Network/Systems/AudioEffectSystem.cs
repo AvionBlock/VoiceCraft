@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Network.Systems;
@@ -37,7 +36,7 @@ public class AudioEffectSystem(VoiceCraftClient client) : IDisposable
     public event Action<byte, IAudioEffect>? OnEffectSet;
     public event Action<byte, IAudioEffect>? OnEffectRemoved;
 
-    public void ProcessEffects(Span<short> buffer, int count, VoiceCraftEntity entity)
+    public void ProcessEffects(Span<short> buffer, int count, VoiceCraftClientEntity entity)
     {
         if (_floatBuffer.Length < count)
             _floatBuffer = new float[count];
@@ -47,6 +46,10 @@ public class AudioEffectSystem(VoiceCraftClient client) : IDisposable
         try
         {
             foreach (var effect in _audioEffects) effect.Value.Process(entity, client, _floatBuffer, count);
+            for (var i = 0; i < count; i++)
+            {
+                _floatBuffer[i] *= entity.Volume;
+            }
         }
         finally
         {
