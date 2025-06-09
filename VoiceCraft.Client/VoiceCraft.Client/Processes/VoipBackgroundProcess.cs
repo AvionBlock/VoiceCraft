@@ -251,7 +251,7 @@ public class VoipBackgroundProcess(
     private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
     {
         if (entity is not VoiceCraftClientEntity clientEntity) return;
-        var entityViewModel = new EntityViewModel(clientEntity);
+        var entityViewModel = new EntityViewModel(clientEntity, settingsService);
         if (!_entityViewModels.TryAdd(entity, entityViewModel)) return;
         OnEntityAdded?.Invoke(entityViewModel);
     }

@@ -24,6 +24,7 @@ public class SettingsService(StorageService storageService)
     public ServersSettings ServersSettings => _settings.ServersSettings;
     public ThemeSettings ThemeSettings => _settings.ThemeSettings;
     public NetworkSettings NetworkSettings => _settings.NetworkSettings;
+    public EntitySettings EntitySettings => _settings.EntitySettings;
 
     public void Load()
     {
@@ -41,6 +42,7 @@ public class SettingsService(StorageService storageService)
         loadedSettings.ServersSettings.OnLoading();
         loadedSettings.ThemeSettings.OnLoading();
         loadedSettings.NetworkSettings.OnLoading();
+        loadedSettings.EntitySettings.OnLoading();
 
         _settings = loadedSettings;
     }
@@ -76,6 +78,7 @@ public class SettingsService(StorageService storageService)
         ServersSettings.OnSaving();
         ThemeSettings.OnSaving();
         NetworkSettings.OnSaving();
+        EntitySettings.OnSaving();
 
         await storageService.SaveAsync(Constants.SettingsFile,
             JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
@@ -113,6 +116,7 @@ public class SettingsStructure
     public ServersSettings ServersSettings { get; set; } = new();
     public ThemeSettings ThemeSettings { get; set; } = new();
     public NetworkSettings NetworkSettings { get; set; } = new();
+    public EntitySettings EntitySettings { get; set; } = new();
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
