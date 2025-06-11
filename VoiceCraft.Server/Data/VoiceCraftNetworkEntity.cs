@@ -10,6 +10,7 @@ public class VoiceCraftNetworkEntity : VoiceCraftEntity
     public VoiceCraftNetworkEntity(
         NetPeer netPeer,
         Guid userGuid,
+        Guid serverUserGuid,
         string locale,
         PositioningType positioningType,
         VoiceCraftWorld world) : base(netPeer.Id, world)
@@ -17,6 +18,7 @@ public class VoiceCraftNetworkEntity : VoiceCraftEntity
         Name = "New Client";
         NetPeer = netPeer;
         UserGuid = userGuid;
+        ServerUserGuid = serverUserGuid;
         Locale = locale;
         PositioningType = positioningType;
         AddVisibleEntity(this); //Should always be visible to itself.
@@ -24,6 +26,7 @@ public class VoiceCraftNetworkEntity : VoiceCraftEntity
 
     public NetPeer NetPeer { get; }
     public Guid UserGuid { get; private set; }
+    public Guid ServerUserGuid { get; private set; }
     public string Locale { get; private set; }
     public PositioningType PositioningType { get; }
     public override EntityType EntityType => EntityType.Network;

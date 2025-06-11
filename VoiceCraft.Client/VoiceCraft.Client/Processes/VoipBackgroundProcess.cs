@@ -126,7 +126,7 @@ public class VoipBackgroundProcess(
                 Thread.Sleep(1); //Don't burn the CPU.
             }
 
-            _voiceCraftClient.Connect(settingsService.UserGuid, ip, port, locale);
+            _voiceCraftClient.Connect(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port, locale);
             Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
             var startTime = DateTime.UtcNow;

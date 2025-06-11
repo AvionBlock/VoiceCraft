@@ -18,6 +18,7 @@ public class SettingsService(StorageService storageService)
 
     // ReSharper disable once InconsistentNaming
     public Guid UserGuid => _settings.UserGuid;
+    public Guid ServerUserGuid => _settings.ServerUserGuid;
     public AudioSettings AudioSettings => _settings.AudioSettings;
     public LocaleSettings LocaleSettings => _settings.LocaleSettings;
     public NotificationSettings NotificationSettings => _settings.NotificationSettings;
@@ -110,6 +111,7 @@ public interface ISetting : ICloneable
 public class SettingsStructure
 {
     public Guid UserGuid { get; set; } = Guid.NewGuid();
+    public Guid ServerUserGuid { get; set; } = Guid.NewGuid();
     public AudioSettings AudioSettings { get; set; } = new();
     public LocaleSettings LocaleSettings { get; set; } = new();
     public NotificationSettings NotificationSettings { get; set; } = new();
