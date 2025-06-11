@@ -25,6 +25,7 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
     private bool _isVisible;
     private DateTime _lastPacket = DateTime.MinValue;
     private float _volume = 1f;
+    private bool _userMuted;
 
     public bool IsVisible
     {
@@ -48,8 +49,20 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
         }
     }
 
-    public event Action<bool, VoiceCraftEntity>? OnIsVisibleUpdated;
-    public event Action<float, VoiceCraftEntity>? OnVolumeUpdated;
+    public bool UserMuted
+    {
+        get => _userMuted;
+        set
+        {
+            if(_userMuted == value) return;
+            _userMuted = value;
+            OnUserMutedUpdated?.Invoke(_userMuted, this);
+        }
+    }
+
+    public event Action<bool, VoiceCraftClientEntity>? OnIsVisibleUpdated;
+    public event Action<float, VoiceCraftClientEntity>? OnVolumeUpdated;
+    public event Action<bool, VoiceCraftClientEntity>? OnUserMutedUpdated;
 
     public void Tick()
     {
@@ -114,6 +127,7 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
 
         OnIsVisibleUpdated = null;
         OnVolumeUpdated = null;
+        OnUserMutedUpdated = null;
     }
 
     private int Read(byte[] buffer)

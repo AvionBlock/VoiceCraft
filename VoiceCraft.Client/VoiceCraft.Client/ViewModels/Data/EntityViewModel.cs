@@ -3,36 +3,42 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class EntityViewModel : ObservableObject
 {
+    //Entity Display.
     [ObservableProperty] private string _displayName;
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
     [ObservableProperty] private bool _isVisible;
+    
+    //User Settings
     [ObservableProperty] private float _volume;
+    [ObservableProperty] private bool _userMuted;
 
     private readonly VoiceCraftClientEntity _entity;
-    private readonly EntitySettings _entitySettings;
+    private readonly UserSettings _userSettings;
     private readonly SettingsService _settingsService;
+    
     private readonly Guid? _entityUserId;
-    private bool _volumeUpdating;
+    private bool _userVolumeUpdating;
+    private bool _userMutedUpdating;
 
     public EntityViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
     {
         _entity = entity;
-        _entitySettings = settingsService.EntitySettings;
+        _userSettings = settingsService.UserSettings;
         _settingsService = settingsService;
 
         if (entity is VoiceCraftClientNetworkEntity networkEntity)
         {
             _entityUserId = networkEntity.UserGuid;
-            if (_entitySettings.Entities.TryGetValue((Guid)_entityUserId, out var entitySetting))
+            if (_userSettings.Users.TryGetValue((Guid)_entityUserId, out var entitySetting))
             {
                 entity.Volume = entitySetting.Volume;
+                entity.UserMuted = entitySetting.UserMuted;
             }
         }
         
@@ -47,35 +53,54 @@ public partial class EntityViewModel : ObservableObject
         entity.OnDeafenUpdated += (value, _) => IsDeafened = value;
         entity.OnIsVisibleUpdated += (value, _) => IsVisible = value;
         entity.OnVolumeUpdated += UpdateVolume;
+        entity.OnUserMutedUpdated += UpdateUserMuted;
     }
 
-    private void UpdateVolume(float volume, VoiceCraftEntity entity)
+    private void UpdateVolume(float volume, VoiceCraftClientEntity entity)
     {
-        if (_volumeUpdating) return;
-        _volumeUpdating = true;
+        if (_userVolumeUpdating) return;
+        _userVolumeUpdating = true;
         Volume = volume;
-        _volumeUpdating = false;
+        _userVolumeUpdating = false;
+    }
+
+    private void UpdateUserMuted(bool userMuted, VoiceCraftClientEntity entity)
+    {
+        if (_userMutedUpdating) return;
+        _userMutedUpdating = true;
+        UserMuted = userMuted;
+        _userMutedUpdating = false;
     }
 
     partial void OnVolumeChanging(float value)
     {
-        if (_volumeUpdating) return;
-        _volumeUpdating = true;
+        if (_userVolumeUpdating) return;
+        _userVolumeUpdating = true;
         _entity.Volume = value;
         SaveSettings();
-        _volumeUpdating = false;
+        _userVolumeUpdating = false;
+    }
+
+    partial void OnUserMutedChanging(bool value)
+    {
+        if(_userMutedUpdating) return;
+        _userMutedUpdating = true;
+        _entity.UserMuted = value;
+        SaveSettings();
+        _userMutedUpdating = false;
     }
 
     private void SaveSettings()
     {
         if (_entityUserId == null) return;
-        if (!_entitySettings.Entities.TryGetValue((Guid)_entityUserId, out var entity))
+        if (!_userSettings.Users.TryGetValue((Guid)_entityUserId, out var entity))
         {
-            entity = new EntitySetting();
-            _entitySettings.Entities.Add((Guid)_entityUserId, entity);
+            entity = new UserSetting();
+            _userSettings.Users.Add((Guid)_entityUserId, entity);
         }
 
         entity.Volume = _entity.Volume;
+        entity.UserMuted = _entity.UserMuted;
 
         _ = _settingsService.SaveAsync();
     }
