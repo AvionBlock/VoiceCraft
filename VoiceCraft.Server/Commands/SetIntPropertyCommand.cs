@@ -6,11 +6,19 @@ namespace VoiceCraft.Server.Commands;
 
 public class SetIntPropertyCommand : Command
 {
-    public SetIntPropertyCommand(VoiceCraftServer server) : base("setIntProperty", "Sets an integer property for an entity.")
+    public SetIntPropertyCommand(VoiceCraftServer server) : base(
+        Locales.Locales.Commands_SetIntProperty_Name,
+        Locales.Locales.Commands_SetIntProperty_Description)
     {
-        var idArgument = new Argument<int>("id", "The client's entity id.");
-        var keyArgument = new Argument<PropertyKey>("key", "The property key to set.");
-        var valueArgument = new Argument<int?>("value", "The property value to set.");
+        var idArgument = new Argument<int>(
+            Locales.Locales.Commands_SetIntProperty_Arguments_Id_Name,
+            Locales.Locales.Commands_SetIntProperty_Arguments_Id_Description);
+        var keyArgument = new Argument<PropertyKey>(
+            Locales.Locales.Commands_SetIntProperty_Arguments_Key_Name, 
+            Locales.Locales.Commands_SetIntProperty_Arguments_Key_Description);
+        var valueArgument = new Argument<int>(
+            Locales.Locales.Commands_SetIntProperty_Arguments_Value_Name, 
+            Locales.Locales.Commands_SetIntProperty_Arguments_Value_Description);
         AddArgument(idArgument);
         AddArgument(keyArgument);
         AddArgument(valueArgument);

@@ -7,10 +7,18 @@ namespace VoiceCraft.Server.Commands;
 
 public class ListCommand : Command
 {
-    public ListCommand(VoiceCraftServer server) : base("list", "Lists entities.")
+    public ListCommand(VoiceCraftServer server) : base(
+        Locales.Locales.Commands_List_Name,
+        Locales.Locales.Commands_List_Description)
     {
-        var clientsOnlyOption = new Option<bool>("--clientsOnly", () => false, "Show networked clients only.");
-        var limitOption = new Option<int>("--limit", () => 10, "Limit the number of shown entities.");
+        var clientsOnlyOption = new Option<bool>(
+            $"--{Locales.Locales.Commands_List_Options_ClientsOnly_Name}",
+            () => false,
+            Locales.Locales.Commands_List_Options_ClientsOnly_Description);
+        var limitOption = new Option<int>(
+            $"--{Locales.Locales.Commands_List_Options_Limit_Name}",
+            () => 10,
+            Locales.Locales.Commands_List_Options_Limit_Description);
         AddOption(clientsOnlyOption);
         AddOption(limitOption);
 
@@ -29,7 +37,7 @@ public class ListCommand : Command
                 var list = server.World.Entities;
                 if (clientsOnly)
                     list = list.OfType<VoiceCraftNetworkEntity>();
-                
+
                 AnsiConsole.WriteLine(Locales.Locales.Commands_List_Showing.Replace("{limit}", limit.ToString()));
                 foreach (var entity in list)
                 {
@@ -43,7 +51,7 @@ public class ListCommand : Command
                         $"[red]{entity.Rotation.X}[/], [green]{entity.Rotation.Y}[/], [blue]{entity.Rotation.Z}[/], [yellow]{entity.Rotation.W}[/]",
                         entity.WorldId);
                 }
-                
+
                 AnsiConsole.Write(table);
             },
             clientsOnlyOption, limitOption);

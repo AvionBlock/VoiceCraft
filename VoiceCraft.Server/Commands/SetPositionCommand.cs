@@ -6,12 +6,22 @@ namespace VoiceCraft.Server.Commands;
 
 public class SetPositionCommand : Command
 {
-    public SetPositionCommand(VoiceCraftServer server) : base("setPosition", "Sets a position for an entity.")
+    public SetPositionCommand(VoiceCraftServer server) : base(
+        Locales.Locales.Commands_SetPosition_Name,
+        Locales.Locales.Commands_SetPosition_Description)
     {
-        var idArgument = new Argument<int>("id", "The entity's id.");
-        var xPosArgument = new Argument<float>("x", "The X position.");
-        var yPosArgument = new Argument<float>("y", "The Y position.");
-        var zPosArgument = new Argument<float>("z", "The Z position.");
+        var idArgument = new Argument<int>(
+            Locales.Locales.Commands_SetPosition_Arguments_Id_Name,
+            Locales.Locales.Commands_SetPosition_Arguments_Id_Description);
+        var xPosArgument = new Argument<float>(
+            Locales.Locales.Commands_SetPosition_Arguments_X_Name,
+            Locales.Locales.Commands_SetPosition_Arguments_X_Description);
+        var yPosArgument = new Argument<float>(
+            Locales.Locales.Commands_SetPosition_Arguments_Y_Name,
+            Locales.Locales.Commands_SetPosition_Arguments_Y_Description);
+        var zPosArgument = new Argument<float>(
+            Locales.Locales.Commands_SetPosition_Arguments_Z_Name,
+            Locales.Locales.Commands_SetPosition_Arguments_Z_Description);
         AddArgument(idArgument);
         AddArgument(xPosArgument);
         AddArgument(yPosArgument);
