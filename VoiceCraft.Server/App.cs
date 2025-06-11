@@ -44,6 +44,7 @@ public static class App
 
             //Register Commands
             AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);
+            rootCommand.Description = Locales.Locales.Commands_RootCommand_Description;
             var commandCount = 0;
             foreach (var command in Program.ServiceProvider.GetServices<Command>())
             {

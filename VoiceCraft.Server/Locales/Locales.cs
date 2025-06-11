@@ -44,8 +44,65 @@ public static class Locales
     public static string Commands_Exception => Localizer.Get("Commands.Exception");
     public static string Commands_Exceptions_CannotFindEntity => Localizer.Get("Commands.Exceptions.CannotFindEntity");
     public static string Commands_Exceptions_EntityNotAClient => Localizer.Get("Commands.Exceptions.EntityNotAClient");
+
+    public static string Commands_RootCommand_Description => Localizer.Get("Commands.RootCommand.Description");
+    
+    public static string Commands_List_Name => Localizer.Get("Commands.List.Name");
+    public static string Commands_List_Description => Localizer.Get("Commands.List.Description");
     public static string Commands_List_Showing => Localizer.Get("Commands.List.Showing");
+    public static string Commands_List_Options_ClientsOnly_Name => Localizer.Get("Commands.List.Options.ClientsOnly.Name");
+    public static string Commands_List_Options_ClientsOnly_Description => Localizer.Get("Commands.List.Options.ClientsOnly.Description");
+    public static string Commands_List_Options_Limit_Name => Localizer.Get("Commands.List.Options.Limit.Name");
+    public static string Commands_List_Options_Limit_Description => Localizer.Get("Commands.List.Options.Limit.Description");
     public static string Commands_List_Exceptions_LimitArgument => Localizer.Get("Commands.List.Exceptions.Limit");
+    
+    public static string Commands_SetTitle_Name => Localizer.Get("Commands.SetTitle.Name");
+    public static string Commands_SetTitle_Description => Localizer.Get("Commands.SetTitle.Description");
+    public static string Commands_SetTitle_Arguments_Id_Name => Localizer.Get("Commands.SetTitle.Arguments.Id.Name");
+    public static string Commands_SetTitle_Arguments_Id_Description => Localizer.Get("Commands.SetTitle.Arguments.Id.Description");
+    public static string Commands_SetTitle_Arguments_Value_Name => Localizer.Get("Commands.SetTitle.Arguments.Value.Name");
+    public static string Commands_SetTitle_Arguments_Value_Description => Localizer.Get("Commands.SetTitle.Arguments.Value.Description");
+    
+    public static string Commands_SetDescription_Name => Localizer.Get("Commands.SetDescription.Name");
+    public static string Commands_SetDescription_Description => Localizer.Get("Commands.SetDescription.Description");
+    public static string Commands_SetDescription_Arguments_Id_Name => Localizer.Get("Commands.SetDescription.Arguments.Id.Name");
+    public static string Commands_SetDescription_Arguments_Id_Description => Localizer.Get("Commands.SetDescription.Arguments.Id.Description");
+    public static string Commands_SetDescription_Arguments_Value_Name => Localizer.Get("Commands.SetDescription.Arguments.Value.Name");
+    public static string Commands_SetDescription_Arguments_Value_Description => Localizer.Get("Commands.SetDescription.Arguments.Value.Description");
+    
+    public static string Commands_SetIntProperty_Name => Localizer.Get("Commands.SetIntProperty.Name");
+    public static string Commands_SetIntProperty_Description => Localizer.Get("Commands.SetIntProperty.Description");
+    public static string Commands_SetIntProperty_Arguments_Id_Name => Localizer.Get("Commands.SetIntProperty.Arguments.Id.Name");
+    public static string Commands_SetIntProperty_Arguments_Id_Description => Localizer.Get("Commands.SetIntProperty.Arguments.Id.Description");
+    public static string Commands_SetIntProperty_Arguments_Key_Name => Localizer.Get("Commands.SetIntProperty.Arguments.Key.Name");
+    public static string Commands_SetIntProperty_Arguments_Key_Description => Localizer.Get("Commands.SetIntProperty.Arguments.Key.Description");
+    public static string Commands_SetIntProperty_Arguments_Value_Name => Localizer.Get("Commands.SetIntProperty.Arguments.Value.Name");
+    public static string Commands_SetIntProperty_Arguments_Value_Description => Localizer.Get("Commands.SetIntProperty.Arguments.Value.Description");
+    
+    public static string Commands_ClearProperty_Name => Localizer.Get("Commands.ClearProperty.Name");
+    public static string Commands_ClearProperty_Description => Localizer.Get("Commands.ClearProperty.Description");
+    public static string Commands_ClearProperty_Arguments_Id_Name => Localizer.Get("Commands.ClearProperty.Arguments.Id.Name");
+    public static string Commands_ClearProperty_Arguments_Id_Description => Localizer.Get("Commands.ClearProperty.Arguments.Id.Description");
+    public static string Commands_ClearProperty_Arguments_Key_Name => Localizer.Get("Commands.ClearProperty.Arguments.Key.Name");
+    public static string Commands_ClearProperty_Arguments_Key_Description => Localizer.Get("Commands.ClearProperty.Arguments.Key.Description");
+    
+    public static string Commands_SetPosition_Name => Localizer.Get("Commands.SetPosition.Name");
+    public static string Commands_SetPosition_Description => Localizer.Get("Commands.SetPosition.Description");
+    public static string Commands_SetPosition_Arguments_Id_Name => Localizer.Get("Commands.SetPosition.Arguments.Id.Name");
+    public static string Commands_SetPosition_Arguments_Id_Description => Localizer.Get("Commands.SetPosition.Arguments.Id.Description");
+    public static string Commands_SetPosition_Arguments_X_Name => Localizer.Get("Commands.SetPosition.Arguments.X.Name");
+    public static string Commands_SetPosition_Arguments_X_Description => Localizer.Get("Commands.SetPosition.Arguments.X.Description");
+    public static string Commands_SetPosition_Arguments_Y_Name => Localizer.Get("Commands.SetPosition.Arguments.Y.Name");
+    public static string Commands_SetPosition_Arguments_Y_Description => Localizer.Get("Commands.SetPosition.Arguments.Y.Description");
+    public static string Commands_SetPosition_Arguments_Z_Name => Localizer.Get("Commands.SetPosition.Arguments.Z.Name");
+    public static string Commands_SetPosition_Arguments_Z_Description => Localizer.Get("Commands.SetPosition.Arguments.Z.Description");
+    
+    public static string Commands_SetWorldId_Name => Localizer.Get("Commands.SetWorldId.Name");
+    public static string Commands_SetWorldId_Description => Localizer.Get("Commands.SetWorldId.Description");
+    public static string Commands_SetWorldId_Arguments_Id_Name => Localizer.Get("Commands.SetWorldId.Arguments.Id.Name");
+    public static string Commands_SetWorldId_Arguments_Id_Description => Localizer.Get("Commands.SetWorldId.Arguments.Id.Description");
+    public static string Commands_SetWorldId_Arguments_Value_Name => Localizer.Get("Commands.SetWorldId.Arguments.Value.Name");
+    public static string Commands_SetWorldId_Arguments_Value_Description => Localizer.Get("Commands.SetWorldId.Arguments.Value.Description");
     
     public static string AudioEffectSystem_Exceptions_AddEffect => Localizer.Get("AudioEffectSystem.AddEffect");
     public static string AudioEffectSystem_Exceptions_RemoveEffect => Localizer.Get("AudioEffectSystem.RemoveEffect");

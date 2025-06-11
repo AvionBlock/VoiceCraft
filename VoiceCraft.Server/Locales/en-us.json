@@ -53,13 +53,124 @@
   "Commands": {
     "Exception": "An error occurred while trying to execute the command {commandName}!",
     "Exceptions": {
-      "EntityNotFound" : "Could not find entity with the id: {id}",
+      "EntityNotFound": "Could not find entity with the id: {id}",
       "EntityNotAClient": "Entity with id {id} is not a client entity!"
     },
+    "RootCommand": {
+      "Description": "Executes a VoiceCraft command."
+    },
     "List": {
+      "Name": "list",
+      "Description": "Lists entities.",
       "Showing": "Showing {limit} entities.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "Shows networked client entities only."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "Limits the number of shown entities."
+        }
+      },
       "Exceptions": {
         "LimitArgument": "Limit cannot be less than zero!"
+      }
+    },
+    "SetTitle": {
+      "Name": "setTitle",
+      "Description": "Sets a title for a client entity's application.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The client's entity id."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "The value to set for the title."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setDescription",
+      "Description": "Sets a description for a client entity's application.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The client's entity id."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "The value to set for the description."
+        }
+      }
+    },
+    "SetIntProperty": {
+      "Name": "setIntProperty",
+      "Description": "Sets an integer property for an entity.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        },
+        "Key": {
+          "Name": "key",
+          "Description": "The property value to set."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "The value to set for the description."
+        }
+      }
+    },
+    "ClearProperty": {
+      "Name": "clearProperty",
+      "Description": "Clears a property for an entity.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        },
+        "Key": {
+          "Name": "key",
+          "Description": "The property value to clear."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setPosition",
+      "Description": "Sets a position for an entity.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "The X position to set."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "The Y position to set."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "The Z position to set."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setWorldId",
+      "Description": "Sets a WorldId for an entity.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        },
+        "value": {
+          "Name": "value",
+          "Description": "The value to set the entity's WorldId."
+        }
       }
     }
   },

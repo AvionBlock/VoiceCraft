@@ -7,14 +7,20 @@ namespace VoiceCraft.Server.Commands;
 
 public class SetTitleCommand : Command
 {
-    public SetTitleCommand(VoiceCraftServer server) : base("setTitle", "Sets a title for a client entity.")
+    public SetTitleCommand(VoiceCraftServer server) : base(
+        Locales.Locales.Commands_SetTitle_Name,
+        Locales.Locales.Commands_SetTitle_Description)
     {
-        var idArgument = new Argument<int>("id", "The client's entity id.");
-        var titleArgument = new Argument<string>("title", () => string.Empty, "The title to set.");
+        var idArgument = new Argument<int>(
+            Locales.Locales.Commands_SetTitle_Arguments_Id_Name,
+            Locales.Locales.Commands_SetTitle_Arguments_Id_Description);
+        var valueArgument = new Argument<string?>(
+            Locales.Locales.Commands_SetTitle_Arguments_Value_Name,
+            Locales.Locales.Commands_SetTitle_Arguments_Value_Description);
         AddArgument(idArgument);
-        AddArgument(titleArgument);
+        AddArgument(valueArgument);
 
-        this.SetHandler((id, title) =>
+        this.SetHandler((id, value) =>
         {
             var entity = server.World.GetEntity(id);
             if (entity is null)
@@ -22,8 +28,8 @@ public class SetTitleCommand : Command
             if (entity is not VoiceCraftNetworkEntity networkEntity)
                 throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotAClient.Replace("{id}", id.ToString()));
 
-            var packet = new SetTitlePacket(title);
+            var packet = new SetTitlePacket(string.IsNullOrWhiteSpace(value) ? "" : value);
             server.SendPacket(networkEntity.NetPeer, packet);
-        }, idArgument, titleArgument);
+        }, idArgument, valueArgument);
     }
 }

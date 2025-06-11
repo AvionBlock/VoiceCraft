@@ -28,10 +28,12 @@ public static class Program
         var rootCommand = new RootCommand();
         serviceCollection.AddSingleton(rootCommand);
         serviceCollection.AddSingleton<Command, SetIntPropertyCommand>();
+        serviceCollection.AddSingleton<Command, ClearPropertyCommand>();
         serviceCollection.AddSingleton<Command, SetPositionCommand>();
         serviceCollection.AddSingleton<Command, SetWorldIdCommand>();
         serviceCollection.AddSingleton<Command, ListCommand>();
         serviceCollection.AddSingleton<Command, SetTitleCommand>();
+        serviceCollection.AddSingleton<Command, SetDescriptionCommand>();
         return serviceCollection.BuildServiceProvider();
     }
 }
