@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,14 +20,16 @@ public partial class SelectedServerViewModel(
     AudioService audioService)
     : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private int _latency = -1;
     private Task? _pinger;
 
     [ObservableProperty] private ServerViewModel? _selectedServer;
 
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
 
-    [ObservableProperty] private string _statusInfo = string.Empty;
+    [ObservableProperty] private string _latency = string.Empty;
+    [ObservableProperty] private string _motd = string.Empty;
+    [ObservableProperty] private string _positioningType = string.Empty;
+    [ObservableProperty] private string _connectedClients = string.Empty;
     private bool _stopPinger;
 
     public void Dispose()
@@ -38,15 +41,15 @@ public partial class SelectedServerViewModel(
 
     public override void OnAppearing(object? data = null)
     {
-        if(data is SelectedServerNavigationData navigationData)
+        if (data is SelectedServerNavigationData navigationData)
             SelectedServer = new ServerViewModel(navigationData.Server, settingsService);
-        
+
         if (_pinger != null)
             _stopPinger = true;
         while (_pinger is { IsCompleted: false }) Task.Delay(10).Wait(); //Don't burn the CPU!.
 
         _stopPinger = false;
-        StatusInfo = Locales.Locales.SelectedServer_ServerInfo_Status_Pinging;
+        Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Pinging;
         _pinger = Task.Run(async () =>
         {
             var client = new VoiceCraftClient();
@@ -59,6 +62,7 @@ public partial class SelectedServerViewModel(
                 client.Update();
 
                 if ((DateTime.UtcNow - startTime).TotalMilliseconds < 2000) continue;
+                Debug.WriteLine("Ping Test");
                 client.Ping(SelectedServer.Ip, SelectedServer.Port);
                 startTime = DateTime.UtcNow;
             }
@@ -94,20 +98,35 @@ public partial class SelectedServerViewModel(
         }
         catch
         {
-            notificationService.SendNotification("Background worker failed to start VOIP process!");
+            notificationService.SendNotification("Background worker failed to start VOIP process!"); //TODO NEED TO LOCALE THESE!
             _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
         }
 
         DisableBackButton = false;
     }
 
+    [RelayCommand]
+    private void EditServer()
+    {
+        if (SelectedServer == null) return;
+        navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(SelectedServer.Server));
+    }
+    
+    [RelayCommand]
+    private void DeleteServer()
+    {
+        if (SelectedServer == null) return;
+        ServersSettings.ServersSettings.RemoveServer(SelectedServer.Server);
+        notificationService.SendSuccessNotification($"{SelectedServer.Name} has been removed."); //TODO NEED TO LOCALE THESE!
+        _ = settingsService.SaveAsync();
+        navigationService.Back();
+    }
+
     private void OnServerInfo(ServerInfo info)
     {
-        var statusInfo = Locales.Locales.SelectedServer_ServerInfo_Status_Status
-            .Replace("{motd}", info.Motd)
-            .Replace("{positioningType}", info.PositioningType.ToString())
-            .Replace("{clients}", info.Clients.ToString());
-        StatusInfo = statusInfo;
-        Latency = Environment.TickCount - info.Tick;
+        Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Latency.Replace("{latency}", (Environment.TickCount - info.Tick).ToString());
+        Motd = Locales.Locales.SelectedServer_ServerInfo_Status_Motd.Replace("{motd}", info.Motd);
+        PositioningType = Locales.Locales.SelectedServer_ServerInfo_Status_PositioningType.Replace("{positioningType}", info.PositioningType.ToString());
+        ConnectedClients = Locales.Locales.SelectedServer_ServerInfo_Status_ConnectedClients.Replace("{connectedClients}", info.Clients.ToString());
     }
 }

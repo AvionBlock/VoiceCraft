@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:Jeek.Avalonia.Localization"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:SelectedServerViewModel"
@@ -64,30 +65,36 @@
                                VerticalAlignment="Center"
                                FontSize="17"
                                FontWeight="Bold"
-                               Text="Ping Information" />
+                               Text="{locale:Localize 'SelectedServer.PingInformation'}" />
 
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Text="Latency: " />
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   Text="{Binding Latency}" />
-                    </StackPanel>
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding Latency}" />
 
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   FontWeight="Bold"
-                                   Text="Server Info: " />
-                        <TextBlock VerticalAlignment="Center"
-                                   FontSize="15"
-                                   Text="{Binding StatusInfo}" />
-                    </StackPanel>
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding Motd}" />
 
-                    <Button Background="#AA008800" Command="{Binding ConnectCommand}">
-                        <TextBlock>Connect</TextBlock>
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding PositioningType}" />
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding ConnectedClients}" />
+
+                    <Button Background="#AA008800"
+                            Command="{Binding ConnectCommand}"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize 'SelectedServer.Connect'}" />
+                    </Button>
+                    <Button Command="{Binding EditServerCommand}"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize 'SelectedServer.Edit'}" />
+                    </Button>
+                    <Button Command="{Binding DeleteServerCommand}"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize 'SelectedServer.Delete'}" />
                     </Button>
                 </StackPanel>
             </Border>

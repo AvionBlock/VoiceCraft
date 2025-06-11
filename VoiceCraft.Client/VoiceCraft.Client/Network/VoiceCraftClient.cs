@@ -149,8 +149,9 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public void Update()
     {
         _netManager.PollEvents();
+        if (ConnectionState == ConnectionState.Disconnected) return;
+        //Only tick entities when connected to avoid allocation issues.
         _tickSystem.TickEntities();
-        //if (ConnectionState == ConnectionState.Disconnected) return;
     }
 
     public int Read(byte[] buffer, int _, int count)
