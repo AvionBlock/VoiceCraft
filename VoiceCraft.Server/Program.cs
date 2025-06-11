@@ -1,9 +1,9 @@
 using System.CommandLine;
 using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
-using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Commands;
 using VoiceCraft.Server.Locales;
+using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server;
 
@@ -25,9 +25,9 @@ public static class Program
         serviceCollection.AddSingleton<ServerProperties>();
 
         //Commands
-        var rootCommand = new RootCommand(Locales.Locales.Commands_Root_Description);
+        var rootCommand = new RootCommand();
         serviceCollection.AddSingleton(rootCommand);
-        serviceCollection.AddSingleton<Command, SetPropertyCommand>();
+        serviceCollection.AddSingleton<Command, SetIntPropertyCommand>();
         serviceCollection.AddSingleton<Command, SetPositionCommand>();
         serviceCollection.AddSingleton<Command, SetWorldIdCommand>();
         serviceCollection.AddSingleton<Command, ListCommand>();

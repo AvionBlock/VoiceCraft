@@ -1,15 +1,14 @@
 using System.CommandLine;
-using VoiceCraft.Server.Application;
+using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetWorldIdCommand : Command
 {
-    public SetWorldIdCommand(VoiceCraftServer server) : base(Locales.Locales.Commands_SetWorldId_Name, Locales.Locales.Commands_SetWorldId_Description)
+    public SetWorldIdCommand(VoiceCraftServer server) : base("setWorldId", "Sets a WorldId for an entity.")
     {
-        var idArgument = new Argument<byte>(Locales.Locales.Commands_Options_id_Name, Locales.Locales.Commands_Options_id_Description);
-        var worldIdArgument = new Argument<string?>(Locales.Locales.Commands_SetWorldId_Options_world_Name,
-            Locales.Locales.Commands_SetWorldId_Options_world_Description);
+        var idArgument = new Argument<int>("id", "The entity's id.");
+        var worldIdArgument = new Argument<string?>("worldId", "The WorldId to set.");
         AddArgument(idArgument);
         AddArgument(worldIdArgument);
 
