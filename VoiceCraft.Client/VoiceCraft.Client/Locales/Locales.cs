@@ -6,8 +6,11 @@ namespace VoiceCraft.Client.Locales;
 
 public static class Locales
 {
-    public static string SelectedServer_ServerInfo_Status_Status => Localizer.Get("SelectedServer.ServerInfo.Status.Status");
     public static string SelectedServer_ServerInfo_Status_Pinging => Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
+    public static string SelectedServer_ServerInfo_Status_Latency => Localizer.Get("SelectedServer.ServerInfo.Status.Latency");
+    public static string SelectedServer_ServerInfo_Status_Motd => Localizer.Get("SelectedServer.ServerInfo.Status.Motd");
+    public static string SelectedServer_ServerInfo_Status_PositioningType => Localizer.Get("SelectedServer.ServerInfo.Status.PositioningType");
+    public static string SelectedServer_ServerInfo_Status_ConnectedClients => Localizer.Get("SelectedServer.ServerInfo.Status.ConnectedClients");
 
     public static string Audio_Recorder_InitFailed => Localizer.Get("Audio.Recorder.InitFailed");
     public static string Audio_Recorder_Init => Localizer.Get("Audio.Recorder.Init");

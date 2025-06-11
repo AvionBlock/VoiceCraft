@@ -59,11 +59,16 @@
   "SelectedServer": {
     "Address": "Address",
     "PingInformation": "Ping Information",
-    "Latency": "Latency",
+    "Connect": "Connect",
+    "Edit": "Edit Server",
+    "Delete": "Delete Server",
     "ServerInfo": {
       "ServerInfo": "Server Info",
       "Status": {
-        "Status": "Motd: {motd}\nPositioning Type: {positioningType}\nConnected Clients: {clients}",
+        "Latency": "Latency: {latency}",
+        "Motd": "Motd: {motd}",
+        "PositioningType": "Positioning Type: {positioningType}",
+        "ConnectedClients": "Connected Clients: {connectedClients}",
         "Pinging": "Pinging..."
       }
     }
@@ -95,7 +100,7 @@
       "Initializing": "Initializing...",
       "Connecting": "Connecting...",
       "Connected": "Connected!",
-      "Disconnected": "Disconnected! Reason: "
+      "Disconnected": "Disconnected! Reason: {reason}"
     },
     "DisconnectReason":
     {

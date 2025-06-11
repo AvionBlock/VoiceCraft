@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Data;
@@ -32,9 +31,9 @@ public partial class EditServerViewModel(NavigationService navigationService, No
     {
         try
         {
-            var serversSettings = settings.ServersSettings;
-            serversSettings.AddServer(EditableServer);
-            serversSettings.RemoveServer(Server);
+            Server.Name = EditableServer.Name;
+            Server.Ip = EditableServer.Ip;
+            Server.Port = EditableServer.Port;
 
             notificationService.SendNotification($"{Server.Name} has been edited.");
             EditableServer = new Server();
