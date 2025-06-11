@@ -3,10 +3,10 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Models.Settings;
 
-public class EntitySetting : Setting<EntitySetting>
+public class UserSetting : Setting<UserSetting>
 {
     private float _volume = 1f;
-    private bool _muted;
+    private bool _userMuted;
 
     public float Volume
     {
@@ -18,21 +18,21 @@ public class EntitySetting : Setting<EntitySetting>
         }
     }
 
-    public bool Muted
+    public bool UserMuted
     {
-        get => _muted;
+        get => _userMuted;
         set
         {
-            _muted = value;
+            _userMuted = value;
             OnUpdated?.Invoke(this);
         }
     }
 
-    public override event Action<EntitySetting>? OnUpdated;
+    public override event Action<UserSetting>? OnUpdated;
     
     public override object Clone()
     {
-        var clone = (EntitySetting)MemberwiseClone();
+        var clone = (UserSetting)MemberwiseClone();
         clone.OnUpdated = null;
         return clone;
     }
