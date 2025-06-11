@@ -1,17 +1,16 @@
 using System.CommandLine;
 using VoiceCraft.Core.Network.Packets;
-using VoiceCraft.Server.Application;
 using VoiceCraft.Server.Data;
+using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetTitleCommand : Command
 {
-    public SetTitleCommand(VoiceCraftServer server) : base(Locales.Locales.Commands_SetTitle_Name, Locales.Locales.Commands_SetTitle_Description)
+    public SetTitleCommand(VoiceCraftServer server) : base("setTitle", "Sets a title for a client entity.")
     {
-        var idArgument = new Argument<byte>(Locales.Locales.Commands_Options_id_Name, Locales.Locales.Commands_Options_id_Description);
-        var titleArgument = new Argument<string>(Locales.Locales.Commands_SetTitle_Options_title_Name,
-            Locales.Locales.Commands_SetTitle_Options_title_Description);
+        var idArgument = new Argument<int>("id", "The client's entity id.");
+        var titleArgument = new Argument<string>("title", () => string.Empty, "The title to set.");
         AddArgument(idArgument);
         AddArgument(titleArgument);
 
@@ -19,9 +18,9 @@ public class SetTitleCommand : Command
         {
             var entity = server.World.GetEntity(id);
             if (entity is null)
-                throw new Exception(string.Format(Locales.Locales.Commands_Exceptions_CannotFindEntity, id));
+                throw new Exception(Locales.Locales.Commands_Exceptions_CannotFindEntity.Replace("{id}", id.ToString()));
             if (entity is not VoiceCraftNetworkEntity networkEntity)
-                throw new Exception(string.Format(Locales.Locales.Commands_SetTitle_Exceptions_NotAClientEntity, id));
+                throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotAClient.Replace("{id}", id.ToString()));
 
             var packet = new SetTitlePacket(title);
             server.SendPacket(networkEntity.NetPeer, packet);

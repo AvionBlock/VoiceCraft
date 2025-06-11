@@ -28,7 +28,7 @@ public class AudioEffectSystem : IResettable, IDisposable
     {
         var id = GetLowestAvailableId();
         if (_audioEffects.TryAdd(id, effect))
-            throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_FailedToAddEffect);
+            throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_Exceptions_AddEffect);
     }
 
     public void SetEffect(IAudioEffect effect, byte index)
@@ -41,7 +41,7 @@ public class AudioEffectSystem : IResettable, IDisposable
     public void RemoveEffect(byte index)
     {
         if (!_audioEffects.Remove(index, out var effect))
-            throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_FailedToRemoveEffect);
+            throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_Exceptions_RemoveEffect);
         effect.Dispose();
         OnEffectRemoved?.Invoke(index, effect);
     }
@@ -63,6 +63,6 @@ public class AudioEffectSystem : IResettable, IDisposable
             if (!_audioEffects.ContainsKey(i))
                 return i;
 
-        throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_NoAvailableIdFound);
+        throw new InvalidOperationException(Locales.Locales.AudioEffectSystem_Exceptions_AvailableId);
     }
 }

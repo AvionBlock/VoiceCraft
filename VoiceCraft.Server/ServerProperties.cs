@@ -20,30 +20,32 @@ public class ServerProperties
         var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName, SearchOption.AllDirectories);
         if (files.Length == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]" + Locales.Locales.ServerProperties_LoadFile_NotFound + "[/]");
+            AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_NotFound}[/]");
             _properties = CreateConfigFile();
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Success}[/]");
             return;
         }
 
         var file = files[0];
         _properties = LoadFile(file);
+        AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Success}[/]");
     }
 
     private static ServerPropertiesStructure LoadFile(string path)
     {
         try
         {
-            AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_LoadFile_Loading, path)}[/]");
+            AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Loading.Replace("{path}", path)}[/]");
             var text = File.ReadAllText(path);
             var properties =
                 JsonSerializer.Deserialize<ServerPropertiesStructure>(text, ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
             if (properties == null)
-                throw new Exception(Locales.Locales.ServerProperties_LoadFile_JSONFailed);
+                throw new Exception(Locales.Locales.ServerProperties_Exceptions_ParseJson);
             return properties;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_LoadFile_Failed, ex.Message)}[/]");
+            AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Failed.Replace("{errorMessage}", ex.Message)}[/]");
         }
 
         return new ServerPropertiesStructure();
@@ -54,18 +56,19 @@ public class ServerProperties
         var properties = new ServerPropertiesStructure();
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath);
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath, FileName);
-        AnsiConsole.MarkupLine($"[yellow]{string.Format(Locales.Locales.ServerProperties_CreateFile_Generating, path)}[/]");
+        AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Generating_Generating.Replace("{path}", path)}[/]");
         try
         {
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
             File.WriteAllText(filePath, JsonSerializer.Serialize(properties, ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
-            AnsiConsole.MarkupLine($"[green]{string.Format(Locales.Locales.ServerProperties_CreateFile_Success, path)}[/]");
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Generating_Success}[/]");
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]{string.Format(Locales.Locales.ServerProperties_CreateFile_Failed, path, ex.Message)}[/]");
+            AnsiConsole.MarkupLine(
+                $"[red]{Locales.Locales.ServerProperties_Generating_Failed.Replace("{path}", path).Replace("{errorMessage}", ex.Message)}[/]");
         }
 
         return properties;

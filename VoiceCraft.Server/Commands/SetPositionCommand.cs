@@ -1,17 +1,17 @@
 using System.CommandLine;
 using System.Numerics;
-using VoiceCraft.Server.Application;
+using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetPositionCommand : Command
 {
-    public SetPositionCommand(VoiceCraftServer server) : base(Locales.Locales.Commands_SetPosition_Name, Locales.Locales.Commands_SetPosition_Description)
+    public SetPositionCommand(VoiceCraftServer server) : base("setPosition", "Sets a position for an entity.")
     {
-        var idArgument = new Argument<byte>(Locales.Locales.Commands_Options_id_Name, Locales.Locales.Commands_Options_id_Description);
-        var xPosArgument = new Argument<float>("x", Locales.Locales.Commands_SetPosition_Options_x_Description);
-        var yPosArgument = new Argument<float>("y", Locales.Locales.Commands_SetPosition_Options_y_Description);
-        var zPosArgument = new Argument<float>("z", Locales.Locales.Commands_SetPosition_Options_z_Description);
+        var idArgument = new Argument<int>("id", "The entity's id.");
+        var xPosArgument = new Argument<float>("x", "The X position.");
+        var yPosArgument = new Argument<float>("y", "The Y position.");
+        var zPosArgument = new Argument<float>("z", "The Z position.");
         AddArgument(idArgument);
         AddArgument(xPosArgument);
         AddArgument(yPosArgument);

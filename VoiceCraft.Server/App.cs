@@ -3,7 +3,7 @@ using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Server.Application;
+using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server;
 
@@ -23,32 +23,28 @@ public static class App
 
             //Startup.
             AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
+            AnsiConsole.MarkupLine(Locales.Locales.Startup_Starting);
 
             //Properties
-            AnsiConsole.WriteLine(Locales.Locales.Startup_ServerProperties_Loading);
             properties.Load();
             Localizer.Language = properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
-            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Startup_Title_Starting}"; //Loaded, Set the title.
-            AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_ServerProperties_Success + "[/]");
+            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Title_Starting}"; //Loaded, Set the title.
 
             //Server Startup
-            AnsiConsole.WriteLine(Locales.Locales.Startup_VoiceCraftServer_Starting);
-            if (!server.Start(properties.VoiceCraftConfig))
-                throw new Exception(Locales.Locales.Startup_VoiceCraftServer_Failed);
+            server.Start(properties.VoiceCraftConfig);
 
             //Server Started
             //Table for Server Setup Display
             var serverSetupTable = new Table()
-                .AddColumn(Locales.Locales.Startup_ServerSetupTable_Server)
-                .AddColumn(Locales.Locales.Startup_ServerSetupTable_Port)
-                .AddColumn(Locales.Locales.Startup_ServerSetupTable_Protocol);
-
-            AnsiConsole.MarkupLine("[green]" + Locales.Locales.Startup_VoiceCraftServer_Success + "[/]");
+                .AddColumn(Locales.Locales.Tables_ServerSetup_Server)
+                .AddColumn(Locales.Locales.Tables_ServerSetup_Port)
+                .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
+            
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
 
             //Server finished.
-            AnsiConsole.MarkupLine("[bold green]" + Locales.Locales.Startup_Finished + "[/]");
             AnsiConsole.Write(serverSetupTable);
+            AnsiConsole.MarkupLine($"[bold green]{Locales.Locales.Startup_Success}[/]");
 
             StartCommandTask();
             var startTime = DateTime.UtcNow;
@@ -72,11 +68,11 @@ public static class App
             server.Stop();
             server.Dispose();
             Cts.Dispose();
-            AnsiConsole.MarkupLine("[green]" + Locales.Locales.Shutdown_Success + "[/]");
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.Shutdown_Success}[/]");
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine("[red]" + Locales.Locales.Startup_Exception + "[/]");
+            AnsiConsole.MarkupLine($"[red]{Locales.Locales.Startup_Failed}[/]");
             AnsiConsole.WriteException(ex);
             Shutdown(10000);
         }
@@ -91,7 +87,7 @@ public static class App
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]{string.Format(Locales.Locales.Command_Exception, _bufferedCommand)}[/]");
+            AnsiConsole.MarkupLine($"[red]{Locales.Locales.Commands_Exception.Replace("{commandName}", _bufferedCommand)}[/]");
             AnsiConsole.WriteException(ex);
         }
 
@@ -121,7 +117,7 @@ public static class App
         if (Cts.IsCancellationRequested || _shuttingDown) return;
         _shuttingDown = true;
         AnsiConsole.MarkupLine(delayMs > 0
-            ? $"[bold yellow]{string.Format(Locales.Locales.Shutdown_StartingIn, delayMs)}[/]"
+            ? $"[bold yellow]{Locales.Locales.Shutdown_StartingIn.Replace("{delayMs}", delayMs.ToString())}[/]"
             : $"[bold yellow]{Locales.Locales.Shutdown_Starting}[/]");
         Task.Delay((int)delayMs).Wait();
         Cts.Cancel();

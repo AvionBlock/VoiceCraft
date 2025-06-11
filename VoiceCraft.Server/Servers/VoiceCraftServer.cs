@@ -1,6 +1,7 @@
 using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
@@ -8,7 +9,7 @@ using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Data;
 using VoiceCraft.Server.Systems;
 
-namespace VoiceCraft.Server.Application;
+namespace VoiceCraft.Server.Servers;
 
 public class VoiceCraftServer : IResettable, IDisposable
 {
@@ -66,10 +67,14 @@ public class VoiceCraftServer : IResettable, IDisposable
         Dispose(false);
     }
 
-    public bool Start(VoiceCraftConfig? config = null)
+    public void Start(VoiceCraftConfig? config = null)
     {
+        AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Starting);
         Config = config ?? new VoiceCraftConfig();
-        return _netManager.IsRunning || _netManager.Start((int)Config.Port);
+        if(_netManager.IsRunning || _netManager.Start((int)Config.Port))
+            AnsiConsole.WriteLine($"[green]{Locales.Locales.VoiceCraftServer_Success}[/]");
+        else
+            throw new Exception(Locales.Locales.VoiceCraftServer_Exceptions_Failed);
     }
 
     public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket

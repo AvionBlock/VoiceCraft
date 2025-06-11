@@ -1,63 +1,69 @@
 {
-  "Startup.Title.Starting": "Starting...",
-  "Startup.ServerSetupTable.Server": "Server",
-  "Startup.ServerSetupTable.Port": "Port",
-  "Startup.ServerSetupTable.Protocol": "Protocol",
-  "Startup.ServerProperties.Loading": "Loading Server Properties...",
-  "Startup.ServerProperties.Success": "Successfully loaded server properties!",
-  "Startup.VoiceCraftServer.Starting": "Starting VoiceCraft Server...",
-  "Startup.VoiceCraftServer.Failed": "Failed to start VoiceCraft Server! Please check if another process is using the same port!",
-  "Startup.VoiceCraftServer.Success": "VoiceCraft server started!",
-  "Startup.Finished": "Server started!",
-  "Startup.Exception": "An error occurred while trying to startup the server!",
-  "Command.Exception": "An error occurred while trying to execute the command {0}!",
-  "Shutdown.StartingIn": "Shutting down server in {0}ms...",
-  "Shutdown.Starting": "Shutting down server...",
-  "Shutdown.Success": "Server shut down successfully!",
-  "ServerProperties.LoadFile.NotFound": "ServerProperties.json was not found in the current and/or sub directories! Falling back to default server properties!",
-  "ServerProperties.LoadFile.Loading": "Loading ServerProperties.json file at {0}...",
-  "ServerProperties.LoadFile.JSONFailed": "JSON parsing failed.",
-  "ServerProperties.LoadFile.Failed": "Failed to load server properties! Falling back to default properties! Error: {0}",
-  "ServerProperties.CreateFile.Generating": "Generating ServerProperties.json file at {0}...",
-  "ServerProperties.CreateFile.Success": "Successfully generated ServerProperties.json file at {0}",
-  "ServerProperties.CreateFile.Failed": "Failed to generate ServerProperties.json file at {0}! Error: {1}",
-  "Commands.Exceptions.CannotFindEntity": "Could not find entity with id: {0}",
-  "Commands.Root.Description": "VoiceCraft commands.",
-  "Commands.Options.id.Name": "id",
-  "Commands.Options.id.Description": "The entity id.",
-  "Commands.SetProperty.Name": "setproperty",
-  "Commands.SetProperty.Description": "Set a property to a given entity.",
-  "Commands.SetProperty.Options.key.Name": "key",
-  "Commands.SetProperty.Options.key.Description": "The property key.",
-  "Commands.SetProperty.Options.value.Name": "value",
-  "Commands.SetProperty.Options.value.Description": "The property value.",
-  "Commands.SetPosition.Name": "setposition",
-  "Commands.SetPosition.Description": "Set the position to a given entity.",
-  "Commands.SetPosition.Options.x.Description": "The X position.",
-  "Commands.SetPosition.Options.y.Description": "The Y position.",
-  "Commands.SetPosition.Options.z.Description": "The Z position.",
-  "Commands.SetWorldId.Name": "setworldid",
-  "Commands.SetWorldId.Description": "Set the world ID to a given entity.",
-  "Commands.SetWorldId.Options.world.Name": "world",
-  "Commands.SetWorldId.Options.world.Description": "The world ID to set.",
-  "Commands.List.Name": "list",
-  "Commands.List.Description": "Lists all entities.",
-  "Commands.List.Options.clientsOnly.Name": "clientsOnly",
-  "Commands.List.Options.clientsOnly.Description": "Show clients only.",
-  "Commands.List.Options.limit.Name": "limit",
-  "Commands.List.Options.limit.Description": "Limit the number of shown entities.",
-  "Commands.List.Exceptions.Limit": "Limit cannot be less than zero!",
-  "Commands.List.EntityTable.Id": "Id",
-  "Commands.List.EntityTable.Name": "Name",
-  "Commands.List.EntityTable.Position": "Position",
-  "Commands.List.EntityTable.Rotation": "Rotation",
-  "Commands.List.Showing": "Showing {0} entities.",
-  "Commands.SetTitle.Name": "settitle",
-  "Commands.SetTitle.Description": "Sets a title for a client.",
-  "Commands.SetTitle.Options.title.Name": "title",
-  "Commands.SetTitle.Options.title.Description": "The title to set.",
-  "Commands.SetTitle.Exceptions.NotAClientEntity": "Entity with id {0} is not a client entity!",
-  "AudioEffectSystem.FailedToAddEffect": "Failed to add effect!",
-  "AudioEffectSystem.FailedToRemoveEffect": "Failed to remove effect!",
-  "AudioEffectSystem.NoAvailableIdFound": "Could not find an available id!"
+  "Startup": {
+    "Starting": "Server starting...",
+    "Success": "Server successfully started!",
+    "Failed": "An error occurred while trying to startup the server!"
+  },
+  "Shutdown": {
+    "Starting": "Shutting down server...",
+    "StartingIn": "Shutting down server in {delayMs}ms..."
+  },
+  "ServerProperties": {
+    "Loading": "Loading ServerProperties.json file at {path}",
+    "Success": "Successfully loaded server properties!",
+    "Failed": "Failed to load server properties! Falling back to default properties! Error: {errorMessage}",
+    "NotFound": "ServerProperties.json was not found in the current and/or sub directories! Generating file...",
+    "Generating": {
+      "Generating": "Generating ServerProperties.json file at {path}",
+      "Success": "Successfully generated ServerProperties.json file at {path}",
+      "Failed": "Failed to generate ServerProperties.json file at {path}! Error: {errorMessage}"
+    },
+    "Exceptions": {
+      "ParseJson": "Failed to parse JSON data from the loaded file!"
+    }
+  },
+  "Title": {
+    "Starting": "Starting..."
+  },
+  "VoiceCraftServer": {
+    "Starting": "Starting VoiceCraft server...",
+    "Success": "Successfully started the VoiceCraft server!",
+    "Exceptions": {
+      "Failed": "Failed to start VoiceCraft Server! Please check if another process is using the same port!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Server",
+      "Port": "Port",
+      "Protocol": "Protocol"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "Name",
+      "Position": "Position",
+      "Rotation": "Rotation",
+      "WorldId": "WorldId"
+    }
+  },
+  "Commands": {
+    "Exception": "An error occurred while trying to execute the command {commandName}!",
+    "Exceptions": {
+      "EntityNotFound" : "Could not find entity with the id: {id}",
+      "EntityNotAClient": "Entity with id {id} is not a client entity!"
+    },
+    "List": {
+      "Showing": "Showing {number} entities.",
+      "Exceptions": {
+        "LimitArgument": "Limit cannot be less than zero!"
+      }
+    }
+  },
+  "AudioEffectSystem": {
+    "Exceptions": {
+      "AddEffect": "Failed to add effect!",
+      "RemoveEffect": "Failed to remove effect!",
+      "AvailableId": "Could not find an available id!"
+    }
+  }
 }
