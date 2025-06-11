@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -62,7 +61,6 @@ public partial class SelectedServerViewModel(
                 client.Update();
 
                 if ((DateTime.UtcNow - startTime).TotalMilliseconds < 2000) continue;
-                Debug.WriteLine("Ping Test");
                 client.Ping(SelectedServer.Ip, SelectedServer.Port);
                 startTime = DateTime.UtcNow;
             }
