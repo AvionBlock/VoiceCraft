@@ -2,7 +2,11 @@
   "Startup": {
     "Starting": "Server starting...",
     "Success": "Server successfully started!",
-    "Failed": "An error occurred while trying to startup the server!"
+    "Failed": "An error occurred while trying to startup the server!",
+    "Commands": {
+      "Registering": "Registering commands...",
+      "Success": "Successfully registered {commands} commands!"
+    }
   },
   "Shutdown": {
     "Starting": "Shutting down server...",
@@ -53,7 +57,7 @@
       "EntityNotAClient": "Entity with id {id} is not a client entity!"
     },
     "List": {
-      "Showing": "Showing {number} entities.",
+      "Showing": "Showing {limit} entities.",
       "Exceptions": {
         "LimitArgument": "Limit cannot be less than zero!"
       }

@@ -9,6 +9,8 @@ public static class Locales
     public static string Startup_Starting => Localizer.Get("Startup.Starting");
     public static string Startup_Success => Localizer.Get("Startup.Success");
     public static string Startup_Failed => Localizer.Get("Startup.Failed");
+    public static string Startup_Commands_Registering => Localizer.Get("Startup.Commands.Registering");
+    public static string Startup_Commands_Success => Localizer.Get("Startup.Commands.Success");
     
     public static string Shutdown_Starting => Localizer.Get("Shutdown.Starting");
     public static string Shutdown_StartingIn => Localizer.Get("Shutdown.StartingIn");

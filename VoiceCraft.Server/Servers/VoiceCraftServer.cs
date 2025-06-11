@@ -72,7 +72,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Starting);
         Config = config ?? new VoiceCraftConfig();
         if(_netManager.IsRunning || _netManager.Start((int)Config.Port))
-            AnsiConsole.WriteLine($"[green]{Locales.Locales.VoiceCraftServer_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.VoiceCraftServer_Success}[/]");
         else
             throw new Exception(Locales.Locales.VoiceCraftServer_Exceptions_Failed);
     }
