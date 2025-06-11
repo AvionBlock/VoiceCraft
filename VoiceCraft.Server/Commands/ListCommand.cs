@@ -30,7 +30,7 @@ public class ListCommand : Command
                 if (clientsOnly)
                     list = list.OfType<VoiceCraftNetworkEntity>();
                 
-                AnsiConsole.WriteLine(Locales.Locales.Commands_List_Showing.Replace("{number}", limit.ToString()));
+                AnsiConsole.WriteLine(Locales.Locales.Commands_List_Showing.Replace("{limit}", limit.ToString()));
                 foreach (var entity in list)
                 {
                     if (limit <= 0)

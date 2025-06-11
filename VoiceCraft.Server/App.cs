@@ -15,15 +15,15 @@ public static class App
 
     public static async Task Start()
     {
+        var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
+        var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
+        var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
+        
         try
         {
-            var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
-            var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
-            var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
-
             //Startup.
             AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
-            AnsiConsole.MarkupLine(Locales.Locales.Startup_Starting);
+            AnsiConsole.WriteLine(Locales.Locales.Startup_Starting);
 
             //Properties
             properties.Load();
@@ -39,8 +39,19 @@ public static class App
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Server)
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Port)
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
-            
+
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
+
+            //Register Commands
+            AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);
+            var commandCount = 0;
+            foreach (var command in Program.ServiceProvider.GetServices<Command>())
+            {
+                rootCommand.AddCommand(command);
+                commandCount++;
+            }
+
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.Startup_Commands_Success.Replace("{commands}", commandCount.ToString())}[/]");
 
             //Server finished.
             AnsiConsole.Write(serverSetupTable);
@@ -66,8 +77,6 @@ public static class App
                 }
 
             server.Stop();
-            server.Dispose();
-            Cts.Dispose();
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.Shutdown_Success}[/]");
         }
         catch (Exception ex)
@@ -75,6 +84,11 @@ public static class App
             AnsiConsole.MarkupLine($"[red]{Locales.Locales.Startup_Failed}[/]");
             AnsiConsole.WriteException(ex);
             Shutdown(10000);
+        }
+        finally
+        {
+            server.Dispose();
+            Cts.Dispose();
         }
     }
 

@@ -32,12 +32,6 @@ public static class Program
         serviceCollection.AddSingleton<Command, SetWorldIdCommand>();
         serviceCollection.AddSingleton<Command, ListCommand>();
         serviceCollection.AddSingleton<Command, SetTitleCommand>();
-
-        var serviceProvider = serviceCollection.BuildServiceProvider();
-        foreach (var command in serviceProvider.GetServices<Command>())
-        {
-            rootCommand.AddCommand(command);
-        }
-        return serviceProvider;
+        return serviceCollection.BuildServiceProvider();
     }
 }
