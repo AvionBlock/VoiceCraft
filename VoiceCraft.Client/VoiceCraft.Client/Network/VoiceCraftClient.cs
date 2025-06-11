@@ -98,14 +98,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    public void Connect(Guid userGuid, string ip, int port, string locale)
+    public void Connect(Guid userGuid, Guid serverUserGuid, string ip, int port, string locale)
     {
         ThrowIfDisposed();
         if (ConnectionState != ConnectionState.Disconnected)
             throw new InvalidOperationException("This client is already connected or is connecting to a server!");
 
         var dataWriter = new NetDataWriter();
-        var loginPacket = new LoginPacket(userGuid, locale, Version.ToString(), LoginType.Login);
+        var loginPacket = new LoginPacket(userGuid, serverUserGuid, locale, Version.ToString(), LoginType.Login);
         loginPacket.Serialize(dataWriter);
         _serverPeer = _netManager.Connect(ip, port, dataWriter) ?? throw new InvalidOperationException("A connection request is awaiting!");
     }

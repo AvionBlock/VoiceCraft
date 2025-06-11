@@ -5,10 +5,16 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class LoginPacket : VoiceCraftPacket
     {
-        public LoginPacket(Guid userGuid = new Guid(), string locale = "", string version = "", LoginType loginType = LoginType.Unknown,
+        public LoginPacket(
+            Guid userGuid = new Guid(),
+            Guid serverUserGuid = new Guid(),
+            string locale = "",
+            string version = "",
+            LoginType loginType = LoginType.Unknown,
             PositioningType positioningType = PositioningType.Server)
         {
             UserGuid = userGuid;
+            ServerUserGuid = serverUserGuid;
             Locale = locale;
             Version = version;
             LoginType = loginType;
@@ -18,6 +24,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override PacketType PacketType => PacketType.Login;
 
         public Guid UserGuid { get; private set; }
+        public Guid ServerUserGuid { get; private set; }
         public string Locale { get; private set; }
         public string Version { get; private set; }
         public LoginType LoginType { get; private set; }
@@ -26,6 +33,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(UserGuid);
+            writer.Put(ServerUserGuid);
             writer.Put(Locale, Constants.MaxStringLength);
             writer.Put(Version, Constants.MaxStringLength);
             writer.Put((byte)LoginType);
@@ -35,6 +43,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             UserGuid = reader.GetGuid();
+            ServerUserGuid = reader.GetGuid();
             Locale = reader.GetString(Constants.MaxStringLength);
             Version = reader.GetString(Constants.MaxStringLength);
             var loginTypeValue = reader.GetByte();

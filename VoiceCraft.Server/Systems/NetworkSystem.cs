@@ -177,9 +177,9 @@ public class NetworkSystem : IDisposable
             switch (packet.LoginType)
             {
                 case LoginType.Login:
-                    var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.Locale, packet.PositioningType, _world);
-                    _world.AddEntity(entity);
+                    var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType, _world);
                     peer.Tag = entity;
+                    _world.AddEntity(entity);
                     break;
                 case LoginType.Discovery:
                     peer.Tag = LoginType.Discovery;
