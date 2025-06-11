@@ -30,7 +30,6 @@ public class VoipBackgroundProcess(
     //Audio
     private IAudioRecorder? _audioRecorder;
     private IDenoiser? _denoiser;
-    private string _description = string.Empty;
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
 
@@ -41,6 +40,7 @@ public class VoipBackgroundProcess(
 
     //Displays
     private string _title = string.Empty;
+    private string _description = string.Empty;
 
     //Public Variables
     public bool HasEnded { get; private set; }

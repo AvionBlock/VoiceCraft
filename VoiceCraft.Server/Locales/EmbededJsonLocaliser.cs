@@ -1,18 +1,27 @@
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using Jeek.Avalonia.Localization;
 
 namespace VoiceCraft.Server.Locales;
 
 //Credits https://github.com/tifish/Jeek.Avalonia.Localization/blob/main/Jeek.Avalonia.Localization/JsonLocalizer.cs
-public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : BaseLocalizer
+public class EmbeddedJsonLocalizer : BaseLocalizer
 {
-    private readonly string _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
-    private Dictionary<string, string>? _languageStrings;
+    private readonly string _languageJsonDirectory;
+    private JsonNode? _languageStrings;
+
+    public EmbeddedJsonLocalizer(string languageJsonDirectory = "")
+    {
+        FallbackLanguage = "en-us";
+        _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
+    }
 
     public override void Reload()
     {
+        if (_hasLoaded)
+            return;
+
         _languageStrings = null;
         _languages.Clear();
 
@@ -39,33 +48,37 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : BaseLoca
             using (var reader = new StreamReader(stream))
             {
                 var jsonContent = reader.ReadToEnd();
-                _languageStrings =
-                    JsonSerializer.Deserialize<Dictionary<string, string>>(jsonContent, LocalesGenerationContext.Default.DictionaryStringString);
+                _languageStrings = JsonNode.Parse(jsonContent);
             }
         }
 
         _hasLoaded = true;
-
         UpdateDisplayLanguages();
     }
 
     protected override void OnLanguageChanged()
     {
+        _hasLoaded = false;
         Reload();
     }
 
     public override string Get(string key)
     {
-        if (!_hasLoaded)
-            Reload();
+        Reload();
 
-        if (_languageStrings == null)
+        if (_languageStrings is null)
             return key;
 
-        return _languageStrings.TryGetValue(key, out var langStr) ? langStr.Replace("\\n", "\n") : $"{Language}:{key}";
+        var dict = _languageStrings;
+
+        int start = 0, end;
+        while ((end = key.IndexOf('.', start)) != -1)
+        {
+            dict = dict?[key[start..end]];
+            start = end + 1;
+        }
+
+        var node = dict?[key[start..]];
+        return node?.GetValueKind() != JsonValueKind.String ? key : node.GetValue<string>().Replace("\\n", "\n");
     }
 }
-
-[JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(Dictionary<string, string>), GenerationMode = JsonSourceGenerationMode.Metadata)]
-public partial class LocalesGenerationContext : JsonSerializerContext;

@@ -92,7 +92,6 @@
   },
   "VoiceCraft": {
     "Status": {
-      "Title": "VoiceCraft Client Is Running",
       "Initializing": "Initializing...",
       "Connecting": "Connecting...",
       "Connected": "Connected!",

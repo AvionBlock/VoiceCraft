@@ -11,10 +11,9 @@ public static class Program
 {
     public static readonly IServiceProvider ServiceProvider = BuildServiceProvider();
 
-    public static void Main(string[] args)
+    public static void Main()
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales"));
-        Localizer.Language = "en-us"; //Default
         App.Start().GetAwaiter().GetResult();
     }
 
@@ -28,18 +27,17 @@ public static class Program
         //Commands
         var rootCommand = new RootCommand(Locales.Locales.Commands_Root_Description);
         serviceCollection.AddSingleton(rootCommand);
-        serviceCollection.AddSingleton<SetPropertyCommand>();
-        serviceCollection.AddSingleton<SetPositionCommand>();
-        serviceCollection.AddSingleton<SetWorldIdCommand>();
-        serviceCollection.AddSingleton<ListCommand>();
-        serviceCollection.AddSingleton<SetTitleCommand>();
+        serviceCollection.AddSingleton<Command, SetPropertyCommand>();
+        serviceCollection.AddSingleton<Command, SetPositionCommand>();
+        serviceCollection.AddSingleton<Command, SetWorldIdCommand>();
+        serviceCollection.AddSingleton<Command, ListCommand>();
+        serviceCollection.AddSingleton<Command, SetTitleCommand>();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();
-        rootCommand.AddCommand(serviceProvider.GetRequiredService<SetPropertyCommand>());
-        rootCommand.AddCommand(serviceProvider.GetRequiredService<SetPositionCommand>());
-        rootCommand.AddCommand(serviceProvider.GetRequiredService<SetWorldIdCommand>());
-        rootCommand.AddCommand(serviceProvider.GetRequiredService<ListCommand>());
-        rootCommand.AddCommand(serviceProvider.GetRequiredService<SetTitleCommand>());
+        foreach (var command in serviceProvider.GetServices<Command>())
+        {
+            rootCommand.AddCommand(command);
+        }
         return serviceProvider;
     }
 }
