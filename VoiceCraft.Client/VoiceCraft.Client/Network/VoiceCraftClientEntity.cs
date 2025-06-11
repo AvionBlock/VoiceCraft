@@ -69,7 +69,7 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
         if (Destroyed) return;
         
         var currentTick = Environment.TickCount;
-        while (_startTick - currentTick <= 0)
+        while (_startTick - currentTick < 0)
         {
             _startTick += Constants.FrameSizeMs;
             Array.Clear(_readBuffer);
