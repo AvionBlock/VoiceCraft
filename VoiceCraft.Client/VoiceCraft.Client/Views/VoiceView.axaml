@@ -9,13 +9,22 @@
              x:DataType="vm:VoiceViewModel">
     <Grid RowDefinitions="Auto, *">
         <Border Grid.Row="0"
+                Padding="0,10,0,10"
                 Background="{DynamicResource BackgroundBrush}">
-            <TextBlock Margin="10"
-                       VerticalAlignment="Center"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Text="{Binding StatusText}"
-                       TextAlignment="Center" />
+            <Grid RowDefinitions="Auto, Auto">
+                <TextBlock Grid.Row="0"
+                           VerticalAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Text="{Binding StatusTitleText}"
+                           TextAlignment="Center" />
+                <TextBlock Grid.Row="1"
+                           Margin="0,10,0,0"
+                           Text="{Binding StatusDescriptionText}"
+                           TextAlignment="Center"
+                           IsVisible="{Binding StatusDescriptionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                </TextBlock>
+            </Grid>
         </Border>
         <ListBox Grid.Row="1"
                  Margin="0,10,0,0"
@@ -131,7 +140,7 @@
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Top"
                                FontSize="15"
-                               Text="{Binding SelectedEntity.DisplayName, FallbackValue='N.A.'}"/>
+                               Text="{Binding SelectedEntity.DisplayName, FallbackValue='N.A.'}" />
                     <Grid ColumnDefinitions="Auto, Auto">
                         <TextBlock Grid.Column="0" VerticalAlignment="Center"
                                    Text="Volume" />
@@ -140,25 +149,25 @@
                     </Grid>
                     <Slider Maximum="2.0"
                             Minimum="0.0"
-                            Value="{Binding SelectedEntity.Volume, FallbackValue=0}"/>
+                            Value="{Binding SelectedEntity.Volume, FallbackValue=0}" />
                 </StackPanel>
             </Border>
-            
+
             <Border.Transitions>
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
                 </Transitions>
             </Border.Transitions>
             <Border.Styles>
                 <Style Selector="Border.ShowModal">
                     <Setter Property="IsHitTestVisible" Value="True" />
-                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="Opacity" Value="1" />
                 </Style>
             </Border.Styles>
             <Border.Styles>
                 <Style Selector="Border.HideModal">
                     <Setter Property="IsHitTestVisible" Value="False" />
-                    <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="Opacity" Value="0" />
                 </Style>
             </Border.Styles>
         </Border>

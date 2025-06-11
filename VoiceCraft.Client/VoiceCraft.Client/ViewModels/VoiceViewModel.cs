@@ -20,7 +20,8 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     [ObservableProperty] private bool _showModal;
     private VoipBackgroundProcess? _process;
 
-    [ObservableProperty] private string _statusText = string.Empty;
+    [ObservableProperty] private string _statusTitleText = string.Empty;
+    [ObservableProperty] private string _statusDescriptionText = string.Empty;
     public override bool DisableBackButton { get; protected set; } = true;
 
     public void Dispose()
@@ -86,19 +87,26 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         //Register events first.
         _process.OnDisconnected += OnDisconnected;
         _process.OnUpdateTitle += OnUpdateTitle;
+        _process.OnUpdateDescription += OnUpdateDescription;
         _process.OnUpdateMute += OnUpdateMute;
         _process.OnUpdateDeafen += OnUpdateDeafen;
         _process.OnEntityAdded += OnEntityAdded;
         _process.OnEntityRemoved += OnEntityRemoved;
 
-        StatusText = _process.Title;
+        StatusTitleText = _process.Title;
+        StatusDescriptionText = _process.Description;
         IsMuted = _process.Muted;
         IsDeafened = _process.Deafened;
     }
 
     private void OnUpdateTitle(string title)
     {
-        Dispatcher.UIThread.Invoke(() => { StatusText = title; });
+        Dispatcher.UIThread.Invoke(() => { StatusTitleText = title; });
+    }
+
+    private void OnUpdateDescription(string description)
+    {
+        Dispatcher.UIThread.Invoke(() => { StatusDescriptionText = description; });
     }
 
     private void OnDisconnected(string reason)
@@ -109,6 +117,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
             {
                 _process.OnDisconnected -= OnDisconnected;
                 _process.OnUpdateTitle -= OnUpdateTitle;
+                _process.OnUpdateDescription -= OnUpdateDescription;
                 _process.OnUpdateMute -= OnUpdateMute;
                 _process.OnUpdateDeafen -= OnUpdateDeafen;
                 _process.OnEntityAdded -= OnEntityAdded;
