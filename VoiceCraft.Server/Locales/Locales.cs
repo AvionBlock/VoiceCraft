@@ -77,6 +77,12 @@ public static class Locales
     public static string Commands_SetTitle_Exceptions_NotAClientEntity => Localizer.Get("Commands.SetTitle.Exceptions.NotAClientEntity");
 
 
+    public static string Commands_SetDescription_Name => Localizer.Get("Commands.SetTitle.Name");
+    public static string Commands_SetDescription_Description => Localizer.Get("Commands.SetTitle.Description");
+    public static string Commands_SetDescription_Options_title_Name => Localizer.Get("Commands.SetTitle.Options.title.Name");
+    public static string Commands_SetDescription_Options_title_Description => Localizer.Get("Commands.SetTitle.Options.title.Description");
+    public static string Commands_SetDescription_Exceptions_NotAClientEntity => Localizer.Get("Commands.SetTitle.Exceptions.NotAClientEntity");
+    
     public static string AudioEffectSystem_FailedToAddEffect => Localizer.Get("AudioEffectSystem.FailedToAddEffect");
     public static string AudioEffectSystem_FailedToRemoveEffect => Localizer.Get("AudioEffectSystem.FailedToRemoveEffect");
     public static string AudioEffectSystem_NoAvailableIdFound => Localizer.Get("AudioEffectSystem.NoAvailableIdFound");
