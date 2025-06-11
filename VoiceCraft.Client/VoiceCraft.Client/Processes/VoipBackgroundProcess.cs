@@ -155,7 +155,7 @@ public class VoipBackgroundProcess(
         finally
         {
             HasEnded = true;
-            notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected}{Localizer.Get(_disconnectReason)}");
+            notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}");
 
             if (_audioRecorder != null)
             {
