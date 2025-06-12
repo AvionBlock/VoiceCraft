@@ -7,7 +7,8 @@ Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, 
 </p>
 
 > [!NOTE]
-> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE!
+> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
+> ADDON/WORLD! 
 
 ## Project Description
 
@@ -22,7 +23,7 @@ There is also a comprehensive API system in place that addon developer's can use
 audio effects, audio simulations and more!
 
 <p align="center">
-  <img width="800" src="./Images/Screenshot from 2025-04-07 15-06-51.png">
+  <img width="800" src="./Images/MainPage.png">
 </p>
 
 ## Supported Devices
@@ -63,3 +64,7 @@ audio effects, audio simulations and more!
 - [NAudio](https://github.com/naudio/NAudio)
 - [NWaves](https://github.com/ar1st0crat/NWaves)
 - [OpenTK (OpenAL)](https://github.com/opentk/opentk)
+- [CommunityToolkit.MVVM](https://github.com/CommunityToolkit/dotnet)
+- [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
+- [Microsoft.Maui.Essentials](https://github.com/dotnet/maui)
+- [Microsoft.Extensions.DependencyInjection](https://github.com/dotnet/runtime)
