@@ -42,7 +42,7 @@ public static class Locales
     public static string Tables_ListCommandEntities_WorldId => Localizer.Get("Tables.ListCommandEntities.WorldId");
     
     public static string Commands_Exception => Localizer.Get("Commands.Exception");
-    public static string Commands_Exceptions_CannotFindEntity => Localizer.Get("Commands.Exceptions.CannotFindEntity");
+    public static string Commands_Exceptions_EntityNotFound => Localizer.Get("Commands.Exceptions.EntityNotFound");
     public static string Commands_Exceptions_EntityNotAClient => Localizer.Get("Commands.Exceptions.EntityNotAClient");
 
     public static string Commands_RootCommand_Description => Localizer.Get("Commands.RootCommand.Description");

@@ -167,7 +167,7 @@
           "Name": "id",
           "Description": "The entity's id."
         },
-        "value": {
+        "Value": {
           "Name": "value",
           "Description": "The value to set the entity's WorldId."
         }
