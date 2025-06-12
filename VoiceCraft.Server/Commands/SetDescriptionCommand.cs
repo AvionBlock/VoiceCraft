@@ -24,7 +24,7 @@ public class SetDescriptionCommand : Command
         {
             var entity = server.World.GetEntity(id);
             if (entity is null)
-                throw new Exception(Locales.Locales.Commands_Exceptions_CannotFindEntity.Replace("{id}", id.ToString()));
+                throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotFound.Replace("{id}", id.ToString()));
             if (entity is not VoiceCraftNetworkEntity networkEntity)
                 throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotAClient.Replace("{id}", id.ToString()));
 

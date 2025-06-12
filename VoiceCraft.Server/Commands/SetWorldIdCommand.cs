@@ -22,7 +22,7 @@ public class SetWorldIdCommand : Command
             {
                 var entity = server.World.GetEntity(id);
                 if (entity is null)
-                    throw new Exception(string.Format(Locales.Locales.Commands_Exceptions_CannotFindEntity, id));
+                    throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotFound.Replace("{id}", id.ToString()));
 
                 entity.WorldId = value ?? string.Empty;
             },
