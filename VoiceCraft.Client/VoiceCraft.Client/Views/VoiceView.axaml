@@ -150,6 +150,10 @@
                     <Slider Maximum="2.0"
                             Minimum="0.0"
                             Value="{Binding SelectedEntity.Volume, FallbackValue=0}" />
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding SelectedEntity.UserMuted, FallbackValue=False}">
+                        <TextBlock Text="Muted" />
+                    </ToggleButton>
                 </StackPanel>
             </Border>
 
