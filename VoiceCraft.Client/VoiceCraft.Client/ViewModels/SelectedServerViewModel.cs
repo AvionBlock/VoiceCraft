@@ -57,14 +57,14 @@ public partial class SelectedServerViewModel(
         {
             var client = new VoiceCraftClient();
             client.NetworkSystem.OnServerInfo += OnServerInfo;
-            var startTime = DateTime.UtcNow;
+            var startTime = DateTime.MinValue;
             while (!_stopPinger)
             {
                 await Task.Delay(2);
                 if (SelectedServer == null) continue;
                 client.Update();
 
-                if ((DateTime.UtcNow - startTime).TotalMilliseconds < 2000) continue;
+                if (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(2)) continue;
                 client.Ping(SelectedServer.Ip, SelectedServer.Port);
                 startTime = DateTime.UtcNow;
             }
