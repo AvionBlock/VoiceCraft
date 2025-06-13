@@ -188,6 +188,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _sendTimestamp += Constants.SamplesPerFrame; //Add to timestamp even though we aren't really connected.
         if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs || _serverPeer == null ||
             ConnectionState != ConnectionState.Connected || Muted) return;
+        
         Array.Clear(_encodeBuffer);
         var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
         var packet = new AudioPacket(_serverPeer.RemoteId, _sendTimestamp, frameLoudness, bytesEncoded, _encodeBuffer);
