@@ -21,7 +21,7 @@ public class AudioPlayer : IAudioPlayer
     private bool _disposed;
     private ALDevice _nativePlayer;
     private ALContext _nativePlayerContext;
-    private Func<byte[], int, int, int>? _playerCallback;
+    private Func<byte[], int, int>? _playerCallback;
 
     private int _sampleRate;
     private int _source;
@@ -92,7 +92,7 @@ public class AudioPlayer : IAudioPlayer
 
     public event Action<Exception?>? OnPlaybackStopped;
 
-    public void Initialize(Func<byte[], int, int, int> playerCallback)
+    public void Initialize(Func<byte[], int, int> playerCallback)
     {
         _lockObj.Enter();
 
@@ -367,7 +367,7 @@ public class AudioPlayer : IAudioPlayer
         //Fill Buffers.
         foreach (var buffer in _buffers)
         {
-            var read = _playerCallback(buffer.Data, 0, _bufferBytes);
+            var read = _playerCallback(buffer.Data, _bufferBytes);
             if (read > 0)
                 buffer.FillBuffer(read);
 
@@ -404,7 +404,7 @@ public class AudioPlayer : IAudioPlayer
                 var audioBuffer = _buffers.First(x => x.Id == buffer);
                 audioBuffer.Clear();
                 //Fill buffers with more data
-                var read = _playerCallback(audioBuffer.Data, 0, _bufferBytes);
+                var read = _playerCallback(audioBuffer.Data, _bufferBytes);
                 if (read > 0)
                     audioBuffer.FillBuffer(read);
 

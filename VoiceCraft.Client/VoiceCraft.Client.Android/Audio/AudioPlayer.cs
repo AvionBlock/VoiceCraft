@@ -22,7 +22,7 @@ public class AudioPlayer : IAudioPlayer
     private bool _disposed;
     private float[] _floatBuffer = [];
     private AudioTrack? _nativePlayer;
-    private Func<byte[], int, int, int>? _playerCallback;
+    private Func<byte[], int, int>? _playerCallback;
     private int _sampleRate;
 
     public AudioPlayer(AudioManager audioManager, int sampleRate, int channels, Core.AudioFormat format)
@@ -98,7 +98,7 @@ public class AudioPlayer : IAudioPlayer
 
     public event Action<Exception?>? OnPlaybackStopped;
 
-    public void Initialize(Func<byte[], int, int, int> playerCallback)
+    public void Initialize(Func<byte[], int, int> playerCallback)
     {
         _lockObj.Enter();
 
@@ -354,7 +354,7 @@ public class AudioPlayer : IAudioPlayer
             Array.Clear(_byteBuffer);
 
             //Fill the wave buffer with new samples
-            var read = _playerCallback(_byteBuffer, 0, _byteBuffer.Length);
+            var read = _playerCallback(_byteBuffer, _byteBuffer.Length);
             if (read <= 0) break;
             switch (_nativePlayer.AudioFormat)
             {

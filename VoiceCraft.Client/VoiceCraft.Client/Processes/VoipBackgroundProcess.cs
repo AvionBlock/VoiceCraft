@@ -272,9 +272,9 @@ public class VoipBackgroundProcess(
         Description = description;
     }
 
-    private int Read(byte[] buffer, int offset, int count)
+    private int Read(byte[] buffer, int count)
     {
-        var read = _voiceCraftClient.Read(buffer, offset, count);
+        var read = _voiceCraftClient.Read(buffer, count);
         _echoCanceler?.EchoPlayback(buffer, read);
         return read;
     }

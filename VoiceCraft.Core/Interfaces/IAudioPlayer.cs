@@ -14,7 +14,7 @@ namespace VoiceCraft.Core.Interfaces
 
         event Action<Exception?>? OnPlaybackStopped;
 
-        void Initialize(Func<byte[], int, int, int> playerCallback);
+        void Initialize(Func<byte[], int, int> playerCallback);
         void Play();
         void Pause();
         void Stop();

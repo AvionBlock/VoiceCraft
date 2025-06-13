@@ -83,7 +83,7 @@ public class AudioPlayer : IAudioPlayer
 
     public event Action<Exception?>? OnPlaybackStopped;
 
-    public void Initialize(Func<byte[], int, int, int> playerCallback)
+    public void Initialize(Func<byte[], int, int> playerCallback)
     {
         _lockObj.Enter();
 
@@ -260,13 +260,13 @@ public class AudioPlayer : IAudioPlayer
         _disposed = true;
     }
 
-    private class CallbackWaveProvider(WaveFormat waveFormat, Func<byte[], int, int, int> callback) : IWaveProvider
+    private class CallbackWaveProvider(WaveFormat waveFormat, Func<byte[], int, int> callback) : IWaveProvider
     {
         public WaveFormat WaveFormat { get; } = waveFormat;
 
-        public int Read(byte[] buffer, int offset, int count)
+        public int Read(byte[] buffer, int _, int count)
         {
-            return callback(buffer, offset, count);
+            return callback(buffer, count);
         }
     }
 }

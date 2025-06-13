@@ -154,7 +154,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _tickSystem.TickEntities();
     }
 
-    public int Read(byte[] buffer, int _, int count)
+    public int Read(byte[] buffer, int count)
     {
         if (_outputBuffer.Length < count)
             _outputBuffer = new byte[count];
@@ -166,7 +166,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         var outputBufferShort = MemoryMarshal.Cast<byte, short>(_outputBuffer);
         foreach (var clientEntity in clientEntities)
         {
-            var read = clientEntity.Read(_outputBuffer, 0, buffer.Length);
+            var read = clientEntity.Read(_outputBuffer, buffer.Length);
             if (read <= 0) continue;
             bytesRead = Math.Max(bytesRead, read);
             _audioEffectSystem.ProcessEffects(outputBufferShort, read / sizeof(short), clientEntity);

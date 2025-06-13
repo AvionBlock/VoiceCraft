@@ -82,7 +82,7 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
         }
     }
 
-    public int Read(byte[] buffer, int offset, int count)
+    public int Read(byte[] buffer, int count)
     {
         var read = ReadFromOutputBuffer(buffer, count);
         return read <= 0 ? 0 : read;
