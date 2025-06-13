@@ -1,0 +1,84 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{754070F7-4DB3-484A-81A1-3AE1027A617C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client", "VoiceCraft.Client\VoiceCraft.Client\VoiceCraft.Client.csproj", "{6BDCB7FE-9745-4739-997D-A5AA120661FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Android", "VoiceCraft.Client\VoiceCraft.Client.Android\VoiceCraft.Client.Android.csproj", "{618F9159-BA63-4BA7-8655-318A2B4A3C85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Browser", "VoiceCraft.Client\VoiceCraft.Client.Browser\VoiceCraft.Client.Browser.csproj", "{C4D9F35C-9D37-4A01-B505-86345FB33C6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.iOS", "VoiceCraft.Client\VoiceCraft.Client.iOS\VoiceCraft.Client.iOS.csproj", "{F539F923-3754-4428-9691-42FC623F1B8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Linux", "VoiceCraft.Client\VoiceCraft.Client.Linux\VoiceCraft.Client.Linux.csproj", "{8126264F-3E61-4C63-95FD-015363DD44F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.MacOS", "VoiceCraft.Client\VoiceCraft.Client.MacOS\VoiceCraft.Client.MacOS.csproj", "{29067AAF-A30A-42F0-B3C5-5B78EDEF07AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Client.Windows", "VoiceCraft.Client\VoiceCraft.Client.Windows\VoiceCraft.Client.Windows.csproj", "{C470CD60-D67C-4795-B942-44F6258A7EFA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{D85570AD-9558-48D2-A505-DD4E4BDAB405}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{D789BEEE-6F40-4971-99FB-6058587BDCC1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C1985940-0CD7-4C0D-9F3C-780C64790A84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Server", "VoiceCraft.Server\VoiceCraft.Server.csproj", "{D9B5546C-7B63-45FF-9426-B876A373CA2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6BDCB7FE-9745-4739-997D-A5AA120661FE} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{618F9159-BA63-4BA7-8655-318A2B4A3C85} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{C4D9F35C-9D37-4A01-B505-86345FB33C6D} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{F539F923-3754-4428-9691-42FC623F1B8D} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{8126264F-3E61-4C63-95FD-015363DD44F3} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{29067AAF-A30A-42F0-B3C5-5B78EDEF07AE} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{C470CD60-D67C-4795-B942-44F6258A7EFA} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
+		{D789BEEE-6F40-4971-99FB-6058587BDCC1} = {D85570AD-9558-48D2-A505-DD4E4BDAB405}
+		{D9B5546C-7B63-45FF-9426-B876A373CA2B} = {C1985940-0CD7-4C0D-9F3C-780C64790A84}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BDCB7FE-9745-4739-997D-A5AA120661FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BDCB7FE-9745-4739-997D-A5AA120661FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BDCB7FE-9745-4739-997D-A5AA120661FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BDCB7FE-9745-4739-997D-A5AA120661FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{618F9159-BA63-4BA7-8655-318A2B4A3C85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{618F9159-BA63-4BA7-8655-318A2B4A3C85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{618F9159-BA63-4BA7-8655-318A2B4A3C85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{618F9159-BA63-4BA7-8655-318A2B4A3C85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4D9F35C-9D37-4A01-B505-86345FB33C6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4D9F35C-9D37-4A01-B505-86345FB33C6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4D9F35C-9D37-4A01-B505-86345FB33C6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4D9F35C-9D37-4A01-B505-86345FB33C6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F539F923-3754-4428-9691-42FC623F1B8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F539F923-3754-4428-9691-42FC623F1B8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F539F923-3754-4428-9691-42FC623F1B8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F539F923-3754-4428-9691-42FC623F1B8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8126264F-3E61-4C63-95FD-015363DD44F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8126264F-3E61-4C63-95FD-015363DD44F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8126264F-3E61-4C63-95FD-015363DD44F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8126264F-3E61-4C63-95FD-015363DD44F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29067AAF-A30A-42F0-B3C5-5B78EDEF07AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29067AAF-A30A-42F0-B3C5-5B78EDEF07AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29067AAF-A30A-42F0-B3C5-5B78EDEF07AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29067AAF-A30A-42F0-B3C5-5B78EDEF07AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C470CD60-D67C-4795-B942-44F6258A7EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C470CD60-D67C-4795-B942-44F6258A7EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C470CD60-D67C-4795-B942-44F6258A7EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C470CD60-D67C-4795-B942-44F6258A7EFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D789BEEE-6F40-4971-99FB-6058587BDCC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D789BEEE-6F40-4971-99FB-6058587BDCC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D789BEEE-6F40-4971-99FB-6058587BDCC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D789BEEE-6F40-4971-99FB-6058587BDCC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
