@@ -15,7 +15,7 @@ public class AudioPlayer : IAudioPlayer
     private int _bufferMilliseconds;
     private int _channels;
     private bool _disposed;
-    private Func<byte[], int, int, int>? _playerCallback;
+    private Func<byte[], int, int>? _playerCallback;
 
     private int _sampleRate;
 
@@ -85,7 +85,7 @@ public class AudioPlayer : IAudioPlayer
 
     public event Action<Exception?>? OnPlaybackStopped;
 
-    public void Initialize(Func<byte[], int, int, int> playerCallback)
+    public void Initialize(Func<byte[], int, int> playerCallback)
     {
         _lockObj.Enter();
 

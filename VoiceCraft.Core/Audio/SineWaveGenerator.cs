@@ -22,9 +22,8 @@ namespace VoiceCraft.Core.Audio
         public float Amplitude { get; set; } = 1.0f;
 
         public float Phase { get; set; } = 0f;
-
-        //This works somehow...
-        public int Read(byte[] buffer, int offset, int count)
+        
+        public int Read(byte[] buffer, int count)
         {
             // Calculate the phase increment per sample based on the frequency
             _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
