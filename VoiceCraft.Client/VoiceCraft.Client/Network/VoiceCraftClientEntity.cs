@@ -8,10 +8,10 @@ namespace VoiceCraft.Client.Network;
 
 public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftEntity(id, world)
 {
-    private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
-    private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
-    private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
     private readonly CircularBuffer<byte> _outputBuffer = new(Constants.DecodeBufferBytes);
+    private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
+    private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
+    private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
     private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
 
     private long _startTick = Environment.TickCount64;
@@ -74,7 +74,7 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
 
     public void ClearBuffer()
     {
-        lock(_outputBuffer)
+        lock (_outputBuffer)
         lock (_jitterBuffer)
         {
             _outputBuffer.Clear();
@@ -153,7 +153,9 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
     {
         lock (_outputBuffer)
         {
-            for (var i = 0; i < count; i++) _outputBuffer.PushBack(buffer[i]);
+            if (_outputBuffer.IsFull) return; //We have to drop the packet.
+            for (var i = 0; i < count; i++)
+                _outputBuffer.PushBack(buffer[i]);
         }
     }
 
