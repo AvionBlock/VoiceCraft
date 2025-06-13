@@ -49,6 +49,10 @@ public partial class SelectedServerViewModel(
 
         _stopPinger = false;
         Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Pinging;
+        Motd = string.Empty;
+        PositioningType = string.Empty;
+        ConnectedClients = string.Empty;
+        
         _pinger = Task.Run(async () =>
         {
             var client = new VoiceCraftClient();
