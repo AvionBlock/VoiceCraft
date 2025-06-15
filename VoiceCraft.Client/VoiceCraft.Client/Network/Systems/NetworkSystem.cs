@@ -12,16 +12,16 @@ namespace VoiceCraft.Client.Network.Systems;
 public class NetworkSystem : IDisposable
 {
     private readonly VoiceCraftClient _client;
-    private readonly AudioEffectSystem _audioEffectSystem;
+    private readonly AudioSystem _audioSystem;
     private readonly EventBasedNetListener _listener;
     private readonly VoiceCraftWorld _world;
 
-    public NetworkSystem(VoiceCraftClient client, EventBasedNetListener listener, VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
+    public NetworkSystem(VoiceCraftClient client, EventBasedNetListener listener, VoiceCraftWorld world, AudioSystem audioSystem)
     {
         _client = client;
         _listener = listener;
         _world = world;
-        _audioEffectSystem = audioEffectSystem;
+        _audioSystem = audioSystem;
 
         _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
@@ -191,7 +191,7 @@ public class NetworkSystem : IDisposable
 
     private void HandleSetEffectPacket(SetEffectPacket packet, NetDataReader reader)
     {
-        if (_audioEffectSystem.TryGetEffect(packet.Index, out var effect) && effect.EffectType == packet.EffectType)
+        if (_audioSystem.TryGetEffect(packet.Index, out var effect) && effect.EffectType == packet.EffectType)
         {
             effect.Deserialize(reader); //Do not recreate the effect instance! Could hold audio instance data!
             return;
@@ -202,11 +202,11 @@ public class NetworkSystem : IDisposable
             case EffectType.Proximity:
                 var proximityEffect = new ClientProximityEffect();
                 proximityEffect.Deserialize(reader);
-                _audioEffectSystem.SetEffect(packet.Index, proximityEffect);
+                _audioSystem.SetEffect(packet.Index, proximityEffect);
                 break;
             case EffectType.Unknown:
             default:
-                _audioEffectSystem.RemoveEffect(packet.Index);
+                _audioSystem.RemoveEffect(packet.Index);
                 break;
         }
     }

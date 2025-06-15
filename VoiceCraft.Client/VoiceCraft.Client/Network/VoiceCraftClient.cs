@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,15 +19,19 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     //Buffers
     private readonly NetDataWriter _dataWriter = new();
     private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
+    
+    //Encoder
     private readonly OpusEncoder _encoder;
+    
+    //Networking
     private readonly NetManager _netManager;
     private readonly EventBasedNetListener _listener;
-    private readonly EntityTickSystem _tickSystem;
-    private readonly AudioEffectSystem _audioEffectSystem;
+    
+    //Systems
+    private readonly AudioSystem _audioSystem;
 
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
-    private byte[] _outputBuffer = [];
     private uint _sendTimestamp;
 
     //Privates
@@ -49,9 +52,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _encoder.SetBitRate(32000);
 
         //Setup Systems.
-        _audioEffectSystem = new AudioEffectSystem(this);
-        NetworkSystem = new NetworkSystem(this, _listener, World, _audioEffectSystem);
-        _tickSystem = new EntityTickSystem(this);
+        _audioSystem = new AudioSystem(this, World);
+        NetworkSystem = new NetworkSystem(this, _listener, World, _audioSystem);
 
         //Setup Listeners
         _listener.PeerConnectedEvent += InvokeConnected;
@@ -149,33 +151,18 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public void Update()
     {
         _netManager.PollEvents();
-        if (ConnectionState == ConnectionState.Disconnected) return;
-        //Only tick entities when connected to avoid allocation issues.
-        _tickSystem.TickEntities();
+        //if (ConnectionState == ConnectionState.Disconnected) return;
     }
 
     public int Read(byte[] buffer, int count)
     {
-        if (_outputBuffer.Length < count)
-            _outputBuffer = new byte[count];
-
         //Only enumerate over visible entities.
-        var bytesRead = 0;
-        var clientEntities = World.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible);
         var bufferShort = MemoryMarshal.Cast<byte, short>(buffer);
-        var outputBufferShort = MemoryMarshal.Cast<byte, short>(_outputBuffer);
-        foreach (var clientEntity in clientEntities)
-        {
-            var read = clientEntity.Read(_outputBuffer, buffer.Length);
-            if (read <= 0) continue;
-            bytesRead = Math.Max(bytesRead, read);
-            _audioEffectSystem.ProcessEffects(outputBufferShort, read / sizeof(short), clientEntity);
-            Pcm16Mix(outputBufferShort, read, bufferShort);
-        }
-
-        Buffer.BlockCopy(_outputBuffer, 0, buffer, 0, count);
-        if (bytesRead >= count) return bytesRead;
-        Array.Clear(_outputBuffer, bytesRead, count - bytesRead);
+        var read = _audioSystem.Read(bufferShort, count / sizeof(short)) * sizeof(short);
+        
+        //Full read
+        if (read >= count) return read;
+        Array.Clear(buffer, read, count - read);
         return count;
     }
 
@@ -246,15 +233,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
 
         _isDisposed = true;
-    }
-
-    private static void Pcm16Mix(Span<short> srcBuffer, int count, Span<short> dstBuffer)
-    {
-        for (var i = 0; i < count / sizeof(short); i++)
-        {
-            var mixed = srcBuffer[i] + dstBuffer[i];
-            dstBuffer[i] = (short)Math.Clamp(mixed, short.MinValue, short.MaxValue);
-        }
     }
 
     private static float GetFrameLoudness(byte[] data, int bytesRead)

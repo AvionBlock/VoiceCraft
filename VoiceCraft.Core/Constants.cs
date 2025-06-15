@@ -20,15 +20,15 @@ namespace VoiceCraft.Core
         public const int Channels = 1;
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
-        public const int DecodeBufferSizeMs = FrameSizeMs * 50; //Enough to hold 50 full packets -> 1 second.
+        public const int OutputBufferSizeMs = FrameSizeMs * 3; //Enough to hold 3 full packets -> 60ms.
 
         //Audio Calculations
         public const int BlockAlign = Channels * (BitDepth / 8);
         public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
         public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
         
-        public const int DecodeBufferSamples = SampleRate / 1000 * DecodeBufferSizeMs;
-        public const int DecodeBufferBytes = BitDepth / 8 * Channels * DecodeBufferSamples;
+        public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
+        public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
 
         //Storage
         public const string ApplicationDirectory = "voicecraft";
