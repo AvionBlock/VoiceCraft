@@ -23,16 +23,29 @@ namespace VoiceCraft.Core.Audio
 
         public float Phase { get; set; } = 0f;
         
-        public int Read(byte[] buffer, int count)
+        public int Read(Span<short> buffer, int count)
+        {
+            // Calculate the phase increment per sample based on the frequency
+            _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
+            
+            for (var i = 0; i < count; i++) buffer[i] = FloatToShort(GenerateSample());
+            return count;
+        }
+        
+        public int Read(short[] buffer, int count) => Read(buffer.AsSpan(), count);
+        
+        public int Read(Span<byte> buffer, int count)
         {
             // Calculate the phase increment per sample based on the frequency
             _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
 
             var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
-            for (var i = 0; i < shortBuffer.Length; i++) shortBuffer[i] = FloatToShort(GenerateSample());
+            for (var i = 0; i < count * sizeof(short); i++) shortBuffer[i] = FloatToShort(GenerateSample());
 
             return count;
         }
+        
+        public int Read(byte[] buffer, int count) => Read(buffer.AsSpan(), count);
 
         private short FloatToShort(float value)
         {

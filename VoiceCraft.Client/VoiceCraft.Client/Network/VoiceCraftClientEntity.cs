@@ -1,4 +1,6 @@
 using System;
+using System.Buffers;
+using System.Threading.Tasks;
 using OpusSharp.Core;
 using SpeexDSPSharp.Core;
 using SpeexDSPSharp.Core.Structures;
@@ -6,16 +8,14 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Network;
 
-public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftEntity(id, world)
+public class VoiceCraftClientEntity : VoiceCraftEntity
 {
-    private readonly CircularBuffer<byte> _outputBuffer = new(Constants.DecodeBufferBytes);
     private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
     private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
-    private readonly byte[] _encodedData = new byte[Constants.MaximumEncodedBytes];
-    private readonly byte[] _readBuffer = new byte[Constants.BytesPerFrame];
 
-    private long _startTick = Environment.TickCount64;
+    private CircularBuffer<short> _outputBuffer = new(Constants.OutputBufferShorts);
     private DateTime _lastPacket = DateTime.MinValue;
+    private bool _isReading;
     private bool _isVisible;
     private float _volume = 1f;
     private bool _userMuted;
@@ -57,19 +57,9 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
     public event Action<float, VoiceCraftClientEntity>? OnVolumeUpdated;
     public event Action<bool, VoiceCraftClientEntity>? OnUserMutedUpdated;
 
-    public void Tick()
+    public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
     {
-        if (Destroyed) return;
-
-        var currentTick = Environment.TickCount;
-        while (_startTick - currentTick < 0)
-        {
-            _startTick += Constants.FrameSizeMs;
-            Array.Clear(_readBuffer);
-            var read = Read(_readBuffer);
-            if (read > 0)
-                WriteToOutputBuffer(_readBuffer, Constants.BitDepth / 8 * Constants.Channels * read);
-        }
+        Task.Run(ReaderLogic);
     }
 
     public void ClearBuffer()
@@ -82,10 +72,26 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
         }
     }
 
-    public int Read(byte[] buffer, int count)
+    public int Read(Span<short> buffer, int count)
     {
+        if (_userMuted)
+        {
+            _isReading = false;
+            return 0;
+        }
+
         var read = ReadFromOutputBuffer(buffer, count);
-        return read <= 0 ? 0 : read;
+        if (read <= 0)
+        {
+            ResizeDecodeBufferIfNeeded(count);
+            if (!_isReading) return 0;
+            _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
+            _isReading = false;
+            return 0;
+        }
+
+        _isReading = true;
+        return read;
     }
 
     public override void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
@@ -105,12 +111,13 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
 
     public override void Destroy()
     {
+        lock (_decoder)
         lock (_jitterBuffer)
         {
             _jitterBuffer.Dispose();
+            _decoder.Dispose();
         }
 
-        _decoder.Dispose();
         base.Destroy();
 
         OnIsVisibleUpdated = null;
@@ -118,38 +125,7 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
         OnUserMutedUpdated = null;
     }
 
-    private int Read(byte[] buffer)
-    {
-        if (buffer.Length < Constants.BytesPerFrame)
-            return 0;
-
-        lock (_jitterBuffer)
-        {
-            try
-            {
-                Array.Clear(_encodedData);
-                var outPacket = new SpeexDSPJitterBufferPacket(_encodedData, (uint)_encodedData.Length);
-                var startOffset = 0;
-                if (_jitterBuffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
-                    return (DateTime.UtcNow - _lastPacket).TotalMilliseconds > Constants.SilenceThresholdMs
-                        ? 0
-                        : _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
-
-                _lastPacket = DateTime.UtcNow;
-                return _decoder.Decode(_encodedData, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
-            }
-            catch
-            {
-                return 0;
-            }
-            finally
-            {
-                _jitterBuffer.Tick();
-            }
-        }
-    }
-
-    private void WriteToOutputBuffer(Span<byte> buffer, int count)
+    private void WriteToOutputBuffer(Span<short> buffer, int count)
     {
         lock (_outputBuffer)
         {
@@ -159,20 +135,92 @@ public class VoiceCraftClientEntity(int id, VoiceCraftWorld world) : VoiceCraftE
         }
     }
 
-    private int ReadFromOutputBuffer(Span<byte> buffer, int count)
+    private int ReadFromOutputBuffer(Span<short> buffer, int count)
     {
         lock (_outputBuffer)
         {
             var read = 0;
             for (var i = 0; i < count; i++)
             {
-                if (_outputBuffer.IsEmpty) return read;
+                if (_outputBuffer.IsEmpty || _outputBuffer.Size < count && !_isReading) return read;
                 buffer[i] = _outputBuffer.Front();
                 _outputBuffer.PopFront();
                 read++;
             }
 
             return read;
+        }
+    }
+
+    private void ResizeDecodeBufferIfNeeded(int newSize)
+    {
+        lock (_outputBuffer)
+        {
+            if (_outputBuffer.Capacity >= newSize) return;
+            _outputBuffer = new CircularBuffer<short>(newSize, _outputBuffer.ToArray());
+        }
+    }
+
+    private int GetNextPacket(Span<short> buffer)
+    {
+        if (buffer.Length * sizeof(short) < Constants.BytesPerFrame)
+            return 0;
+
+        var encodeBuffer = ArrayPool<byte>.Shared.Rent(Constants.MaximumEncodedBytes);
+        lock (_jitterBuffer)
+        {
+            try
+            {
+                Array.Clear(encodeBuffer); //Clear the buffer.
+                var outPacket = new SpeexDSPJitterBufferPacket(encodeBuffer, (uint)encodeBuffer.Length);
+                var startOffset = 0;
+                if (_jitterBuffer.Get(ref outPacket, Constants.SamplesPerFrame, ref startOffset) != JitterBufferState.JITTER_BUFFER_OK)
+                    return (DateTime.UtcNow - _lastPacket).TotalMilliseconds > Constants.SilenceThresholdMs
+                        ? 0
+                        : _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
+
+                _lastPacket = DateTime.UtcNow;
+                return _decoder.Decode(encodeBuffer, (int)outPacket.len, buffer, Constants.SamplesPerFrame, false);
+            }
+            catch
+            {
+                return 0;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(encodeBuffer);
+                _jitterBuffer.Tick();
+            }
+        }
+    }
+
+    private async Task ReaderLogic()
+    {
+        var startTick = Environment.TickCount64;
+        var readBuffer = new short[Constants.BytesPerFrame / sizeof(short)];
+        while (!Destroyed)
+        {
+            try
+            {
+                var tick = Environment.TickCount;
+                var dist = startTick - tick;
+                if (dist > 0)
+                {
+                    await Task.Delay((int)dist).ConfigureAwait(false); //Delay by required amount.
+                    continue;
+                }
+
+                startTick += Constants.FrameSizeMs; //Step Forwards.
+                Array.Clear(readBuffer); //Clear Read Buffer.
+                var read = GetNextPacket(readBuffer);
+                if (read <= 0) continue;
+                
+                WriteToOutputBuffer(readBuffer, Constants.BitDepth / 16 * Constants.Channels * read);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }
