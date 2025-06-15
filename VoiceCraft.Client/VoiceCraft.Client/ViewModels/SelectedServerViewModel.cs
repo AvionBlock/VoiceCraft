@@ -8,6 +8,7 @@ using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -60,9 +61,9 @@ public partial class SelectedServerViewModel(
             var startTime = DateTime.MinValue;
             while (!_stopPinger)
             {
-                await Task.Delay(2);
-                if (SelectedServer == null) continue;
                 client.Update();
+                await Task.Delay(Constants.TickRate);
+                if (SelectedServer == null) continue;
 
                 if (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(2)) continue;
                 client.Ping(SelectedServer.Ip, SelectedServer.Port);
