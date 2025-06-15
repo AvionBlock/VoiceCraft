@@ -78,7 +78,7 @@
       }
     },
     "SetTitle": {
-      "Name": "setTitle",
+      "Name": "settitle",
       "Description": "Sets a title for a client entity's application.",
       "Arguments": {
         "Id": {
@@ -92,7 +92,7 @@
       }
     },
     "SetDescription": {
-      "Name": "setDescription",
+      "Name": "setdescription",
       "Description": "Sets a description for a client entity's application.",
       "Arguments": {
         "Id": {
@@ -106,7 +106,7 @@
       }
     },
     "SetIntProperty": {
-      "Name": "setIntProperty",
+      "Name": "setintproperty",
       "Description": "Sets an integer property for an entity.",
       "Arguments": {
         "Id": {
@@ -124,7 +124,7 @@
       }
     },
     "ClearProperty": {
-      "Name": "clearProperty",
+      "Name": "clearproperty",
       "Description": "Clears a property for an entity.",
       "Arguments": {
         "Id": {
@@ -138,7 +138,7 @@
       }
     },
     "SetPosition": {
-      "Name": "setPosition",
+      "Name": "setposition",
       "Description": "Sets a position for an entity.",
       "Arguments": {
         "Id": {
@@ -160,7 +160,7 @@
       }
     },
     "SetWorldId": {
-      "Name": "setWorldId",
+      "Name": "setworldid",
       "Description": "Sets a WorldId for an entity.",
       "Arguments": {
         "Id": {

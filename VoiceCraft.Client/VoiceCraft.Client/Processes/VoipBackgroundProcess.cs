@@ -233,8 +233,9 @@ public class VoipBackgroundProcess(
     {
         _disconnected = true;
         _disconnectReason = reason;
-        Title = Locales.Locales.VoiceCraft_Status_Disconnected;
-        Description = reason;
+        var localeReason = $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
+        Title = localeReason;
+        Description = localeReason;
         OnDisconnected?.Invoke(reason);
     }
 
