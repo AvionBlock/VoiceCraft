@@ -53,7 +53,7 @@ public partial class SelectedServerViewModel(
         Motd = string.Empty;
         PositioningType = string.Empty;
         ConnectedClients = string.Empty;
-        
+
         _pinger = Task.Run(async () =>
         {
             var client = new VoiceCraftClient();
@@ -114,7 +114,7 @@ public partial class SelectedServerViewModel(
         if (SelectedServer == null) return;
         navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(SelectedServer.Server));
     }
-    
+
     [RelayCommand]
     private void DeleteServer()
     {
@@ -127,7 +127,8 @@ public partial class SelectedServerViewModel(
 
     private void OnServerInfo(ServerInfo info)
     {
-        Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Latency.Replace("{latency}", (Environment.TickCount - info.Tick).ToString());
+        Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Latency.Replace("{latency}",
+            Math.Max(Environment.TickCount - info.Tick - Constants.TickRate, 0).ToString());
         Motd = Locales.Locales.SelectedServer_ServerInfo_Status_Motd.Replace("{motd}", info.Motd);
         PositioningType = Locales.Locales.SelectedServer_ServerInfo_Status_PositioningType.Replace("{positioningType}", info.PositioningType.ToString());
         ConnectedClients = Locales.Locales.SelectedServer_ServerInfo_Status_ConnectedClients.Replace("{connectedClients}", info.Clients.ToString());
