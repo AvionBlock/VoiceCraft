@@ -35,17 +35,17 @@ audio effects, audio simulations and more!
 - ❗ Unknown status (limited support)
 - ❌ Not planned, Not supported.
 
-| Device      | x64 | x86 | arm32 | arm64 |
+| Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
 |-------------|-----|-----|-------|-------|
-| Linux       | ✅   | ❌   | ✅     | ✅     |
-| Android     | ❎   | ❎   | ✅     | ✅     |
-| Windows     | ✅   | ✅   | ❌     | ✅     |
-| iOS         | ❌   | ❌   | ✅     | ✅     |
-| MacOS       | ✅   | ❌   | ❌     | ✅     |
-| Web         | ❗   | ❗   | ❗     | ❗     |
-| XBOX        | ❌   | ❌   | ❌     | ❌     |
-| PlayStation | ❌   | ❌   | ❌     | ❌     |
-| Switch      | ❌   | ❌   | ❌     | ❌     |
+| Linux       | ✅   | ❌   | ✅     | ✅     | OpenAL |
+| Android     | ❎   | ❎   | ✅     | ✅     | Android API |
+| Windows     | ✅   | ✅   | ❌     | ✅     | WinMM |
+| iOS         | ❌   | ❌   | ✅     | ✅     | N.A.|
+| MacOS       | ✅   | ❌   | ❌     | ✅     |N.A.|
+| Web         | ❗   | ❗   | ❗     | ❗     | Web API |
+| XBOX        | ❌   | ❌   | ❌     | ❌     |N.A.|
+| PlayStation | ❌   | ❌   | ❌     | ❌     |N.A.|
+| Switch      | ❌   | ❌   | ❌     | ❌     |N.A.|
 
 ## Hosts
 
