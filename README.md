@@ -36,7 +36,7 @@ audio effects, audio simulations and more!
 - ❌ Not planned, Not supported.
 
 | Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
-|-------------|-----|-----|-------|-------|
+|-------------|-----|-----|-------|-------|---------------|
 | Linux       | ✅   | ❌   | ✅     | ✅     |OpenAL|
 | Android     | ❎   | ❎   | ✅     | ✅     |Android API|
 | Windows     | ✅   | ✅   | ❌     | ✅     |WinMM|
