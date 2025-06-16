@@ -6,9 +6,11 @@ Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, 
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
+> [!WARN]
+> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE ADDON/WORLD!
+
 > [!NOTE]
-> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
-> ADDON/WORLD! 
+> VoiceCraft is also not a standard voice chat that comes with groups or channels. It is designed to be customized through the api allowing recreation of channels, proximity, effects and more through the session based Addon API. This is essentially up to the server owner to install or add-on developer to implement.
 
 ## Project Description
 
