@@ -6,7 +6,7 @@ Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, 
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
-> [!WARN]
+> [!WARNING]
 > VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE ADDON/WORLD!
 
 > [!NOTE]
