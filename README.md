@@ -19,7 +19,7 @@ range of devices to increase it's availability to players and can indirectly sup
 through the binding system.
 
 VoiceCraft is coded in C# for both the server and applications using the Avalonia framework. VoiceCraft also uses the
-Opus codec for voice data compression and SpeexDSP for voice enhancements.
+Opus codec for voice data compression and SpeexDSP for voice enhancements with optional support for hardware related preprocessors on android devices.
 
 There is also a comprehensive API system in place that addon developer's can use to customize VoiceCraft's behavior,
 audio effects, audio simulations and more!
