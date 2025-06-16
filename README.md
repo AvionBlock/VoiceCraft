@@ -37,12 +37,12 @@ audio effects, audio simulations and more!
 
 | Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
 |-------------|-----|-----|-------|-------|
-| Linux       | ✅   | ❌   | ✅     | ✅     | OpenAL |
-| Android     | ❎   | ❎   | ✅     | ✅     | Android API |
-| Windows     | ✅   | ✅   | ❌     | ✅     | WinMM |
+| Linux       | ✅   | ❌   | ✅     | ✅     |OpenAL|
+| Android     | ❎   | ❎   | ✅     | ✅     |Android API|
+| Windows     | ✅   | ✅   | ❌     | ✅     |WinMM|
 | iOS         | ❌   | ❌   | ✅     | ✅     | N.A.|
 | MacOS       | ✅   | ❌   | ❌     | ✅     |N.A.|
-| Web         | ❗   | ❗   | ❗     | ❗     | Web API |
+| Web         | ❗   | ❗   | ❗     | ❗     |Web API|
 | XBOX        | ❌   | ❌   | ❌     | ❌     |N.A.|
 | PlayStation | ❌   | ❌   | ❌     | ❌     |N.A.|
 | Switch      | ❌   | ❌   | ❌     | ❌     |N.A.|
