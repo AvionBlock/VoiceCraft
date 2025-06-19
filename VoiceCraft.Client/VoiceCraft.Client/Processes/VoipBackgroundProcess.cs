@@ -36,7 +36,7 @@ public class VoipBackgroundProcess(
     private bool _stopping;
     private bool _stopRequested;
     private bool _disconnected;
-    private string _disconnectReason = "VoiceCraft.Status.Disconnected";
+    private string _disconnectReason = "VoiceCraft.DisconnectReason.Error";
 
     //Displays
     private string _title = string.Empty;
@@ -149,13 +149,17 @@ public class VoipBackgroundProcess(
         catch (Exception ex)
         {
             notificationService.SendErrorNotification($"Voip Background Error: {ex.Message}");
-            OnDisconnected?.Invoke(ex.Message);
+            _disconnectReason = "VoiceCraft.DisconnectReason.Error";
             throw;
         }
         finally
         {
             HasEnded = true;
-            notificationService.SendNotification($"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}");
+            OnDisconnected?.Invoke();
+            var localeReason = $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
+            Title = localeReason;
+            Description = localeReason;
+            notificationService.SendNotification(localeReason);
 
             if (_audioRecorder != null)
             {
@@ -200,7 +204,7 @@ public class VoipBackgroundProcess(
     }
 
     public event Action? OnConnected;
-    public event Action<string>? OnDisconnected;
+    public event Action? OnDisconnected;
     public event Action<bool>? OnUpdateMute;
     public event Action<bool>? OnUpdateDeafen;
     public event Action<EntityViewModel>? OnEntityAdded;
@@ -231,12 +235,8 @@ public class VoipBackgroundProcess(
 
     private void ClientOnDisconnected(string reason)
     {
-        _disconnected = true;
         _disconnectReason = reason;
-        var localeReason = $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
-        Title = localeReason;
-        Description = localeReason;
-        OnDisconnected?.Invoke(reason);
+        _disconnected = true;
     }
 
     private void ClientOnMuteUpdated(bool mute, VoiceCraftEntity entity)
@@ -292,8 +292,8 @@ public class VoipBackgroundProcess(
     {
         if (ex != null)
         {
-            _stopRequested = true;
             _disconnectReason = ex.Message;
+            _stopRequested = true;
             return;
         }
 
@@ -304,8 +304,8 @@ public class VoipBackgroundProcess(
     {
         if (ex != null)
         {
-            _stopRequested = true;
             _disconnectReason = ex.Message;
+            _stopRequested = true;
             return;
         }
 

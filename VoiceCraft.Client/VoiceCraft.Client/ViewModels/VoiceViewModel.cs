@@ -63,7 +63,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     [RelayCommand]
     private void Disconnect()
     {
-        if (_process?.ConnectionState == ConnectionState.Disconnected)
+        if (_process == null || _process.ConnectionState == ConnectionState.Disconnected)
         {
             navigationService.Back(); //If disconnected. Return to previous page.
             return;
@@ -76,9 +76,8 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     {
         if (data is VoiceNavigationData navigationData)
             _process = navigationData.Process;
-
-        if (_process == null) return;
-        if (_process.HasEnded)
+        
+        if (_process == null || _process.HasEnded)
         {
             navigationService.Back();
             return;
@@ -109,7 +108,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         Dispatcher.UIThread.Invoke(() => { StatusDescriptionText = description; });
     }
 
-    private void OnDisconnected(string reason)
+    private void OnDisconnected()
     {
         Dispatcher.UIThread.Invoke(() =>
         {
