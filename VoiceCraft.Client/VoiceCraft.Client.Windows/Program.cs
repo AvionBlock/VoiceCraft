@@ -22,18 +22,22 @@ internal sealed class Program
         CrashLogService.NativeStorageService = nativeStorage;
         CrashLogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+        
+        App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
 
-        App.ServiceCollection.AddSingleton<AudioService>(_ =>
-        {
-            var audioService = new NativeAudioService();
-
-            //Register Speex Preprocessors
-            audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
-            audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid,
-                "SpeexDsp Automatic Gain Controller");
-            audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
-            return audioService;
-        });
+        //Register Speex Preprocessors
+        App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
+            Constants.SpeexDspEchoCancelerGuid,
+            "SpeexDsp Echo Canceler",
+            typeof(SpeexDspEchoCanceler)));
+        App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
+            Constants.SpeexDspAutomaticGainControllerGuid,
+            "SpeexDsp Automatic Gain Controller",
+            typeof(SpeexDspAutomaticGainController)));
+        App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
+            Constants.SpeexDspDenoiserGuid,
+            "SpeexDsp Denoiser",
+            typeof(SpeexDspDenoiser)));
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();

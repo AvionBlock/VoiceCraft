@@ -10,7 +10,15 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Browser.Audio;
 
-public class NativeAudioService(PermissionsService permissionsService) : AudioService
+public class NativeAudioService(
+    PermissionsService permissionsService,
+    IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
+    IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
+    IEnumerable<RegisteredDenoiser> registeredDenoisers)
+    : AudioService(
+        registeredAutomaticGainControllers,
+        registeredEchoCancelers,
+        registeredDenoisers)
 {
     public override IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format)
     {

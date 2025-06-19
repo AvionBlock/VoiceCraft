@@ -7,7 +7,14 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Linux.Audio;
 
-public class NativeAudioService : AudioService
+public class NativeAudioService(
+    IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
+    IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
+    IEnumerable<RegisteredDenoiser> registeredDenoisers)
+    : AudioService(
+        registeredAutomaticGainControllers,
+        registeredEchoCancelers,
+        registeredDenoisers)
 {
     public override IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format)
     {
