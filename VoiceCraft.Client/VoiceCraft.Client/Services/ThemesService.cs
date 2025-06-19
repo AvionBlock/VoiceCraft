@@ -20,11 +20,20 @@ public class ThemesService
     private RegisteredBackgroundImage? _currentBackgroundImage;
     private RegisteredTheme? _currentTheme;
 
-    public ThemesService()
+    public ThemesService(IEnumerable<RegisteredTheme> registeredThemes, IEnumerable<RegisteredBackgroundImage> registeredBackgroundImages)
     {
         _registeredThemes.TryAdd(Guid.Empty, new RegisteredTheme(Guid.Empty, "Default", ThemeVariant.Default, [], []));
-        _registeredBackgroundImages.TryAdd(Guid.Empty,
-            new RegisteredBackgroundImage(Guid.Empty, "None", string.Empty));
+        _registeredBackgroundImages.TryAdd(Guid.Empty, new RegisteredBackgroundImage(Guid.Empty, "None", string.Empty));
+        
+        foreach (var registeredTheme in registeredThemes)
+        {
+            _registeredThemes.TryAdd(registeredTheme.Id, registeredTheme);
+        }
+        
+        foreach (var registeredBackgroundImage in registeredBackgroundImages)
+        {
+            _registeredBackgroundImages.TryAdd(registeredBackgroundImage.Id, registeredBackgroundImage);
+        }
     }
 
     public IEnumerable<RegisteredTheme> RegisteredThemes => _registeredThemes.Values.ToArray();
@@ -32,37 +41,6 @@ public class ThemesService
 
     public event Action<RegisteredTheme?>? OnThemeChanged;
     public event Action<RegisteredBackgroundImage?>? OnBackgroundImageChanged;
-
-    public bool RegisterTheme(Guid id, string name, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries, ThemeVariant themeVariant)
-    {
-        return _registeredThemes.TryAdd(id, new RegisteredTheme(id, name, themeVariant, themeStyles, resourceDictionaries));
-    }
-
-    public bool UnregisterTheme(Guid id)
-    {
-        if (id == Guid.Empty) return false;
-
-        var removed = _registeredThemes.TryRemove(id, out var theme);
-        if (theme == _currentTheme)
-            SwitchTheme(Guid.Empty);
-        return removed;
-    }
-
-    public bool RegisterBackgroundImage(Guid id, string name, string imagePath)
-    {
-        return _registeredBackgroundImages.TryAdd(id, new RegisteredBackgroundImage(id, name, imagePath));
-    }
-
-    public bool UnregisterBackgroundImage(Guid id)
-    {
-        if (id == Guid.Empty) return false;
-
-        var removed = _registeredBackgroundImages.TryRemove(id, out var backgroundImage);
-        if (backgroundImage == _currentBackgroundImage)
-            SwitchBackgroundImage(Guid.Empty);
-        backgroundImage?.UnloadBitmap();
-        return removed;
-    }
 
     public void SwitchTheme(Guid id)
     {

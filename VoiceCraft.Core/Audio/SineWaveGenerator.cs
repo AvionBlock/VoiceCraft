@@ -40,7 +40,7 @@ namespace VoiceCraft.Core.Audio
             _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
 
             var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
-            for (var i = 0; i < count * sizeof(short); i++) shortBuffer[i] = FloatToShort(GenerateSample());
+            for (var i = 0; i < count / sizeof(short); i++) shortBuffer[i] = FloatToShort(GenerateSample());
 
             return count;
         }
