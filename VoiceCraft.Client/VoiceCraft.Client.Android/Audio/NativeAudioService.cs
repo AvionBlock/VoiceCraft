@@ -25,7 +25,15 @@ public class NativeAudioService : AudioService
 
     private readonly AudioManager _audioManager;
 
-    public NativeAudioService(AudioManager audioManager)
+    public NativeAudioService(
+        AudioManager audioManager,
+        IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
+        IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
+        IEnumerable<RegisteredDenoiser> registeredDenoisers)
+        : base(
+            registeredAutomaticGainControllers,
+            registeredEchoCancelers,
+            registeredDenoisers)
     {
         _audioManager = audioManager;
 

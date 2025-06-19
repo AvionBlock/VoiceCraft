@@ -23,7 +23,6 @@ internal sealed class Program
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
         App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
-
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();

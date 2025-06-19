@@ -51,29 +51,48 @@ public class MainActivity : AvaloniaMainActivity<App>
         CrashLogService.NativeStorageService = nativeStorage;
         CrashLogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-
         OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
-        App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>(_ =>
-        {
-            var audioService = new NativeAudioService((AudioManager?)GetSystemService(AudioService) ?? throw new Exception(
-                $"Could not find {AudioService}. Cannot initialize audio service."));
 
-            //Register native preprocessors
-            if (AcousticEchoCanceler.IsAvailable)
-                audioService.RegisterEchoCanceler<NativeEchoCanceler>(EchoCancelerGuid, "Native Echo Canceler");
-            if (NoiseSuppressor.IsAvailable)
-                audioService.RegisterDenoiser<NativeDenoiser>(NativeDenoiserGuid, "Native Denoiser");
-            if (AutomaticGainControl.IsAvailable)
-                audioService.RegisterAutomaticGainController<NativeAutomaticGainController>(NativeAutomaticGainControllerGuid,
-                    "Native Automatic Gain Controller");
+        var audioManager = (AudioManager?)GetSystemService(AudioService);
+        if (audioManager == null)
+            throw new Exception($"Could not find {AudioService}. Cannot initialize audio service.");
 
-            //Register Speex Preprocessors
-            audioService.RegisterEchoCanceler<SpeexDspEchoCanceler>(Constants.SpeexDspEchoCancelerGuid, "SpeexDsp Echo Canceler");
-            audioService.RegisterAutomaticGainController<SpeexDspAutomaticGainController>(Constants.SpeexDspAutomaticGainControllerGuid,
-                "SpeexDsp Automatic Gain Controller");
-            audioService.RegisterDenoiser<SpeexDspDenoiser>(Constants.SpeexDspDenoiserGuid, "SpeexDsp Denoiser");
-            return audioService;
-        });
+        App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>(x => new NativeAudioService(
+            audioManager,
+            x.GetServices<RegisteredAutomaticGainController>(),
+            x.GetServices<RegisteredEchoCanceler>(),
+            x.GetServices<RegisteredDenoiser>()));
+
+        //Register native preprocessors
+        if (AutomaticGainControl.IsAvailable)
+            App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
+                NativeAutomaticGainControllerGuid,
+                "Native Automatic Gain Controller",
+                typeof(NativeAutomaticGainController)));
+        if (AcousticEchoCanceler.IsAvailable)
+            App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
+                EchoCancelerGuid,
+                "Native Echo Canceler",
+                typeof(NativeEchoCanceler)));
+        if (NoiseSuppressor.IsAvailable)
+            App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
+                NativeDenoiserGuid,
+                "Native Denoiser",
+                typeof(NativeDenoiser)));
+
+        //Register Speex Preprocessors
+        App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
+            Constants.SpeexDspEchoCancelerGuid,
+            "SpeexDsp Echo Canceler",
+            typeof(SpeexDspEchoCanceler)));
+        App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
+            Constants.SpeexDspAutomaticGainControllerGuid,
+            "SpeexDsp Automatic Gain Controller",
+            typeof(SpeexDspAutomaticGainController)));
+        App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
+            Constants.SpeexDspDenoiserGuid,
+            "SpeexDsp Denoiser",
+            typeof(SpeexDspDenoiser)));
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
