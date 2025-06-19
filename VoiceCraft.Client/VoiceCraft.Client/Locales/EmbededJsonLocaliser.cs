@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Jeek.Avalonia.Localization;
-using Microsoft.VisualBasic;
 
 namespace VoiceCraft.Client.Locales;
 
