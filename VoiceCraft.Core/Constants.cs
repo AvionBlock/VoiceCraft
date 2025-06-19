@@ -29,6 +29,9 @@ namespace VoiceCraft.Core
 
         public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
         public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
+        
+        //Default Country Code & Fallback
+        public const string DefaultLanguage = "en-US";
 
         //Storage
         public const string ApplicationDirectory = "voicecraft";
