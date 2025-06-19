@@ -6,9 +6,11 @@ Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, 
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
+> [!WARNING]
+> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE ADDON/WORLD!
+
 > [!NOTE]
-> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
-> ADDON/WORLD! 
+> VoiceCraft is also not a standard voice chat that comes with groups or channels. It is designed to be customized through the api allowing recreation of channels, proximity, effects and more through the session based Addon API. This is essentially up to the server owner to install or add-on developer to implement.
 
 ## Project Description
 
@@ -17,7 +19,7 @@ range of devices to increase it's availability to players and can indirectly sup
 through the binding system.
 
 VoiceCraft is coded in C# for both the server and applications using the Avalonia framework. VoiceCraft also uses the
-Opus codec for voice data compression and SpeexDSP for voice enhancements.
+Opus codec for voice data compression and SpeexDSP for voice enhancements with optional support for hardware related preprocessors on android devices.
 
 There is also a comprehensive API system in place that addon developer's can use to customize VoiceCraft's behavior,
 audio effects, audio simulations and more!
@@ -33,17 +35,17 @@ audio effects, audio simulations and more!
 - ❗ Unknown status (limited support)
 - ❌ Not planned, Not supported.
 
-| Device      | x64 | x86 | arm32 | arm64 |
-|-------------|-----|-----|-------|-------|
-| Linux       | ✅   | ❌   | ✅     | ✅     |
-| Android     | ❎   | ❎   | ✅     | ✅     |
-| Windows     | ✅   | ✅   | ❌     | ✅     |
-| iOS         | ❌   | ❌   | ✅     | ✅     |
-| MacOS       | ✅   | ❌   | ❌     | ✅     |
-| Web         | ❗   | ❗   | ❗     | ❗     |
-| XBOX        | ❌   | ❌   | ❌     | ❌     |
-| PlayStation | ❌   | ❌   | ❌     | ❌     |
-| Switch      | ❌   | ❌   | ❌     | ❌     |
+| Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
+|-------------|-----|-----|-------|-------|---------------|
+| Linux       | ✅   | ❌   | ✅     | ✅     |OpenAL|
+| Android     | ❎   | ❎   | ✅     | ✅     |Android API|
+| Windows     | ✅   | ✅   | ❌     | ✅     |WinMM|
+| iOS         | ❌   | ❌   | ✅     | ✅     | N.A.|
+| MacOS       | ✅   | ❌   | ❌     | ✅     |N.A.|
+| Web         | ❗   | ❗   | ❗     | ❗     |Web API|
+| XBOX        | ❌   | ❌   | ❌     | ❌     |N.A.|
+| PlayStation | ❌   | ❌   | ❌     | ❌     |N.A.|
+| Switch      | ❌   | ❌   | ❌     | ❌     |N.A.|
 
 ## Hosts
 
