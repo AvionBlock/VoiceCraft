@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -9,11 +8,11 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Services;
 
-public class SettingsService(StorageService storageService)
+public class SettingsService
 {
-    private bool _queueWrite;
+    private readonly StorageService _storageService;
     private SettingsStructure _settings = new();
-
+    private bool _queueWrite;
     private bool _writing;
 
     // ReSharper disable once InconsistentNaming
@@ -27,25 +26,10 @@ public class SettingsService(StorageService storageService)
     public NetworkSettings NetworkSettings => _settings.NetworkSettings;
     public UserSettings UserSettings => _settings.UserSettings;
 
-    public void Load()
+    public SettingsService(StorageService storageService)
     {
-        if (!storageService.Exists(Constants.SettingsFile))
-            throw new FileNotFoundException("Settings file not found, Reverting to default.");
-
-        var result = storageService.Load(Constants.SettingsFile);
-        var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
-        if (loadedSettings == null)
-            throw new Exception("Failed to load settings file, Reverting to default.");
-
-        loadedSettings.AudioSettings.OnLoading();
-        loadedSettings.LocaleSettings.OnLoading();
-        loadedSettings.NotificationSettings.OnLoading();
-        loadedSettings.ServersSettings.OnLoading();
-        loadedSettings.ThemeSettings.OnLoading();
-        loadedSettings.NetworkSettings.OnLoading();
-        loadedSettings.UserSettings.OnLoading();
-
-        _settings = loadedSettings;
+        _storageService = storageService;
+        Load();
     }
 
     public async Task SaveImmediate()
@@ -71,6 +55,25 @@ public class SettingsService(StorageService storageService)
         _writing = false;
     }
 
+    private void Load()
+    {
+        if (!_storageService.Exists(Constants.SettingsFile)) return;
+
+        var result = _storageService.Load(Constants.SettingsFile);
+        var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
+        if (loadedSettings == null) return;
+
+        loadedSettings.AudioSettings.OnLoading();
+        loadedSettings.LocaleSettings.OnLoading();
+        loadedSettings.NotificationSettings.OnLoading();
+        loadedSettings.ServersSettings.OnLoading();
+        loadedSettings.ThemeSettings.OnLoading();
+        loadedSettings.NetworkSettings.OnLoading();
+        loadedSettings.UserSettings.OnLoading();
+
+        _settings = loadedSettings;
+    }
+
     private async Task SaveSettingsAsync()
     {
         AudioSettings.OnSaving();
@@ -81,7 +84,7 @@ public class SettingsService(StorageService storageService)
         NetworkSettings.OnSaving();
         UserSettings.OnSaving();
 
-        await storageService.SaveAsync(Constants.SettingsFile,
+        await _storageService.SaveAsync(Constants.SettingsFile,
             JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
     }
 }

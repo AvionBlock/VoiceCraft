@@ -191,7 +191,7 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
 
     public override void OnAppearing(object? data = null)
     {
-        base.OnAppearing();
+        base.OnAppearing(data);
         _ = AudioSettings.ReloadAvailableDevices();
     }
 

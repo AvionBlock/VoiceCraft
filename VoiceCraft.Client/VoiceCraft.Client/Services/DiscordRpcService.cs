@@ -59,6 +59,9 @@ public class DiscordRpcService : IDisposable
             //The presence has updated
             Debug.WriteLine("Presence has been updated!");
         };
+        
+        _rpcClient?.Initialize();
+        _rpcClient?.SetPresence(_richPresence);
     }
 
     public void Dispose()
@@ -70,12 +73,6 @@ public class DiscordRpcService : IDisposable
     public void SetState(string state)
     {
         _richPresence.State = state;
-        _rpcClient?.SetPresence(_richPresence);
-    }
-
-    public void Initialize()
-    {
-        _rpcClient?.Initialize();
         _rpcClient?.SetPresence(_richPresence);
     }
 }

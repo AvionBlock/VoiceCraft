@@ -12,8 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Client.Themes.Dark;
-using VoiceCraft.Client.Themes.Light;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.ViewModels.Settings;
@@ -22,8 +20,6 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
-using Resources = VoiceCraft.Client.Themes.Dark.Resources;
-using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
 namespace VoiceCraft.Client;
 
@@ -154,6 +150,57 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, NetworkSettingsView>(typeof(NetworkSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
 
+        //Themes Registry
+        ServiceCollection.AddSingleton(new RegisteredTheme(
+            Constants.DarkThemeGuid,
+            "Dark",
+            ThemeVariant.Dark,
+            [new Themes.Dark.Styles()],
+            [new Themes.Dark.Colors(), new Themes.Dark.Resources()]));
+
+        ServiceCollection.AddSingleton(new RegisteredTheme(
+            Constants.DarkPurpleThemeGuid,
+            "Dark Purple",
+            ThemeVariant.Dark,
+            [new Themes.DarkPurple.Styles()],
+            [new Themes.DarkPurple.Colors(), new Themes.DarkPurple.Resources()]));
+
+        ServiceCollection.AddSingleton(new RegisteredTheme(
+            Constants.DarkGreenThemeGuid,
+            "Dark Green",
+            ThemeVariant.Dark,
+            [new Themes.DarkGreen.Styles()],
+            [new Themes.DarkGreen.Colors(), new Themes.DarkGreen.Resources()]));
+
+        ServiceCollection.AddSingleton(new RegisteredTheme(
+            Constants.LightThemeGuid,
+            "Light",
+            ThemeVariant.Light,
+            [new Themes.Light.Styles()],
+            [new Themes.Light.Colors(), new Themes.Light.Resources()]));
+
+        //Background Image Registry
+        ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
+            Constants.DockNightGuid,
+            "Dock Night",
+            "avares://VoiceCraft.Client/Assets/bgdark.png"));
+        ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
+            Constants.DockDayGuid,
+            "Dock Day",
+            "avares://VoiceCraft.Client/Assets/bglight.png"));
+        ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
+            Constants.LethalCraftGuid,
+            "Lethal Craft",
+            "avares://VoiceCraft.Client/Assets/lethalCraft.png"));
+        ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
+            Constants.BlockSenseSpawnGuid,
+            "BlockSense Spawn",
+            "avares://VoiceCraft.Client/Assets/blocksensespawn.jpg"));
+        ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
+            Constants.SineSmpBaseGuid,
+            "SineSMP Base",
+            "avares://VoiceCraft.Client/Assets/sinesmpbase.png"));
+
         return ServiceCollection.BuildServiceProvider();
     }
 
@@ -161,65 +208,5 @@ public class App : Application
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
-
-        var discordRpcService = serviceProvider.GetRequiredService<DiscordRpcService>();
-        discordRpcService.Initialize();
-
-        var settingsService = serviceProvider.GetRequiredService<SettingsService>();
-        try
-        {
-            settingsService.Load();
-        }
-        catch (Exception ex)
-        {
-            serviceProvider.GetRequiredService<NotificationService>().SendErrorNotification(ex.Message);
-        }
-
-        var themesService = serviceProvider.GetRequiredService<ThemesService>();
-        themesService.RegisterTheme(Constants.DarkThemeGuid, "Dark",
-            [
-                new Styles()
-            ],
-            [
-                new VcColors(),
-                new Resources()
-            ],
-            ThemeVariant.Dark);
-
-        themesService.RegisterTheme(Constants.LightThemeGuid, "Light",
-            [
-                new Themes.Light.Styles()
-            ],
-            [
-                new Colors(),
-                new Themes.Light.Resources()
-            ],
-            ThemeVariant.Light);
-
-        themesService.RegisterTheme(Constants.DarkPurpleThemeGuid, "Dark Purple",
-            [
-                new Themes.DarkPurple.Styles()
-            ],
-            [
-                new Themes.DarkPurple.Colors(),
-                new Themes.DarkPurple.Resources()
-            ],
-            ThemeVariant.Dark);
-
-        themesService.RegisterTheme(Constants.DarkGreenThemeGuid, "Dark Green",
-            [
-                new Themes.DarkGreen.Styles()
-            ],
-            [
-                new Themes.DarkGreen.Colors(),
-                new Themes.DarkGreen.Resources()
-            ],
-            ThemeVariant.Dark);
-
-        themesService.RegisterBackgroundImage(Constants.DockNightGuid, "Dock Night", "avares://VoiceCraft.Client/Assets/bgdark.png");
-        themesService.RegisterBackgroundImage(Constants.DockDayGuid, "Dock Day", "avares://VoiceCraft.Client/Assets/bglight.png");
-        themesService.RegisterBackgroundImage(Constants.LethalCraftGuid, "Lethal Craft", "avares://VoiceCraft.Client/Assets/lethalCraft.png");
-        themesService.RegisterBackgroundImage(Constants.BlockSenseSpawnGuid, "BlockSense Spawn", "avares://VoiceCraft.Client/Assets/blocksensespawn.jpg");
-        themesService.RegisterBackgroundImage(Constants.SineSmpBaseGuid, "SineSMP Base", "avares://VoiceCraft.Client/Assets/sinesmpbase.png");
     }
 }
