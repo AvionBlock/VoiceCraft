@@ -5,7 +5,7 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class LocaleSettings : Setting<LocaleSettings>
 {
-    private string _culture = "en-us";
+    private string _culture = "en-US";
 
     public string Culture
     {

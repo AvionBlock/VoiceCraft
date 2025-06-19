@@ -1,34 +1,43 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
-public partial class GeneralSettingsViewModel(
-    NavigationService navigationService,
-    SettingsService settingsService)
+public partial class GeneralSettingsViewModel
     : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private ObservableCollection<KeyValuePair<string, string>> _locales =
-    [
-        new("English (US)", "en-us"),
-        new("Netherlands", "nl-nl"),
-        new("Chinese (PRC)", "zh-cn"),
-        new("Chinese (Taiwan)", "zh-tw")
-    ];
+    private readonly NavigationService _navigationService;
+    
+    [ObservableProperty] private ObservableCollection<KeyValuePair<string, string>> _locales = [];
 
     //Language Settings
-    [ObservableProperty] private LocaleSettingsViewModel _localeSettings = new(settingsService);
+    [ObservableProperty] private LocaleSettingsViewModel _localeSettings;
 
     //Notification Settings
-    [ObservableProperty] private NotificationSettingsViewModel _notificationSettings = new(settingsService);
+    [ObservableProperty] private NotificationSettingsViewModel _notificationSettings;
 
     //Server Settings
-    [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
+    [ObservableProperty] private ServersSettingsViewModel _serversSettings;
+
+    public GeneralSettingsViewModel(NavigationService navigationService, SettingsService settingsService)
+    {
+        _navigationService = navigationService;
+        _localeSettings = new LocaleSettingsViewModel(settingsService);
+        _notificationSettings = new NotificationSettingsViewModel(settingsService);
+        _serversSettings = new ServersSettingsViewModel(settingsService);
+
+        foreach (var locale in Localizer.Languages)
+        {
+            _locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
+        }
+    }
 
     public void Dispose()
     {
@@ -41,6 +50,6 @@ public partial class GeneralSettingsViewModel(
     private void Cancel()
     {
         if (DisableBackButton) return;
-        navigationService.Back();
+        _navigationService.Back();
     }
 }

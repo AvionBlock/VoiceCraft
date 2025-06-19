@@ -111,11 +111,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Locales\nl-nl.json"/>
-        <None Remove="Locales\Resources.json"/>
-        <EmbeddedResource Include="Locales\en-us.json"/>
-        <EmbeddedResource Include="Locales\zh-cn.json"/>
-        <EmbeddedResource Include="Locales\zh-tw.json"/>
+        <EmbeddedResource Include="Locales\nl-NL.json" />
+        <EmbeddedResource Include="Locales\en-US.json" />
+        <EmbeddedResource Include="Locales\zh-CN.json" />
+        <EmbeddedResource Include="Locales\zh-TW.json" />
     </ItemGroup>
 
     <ItemGroup>
