@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Jeek.Avalonia.Localization;
+using Microsoft.VisualBasic;
 
 namespace VoiceCraft.Client.Locales;
 
@@ -15,7 +16,7 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
 
     public EmbeddedJsonLocalizer(string languageJsonDirectory = "")
     {
-        FallbackLanguage = "en-US";
+        FallbackLanguage = Core.Constants.DefaultLanguage;
         _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
     }
 
