@@ -1,56 +1,112 @@
 {
-  "Home.Credits": "制作人員",
-  "Home.Servers": "伺服器",
-  "Home.Settings": "設置",
-  "Home.CrashLogs": "崩潰日志",
-  "AddServer.AddServer": "添加伺服器",
-  "AddServer.IP": "IP地址",
-  "AddServer.Name": "名稱",
-  "AddServer.Port": "端口",
-  "Credits.AppVersion": "應用版本",
-  "Credits.Author": "作者",
-  "Credits.Codec": "編解碼器",
-  "Credits.Contributors": "貢獻者",
-  "Credits.Version": "版本",
-  "Settings.General": "常規設置",
-  "Settings.General.BackgroundImage": "背景圖片",
-  "Settings.General.DisableNotifications": "關閉通知",
-  "Settings.General.HideServerAddresses": "隱藏伺服器地址",
-  "Settings.General.Language": "語言",
-  "Settings.General.NotificationDismiss": "通知消失時間(毫秒)",
-  "Settings.General.Theme": "主題",
-  "Settings.Audio": "音頻設置",
-  "Settings.Audio.AutomaticGainControllers": "自動增益控制器",
-  "Settings.Audio.Denoisers": "降噪",
-  "Settings.Audio.EchoCancelers": "回聲消除器",
-  "Settings.Audio.InputDevices": "輸入設備",
-  "Settings.Audio.MicrophoneSensitivity": "麥克風靈敏度",
-  "Settings.Audio.MicrophoneTest": "麥克風測試",
-  "Settings.Audio.MicrophoneTest.Test": "測試",
-  "Settings.Audio.OutputDevices": "輸出設備",
-  "Settings.Audio.TestOutput": "測試輸出",
-  "Settings.Advanced": "高級設置",
-  "Settings.Advanced.TriggerGc": "觸發垃圾回收",
-  "Settings.Advanced.Crash": "測試崩潰",
-  "SelectedServer.Address": "地址",
-  "SelectedServer.PingInformation": "Ping信息",
-  "SelectedServer.Latency": "延遲",
-  "SelectedServer.ServerInfo": "伺服器信息",
-  "SelectedServer.ServerInfo.Status": "公告: {motd}\n定位類型: {positioningType}\n已連接客戶端: {clients}",
-  "SelectedServer.ServerInfo.Status.Pinging": "正在Ping...",
-  "Audio.Recorder.InitFailed": "錄音器初始化失敗！",
-  "Audio.Recorder.Init": "錄音器未初始化！",
-  "Audio.Player.InitFailed": "播放器初始化失敗！",
-  "Audio.Player.Init": "播放器未初始化！",
-  "Audio.AEC.InitFailed": "回聲消除器初始化失敗！",
-  "Audio.AEC.Init": "回聲消除器未初始化！",
-  "Audio.AGC.InitFailed": "增益控制器初始化失敗！",
-  "Audio.AGC.Init": "增益控制器未初始化！",
-  "Audio.DN.InitFailed": "降噪器初始化失敗！",
-  "Audio.DN.Init": "降噪器未初始化！",
-  "VoiceCraft.Status.Title": "VoiceCraft客戶端正在運行",
-  "VoiceCraft.Status.Initializing": "正在初始化...",
-  "VoiceCraft.Status.Connecting": "正在連接...",
-  "VoiceCraft.Status.Connected": "已連接！",
-  "VoiceCraft.Status.Disconnected": "已斷開連接！原因:"
-} 
+    "Home": {
+        "Servers": "伺服器",
+        "Settings": "設置",
+        "Credits": "製作人員",
+        "CrashLogs": "崩潰日志"
+    },
+    "AddServer": {
+        "AddServer": "添加伺服器",
+        "Name": "伺服器名稱",
+        "IP": "IP地址",
+        "Port": "端口"
+    },
+    "Credits": {
+        "AppVersion": "應用版本",
+        "Author": "作者",
+        "Codec": "編解碼器",
+        "Contributors": "貢獻者",
+        "Version": "版本"
+    },
+    "Settings": {
+        "General": {
+            "General": "常規設置",
+            "Language": "語言",
+            "NotificationDismiss": "通知消失時間(毫秒)",
+            "DisableNotifications": "禁用通知",
+            "HideServerAddresses": "隱藏伺服器地址"
+        },
+        "Appearance": {
+            "Appearance": "外觀設置",
+            "Theme": "主題",
+            "BackgroundImage": "背景圖片"
+        },
+        "Audio": {
+            "Audio": "音頻設置",
+            "AutomaticGainControllers": "自動增益控制器",
+            "Denoisers": "降噪器",
+            "EchoCancelers": "回聲消除器",
+            "InputDevices": "輸入設備",
+            "MicrophoneSensitivity": "麥克風靈敏度",
+            "OutputDevices": "輸出設備",
+            "TestOutput": "測試輸出",
+            "MicrophoneTest": {
+                "MicrophoneTest": "麥克風測試",
+                "Test": "測試"
+            }
+        },
+        "Network": {
+            "Network": "網路設置",
+            "PacketCompression": "數據包壓縮",
+            "McWssHostPort": "MCWSS主機端口"
+        },
+        "Advanced": {
+            "Advanced": "高級設置",
+            "TriggerGc": "觸發垃圾回收",
+            "Crash": "測試崩潰"
+        }
+    },
+    "SelectedServer": {
+        "Address": "地址",
+        "PingInformation": "Ping信息",
+        "Connect": "連接",
+        "Edit": "編輯伺服器",
+        "Delete": "刪除伺服器",
+        "ServerInfo": {
+            "ServerInfo": "伺服器信息",
+            "Status": {
+                "Latency": "延遲: {latency}",
+                "Motd": "Motd: {motd}",
+                "PositioningType": "定位類型: {positioningType}",
+                "ConnectedClients": "已連接客戶端: {connectedClients}",
+                "Pinging": "正在Ping..."
+            }
+        }
+    },
+    "Audio": {
+        "Recorder": {
+            "InitFailed": "錄音器初始化失敗！",
+            "Init": "錄音器未初始化！"
+        },
+        "Player": {
+            "InitFailed": "播放器初始化失敗！",
+            "Init": "播放器未初始化！"
+        },
+        "AEC": {
+            "InitFailed": "回聲消除器初始化失敗！",
+            "Init": "回聲消除器未初始化！"
+        },
+        "AGC": {
+            "InitFailed": "增益控制器初始化失敗！",
+            "Init": "增益控制器未初始化！"
+        },
+        "DN": {
+            "InitFailed": "降噪器初始化失敗！",
+            "Init": "降噪器未初始化！"
+        }
+    },
+    "VoiceCraft": {
+        "Status": {
+            "Initializing": "正在初始化...",
+            "Connecting": "正在連接...",
+            "Connected": "已連接！",
+            "Disconnected": "已斷開連接！原因: {reason}"
+        },
+        "DisconnectReason": {
+            "UnknownLogin": "未知登錄類型！",
+            "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
+            "ServerFull": "伺服器已滿！",
+            "Error": "嘗試登錄時發生錯誤！"
+        }
+    }
+}
