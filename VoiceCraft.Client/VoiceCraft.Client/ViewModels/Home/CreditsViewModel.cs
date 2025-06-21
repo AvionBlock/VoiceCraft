@@ -33,7 +33,7 @@ public partial class CreditsViewModel : ViewModelBase
             new Contributor(
                 "Miniontoby",
                 ["Credits.Roles.Translator", "Credits.Roles.Programmer"],
-                _defaultIcon),
+                LoadImage("avares://VoiceCraft.Client/Assets/minionToby.png")),
             new Contributor(
                 "Unny",
                 ["Credits.Roles.Translator"],
