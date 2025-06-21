@@ -1,4 +1,13 @@
 {
+    "Notification": {
+        "Badges": {
+            "Servers": "?",
+            "Error": "?",
+            "GC": "?",
+            "VoiceCraft": "?",
+            "CrashLogs": "?"
+        }
+    },
     "Home": {
         "Servers": "伺服器",
         "Settings": "設置",
