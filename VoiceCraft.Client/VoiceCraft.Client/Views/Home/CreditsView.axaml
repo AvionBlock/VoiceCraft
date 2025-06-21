@@ -9,25 +9,11 @@
              d:DesignWidth="800"
              x:DataType="vm:CreditsViewModel"
              mc:Ignorable="d">
-    <ScrollViewer>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
         <Border Padding="15"
                 VerticalAlignment="Top"
                 Classes="card">
             <StackPanel Spacing="10">
-                <Grid ColumnDefinitions="Auto, Auto">
-                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                               Text="{locale:Localize Credits.Author}" />
-                    <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                               Text=": SineVector241" />
-                </Grid>
-
-                <Grid ColumnDefinitions="Auto, Auto">
-                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                               Text="{locale:Localize Credits.Contributors}" />
-                    <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                               Text=": Miniontoby" />
-                </Grid>
-
                 <Grid ColumnDefinitions="Auto, Auto">
                     <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
                                Text="{locale:Localize Credits.Version}" />
@@ -41,6 +27,55 @@
                     <TextBlock Grid.Column="1" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
                                Text="{Binding OpusVersion, StringFormat=': {0}'}" />
                 </Grid>
+
+                <TextBlock FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                           Text="{locale:Localize 'Credits.Contributors'}" />
+
+                <ListBox Background="Transparent"
+                         ItemsSource="{Binding Contributors}"
+                         IsHitTestVisible="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto, Auto, *" MaxHeight="100">
+                                <Image Grid.Column="0"
+                                       VerticalAlignment="Center"
+                                       Source="{Binding ImageIcon}"
+                                       Height="50"/>
+
+                                <TextBlock Grid.Column="1"
+                                           FontSize="16"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding Name, StringFormat='{} {0}:'}" />
+
+                                <ListBox Grid.Column="2"
+                                         ItemsSource="{Binding Roles}"
+                                         Background="Transparent"
+                                         VerticalAlignment="Center">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Classes="tag" Padding="5">
+                                                <TextBlock Text="{Binding}" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Padding" Value="3" />
+                                        </Style>
+                                    </ListBox.Styles>
+                                </ListBox>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </StackPanel>
         </Border>
     </ScrollViewer>

@@ -6,7 +6,7 @@ namespace VoiceCraft.Client.Services;
 
 public class NotificationService(INotificationMessageManager notificationMessageManager, SettingsService settingsService)
 {
-    public void SendNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
+    public void SendNotification(string badge, string message, Action<INotificationMessageButton>? onDismiss = null)
     {
         Dispatcher.UIThread.Invoke(() =>
         {
@@ -16,7 +16,7 @@ public class NotificationService(INotificationMessageManager notificationMessage
                     .Accent(ThemesService.GetBrushResource("NotificationAccentBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("NotificationBackgroundBrush"))
-                    .HasBadge("Server")
+                    .HasBadge(badge)
                     .HasMessage(message)
                     .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
                     .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
@@ -24,7 +24,7 @@ public class NotificationService(INotificationMessageManager notificationMessage
         });
     }
 
-    public void SendSuccessNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
+    public void SendSuccessNotification(string badge, string message, Action<INotificationMessageButton>? onDismiss = null)
     {
         Dispatcher.UIThread.Invoke(() =>
         {
@@ -34,7 +34,7 @@ public class NotificationService(INotificationMessageManager notificationMessage
                     .Accent(ThemesService.GetBrushResource("NotificationAccentSuccessBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("NotificationBackgroundSuccessBrush"))
-                    .HasBadge("Server")
+                    .HasBadge(badge)
                     .HasMessage(message)
                     .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
                     .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
@@ -52,7 +52,7 @@ public class NotificationService(INotificationMessageManager notificationMessage
                     .Accent(ThemesService.GetBrushResource("NotificationAccentErrorBrush"))
                     .Animates(true)
                     .Background(ThemesService.GetBrushResource("NotificationBackgroundErrorBrush"))
-                    .HasBadge("Error")
+                    .HasBadge(Locales.Locales.Notification_Badges_Error)
                     .HasMessage(message)
                     .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
                     .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))

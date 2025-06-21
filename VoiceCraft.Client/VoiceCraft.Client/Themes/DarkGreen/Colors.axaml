@@ -9,6 +9,7 @@
 
             <!--  Backgrounds  -->
             <Color x:Key="BackgroundColor">#880a4b06</Color>
+            <Color x:Key="BackgroundTagColor">#88666666</Color>
             <Color x:Key="ApplicationBackgroundColor">#464</Color>
             <!--  We have to do this because foregrounds are broken on the avalonia notification styling.  -->
             <Color x:Key="NotificationBackgroundColor">#444</Color>

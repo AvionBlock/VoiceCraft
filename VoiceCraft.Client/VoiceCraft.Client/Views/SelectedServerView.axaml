@@ -38,7 +38,7 @@
                         <TextBlock VerticalAlignment="Center"
                                    FontSize="15"
                                    FontWeight="Bold"
-                                   Text="Address: " />
+                                   Text="{locale:Localize 'SelectedServer.Address'}" />
                         <TextBlock VerticalAlignment="Center" FontSize="15"
                                    Classes.ShowAddress="{Binding !ServersSettings.HideServerAddresses}"
                                    Classes.HideAddress="{Binding ServersSettings.HideServerAddresses}">
@@ -46,7 +46,7 @@
                                 <Style Selector="TextBlock.ShowAddress">
                                     <Setter Property="Text">
                                         <Setter.Value>
-                                            <MultiBinding StringFormat="{}{0}:{1}">
+                                            <MultiBinding StringFormat="{}: {0}:{1}">
                                                 <Binding Path="SelectedServer.Ip" FallbackValue="N.A" />
                                                 <Binding Path="SelectedServer.Port" FallbackValue="N.A" />
                                             </MultiBinding>
@@ -55,7 +55,7 @@
                                 </Style>
 
                                 <Style Selector="TextBlock.HideAddress">
-                                    <Setter Property="Text" Value="****:****" />
+                                    <Setter Property="Text" Value=": ****:****" />
                                 </Style>
                             </TextBlock.Styles>
                         </TextBlock>
