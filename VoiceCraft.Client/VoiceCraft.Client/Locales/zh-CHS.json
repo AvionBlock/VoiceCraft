@@ -11,12 +11,22 @@
         "IP": "IP地址",
         "Port": "端口"
     },
+    "EditServer": {
+        "EditServer": "?",
+        "Name": "服务器名称",
+        "IP": "IP地址",
+        "Port": "端口"
+    },
     "Credits": {
         "AppVersion": "应用版本",
-        "Author": "作者",
+        "Version": "版本",
         "Codec": "编解码器",
         "Contributors": "贡献者",
-        "Version": "版本"
+        "Roles": {
+            "Author": "作者",
+            "Translator": "?",
+            "Programmer": "?"
+        }
     },
     "Settings": {
         "General": {

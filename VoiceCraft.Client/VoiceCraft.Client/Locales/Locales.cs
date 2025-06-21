@@ -6,6 +6,12 @@ namespace VoiceCraft.Client.Locales;
 
 public static class Locales
 {
+    public static string Notification_Badges_Servers => Localizer.Get("Notification.Badges.Servers");
+    public static string Notification_Badges_Error => Localizer.Get("Notification.Badges.Error");
+    public static string Notification_Badges_GC => Localizer.Get("Notification.Badges.GC");
+    public static string Notification_Badges_VoiceCraft => Localizer.Get("Notification.Badges.VoiceCraft");
+    public static string Notification_Badges_CrashLogs => Localizer.Get("Notification.Badges.CrashLogs");
+    
     public static string SelectedServer_ServerInfo_Status_Pinging => Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
     public static string SelectedServer_ServerInfo_Status_Latency => Localizer.Get("SelectedServer.ServerInfo.Status.Latency");
     public static string SelectedServer_ServerInfo_Status_Motd => Localizer.Get("SelectedServer.ServerInfo.Status.Motd");

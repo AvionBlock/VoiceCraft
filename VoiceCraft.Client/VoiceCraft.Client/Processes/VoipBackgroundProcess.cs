@@ -159,7 +159,7 @@ public class VoipBackgroundProcess(
             var localeReason = $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
             Title = localeReason;
             Description = localeReason;
-            notificationService.SendNotification(localeReason);
+            notificationService.SendNotification(Locales.Locales.Notification_Badges_VoiceCraft, localeReason);
 
             if (_audioRecorder != null)
             {

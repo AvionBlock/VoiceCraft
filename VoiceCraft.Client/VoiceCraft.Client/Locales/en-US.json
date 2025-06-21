@@ -1,4 +1,13 @@
 {
+  "Notification": {
+    "Badges": {
+      "Servers": "Servers",
+      "Error": "Error",
+      "GC": "GC",
+      "VoiceCraft": "VoiceCraft",
+      "CrashLogs": "CrashLogs"
+    }
+  },
   "Home": {
     "Servers": "Servers",
     "Settings": "Settings",
@@ -11,12 +20,22 @@
     "IP": "IP",
     "Port": "Port"
   },
+  "EditServer": {
+    "EditServer": "Edit Server",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port"
+  },
   "Credits": {
     "AppVersion": "App Version",
-    "Author": "Author",
+    "Version": "Version",
     "Codec": "Codec",
     "Contributors": "Contributors",
-    "Version": "Version"
+    "Roles": {
+      "Author": "Author",
+      "Translator": "Translator",
+      "Programmer": "Programmer"
+    }
   },
   "Settings": {
     "General": {
@@ -102,8 +121,7 @@
       "Connected": "Connected!",
       "Disconnected": "Disconnected! Reason: {reason}"
     },
-    "DisconnectReason":
-    {
+    "DisconnectReason": {
       "UnknownLogin": "Unknown login type!",
       "IncompatibleVersion": "Incompatible client/server version!",
       "ServerFull": "Server is full!",

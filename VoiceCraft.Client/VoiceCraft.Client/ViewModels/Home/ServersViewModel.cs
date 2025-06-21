@@ -37,7 +37,7 @@ public partial class ServersViewModel(NavigationService navigationService, Notif
     private void DeleteServer(ServerViewModel server)
     {
         ServersSettings.ServersSettings.RemoveServer(server.Server);
-        notificationService.SendSuccessNotification($"{server.Name} has been removed.");
+        notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_Servers, $"{server.Name} has been removed.");
         _ = settings.SaveAsync();
     }
 
