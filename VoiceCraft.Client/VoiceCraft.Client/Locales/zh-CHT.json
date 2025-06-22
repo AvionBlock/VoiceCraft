@@ -27,9 +27,9 @@
         "Port": "端口"
     },
     "Credits": {
-        "AppVersion": "應用版本",
-        "Version": "版本",
-        "Codec": "編解碼器",
+        "AppVersion": "應用版本: {version}",
+        "Version": "版本: {version}",
+        "Codec": "編解碼器: {version}",
         "Contributors": "貢獻者",
         "Roles": {
             "Author": "作者",
