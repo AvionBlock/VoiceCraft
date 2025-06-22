@@ -27,9 +27,9 @@
     "Port": "Port"
   },
   "Credits": {
-    "AppVersion": "App Version",
-    "Version": "Version",
-    "Codec": "Codec",
+    "AppVersion": "App Version: {version}",
+    "Version": "Version: {version}",
+    "Codec": "Codec: {version}",
     "Contributors": "Contributors",
     "Roles": {
       "Author": "Author",
