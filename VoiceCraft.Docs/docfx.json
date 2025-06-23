@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+        "default",
+        "modern"
+    ],
+    "globalMetadata": {
+      "_appLogoPath": "images/logo.png",
+      "_appName": "VoiceCraft Documentation",
+      "_appTitle": "VoiceCraft Documentation",
+      "_enableSearch": true,
+      "pdf": false
+    },
+    "markdownEngineProperties": {
+      "markdigExtensions": [
+        "attributes"
+      ]
+    }
+  }
+}
