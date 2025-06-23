@@ -37,6 +37,6 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 ## Quick Start
 
-- Client Installation
-- Server Installation
+- [Client Installation](/guides/introduction?tabs=clientInstallation)
+- [Server Installation](/guides/introduction?tabs=serverInstallation)
 - Addon API Reference
