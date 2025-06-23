@@ -1,2 +1,4 @@
 - name: Guides
   href: guides/
+- name: FAQ
+  href: faq.md
