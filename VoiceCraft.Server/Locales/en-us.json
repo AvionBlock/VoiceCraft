@@ -105,38 +105,6 @@
         }
       }
     },
-    "SetIntProperty": {
-      "Name": "setintproperty",
-      "Description": "Sets an integer property for an entity.",
-      "Arguments": {
-        "Id": {
-          "Name": "id",
-          "Description": "The entity's id."
-        },
-        "Key": {
-          "Name": "key",
-          "Description": "The property value to set."
-        },
-        "Value": {
-          "Name": "value",
-          "Description": "The value to set for the description."
-        }
-      }
-    },
-    "ClearProperty": {
-      "Name": "clearproperty",
-      "Description": "Clears a property for an entity.",
-      "Arguments": {
-        "Id": {
-          "Name": "id",
-          "Description": "The entity's id."
-        },
-        "Key": {
-          "Name": "key",
-          "Description": "The property value to clear."
-        }
-      }
-    },
     "SetPosition": {
       "Name": "setposition",
       "Description": "Sets a position for an entity.",
@@ -170,6 +138,20 @@
         "Value": {
           "Name": "value",
           "Description": "The value to set the entity's WorldId."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "Sets a name for an entity.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "The value to set the entity's Name."
         }
       }
     }
