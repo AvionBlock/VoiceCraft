@@ -12,21 +12,7 @@ public class ClientProximityEffect : ProximityEffect
         var bitmask = from.TalkBitmask & to.ListenBitmask;
         if ((bitmask & Bitmask) == 0) return; //Not enabled.
 
-        var minRange = from.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMinRange);
-        var toMinRange = to.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMinRange);
-        if (minRange == null && toMinRange == null)
-            minRange = MinRange;
-        else
-            minRange = Math.Min(minRange ?? int.MaxValue, toMinRange ?? int.MaxValue);
-
-        var maxRange = from.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMaxRange);
-        var toMaxRange = to.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMaxRange);
-        if (maxRange == null && toMaxRange == null)
-            maxRange = MaxRange;
-        else
-            maxRange = Math.Max(maxRange ?? int.MinValue, toMaxRange ?? int.MinValue);
-
-        var range = (int)(maxRange - minRange);
+        var range = MinRange - MaxRange;
         if (range == 0) return; //Range is 0. Do not calculate division.
         var distance = Vector3.Distance(from.Position, to.Position);
         var factor = 1f - Math.Clamp(distance / range, 0f, 1.0f);

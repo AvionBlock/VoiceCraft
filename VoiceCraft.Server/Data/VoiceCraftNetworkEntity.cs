@@ -53,6 +53,5 @@ public class VoiceCraftNetworkEntity : VoiceCraftEntity
         Rotation = Quaternion.Zero;
         TalkBitmask = ulong.MaxValue;
         ListenBitmask = ulong.MaxValue;
-        ClearProperties();
     }
 }
