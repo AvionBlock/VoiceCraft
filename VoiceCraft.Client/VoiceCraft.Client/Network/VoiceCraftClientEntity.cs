@@ -12,7 +12,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 {
     private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
     private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
-
+    
     private CircularBuffer<short> _outputBuffer = new(Constants.OutputBufferShorts);
     private DateTime _lastPacket = DateTime.MinValue;
     private bool _isReading;
@@ -56,6 +56,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     public event Action<bool, VoiceCraftClientEntity>? OnIsVisibleUpdated;
     public event Action<float, VoiceCraftClientEntity>? OnVolumeUpdated;
     public event Action<bool, VoiceCraftClientEntity>? OnUserMutedUpdated;
+    public event Action<VoiceCraftClientEntity>? OnStartedSpeaking;
+    public event Action<VoiceCraftClientEntity>? OnStoppedSpeaking;
 
     public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
     {
@@ -87,9 +89,12 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             if (!_isReading) return 0;
             _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
             _isReading = false;
+            OnStoppedSpeaking?.Invoke(this);
             return 0;
         }
 
+        if (_isReading) return read;
+        OnStartedSpeaking?.Invoke(this);
         _isReading = true;
         return read;
     }
@@ -123,6 +128,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         OnIsVisibleUpdated = null;
         OnVolumeUpdated = null;
         OnUserMutedUpdated = null;
+        OnStartedSpeaking = null;
+        OnStoppedSpeaking = null;
     }
 
     private void WriteToOutputBuffer(Span<short> buffer, int count)

@@ -13,7 +13,8 @@ public partial class EntityViewModel : ObservableObject
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
     [ObservableProperty] private bool _isVisible;
-    
+    [ObservableProperty] private bool _isSpeaking;
+
     //User Settings
     [ObservableProperty] private float _volume;
     [ObservableProperty] private bool _userMuted;
@@ -21,7 +22,7 @@ public partial class EntityViewModel : ObservableObject
     private readonly VoiceCraftClientEntity _entity;
     private readonly UserSettings _userSettings;
     private readonly SettingsService _settingsService;
-    
+
     private readonly Guid? _entityUserId;
     private bool _userVolumeUpdating;
     private bool _userMutedUpdating;
@@ -41,17 +42,20 @@ public partial class EntityViewModel : ObservableObject
                 entity.UserMuted = entitySetting.UserMuted;
             }
         }
-        
+
         _displayName = entity.Name;
         _isMuted = entity.Muted;
         _isDeafened = entity.Deafened;
         _isVisible = entity.IsVisible;
+        _isSpeaking = entity.IsSpeaking;
         _volume = entity.Volume;
 
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;
         entity.OnDeafenUpdated += (value, _) => IsDeafened = value;
         entity.OnIsVisibleUpdated += (value, _) => IsVisible = value;
+        entity.OnStartedSpeaking += _ => IsSpeaking = true;
+        entity.OnStoppedSpeaking += _ => IsSpeaking = false;
         entity.OnVolumeUpdated += UpdateVolume;
         entity.OnUserMutedUpdated += UpdateUserMuted;
     }
@@ -83,7 +87,7 @@ public partial class EntityViewModel : ObservableObject
 
     partial void OnUserMutedChanging(bool value)
     {
-        if(_userMutedUpdating) return;
+        if (_userMutedUpdating) return;
         _userMutedUpdating = true;
         _entity.UserMuted = value;
         SaveSettings();
