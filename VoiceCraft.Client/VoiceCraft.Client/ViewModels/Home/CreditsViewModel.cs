@@ -6,8 +6,8 @@ using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jeek.Avalonia.Localization;
 using OpusSharp.Core;
-using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Network;
+using VoiceCraft.Client.ViewModels.Data;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -21,21 +21,21 @@ public partial class CreditsViewModel : ViewModelBase
 
     [ObservableProperty] private string _codec = string.Empty;
 
-    [ObservableProperty] private ObservableCollection<Contributor> _contributors;
+    [ObservableProperty] private ObservableCollection<ContributorViewModel> _contributors;
 
     public CreditsViewModel()
     {
         _contributors =
         [
-            new Contributor(
+            new ContributorViewModel(
                 "SineVector241",
                 ["Credits.Roles.Author", "Credits.Roles.Programmer"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/sinePlushie.png")),
-            new Contributor(
+            new ContributorViewModel(
                 "Miniontoby",
                 ["Credits.Roles.Translator", "Credits.Roles.Programmer"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/minionToby.png")),
-            new Contributor(
+            new ContributorViewModel(
                 "Unny",
                 ["Credits.Roles.Translator"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/unny.png"))

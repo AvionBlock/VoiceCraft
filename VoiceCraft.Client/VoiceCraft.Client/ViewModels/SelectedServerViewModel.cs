@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jeek.Avalonia.Localization;
-using VoiceCraft.Client.Data;
+using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;

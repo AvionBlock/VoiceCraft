@@ -2,7 +2,7 @@
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jeek.Avalonia.Localization;
-using VoiceCraft.Client.Data;
+using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 
