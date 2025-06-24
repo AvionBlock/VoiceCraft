@@ -10,7 +10,6 @@ namespace VoiceCraft.Core
 {
     public class VoiceCraftEntity : INetSerializable, IResettable
     {
-        private readonly Dictionary<PropertyKey, object> _properties = new Dictionary<PropertyKey, object>();
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
         private bool _deafened;
         private ulong _listenBitmask = ulong.MaxValue;
@@ -73,80 +72,10 @@ namespace VoiceCraft.Core
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<PropertyKey, object?, VoiceCraftEntity>? OnPropertySet;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
         public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
-
-        public void SetProperty(PropertyKey key, object? value)
-        {
-            if (key == PropertyKey.Unknown)
-                throw new ArgumentOutOfRangeException(nameof(key));
-
-            switch (value)
-            {
-                case byte _:
-                case int _:
-                case uint _:
-                case float _:
-                case null:
-                    break;
-                default:
-                    throw new ArgumentException("Invalid argument type!", nameof(value));
-            }
-
-            //Null values aren't stored.
-            if (value == null)
-            {
-                if (_properties.Remove(key))
-                    OnPropertySet?.Invoke(key, null, this);
-                return;
-            }
-
-            if (!_properties.TryAdd(key, value))
-                _properties[key] = value;
-            OnPropertySet?.Invoke(key, value, this);
-        }
-
-        public T GetProperty<T>(PropertyKey key) where T : unmanaged
-        {
-            if (key == PropertyKey.Unknown)
-                throw new ArgumentOutOfRangeException(nameof(key));
-
-            if (_properties.TryGetValue(key, out var value) && value is T typeValue)
-                return typeValue;
-            throw new KeyNotFoundException($"Property {key} not found!");
-        }
-
-        public bool TryGetProperty<T>(PropertyKey key, [NotNullWhen(true)] out T? result) where T : unmanaged
-        {
-            if (key == PropertyKey.Unknown)
-                throw new ArgumentOutOfRangeException(nameof(key));
-
-            if (_properties.TryGetValue(key, out var value) && value is T typeValue)
-                result = typeValue;
-            else
-                result = null;
-            return result != null;
-        }
-
-        public T? GetPropertyOrDefault<T>(PropertyKey key, T? defaultValue = null) where T : unmanaged
-        {
-            if (key == PropertyKey.Unknown)
-                throw new ArgumentOutOfRangeException(nameof(key));
-
-            if (_properties.TryGetValue(key, out var value) && value is T typeValue)
-                return typeValue;
-            return defaultValue;
-        }
-
-        public void ClearProperties()
-        {
-            var properties = _properties.ToArray(); //Copy the properties.
-            _properties.Clear();
-            foreach (var property in properties) OnPropertySet?.Invoke(property.Key, null, this);
-        }
 
         public void AddVisibleEntity(VoiceCraftEntity entity)
         {
@@ -197,7 +126,6 @@ namespace VoiceCraft.Core
             OnListenBitmaskUpdated = null;
             OnPositionUpdated = null;
             OnRotationUpdated = null;
-            OnPropertySet = null;
             OnVisibleEntityAdded = null;
             OnVisibleEntityRemoved = null;
             OnAudioReceived = null;
@@ -207,9 +135,6 @@ namespace VoiceCraft.Core
         #region Updatable Properties
 
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities.Values;
-
-        public IEnumerable<KeyValuePair<PropertyKey, object>> Properties => _properties;
-
 
         public string WorldId
         {

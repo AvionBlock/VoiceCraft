@@ -43,8 +43,7 @@ namespace VoiceCraft.Core
         SetTalkBitmask,
         SetListenBitmask,
         SetPosition,
-        SetRotation,
-        SetProperty
+        SetRotation
     }
 
     public enum McLinkPacketType : byte

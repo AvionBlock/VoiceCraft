@@ -99,7 +99,6 @@ public class EventHandlerSystem : IDisposable
         newEntity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
         newEntity.OnPositionUpdated += OnEntityPositionUpdated;
         newEntity.OnRotationUpdated += OnEntityRotationUpdated;
-        newEntity.OnPropertySet += OnEntityPropertySet;
         newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
         newEntity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
         newEntity.OnAudioReceived += OnEntityAudioReceived;
@@ -118,7 +117,6 @@ public class EventHandlerSystem : IDisposable
         entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
         entity.OnPositionUpdated -= OnEntityPositionUpdated;
         entity.OnRotationUpdated -= OnEntityRotationUpdated;
-        entity.OnPropertySet -= OnEntityPropertySet;
         entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
         entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
         entity.OnAudioReceived -= OnEntityAudioReceived;
@@ -200,16 +198,6 @@ public class EventHandlerSystem : IDisposable
     }
 
     //Properties
-    private void OnEntityPropertySet(PropertyKey key, object? value, VoiceCraftEntity entity)
-    {
-        _tasks.Add(() =>
-        {
-            //Only send updates to visible entities.
-            var packet = new SetPropertyPacket(entity.Id, key, value);
-            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-        });
-    }
 
     private void OnEntityVisibleEntityAdded(VoiceCraftEntity addedEntity, VoiceCraftEntity entity)
     {
@@ -227,12 +215,6 @@ public class EventHandlerSystem : IDisposable
             _server.SendPacket(networkEntity.NetPeer, listenBitmaskPacket);
             _server.SendPacket(networkEntity.NetPeer, positionPacket);
             _server.SendPacket(networkEntity.NetPeer, rotationPacket);
-
-            foreach (var property in networkEntity.Properties)
-            {
-                var propertyPacket = new SetPropertyPacket(entity.Id, property.Key, property.Value); //Set all properties.
-                _server.SendPacket(networkEntity.NetPeer, propertyPacket);
-            }
         });
     }
 

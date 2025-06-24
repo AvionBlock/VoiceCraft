@@ -42,16 +42,8 @@ namespace VoiceCraft.Core.Audio.Effects
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask;
             if ((bitmask & Bitmask) == 0) return true; //Proximity checking disabled.
-
-            var maxRange = from.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMaxRange);
-            var toMaxRange = to.GetPropertyOrDefault<int>(PropertyKey.ProximityEffectMaxRange);
-            if (maxRange == null && toMaxRange == null)
-                maxRange = MaxRange;
-            else
-                maxRange = Math.Max(maxRange ?? int.MinValue, toMaxRange ?? int.MinValue);
-
             var distance = Vector3.Distance(from.Position, to.Position);
-            return distance <= maxRange;
+            return distance <= MaxRange;
         }
     }
 }

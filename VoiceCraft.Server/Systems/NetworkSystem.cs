@@ -136,7 +136,6 @@ public class NetworkSystem : IDisposable
             case PacketType.SetListenBitmask:
             case PacketType.SetPosition:
             case PacketType.SetRotation:
-            case PacketType.SetProperty:
             default:
                 break;
         }

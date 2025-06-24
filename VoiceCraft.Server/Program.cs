@@ -27,8 +27,6 @@ public static class Program
         //Commands
         var rootCommand = new RootCommand();
         serviceCollection.AddSingleton(rootCommand);
-        serviceCollection.AddSingleton<Command, SetIntPropertyCommand>();
-        serviceCollection.AddSingleton<Command, ClearPropertyCommand>();
         serviceCollection.AddSingleton<Command, SetPositionCommand>();
         serviceCollection.AddSingleton<Command, SetWorldIdCommand>();
         serviceCollection.AddSingleton<Command, ListCommand>();

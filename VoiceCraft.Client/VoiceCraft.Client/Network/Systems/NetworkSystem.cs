@@ -156,11 +156,6 @@ public class NetworkSystem : IDisposable
                 setRotationPacket.Deserialize(reader);
                 HandleSetRotationPacket(setRotationPacket);
                 break;
-            case PacketType.SetProperty:
-                var setPropertyPacket = new SetPropertyPacket();
-                setPropertyPacket.Deserialize(reader);
-                HandleSetPropertyPacket(setPropertyPacket);
-                break;
             case PacketType.Login:
             case PacketType.Unknown:
             default:
@@ -243,7 +238,6 @@ public class NetworkSystem : IDisposable
         clientEntity.IsVisible = packet.Value;
         if (clientEntity.IsVisible) return; //Clear properties and the audio buffer when entity is not visible.
         clientEntity.ClearBuffer();
-        clientEntity.ClearProperties();
     }
 
     private void HandleSetNamePacket(SetNamePacket packet)
@@ -323,17 +317,5 @@ public class NetworkSystem : IDisposable
         var entity = _world.GetEntity(packet.Id);
         if (entity == null) return;
         entity.Rotation = packet.Value;
-    }
-
-    private void HandleSetPropertyPacket(SetPropertyPacket packet)
-    {
-        if (packet.Id == _client.Id)
-        {
-            _client.SetProperty(packet.Key, packet.Value);
-            return;
-        }
-
-        var entity = _world.GetEntity(packet.Id);
-        entity?.SetProperty(packet.Key, packet.Value);
     }
 }
