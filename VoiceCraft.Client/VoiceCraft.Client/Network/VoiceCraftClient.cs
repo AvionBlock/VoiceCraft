@@ -161,7 +161,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         var read = _audioSystem.Read(bufferShort, count / sizeof(short)) * sizeof(short);
         
         //Full read
-        if (read >= count) return read;
+        if (read > 0) return read;
         Array.Clear(buffer, read, count - read);
         return count;
     }
