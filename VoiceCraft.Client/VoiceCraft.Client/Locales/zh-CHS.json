@@ -1,11 +1,11 @@
 {
     "Notification": {
         "Badges": {
-            "Servers": "?",
-            "Error": "?",
-            "GC": "?",
-            "VoiceCraft": "?",
-            "CrashLogs": "?"
+            "Servers": "服务器",
+            "Error": "错误",
+            "GC": "垃圾回收",
+            "VoiceCraft": "VoiceCraft",
+            "CrashLogs": "崩溃日志"
         }
     },
     "Home": {
