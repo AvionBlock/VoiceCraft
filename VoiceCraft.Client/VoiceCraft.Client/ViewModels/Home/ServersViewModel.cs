@@ -1,7 +1,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Client.Data;
+using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 
