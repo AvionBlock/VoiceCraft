@@ -41,8 +41,8 @@
     "General": {
       "General": "Algemene Instellingen",
       "Language": "Taal",
-      "NotificationDismiss": "Meldingen Afwijzen(ms)",
-      "DisableNotifications": "Notificaties Uitschakelen",
+      "NotificationDismiss": "Meldingen afwijzen(ms)",
+      "DisableNotifications": "Notificaties uitschakelen",
       "HideServerAddresses": "Serveradressen verbergen"
     },
     "Appearance": {
@@ -56,9 +56,9 @@
       "Denoisers": "Ruis-onderdrukkers",
       "EchoCancelers": "Echo-onderdrukkers",
       "InputDevices": "Invoerapparaten",
-      "MicrophoneSensitivity": "Microfoon Gevoeligheid",
+      "MicrophoneSensitivity": "Microfoon gevoeligheid",
       "OutputDevices": "Uitvoerapparaten",
-      "TestOutput": "Test Uitvoer",
+      "TestOutput": "Uitvoer testen",
       "MicrophoneTest": {
         "MicrophoneTest": "Microfoon Test",
         "Test": "Test"
@@ -66,8 +66,8 @@
     },
     "Network": {
       "Network": "Netwerk Instellingen",
-      "PacketCompression": "Pakket Compressie",
-      "McWssHostPort": "MCWSS Host Poort"
+      "PacketCompression": "Pakket compressie",
+      "McWssHostPort": "MCWSS host poort"
     },
     "Advanced": {
       "Advanced": "Geavanceerde instellingen",
@@ -119,7 +119,7 @@
       "Initializing": "Initialiseren...",
       "Connecting": "Verbinden...",
       "Connected": "Verbonden!",
-      "Disconnected": "Verbinding verbroken! Reden:"
+      "Disconnected": "Verbinding verbroken! Reden: {reason}"
     },
     "DisconnectReason": {
       "UnknownLogin": "Onbekende login type!",
