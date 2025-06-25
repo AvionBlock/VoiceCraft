@@ -118,7 +118,7 @@
     "Status": {
       "Initializing": "Initialiseren...",
       "Connecting": "Verbinden...",
-      "Connected": "Verbonden! Meer spul hier later.",
+      "Connected": "Verbonden!",
       "Disconnected": "Verbinding verbroken! Reden:"
     },
     "DisconnectReason": {
