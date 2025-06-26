@@ -22,7 +22,7 @@ public class NativeEchoCanceler : IEchoCanceler
         CleanupEchoCanceler();
         _echoCanceler = AcousticEchoCanceler.Create(audioRecorder.SessionId);
 
-        if (_echoCanceler == null)
+        if (_echoCanceler == null || _echoCanceler.SetEnabled(true) != AudioEffectStatus.Success)
             throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
     }
 

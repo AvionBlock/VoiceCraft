@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,7 +17,7 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
     private readonly NavigationService _navigationService;
     private readonly NotificationService _notificationService;
     private readonly PermissionsService _permissionsService;
-    private readonly SineWaveGenerator _sineWaveGenerator;
+    private readonly SineWaveGenerator16 _sineWaveGenerator16;
 
     [ObservableProperty] private Data.AudioSettingsViewModel _audioSettings;
     private IDenoiser? _denoiser;
@@ -41,7 +42,7 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
         _audioService = audioService;
         _notificationService = notificationService;
         _permissionsService = permissionsService;
-        _sineWaveGenerator = new SineWaveGenerator(Constants.SampleRate);
+        _sineWaveGenerator16 = new SineWaveGenerator16(Constants.SampleRate);
 
         _audioSettings = new Data.AudioSettingsViewModel(settingsService, _audioService);
     }
@@ -101,7 +102,7 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
             _player.SelectedDevice = AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
             _player.BufferMilliseconds = 100;
             _player.OnPlaybackStopped += OnPlaybackStopped;
-            _player.Initialize(_sineWaveGenerator.Read);
+            _player.Initialize(ReadSineWave);
             _player.Play();
             IsPlaying = true;
         }
@@ -117,6 +118,12 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
     private void Cancel()
     {
         _navigationService.Back();
+    }
+
+    private int ReadSineWave(byte[] buffer, int length)
+    {
+        var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
+        return _sineWaveGenerator16.Read(shortBuffer, length / sizeof(short)) * sizeof(short);
     }
 
     private void OnDataAvailable(byte[] data, int count)

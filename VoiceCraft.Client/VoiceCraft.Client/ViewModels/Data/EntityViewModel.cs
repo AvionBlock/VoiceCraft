@@ -49,6 +49,7 @@ public partial class EntityViewModel : ObservableObject
         _isVisible = entity.IsVisible;
         _isSpeaking = entity.IsSpeaking;
         _volume = entity.Volume;
+        _userMuted =  entity.UserMuted;
 
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;

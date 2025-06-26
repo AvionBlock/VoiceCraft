@@ -32,7 +32,7 @@ public class AudioRecorder : IAudioRecorder
         Format = format;
     }
 
-    public AudioSource AudioSource { get; set; } = AudioSource.Default;
+    public AudioSource AudioSource { get; set; } = AudioSource.VoiceCommunication;
 
     public int SessionId => _nativeRecorder?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
 

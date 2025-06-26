@@ -21,7 +21,7 @@ public class NativeAutomaticGainController : IAutomaticGainController
         CleanupGainController();
         _gainController = AutomaticGainControl.Create(audioRecorder.SessionId);
 
-        if (_gainController == null)
+        if (_gainController == null || _gainController.SetEnabled(true) != AudioEffectStatus.Success)
             throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
     }
 

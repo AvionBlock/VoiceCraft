@@ -20,7 +20,7 @@ namespace VoiceCraft.Core
         public const int Channels = 1;
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
-        public const int OutputBufferSizeMs = FrameSizeMs * 3; //Enough to hold 3 full packets -> 60ms.
+        public const int OutputBufferSizeMs = FrameSizeMs * 50; //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
 
         //Audio Calculations
         public const int BlockAlign = Channels * (BitDepth / 8);
