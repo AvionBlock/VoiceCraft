@@ -20,7 +20,7 @@ public class NativeDenoiser : IDenoiser
         CleanupDenoiser();
         _denoiser = NoiseSuppressor.Create(audioRecorder.SessionId);
 
-        if (_denoiser == null)
+        if (_denoiser == null || _denoiser.SetEnabled(true) != AudioEffectStatus.Success)
             throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
     }
 
