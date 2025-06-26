@@ -1,6 +1,6 @@
 using System;
 
-//Credits https://github.com/joaoportela/CircularBuffer-CSharp/blob/master/CircularBuffer/CircularBuffer.cs
+//Credits https://github.com/naudio/NAudio/blob/master/NAudio.Core/Utils/CircularBuffer.cs - Modified for generic use.
 namespace VoiceCraft.Core
 {
     /// <summary>
@@ -97,14 +97,31 @@ namespace VoiceCraft.Core
         public int MaxLength => _buffer.Length;
 
         /// <summary>
-        /// Number of elements currently stored in the circular buffer
+        /// Number of bytes currently stored in the circular buffer
         /// </summary>
-        public int Count => _count;
+        public int Count
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    return _count;
+                }
+            }
+        }
 
         /// <summary>
         /// Resets the buffer
         /// </summary>
         public void Reset()
+        {
+            lock (_lockObject)
+            {
+                ResetInner();
+            }
+        }
+
+        private void ResetInner()
         {
             _count = 0;
             _readPosition = 0;
@@ -117,17 +134,19 @@ namespace VoiceCraft.Core
         /// <param name="count">Bytes to advance</param>
         public void Advance(int count)
         {
-            if (count >= _count)
+            lock (_lockObject)
             {
-                Reset();
+                if (count >= _count)
+                {
+                    ResetInner();
+                }
+                else
+                {
+                    _count -= count;
+                    _readPosition += count;
+                    _readPosition %= MaxLength;
+                }
             }
-            else
-            {
-                _count -= count;
-                _readPosition += count;
-                _readPosition %= MaxLength;
-            }
-
         }
     }
 }
