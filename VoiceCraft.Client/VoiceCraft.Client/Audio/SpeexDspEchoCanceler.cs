@@ -62,12 +62,7 @@ public class SpeexDspEchoCanceler : IEchoCanceler
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
-        if (_captureBuffer == null) return;
-
-        lock (_captureBuffer)
-        {
-            for (var i = 0; i < count; i++) _captureBuffer.PushBack(buffer[i]);
-        }
+        _captureBuffer?.Write(buffer, 0, count);
     }
 
     public void EchoPlayback(byte[] buffer, int count)
@@ -94,15 +89,10 @@ public class SpeexDspEchoCanceler : IEchoCanceler
         lock (_captureBuffer)
         {
             Array.Clear(_captureBufferFrame);
-            if (_captureBuffer.Size < _captureBufferFrame.Length)
+            if (_captureBuffer.Count < _captureBufferFrame.Length)
                 return _captureBufferFrame;
-
-            for (var i = 0; i < _captureBufferFrame.Length; i++)
-            {
-                _captureBufferFrame[i] = _captureBuffer.Front();
-                _captureBuffer.PopFront();
-            }
-
+            
+            _captureBuffer.Read(_captureBufferFrame, 0, _captureBufferFrame.Length);
             return _captureBufferFrame;
         }
     }

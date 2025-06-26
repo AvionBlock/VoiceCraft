@@ -56,7 +56,10 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
             read = Math.Max(read, entityRead);
         }
         
-        return read;
+        //Full read
+        if (read >= count) return read;
+        buffer.Slice(read, count - read).Clear();
+        return count;
     }
 
     public void AddEffect(IAudioEffect effect)

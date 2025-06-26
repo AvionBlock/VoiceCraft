@@ -20,6 +20,7 @@ public class AudioPlayer : IAudioPlayer
     private byte[] _byteBuffer = [];
     private int _channels;
     private bool _disposed;
+    private short[] _shortBuffer = [];
     private float[] _floatBuffer = [];
     private AudioTrack? _nativePlayer;
     private Func<byte[], int, int>? _playerCallback;
@@ -131,15 +132,10 @@ public class AudioPlayer : IAudioPlayer
                 2 => ChannelOut.Stereo,
                 _ => throw new NotSupportedException()
             };
-
+            
             //Determine the buffer size
             var blockAlign = Channels * (BitDepth / 8);
             var bytesPerSecond = _sampleRate * blockAlign;
-            var bufferMs = (BufferMilliseconds + NumberOfBuffers - 1) / NumberOfBuffers;
-            _bufferBytes = (int)(bytesPerSecond / 1000.0 * bufferMs);
-            if (_bufferBytes % blockAlign != 0) _bufferBytes = _bufferBytes + blockAlign - _bufferBytes % blockAlign;
-            _byteBuffer = new byte[_bufferBytes];
-            _floatBuffer = new float[_bufferBytes / sizeof(float)];
 
             var audioAttributes = new AudioAttributes.Builder().SetUsage(Usage)?.SetContentType(ContentType)?.Build();
             var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)?.SetSampleRate(SampleRate)?.SetChannelMask(channelMask).Build();
@@ -154,6 +150,13 @@ public class AudioPlayer : IAudioPlayer
 
             _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
                 .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
+            
+            _bufferBytes = (_nativePlayer.BufferSizeInFrames + NumberOfBuffers - 1) / NumberOfBuffers * blockAlign;
+            _bufferBytes = (_bufferBytes + 3) & ~3;
+            _byteBuffer = new byte[_bufferBytes];
+            _shortBuffer = new short[_bufferBytes / sizeof(short)];
+            _floatBuffer = new float[_bufferBytes / sizeof(float)];
+            
             if (_nativePlayer.State != AudioTrackState.Initialized)
                 throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
 
@@ -354,15 +357,21 @@ public class AudioPlayer : IAudioPlayer
             Array.Clear(_byteBuffer);
 
             //Fill the wave buffer with new samples
-            var read = _playerCallback(_byteBuffer, _byteBuffer.Length);
+            var read = _playerCallback(_byteBuffer, _bufferBytes);
             if (read <= 0) break;
             switch (_nativePlayer.AudioFormat)
             {
                 //Write the specified wave buffer to the audio track
                 case Encoding.Pcm8bit:
+                {
+                    _nativePlayer.Write(_byteBuffer, 0, read, WriteMode.Blocking);
+                    break;
+                }
                 case Encoding.Pcm16bit:
                 {
-                    _nativePlayer.Write(_byteBuffer, 0, read);
+                    Array.Clear(_shortBuffer);
+                    Buffer.BlockCopy(_byteBuffer, 0, _shortBuffer, 0, read);
+                    _nativePlayer.Write(_shortBuffer, 0, read / sizeof(short), WriteMode.Blocking); //Shit's annoying.
                     break;
                 }
                 case Encoding.PcmFloat:
@@ -375,9 +384,9 @@ public class AudioPlayer : IAudioPlayer
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
-            _nativePlayer.Flush();
         }
+        
+        _nativePlayer?.Flush();
     }
 
     private void Dispose(bool disposing)

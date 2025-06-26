@@ -1,16 +1,15 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace VoiceCraft.Core.Audio
 {
-    public class SineWaveGenerator
+    public class SineWaveGenerator16
     {
         private float _currentPhase;
 
         // Internal state
         private float _phaseIncrement;
 
-        public SineWaveGenerator(int sampleRate)
+        public SineWaveGenerator16(int sampleRate)
         {
             SampleRate = sampleRate;
         }
@@ -33,21 +32,8 @@ namespace VoiceCraft.Core.Audio
         }
         
         public int Read(short[] buffer, int count) => Read(buffer.AsSpan(), count);
-        
-        public int Read(Span<byte> buffer, int count)
-        {
-            // Calculate the phase increment per sample based on the frequency
-            _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
 
-            var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
-            for (var i = 0; i < count / sizeof(short); i++) shortBuffer[i] = FloatToShort(GenerateSample());
-
-            return count;
-        }
-        
-        public int Read(byte[] buffer, int count) => Read(buffer.AsSpan(), count);
-
-        private short FloatToShort(float value)
+        private static short FloatToShort(float value)
         {
             return (short)(value * short.MaxValue);
         }
