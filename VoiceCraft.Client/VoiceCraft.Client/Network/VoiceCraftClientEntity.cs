@@ -5,6 +5,7 @@ using OpusSharp.Core;
 using SpeexDSPSharp.Core;
 using SpeexDSPSharp.Core.Structures;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.Network;
 
@@ -12,8 +13,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 {
     private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
     private readonly SpeexDSPJitterBuffer _jitterBuffer = new(Constants.SamplesPerFrame);
+    private readonly BufferedAudioProvider16 _outputBuffer = new(Constants.OutputBufferShorts) { DiscardOnOverflow = true };
     
-    private CircularBuffer<short> _outputBuffer = new(Constants.OutputBufferShorts);
     private DateTime _lastPacket = DateTime.MinValue;
     private bool _isReading;
     private bool _isVisible;
@@ -66,7 +67,6 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public void ClearBuffer()
     {
-        lock (_outputBuffer)
         lock (_jitterBuffer)
         {
             _outputBuffer.Clear();
@@ -82,10 +82,9 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             return 0;
         }
 
-        var read = ReadFromOutputBuffer(buffer, count);
+        var read = _outputBuffer.Read(buffer, count);
         if (read <= 0)
         {
-            ResizeDecodeBufferIfNeeded(count);
             if (!_isReading) return 0;
             _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
             _isReading = false;
@@ -130,42 +129,6 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         OnUserMutedUpdated = null;
         OnStartedSpeaking = null;
         OnStoppedSpeaking = null;
-    }
-
-    private void WriteToOutputBuffer(Span<short> buffer, int count)
-    {
-        lock (_outputBuffer)
-        {
-            if (_outputBuffer.IsFull) return; //We have to drop the packet.
-            for (var i = 0; i < count; i++)
-                _outputBuffer.PushBack(buffer[i]);
-        }
-    }
-
-    private int ReadFromOutputBuffer(Span<short> buffer, int count)
-    {
-        lock (_outputBuffer)
-        {
-            var read = 0;
-            for (var i = 0; i < count; i++)
-            {
-                if (_outputBuffer.IsEmpty || _outputBuffer.Size < count && !_isReading) return read;
-                buffer[i] = _outputBuffer.Front();
-                _outputBuffer.PopFront();
-                read++;
-            }
-
-            return read;
-        }
-    }
-
-    private void ResizeDecodeBufferIfNeeded(int newSize)
-    {
-        lock (_outputBuffer)
-        {
-            if (_outputBuffer.Capacity >= newSize) return;
-            _outputBuffer = new CircularBuffer<short>(newSize, _outputBuffer.ToArray());
-        }
     }
 
     private int GetNextPacket(Span<short> buffer)
@@ -222,7 +185,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 var read = GetNextPacket(readBuffer);
                 if (read <= 0) continue;
                 
-                WriteToOutputBuffer(readBuffer, Constants.BitDepth / 16 * Constants.Channels * read);
+                _outputBuffer.Write(readBuffer, Constants.BitDepth / 16 * Constants.Channels * read);
             }
             catch (Exception ex)
             {

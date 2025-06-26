@@ -159,11 +159,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         //Only enumerate over visible entities.
         var bufferShort = MemoryMarshal.Cast<byte, short>(buffer);
         var read = _audioSystem.Read(bufferShort, count / sizeof(short)) * sizeof(short);
-        
-        //Full read
-        if (read > 0) return read;
-        Array.Clear(buffer, read, count - read);
-        return count;
+        return read;
     }
 
     public void Write(byte[] buffer, int bytesRead)
