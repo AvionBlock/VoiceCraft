@@ -78,7 +78,10 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     {
         if (_userMuted)
         {
+            _outputBuffer.Clear();
+            if(!_isReading) return 0;
             _isReading = false;
+            OnStoppedSpeaking?.Invoke(this);
             return 0;
         }
 
@@ -183,7 +186,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 startTick += Constants.FrameSizeMs; //Step Forwards.
                 Array.Clear(readBuffer); //Clear Read Buffer.
                 var read = GetNextPacket(readBuffer);
-                if (read <= 0) continue;
+                if (read <= 0 || _userMuted) continue;
                 
                 _outputBuffer.Write(readBuffer, Constants.BitDepth / 16 * Constants.Channels * read);
             }
