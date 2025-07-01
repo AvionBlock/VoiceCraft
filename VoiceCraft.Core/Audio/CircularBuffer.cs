@@ -1,7 +1,7 @@
 using System;
 
 //Credits https://github.com/naudio/NAudio/blob/master/NAudio.Core/Utils/CircularBuffer.cs - Modified for generic use.
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core.Audio
 {
     /// <summary>
     /// A very basic circular buffer implementation
