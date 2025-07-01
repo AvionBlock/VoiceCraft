@@ -107,7 +107,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             throw new InvalidOperationException("This client is already connected or is connecting to a server!");
 
         var dataWriter = new NetDataWriter();
-        var loginPacket = new LoginPacket(userGuid, serverUserGuid, locale, Version.ToString(), LoginType.Login);
+        var loginPacket = new LoginPacket(userGuid, serverUserGuid, locale, Version);
         loginPacket.Serialize(dataWriter);
         _serverPeer = _netManager.Connect(ip, port, dataWriter) ?? throw new InvalidOperationException("A connection request is awaiting!");
     }

@@ -144,15 +144,7 @@ public class NetworkSystem : IDisposable
     //Packet Handling
     private void HandleLoginPacket(LoginPacket packet, ConnectionRequest request)
     {
-        if (!Enum.IsDefined(packet.LoginType))
-        {
-            request.Reject("VoiceCraft.DisconnectReason.UnknownLogin"u8.ToArray());
-            return;
-        }
-
-        if (!Version.TryParse(packet.Version, out var version) ||
-            version.Minor != VoiceCraftServer.Version.Minor ||
-            version.Major != VoiceCraftServer.Version.Major)
+        if (packet.Version.Major != VoiceCraftServer.Version.Major || packet.Version.Minor != VoiceCraftServer.Version.Minor)
         {
             request.Reject("VoiceCraft.DisconnectReason.IncompatibleVersion"u8.ToArray());
             return;
@@ -164,30 +156,12 @@ public class NetworkSystem : IDisposable
             return;
         }
 
-        if (packet.LoginType == LoginType.Unknown)
-        {
-            request.Reject("VoiceCraft.DisconnectReason.UnknownLogin"u8.ToArray());
-            return;
-        }
-
         var peer = request.Accept();
         try
         {
-            switch (packet.LoginType)
-            {
-                case LoginType.Login:
-                    var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType, _world);
-                    peer.Tag = entity;
-                    _world.AddEntity(entity);
-                    break;
-                case LoginType.Discovery:
-                    peer.Tag = LoginType.Discovery;
-                    break;
-                case LoginType.Unknown:
-                default:
-                    peer.Disconnect("VoiceCraft.DisconnectReason.UnknownLogin"u8.ToArray());
-                    break;
-            }
+            var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType, _world);
+            peer.Tag = entity;
+            _world.AddEntity(entity);
         }
         catch
         {

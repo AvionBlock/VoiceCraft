@@ -9,15 +9,13 @@ namespace VoiceCraft.Core.Network.Packets
             Guid userGuid = new Guid(),
             Guid serverUserGuid = new Guid(),
             string locale = "",
-            string version = "",
-            LoginType loginType = LoginType.Unknown,
+            Version? version = null,
             PositioningType positioningType = PositioningType.Server)
         {
             UserGuid = userGuid;
             ServerUserGuid = serverUserGuid;
             Locale = locale;
-            Version = version;
-            LoginType = loginType;
+            Version = version ?? new Version(0, 0, 0);
             PositioningType = positioningType;
         }
 
@@ -26,8 +24,7 @@ namespace VoiceCraft.Core.Network.Packets
         public Guid UserGuid { get; private set; }
         public Guid ServerUserGuid { get; private set; }
         public string Locale { get; private set; }
-        public string Version { get; private set; }
-        public LoginType LoginType { get; private set; }
+        public Version Version { get; private set; }
         public PositioningType PositioningType { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
@@ -35,8 +32,9 @@ namespace VoiceCraft.Core.Network.Packets
             writer.Put(UserGuid);
             writer.Put(ServerUserGuid);
             writer.Put(Locale, Constants.MaxStringLength);
-            writer.Put(Version, Constants.MaxStringLength);
-            writer.Put((byte)LoginType);
+            writer.Put(Version.Major);
+            writer.Put(Version.Minor);
+            writer.Put(Version.Build);
             writer.Put((byte)PositioningType);
         }
 
@@ -45,9 +43,7 @@ namespace VoiceCraft.Core.Network.Packets
             UserGuid = reader.GetGuid();
             ServerUserGuid = reader.GetGuid();
             Locale = reader.GetString(Constants.MaxStringLength);
-            Version = reader.GetString(Constants.MaxStringLength);
-            var loginTypeValue = reader.GetByte();
-            LoginType = Enum.IsDefined(typeof(LoginType), loginTypeValue) ? (LoginType)loginTypeValue : LoginType.Unknown;
+            Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
             var positioningTypeValue = reader.GetByte();
             PositioningType = Enum.IsDefined(typeof(PositioningType), positioningTypeValue) ? (PositioningType)positioningTypeValue : PositioningType.Unknown;
         }

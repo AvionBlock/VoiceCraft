@@ -9,13 +9,6 @@ namespace VoiceCraft.Core
         Client
     }
 
-    public enum LoginType : byte
-    {
-        Unknown,
-        Login,
-        Discovery
-    }
-
     public enum EntityType : byte
     {
         Unknown,
@@ -46,12 +39,16 @@ namespace VoiceCraft.Core
         SetRotation
     }
 
-    public enum McLinkPacketType : byte
+    public enum McApiPacketType : byte
     {
         Unknown,
         Login,
         Logout,
-        Ping
+        Update,
+        Ping,
+        Fragment,
+        Accept,
+        Deny,
     }
 
     #endregion
