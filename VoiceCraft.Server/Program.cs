@@ -22,6 +22,7 @@ public static class Program
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddSingleton<VoiceCraftServer>();
+        serviceCollection.AddSingleton<McWssServer>();
         serviceCollection.AddSingleton<ServerProperties>();
 
         //Commands

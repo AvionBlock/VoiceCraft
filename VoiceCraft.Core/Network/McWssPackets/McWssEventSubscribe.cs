@@ -16,6 +16,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
         public McWssEventSubscribe(string eventName = "")
         {
             EventName = eventName;
+            header.messagePurpose = "subscribe";
         }
         
         //Resharper disable All
@@ -25,30 +26,4 @@ namespace VoiceCraft.Core.Network.McWssPackets
         }
         //Resharper enable All
     }
-
-    /*
-    private class McwssPlayerMessageStructure
-    {
-        public McwssEventHeaders header { get; set; } = new McwssEventHeaders();
-        public McwssPlayerMessageBody body { get; set; } = new McwssPlayerMessageBody();
-    }
-
-    private class McwssPlayerMessageBody
-    {
-        public string message { get; set; } = string.Empty;
-        public string receiver { get; set; } = string.Empty;
-        public string sender { get; set; } = string.Empty;
-        public string type { get; set; } = string.Empty;
-    }
-
-    private class RawTextStructure
-    {
-        public RawTextMessage[] rawtext { get; set; } = Array.Empty<RawTextMessage>();
-    }
-
-    private class RawTextMessage
-    {
-        public string text { get; set; } = string.Empty;
-    }
-    */
 }

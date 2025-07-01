@@ -16,6 +16,7 @@ public static class App
     public static async Task Start()
     {
         var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
+        var mcwssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
         
@@ -32,6 +33,7 @@ public static class App
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
+            mcwssServer.Start(9050);
 
             //Server Started
             //Table for Server Setup Display

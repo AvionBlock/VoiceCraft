@@ -122,7 +122,6 @@
             "Disconnected": "已斷開連接！原因: {reason}"
         },
         "DisconnectReason": {
-            "UnknownLogin": "未知登錄類型！",
             "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
             "ServerFull": "伺服器已滿！",
             "Error": "嘗試登錄時發生錯誤！"
