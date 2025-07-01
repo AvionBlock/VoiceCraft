@@ -1,6 +1,8 @@
 using System.CommandLine;
+using System.Text.Json;
 using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Server.Commands;
 using VoiceCraft.Server.Locales;
 using VoiceCraft.Server.Servers;
@@ -13,6 +15,11 @@ public static class Program
 
     public static void Main()
     {
+        var packet = new McWssEventSubscribe();
+        packet.EventName = "Testing";
+        var text = JsonSerializer.Serialize(packet);
+        Console.WriteLine(text);
+        
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales"));
         App.Start().GetAwaiter().GetResult();
     }

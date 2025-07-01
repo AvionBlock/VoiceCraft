@@ -1,6 +1,6 @@
 using System;
 using SpeexDSPSharp.Core;
-using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Audio;
