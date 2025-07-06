@@ -1,8 +1,11 @@
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McWssPackets;
 using WatsonWebsocket;
@@ -11,10 +14,14 @@ namespace VoiceCraft.Server.Servers;
 
 public class McWssServer
 {
-    private WatsonWsServer? _wsServer;
     private static readonly string SubscribePacket = JsonSerializer.Serialize(new McWssEventSubscribe("PlayerMessage"));
+    private static readonly Regex RawtextRegex = new(Regex.Escape(RawtextPacketIdentifier));
+    private const string RawtextPacketIdentifier = "§p§k";
+    
+    private readonly ConcurrentDictionary<McApiNetPeer, Guid> McApiPeers = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
+    private WatsonWsServer? _wsServer;
     private string? _loginToken;
 
     public void Start(int port, string? loginToken = null)
@@ -66,10 +73,10 @@ public class McWssServer
         {
             case "PlayerMessage":
                 var playerMessagePacket = JsonSerializer.Deserialize<McWssPlayerMessageEvent>(data);
-                if (playerMessagePacket == null) throw new ArgumentException("Invalid packet data!", nameof(data));
+                if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
-                if (rawtextMessage == null) throw new ArgumentException("Invalid packet data!", nameof(data));
-                _reader.SetSource(Encoding.UTF8.GetBytes(rawtextMessage.text)); //Handle it after this.
+                if (rawtextMessage == null || rawtextMessage.text.StartsWith(RawtextPacketIdentifier)) return;
+                _reader.SetSource(Encoding.UTF8.GetBytes(RawtextRegex.Replace(rawtextMessage.text, "", 1))); //Handle it after this.
                 var packetType = _reader.GetByte();
                 var pt = (McApiPacketType)packetType;
                 HandlePacket(pt, _reader, client);
