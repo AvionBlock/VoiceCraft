@@ -54,19 +54,7 @@ public class VoiceCraftServer : IResettable, IDisposable
     //Public Properties
     public VoiceCraftConfig Config { get; private set; }
     public VoiceCraftWorld World { get; }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    public void Reset()
-    {
-        World.Reset();
-        _audioEffectSystem.Reset();
-    }
-
+    
     ~VoiceCraftServer()
     {
         Dispose(false);
@@ -80,6 +68,32 @@ public class VoiceCraftServer : IResettable, IDisposable
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.VoiceCraftServer_Success}[/]");
         else
             throw new Exception(Locales.Locales.VoiceCraftServer_Exceptions_Failed);
+    }
+    
+    public void Update()
+    {
+        _netManager.PollEvents();
+        _visibilitySystem.Update();
+        _eventHandlerSystem.Update();
+    }
+    
+    public void Reset()
+    {
+        World.Reset();
+        _audioEffectSystem.Reset();
+    }
+
+    public void Stop()
+    {
+        if (!_netManager.IsRunning) return;
+        _netManager.DisconnectAll();
+        _netManager.Stop();
+    }
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
@@ -147,21 +161,27 @@ public class VoiceCraftServer : IResettable, IDisposable
             }
         }
     }
-
-    public void Update()
+    
+    private void Dispose(bool disposing)
     {
-        _netManager.PollEvents();
-        _visibilitySystem.Update();
-        _eventHandlerSystem.Update();
-    }
+        if (_isDisposed) return;
+        if (disposing)
+        {
+            World.Dispose();
+            _netManager.Stop();
+            _audioEffectSystem.Dispose();
+            _eventHandlerSystem.Dispose();
+            
+            _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
+            _listener.ConnectionRequestEvent -= OnConnectionRequest;
+            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
+            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
+        }
 
-    public void Stop()
-    {
-        if (!_netManager.IsRunning) return;
-        _netManager.DisconnectAll();
-        _netManager.Stop();
+        _isDisposed = true;
     }
     
+    //Packet Handling
     private void ProcessPacket(PacketType packetType, NetPacketReader reader, NetPeer? peer = null, IPEndPoint? remoteEndPoint = null)
     {
         switch (packetType)
@@ -208,8 +228,7 @@ public class VoiceCraftServer : IResettable, IDisposable
                 break;
         }
     }
-
-    //Packet Handling
+    
     private void HandleLoginPacket(LoginPacket packet, ConnectionRequest request)
     {
         if (packet.Version.Major != VoiceCraftServer.Version.Major || packet.Version.Minor != VoiceCraftServer.Version.Minor)
@@ -261,25 +280,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         var entity = World.GetEntity(peer.Id);
         if (entity is not VoiceCraftNetworkEntity) return;
         entity.Deafened = packet.Value;
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (_isDisposed) return;
-        if (disposing)
-        {
-            World.Dispose();
-            _netManager.Stop();
-            _audioEffectSystem.Dispose();
-            _eventHandlerSystem.Dispose();
-            
-            _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
-            _listener.ConnectionRequestEvent -= OnConnectionRequest;
-            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
-            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
-        }
-
-        _isDisposed = true;
     }
     
     private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)

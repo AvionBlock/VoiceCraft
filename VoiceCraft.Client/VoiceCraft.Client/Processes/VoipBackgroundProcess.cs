@@ -85,12 +85,12 @@ public class VoipBackgroundProcess(
             _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
             _voiceCraftClient.OnConnected += ClientOnConnected;
             _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
+            _voiceCraftClient.OnSetTitle += ClientOnSetTitle;
+            _voiceCraftClient.OnSetDescription += ClientOnSetDescription;
             _voiceCraftClient.OnMuteUpdated += ClientOnMuteUpdated;
             _voiceCraftClient.OnDeafenUpdated += ClientOnDeafenUpdated;
             _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
-            _voiceCraftClient.NetworkSystem.OnSetTitle += ClientOnSetTitle;
-            _voiceCraftClient.NetworkSystem.OnSetDescription += ClientOnSetDescription;
 
             //Setup audio recorder.
             _audioRecorder = audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
@@ -178,12 +178,12 @@ public class VoipBackgroundProcess(
 
             _voiceCraftClient.OnConnected -= ClientOnConnected;
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
+            _voiceCraftClient.OnSetTitle -= ClientOnSetTitle;
+            _voiceCraftClient.OnSetDescription -= ClientOnSetDescription;
             _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
             _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
             _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
-            _voiceCraftClient.NetworkSystem.OnSetTitle -= ClientOnSetTitle;
-            _voiceCraftClient.NetworkSystem.OnSetDescription -= ClientOnSetDescription;
         }
     }
 
