@@ -57,7 +57,7 @@ public partial class SelectedServerViewModel(
         _pinger = Task.Run(async () =>
         {
             var client = new VoiceCraftClient();
-            client.NetworkSystem.OnServerInfo += OnServerInfo;
+            client.OnServerInfo += OnServerInfo;
             var startTime = DateTime.MinValue;
             while (!_stopPinger)
             {
@@ -70,7 +70,7 @@ public partial class SelectedServerViewModel(
                 startTime = DateTime.UtcNow;
             }
 
-            client.NetworkSystem.OnServerInfo -= OnServerInfo;
+            client.OnServerInfo -= OnServerInfo;
             client.Dispose();
         });
     }
