@@ -2,12 +2,12 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiLogoutPacket : McApiPacket
+    public class McApiPingPacket : McApiPacket
     {
         public override McApiPacketType PacketType => McApiPacketType.Logout;
         public string SessionToken { get; private set; }
 
-        public McApiLogoutPacket(string sessionToken = "")
+        public McApiPingPacket(string sessionToken = "")
         {
             SessionToken = sessionToken;
         }
