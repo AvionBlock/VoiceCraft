@@ -66,6 +66,7 @@ public static class App
                 try
                 {
                     server.Update();
+                    mcwssServer.Update();
                     await FlushCommand(rootCommand);
 
                     var dist = DateTime.UtcNow - startTime;
