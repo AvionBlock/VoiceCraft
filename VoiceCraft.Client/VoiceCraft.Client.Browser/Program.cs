@@ -18,8 +18,8 @@ internal sealed class Program
         await BuildJsInterops();
 
         var nativeStorage = new NativeStorageService();
-        CrashLogService.NativeStorageService = nativeStorage;
-        CrashLogService.Load();
+        LogService.NativeStorageService = nativeStorage;
+        LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
         App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
@@ -42,7 +42,7 @@ internal sealed class Program
         try
         {
             if (e.ExceptionObject is Exception ex)
-                CrashLogService.Log(ex); //Log it
+                LogService.LogCrash(ex); //Log it
         }
         catch (Exception writeEx)
         {

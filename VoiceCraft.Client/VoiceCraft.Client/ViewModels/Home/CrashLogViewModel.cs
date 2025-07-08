@@ -17,7 +17,7 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
     {
         try
         {
-            CrashLogService.Clear();
+            LogService.ClearCrashLogs();
             CrashLogs.Clear();
             notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_CrashLogs, "Successfully cleared all logs.");
         }
@@ -29,6 +29,6 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
 
     public override void OnAppearing(object? data = null)
     {
-        CrashLogs = new ObservableCollection<KeyValuePair<DateTime, string>>(CrashLogService.CrashLogs.OrderByDescending(x => x.Key));
+        CrashLogs = new ObservableCollection<KeyValuePair<DateTime, string>>(LogService.CrashLogs.OrderByDescending(x => x.Key));
     }
 }

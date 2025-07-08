@@ -48,8 +48,8 @@ public class MainActivity : AvaloniaMainActivity<App>
     protected override void OnCreate(Bundle? app)
     {
         var nativeStorage = new NativeStorageService();
-        CrashLogService.NativeStorageService = nativeStorage;
-        CrashLogService.Load();
+        LogService.NativeStorageService = nativeStorage;
+        LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
 
@@ -108,7 +108,7 @@ public class MainActivity : AvaloniaMainActivity<App>
         try
         {
             if (e.ExceptionObject is Exception ex)
-                CrashLogService.Log(ex); //Log it
+                LogService.LogCrash(ex); //Log it
         }
         catch (Exception writeEx)
         {
