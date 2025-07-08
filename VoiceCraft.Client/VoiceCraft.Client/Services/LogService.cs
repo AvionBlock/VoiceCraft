@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,12 +23,15 @@ public static class LogService
     public static void Log(Exception exception)
     {
         _exceptionLogs.ExceptionLogs.TryAdd(DateTime.UtcNow, exception.ToString());
+        TrimExceptionLogs();
         _ = SaveAsync();
     }
     
     public static void LogCrash(Exception exception)
     {
+        Debug.WriteLine(exception); //Gets omitted on release build.
         _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
+        TrimCrashLogs();
         SaveLogs();
     }
 
@@ -42,20 +46,13 @@ public static class LogService
             var loadedLogs =
                 JsonSerializer.Deserialize<ExceptionLogsStructure>(result, CrashLogGenerationContext.Default.ExceptionLogsStructure);
             if (loadedLogs == null) return;
-
-            var exceptionLogs = loadedLogs.ExceptionLogs.Count;
-            if(exceptionLogs > Limit)
-                loadedLogs.ExceptionLogs = new ConcurrentDictionary<DateTime, string>(loadedLogs.ExceptionLogs.Skip(exceptionLogs - Limit));
-            
-            var crashLogs = loadedLogs.CrashLogs.Count;
-            if(crashLogs > Limit)
-                loadedLogs.CrashLogs = new ConcurrentDictionary<DateTime, string>(loadedLogs.CrashLogs.Skip(crashLogs - Limit));
-
             _exceptionLogs = loadedLogs;
+            TrimExceptionLogs();
+            TrimCrashLogs();
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            //Do Nothing.
+            Log(ex); //Log it, Don't care what we log.
         }
     }
 
@@ -69,6 +66,24 @@ public static class LogService
     {
         _exceptionLogs.ExceptionLogs.Clear();
         _ = SaveAsync();
+    }
+
+    private static void TrimExceptionLogs()
+    {
+        foreach (var log in _exceptionLogs.ExceptionLogs.OrderBy(d => d.Key))
+        {
+            if (_exceptionLogs.CrashLogs.Count <= Limit) return;
+            _exceptionLogs.ExceptionLogs.TryRemove(log.Key, out _);
+        }
+    }
+    
+    private static void TrimCrashLogs()
+    {
+        foreach (var log in _exceptionLogs.CrashLogs.OrderBy(d => d.Key))
+        {
+            if (_exceptionLogs.CrashLogs.Count <= Limit) return;
+            _exceptionLogs.CrashLogs.TryRemove(log.Key, out _);
+        }
     }
 
     private static async Task SaveAsync()

@@ -190,9 +190,9 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 
                 _outputBuffer.Write(readBuffer, Constants.BitDepth / 16 * Constants.Channels * read);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex);
+                //Ignored. This might end up killing our logging service.
             }
         }
     }
