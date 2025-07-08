@@ -36,7 +36,7 @@ namespace VoiceCraft.Core
         //Storage
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
-        public const string CrashLogsFile = "CrashLogs.json";
+        public const string ExceptionLogsFile = "ExceptionLogs.json";
         
         //Network Stuff.
         public const string RawtextPacketIdentifier = "§p§k";
