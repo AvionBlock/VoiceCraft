@@ -29,7 +29,8 @@
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="13"
-                                   Text="{Binding Value}" />
+                                   Text="{Binding Value}"
+                                   MaxLines="8"/> <!-- Only show a small amount of text, to not annihilate mobile rendering. -->
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

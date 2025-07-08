@@ -11,8 +11,8 @@ namespace VoiceCraft.Client.Services;
 
 public static class LogService
 {
-    private const int Limit = 50;
     public static StorageService? NativeStorageService;
+    private const int Limit = 50;
     private static ExceptionLogsStructure _exceptionLogs = new();
     private static bool _queueWrite;
     private static bool _writing;
@@ -62,11 +62,13 @@ public static class LogService
     public static void ClearCrashLogs()
     {
         _exceptionLogs.CrashLogs.Clear();
+        _ = SaveAsync(); //Since we don't to a save immediate, we need to call the save.
     }
     
     public static void ClearExceptionLogs()
     {
         _exceptionLogs.ExceptionLogs.Clear();
+        _ = SaveAsync();
     }
 
     private static async Task SaveAsync()
