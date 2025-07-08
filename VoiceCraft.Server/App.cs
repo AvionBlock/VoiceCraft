@@ -16,7 +16,7 @@ public static class App
     public static async Task Start()
     {
         var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
-        var mcwssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
+        var mcWssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
         
@@ -33,7 +33,7 @@ public static class App
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
-            mcwssServer.Start(9050);
+            mcWssServer.Start(properties.McWssConfig);
 
             //Server Started
             //Table for Server Setup Display
@@ -43,6 +43,7 @@ public static class App
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
 
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
+            serverSetupTable.AddRow("[green]McWss[/]", mcWssServer.Config.Port.ToString(), "[aqua]TCP/WS[/]");
 
             //Register Commands
             AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);
@@ -66,7 +67,7 @@ public static class App
                 try
                 {
                     server.Update();
-                    mcwssServer.Update();
+                    mcWssServer.Update();
                     await FlushCommand(rootCommand);
 
                     var dist = DateTime.UtcNow - startTime;

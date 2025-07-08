@@ -5,10 +5,12 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
+using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McWssPackets;
+using VoiceCraft.Server.Config;
 using WatsonWebsocket;
 
 namespace VoiceCraft.Server.Servers;
@@ -16,26 +18,44 @@ namespace VoiceCraft.Server.Servers;
 public class McWssServer
 {
     private static readonly string SubscribePacket = JsonSerializer.Serialize(new McWssEventSubscribe("PlayerMessage"));
-    private static readonly Regex RawtextRegex = new(Regex.Escape(RawtextPacketIdentifier));
-    private const string RawtextPacketIdentifier = "§p§k";
-    
+    private static readonly Regex RawtextRegex = new(Regex.Escape(Constants.RawtextPacketIdentifier));
+
+    //Public Properties
+    public McWssConfig Config { get; private set; } = new();
+
     private readonly ConcurrentDictionary<ClientMetadata, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _internalReader = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private WatsonWsServer? _wsServer;
-    private string? _loginToken;
 
-    public void Start(int port, string? loginToken = null)
+    public void Start(McWssConfig? config = null)
     {
         Stop();
-        _loginToken = loginToken;
-        _wsServer = new WatsonWsServer(port: port);
-        _wsServer.ClientConnected += OnClientConnected;
-        _wsServer.ClientDisconnected += OnClientDisconnected;
-        _wsServer.MessageReceived += OnMessageReceived;
 
-        _wsServer.Start();
+        if (config != null)
+            Config = config;
+
+        try
+        {
+            AnsiConsole.WriteLine(Locales.Locales.McWssServer_Starting);
+            _wsServer = new WatsonWsServer(port: (int)Config.Port);
+
+            _wsServer.ClientConnected += OnClientConnected;
+            _wsServer.ClientDisconnected += OnClientDisconnected;
+            _wsServer.MessageReceived += OnMessageReceived;
+
+            _wsServer.Start();
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Success}[/]");
+        }
+        catch
+        {
+            if (_wsServer == null) throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed);
+            _wsServer.ClientConnected -= OnClientConnected;
+            _wsServer.ClientDisconnected += OnClientDisconnected;
+            _wsServer.MessageReceived += OnMessageReceived;
+            throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed);
+        }
     }
 
     public void Update()
@@ -65,8 +85,14 @@ public class McWssServer
 
     public void Stop()
     {
-        _wsServer?.Dispose();
+        if (_wsServer == null) return;
+        AnsiConsole.WriteLine(Locales.Locales.McWssServer_Stopping);
+        _wsServer.ClientConnected -= OnClientConnected;
+        _wsServer.ClientDisconnected -= OnClientDisconnected;
+        _wsServer.MessageReceived -= OnMessageReceived;
+        _wsServer.Dispose();
         _wsServer = null;
+        AnsiConsole.WriteLine(Locales.Locales.McWssServer_Stopped);
     }
 
     public void SendPacket(McApiNetPeer netPeer, McApiPacket packet)
@@ -90,7 +116,7 @@ public class McWssServer
         e.Client.Metadata = netPeer;
         _wsServer?.SendAsync(e.Client.Guid, SubscribePacket);
     }
-    
+
     private void OnClientDisconnected(object? sender, DisconnectionEventArgs e)
     {
         _mcApiPeers.TryRemove(e.Client, out _);
@@ -129,7 +155,7 @@ public class McWssServer
                 var playerMessagePacket = JsonSerializer.Deserialize<McWssPlayerMessageEvent>(data);
                 if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
-                if (rawtextMessage == null || rawtextMessage.text.StartsWith(RawtextPacketIdentifier)) return;
+                if (rawtextMessage == null || rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
                 _internalReader.Clear();
                 _internalReader.SetSource(Encoding.UTF8.GetBytes(RawtextRegex.Replace(rawtextMessage.text, "", 1))); //Handle it after this.
                 var packetType = _internalReader.GetByte();
@@ -172,7 +198,7 @@ public class McWssServer
 
     private void HandleLoginPacket(McApiLoginPacket loginPacket, ClientMetadata client)
     {
-        if (!string.IsNullOrEmpty(_loginToken) && _loginToken != loginPacket.LoginToken)
+        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.LoginToken)
         {
             _wsServer?.DisconnectClient(client.Guid);
             return;

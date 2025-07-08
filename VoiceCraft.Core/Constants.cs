@@ -37,6 +37,9 @@ namespace VoiceCraft.Core
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
         public const string CrashLogsFile = "CrashLogs.json";
+        
+        //Network Stuff.
+        public const string RawtextPacketIdentifier = "§p§k";
 
         //Settings GUIDS.
         //Speex DSP
