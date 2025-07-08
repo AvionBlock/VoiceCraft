@@ -82,6 +82,7 @@ public class App : Application
                     };
                     break;
             }
+            LogService.Log(ex);
         }
 
         base.OnFrameworkInitializationCompleted();

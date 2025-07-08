@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,6 +8,7 @@ using OpusSharp.Core;
 using OpusSharp.Core.Extensions;
 using VoiceCraft.Client.Audio.Effects;
 using VoiceCraft.Client.Network.Systems;
+using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
 
@@ -274,7 +274,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex);
+            LogService.Log(ex);
         }
 
         reader.Recycle();
@@ -290,7 +290,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex);
+            LogService.Log(ex);
         }
 
         reader.Recycle();

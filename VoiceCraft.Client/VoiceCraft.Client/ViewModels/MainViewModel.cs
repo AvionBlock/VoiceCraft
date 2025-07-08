@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Imaging;
+﻿using System;
+using Avalonia.Media.Imaging;
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jeek.Avalonia.Localization;

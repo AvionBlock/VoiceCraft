@@ -99,10 +99,11 @@ public partial class SelectedServerViewModel(
             await backgroundService.StartBackgroundProcess(process);
             navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(process));
         }
-        catch
+        catch(Exception ex)
         {
             notificationService.SendErrorNotification("Background worker failed to start VOIP process!"); //TODO NEED TO LOCALE THESE!
             _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
+            LogService.Log(ex);
         }
 
         DisableBackButton = false;
