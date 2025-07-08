@@ -16,8 +16,8 @@ public static class LogService
     private static ExceptionLogsStructure _exceptionLogs = new();
     private static bool _queueWrite;
     private static bool _writing;
-    public static IEnumerable<KeyValuePair<DateTime, string>> ExceptionLogs => _exceptionLogs.ExceptionLogs.OrderByDescending(d => d);
-    public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs => _exceptionLogs.CrashLogs.OrderByDescending(d => d);
+    public static IEnumerable<KeyValuePair<DateTime, string>> ExceptionLogs => _exceptionLogs.ExceptionLogs.OrderByDescending(d => d.Key);
+    public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs => _exceptionLogs.CrashLogs.OrderByDescending(d => d.Key);
 
     public static void Log(Exception exception)
     {
