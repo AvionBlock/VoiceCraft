@@ -15,12 +15,15 @@ namespace VoiceCraft.Server.Servers;
 public class VoiceCraftServer : IResettable, IDisposable
 {
     public static readonly Version Version = new(1, 1, 0);
-    private readonly AudioEffectSystem _audioEffectSystem;
-
-    //Privates
+    
+    //Public Properties
+    public VoiceCraftConfig Config { get; private set; } = new();
+    public VoiceCraftWorld World { get; } = new();
+    
     //Networking
-    private readonly NetDataWriter _dataWriter;
-    private readonly EventBasedNetListener _listener;
+    private readonly NetDataWriter _dataWriter = new();
+    private readonly EventBasedNetListener _listener = new();
+    private readonly AudioEffectSystem _audioEffectSystem = new();
     private readonly EventHandlerSystem _eventHandlerSystem;
     private readonly NetManager _netManager;
 
@@ -30,18 +33,12 @@ public class VoiceCraftServer : IResettable, IDisposable
 
     public VoiceCraftServer()
     {
-        Config = new VoiceCraftConfig();
-        World = new VoiceCraftWorld();
-
-        _dataWriter = new NetDataWriter();
-        _listener = new EventBasedNetListener();
         _netManager = new NetManager(_listener)
         {
             AutoRecycle = true,
             UnconnectedMessagesEnabled = true
         };
-
-        _audioEffectSystem = new AudioEffectSystem();
+        
         _eventHandlerSystem = new EventHandlerSystem(this, World, _audioEffectSystem);
         _visibilitySystem = new VisibilitySystem(World, _audioEffectSystem);
         
@@ -50,10 +47,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
         _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
     }
-
-    //Public Properties
-    public VoiceCraftConfig Config { get; private set; }
-    public VoiceCraftWorld World { get; }
     
     ~VoiceCraftServer()
     {
@@ -62,8 +55,12 @@ public class VoiceCraftServer : IResettable, IDisposable
 
     public void Start(VoiceCraftConfig? config = null)
     {
+        Stop();
+        
         AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Starting);
-        Config = config ?? new VoiceCraftConfig();
+        if(config != null)
+            Config = config;
+        
         if(_netManager.IsRunning || _netManager.Start((int)Config.Port))
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.VoiceCraftServer_Success}[/]");
         else
@@ -86,8 +83,10 @@ public class VoiceCraftServer : IResettable, IDisposable
     public void Stop()
     {
         if (!_netManager.IsRunning) return;
+        AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopping);
         _netManager.DisconnectAll();
         _netManager.Stop();
+        AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopped);
     }
     
     public void Dispose()

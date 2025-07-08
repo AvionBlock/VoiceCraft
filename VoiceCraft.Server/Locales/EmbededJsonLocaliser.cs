@@ -13,7 +13,7 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
 
     public EmbeddedJsonLocalizer(string languageJsonDirectory = "")
     {
-        FallbackLanguage = "en-us";
+        FallbackLanguage = Core.Constants.DefaultLanguage;
         _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
     }
 

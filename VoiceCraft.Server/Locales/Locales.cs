@@ -29,8 +29,15 @@ public static class Locales
     
     public static string VoiceCraftServer_Starting => Localizer.Get("VoiceCraftServer.Starting");
     public static string VoiceCraftServer_Success => Localizer.Get("VoiceCraftServer.Success");
+    public static string VoiceCraftServer_Stopping => Localizer.Get("VoiceCraftServer.Stopping");
+    public static string VoiceCraftServer_Stopped => Localizer.Get("VoiceCraftServer.Stopped");
     public static string VoiceCraftServer_Exceptions_Failed => Localizer.Get("VoiceCraftServer.Exceptions.Failed");
     
+    public static string McWssServer_Starting => Localizer.Get("McWssServer.Starting");
+    public static string McWssServer_Success => Localizer.Get("McWssServer.Success");
+    public static string McWssServer_Stopping => Localizer.Get("McWssServer.Stopping");
+    public static string McWssServer_Stopped => Localizer.Get("McWssServer.Stopped");
+    public static string McWssServer_Exceptions_Failed => Localizer.Get("McWssServer.Exceptions.Failed");
     
     public static string Tables_ServerSetup_Server => Localizer.Get("Tables.ServerSetup.Server");
     public static string Tables_ServerSetup_Port => Localizer.Get("Tables.ServerSetup.Port");

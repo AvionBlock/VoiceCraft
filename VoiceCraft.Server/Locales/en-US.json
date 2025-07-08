@@ -36,6 +36,13 @@
       "Failed": "Failed to start VoiceCraft Server! Please check if another process is using the same port!"
     }
   },
+  "McWssServer": {
+    "Starting": "Starting McWss server...",
+    "Success": "Successfully started the McWss server!",
+    "Exceptions": {
+      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "Server",

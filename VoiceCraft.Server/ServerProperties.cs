@@ -13,6 +13,7 @@ public class ServerProperties
     private ServerPropertiesStructure _properties = new();
 
     public VoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
+    public McWssConfig McWssConfig => _properties.McWssConfig;
     public McApiConfig McApiConfig => _properties.McApiConfig;
 
     public void Load()
@@ -78,6 +79,7 @@ public class ServerProperties
 public class ServerPropertiesStructure
 {
     public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
+    public McWssConfig McWssConfig { get; set; } = new();
     public McApiConfig McApiConfig { get; set; } = new();
 }
 
