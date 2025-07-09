@@ -11,18 +11,20 @@ namespace VoiceCraft.Core.Network
         private readonly ConcurrentQueue<byte[]> _outboundPacketQueue = new ConcurrentQueue<byte[]>();
         
         public DateTime LastPing = DateTime.UtcNow;
-        public object Metadata = new object();
-        public bool Connected { get; set; }
-        public string SessionToken { get; }
+        public bool Connected { get; private set; }
+        public string SessionToken { get; private set; } = string.Empty;
 
-        public McApiNetPeer(string sessionToken)
+        public void AcceptConnection(string sessionToken)
         {
             SessionToken = sessionToken;
+            Connected = true;
         }
 
         public void ReceiveInboundPacket(byte[] packet)
         {
             if (!Connected) return;
+            if (packet.Length > Constants.McApiMtuLimit)
+                throw new ArgumentOutOfRangeException(nameof(packet));
             
             _inboundPacketQueue.Enqueue(packet);
         }
@@ -35,8 +37,10 @@ namespace VoiceCraft.Core.Network
         public void SendPacket(NetDataWriter writer)
         {
             if (!Connected) return;
+            if (writer.Length > Constants.McApiMtuLimit)
+                throw new ArgumentOutOfRangeException(nameof(writer));
             
-            _outboundPacketQueue.Enqueue(writer.CopyData()); //Will need to fragment it here.
+            _outboundPacketQueue.Enqueue(writer.CopyData());
         }
 
         public bool RetrieveOutboundPacket([NotNullWhen(true)] out byte[]? packet)

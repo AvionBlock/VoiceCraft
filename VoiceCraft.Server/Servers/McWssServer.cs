@@ -24,7 +24,6 @@ public class McWssServer
     public McWssConfig Config { get; private set; } = new();
 
     private readonly ConcurrentDictionary<ClientMetadata, McApiNetPeer> _mcApiPeers = [];
-    private readonly NetDataReader _internalReader = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private WatsonWsServer? _wsServer;
@@ -68,7 +67,7 @@ public class McWssServer
                 _reader.SetSource(packetData);
                 var packetType = _reader.GetByte();
                 var pt = (McApiPacketType)packetType;
-                HandlePacket(pt, _reader, peer.Key);
+                HandlePacket(pt, _reader, peer.Key, peer.Value);
             }
 
             while (peer.Value.RetrieveOutboundPacket(out var outboundPacketData))
@@ -111,7 +110,7 @@ public class McWssServer
 
     private void OnClientConnected(object? sender, ConnectionEventArgs e)
     {
-        var netPeer = new McApiNetPeer(Guid.NewGuid().ToString());
+        var netPeer = new McApiNetPeer();
         _mcApiPeers.TryAdd(e.Client, netPeer);
         e.Client.Metadata = netPeer;
         _wsServer?.SendAsync(e.Client.Guid, SubscribePacket);
@@ -127,7 +126,6 @@ public class McWssServer
     {
         try
         {
-            Debug.WriteLine(Encoding.UTF8.GetString(e.Data));
             if (e.MessageType != WebSocketMessageType.Text)
                 return;
 
@@ -156,42 +154,41 @@ public class McWssServer
                 if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
                 if (rawtextMessage == null || rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
-                _internalReader.Clear();
-                _internalReader.SetSource(Encoding.UTF8.GetBytes(RawtextRegex.Replace(rawtextMessage.text, "", 1))); //Handle it after this.
-                var packetType = _internalReader.GetByte();
-                var pt = (McApiPacketType)packetType;
-                HandlePacket(pt, _internalReader, client);
+                if (_mcApiPeers.TryGetValue(client, out var peer))
+                    peer.ReceiveInboundPacket(Encoding.UTF8.GetBytes(RawtextRegex.Replace(rawtextMessage.text, "", 1)));
                 break;
         }
     }
 
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, ClientMetadata client)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, ClientMetadata client, McApiNetPeer peer)
     {
+        if (packetType == McApiPacketType.Login && !peer.Connected)
+        {
+            var loginPacket = new McApiLoginPacket();
+            loginPacket.Deserialize(reader);
+            HandleLoginPacket(loginPacket, client);
+            return;
+        }
+        if (!peer.Connected) return;
+        
+        // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
         switch (packetType)
         {
-            case McApiPacketType.Login:
-                var loginPacket = new McApiLoginPacket();
-                loginPacket.Deserialize(reader);
-                HandleLoginPacket(loginPacket, client);
-                break;
             case McApiPacketType.Logout:
                 var logoutPacket = new McApiLogoutPacket();
                 logoutPacket.Deserialize(reader);
                 HandleLogoutPacket(logoutPacket, client);
                 break;
-            case McApiPacketType.Update:
             case McApiPacketType.Ping:
                 var pingPacket = new McApiPingPacket();
                 pingPacket.Deserialize(reader);
                 HandlePingPacket(pingPacket, client);
                 break;
-            case McApiPacketType.Fragment:
+            case McApiPacketType.Login:
             case McApiPacketType.Accept:
             case McApiPacketType.Deny:
             case McApiPacketType.Unknown:
             default:
-                if (client.Metadata is not McApiNetPeer netPeer) return;
-                netPeer.ReceiveInboundPacket(reader.GetRemainingBytes());
                 break;
         }
     }
@@ -205,7 +202,7 @@ public class McWssServer
         }
 
         if (!_mcApiPeers.TryGetValue(client, out var netPeer)) return;
-        netPeer.Connected = true;
+        netPeer.AcceptConnection(Guid.NewGuid().ToString());
         SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
     }
 

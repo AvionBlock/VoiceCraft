@@ -44,11 +44,9 @@ namespace VoiceCraft.Core
         Unknown,
         Login,
         Logout,
-        Update,
         Ping,
-        Fragment,
         Accept,
-        Deny,
+        Deny
     }
 
     #endregion
