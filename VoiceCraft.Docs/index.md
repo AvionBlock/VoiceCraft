@@ -17,8 +17,8 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 # [Desktop](#tab/desktop)
 
-![MainPage](images/MainPage.png){width=800}
-![ServerPage](images/ServerPage.png){width=800}
+![MainPage](/images/MainPage.png){width=800}
+![ServerPage](/images/ServerPage.png){width=800}
 
 # [Mobile](#tab/mobile)
 
