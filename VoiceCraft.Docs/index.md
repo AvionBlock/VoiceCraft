@@ -17,12 +17,12 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 # [Desktop](#tab/desktop)
 
-![MainPage](/images/MainPage.png){width=800}
-![ServerPage](/images/ServerPage.png){width=800}
+![MainPage](./images/MainPage.png){width=800}
+![ServerPage](./images/ServerPage.png){width=800}
 
 # [Mobile](#tab/mobile)
 
-![MainPageAndroid](/images/MainPageAndroid.png){width=400}
+![MainPageAndroid](./images/MainPageAndroid.png){width=400}
 
 ---
 
@@ -37,6 +37,6 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 ## Quick Start
 
-- [Client Installation](/guides/introduction?tabs=clientInstallation)
-- [Server Installation](/guides/introduction?tabs=serverInstallation)
+- [Client Installation](./guides/introduction.md?tabs=clientInstallation)
+- [Server Installation](./guides/introduction.md?tabs=serverInstallation)
 - Addon API Reference
