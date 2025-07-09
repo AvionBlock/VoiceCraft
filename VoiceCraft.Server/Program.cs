@@ -23,6 +23,7 @@ public static class Program
 
         serviceCollection.AddSingleton<VoiceCraftServer>();
         serviceCollection.AddSingleton<McWssServer>();
+        serviceCollection.AddSingleton<McHttpServer>();
         serviceCollection.AddSingleton<ServerProperties>();
 
         //Commands
