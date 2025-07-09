@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -119,7 +118,6 @@ public class McWssServer
     private void OnClientDisconnected(object? sender, DisconnectionEventArgs e)
     {
         _mcApiPeers.TryRemove(e.Client, out _);
-        Debug.WriteLine($"Disconnected Client {e.Client.IpPort}");
     }
 
     private void OnMessageReceived(object? sender, MessageReceivedEventArgs e)

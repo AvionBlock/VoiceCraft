@@ -17,6 +17,7 @@ public static class App
     {
         var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
         var mcWssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
+        var httpServer = Program.ServiceProvider.GetRequiredService<McHttpServer>();
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
         
@@ -44,6 +45,7 @@ public static class App
 
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
             serverSetupTable.AddRow("[green]McWss[/]", mcWssServer.Config.Port.ToString(), "[aqua]TCP/WS[/]");
+            serverSetupTable.AddRow("[green]McHttp[/]", httpServer.Config.Port.ToString(), "[aqua]TCP/HTTP[/]");
 
             //Register Commands
             AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);

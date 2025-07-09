@@ -14,7 +14,7 @@ public class ServerProperties
 
     public VoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
     public McWssConfig McWssConfig => _properties.McWssConfig;
-    public McApiConfig McApiConfig => _properties.McApiConfig;
+    public McHttpConfig McHttpConfig => _properties.McHttpConfig;
 
     public void Load()
     {
@@ -80,7 +80,7 @@ public class ServerPropertiesStructure
 {
     public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssConfig McWssConfig { get; set; } = new();
-    public McApiConfig McApiConfig { get; set; } = new();
+    public McHttpConfig McHttpConfig { get; set; } = new();
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
