@@ -40,3 +40,10 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 - [Client Installation](./guides/introduction.md?tabs=clientInstallation)
 - [Server Installation](./guides/introduction.md?tabs=serverInstallation)
 - Addon API Reference
+
+## Dedicated Hosting
+
+- Atrioxhosting €0.44/m (free trial): https://atrioxhost.com/voicecraft
+
+## Support
+[![Discord Shield](https://discordapp.com/api/guilds/847396393068265472/widget.png?style=shield)](https://discord.gg/fJGsRY5hh9)
