@@ -28,8 +28,8 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 ## Features
 - Cross platform support for Android, Windows, Linux, MacOS and iOS devices!
-- Proximity voice chat with filters.
-- Multilinual support.
+- Proximity voice chat with filters and effects!
+- Multilingual support.
 - Multiple themes.
 - Addon API for customization.
 - In-app local server hosting.
