@@ -60,24 +60,7 @@ public class McWssServer
     {
         foreach (var peer in _mcApiPeers)
         {
-            while (peer.Value.RetrieveInboundPacket(out var packetData))
-            {
-                _reader.Clear();
-                _reader.SetSource(packetData);
-                var packetType = _reader.GetByte();
-                var pt = (McApiPacketType)packetType;
-                HandlePacket(pt, _reader, peer.Key, peer.Value);
-            }
-
-            while (peer.Value.RetrieveOutboundPacket(out var outboundPacketData))
-            {
-                SendPacket(peer.Key.Guid, outboundPacketData);
-            }
-
-            if (peer.Value.LastPing.Add(TimeSpan.FromSeconds(5)) <= DateTime.UtcNow)
-            {
-                _wsServer?.DisconnectClient(peer.Key.Guid);
-            }
+            UpdatePeer(peer);
         }
     }
 
@@ -106,6 +89,35 @@ public class McWssServer
         var packet = new McWssCommandRequest($"scripevent vc:mcapi {Encoding.UTF8.GetString(packetData, 0, packetData.Length)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
+    
+    private void UpdatePeer(KeyValuePair<ClientMetadata, McApiNetPeer> peer)
+    {
+        while (peer.Value.RetrieveInboundPacket(out var packetData))
+        {
+            try
+            {
+                _reader.Clear();
+                _reader.SetSource(packetData);
+                var packetType = _reader.GetByte();
+                var pt = (McApiPacketType)packetType;
+                HandlePacket(pt, _reader, peer.Value);
+            }
+            catch
+            {
+                //Do Nothing
+            }
+        }
+
+        while (peer.Value.RetrieveOutboundPacket(out var outboundPacketData))
+        {
+            SendPacket(peer.Key.Guid, outboundPacketData);
+        }
+
+        if (peer.Value.Connected && peer.Value.LastPing.Add(TimeSpan.FromSeconds(5)) <= DateTime.UtcNow)
+        {
+            peer.Value.Disconnect();
+        }
+    }
 
     private void OnClientConnected(object? sender, ConnectionEventArgs e)
     {
@@ -117,7 +129,10 @@ public class McWssServer
 
     private void OnClientDisconnected(object? sender, DisconnectionEventArgs e)
     {
-        _mcApiPeers.TryRemove(e.Client, out _);
+        if (_mcApiPeers.TryRemove(e.Client, out var netPeer))
+        {
+            netPeer.Disconnect();
+        }
     }
 
     private void OnMessageReceived(object? sender, MessageReceivedEventArgs e)
@@ -151,20 +166,20 @@ public class McWssServer
                 var playerMessagePacket = JsonSerializer.Deserialize<McWssPlayerMessageEvent>(data);
                 if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
-                if (rawtextMessage == null || rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
+                if (rawtextMessage == null || !rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
                 if (_mcApiPeers.TryGetValue(client, out var peer))
                     peer.ReceiveInboundPacket(Encoding.UTF8.GetBytes(RawtextRegex.Replace(rawtextMessage.text, "", 1)));
                 break;
         }
     }
 
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, ClientMetadata client, McApiNetPeer peer)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer)
     {
         if (packetType == McApiPacketType.Login && !peer.Connected)
         {
             var loginPacket = new McApiLoginPacket();
             loginPacket.Deserialize(reader);
-            HandleLoginPacket(loginPacket, client);
+            HandleLoginPacket(loginPacket, peer);
             return;
         }
         if (!peer.Connected) return;
@@ -175,12 +190,12 @@ public class McWssServer
             case McApiPacketType.Logout:
                 var logoutPacket = new McApiLogoutPacket();
                 logoutPacket.Deserialize(reader);
-                HandleLogoutPacket(logoutPacket, client);
+                HandleLogoutPacket(logoutPacket, peer);
                 break;
             case McApiPacketType.Ping:
                 var pingPacket = new McApiPingPacket();
                 pingPacket.Deserialize(reader);
-                HandlePingPacket(pingPacket, client);
+                HandlePingPacket(pingPacket, peer);
                 break;
             case McApiPacketType.Login:
             case McApiPacketType.Accept:
@@ -191,33 +206,25 @@ public class McWssServer
         }
     }
 
-    private void HandleLoginPacket(McApiLoginPacket loginPacket, ClientMetadata client)
+    private void HandleLoginPacket(McApiLoginPacket loginPacket, McApiNetPeer netPeer)
     {
         if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.LoginToken)
-        {
-            _wsServer?.DisconnectClient(client.Guid);
             return;
-        }
-
-        if (!_mcApiPeers.TryGetValue(client, out var netPeer)) return;
+        
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
         SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
     }
 
-    private void HandleLogoutPacket(McApiLogoutPacket logoutPacket, ClientMetadata client)
+    private static void HandleLogoutPacket(McApiLogoutPacket logoutPacket, McApiNetPeer netPeer)
     {
-        if (string.IsNullOrWhiteSpace(logoutPacket.SessionToken)) return; //Needs a session token at least.
-        if (_mcApiPeers.TryGetValue(client, out var netPeer) && netPeer.SessionToken == logoutPacket.SessionToken)
-            _wsServer?.DisconnectClient(client.Guid);
+        if (netPeer.SessionToken != logoutPacket.SessionToken) return;
+        netPeer.Disconnect();
     }
 
-    private void HandlePingPacket(McApiPingPacket pingPacket, ClientMetadata client)
+    private static void HandlePingPacket(McApiPingPacket pingPacket, McApiNetPeer netPeer)
     {
-        if (string.IsNullOrWhiteSpace(pingPacket.SessionToken)) return; //Needs a session token at least.
-        if (_mcApiPeers.TryGetValue(client, out var netPeer) && netPeer.SessionToken == pingPacket.SessionToken)
-        {
-            netPeer.LastPing = DateTime.UtcNow;
-        }
+        if (netPeer.SessionToken != pingPacket.SessionToken) return; //Needs a session token at least.
+        netPeer.LastPing = DateTime.UtcNow;
     }
 
     //Resharper disable All
