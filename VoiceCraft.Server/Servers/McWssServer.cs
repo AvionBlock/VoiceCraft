@@ -73,7 +73,7 @@ public class McWssServer
         _wsServer.MessageReceived -= OnMessageReceived;
         _wsServer.Dispose();
         _wsServer = null;
-        AnsiConsole.WriteLine(Locales.Locales.McWssServer_Stopped);
+        AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Stopped}[/]");
     }
 
     public void SendPacket(McApiNetPeer netPeer, McApiPacket packet)
