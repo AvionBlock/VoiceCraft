@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using LiteNetLib.Utils;
 
@@ -9,23 +10,36 @@ namespace VoiceCraft.Core.Network
     {
         private readonly ConcurrentQueue<byte[]> _inboundPacketQueue = new ConcurrentQueue<byte[]>();
         private readonly ConcurrentQueue<byte[]> _outboundPacketQueue = new ConcurrentQueue<byte[]>();
+
+        public event Action? OnDisconnected;
         
-        public DateTime LastPing = DateTime.UtcNow;
+        public DateTime LastPing { get; set; } = DateTime.UtcNow;
         public bool Connected { get; private set; }
         public string SessionToken { get; private set; } = string.Empty;
+
+        public void Disconnect()
+        {
+            if (!Connected) return;
+            Connected = false;
+            SessionToken = string.Empty;
+            OnDisconnected?.Invoke();
+            
+            Debug.WriteLine("McApi Client Disconnected");
+        }
 
         public void AcceptConnection(string sessionToken)
         {
             SessionToken = sessionToken;
             Connected = true;
+            LastPing = DateTime.UtcNow;
         }
 
         public void ReceiveInboundPacket(byte[] packet)
         {
-            if (!Connected) return;
             if (packet.Length > Constants.McApiMtuLimit)
                 throw new ArgumentOutOfRangeException(nameof(packet));
             
+            LastPing = DateTime.UtcNow;
             _inboundPacketQueue.Enqueue(packet);
         }
         
