@@ -39,6 +39,12 @@ public static class Locales
     public static string McWssServer_Stopped => Localizer.Get("McWssServer.Stopped");
     public static string McWssServer_Exceptions_Failed => Localizer.Get("McWssServer.Exceptions.Failed");
     
+    public static string McHttpServer_Starting => Localizer.Get("McHttpServer.Starting");
+    public static string McHttpServer_Success => Localizer.Get("McHttpServer.Success");
+    public static string McHttpServer_Stopping => Localizer.Get("McHttpServer.Stopping");
+    public static string McHttpServer_Stopped => Localizer.Get("McHttpServer.Stopped");
+    public static string McHttpServer_Exceptions_Failed => Localizer.Get("McHttpServer.Exceptions.Failed");
+    
     public static string Tables_ServerSetup_Server => Localizer.Get("Tables.ServerSetup.Server");
     public static string Tables_ServerSetup_Port => Localizer.Get("Tables.ServerSetup.Port");
     public static string Tables_ServerSetup_Protocol => Localizer.Get("Tables.ServerSetup.Protocol");

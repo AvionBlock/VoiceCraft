@@ -30,15 +30,15 @@ public class McHttpServer
 
         try
         {
-            AnsiConsole.WriteLine(Locales.Locales.McWssServer_Starting);
+            AnsiConsole.WriteLine(Locales.Locales.McHttpServer_Starting);
             var settings = new WebserverSettings();
             _httpServer = new WebserverLite(settings, HandleRequest);
             _httpServer.Start();
-            AnsiConsole.WriteLine(Locales.Locales.McWssServer_Success);
+            AnsiConsole.MarkupLine($"[green]{Locales.Locales.McHttpServer_Success}[/]");
         }
         catch
         {
-            throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed);
+            throw new Exception(Locales.Locales.McHttpServer_Exceptions_Failed);
         }
     }
     
@@ -53,11 +53,11 @@ public class McHttpServer
     public void Stop()
     {
         if (_httpServer == null) return;
-        AnsiConsole.WriteLine(Locales.Locales.McWssServer_Stopping);
+        AnsiConsole.WriteLine(Locales.Locales.McHttpServer_Stopping);
         _httpServer.Stop();
         _httpServer.Dispose();
         _httpServer = null;
-        AnsiConsole.WriteLine(Locales.Locales.McWssServer_Stopped);
+        AnsiConsole.MarkupLine($"[green]{Locales.Locales.McHttpServer_Stopped}[/]");
     }
     
     public void SendPacket(McApiNetPeer netPeer, McApiPacket packet)
@@ -81,7 +81,7 @@ public class McHttpServer
             }
             
             var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
-            foreach (var data in packet.Packets.Where(data => data.Length <= Core.Constants.McApiMtuLimit))
+            foreach (var data in packet.Packets.Where(data => data.Length <= Constants.McApiMtuLimit))
             {
                 netPeer.ReceiveInboundPacket(data);
             }

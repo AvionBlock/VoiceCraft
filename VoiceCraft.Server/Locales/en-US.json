@@ -43,6 +43,13 @@
       "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
     }
   },
+  "McHttpServer": {
+    "Starting": "Starting McHttp server...",
+    "Success": "Successfully started the McHttp server!",
+    "Exceptions": {
+      "Failed": "Failed to start McHttp Server! Please check if another process is using the same port!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "Server",

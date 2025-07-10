@@ -34,6 +34,7 @@ public static class App
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
+            httpServer.Start(properties.McHttpConfig);
             mcWssServer.Start(properties.McWssConfig);
 
             //Server Started
@@ -69,6 +70,7 @@ public static class App
                 try
                 {
                     server.Update();
+                    httpServer.Update();
                     mcWssServer.Update();
                     await FlushCommand(rootCommand);
 
@@ -83,6 +85,8 @@ public static class App
                     AnsiConsole.WriteException(ex);
                 }
 
+            mcWssServer.Stop();
+            httpServer.Stop();
             server.Stop();
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.Shutdown_Success}[/]");
         }
