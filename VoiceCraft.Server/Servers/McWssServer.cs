@@ -224,7 +224,6 @@ public class McWssServer
     private void HandlePingPacket(McApiPingPacket pingPacket, McApiNetPeer netPeer)
     {
         if (netPeer.SessionToken != pingPacket.SessionToken) return; //Needs a session token at least.
-        netPeer.LastPing = DateTime.UtcNow;
         SendPacket(netPeer, pingPacket); //Reuse the packet.
     }
 
