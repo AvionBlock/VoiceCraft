@@ -32,6 +32,7 @@ namespace VoiceCraft.Core.Network
             SessionToken = sessionToken;
             Connected = true;
             LastPing = DateTime.UtcNow;
+            Debug.WriteLine($"McApi Client Connected: Session Token - {sessionToken}");
         }
 
         public void ReceiveInboundPacket(byte[] packet)

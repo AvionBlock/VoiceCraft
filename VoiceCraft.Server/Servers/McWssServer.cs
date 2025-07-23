@@ -85,10 +85,10 @@ public class McWssServer
 
     private void SendPacket(Guid clientGuid, byte[] packetData)
     {
-        var packet = new McWssCommandRequest($"scripevent vc:mcapi {Convert.ToBase64String(packetData, 0, packetData.Length)}");
+        var packet = new McWssCommandRequest($"scriptevent vc:mcapi {Convert.ToBase64String(packetData, 0, packetData.Length)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
-    
+
     private void UpdatePeer(KeyValuePair<ClientMetadata, McApiNetPeer> peer)
     {
         while (peer.Value.RetrieveInboundPacket(out var packetData))
@@ -181,8 +181,9 @@ public class McWssServer
             HandleLoginPacket(loginPacket, peer);
             return;
         }
+
         if (!peer.Connected) return;
-        
+
         // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
         switch (packetType)
         {
@@ -209,7 +210,7 @@ public class McWssServer
     {
         if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.LoginToken)
             return;
-        
+
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
         SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
     }
