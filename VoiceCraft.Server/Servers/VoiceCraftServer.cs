@@ -230,7 +230,7 @@ public class VoiceCraftServer : IResettable, IDisposable
     
     private void HandleLoginPacket(LoginPacket packet, ConnectionRequest request)
     {
-        if (packet.Version.Major != VoiceCraftServer.Version.Major || packet.Version.Minor != VoiceCraftServer.Version.Minor)
+        if (packet.Version.Major != Version.Major || packet.Version.Minor != Version.Minor)
         {
             request.Reject("VoiceCraft.DisconnectReason.IncompatibleVersion"u8.ToArray());
             return;
@@ -255,9 +255,9 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    private void HandleInfoPacket(InfoPacket infoPacket, IPEndPoint remoteEndPoint)
+    private void HandleInfoPacket(InfoPacket packet, IPEndPoint remoteEndPoint)
     {
-        SendUnconnectedPacket(remoteEndPoint, new InfoPacket(Config.Motd, _netManager.ConnectedPeersCount, Config.PositioningType, infoPacket.Tick));
+        SendUnconnectedPacket(remoteEndPoint, new InfoPacket(Config.Motd, _netManager.ConnectedPeersCount, Config.PositioningType, packet.Tick));
     }
 
     private void HandleAudioPacket(AudioPacket packet, NetPeer peer)

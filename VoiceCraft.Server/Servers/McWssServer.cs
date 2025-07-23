@@ -174,14 +174,13 @@ public class McWssServer
 
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer)
     {
-        if (packetType == McApiPacketType.Login && !peer.Connected)
+        if (packetType == McApiPacketType.Login)
         {
             var loginPacket = new McApiLoginPacket();
             loginPacket.Deserialize(reader);
             HandleLoginPacket(loginPacket, peer);
             return;
         }
-
         if (!peer.Connected) return;
 
         // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
@@ -206,25 +205,31 @@ public class McWssServer
         }
     }
 
-    private void HandleLoginPacket(McApiLoginPacket loginPacket, McApiNetPeer netPeer)
+    private void HandleLoginPacket(McApiLoginPacket packet, McApiNetPeer netPeer)
     {
-        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.LoginToken)
+        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.LoginToken)
             return;
+
+        if (netPeer.Connected)
+        {
+            SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
+            return;
+        }
 
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
         SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
     }
 
-    private static void HandleLogoutPacket(McApiLogoutPacket logoutPacket, McApiNetPeer netPeer)
+    private static void HandleLogoutPacket(McApiLogoutPacket packet, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != logoutPacket.SessionToken) return;
+        if (netPeer.SessionToken != packet.SessionToken) return;
         netPeer.Disconnect();
     }
 
-    private void HandlePingPacket(McApiPingPacket pingPacket, McApiNetPeer netPeer)
+    private void HandlePingPacket(McApiPingPacket packet, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != pingPacket.SessionToken) return; //Needs a session token at least.
-        SendPacket(netPeer, pingPacket); //Reuse the packet.
+        if (netPeer.SessionToken != packet.SessionToken) return; //Needs a session token at least.
+        SendPacket(netPeer, packet); //Reuse the packet.
     }
 
     //Resharper disable All

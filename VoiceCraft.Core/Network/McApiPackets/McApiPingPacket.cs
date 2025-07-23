@@ -4,7 +4,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiPingPacket : McApiPacket
     {
-        public override McApiPacketType PacketType => McApiPacketType.Logout;
+        public override McApiPacketType PacketType => McApiPacketType.Ping;
         public string SessionToken { get; private set; }
 
         public McApiPingPacket(string sessionToken = "")
