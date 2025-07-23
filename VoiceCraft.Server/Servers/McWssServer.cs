@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
@@ -86,7 +85,7 @@ public class McWssServer
 
     private void SendPacket(Guid clientGuid, byte[] packetData)
     {
-        var packet = new McWssCommandRequest($"scripevent vc:mcapi {Encoding.UTF8.GetString(packetData, 0, packetData.Length)}");
+        var packet = new McWssCommandRequest($"scripevent vc:mcapi {Convert.ToBase64String(packetData, 0, packetData.Length)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
     
@@ -168,7 +167,7 @@ public class McWssServer
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
                 if (rawtextMessage == null || !rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
                 if (_mcApiPeers.TryGetValue(client, out var peer))
-                    peer.ReceiveInboundPacket(Encoding.UTF8.GetBytes(RawtextRegex.Replace(rawtextMessage.text, "", 1)));
+                    peer.ReceiveInboundPacket(Convert.FromBase64String(RawtextRegex.Replace(rawtextMessage.text, "", 1)));
                 break;
         }
     }
