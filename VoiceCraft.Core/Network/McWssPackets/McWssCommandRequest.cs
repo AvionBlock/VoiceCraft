@@ -18,7 +18,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
         {
             Command = command;
             header.requestId = Guid.NewGuid().ToString();
-            header.messagePurpose = "command";
+            header.messagePurpose = "commandRequest";
         }
         
         //Resharper disable All
