@@ -32,7 +32,7 @@ namespace VoiceCraft.Core
             if (!_entities.TryAdd(id, entity))
                 throw new InvalidOperationException("Failed to create entity!");
 
-            entity.OnDestroyed += DestroyEntity;
+            entity.OnDestroyed += RemoveEntity;
             OnEntityCreated?.Invoke(entity);
             return entity;
         }
@@ -44,7 +44,7 @@ namespace VoiceCraft.Core
             if (entity.World != this)
                 throw new InvalidOperationException("Failed to add entity! The entity is not associated with this world!");
 
-            entity.OnDestroyed += DestroyEntity;
+            entity.OnDestroyed += RemoveEntity;
             OnEntityCreated?.Invoke(entity);
         }
 
@@ -58,7 +58,7 @@ namespace VoiceCraft.Core
         {
             if (!_entities.Remove(id, out var entity))
                 throw new InvalidOperationException("Failed to destroy entity! Entity not found!");
-            entity.OnDestroyed -= DestroyEntity; //No need to listen anymore.
+            entity.OnDestroyed -= RemoveEntity; //No need to listen anymore.
             entity.Destroy();
             OnEntityDestroyed?.Invoke(entity);
         }
@@ -69,14 +69,14 @@ namespace VoiceCraft.Core
             _entities.Clear();
             foreach (var entity in entities)
             {
-                entity.Value.OnDestroyed -= DestroyEntity; //Don't trigger the events!
+                entity.Value.OnDestroyed -= RemoveEntity; //Don't trigger the events!
                 entity.Value.Destroy();
             }
         }
 
-        private void DestroyEntity(VoiceCraftEntity entity)
+        private void RemoveEntity(VoiceCraftEntity entity)
         {
-            entity.OnDestroyed -= DestroyEntity;
+            entity.OnDestroyed -= RemoveEntity;
             if (_entities.Remove(entity.Id))
                 OnEntityDestroyed?.Invoke(entity);
         }
