@@ -17,6 +17,7 @@ public class McWssServer
 {
     private static readonly string SubscribePacket = JsonSerializer.Serialize(new McWssEventSubscribe("PlayerMessage"));
     private static readonly Regex RawtextRegex = new(Regex.Escape(Constants.RawtextPacketIdentifier));
+    private static readonly Version McWssVersion = new(1, 1, 0);
 
     //Public Properties
     public McWssConfig Config { get; private set; } = new();
@@ -83,9 +84,17 @@ public class McWssServer
         netPeer.SendPacket(_writer);
     }
 
+    private void SendPacket(Guid clientGuid, McApiPacket packet)
+    {
+        _writer.Reset();
+        _writer.Put((byte)packet.PacketType);
+        packet.Serialize(_writer);
+        SendPacket(clientGuid, _writer.CopyData());
+    }
+
     private void SendPacket(Guid clientGuid, byte[] packetData)
     {
-        var packet = new McWssCommandRequest($"scriptevent vc:mcapi {Convert.ToBase64String(packetData, 0, packetData.Length)}");
+        var packet = new McWssCommandRequest($"scriptevent vc:mcapi {Convert.ToBase64String(packetData)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
 
@@ -99,7 +108,7 @@ public class McWssServer
                 _reader.SetSource(packetData);
                 var packetType = _reader.GetByte();
                 var pt = (McApiPacketType)packetType;
-                HandlePacket(pt, _reader, peer.Value);
+                HandlePacket(pt, _reader, peer.Key, peer.Value);
             }
             catch
             {
@@ -167,20 +176,25 @@ public class McWssServer
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
                 if (rawtextMessage == null || !rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
                 if (_mcApiPeers.TryGetValue(client, out var peer))
-                    peer.ReceiveInboundPacket(Convert.FromBase64String(RawtextRegex.Replace(rawtextMessage.text, "", 1)));
+                {
+                    var textData = RawtextRegex.Replace(rawtextMessage.text, "", 1);
+                    peer.ReceiveInboundPacket(Convert.FromBase64String(textData));
+                }
+
                 break;
         }
     }
 
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, ClientMetadata client, McApiNetPeer peer)
     {
         if (packetType == McApiPacketType.Login)
         {
             var loginPacket = new McApiLoginPacket();
             loginPacket.Deserialize(reader);
-            HandleLoginPacket(loginPacket, peer);
+            HandleLoginPacket(loginPacket, client, peer);
             return;
         }
+
         if (!peer.Connected) return;
 
         // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
@@ -205,14 +219,22 @@ public class McWssServer
         }
     }
 
-    private void HandleLoginPacket(McApiLoginPacket packet, McApiNetPeer netPeer)
+    private void HandleLoginPacket(McApiLoginPacket packet, ClientMetadata client, McApiNetPeer netPeer)
     {
-        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.LoginToken)
-            return;
-
         if (netPeer.Connected)
         {
             SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.LoginToken)
+        {
+            SendPacket(client.Guid, new McApiDenyPacket("McApi.DisconnectReason.InvalidLoginToken"));
+            return;
+        }
+        if (packet.Version.Major != McWssVersion.Major || packet.Version.Minor != McWssVersion.Minor)
+        {
+            SendPacket(client.Guid, new McApiDenyPacket("McApi.DisconnectReason.IncompatibleVersion"));
             return;
         }
 
