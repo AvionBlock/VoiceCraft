@@ -29,6 +29,7 @@ namespace VoiceCraft.Core.Network
 
         public void AcceptConnection(string sessionToken)
         {
+            if (Connected) return;
             SessionToken = sessionToken;
             Connected = true;
             LastPing = DateTime.UtcNow;
