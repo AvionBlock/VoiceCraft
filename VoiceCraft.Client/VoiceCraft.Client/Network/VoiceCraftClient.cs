@@ -306,6 +306,11 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 infoPacket.Deserialize(reader);
                 HandleInfoPacket(infoPacket);
                 break;
+            case PacketType.SetEffect:
+                var setEffectPacket = new SetEffectPacket();
+                setEffectPacket.Deserialize(reader);
+                HandleSetEffectPacket(setEffectPacket, reader);
+                break;
             case PacketType.Audio:
                 var audioPacket = new AudioPacket();
                 audioPacket.Deserialize(reader);
@@ -320,11 +325,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 var setDescriptionPacket = new SetDescriptionPacket();
                 setDescriptionPacket.Deserialize(reader);
                 HandleSetDescriptionPacket(setDescriptionPacket);
-                break;
-            case PacketType.SetEffect:
-                var setEffectPacket = new SetEffectPacket();
-                setEffectPacket.Deserialize(reader);
-                HandleSetEffectPacket(setEffectPacket, reader);
                 break;
             case PacketType.EntityCreated:
                 var entityCreatedPacket = new EntityCreatedPacket();
@@ -387,23 +387,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         OnServerInfo?.Invoke(new ServerInfo(infoPacket));
     }
-
-    private void HandleAudioPacket(AudioPacket packet)
-    {
-        var entity = World.GetEntity(packet.Id);
-        entity?.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
-    }
-
-    private void HandleSetTitlePacket(SetTitlePacket packet)
-    {
-        OnSetTitle?.Invoke(packet.Value);
-    }
-
-    private void HandleSetDescriptionPacket(SetDescriptionPacket packet)
-    {
-        OnSetDescription?.Invoke(packet.Value);
-    }
-
+    
     private void HandleSetEffectPacket(SetEffectPacket packet, NetDataReader reader)
     {
         if (_audioSystem.TryGetEffect(packet.Index, out var effect) && effect.EffectType == packet.EffectType)
@@ -424,6 +408,22 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 _audioSystem.RemoveEffect(packet.Index);
                 break;
         }
+    }
+
+    private void HandleAudioPacket(AudioPacket packet)
+    {
+        var entity = World.GetEntity(packet.Id);
+        entity?.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
+    }
+
+    private void HandleSetTitlePacket(SetTitlePacket packet)
+    {
+        OnSetTitle?.Invoke(packet.Value);
+    }
+
+    private void HandleSetDescriptionPacket(SetDescriptionPacket packet)
+    {
+        OnSetDescription?.Invoke(packet.Value);
     }
 
     private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)

@@ -21,10 +21,12 @@ namespace VoiceCraft.Core
         Unknown,
         Info,
         Login,
+        SetEffect,
+        
+        //Client Entity Stuff
         Audio,
         SetTitle,
         SetDescription,
-        SetEffect,
 
         //Entity stuff
         EntityCreated,
@@ -46,7 +48,26 @@ namespace VoiceCraft.Core
         Logout,
         Ping,
         Accept,
-        Deny
+        Deny,
+        
+        //Server Stuff
+        SetEffect,
+        
+        //Client Entity Stuff
+        Audio,
+        SetTitle,
+        SetDescription,
+        
+        //Entity stuff
+        EntityCreated,
+        EntityDestroyed,
+        SetName,
+        SetMute,
+        SetDeafen,
+        SetTalkBitmask,
+        SetListenBitmask,
+        SetPosition,
+        SetRotation
     }
 
     #endregion
