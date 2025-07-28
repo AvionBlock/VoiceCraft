@@ -212,9 +212,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             // Will need to implement these for client sided mode later.
             case PacketType.Unknown:
             case PacketType.Login:
+            case PacketType.SetEffect:
             case PacketType.SetTitle:
             case PacketType.SetDescription:
-            case PacketType.SetEffect:
             case PacketType.EntityCreated:
             case PacketType.EntityDestroyed:
             case PacketType.SetVisibility:

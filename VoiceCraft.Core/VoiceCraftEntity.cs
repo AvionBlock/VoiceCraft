@@ -10,17 +10,17 @@ namespace VoiceCraft.Core
     public class VoiceCraftEntity : INetSerializable, IResettable
     {
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
-        private bool _deafened;
-        private ulong _listenBitmask = ulong.MaxValue;
 
         //Privates
-        private float _loudness;
         private bool _muted;
+        private bool _deafened;
+        private float _loudness;
+        private string _worldId = string.Empty;
         private string _name = "New Entity";
+        private ulong _listenBitmask = ulong.MaxValue;
+        private ulong _talkBitmask = ulong.MaxValue;
         private Vector3 _position;
         private Quaternion _rotation;
-        private ulong _talkBitmask = ulong.MaxValue;
-        private string _worldId = string.Empty;
 
         //Modifiers for modifying data for later?
 
