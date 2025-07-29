@@ -94,7 +94,7 @@ public class McWssServer
 
     private void SendPacket(Guid clientGuid, byte[] packetData)
     {
-        var packet = new McWssCommandRequest($"scriptevent vc:mcapi {Convert.ToBase64String(packetData)}");
+        var packet = new McWssCommandRequest($"scriptevent vc:mcapi {Z85.GetStringWithPadding(packetData)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
 
@@ -178,7 +178,7 @@ public class McWssServer
                 if (_mcApiPeers.TryGetValue(client, out var peer))
                 {
                     var textData = RawtextRegex.Replace(rawtextMessage.text, "", 1);
-                    peer.ReceiveInboundPacket(Convert.FromBase64String(textData));
+                    peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(textData));
                 }
 
                 break;
