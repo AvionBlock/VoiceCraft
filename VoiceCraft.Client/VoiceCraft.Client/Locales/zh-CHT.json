@@ -66,7 +66,6 @@
         },
         "Network": {
             "Network": "網路設置",
-            "PacketCompression": "數據包壓縮",
             "McWssHostPort": "MCWSS主機端口"
         },
         "Advanced": {

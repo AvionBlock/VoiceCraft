@@ -66,7 +66,6 @@
     },
     "Network": {
       "Network": "Netwerk Instellingen",
-      "PacketCompression": "Pakket compressie",
       "McWssHostPort": "MCWSS host poort"
     },
     "Advanced": {
@@ -122,7 +121,6 @@
       "Disconnected": "Verbinding verbroken! Reden: {reason}"
     },
     "DisconnectReason": {
-      "UnknownLogin": "Onbekende login type!",
       "IncompatibleVersion": "Incompatibele client/server versie!",
       "ServerFull": "Server is vol!",
       "Error": "Er is een fout opgetreden bij het inloggen!"
