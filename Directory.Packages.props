@@ -6,30 +6,30 @@
   <ItemGroup>
     <!-- Avalonia packages -->
     <!-- Important: keep version in sync! -->
-    <PackageVersion Include="Avalonia" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.1">
+    <PackageVersion Include="Avalonia" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>none</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.1" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.2" />
     <PackageVersion Include="Avalonia.iOS" Version="11.2.1" />
-    <PackageVersion Include="Avalonia.Browser" Version="11.3.1" />
-    <PackageVersion Include="Avalonia.Android" Version="11.3.1" />
+    <PackageVersion Include="Avalonia.Browser" Version="11.3.2" />
+    <PackageVersion Include="Avalonia.Android" Version="11.3.2" />
     <PackageVersion Include="LiteNetLib" Version="1.3.1" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageVersion Include="DiscordRichPresence" Version="1.3.0.28" />
+    <PackageVersion Include="DiscordRichPresence" Version="1.5.0.51" />
     <PackageVersion Include="Jeek.Avalonia.Localization" Version="1.3.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
-    <PackageVersion Include="Microsoft.Maui.Essentials" Version="9.0.80" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.Maui.Essentials" Version="9.0.90" />
     <PackageVersion Include="NAudio.WinForms" Version="2.2.1" />
     <PackageVersion Include="NAudio.WinMM" Version="2.2.1" />
     <PackageVersion Include="Notification.Avalonia" Version="2.1.0" />
     <PackageVersion Include="OpusSharp" Version="1.5.6" />
     <PackageVersion Include="SpeexDSPSharp" Version="1.2.2" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.6" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.7" />
     <PackageVersion Include="Watson.Lite" Version="6.3.10" />
     <PackageVersion Include="WatsonWebsocket" Version="4.1.4" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.16" />
