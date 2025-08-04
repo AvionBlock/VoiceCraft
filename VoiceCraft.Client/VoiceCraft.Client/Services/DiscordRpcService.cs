@@ -37,6 +37,7 @@ public class DiscordRpcService : IDisposable
         if (OperatingSystem.IsBrowser()) return;
 
         _rpcClient = new DiscordRpcClient(ApplicationId);
+        _rpcClient.Logger = new ConsoleLogger();
         _rpcClient.OnReady += (_, _) => { Debug.WriteLine("RPC Ready"); };
 
         _rpcClient.OnClose += (_, msg) => { Debug.WriteLine($"RPC Closed: {msg.Type}"); };
