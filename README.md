@@ -57,16 +57,22 @@ audio effects, audio simulations and more!
 > Some dependencies are not used in full for example VoiceCraft only depends on NAudio.Core for all platforms but also
 > depends on NAudio.WinForms and NAudio.WinMM for windows.
 
+### All Projects
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
+- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
+- [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
+
+### Client
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
 - [Notification.Avalonia](https://github.com/AvaloniaCommunity/Notification.Avalonia)
-- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
-- [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
 - [NAudio](https://github.com/naudio/NAudio)
 - [NWaves](https://github.com/ar1st0crat/NWaves)
 - [OpenTK (OpenAL)](https://github.com/opentk/opentk)
 - [CommunityToolkit.MVVM](https://github.com/CommunityToolkit/dotnet)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
-- [Microsoft.Maui.Essentials](https://github.com/dotnet/maui)
-- [Microsoft.Extensions.DependencyInjection](https://github.com/dotnet/runtime)
+
+### Server
+- [WatsonWebsocket](https://github.com/jchristn/WatsonWebsocket)
+- [Watson.Lite](https://github.com/dotnet/WatsonWebserver)
+- [Spectre.Console](https://github.com/spectreconsole/spectre.console)
