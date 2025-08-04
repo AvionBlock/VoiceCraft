@@ -54,8 +54,7 @@ audio effects, audio simulations and more!
 ## Project Dependencies
 
 > [!NOTE]
-> Some dependencies are not used in full for example VoiceCraft only depends on NAudio.Core for all platforms but also
-> depends on NAudio.WinForms and NAudio.WinMM for windows.
+> Most dotnet and microsoft extension packages aren't listed.
 
 ### All Projects
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
