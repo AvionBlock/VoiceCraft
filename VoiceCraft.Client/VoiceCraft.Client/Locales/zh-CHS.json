@@ -21,7 +21,7 @@
         "Port": "端口"
     },
     "EditServer": {
-        "EditServer": "?",
+        "EditServer": "修改服务器",
         "Name": "服务器名称",
         "IP": "IP地址",
         "Port": "端口"
@@ -33,8 +33,8 @@
         "Contributors": "贡献者",
         "Roles": {
             "Author": "作者",
-            "Translator": "?",
-            "Programmer": "?"
+            "Translator": "翻译者",
+            "Programmer": "程序员"
         }
     },
     "Settings": {
