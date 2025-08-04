@@ -60,5 +60,12 @@ namespace VoiceCraft.Core
         public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
         public static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
         public static readonly Guid DarkGreenThemeGuid = Guid.Parse("66BA4F00-C61C-4C04-A62B-CE4277679F14");
+        
+        //RPC
+        public const string ApplicationId = "1364434932968984669";
+        public const string GithubButton = "VoiceCraft";
+        public const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
+        public const string LargeImageKey = "vc";
+        public const string LargeImageText = "VoiceCraft";
     }
 }
