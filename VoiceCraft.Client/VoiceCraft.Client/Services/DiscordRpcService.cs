@@ -1,31 +1,26 @@
 using System;
 using System.Diagnostics;
 using DiscordRPC;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Services;
 
 public class DiscordRpcService : IDisposable
 {
-    private const string ApplicationId = "1364434932968984669";
-    private const string GithubButton = "VoiceCraft";
-    private const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
-    private const string LargeImageKey = "vc";
-    private const string LargeImageText = "VoiceCraft";
-
     private readonly RichPresence _richPresence = new()
     {
         Buttons =
         [
             new Button
             {
-                Label = GithubButton,
-                Url = GithubButtonUrl
+                Label = Constants.GithubButton,
+                Url = Constants.GithubButtonUrl
             }
         ],
         Assets = new Assets
         {
-            LargeImageKey = LargeImageKey,
-            LargeImageText = LargeImageText
+            LargeImageKey = Constants.LargeImageKey,
+            LargeImageText = Constants.LargeImageText
         }
     };
 
@@ -35,7 +30,7 @@ public class DiscordRpcService : IDisposable
     {
         if (OperatingSystem.IsBrowser()) return;
 
-        _rpcClient = new DiscordRpcClient(ApplicationId);
+        _rpcClient = new DiscordRpcClient(Constants.ApplicationId);
         
         #if DEBUG
         _rpcClient.OnConnectionEstablished += (_, msg) => { Debug.WriteLine($"RPC Connected: {msg.Type}"); };
