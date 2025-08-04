@@ -31,7 +31,7 @@
     <PackageVersion Include="SpeexDSPSharp" Version="1.2.2" />
     <PackageVersion Include="System.Text.Json" Version="9.0.7" />
     <PackageVersion Include="Watson.Lite" Version="6.3.10" />
-    <PackageVersion Include="WatsonWebsocket" Version="4.1.4" />
+    <PackageVersion Include="WatsonWebsocket" Version="4.1.5" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.16" />
     <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.4" />
     <PackageVersion Include="Spectre.Console" Version="0.50.0" />
