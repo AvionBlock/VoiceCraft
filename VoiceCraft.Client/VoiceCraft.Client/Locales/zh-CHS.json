@@ -66,7 +66,6 @@
         },
         "Network": {
             "Network": "网络设置",
-            "PacketCompression": "数据包压缩",
             "McWssHostPort": "MCWSS主机端口"
         },
         "Advanced": {
