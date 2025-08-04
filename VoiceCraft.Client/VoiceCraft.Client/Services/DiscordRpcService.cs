@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using DiscordRPC;
-using DiscordRPC.Logging;
 
 namespace VoiceCraft.Client.Services;
 
@@ -37,29 +36,17 @@ public class DiscordRpcService : IDisposable
         if (OperatingSystem.IsBrowser()) return;
 
         _rpcClient = new DiscordRpcClient(ApplicationId);
-        _rpcClient.Logger = new ConsoleLogger();
-        _rpcClient.OnReady += (_, _) => { Debug.WriteLine("RPC Ready"); };
+        _rpcClient.OnConnectionEstablished += (_, msg) => { Debug.WriteLine($"RPC Connected: {msg.Type}"); };
 
+        _rpcClient.OnConnectionFailed += (_, msg) => { Debug.WriteLine($"RPC Failed: {msg.Type}"); };
+        
+        _rpcClient.OnReady += (_, msg) => { Debug.WriteLine($"RPC Ready: {msg.User.Username}"); };
+        
+        _rpcClient.OnPresenceUpdate += (_, _) => { Debug.WriteLine("RPC Update: Presence updated."); };
+        
         _rpcClient.OnClose += (_, msg) => { Debug.WriteLine($"RPC Closed: {msg.Type}"); };
 
         _rpcClient.OnError += (_, msg) => { Debug.WriteLine($"RPC Error: {msg.Type}"); };
-
-        _rpcClient.OnConnectionEstablished += (_, msg) => { Debug.WriteLine($"RPC Connection Established: {msg.Type}"); };
-
-        _rpcClient.OnConnectionFailed += (_, msg) => { Debug.WriteLine($"RPC Connection Failed: {msg.Type}"); };
-
-        // == Subscribe to some events
-        _rpcClient.OnReady += (_, msg) =>
-        {
-            //Create some events so we know things are happening
-            Debug.WriteLine("Connected to discord with user {0}", msg.User.Username);
-        };
-
-        _rpcClient.OnPresenceUpdate += (_, _) =>
-        {
-            //The presence has updated
-            Debug.WriteLine("Presence has been updated!");
-        };
         
         _rpcClient?.Initialize();
         _rpcClient?.SetPresence(_richPresence);
