@@ -23,7 +23,8 @@
     </ItemGroup>
 
     <PropertyGroup Condition="'$([MSBuild]::IsOSUnixLike())' == 'true'">
-        <AndroidSDKDirectory>$(HOME)/Android/Sdk</AndroidSDKDirectory>
+        <AndroidSDKDirectory>$(HOME)/.android-sdk/</AndroidSDKDirectory>
+        <JavaSdkDirectory>$(HOME)/.jdk-21.0.8/</JavaSdkDirectory>
     </PropertyGroup>
 
     <ItemGroup>
