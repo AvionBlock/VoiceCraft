@@ -1,11 +1,12 @@
-import { world, system } from "@minecraft/server";
+import { world, system, CustomCommandStatus, CommandPermissionLevel, CustomCommandParamType } from "@minecraft/server";
 
 class CommandSystem {
   static Prefix = "!";
   static Commands = {};
 
-  static RegisterCommand(name, callback, paramTypes, opOnly = false) {
+  static RegisterCommand(name, description, callback, paramTypes, opOnly = false) {
     this.Commands[name] = {
+      description: description,
       callback: callback,
       paramTypes: paramTypes,
       opOnly: opOnly,
@@ -103,6 +104,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         }
       }
     }
+    source.sendMessage('* Using /scriptevent is no longer needed. Use "/voicecraft:' + message + '" instead.');
     CommandSystem.executeCommand(CommandSystem.Prefix + message, source, event);
   }
 });
@@ -110,6 +112,82 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
 // No longer using this, but if beta api's are enabled, it will still work
 world?.beforeEvents?.chatSend?.subscribe?.((ev) => {
   CommandSystem.executeCommand(ev.message, ev.sender, ev);
+});
+
+system?.beforeEvents?.startup?.subscribe?.((init) => {
+  // All commands should have loaded in.
+  for (const commandName in CommandSystem.Commands) {
+    const { description, callback, paramTypes, opOnly } = CommandSystem.Commands[commandName];
+
+    /** @type {import("@minecraft/server").CustomCommand} */
+    const command = {
+      name: "voicecraft:" + commandName,
+      description,
+      permissionLevel: opOnly ? CommandPermissionLevel.Admin : CommandPermissionLevel.Any,
+      cheatsRequired: false, // Allow to use without cheats enabled.
+      mandatoryParameters: [],
+    }
+
+    for (const [paramName, type] of Object.entries(paramTypes)) {
+      switch (type.toLowerCase()) {
+        case "string":
+          command.mandatoryParameters.push({
+            type: CustomCommandParamType.String,
+            name: paramName,
+          });
+          break;
+        case "integer":
+          command.mandatoryParameters.push({
+            type: CustomCommandParamType.Integer,
+            name: paramName,
+          });
+          break;
+        case "float":
+          command.mandatoryParameters.push({
+            type: CustomCommandParamType.Float,
+            name: paramName,
+          });
+          break;
+        default:
+          console.warn(
+            `§cInvalid parameter type: ${type} for param ${paramName}`
+          );
+          return;
+      }
+    }
+
+    /**
+     * @param {import("@minecraft/server").CustomCommandOrigin} origin
+     * @returns {import("@minecraft/server").CustomCommandResult}
+     */
+    init?.customCommandRegistry?.registerCommand?.(command, function(origin, ...args) {
+      let source = origin?.sourceEntity ?? origin?.initiator;
+      if (origin?.sourceType === 'Server')  {
+        source = {
+          isOp: () => true,
+          sendMessage: function(message) {
+            console.log(message);
+          }
+        }
+      }
+      if (!source) {
+        return {
+          status: CustomCommandStatus?.Failure,
+          message: 'No valid source found!',
+        }
+      }
+
+      const typedArgs = { source };
+      for (let i = 0; i < Math.min(args.length, command.mandatoryParameters.length); i++) {
+        typedArgs[command.mandatoryParameters[i].name] = args[i];
+      }
+
+      callback.call(null, typedArgs);
+      return {
+        status: CustomCommandStatus?.Success,
+      };
+    });
+  }
 });
 
 export { CommandSystem };

@@ -14,6 +14,7 @@ const GUI = new GUIHandler(Network);
 
 CommandSystem.RegisterCommand(
   "connect",
+  "Attempts connection to a voicecraft server.",
   function (params) {
     params.source.sendMessage("§eConnecting/Linking Server...");
     Network.Connect(params.IP, params.PORT, params.Key, params.source)
@@ -30,11 +31,13 @@ CommandSystem.RegisterCommand(
     IP: "string",
     PORT: "integer",
     Key: "string",
-  }
+  },
+  true
 );
 
 CommandSystem.RegisterCommand(
   "disconnect",
+  "Disconnects from the voicecraft server.",
   function (params) {
     params.source.sendMessage("§eDisconnecting from Server...");
     if (!Network.IsConnected) {
@@ -46,11 +49,13 @@ CommandSystem.RegisterCommand(
       params.source.sendMessage(`§c${res}`);
     });
   },
-  {}
+  {},
+  true
 );
 
 CommandSystem.RegisterCommand(
   "settings",
+  "Gives you an item to access voicecraft settings panel/gui.",
   function (params) {
     try {
       const component = params.source.getComponent(
@@ -67,11 +72,13 @@ CommandSystem.RegisterCommand(
       params.source.sendMessage(ex.toString());
     }
   },
-  {}
+  {},
+  true
 );
 
 CommandSystem.RegisterCommand(
   "bind",
+  "Binds the client running the command to a client connected to the voicecraft server.",
   function (params) {
     params.source.sendMessage("§eBinding...");
     Network.Bind(params.source, params.Key)
@@ -93,6 +100,7 @@ CommandSystem.RegisterCommand(
 
 CommandSystem.RegisterCommand(
   "bindfake",
+  "Binds a fake player to a client connected to the voicecraft server.",
   function (params) {
     params.source.sendMessage("§eBinding fake player...");
     Network.BindFake(params.Name, params.Key)
@@ -108,11 +116,13 @@ CommandSystem.RegisterCommand(
   {
     Key: "integer",
     Name: "string",
-  }
+  },
+  true
 );
 
 CommandSystem.RegisterCommand(
   "updatefake",
+  "Updates a fake player to a client connected to the voicecraft server.",
   function (params) {
     params.source.sendMessage("§eUpdating fake player...");
     Network.UpdateFake(params.Id, params.source)
@@ -125,11 +135,13 @@ CommandSystem.RegisterCommand(
   },
   {
     Id: "string",
-  }
+  },
+  true
 );
 
 CommandSystem.RegisterCommand(
   "autoconnect",
+  "Takes the settings from the autoconnect settings and attempts connection.",
   function (params) {
     params.source.sendMessage("§eConnecting/Linking Server...");
     Network.AutoConnect()
@@ -147,6 +159,7 @@ CommandSystem.RegisterCommand(
 
 CommandSystem.RegisterCommand(
   "setautobind",
+  "Sets an auto bind tag for the player who ran the command.",
   function (params) {
     try {
       params.source.setDynamicProperty("VCAutoBind", params.Key);
@@ -164,6 +177,7 @@ CommandSystem.RegisterCommand(
 
 CommandSystem.RegisterCommand(
   "clearautobind",
+  "Clears the auto bind tag for the player who ran the command.",
   function (params) {
     try {
       params.source.setDynamicProperty("VCAutoBind", null);
@@ -179,6 +193,7 @@ CommandSystem.RegisterCommand(
 
 CommandSystem.RegisterCommand(
   "help",
+  "Help command.",
   function (params) {
     params.source.sendMessage(
       "§bVoiceCraft Commands\n" +
