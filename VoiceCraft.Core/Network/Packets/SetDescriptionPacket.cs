@@ -15,12 +15,12 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(Value, Constants.MaxStringLength);
+            writer.Put(Value, Constants.MaxDescriptionStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            Value = reader.GetString(Constants.MaxStringLength);
+            Value = reader.GetString(Constants.MaxDescriptionStringLength);
         }
     }
 }
