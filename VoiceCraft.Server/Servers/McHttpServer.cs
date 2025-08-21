@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 using LiteNetLib.Utils;
 using Spectre.Console;
@@ -81,17 +82,24 @@ public class McHttpServer
             }
             
             var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
-            foreach (var data in packet.Packets.Where(data => data.Length <= Constants.McApiMtuLimit))
+            var packets = packet.Packets.Split("|");
+            foreach (var data in packets.Where(data => data.Length <= short.MaxValue))
             {
-                netPeer.ReceiveInboundPacket(data);
+                netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
             }
 
-            _updatePacket.Packets.Clear();
+            _updatePacket.Packets = string.Empty;
+            var first = false;
+            var stringBuilder = new StringBuilder();
             while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
             {
-                _updatePacket.Packets.Add(outboundPacket);
+                stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
+                if (!first) continue;
+                first = true;
+                stringBuilder.Append('|');
             }
-
+            
+            _updatePacket.Packets = stringBuilder.ToString();
             var responseData = JsonSerializer.Serialize(_updatePacket);
             await context.Response.Send(responseData);
         }

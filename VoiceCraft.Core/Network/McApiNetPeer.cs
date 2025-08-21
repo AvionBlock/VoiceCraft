@@ -38,7 +38,7 @@ namespace VoiceCraft.Core.Network
 
         public void ReceiveInboundPacket(byte[] packet)
         {
-            if (packet.Length > Constants.McApiMtuLimit)
+            if (packet.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(packet));
             
             LastPing = DateTime.UtcNow;
@@ -53,7 +53,7 @@ namespace VoiceCraft.Core.Network
         public void SendPacket(NetDataWriter writer)
         {
             if (!Connected) return;
-            if (writer.Length > Constants.McApiMtuLimit)
+            if (writer.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(writer));
             
             _outboundPacketQueue.Enqueue(writer.CopyData());
