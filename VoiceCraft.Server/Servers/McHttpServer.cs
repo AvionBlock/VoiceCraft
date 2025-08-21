@@ -21,7 +21,6 @@ public class McHttpServer
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
-    private readonly McHttpUpdate _updatePacket = new();
     private WebserverLite? _httpServer;
 
     public void Start(McHttpConfig? config = null)
@@ -88,7 +87,7 @@ public class McHttpServer
                 netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
             }
 
-            _updatePacket.Packets = string.Empty;
+            packet.Packets = string.Empty;
             var first = false;
             var stringBuilder = new StringBuilder();
             while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
@@ -99,8 +98,8 @@ public class McHttpServer
                 stringBuilder.Append('|');
             }
             
-            _updatePacket.Packets = stringBuilder.ToString();
-            var responseData = JsonSerializer.Serialize(_updatePacket);
+            packet.Packets = stringBuilder.ToString();
+            var responseData = JsonSerializer.Serialize(packet);
             await context.Response.Send(responseData);
         }
         catch (JsonException)
@@ -172,6 +171,19 @@ public class McHttpServer
             case McApiPacketType.Accept:
             case McApiPacketType.Deny:
             case McApiPacketType.Unknown:
+            case McApiPacketType.SetEffect:
+            case McApiPacketType.Audio:
+            case McApiPacketType.SetTitle:
+            case McApiPacketType.SetDescription:
+            case McApiPacketType.EntityCreated:
+            case McApiPacketType.EntityDestroyed:
+            case McApiPacketType.SetName:
+            case McApiPacketType.SetMute:
+            case McApiPacketType.SetDeafen:
+            case McApiPacketType.SetTalkBitmask:
+            case McApiPacketType.SetListenBitmask:
+            case McApiPacketType.SetPosition:
+            case McApiPacketType.SetRotation:
             default:
                 break;
         }
