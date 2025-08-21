@@ -8,5 +8,23 @@
                 ? value[..maxLength] + truncationSuffix
                 : value;
         }
+        
+        public static float GetFrameLoudness(this byte[] data, int bytesRead)
+        {
+            float max = 0;
+            // interpret as 16-bit audio
+            for (var index = 0; index < bytesRead; index += 2)
+            {
+                var sample = (short)((data[index + 1] << 8) |
+                                     data[index + 0]);
+                // to floating point
+                var sample32 = sample / 32768f;
+                // absolute value 
+                if (sample32 < 0) sample32 = -sample32;
+                if (sample32 > max) max = sample32;
+            }
+
+            return max;
+        }
     }
 }

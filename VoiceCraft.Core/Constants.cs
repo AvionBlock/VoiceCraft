@@ -37,10 +37,6 @@ namespace VoiceCraft.Core
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
         public const string ExceptionLogsFile = "ExceptionLogs.json";
-        
-        //Network Stuff.
-        public const int McApiMtuLimit = 800; //800 bytes
-        public const string RawtextPacketIdentifier = "§p§k";
 
         //Settings GUIDS.
         //Speex DSP

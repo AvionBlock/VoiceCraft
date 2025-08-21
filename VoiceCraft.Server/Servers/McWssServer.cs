@@ -16,7 +16,7 @@ namespace VoiceCraft.Server.Servers;
 public class McWssServer
 {
     private static readonly string SubscribePacket = JsonSerializer.Serialize(new McWssEventSubscribe("PlayerMessage"));
-    private static readonly Regex RawtextRegex = new(Regex.Escape(Constants.RawtextPacketIdentifier));
+    private static readonly Regex RawtextRegex = new(Regex.Escape("vc:mcwss_api"));
     private static readonly Version McWssVersion = new(1, 1, 0);
 
     //Public Properties
@@ -94,7 +94,7 @@ public class McWssServer
 
     private void SendPacket(Guid clientGuid, byte[] packetData)
     {
-        var packet = new McWssCommandRequest($"scriptevent vc:mcapi {Z85.GetStringWithPadding(packetData)}");
+        var packet = new McWssCommandRequest($"scriptevent vc:mcwss_api {Z85.GetStringWithPadding(packetData)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
 
@@ -174,7 +174,7 @@ public class McWssServer
                 var playerMessagePacket = JsonSerializer.Deserialize<McWssPlayerMessageEvent>(data);
                 if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
-                if (rawtextMessage == null || !rawtextMessage.text.StartsWith(Constants.RawtextPacketIdentifier)) return;
+                if (rawtextMessage == null || !rawtextMessage.text.StartsWith("vc:mcwss_api")) return;
                 if (_mcApiPeers.TryGetValue(client, out var peer))
                 {
                     var textData = RawtextRegex.Replace(rawtextMessage.text, "", 1);
@@ -214,6 +214,19 @@ public class McWssServer
             case McApiPacketType.Accept:
             case McApiPacketType.Deny:
             case McApiPacketType.Unknown:
+            case McApiPacketType.SetEffect:
+            case McApiPacketType.Audio:
+            case McApiPacketType.SetTitle:
+            case McApiPacketType.SetDescription:
+            case McApiPacketType.EntityCreated:
+            case McApiPacketType.EntityDestroyed:
+            case McApiPacketType.SetName:
+            case McApiPacketType.SetMute:
+            case McApiPacketType.SetDeafen:
+            case McApiPacketType.SetTalkBitmask:
+            case McApiPacketType.SetListenBitmask:
+            case McApiPacketType.SetPosition:
+            case McApiPacketType.SetRotation:
             default:
                 break;
         }
