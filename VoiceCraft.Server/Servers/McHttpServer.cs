@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 using LiteNetLib.Utils;
 using Spectre.Console;
@@ -20,7 +21,6 @@ public class McHttpServer
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
-    private readonly McHttpUpdate _updatePacket = new();
     private WebserverLite? _httpServer;
 
     public void Start(McHttpConfig? config = null)
@@ -81,18 +81,25 @@ public class McHttpServer
             }
             
             var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
-            foreach (var data in packet.Packets.Where(data => data.Length <= Constants.McApiMtuLimit))
+            var packets = packet.Packets.Split("|");
+            foreach (var data in packets.Where(data => data.Length <= short.MaxValue))
             {
-                netPeer.ReceiveInboundPacket(data);
+                netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
             }
 
-            _updatePacket.Packets.Clear();
+            packet.Packets = string.Empty;
+            var first = false;
+            var stringBuilder = new StringBuilder();
             while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
             {
-                _updatePacket.Packets.Add(outboundPacket);
+                stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
+                if (!first) continue;
+                first = true;
+                stringBuilder.Append('|');
             }
-
-            var responseData = JsonSerializer.Serialize(_updatePacket);
+            
+            packet.Packets = stringBuilder.ToString();
+            var responseData = JsonSerializer.Serialize(packet);
             await context.Response.Send(responseData);
         }
         catch (JsonException)
@@ -164,6 +171,19 @@ public class McHttpServer
             case McApiPacketType.Accept:
             case McApiPacketType.Deny:
             case McApiPacketType.Unknown:
+            case McApiPacketType.SetEffect:
+            case McApiPacketType.Audio:
+            case McApiPacketType.SetTitle:
+            case McApiPacketType.SetDescription:
+            case McApiPacketType.EntityCreated:
+            case McApiPacketType.EntityDestroyed:
+            case McApiPacketType.SetName:
+            case McApiPacketType.SetMute:
+            case McApiPacketType.SetDeafen:
+            case McApiPacketType.SetTalkBitmask:
+            case McApiPacketType.SetListenBitmask:
+            case McApiPacketType.SetPosition:
+            case McApiPacketType.SetRotation:
             default:
                 break;
         }

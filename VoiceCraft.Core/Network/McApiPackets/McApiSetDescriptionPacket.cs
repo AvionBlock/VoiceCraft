@@ -21,14 +21,14 @@ namespace VoiceCraft.Core.Network.McApiPackets
         {
             writer.Put(SessionToken, Constants.MaxStringLength);
             writer.Put(Id);
-            writer.Put(Value, Constants.MaxStringLength);
+            writer.Put(Value, Constants.MaxDescriptionStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             SessionToken = reader.GetString(Constants.MaxStringLength);
             Id = reader.GetInt();
-            Value = reader.GetString(Constants.MaxStringLength);
+            Value = reader.GetString(Constants.MaxDescriptionStringLength);
         }
     }
 }

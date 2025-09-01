@@ -10,6 +10,7 @@ namespace VoiceCraft.Core
         //Limits
         public const int FileWritingDelay = 2000;
         public const int MaxStringLength = 100; //100 characters.
+        public const int MaxDescriptionStringLength = 500; //500 characters.
         public const float FloatingPointTolerance = 0.001f;
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
 
@@ -37,10 +38,6 @@ namespace VoiceCraft.Core
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
         public const string ExceptionLogsFile = "ExceptionLogs.json";
-        
-        //Network Stuff.
-        public const int McApiMtuLimit = 800; //800 bytes
-        public const string RawtextPacketIdentifier = "§p§k";
 
         //Settings GUIDS.
         //Speex DSP
