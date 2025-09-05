@@ -242,12 +242,12 @@ public class McWssServer
 
         if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.LoginToken)
         {
-            SendPacket(client.Guid, new McApiDenyPacket("McApi.DisconnectReason.InvalidLoginToken"));
+            SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.InvalidLoginToken"));
             return;
         }
         if (packet.Version.Major != McWssVersion.Major || packet.Version.Minor != McWssVersion.Minor)
         {
-            SendPacket(client.Guid, new McApiDenyPacket("McApi.DisconnectReason.IncompatibleVersion"));
+            SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.IncompatibleVersion"));
             return;
         }
 
