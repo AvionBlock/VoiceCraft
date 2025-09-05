@@ -106,7 +106,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         lock (_dataWriter)
         {
             _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
             packet.Serialize(_dataWriter);
             request.Reject(_dataWriter);
         }
@@ -123,7 +122,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         lock (_dataWriter)
         {
             _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
             packet.Serialize(_dataWriter);
             peer.Disconnect(_dataWriter);
         }

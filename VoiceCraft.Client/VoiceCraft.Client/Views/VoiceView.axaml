@@ -48,13 +48,13 @@
                                 </Style>
                             </TextBlock.Styles>
                         </TextBlock>
-                        
+
                         <PathIcon Grid.Column="1"
                                   Margin="5,0,0,0"
                                   IsVisible="{Binding IsSpeaking}"
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Center"
-                                  Data="{StaticResource SpeakerRegular}"/>
+                                  Data="{StaticResource SpeakerRegular}" />
 
                         <StackPanel Grid.Column="2"
                                     HorizontalAlignment="Right"
@@ -79,7 +79,15 @@
                           Height="50"
                           IsChecked="{Binding IsMuted}">
                 <Panel>
-                    <PathIcon Classes="micOn" Data="{StaticResource MicOnRegular}" />
+                    <PathIcon Classes="micOn"
+                              Data="{StaticResource MicOnRegular}"
+                              Classes.IsSpeaking="{Binding IsSpeaking}">
+                        <PathIcon.Styles>
+                            <Style Selector="PathIcon.IsSpeaking">
+                                <Setter Property="Foreground" Value="{DynamicResource SuccessAccentBrush}" />
+                            </Style>
+                        </PathIcon.Styles>
+                    </PathIcon>
                     <PathIcon Classes="micOff" Data="{StaticResource MicOffRegular}" />
                 </Panel>
                 <ToggleButton.Styles>

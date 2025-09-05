@@ -89,6 +89,7 @@ public class VoipBackgroundProcess(
             _voiceCraftClient.OnSetDescription += ClientOnSetDescription;
             _voiceCraftClient.OnMuteUpdated += ClientOnMuteUpdated;
             _voiceCraftClient.OnDeafenUpdated += ClientOnDeafenUpdated;
+            _voiceCraftClient.OnSpeakingUpdated += ClientOnSpeakingUpdated;
             _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
 
@@ -182,6 +183,7 @@ public class VoipBackgroundProcess(
             _voiceCraftClient.OnSetDescription -= ClientOnSetDescription;
             _voiceCraftClient.OnMuteUpdated -= ClientOnMuteUpdated;
             _voiceCraftClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
+            _voiceCraftClient.OnSpeakingUpdated -= ClientOnSpeakingUpdated;
             _voiceCraftClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
         }
@@ -207,6 +209,7 @@ public class VoipBackgroundProcess(
     public event Action? OnDisconnected;
     public event Action<bool>? OnUpdateMute;
     public event Action<bool>? OnUpdateDeafen;
+    public event Action<bool>? OnUpdateSpeaking;
     public event Action<EntityViewModel>? OnEntityAdded;
     public event Action<EntityViewModel>? OnEntityRemoved;
 
@@ -247,6 +250,11 @@ public class VoipBackgroundProcess(
     private void ClientOnDeafenUpdated(bool deafen, VoiceCraftEntity entity)
     {
         OnUpdateDeafen?.Invoke(deafen);
+    }
+    
+    private void ClientOnSpeakingUpdated(bool speaking)
+    {
+        OnUpdateSpeaking?.Invoke(speaking);
     }
 
     private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
