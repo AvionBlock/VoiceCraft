@@ -11,7 +11,9 @@ namespace VoiceCraft.Core.Network.Packets
         {
             UserGuid = userGuid;
         }
-
+        
+        public override PacketType PacketType => PacketType.NetworkEntityCreated;
+        
         public Guid UserGuid { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
