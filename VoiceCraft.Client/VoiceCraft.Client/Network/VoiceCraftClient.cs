@@ -28,6 +28,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public event Action<ServerInfo>? OnServerInfo;
     public event Action<string>? OnSetTitle;
     public event Action<string>? OnSetDescription;
+    public event Action<bool>? OnSpeakingUpdated;
 
     //Buffers
     private readonly NetDataWriter _dataWriter = new();
@@ -45,6 +46,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
+    private bool _speakingState;
     private uint _sendTimestamp;
 
     //Privates
@@ -109,15 +111,33 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (ConnectionState != ConnectionState.Disconnected)
             throw new InvalidOperationException("This client is already connected or is connecting to a server!");
 
-        var dataWriter = new NetDataWriter();
-        var loginPacket = new LoginPacket(userGuid, serverUserGuid, locale, Version);
-        loginPacket.Serialize(dataWriter);
-        _serverPeer = _netManager.Connect(ip, port, dataWriter) ?? throw new InvalidOperationException("A connection request is awaiting!");
+        _speakingState = false;
+        lock (_dataWriter)
+        {
+            _dataWriter.Reset();
+            var loginPacket = new LoginPacket(userGuid, serverUserGuid, locale, Version);
+            loginPacket.Serialize(_dataWriter);
+            _serverPeer = _netManager.Connect(ip, port, _dataWriter) ??
+                          throw new InvalidOperationException("A connection request is awaiting!");
+        }
     }
     
     public void Update()
     {
         _netManager.PollEvents();
+        switch (_speakingState)
+        {
+            case false when
+                (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds <= Constants.SilenceThresholdMs:
+                _speakingState = true;
+                OnSpeakingUpdated?.Invoke(true);
+                break;
+            case true when
+                (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs:
+                _speakingState = false;
+                OnSpeakingUpdated?.Invoke(false);
+                break;
+        }
         //if (ConnectionState == ConnectionState.Disconnected) return;
     }
 
