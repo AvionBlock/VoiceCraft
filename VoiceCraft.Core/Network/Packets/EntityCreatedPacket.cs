@@ -1,36 +1,38 @@
-using System;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
     public class EntityCreatedPacket : VoiceCraftPacket
     {
-        public EntityCreatedPacket(int id = 0, VoiceCraftEntity? entity = null)
+        public EntityCreatedPacket(int id = 0, string name = "", bool muted = false, bool deafened = false)
         {
             Id = id;
-            EntityType = entity?.EntityType ?? EntityType.Unknown;
-            Entity = entity;
+            Name = name;
+            Muted = muted;
+            Deafened = deafened;
         }
 
         public override PacketType PacketType => PacketType.EntityCreated;
 
         public int Id { get; private set; }
-        public EntityType EntityType { get; private set; }
-        public VoiceCraftEntity? Entity { get; }
+        public string Name { get; private set; }
+        public bool Muted { get; private set; }
+        public bool Deafened { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put((byte)EntityType);
-            if (Entity != null)
-                writer.Put(Entity);
+            writer.Put(Name, Constants.MaxStringLength);
+            writer.Put(Muted);
+            writer.Put(Deafened);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            var entityTypeValue = reader.GetByte();
-            EntityType = Enum.IsDefined(typeof(EntityType), entityTypeValue) ? (EntityType)entityTypeValue : EntityType.Unknown;
+            Name = reader.GetString(Constants.MaxStringLength);
+            Muted = reader.GetBool();
+            Deafened = reader.GetBool();
         }
     }
 }
