@@ -404,6 +404,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleAudioPacket(AudioPacket packet)
     {
+        if (Deafened) return;
         var entity = World.GetEntity(packet.Id);
         entity?.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
     }
