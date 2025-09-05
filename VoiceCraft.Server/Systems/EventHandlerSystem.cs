@@ -244,7 +244,7 @@ public class EventHandlerSystem : IDisposable
             //Only send updates to visible entities.
             var packet = new AudioPacket(entity.Id, timestamp, frameLoudness, data.Length, data);
             var visibleNetworkEntities =
-                entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>().Where(x => x != entity);
+                entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>().Where(x => x != entity && !x.Deafened);
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
         });
     }
