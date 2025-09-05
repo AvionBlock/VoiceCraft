@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core
 {
-    public class VoiceCraftEntity : INetSerializable, IResettable
+    public class VoiceCraftEntity : IResettable
     {
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
 
@@ -33,29 +32,10 @@ namespace VoiceCraft.Core
         //Properties
         public virtual int Id { get; }
         public VoiceCraftWorld World { get; }
-        public virtual EntityType EntityType => EntityType.Server;
         public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
         public bool Destroyed { get; private set; }
-
-        public virtual void Serialize(NetDataWriter writer)
-        {
-            writer.Put(Name, Constants.MaxStringLength);
-            writer.Put(Muted);
-            writer.Put(Deafened);
-        }
-
-        public virtual void Deserialize(NetDataReader reader)
-        {
-            var name = reader.GetString(Constants.MaxStringLength);
-            var muted = reader.GetBool();
-            var deafened = reader.GetBool();
-
-            Name = name;
-            Muted = muted;
-            Deafened = deafened;
-        }
 
         public virtual void Reset()
         {

@@ -121,6 +121,8 @@
       "Disconnected": "Verbinding verbroken! Reden: {reason}"
     },
     "DisconnectReason": {
+      "Shutdown": "?",
+      "Forced": "?",
       "IncompatibleVersion": "Incompatibele client/server versie!",
       "ServerFull": "Server is vol!",
       "Error": "Er is een fout opgetreden bij het inloggen!"

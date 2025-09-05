@@ -1,6 +1,5 @@
 using System.Numerics;
 using LiteNetLib;
-using LiteNetLib.Utils;
 using VoiceCraft.Core;
 
 namespace VoiceCraft.Server.Data;
@@ -29,20 +28,6 @@ public class VoiceCraftNetworkEntity : VoiceCraftEntity
     public Guid ServerUserGuid { get; private set; }
     public string Locale { get; private set; }
     public PositioningType PositioningType { get; }
-    public override EntityType EntityType => EntityType.Network;
-
-    public override void Serialize(NetDataWriter writer)
-    {
-        writer.Put(UserGuid);
-        base.Serialize(writer);
-    }
-
-    public override void Deserialize(NetDataReader reader)
-    {
-        var userGuid = reader.GetGuid();
-        base.Deserialize(reader);
-        UserGuid = userGuid;
-    }
 
     public override void Reset()
     {

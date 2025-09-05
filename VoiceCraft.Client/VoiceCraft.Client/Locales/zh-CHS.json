@@ -121,6 +121,8 @@
             "Disconnected": "已断开连接！原因: {reason}"
         },
         "DisconnectReason": {
+            "Shutdown": "?",
+            "Forced": "?",
             "IncompatibleVersion": "客户端/服务器版本不兼容！",
             "ServerFull": "服务器已满！",
             "Error": "尝试登录时发生错误！"

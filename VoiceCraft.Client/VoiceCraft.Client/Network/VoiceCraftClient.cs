@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using OpusSharp.Core;
@@ -229,10 +228,15 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         {
             World.ClearEntities();
 
-            var reason = !info.AdditionalData.IsNull
-                ? Encoding.UTF8.GetString(info.AdditionalData.GetRemainingBytesSpan())
-                : info.Reason.ToString();
-            OnDisconnected?.Invoke(reason);
+            if (info.AdditionalData.IsNull)
+            {
+                OnDisconnected?.Invoke(info.Reason.ToString());
+                return;
+            }
+
+            var logoutPacket = new LogoutPacket();
+            logoutPacket.Deserialize(info.AdditionalData);
+            OnDisconnected?.Invoke(logoutPacket.Reason);
         }
         catch
         {
@@ -311,7 +315,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case PacketType.EntityCreated:
                 var entityCreatedPacket = new EntityCreatedPacket();
                 entityCreatedPacket.Deserialize(reader);
-                HandleEntityCreatedPacket(entityCreatedPacket, reader);
+                HandleEntityCreatedPacket(entityCreatedPacket);
+                break;
+            case PacketType.NetworkEntityCreated:
+                var networkEntityCreatedPacket = new NetworkEntityCreatedPacket();
+                networkEntityCreatedPacket.Deserialize(reader);
+                HandleNetworkEntityCreatedPacket(networkEntityCreatedPacket);
                 break;
             case PacketType.EntityDestroyed:
                 var entityDestroyedPacket = new EntityDestroyedPacket();
@@ -359,6 +368,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 HandleSetRotationPacket(setRotationPacket);
                 break;
             case PacketType.Login:
+            case PacketType.Logout:
             case PacketType.Unknown:
             default:
                 break;
@@ -408,24 +418,26 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         OnSetDescription?.Invoke(packet.Value);
     }
 
-    private void HandleEntityCreatedPacket(EntityCreatedPacket packet, NetDataReader reader)
+    private void HandleEntityCreatedPacket(EntityCreatedPacket packet)
     {
-        switch (packet.EntityType)
+        var entity = new VoiceCraftClientEntity(packet.Id, World)
         {
-            case EntityType.Server:
-                var entity = new VoiceCraftClientEntity(packet.Id, World);
-                entity.Deserialize(reader);
-                World.AddEntity(entity);
-                break;
-            case EntityType.Network:
-                var networkEntity = new VoiceCraftClientNetworkEntity(packet.Id, World);
-                networkEntity.Deserialize(reader);
-                World.AddEntity(networkEntity);
-                break;
-            case EntityType.Unknown:
-            default:
-                break;    
-        }
+            Name = packet.Name,
+            Muted = packet.Muted,
+            Deafened = packet.Deafened
+        };
+        World.AddEntity(entity);
+    }
+    
+    private void HandleNetworkEntityCreatedPacket(NetworkEntityCreatedPacket packet)
+    {
+        var entity = new VoiceCraftClientNetworkEntity(packet.Id, World, packet.UserGuid)
+        {
+            Name = packet.Name,
+            Muted = packet.Muted,
+            Deafened = packet.Deafened,
+        };
+        World.AddEntity(entity);
     }
 
     private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
