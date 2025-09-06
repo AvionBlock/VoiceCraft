@@ -1,6 +1,6 @@
 using System.CommandLine;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Network.Packets;
-using VoiceCraft.Server.Data;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;

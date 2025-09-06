@@ -17,12 +17,12 @@ namespace VoiceCraft.Client.Network;
 public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 {
     public static readonly Version Version = new(1, 1, 0);
-    
+
     //Public Properties
-    public override int Id => _serverPeer?.RemoteId ?? -1;
+    public override int Id => _id;
     public ConnectionState ConnectionState => _serverPeer?.ConnectionState ?? ConnectionState.Disconnected;
     public float MicrophoneSensitivity { get; set; }
-    
+
     //Events
     public event Action? OnConnected;
     public event Action<string>? OnDisconnected;
@@ -34,14 +34,15 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     //Buffers
     private readonly NetDataWriter _dataWriter = new();
     private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
-    
+
     //Encoder
     private readonly OpusEncoder _encoder;
-    
+
     //Networking
+    private int _id = -1;
     private readonly NetManager _netManager;
     private readonly EventBasedNetListener _listener;
-    
+
     //Systems
     private readonly AudioSystem _audioSystem;
 
@@ -63,7 +64,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             UnconnectedMessagesEnabled = true
         };
 
-        _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels, OpusPredefinedValues.OPUS_APPLICATION_VOIP);
+        _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels,
+            OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         _encoder.SetPacketLostPercent(50); //Expected packet loss, might make this change over time later.
         _encoder.SetBitRate(32000);
 
@@ -71,8 +73,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _audioSystem = new AudioSystem(this, World);
 
         //Setup Listeners
-        _listener.PeerConnectedEvent += InvokeConnected;
-        _listener.PeerDisconnectedEvent += InvokeDisconnected;
+        _listener.PeerConnectedEvent += OnConnectedEvent;
+        _listener.PeerDisconnectedEvent += OnDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
         _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
@@ -122,7 +124,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                           throw new InvalidOperationException("A connection request is awaiting!");
         }
     }
-    
+
     public void Update()
     {
         _netManager.PollEvents();
@@ -139,7 +141,19 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 OnSpeakingUpdated?.Invoke(false);
                 break;
         }
-        //if (ConnectionState == ConnectionState.Disconnected) return;
+
+        switch (ConnectionState)
+        {
+            case ConnectionState.Disconnected:
+                return;
+            case ConnectionState.Connected:
+            case ConnectionState.Outgoing:
+            case ConnectionState.ShutdownRequested:
+            case ConnectionState.EndPointChange:
+            case ConnectionState.Any:
+            default:
+                break;
+        }
     }
 
     public int Read(byte[] buffer, int count)
@@ -157,9 +171,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _lastAudioPeakTime = DateTime.UtcNow;
 
         _sendTimestamp += Constants.SamplesPerFrame; //Add to timestamp even though we aren't really connected.
-        if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs || _serverPeer == null ||
+        if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
+            _serverPeer == null ||
             ConnectionState != ConnectionState.Connected || Muted) return;
-        
+
         Array.Clear(_encodeBuffer);
         var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
         var packet = new AudioPacket(_serverPeer.RemoteId, _sendTimestamp, frameLoudness, bytesEncoded, _encodeBuffer);
@@ -172,7 +187,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _netManager.DisconnectAll();
     }
 
-    public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : VoiceCraftPacket
+    public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        where T : VoiceCraftPacket
     {
         if (ConnectionState != ConnectionState.Connected) return false;
 
@@ -207,7 +223,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             return _netManager.SendUnconnectedMessage(_dataWriter, ip, (int)port);
         }
     }
-    
+
     private void Dispose(bool disposing)
     {
         if (_isDisposed) return;
@@ -217,12 +233,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _encoder.Dispose();
             World.Dispose();
 
-            _listener.PeerConnectedEvent -= InvokeConnected;
-            _listener.PeerDisconnectedEvent -= InvokeDisconnected;
+            _listener.PeerConnectedEvent -= OnConnectedEvent;
+            _listener.PeerDisconnectedEvent -= OnDisconnectedEvent;
             _listener.ConnectionRequestEvent -= OnConnectionRequestEvent;
             _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
-            
+
             OnConnected = null;
             OnDisconnected = null;
         }
@@ -236,13 +252,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
     }
 
-    private void InvokeConnected(NetPeer peer)
+    //Network Handling
+    private void OnConnectedEvent(NetPeer peer)
     {
         if (!Equals(peer, _serverPeer)) return;
         OnConnected?.Invoke();
     }
 
-    private void InvokeDisconnected(NetPeer peer, DisconnectInfo info)
+    private void OnDisconnectedEvent(NetPeer peer, DisconnectInfo info)
     {
         if (!Equals(peer, _serverPeer)) return;
         try
@@ -263,15 +280,19 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         {
             OnDisconnected?.Invoke(info.Reason.ToString());
         }
+        finally
+        {
+            _id = -1;
+        }
     }
-    
-    //Network Handling
+
     private static void OnConnectionRequestEvent(ConnectionRequest request)
     {
         request.Reject(); //No fuck you.
     }
 
-    private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
+    private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
+        DeliveryMethod deliveryMethod)
     {
         try
         {
@@ -287,7 +308,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         reader.Recycle();
     }
 
-    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
+        UnconnectedMessageType messageType)
     {
         try
         {
@@ -312,6 +334,11 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 var infoPacket = new InfoPacket();
                 infoPacket.Deserialize(reader);
                 HandleInfoPacket(infoPacket);
+                break;
+            case PacketType.SetId:
+                var setIdPacket = new SetIdPacket();
+                setIdPacket.Deserialize(reader);
+                HandleSetIdPacket(setIdPacket);
                 break;
             case PacketType.SetEffect:
                 var setEffectPacket = new SetEffectPacket();
@@ -405,7 +432,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         OnServerInfo?.Invoke(new ServerInfo(infoPacket));
     }
-    
+
+    private void HandleSetIdPacket(SetIdPacket setIdPacket)
+    {
+        _id = setIdPacket.Id;
+    }
+
     private void HandleSetEffectPacket(SetEffectPacket packet, NetDataReader reader)
     {
         if (_audioSystem.TryGetEffect(packet.Bitmask, out var effect) && effect.EffectType == packet.EffectType)
@@ -460,9 +492,17 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         };
         World.AddEntity(entity);
     }
-    
+
     private void HandleNetworkEntityCreatedPacket(NetworkEntityCreatedPacket packet)
     {
+        if (packet.Id == Id)
+        {
+            Name = packet.Name;
+            Muted = packet.Muted;
+            Deafened = packet.Deafened;
+            return;
+        }
+        
         var entity = new VoiceCraftClientNetworkEntity(packet.Id, World, packet.UserGuid)
         {
             Name = packet.Name,
@@ -546,7 +586,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             EffectBitmask = packet.Value;
             return;
         }
-        
+
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
         entity.EffectBitmask = packet.Value;

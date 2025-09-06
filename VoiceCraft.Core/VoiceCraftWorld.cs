@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LiteNetLib;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core
@@ -37,12 +38,27 @@ namespace VoiceCraft.Core
             return entity;
         }
 
+        public VoiceCraftNetworkEntity CreateEntity(NetPeer peer, Guid userGuid, Guid serverUserGuid, string locale,
+            PositioningType positioningType)
+        {
+            var id = GetLowestAvailableId();
+            var entity = new VoiceCraftNetworkEntity(peer, id, userGuid, serverUserGuid, locale, positioningType, this);
+            if (!_entities.TryAdd(id, entity))
+                throw new InvalidOperationException("Failed to create entity!");
+
+            peer.Tag = entity;
+            entity.OnDestroyed += RemoveEntity;
+            OnEntityCreated?.Invoke(entity);
+            return entity;
+        }
+
         public void AddEntity(VoiceCraftEntity entity)
         {
             if (!_entities.TryAdd(entity.Id, entity))
                 throw new InvalidOperationException("Failed to add entity! An entity with the same id already exists!");
             if (entity.World != this)
-                throw new InvalidOperationException("Failed to add entity! The entity is not associated with this world!");
+                throw new InvalidOperationException(
+                    "Failed to add entity! The entity is not associated with this world!");
 
             entity.OnDestroyed += RemoveEntity;
             OnEntityCreated?.Invoke(entity);

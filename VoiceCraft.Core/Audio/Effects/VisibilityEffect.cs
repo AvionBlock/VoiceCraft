@@ -33,7 +33,7 @@ namespace VoiceCraft.Core.Audio.Effects
             var bitmask = from.TalkBitmask & to.ListenBitmask & (from.EffectBitmask | to.EffectBitmask);
             if ((effectBitmask & bitmask) == 0) return true; //Disabled, is visible by default.
             
-            if (!string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) &&
+            if (string.IsNullOrWhiteSpace(from.WorldId) && string.IsNullOrWhiteSpace(to.WorldId) ||
                 from.WorldId != to.WorldId) return false;
             return (from.TalkBitmask & to.ListenBitmask) != 0;
         }

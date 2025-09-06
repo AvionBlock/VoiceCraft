@@ -3,7 +3,6 @@ using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
-using VoiceCraft.Server.Data;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Systems;
@@ -60,37 +59,34 @@ public class EventHandlerSystem : IDisposable
     {
         if (newEntity is VoiceCraftNetworkEntity networkEntity)
         {
-            var networkEntityCreatedPacket =
-                new NetworkEntityCreatedPacket(newEntity.Id, newEntity.Name, newEntity.Muted, newEntity.Deafened,
-                    networkEntity.UserGuid);
-            _server.Broadcast(networkEntityCreatedPacket, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+            _server.SendPacket(networkEntity.NetPeer, new SetIdPacket(networkEntity.Id));
+            _server.Broadcast(new NetworkEntityCreatedPacket(networkEntity.Id, networkEntity.Name, networkEntity.Muted,
+                networkEntity.Deafened,
+                networkEntity.UserGuid));
 
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
             {
-                var packet = new SetEffectPacket(effect.Key, effect.Value);
-                _server.SendPacket(networkEntity.NetPeer, packet);
+                _server.SendPacket(networkEntity.NetPeer, new SetEffectPacket(effect.Key, effect.Value));
             }
 
             //Send other entities.
             foreach (var entity in _world.Entities)
             {
-                if (entity == newEntity) continue;
-                EntityCreatedPacket entityCreatedPacket;
+                if (entity == networkEntity) continue;
                 if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                    entityCreatedPacket = new NetworkEntityCreatedPacket(entity.Id, entity.Name, entity.Muted,
-                        entity.Deafened, otherNetworkEntity.UserGuid);
+                    _server.SendPacket(networkEntity.NetPeer, new NetworkEntityCreatedPacket(entity.Id, entity.Name,
+                        entity.Muted,
+                        entity.Deafened, otherNetworkEntity.UserGuid));
                 else
-                    entityCreatedPacket =
-                        new EntityCreatedPacket(entity.Id, entity.Name, entity.Muted, entity.Deafened);
-                _server.SendPacket(networkEntity.NetPeer, entityCreatedPacket);
+                    _server.SendPacket(networkEntity.NetPeer,
+                        new EntityCreatedPacket(entity.Id, entity.Name, entity.Muted, entity.Deafened));
             }
         }
         else
         {
-            var entityCreatedPacket =
-                new EntityCreatedPacket(newEntity.Id, newEntity.Name, newEntity.Muted, newEntity.Deafened);
-            _server.Broadcast(entityCreatedPacket);
+            _server.Broadcast(
+                new EntityCreatedPacket(newEntity.Id, newEntity.Name, newEntity.Muted, newEntity.Deafened));
         }
 
         newEntity.OnNameUpdated += OnEntityNameUpdated;
@@ -247,7 +243,8 @@ public class EventHandlerSystem : IDisposable
             //Only send updates to visible entities.
             var packet = new AudioPacket(entity.Id, timestamp, frameLoudness, data.Length, data);
             var visibleNetworkEntities =
-                entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>().Where(x => x != entity && !x.Deafened);
+                entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>()
+                    .Where(x => x != entity && !x.Deafened);
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
         });
     }

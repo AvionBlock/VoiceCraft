@@ -7,7 +7,6 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Config;
-using VoiceCraft.Server.Data;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
@@ -126,7 +125,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             peer.Disconnect(_dataWriter);
         }
     }
-    
+
     public void DisconnectAll<T>(T? packet = null) where T : VoiceCraftPacket
     {
         if (packet == null)
@@ -266,6 +265,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             case PacketType.Unknown:
             case PacketType.Login:
             case PacketType.Logout:
+            case PacketType.SetId:
             case PacketType.SetEffect:
             case PacketType.SetTitle:
             case PacketType.SetDescription:
@@ -276,6 +276,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             case PacketType.SetName:
             case PacketType.SetTalkBitmask:
             case PacketType.SetListenBitmask:
+            case PacketType.SetEffectBitmask:
             case PacketType.SetPosition:
             case PacketType.SetRotation:
             default:
@@ -300,13 +301,11 @@ public class VoiceCraftServer : IResettable, IDisposable
         var peer = request.Accept();
         try
         {
-            var entity = new VoiceCraftNetworkEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale,
-                packet.PositioningType, World);
-            peer.Tag = entity;
-            World.AddEntity(entity);
+            World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             DisconnectPeer(peer, new LogoutPacket("VoiceCraft.DisconnectReason.Error"));
         }
     }
@@ -317,31 +316,28 @@ public class VoiceCraftServer : IResettable, IDisposable
             new InfoPacket(Config.Motd, _netManager.ConnectedPeersCount, Config.PositioningType, packet.Tick));
     }
 
-    private void HandleAudioPacket(AudioPacket packet, NetPeer peer)
+    private static void HandleAudioPacket(AudioPacket packet, NetPeer peer)
     {
-        var entity = World.GetEntity(peer.Id);
-        if (entity is not VoiceCraftNetworkEntity networkEntity) return;
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
         networkEntity.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
     }
 
-    private void HandleSetMutePacket(SetMutePacket packet, NetPeer peer)
+    private static void HandleSetMutePacket(SetMutePacket packet, NetPeer peer)
     {
-        var entity = World.GetEntity(peer.Id);
-        if (entity is not VoiceCraftNetworkEntity) return;
-        entity.Muted = packet.Value;
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+        networkEntity.Muted = packet.Value;
     }
 
-    private void HandleSetDeafenPacket(SetDeafenPacket packet, NetPeer peer)
+    private static void HandleSetDeafenPacket(SetDeafenPacket packet, NetPeer peer)
     {
-        var entity = World.GetEntity(peer.Id);
-        if (entity is not VoiceCraftNetworkEntity) return;
-        entity.Deafened = packet.Value;
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+        networkEntity.Deafened = packet.Value;
     }
 
     private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
     {
-        if (peer.Tag is not VoiceCraftNetworkEntity) return;
-        World.DestroyEntity(peer.Id);
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+        World.DestroyEntity(networkEntity.Id);
     }
 
     private void OnConnectionRequest(ConnectionRequest request)
@@ -358,8 +354,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             loginPacket.Deserialize(request.Data);
             HandleLoginPacket(loginPacket, request);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.Error"));
         }
     }
