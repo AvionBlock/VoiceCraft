@@ -28,7 +28,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Bitmask = reader.GetByte();
+            Bitmask = reader.GetULong();
             var effectTypeValue = reader.GetByte();
             EffectType = Enum.IsDefined(typeof(EffectType), effectTypeValue)
                 ? (EffectType)effectTypeValue
