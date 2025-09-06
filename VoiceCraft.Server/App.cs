@@ -79,6 +79,7 @@ public static class App
                     if (delay > 0)
                         await Task.Delay((int)delay);
                     startTime = DateTime.UtcNow;
+                    //Console.WriteLine(delay);
                 }
                 catch (Exception ex)
                 {

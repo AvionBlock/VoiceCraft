@@ -5,8 +5,7 @@ namespace VoiceCraft.Server.Systems;
 
 public class AudioEffectSystem : IResettable, IDisposable
 {
-    private readonly OrderedDictionary<ulong, IAudioEffect> _audioEffects = new()
-        { { ulong.MaxValue, new VisibilityEffect() } };
+    private readonly OrderedDictionary<ulong, IAudioEffect> _audioEffects = new() { { ulong.MaxValue, new ProximityEffect() } };
 
     public IEnumerable<KeyValuePair<ulong, IAudioEffect>> Effects => _audioEffects;
 

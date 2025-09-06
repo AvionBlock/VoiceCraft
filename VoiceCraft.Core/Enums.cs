@@ -15,6 +15,7 @@ namespace VoiceCraft.Core
         Info,
         Login,
         Logout,
+        SetId,
         SetEffect,
         
         //Client Entity Stuff

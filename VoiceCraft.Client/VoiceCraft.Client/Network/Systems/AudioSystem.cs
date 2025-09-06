@@ -18,10 +18,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         get
         {
             lock (_audioEffects)
-            {
-                var audioEffects = _audioEffects.ToArray();
-                return audioEffects;
-            }
+                return _audioEffects;
         }
     }
 
