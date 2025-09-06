@@ -11,6 +11,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
 {
     private readonly OrderedDictionary<ulong, IAudioEffect> _audioEffects = new();
     private float[] _effectBuffer = [];
+    private float[] _mixingBuffer = [];
     private short[] _entityBuffer = [];
 
     public IEnumerable<KeyValuePair<ulong, IAudioEffect>> Effects
@@ -35,9 +36,15 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
     {
         if (_effectBuffer.Length < count)
             _effectBuffer = new float[count];
+        if (_mixingBuffer.Length < count)
+            _mixingBuffer = new float[count];
         if(_entityBuffer.Length < count)
             _entityBuffer = new short[count];
-
+        
+        _mixingBuffer.AsSpan().Clear();
+        _effectBuffer.AsSpan().Clear();
+        _entityBuffer.AsSpan().Clear();
+        
         var read = 0;
         foreach (var entity in world.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible))
         {
@@ -46,8 +53,8 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
             Pcm16ToFloat(_entityBuffer, entityRead, _effectBuffer); //To IEEEFloat
             ProcessEffects(_effectBuffer, entityRead, entity); //Process Effects
             AdjustVolume(_effectBuffer, entityRead, entity.Volume); //Adjust the volume of the entity.
-            PcmFloatTo16(_effectBuffer, entityRead, _entityBuffer); //To PCM16
-            Pcm16Mix(_entityBuffer, entityRead, buffer); //Mix 16bit audio.
+            PcmFloatMix(_effectBuffer, entityRead, _mixingBuffer); //Mix IEEFloat audio.
+            PcmFloatTo16(_mixingBuffer, entityRead, buffer); //To PCM16
             read = Math.Max(read, entityRead);
         }
         
@@ -124,12 +131,11 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
             destBuffer[i] = (short)(floatBuffer[i] * short.MaxValue);
     }
     
-    private static void Pcm16Mix(Span<short> srcBuffer, int count, Span<short> dstBuffer)
+    private static void PcmFloatMix(Span<float> srcBuffer, int count, Span<float> dstBuffer)
     {
         for (var i = 0; i < count; i++)
         {
-            var mixed = srcBuffer[i] + dstBuffer[i];
-            dstBuffer[i] = (short)Math.Clamp(mixed, short.MinValue, short.MaxValue);
+            dstBuffer[i] = Math.Clamp(srcBuffer[i] + dstBuffer[i], -1f, 1f);
         }
     }
 }

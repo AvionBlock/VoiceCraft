@@ -21,7 +21,6 @@ namespace VoiceCraft.Core
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
-            Muted = true;
             AddVisibleEntity(this); //Should always be visible to itself.
         }
         

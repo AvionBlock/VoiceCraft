@@ -30,7 +30,7 @@ namespace VoiceCraft.Core.Audio.Effects
 
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask)
         {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & (from.EffectBitmask | to.EffectBitmask);
+            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((effectBitmask & bitmask) == 0) return true; //Disabled, is visible by default.
             
             if (string.IsNullOrWhiteSpace(from.WorldId) && string.IsNullOrWhiteSpace(to.WorldId) ||

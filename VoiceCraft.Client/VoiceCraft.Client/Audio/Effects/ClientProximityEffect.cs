@@ -9,7 +9,7 @@ public class ClientProximityEffect : ProximityEffect
 {
     public override void Process(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask, Span<float> data, int count)
     {
-        var bitmask = from.TalkBitmask & to.ListenBitmask & (from.EffectBitmask | to.EffectBitmask);
+        var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
         if ((bitmask & effectBitmask) == 0) return; //Not enabled.
 
         var range = MinRange - MaxRange;
