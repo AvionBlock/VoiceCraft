@@ -63,7 +63,7 @@ public static class App
             //Server finished.
             AnsiConsole.Write(serverSetupTable);
             AnsiConsole.MarkupLine($"[bold green]{Locales.Locales.Startup_Success}[/]");
-
+            
             StartCommandTask();
             var startTime = DateTime.UtcNow;
             while (!Cts.IsCancellationRequested)

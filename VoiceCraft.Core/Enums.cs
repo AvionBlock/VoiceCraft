@@ -32,6 +32,7 @@ namespace VoiceCraft.Core
         SetDeafen,
         SetTalkBitmask,
         SetListenBitmask,
+        SetEffectBitmask,
         SetPosition,
         SetRotation
     }
@@ -72,6 +73,7 @@ namespace VoiceCraft.Core
     public enum EffectType : byte
     {
         Unknown,
+        Visibility,
         Proximity
     }
 

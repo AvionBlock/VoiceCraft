@@ -1,15 +1,12 @@
 using System;
-using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Audio.Effects
 {
-    public class ProximityEffect : IAudioEffect, IVisible
+    public class VisibilityEffect : IAudioEffect, IVisible
     {
-        public int MinRange { get; set; }
-        public int MaxRange { get; set; }
-        public EffectType EffectType => EffectType.Proximity;
+        public EffectType EffectType => EffectType.Visibility;
 
         public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask, Span<float> data,
             int count)
@@ -19,14 +16,10 @@ namespace VoiceCraft.Core.Audio.Effects
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(MinRange);
-            writer.Put(MaxRange);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            MinRange = reader.GetInt();
-            MaxRange = reader.GetInt();
         }
 
         public void Dispose()
@@ -38,9 +31,11 @@ namespace VoiceCraft.Core.Audio.Effects
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & (from.EffectBitmask | to.EffectBitmask);
-            if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.
-            var distance = Vector3.Distance(from.Position, to.Position);
-            return distance <= MaxRange;
+            if ((effectBitmask & bitmask) == 0) return true; //Disabled, is visible by default.
+            
+            if (!string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) &&
+                from.WorldId != to.WorldId) return false;
+            return (from.TalkBitmask & to.ListenBitmask) != 0;
         }
     }
 }
