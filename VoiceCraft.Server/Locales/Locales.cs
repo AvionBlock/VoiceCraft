@@ -107,8 +107,4 @@ public static class Locales
     public static string Commands_SetWorldId_Arguments_Id_Description => Localizer.Get("Commands.SetWorldId.Arguments.Id.Description");
     public static string Commands_SetWorldId_Arguments_Value_Name => Localizer.Get("Commands.SetWorldId.Arguments.Value.Name");
     public static string Commands_SetWorldId_Arguments_Value_Description => Localizer.Get("Commands.SetWorldId.Arguments.Value.Description");
-    
-    public static string AudioEffectSystem_Exceptions_AddEffect => Localizer.Get("AudioEffectSystem.AddEffect");
-    public static string AudioEffectSystem_Exceptions_RemoveEffect => Localizer.Get("AudioEffectSystem.RemoveEffect");
-    public static string AudioEffectSystem_Exceptions_AvailableId => Localizer.Get("AudioEffectSystem.AvailableId");
 }

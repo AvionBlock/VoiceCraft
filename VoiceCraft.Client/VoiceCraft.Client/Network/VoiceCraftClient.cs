@@ -9,6 +9,7 @@ using VoiceCraft.Client.Audio.Effects;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Network;
@@ -151,7 +152,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public void Write(byte[] buffer, int bytesRead)
     {
-        var frameLoudness = buffer.GetFrameLoudness(bytesRead);
+        var frameLoudness = buffer.GetFramePeak16(bytesRead);
         if (frameLoudness >= MicrophoneSensitivity)
             _lastAudioPeakTime = DateTime.UtcNow;
 
@@ -377,6 +378,11 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 setListenBitmaskPacket.Deserialize(reader);
                 HandleSetListenBitmaskPacket(setListenBitmaskPacket);
                 break;
+            case PacketType.SetEffectBitmask:
+                var setEffectBitmaskPacket = new SetEffectBitmaskPacket();
+                setEffectBitmaskPacket.Deserialize(reader);
+                HandleSetEffectBitmaskPacket(setEffectBitmaskPacket);
+                break;
             case PacketType.SetPosition:
                 var setPositionPacket = new SetPositionPacket();
                 setPositionPacket.Deserialize(reader);
@@ -402,7 +408,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     
     private void HandleSetEffectPacket(SetEffectPacket packet, NetDataReader reader)
     {
-        if (_audioSystem.TryGetEffect(packet.Index, out var effect) && effect.EffectType == packet.EffectType)
+        if (_audioSystem.TryGetEffect(packet.Bitmask, out var effect) && effect.EffectType == packet.EffectType)
         {
             effect.Deserialize(reader); //Do not recreate the effect instance! Could hold audio instance data!
             return;
@@ -410,14 +416,19 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         switch (packet.EffectType)
         {
+            case EffectType.Visibility:
+                var visibilityEffect = new VisibilityEffect();
+                visibilityEffect.Deserialize(reader);
+                _audioSystem.SetEffect(packet.Bitmask, visibilityEffect);
+                break;
             case EffectType.Proximity:
                 var proximityEffect = new ClientProximityEffect();
                 proximityEffect.Deserialize(reader);
-                _audioSystem.SetEffect(packet.Index, proximityEffect);
+                _audioSystem.SetEffect(packet.Bitmask, proximityEffect);
                 break;
             case EffectType.Unknown:
             default:
-                _audioSystem.RemoveEffect(packet.Index);
+                _audioSystem.SetEffect(packet.Bitmask, null);
                 break;
         }
     }
@@ -526,6 +537,19 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
         entity.ListenBitmask = packet.Value;
+    }
+
+    private void HandleSetEffectBitmaskPacket(SetEffectBitmaskPacket packet)
+    {
+        if (packet.Id == Id)
+        {
+            EffectBitmask = packet.Value;
+            return;
+        }
+        
+        var entity = World.GetEntity(packet.Id);
+        if (entity == null) return;
+        entity.EffectBitmask = packet.Value;
     }
 
     private void HandleSetPositionPacket(SetPositionPacket packet)

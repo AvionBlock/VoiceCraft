@@ -7,8 +7,6 @@ namespace VoiceCraft.Core.Interfaces
     {
         EffectType EffectType { get; }
 
-        public ulong Bitmask { get; }
-
-        void Process(VoiceCraftEntity from, VoiceCraftEntity to, Span<float> data, int count);
+        void Process(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask, Span<float> data, int count);
     }
 }

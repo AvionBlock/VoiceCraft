@@ -18,6 +18,7 @@ namespace VoiceCraft.Core
         private string _name = "New Entity";
         private ulong _listenBitmask = ulong.MaxValue;
         private ulong _talkBitmask = ulong.MaxValue;
+        private ulong _effectBitmask = ulong.MaxValue;
         private Vector3 _position;
         private Quaternion _rotation;
 
@@ -49,6 +50,7 @@ namespace VoiceCraft.Core
         public event Action<bool, VoiceCraftEntity>? OnDeafenUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
         public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
+        public event Action<ulong, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
@@ -83,13 +85,6 @@ namespace VoiceCraft.Core
             OnAudioReceived?.Invoke(buffer, timestamp, frameLoudness, this);
         }
 
-        public bool VisibleTo(VoiceCraftEntity entity)
-        {
-            if (string.IsNullOrWhiteSpace(WorldId) || string.IsNullOrWhiteSpace(entity.WorldId) || WorldId != entity.WorldId) return false;
-            var bitmask = TalkBitmask & entity.ListenBitmask;
-            return bitmask != 0;
-        }
-
         public virtual void Destroy()
         {
             if (Destroyed) return;
@@ -103,6 +98,7 @@ namespace VoiceCraft.Core
             OnDeafenUpdated = null;
             OnTalkBitmaskUpdated = null;
             OnListenBitmaskUpdated = null;
+            OnEffectBitmaskUpdated = null;
             OnPositionUpdated = null;
             OnRotationUpdated = null;
             OnVisibleEntityAdded = null;
@@ -180,6 +176,17 @@ namespace VoiceCraft.Core
                 if (_listenBitmask == value) return;
                 _listenBitmask = value;
                 OnTalkBitmaskUpdated?.Invoke(_listenBitmask, this);
+            }
+        }
+
+        public ulong EffectBitmask
+        {
+            get => _effectBitmask;
+            set
+            {
+                if (_effectBitmask == value) return;
+                _effectBitmask = value;
+                OnEffectBitmaskUpdated?.Invoke(_effectBitmask, this);
             }
         }
 

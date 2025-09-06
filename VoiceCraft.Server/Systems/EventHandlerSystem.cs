@@ -24,7 +24,6 @@ public class EventHandlerSystem : IDisposable
         _world.OnEntityCreated += OnEntityCreated;
         _world.OnEntityDestroyed += OnEntityDestroyed;
         _audioEffectSystem.OnEffectSet += OnAudioEffectSet;
-        _audioEffectSystem.OnEffectRemoved += OnAudioEffectRemoved;
     }
 
     public void Dispose()
@@ -32,7 +31,6 @@ public class EventHandlerSystem : IDisposable
         _world.OnEntityCreated -= OnEntityCreated;
         _world.OnEntityDestroyed -= OnEntityDestroyed;
         _audioEffectSystem.OnEffectSet -= OnAudioEffectSet;
-        _audioEffectSystem.OnEffectRemoved -= OnAudioEffectRemoved;
         GC.SuppressFinalize(this);
     }
 
@@ -44,20 +42,11 @@ public class EventHandlerSystem : IDisposable
 
     #region Audio Effect Events
 
-    private void OnAudioEffectSet(byte index, IAudioEffect effect)
+    private void OnAudioEffectSet(ulong bitmask, IAudioEffect? effect)
     {
         _tasks.Add(() =>
         {
-            var packet = new SetEffectPacket(index, effect);
-            _server.Broadcast(packet);
-        });
-    }
-
-    private void OnAudioEffectRemoved(byte index, IAudioEffect effect)
-    {
-        _tasks.Add(() =>
-        {
-            var packet = new SetEffectPacket(index);
+            var packet = new SetEffectPacket(bitmask, effect);
             _server.Broadcast(packet);
         });
     }
@@ -109,6 +98,7 @@ public class EventHandlerSystem : IDisposable
         newEntity.OnDeafenUpdated += OnEntityDeafenUpdated;
         newEntity.OnTalkBitmaskUpdated += OnEntityTalkBitmaskUpdated;
         newEntity.OnListenBitmaskUpdated += OnEntityListenBitmaskUpdated;
+        newEntity.OnEffectBitmaskUpdated += OnEntityEffectBitmaskUpdated;
         newEntity.OnPositionUpdated += OnEntityPositionUpdated;
         newEntity.OnRotationUpdated += OnEntityRotationUpdated;
         newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
@@ -128,6 +118,7 @@ public class EventHandlerSystem : IDisposable
         entity.OnDeafenUpdated -= OnEntityDeafenUpdated;
         entity.OnTalkBitmaskUpdated -= OnEntityTalkBitmaskUpdated;
         entity.OnListenBitmaskUpdated -= OnEntityListenBitmaskUpdated;
+        entity.OnEffectBitmaskUpdated -= OnEntityEffectBitmaskUpdated;
         entity.OnPositionUpdated -= OnEntityPositionUpdated;
         entity.OnRotationUpdated -= OnEntityRotationUpdated;
         entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
@@ -189,6 +180,16 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
+    private void OnEntityEffectBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
+    {
+        _tasks.Add(() =>
+        {
+            var packet = new SetEffectBitmaskPacket(entity.Id, bitmask);
+            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
+        });
+    }
+
     private void OnEntityPositionUpdated(Vector3 position, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
@@ -220,12 +221,14 @@ public class EventHandlerSystem : IDisposable
             var visibilityPacket = new SetVisibilityPacket(entity.Id, true);
             var talkBitmaskPacket = new SetTalkBitmaskPacket(entity.Id, entity.TalkBitmask);
             var listenBitmaskPacket = new SetListenBitmaskPacket(entity.Id, entity.ListenBitmask);
+            var effectBitmaskPacket = new SetEffectBitmaskPacket(entity.Id, entity.EffectBitmask);
             var positionPacket = new SetPositionPacket(entity.Id, entity.Position);
             var rotationPacket = new SetRotationPacket(entity.Id, entity.Rotation);
 
             _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
             _server.SendPacket(networkEntity.NetPeer, talkBitmaskPacket);
             _server.SendPacket(networkEntity.NetPeer, listenBitmaskPacket);
+            _server.SendPacket(networkEntity.NetPeer, effectBitmaskPacket);
             _server.SendPacket(networkEntity.NetPeer, positionPacket);
             _server.SendPacket(networkEntity.NetPeer, rotationPacket);
         });

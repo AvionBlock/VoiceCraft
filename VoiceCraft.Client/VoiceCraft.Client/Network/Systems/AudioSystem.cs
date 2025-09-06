@@ -9,11 +9,11 @@ namespace VoiceCraft.Client.Network.Systems;
 
 public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisposable
 {
-    private readonly Dictionary<byte, IAudioEffect> _audioEffects = new();
+    private readonly OrderedDictionary<ulong, IAudioEffect> _audioEffects = new();
     private float[] _effectBuffer = [];
     private short[] _entityBuffer = [];
 
-    public IEnumerable<KeyValuePair<byte, IAudioEffect>> Effects
+    public IEnumerable<KeyValuePair<ulong, IAudioEffect>> Effects
     {
         get
         {
@@ -29,12 +29,10 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
     {
         ClearEffects();
         OnEffectSet = null;
-        OnEffectRemoved = null;
         GC.SuppressFinalize(this);
     }
 
-    public event Action<byte, IAudioEffect>? OnEffectSet;
-    public event Action<byte, IAudioEffect>? OnEffectRemoved;
+    public event Action<ulong, IAudioEffect?>? OnEffectSet;
 
     public int Read(Span<short> buffer, int count)
     {
@@ -62,67 +60,42 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         return count;
     }
 
-    public void AddEffect(IAudioEffect effect)
+    public bool TryGetEffect(ulong index, [NotNullWhen(true)] out IAudioEffect? effect)
     {
         lock(_audioEffects)
         {
-            var id = GetLowestAvailableId();
-            if (_audioEffects.TryAdd(id, effect))
-                throw new InvalidOperationException("Failed to add effect!");
+            return _audioEffects.TryGetValue(index, out effect);
         }
     }
-
-    public void SetEffect(byte index, IAudioEffect effect)
+    
+    public void SetEffect(ulong bitmask, IAudioEffect? effect)
     {
-        lock(_audioEffects)
+        lock (_audioEffects)
         {
-            if (!_audioEffects.TryAdd(index, effect))
-                _audioEffects[index] = effect;
-            OnEffectSet?.Invoke(index, effect);
-        }
-    }
+            if (effect == null && _audioEffects.Remove(bitmask, out var audioEffect))
+            {
+                audioEffect.Dispose();
+                OnEffectSet?.Invoke(bitmask, null);
+                return;
+            }
 
-    public bool TryGetEffect(byte index, [NotNullWhen(true)] out IAudioEffect? effect)
-    {
-        lock(_audioEffects)
-        {
-            effect = _audioEffects.GetValueOrDefault(index);
-            return effect != null;
-        }
-    }
-
-    public void RemoveEffect(byte index)
-    {
-        lock(_audioEffects)
-        {
-            if (!_audioEffects.Remove(index, out var effect))
-                throw new InvalidOperationException("Failed to remove effect!");
-            effect.Dispose();
-            OnEffectRemoved?.Invoke(index, effect);
+            if (effect == null || !_audioEffects.TryAdd(bitmask, effect)) return;
+            OnEffectSet?.Invoke(bitmask, effect);
         }
     }
 
     public void ClearEffects()
     {
-        lock(_audioEffects)
+        lock (_audioEffects)
         {
             var effects = _audioEffects.ToArray(); //Copy the effects.
             _audioEffects.Clear();
             foreach (var effect in effects)
             {
                 effect.Value.Dispose();
-                OnEffectRemoved?.Invoke(effect.Key, effect.Value);
+                OnEffectSet?.Invoke(effect.Key, null);
             }
         }
-    }
-
-    private byte GetLowestAvailableId()
-    {
-        for (var i = byte.MinValue; i < byte.MaxValue; i++)
-            if (!_audioEffects.ContainsKey(i))
-                return i;
-
-        throw new InvalidOperationException("Could not find an available id!");
     }
 
     private void ProcessEffects(Span<float> buffer, int count, VoiceCraftClientEntity entity)
@@ -130,7 +103,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         lock(_audioEffects)
         {
             foreach (var effect in _audioEffects)
-                effect.Value.Process(entity, client, buffer, count);
+                effect.Value.Process(entity, client, effect.Key, buffer, count);
         }
     }
 
