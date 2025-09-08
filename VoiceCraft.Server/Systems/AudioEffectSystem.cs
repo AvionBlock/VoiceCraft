@@ -1,13 +1,12 @@
-using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems;
 
 public class AudioEffectSystem : IResettable, IDisposable
 {
-    private readonly OrderedDictionary<ulong, IAudioEffect> _audioEffects = new();
+    private readonly OrderedDictionary<uint, IAudioEffect> _audioEffects = new();
 
-    public IEnumerable<KeyValuePair<ulong, IAudioEffect>> Effects => _audioEffects;
+    public IEnumerable<KeyValuePair<uint, IAudioEffect>> Effects => _audioEffects;
 
     public void Dispose()
     {
@@ -21,9 +20,9 @@ public class AudioEffectSystem : IResettable, IDisposable
         ClearEffects();
     }
 
-    public event Action<ulong, IAudioEffect?>? OnEffectSet;
+    public event Action<uint, IAudioEffect?>? OnEffectSet;
 
-    public void SetEffect(ulong bitmask, IAudioEffect? effect)
+    public void SetEffect(uint bitmask, IAudioEffect? effect)
     {
         if (effect == null && _audioEffects.Remove(bitmask, out var audioEffect))
         {

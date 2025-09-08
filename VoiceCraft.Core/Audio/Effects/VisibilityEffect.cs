@@ -8,7 +8,7 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         public EffectType EffectType => EffectType.Visibility;
 
-        public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask, Span<float> data,
+        public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask, Span<float> data,
             int count)
         {
             throw new NotSupportedException();
@@ -28,7 +28,7 @@ namespace VoiceCraft.Core.Audio.Effects
         }
 
 
-        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask)
+        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((effectBitmask & bitmask) == 0) return true; //Disabled, is visible by default.

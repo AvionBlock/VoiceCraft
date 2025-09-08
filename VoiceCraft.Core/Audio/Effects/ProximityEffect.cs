@@ -11,7 +11,7 @@ namespace VoiceCraft.Core.Audio.Effects
         public int MaxRange { get; set; }
         public EffectType EffectType => EffectType.Proximity;
 
-        public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask, Span<float> data,
+        public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask, Span<float> data,
             int count)
         {
             throw new NotSupportedException();
@@ -35,7 +35,7 @@ namespace VoiceCraft.Core.Audio.Effects
         }
 
 
-        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask)
+        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.

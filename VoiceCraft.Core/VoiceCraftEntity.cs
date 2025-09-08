@@ -16,9 +16,9 @@ namespace VoiceCraft.Core
         private float _loudness;
         private string _worldId = string.Empty;
         private string _name = "New Entity";
-        private ulong _listenBitmask = ulong.MaxValue;
-        private ulong _talkBitmask = ulong.MaxValue;
-        private ulong _effectBitmask = ulong.MaxValue;
+        private uint _listenBitmask = uint.MaxValue;
+        private uint _talkBitmask = uint.MaxValue;
+        private uint _effectBitmask = uint.MaxValue;
         private Vector3 _position;
         private Quaternion _rotation;
 
@@ -48,9 +48,9 @@ namespace VoiceCraft.Core
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<bool, VoiceCraftEntity>? OnMuteUpdated;
         public event Action<bool, VoiceCraftEntity>? OnDeafenUpdated;
-        public event Action<ulong, VoiceCraftEntity>? OnTalkBitmaskUpdated;
-        public event Action<ulong, VoiceCraftEntity>? OnListenBitmaskUpdated;
-        public event Action<ulong, VoiceCraftEntity>? OnEffectBitmaskUpdated;
+        public event Action<uint, VoiceCraftEntity>? OnTalkBitmaskUpdated;
+        public event Action<uint, VoiceCraftEntity>? OnListenBitmaskUpdated;
+        public event Action<uint, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
@@ -157,7 +157,7 @@ namespace VoiceCraft.Core
             }
         }
 
-        public ulong TalkBitmask
+        public uint TalkBitmask
         {
             get => _talkBitmask;
             set
@@ -168,7 +168,7 @@ namespace VoiceCraft.Core
             }
         }
 
-        public ulong ListenBitmask
+        public uint ListenBitmask
         {
             get => _listenBitmask;
             set
@@ -179,7 +179,7 @@ namespace VoiceCraft.Core
             }
         }
 
-        public ulong EffectBitmask
+        public uint EffectBitmask
         {
             get => _effectBitmask;
             set

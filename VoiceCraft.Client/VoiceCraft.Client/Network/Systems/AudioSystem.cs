@@ -9,12 +9,12 @@ namespace VoiceCraft.Client.Network.Systems;
 
 public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisposable
 {
-    private readonly OrderedDictionary<ulong, IAudioEffect> _audioEffects = new();
+    private readonly OrderedDictionary<uint, IAudioEffect> _audioEffects = new();
     private float[] _effectBuffer = [];
     private float[] _mixingBuffer = [];
     private short[] _entityBuffer = [];
 
-    public IEnumerable<KeyValuePair<ulong, IAudioEffect>> Effects
+    public IEnumerable<KeyValuePair<uint, IAudioEffect>> Effects
     {
         get
         {
@@ -30,7 +30,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         GC.SuppressFinalize(this);
     }
 
-    public event Action<ulong, IAudioEffect?>? OnEffectSet;
+    public event Action<uint, IAudioEffect?>? OnEffectSet;
 
     public int Read(Span<short> buffer, int count)
     {
@@ -64,15 +64,15 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         return count;
     }
 
-    public bool TryGetEffect(ulong index, [NotNullWhen(true)] out IAudioEffect? effect)
+    public bool TryGetEffect(uint bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
     {
         lock(_audioEffects)
         {
-            return _audioEffects.TryGetValue(index, out effect);
+            return _audioEffects.TryGetValue(bitmask, out effect);
         }
     }
     
-    public void SetEffect(ulong bitmask, IAudioEffect? effect)
+    public void SetEffect(uint bitmask, IAudioEffect? effect)
     {
         lock (_audioEffects)
         {
