@@ -6,7 +6,7 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetEffectPacket : VoiceCraftPacket
     {
-        public SetEffectPacket(ulong bitmask = 0, IAudioEffect? effect = null)
+        public SetEffectPacket(uint bitmask = 0, IAudioEffect? effect = null)
         {
             Bitmask = bitmask;
             EffectType = effect?.EffectType ?? EffectType.Unknown;
@@ -15,7 +15,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override PacketType PacketType => PacketType.SetEffect;
 
-        public ulong Bitmask { get; private set; }
+        public uint Bitmask { get; private set; }
         public EffectType EffectType { get; private set; }
         public IAudioEffect? Effect { get; }
 
@@ -28,7 +28,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Bitmask = reader.GetULong();
+            Bitmask = reader.GetUInt();
             var effectTypeValue = reader.GetByte();
             EffectType = Enum.IsDefined(typeof(EffectType), effectTypeValue)
                 ? (EffectType)effectTypeValue

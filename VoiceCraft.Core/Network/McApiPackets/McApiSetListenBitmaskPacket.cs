@@ -4,7 +4,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiSetListenBitmaskPacket : McApiPacket
     {
-        public McApiSetListenBitmaskPacket(string sessionToken = "", int id = 0, ulong value = 0)
+        public McApiSetListenBitmaskPacket(string sessionToken = "", int id = 0, uint value = 0)
         {
             SessionToken = sessionToken;
             Id = id;
@@ -15,7 +15,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
 
         public string SessionToken { get; private set; }
         public int Id { get; private set; }
-        public ulong Value { get; private set; }
+        public uint Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -28,7 +28,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
         {
             SessionToken = reader.GetString(Constants.MaxStringLength);
             Id = reader.GetInt();
-            Value = reader.GetULong();
+            Value = reader.GetUInt();
         }
     }
 }

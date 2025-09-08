@@ -7,7 +7,7 @@ namespace VoiceCraft.Client.Audio.Effects;
 
 public class ClientProximityEffect : ProximityEffect
 {
-    public override void Process(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask, Span<float> data, int count)
+    public override void Process(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask, Span<float> data, int count)
     {
         var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
         if ((bitmask & effectBitmask) == 0) return; //Not enabled.

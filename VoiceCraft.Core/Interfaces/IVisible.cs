@@ -2,6 +2,6 @@ namespace VoiceCraft.Core.Interfaces
 {
     public interface IVisible
     {
-        bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ulong effectBitmask);
+        bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask);
     }
 }

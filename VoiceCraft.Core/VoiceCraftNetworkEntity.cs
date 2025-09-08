@@ -37,8 +37,8 @@ namespace VoiceCraft.Core
             WorldId = string.Empty;
             Position = Vector3.Zero;
             Rotation = new  Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
-            TalkBitmask = ulong.MaxValue;
-            ListenBitmask = ulong.MaxValue;
+            TalkBitmask = uint.MaxValue;
+            ListenBitmask = uint.MaxValue;
         }
     }
 }

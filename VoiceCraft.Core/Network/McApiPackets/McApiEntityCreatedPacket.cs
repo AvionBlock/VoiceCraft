@@ -15,8 +15,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
             string name = "",
             bool muted = false,
             bool deafened = false,
-            ulong talkBitmask = ulong.MinValue,
-            ulong listenBitmask = ulong.MinValue,
+            uint talkBitmask = uint.MinValue,
+            uint listenBitmask = uint.MinValue,
             Vector3 position = new Vector3(),
             Quaternion rotation = new Quaternion())
         {
@@ -44,8 +44,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
         public string Name { get; private set; }
         public bool Muted { get; private set; }
         public bool Deafened { get; private set; }
-        public ulong TalkBitmask { get; private set; }
-        public ulong ListenBitmask { get; private set; }
+        public uint TalkBitmask { get; private set; }
+        public uint ListenBitmask { get; private set; }
         public Vector3 Position { get; private set; }
         public Quaternion Rotation { get; private set; }
 
@@ -80,8 +80,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
             Name = reader.GetString(Constants.MaxStringLength);
             Muted = reader.GetBool();
             Deafened = reader.GetBool();
-            TalkBitmask = reader.GetULong();
-            ListenBitmask = reader.GetULong();
+            TalkBitmask = reader.GetUInt();
+            ListenBitmask = reader.GetUInt();
             Position = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
             Rotation = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         }

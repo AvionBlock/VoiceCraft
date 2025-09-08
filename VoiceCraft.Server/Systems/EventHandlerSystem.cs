@@ -1,5 +1,4 @@
 using System.Numerics;
-using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
@@ -41,7 +40,7 @@ public class EventHandlerSystem : IDisposable
 
     #region Audio Effect Events
 
-    private void OnAudioEffectSet(ulong bitmask, IAudioEffect? effect)
+    private void OnAudioEffectSet(uint bitmask, IAudioEffect? effect)
     {
         _tasks.Add(() =>
         {
@@ -156,7 +155,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityTalkBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
+    private void OnEntityTalkBitmaskUpdated(uint bitmask, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
@@ -166,7 +165,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityListenBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
+    private void OnEntityListenBitmaskUpdated(uint bitmask, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
@@ -176,7 +175,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityEffectBitmaskUpdated(ulong bitmask, VoiceCraftEntity entity)
+    private void OnEntityEffectBitmaskUpdated(uint bitmask, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
