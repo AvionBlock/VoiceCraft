@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jeek.Avalonia.Localization;
@@ -16,11 +15,15 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty] private INotificationMessageManager _manager;
 
-    public MainViewModel(NavigationService navigationService, INotificationMessageManager manager, ThemesService themesService,
+    public MainViewModel(NavigationService navigationService, INotificationMessageManager manager,
+        ThemesService themesService,
         SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService)
     {
         _manager = manager;
-        themesService.OnBackgroundImageChanged += backgroundImage => { BackgroundImage = backgroundImage?.BackgroundImageBitmap; };
+        themesService.OnBackgroundImageChanged += backgroundImage =>
+        {
+            BackgroundImage = backgroundImage?.BackgroundImageBitmap;
+        };
         // register route changed event to set content to viewModel, whenever 
         // a route changes
         navigationService.OnViewModelChanged += viewModel =>

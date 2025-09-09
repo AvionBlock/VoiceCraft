@@ -201,6 +201,10 @@ public class App : Application
             Constants.SineSmpBaseGuid,
             "SineSMP Base",
             "avares://VoiceCraft.Client/Assets/sinesmpbase.png"));
+        
+        //HotKey Registry
+        ServiceCollection.AddSingleton<HotKeyAction, MuteAction>();
+        ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
 
         return ServiceCollection.BuildServiceProvider();
     }
@@ -209,5 +213,6 @@ public class App : Application
     {
         Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
+        serviceProvider.GetService<HotKeyService>();
     }
 }
