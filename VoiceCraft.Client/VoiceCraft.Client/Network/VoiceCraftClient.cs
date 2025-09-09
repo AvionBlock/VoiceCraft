@@ -170,7 +170,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (frameLoudness >= MicrophoneSensitivity)
             _lastAudioPeakTime = DateTime.UtcNow;
 
-        _sendTimestamp += Constants.SamplesPerFrame; //Add to timestamp even though we aren't really connected.
+        _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
         if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
             _serverPeer == null ||
             ConnectionState != ConnectionState.Connected || Muted) return;
