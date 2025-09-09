@@ -3,7 +3,7 @@ using SpeexDSPSharp.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Audio;
+namespace VoiceCraft.Client.Android.Audio;
 
 public class SpeexDspEchoCanceler : IEchoCanceler
 {
