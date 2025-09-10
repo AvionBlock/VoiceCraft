@@ -5,7 +5,6 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using OpusSharp.Core;
 using OpusSharp.Core.Extensions;
-using VoiceCraft.Client.Audio.Effects;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -454,9 +453,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 _audioSystem.SetEffect(packet.Bitmask, visibilityEffect);
                 break;
             case EffectType.Proximity:
-                var proximityEffect = new ClientProximityEffect();
+                var proximityEffect = new ProximityEffect();
                 proximityEffect.Deserialize(reader);
                 _audioSystem.SetEffect(packet.Bitmask, proximityEffect);
+                break;
+            case EffectType.Directional:
+                var directionalEffect = new DirectionalEffect();
+                directionalEffect.Deserialize(reader);
+                _audioSystem.SetEffect(packet.Bitmask, directionalEffect);
                 break;
             case EffectType.Unknown:
             default:
