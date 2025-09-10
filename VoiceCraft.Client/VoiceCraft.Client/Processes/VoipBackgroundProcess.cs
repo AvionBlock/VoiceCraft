@@ -101,7 +101,7 @@ public class VoipBackgroundProcess(
             _audioRecorder.OnRecordingStopped += OnRecordingStopped;
 
             //Setup audio player.
-            _audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
+            _audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, 2, Constants.Format);
             _audioPlayer.BufferMilliseconds = 100;
             _audioPlayer.SelectedDevice = audioSettings.OutputDevice == "Default" ? null : audioSettings.OutputDevice;
             _audioPlayer.OnPlaybackStopped += OnPlaybackStopped;

@@ -60,8 +60,16 @@ public class NativeHotKeyService : HotKeyService, IDisposable
     public void Dispose()
     {
         _hook.KeyPressed -= OnKeyPressed;
-        _hook.Stop();
-        _hook.Dispose();
+        try
+        {
+            _hook.Stop();
+            _hook.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
         GC.SuppressFinalize(this);
     }
 }

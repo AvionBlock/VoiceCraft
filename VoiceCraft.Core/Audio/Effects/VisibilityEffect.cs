@@ -11,7 +11,6 @@ namespace VoiceCraft.Core.Audio.Effects
         public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask, Span<float> data,
             int count)
         {
-            throw new NotSupportedException();
         }
 
         public void Serialize(NetDataWriter writer)
