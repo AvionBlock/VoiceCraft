@@ -21,8 +21,8 @@ namespace VoiceCraft.Core.Audio.Effects
             
             for (var i = 0; i < count; i += 2)
             {
-                data[i-1] *= left;
-                data[i] *= right;
+                data[i] *= left;
+                data[i+1] *= right;
             }
         }
 
