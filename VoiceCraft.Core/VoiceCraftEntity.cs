@@ -20,7 +20,7 @@ namespace VoiceCraft.Core
         private uint _talkBitmask = uint.MaxValue;
         private uint _effectBitmask = uint.MaxValue;
         private Vector3 _position;
-        private Quaternion _rotation;
+        private Vector2 _rotation;
 
         //Modifiers for modifying data for later?
 
@@ -52,7 +52,7 @@ namespace VoiceCraft.Core
         public event Action<uint, VoiceCraftEntity>? OnListenBitmaskUpdated;
         public event Action<uint, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
-        public event Action<Quaternion, VoiceCraftEntity>? OnRotationUpdated;
+        public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
         public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
@@ -201,7 +201,7 @@ namespace VoiceCraft.Core
             }
         }
 
-        public Quaternion Rotation
+        public Vector2 Rotation
         {
             get => _rotation;
             set

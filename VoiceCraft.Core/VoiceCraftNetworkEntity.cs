@@ -36,7 +36,7 @@ namespace VoiceCraft.Core
             Name = "New Client";
             WorldId = string.Empty;
             Position = Vector3.Zero;
-            Rotation = new  Quaternion(0.0f, 0.0f, 0.0f, 0.0f);
+            Rotation = Vector2.Zero;
             TalkBitmask = uint.MaxValue;
             ListenBitmask = uint.MaxValue;
         }

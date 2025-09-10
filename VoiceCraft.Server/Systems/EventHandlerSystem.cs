@@ -195,7 +195,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityRotationUpdated(Quaternion rotation, VoiceCraftEntity entity)
+    private void OnEntityRotationUpdated(Vector2 rotation, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
