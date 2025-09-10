@@ -48,7 +48,7 @@ public class ListCommand : Command
                         entity.Id.ToString(),
                         entity.Name,
                         $"[red]{entity.Position.X}[/], [green]{entity.Position.Y}[/], [blue]{entity.Position.Z}[/]",
-                        $"[red]{entity.Rotation.X}[/], [green]{entity.Rotation.Y}[/], [blue]{entity.Rotation.Z}[/], [yellow]{entity.Rotation.W}[/]",
+                        $"[red]{entity.Rotation.X}[/], [green]{entity.Rotation.Y}[/]",
                         entity.WorldId);
                 }
 

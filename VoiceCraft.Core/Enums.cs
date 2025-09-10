@@ -75,7 +75,8 @@ namespace VoiceCraft.Core
     {
         Unknown,
         Visibility,
-        Proximity
+        Proximity,
+        Directional
     }
 
     public enum AudioFormat

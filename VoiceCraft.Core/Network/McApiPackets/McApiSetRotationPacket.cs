@@ -5,7 +5,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiSetRotationPacket : McApiPacket
     {
-        public McApiSetRotationPacket(string sessionToken = "", int id = 0, Quaternion value = new Quaternion())
+        public McApiSetRotationPacket(string sessionToken = "", int id = 0, Vector2 value = new Vector2())
         {
             SessionToken = sessionToken;
             Id = id;
@@ -16,7 +16,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
 
         public string SessionToken { get; private set; }
         public int Id { get; private set; }
-        public Quaternion Value { get; private set; }
+        public Vector2 Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -24,15 +24,13 @@ namespace VoiceCraft.Core.Network.McApiPackets
             writer.Put(Id);
             writer.Put(Value.X);
             writer.Put(Value.Y);
-            writer.Put(Value.Z);
-            writer.Put(Value.W);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             SessionToken = reader.GetString(Constants.MaxStringLength);
             Id = reader.GetInt();
-            Value = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
+            Value = new Vector2(reader.GetFloat(), reader.GetFloat());
         }
     }
 }

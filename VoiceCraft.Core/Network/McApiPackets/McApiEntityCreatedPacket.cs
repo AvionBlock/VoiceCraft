@@ -18,7 +18,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
             uint talkBitmask = uint.MinValue,
             uint listenBitmask = uint.MinValue,
             Vector3 position = new Vector3(),
-            Quaternion rotation = new Quaternion())
+            Vector2 rotation = new Vector2())
         {
             SessionToken = sessionToken;
             Id = id;
@@ -47,7 +47,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
         public uint TalkBitmask { get; private set; }
         public uint ListenBitmask { get; private set; }
         public Vector3 Position { get; private set; }
-        public Quaternion Rotation { get; private set; }
+        public Vector2 Rotation { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -66,8 +66,6 @@ namespace VoiceCraft.Core.Network.McApiPackets
             writer.Put(Position.Z);
             writer.Put(Rotation.X);
             writer.Put(Rotation.Y);
-            writer.Put(Rotation.Z);
-            writer.Put(Rotation.W);
         }
 
         public override void Deserialize(NetDataReader reader)
@@ -83,7 +81,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
             TalkBitmask = reader.GetUInt();
             ListenBitmask = reader.GetUInt();
             Position = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
-            Rotation = new Quaternion(reader.GetFloat(), reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
+            Rotation = new Vector2(reader.GetFloat(), reader.GetFloat());
         }
     }
 }
