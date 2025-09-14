@@ -34,6 +34,15 @@ audio effects, audio simulations, authentication, and more!
   <img width="800" src="./Images/MainPage.png">
 </p>
 
+## Packages, Guides And Resources
+- ### [Wiki](https://avionblock.github.io/VoiceCraft/)
+- ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
+- ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
+- ### [Geyser Plugin](https://github.com/AvionBlock/GeyserVoice)
+- ### [PocketMine Plugin](https://github.com/AvionBlock/VoiceCraft-PocketMine)
+- ### [Docker Package](https://github.com/AvionBlock/VoiceCraft-Docker/pkgs/container/voicecraft)
+- ### [Docker Page](https://hub.docker.com/r/sinevector241/voicecraft/tags)
+
 ## Supported Devices
 
 - ✅ Fully and natively supported.
@@ -60,7 +69,7 @@ audio effects, audio simulations, authentication, and more!
 ## Project Dependencies
 
 > [!NOTE]
-> Most dotnet and microsoft extension packages aren't listed.
+> All dotnet and microsoft extension packages aren't listed. If you wish to view all dependencies, You can look at the [Directory.Packages.props](./Directory.Packages.props) file.
 
 ### All Projects
 
@@ -76,7 +85,6 @@ audio effects, audio simulations, authentication, and more!
 - [NAudio](https://github.com/naudio/NAudio)
 - [NWaves](https://github.com/ar1st0crat/NWaves)
 - [OpenTK (OpenAL)](https://github.com/opentk/opentk)
-- [CommunityToolkit.MVVM](https://github.com/CommunityToolkit/dotnet)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
 
 ### Server
