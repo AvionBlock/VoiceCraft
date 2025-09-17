@@ -54,6 +54,7 @@ Settings that the server will use to change it's behavior on runtime.
 
 ## ConnectionType
 **ConnectionType** is the type of login connection that the server will accept when a client connects. The numbers below correspond to the type of connection:
+
 |Type|Description                                                                              |
 |----|-----------------------------------------------------------------------------------------|
 |0   |Server Sided: Will only allow clients to connect and bind by minecraft server.           |
