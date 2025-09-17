@@ -1,6 +1,6 @@
-- name: Guides
-  href: guides/
-- name: FAQ
-  href: faq.md
 - name: v1.0.7
   href: v1.0.7/
+- name: Guides
+  href: guides/
+- name: Faq
+  href: faq.md
