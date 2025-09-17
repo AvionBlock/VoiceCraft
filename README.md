@@ -23,13 +23,13 @@ VoiceCraft proximity chat is a VOIP program developed on .NET 8.0 MAUI framework
 ## Packages & Resources
 - ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
 - ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
-- ### [Geyser Plugin](https://github.com/AvionBlock/GeyserVoice)
+- ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
 - ### [PocketMine Plugin](https://github.com/AvionBlock/VoiceCraft-PocketMine)
 - ### [Docker Package](https://github.com/AvionBlock/VoiceCraft-Docker/pkgs/container/voicecraft)
 - ### [Docker Page](https://hub.docker.com/r/sinevector241/voicecraft/tags)
 
 ## Installation Guide
-Please refer to the [wiki](https://github.com/SineVector241/VoiceCraft-MCBE_Proximity_Chat/wiki) for installations.
+Please refer to the [wiki]([https://github.com/SineVector241/VoiceCraft-MCBE_Proximity_Chat/wiki](https://avionblock.github.io/VoiceCraft/v1.0.7/introduction.html)) for installations.
 
 ## Supported Devices
 
