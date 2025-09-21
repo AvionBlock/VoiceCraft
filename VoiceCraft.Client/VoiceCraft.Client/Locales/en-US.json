@@ -68,6 +68,13 @@
       "Network": "Network Settings",
       "McWssHostPort": "MCWSS Host Port"
     },
+    "HotKey": {
+      "HotKey": "HotKey",
+      "Actions": {
+        "Mute": "Mute",
+        "Deafen": "Deafen"
+      }
+    },
     "Advanced": {
       "Advanced": "Advanced Settings",
       "TriggerGc": "Trigger Garbage Collector",

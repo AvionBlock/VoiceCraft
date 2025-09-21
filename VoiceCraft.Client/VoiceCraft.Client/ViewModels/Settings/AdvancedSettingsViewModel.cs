@@ -4,7 +4,9 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
-public partial class AdvancedSettingsViewModel(NavigationService navigationService, NotificationService notificationService) : ViewModelBase
+public partial class AdvancedSettingsViewModel(
+    NavigationService navigationService,
+    NotificationService notificationService) : ViewModelBase
 {
     [RelayCommand]
     private void TriggerGc()
