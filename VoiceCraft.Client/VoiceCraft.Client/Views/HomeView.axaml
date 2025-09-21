@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:HomeViewModel"
@@ -17,7 +18,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{Binding Title}"
+                       Text="{locale:Localize { Binding $parent[UserControl].((vm:HomeViewModel)DataContext).Title } }"
                        TextAlignment="Center" />
         </Grid>
         <Grid Grid.Row="1"

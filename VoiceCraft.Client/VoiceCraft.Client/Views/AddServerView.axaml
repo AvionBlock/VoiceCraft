@@ -5,7 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:server="clr-namespace:VoiceCraft.Client.Models.Settings"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
-             xmlns:locale="using:Jeek.Avalonia.Localization"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:AddServerViewModel"
