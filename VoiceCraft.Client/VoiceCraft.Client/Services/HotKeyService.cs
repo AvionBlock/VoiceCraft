@@ -18,6 +18,7 @@ public abstract class HotKeyService
 
 public abstract class HotKeyAction
 {
+    public abstract string Title { get; }
     public abstract string DefaultKeyCombo { get; }
     
     public virtual void Press()
@@ -29,6 +30,7 @@ public abstract class HotKeyAction
 
 public class MuteAction(BackgroundService backgroundService) : HotKeyAction
 {
+    public override string Title => "Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
     
     BackgroundService _backgroundService = backgroundService;
@@ -41,6 +43,7 @@ public class MuteAction(BackgroundService backgroundService) : HotKeyAction
 
 public class DeafenAction(BackgroundService backgroundService) : HotKeyAction
 {
+    public override string Title => "Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
     
     BackgroundService _backgroundService = backgroundService;

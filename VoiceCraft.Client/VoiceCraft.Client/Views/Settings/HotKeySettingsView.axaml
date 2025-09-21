@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="vm:Settings.HotKeySettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.HotKeySettingsView">
+    <ScrollViewer>
+        <Grid RowDefinitions="Auto, *">
+            <Grid Grid.Row="0"
+                  Margin="0,0,0,10"
+                  Background="{DynamicResource BackgroundBrush}">
+                <TextBlock Margin="10"
+                           VerticalAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Text="{locale:Localize Settings.HotKey.HotKey}"
+                           TextAlignment="Center" />
+                <Button Padding="10"
+                        VerticalAlignment="Stretch"
+                        Background="Transparent"
+                        Command="{Binding CancelCommand}"
+                        CornerRadius="0">
+                    <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+                </Button>
+            </Grid>
+            <ListBox Grid.Row="1"
+                     Background="Transparent"
+                     Margin="10, 10, 10, 10"
+                     ItemsSource="{Binding HotKeys}"
+                     IsHitTestVisible="False">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid RowDefinitions="Auto, *">
+                            <TextBlock FontSize="16"
+                                       FontWeight="Bold"
+                                       Grid.Row="0"
+                                       Text="{locale:Localize {Binding Title}}" />
+                            <Border Grid.Row="1" Classes="tag" Padding="5" HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding Keybind}" />
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

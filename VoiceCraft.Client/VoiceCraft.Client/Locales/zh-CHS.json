@@ -68,6 +68,13 @@
             "Network": "网络设置",
             "McWssHostPort": "MCWSS主机端口"
         },
+      "HotKey": {
+        "HotKey": "?",
+        "Actions": {
+          "Mute": "?",
+          "Deafen": "?"
+        }
+      },
         "Advanced": {
             "Advanced": "高级设置",
             "TriggerGc": "触发垃圾回收",
