@@ -2,20 +2,26 @@ using System;
 using System.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
-using Jeek.Avalonia.Localization;
+using Avalonia.Markup.Xaml;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Locales;
 
-public class LocalizeExtension(object arg)
+public class LocalizeExtension(object arg) : MarkupExtension
 {
-    public object ProvideValue(IServiceProvider serviceProvider)
+    public override object ProvideValue(IServiceProvider serviceProvider)
     {
         if (arg is string key)
             return new MultiBinding()
             {
-                Bindings = [new Binding { Source = key }, new Binding { Source = Localizer.Language }],
+                Bindings =
+                [
+                    new Binding() { Source = key },
+                    new Binding(nameof(Localizer.Instance.Language)) { Source = Localizer.Instance }
+                ],
                 Mode = BindingMode.TwoWay,
-                Converter = new FuncMultiValueConverter<string, string>(x => Localizer.Get(x.ElementAt(0) ?? ""))
+                Converter = new FuncMultiValueConverter<string, string>(x =>
+                    Localizer.Get(x.ElementAtOrDefault(0) ?? ""))
             };
 
         if (arg is not IBinding binding)
@@ -23,10 +29,11 @@ public class LocalizeExtension(object arg)
 
         var mb = new MultiBinding()
         {
-            Bindings = [binding, new Binding { Source = Localizer.Language }],
+            Bindings = [binding, new Binding(nameof(Localizer.Instance.Language)) { Source = Localizer.Instance }],
             Mode = BindingMode.TwoWay,
-            Converter = new FuncMultiValueConverter<string, string>(x => Localizer.Get(x.ElementAt(0) ?? ""))
+            Converter = new FuncMultiValueConverter<string, string>(x => Localizer.Get(x.ElementAtOrDefault(0) ?? ""))
         };
+
         return mb;
     }
 }

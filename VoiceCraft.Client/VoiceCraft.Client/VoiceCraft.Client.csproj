@@ -27,7 +27,6 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="DiscordRichPresence"/>
-        <PackageReference Include="Jeek.Avalonia.Localization"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
         <PackageReference Include="Notification.Avalonia"/>

@@ -1,8 +1,8 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
@@ -32,10 +32,11 @@ public partial class LocaleSettingsViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    partial void OnCultureChanging(string value)
+    partial void OnCultureChanging(string? value)
     {
         ThrowIfDisposed();
-        Localizer.Language = value;
+        if (string.IsNullOrWhiteSpace(value)) return; //fsr this happens.
+        Localizer.Instance.Language = value;
 
         if (_updating) return;
         _updating = true;

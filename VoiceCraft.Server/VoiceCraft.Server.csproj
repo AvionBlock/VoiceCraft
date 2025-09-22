@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Jeek.Avalonia.Localization"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Spectre.Console" />
         <PackageReference Include="System.CommandLine"/>

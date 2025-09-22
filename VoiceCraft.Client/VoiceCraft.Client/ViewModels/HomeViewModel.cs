@@ -3,8 +3,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.ViewModels.Home;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -26,7 +26,7 @@ public partial class HomeViewModel : ViewModelBase
 
         SelectedListItem = _items[0];
         _content = _items[0].Content;
-        _title = Localizer.Get(_items[0].Title);
+        _title = _items[0].Title;
     }
 
     partial void OnSelectedListItemChanged(ListItemTemplate? value)
@@ -36,7 +36,7 @@ public partial class HomeViewModel : ViewModelBase
             viewModel.OnDisappearing();
 
         Content = value.Content;
-        Title = Localizer.Get(value.Title);
+        Title = value.Title;
         Content.OnAppearing();
     }
 }

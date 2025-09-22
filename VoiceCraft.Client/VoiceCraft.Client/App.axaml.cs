@@ -7,7 +7,6 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Notification;
 using Avalonia.Styling;
-using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Locales;
@@ -20,6 +19,7 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client;
 
@@ -213,7 +213,7 @@ public class App : Application
 
     private void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
         serviceProvider.GetService<HotKeyService>();
     }

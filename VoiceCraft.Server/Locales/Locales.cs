@@ -1,4 +1,4 @@
-using Jeek.Avalonia.Localization;
+using VoiceCraft.Core.Locales;
 
 // ReSharper disable InconsistentNaming
 
