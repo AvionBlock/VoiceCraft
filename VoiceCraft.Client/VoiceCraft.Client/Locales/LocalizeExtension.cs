@@ -12,16 +12,11 @@ public class LocalizeExtension(object arg) : MarkupExtension
     public override object ProvideValue(IServiceProvider serviceProvider)
     {
         if (arg is string key)
-            return new MultiBinding()
+            return new Binding(nameof(Localizer.Instance.Language))
             {
-                Bindings =
-                [
-                    new Binding() { Source = key },
-                    new Binding(nameof(Localizer.Instance.Language)) { Source = Localizer.Instance }
-                ],
-                Mode = BindingMode.TwoWay,
-                Converter = new FuncMultiValueConverter<string, string>(x =>
-                    Localizer.Get(x.ElementAtOrDefault(0) ?? ""))
+                Source = Localizer.Instance,
+                Mode = BindingMode.OneWay,
+                Converter = new FuncValueConverter<string, string>(x => Localizer.Get(key))
             };
 
         if (arg is not IBinding binding)
@@ -30,7 +25,7 @@ public class LocalizeExtension(object arg) : MarkupExtension
         var mb = new MultiBinding()
         {
             Bindings = [binding, new Binding(nameof(Localizer.Instance.Language)) { Source = Localizer.Instance }],
-            Mode = BindingMode.TwoWay,
+            Mode = BindingMode.OneWay,
             Converter = new FuncMultiValueConverter<string, string>(x => Localizer.Get(x.ElementAtOrDefault(0) ?? ""))
         };
 
