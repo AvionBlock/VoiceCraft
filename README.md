@@ -75,7 +75,6 @@ audio effects, audio simulations, authentication, and more!
 
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
 - [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
-- [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
 
 ### Client
 
