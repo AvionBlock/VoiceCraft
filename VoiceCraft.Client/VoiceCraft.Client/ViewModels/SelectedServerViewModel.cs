@@ -2,13 +2,13 @@ using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -91,7 +91,8 @@ public partial class SelectedServerViewModel(
     private async Task Connect()
     {
         if (SelectedServer == null) return;
-        var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, Localizer.Language, notificationService, audioService, settingsService);
+        var process = new VoipBackgroundProcess(SelectedServer.Ip, SelectedServer.Port, Localizer.Instance.Language,
+            notificationService, audioService, settingsService);
         try
         {
             DisableBackButton = true;
@@ -99,9 +100,10 @@ public partial class SelectedServerViewModel(
             await backgroundService.StartBackgroundProcess(process);
             navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(process));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            notificationService.SendErrorNotification("Background worker failed to start VOIP process!"); //TODO NEED TO LOCALE THESE!
+            notificationService.SendErrorNotification(
+                "Background worker failed to start VOIP process!"); //TODO NEED TO LOCALE THESE!
             _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
             LogService.Log(ex);
         }
@@ -132,7 +134,11 @@ public partial class SelectedServerViewModel(
         Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Latency.Replace("{latency}",
             Math.Max(Environment.TickCount - info.Tick - Constants.TickRate, 0).ToString());
         Motd = Locales.Locales.SelectedServer_ServerInfo_Status_Motd.Replace("{motd}", info.Motd);
-        PositioningType = Locales.Locales.SelectedServer_ServerInfo_Status_PositioningType.Replace("{positioningType}", info.PositioningType.ToString());
-        ConnectedClients = Locales.Locales.SelectedServer_ServerInfo_Status_ConnectedClients.Replace("{connectedClients}", info.Clients.ToString());
+        PositioningType =
+            Locales.Locales.SelectedServer_ServerInfo_Status_PositioningType.Replace("{positioningType}",
+                info.PositioningType.ToString());
+        ConnectedClients =
+            Locales.Locales.SelectedServer_ServerInfo_Status_ConnectedClients.Replace("{connectedClients}",
+                info.Clients.ToString());
     }
 }

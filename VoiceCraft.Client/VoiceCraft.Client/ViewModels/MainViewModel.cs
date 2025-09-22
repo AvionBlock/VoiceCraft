@@ -1,10 +1,10 @@
 ﻿using Avalonia.Media.Imaging;
 using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -35,14 +35,7 @@ public partial class MainViewModel : ObservableObject
         themesService.SwitchTheme(themeSettings.SelectedTheme);
         themesService.SwitchBackgroundImage(themeSettings.SelectedBackgroundImage);
         var localeSettings = settingsService.LocaleSettings;
-        try
-        {
-            Localizer.Language = localeSettings.Culture;
-        }
-        catch
-        {
-            Localizer.LanguageIndex = 0;
-        }
+        Localizer.Instance.Language = localeSettings.Culture;
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();

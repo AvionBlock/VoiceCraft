@@ -4,10 +4,10 @@ using System.Reflection;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Jeek.Avalonia.Localization;
 using OpusSharp.Core;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -41,7 +41,7 @@ public partial class CreditsViewModel : ViewModelBase
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/unny.png"))
         ];
         
-        Localizer.LanguageChanged += (_, _) => UpdateLocalizations();
+        Localizer.Instance.OnLanguageChanged += UpdateLocalizations;
         UpdateLocalizations();
     }
 
@@ -50,7 +50,7 @@ public partial class CreditsViewModel : ViewModelBase
         return AssetLoader.Exists(new Uri(path)) ? new Bitmap(AssetLoader.Open(new Uri(path))) : null;
     }
     
-    private void UpdateLocalizations()
+    private void UpdateLocalizations(string language = "")
     {
         AppVersion = Locales.Locales.Credits_AppVersion.Replace("{version}", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.");
         Version = Locales.Locales.Credits_Version.Replace("{version}", VoiceCraftClient.Version.ToString());

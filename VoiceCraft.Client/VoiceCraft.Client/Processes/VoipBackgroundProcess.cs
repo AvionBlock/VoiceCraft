@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Jeek.Avalonia.Localization;
 using LiteNetLib;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes;
@@ -94,7 +94,8 @@ public class VoipBackgroundProcess(
             _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
 
             //Setup audio recorder.
-            _audioRecorder = audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
+            _audioRecorder =
+                audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
             _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
             _audioRecorder.SelectedDevice = audioSettings.InputDevice == "Default" ? null : audioSettings.InputDevice;
             _audioRecorder.OnDataAvailable += Write;
@@ -108,7 +109,8 @@ public class VoipBackgroundProcess(
 
             //Setup Preprocessors
             _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
-            _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)?.Instantiate();
+            _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
+                ?.Instantiate();
             _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
 
             //Initialize and start.
@@ -120,7 +122,8 @@ public class VoipBackgroundProcess(
             _audioRecorder.Start();
             _audioPlayer.Play();
 
-            while (_audioRecorder.CaptureState == CaptureState.Starting || _audioPlayer.PlaybackState == PlaybackState.Starting)
+            while (_audioRecorder.CaptureState == CaptureState.Starting ||
+                   _audioPlayer.PlaybackState == PlaybackState.Starting)
             {
                 if (_stopRequested)
                     return;
@@ -157,7 +160,8 @@ public class VoipBackgroundProcess(
         {
             HasEnded = true;
             OnDisconnected?.Invoke();
-            var localeReason = $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
+            var localeReason =
+                $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
             Title = localeReason;
             Description = localeReason;
             notificationService.SendNotification(Locales.Locales.Notification_Badges_VoiceCraft, localeReason);
@@ -251,7 +255,7 @@ public class VoipBackgroundProcess(
     {
         OnUpdateDeafen?.Invoke(deafen);
     }
-    
+
     private void ClientOnSpeakingUpdated(bool speaking)
     {
         OnUpdateSpeaking?.Invoke(speaking);

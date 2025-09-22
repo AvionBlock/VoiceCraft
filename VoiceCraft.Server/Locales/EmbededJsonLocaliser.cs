@@ -1,29 +1,26 @@
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Jeek.Avalonia.Localization;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Locales;
 
 //Credits https://github.com/tifish/Jeek.Avalonia.Localization/blob/main/Jeek.Avalonia.Localization/JsonLocalizer.cs
-public class EmbeddedJsonLocalizer : BaseLocalizer
+public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLocalizer
 {
-    private readonly string _languageJsonDirectory;
+    private readonly string _languageJsonDirectory =
+        string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
+
     private JsonNode? _languageStrings;
 
-    public EmbeddedJsonLocalizer(string languageJsonDirectory = "")
-    {
-        FallbackLanguage = Core.Constants.DefaultLanguage;
-        _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
-    }
+    public string FallbackLanguage => Core.Constants.DefaultLanguage;
+    public ObservableCollection<string> Languages { get; } = [];
 
-    public override void Reload()
+    public string Reload(string language)
     {
-        if (_hasLoaded)
-            return;
-
         _languageStrings = null;
-        _languages.Clear();
+        Languages.Clear();
 
         var assembly = Assembly.GetExecutingAssembly();
         var resources = assembly.GetManifestResourceNames();
@@ -34,38 +31,25 @@ public class EmbeddedJsonLocalizer : BaseLocalizer
         var files = resources.Where(x => x.Contains(_languageJsonDirectory) && x.EndsWith(".json"));
         foreach (var file in files)
         {
-            var language = Path.GetFileNameWithoutExtension(file).Replace($"{_languageJsonDirectory}.", "");
-            _languages.Add(language);
+            var lang = Path.GetFileNameWithoutExtension(file).Replace($"{_languageJsonDirectory}.", "");
+            Languages.Add(lang);
         }
 
-        ValidateLanguage();
+        if (!Languages.Contains(language))
+            language = FallbackLanguage;
 
-        var languageFile = $"{_languageJsonDirectory}.{_language}.json";
-        using (var stream = assembly.GetManifestResourceStream(languageFile))
-        {
-            if (stream == null) throw new FileNotFoundException($"Could not find resource {languageFile}");
+        var languageFile = $"{_languageJsonDirectory}.{language}.json";
+        using var stream = assembly.GetManifestResourceStream(languageFile);
+        if (stream == null) throw new FileNotFoundException($"Could not find resource {languageFile}");
 
-            using (var reader = new StreamReader(stream))
-            {
-                var jsonContent = reader.ReadToEnd();
-                _languageStrings = JsonNode.Parse(jsonContent);
-            }
-        }
-
-        _hasLoaded = true;
-        UpdateDisplayLanguages();
+        using var reader = new StreamReader(stream);
+        var jsonContent = reader.ReadToEnd();
+        _languageStrings = JsonNode.Parse(jsonContent);
+        return language;
     }
 
-    protected override void OnLanguageChanged()
+    public string Get(string key)
     {
-        _hasLoaded = false;
-        Reload();
-    }
-
-    public override string Get(string key)
-    {
-        Reload();
-
         if (_languageStrings is null)
             return key;
 

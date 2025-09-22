@@ -1,6 +1,6 @@
 using System.CommandLine;
-using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Commands;
 using VoiceCraft.Server.Locales;
 using VoiceCraft.Server.Servers;
@@ -13,7 +13,7 @@ public static class Program
 
     public static void Main()
     {
-        Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales"));
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales");
         App.Start().GetAwaiter().GetResult();
     }
 

@@ -1,7 +1,6 @@
-using Jeek.Avalonia.Localization;
+using VoiceCraft.Core.Locales;
 
 // ReSharper disable InconsistentNaming
-
 namespace VoiceCraft.Client.Locales;
 
 public static class Locales

@@ -4,9 +4,9 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -28,15 +28,14 @@ public partial class GeneralSettingsViewModel
 
     public GeneralSettingsViewModel(NavigationService navigationService, SettingsService settingsService)
     {
-        _navigationService = navigationService;
-        _localeSettings = new LocaleSettingsViewModel(settingsService);
-        _notificationSettings = new NotificationSettingsViewModel(settingsService);
-        _serversSettings = new ServersSettingsViewModel(settingsService);
-
         foreach (var locale in Localizer.Languages)
         {
             _locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
         }
+        _navigationService = navigationService;   
+        _localeSettings = new LocaleSettingsViewModel(settingsService);
+        _notificationSettings = new NotificationSettingsViewModel(settingsService);
+        _serversSettings = new ServersSettingsViewModel(settingsService);
     }
 
     public void Dispose()

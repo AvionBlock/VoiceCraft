@@ -1,8 +1,8 @@
 using System.CommandLine;
-using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server;
@@ -29,7 +29,7 @@ public static class App
 
             //Properties
             properties.Load();
-            Localizer.Language = properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
+            Localizer.Instance.Language = properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Title_Starting}"; //Loaded, Set the title.
 
             //Server Startup
