@@ -32,7 +32,7 @@ public partial class LocaleSettingsViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    partial void OnCultureChanging(string? value)
+    partial void OnCultureChanging(string value)
     {
         ThrowIfDisposed();
         if (string.IsNullOrWhiteSpace(value)) return; //fsr this happens.
