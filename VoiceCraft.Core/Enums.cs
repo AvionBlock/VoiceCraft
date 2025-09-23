@@ -35,7 +35,9 @@ namespace VoiceCraft.Core
         SetListenBitmask,
         SetEffectBitmask,
         SetPosition,
-        SetRotation
+        SetRotation,
+        SetCaveFactor,
+        SetMuffleFactor
     }
 
     public enum McApiPacketType : byte
@@ -76,7 +78,8 @@ namespace VoiceCraft.Core
         Unknown,
         Visibility,
         Proximity,
-        Directional
+        Directional,
+        Echo,
     }
 
     public enum AudioFormat

@@ -21,12 +21,6 @@ namespace VoiceCraft.Core.Audio.Effects
         {
         }
 
-        public void Dispose()
-        {
-            //Nothing to dispose.
-        }
-
-
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
@@ -34,6 +28,16 @@ namespace VoiceCraft.Core.Audio.Effects
             
             return !string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) && 
                    from.WorldId == to.WorldId;
+        }
+        
+        public void Reset()
+        {
+            //Nothing to reset
+        }
+
+        public void Dispose()
+        {
+            //Nothing to dispose.
         }
     }
 }

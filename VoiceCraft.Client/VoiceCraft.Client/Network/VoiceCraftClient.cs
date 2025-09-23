@@ -419,6 +419,16 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 setRotationPacket.Deserialize(reader);
                 HandleSetRotationPacket(setRotationPacket);
                 break;
+            case PacketType.SetCaveFactor:
+                var setCaveFactorPacket = new SetCaveFactorPacket();
+                setCaveFactorPacket.Deserialize(reader);
+                HandleSetCaveFactorPacket(setCaveFactorPacket);
+                break;
+            case PacketType.SetMuffleFactor:
+                var setMuffleFactorPacket = new SetMuffleFactorPacket();
+                setMuffleFactorPacket.Deserialize(reader);
+                HandleSetMuffleFactorPacket(setMuffleFactorPacket);
+                break;
             case PacketType.Login:
             case PacketType.Logout:
             case PacketType.Unknown:
@@ -461,6 +471,11 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 var directionalEffect = new DirectionalEffect();
                 directionalEffect.Deserialize(reader);
                 _audioSystem.SetEffect(packet.Bitmask, directionalEffect);
+                break;
+            case EffectType.Echo:
+                var echoEffect = new EchoEffect(Constants.SampleRate, 0.5f);
+                echoEffect.Deserialize(reader);
+                _audioSystem.SetEffect(packet.Bitmask, echoEffect);
                 break;
             case EffectType.Unknown:
             default:
@@ -620,5 +635,31 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
         entity.Rotation = packet.Value;
+    }
+
+    private void HandleSetCaveFactorPacket(SetCaveFactorPacket packet)
+    {
+        if (packet.Id == Id)
+        {
+            CaveFactor = packet.Value;
+            return;
+        }
+        
+        var entity = World.GetEntity(packet.Id);
+        if (entity == null) return;
+        entity.CaveFactor = packet.Value;
+    }
+    
+    private void HandleSetMuffleFactorPacket(SetMuffleFactorPacket packet)
+    {
+        if (packet.Id == Id)
+        {
+            MuffleFactor = packet.Value;
+            return;
+        }
+        
+        var entity = World.GetEntity(packet.Id);
+        if (entity == null) return;
+        entity.MuffleFactor = packet.Value;
     }
 }

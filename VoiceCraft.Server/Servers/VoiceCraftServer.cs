@@ -279,6 +279,8 @@ public class VoiceCraftServer : IResettable, IDisposable
             case PacketType.SetEffectBitmask:
             case PacketType.SetPosition:
             case PacketType.SetRotation:
+            case PacketType.SetCaveFactor:
+            case PacketType.SetMuffleFactor:
             default:
                 break;
         }
