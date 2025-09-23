@@ -1,10 +1,15 @@
+using VoiceCraft.Core;
+using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems;
 
 public class AudioEffectSystem : IResettable, IDisposable
 {
-    private readonly OrderedDictionary<uint, IAudioEffect> _audioEffects = new();
+    private readonly OrderedDictionary<uint, IAudioEffect> _audioEffects = new()
+    {
+        { uint.MaxValue, new EchoEffect(Constants.SampleRate, 0.2f) }
+    };
 
     public IEnumerable<KeyValuePair<uint, IAudioEffect>> Effects => _audioEffects;
 

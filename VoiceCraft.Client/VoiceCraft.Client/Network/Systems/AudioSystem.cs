@@ -59,7 +59,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
             try
             {
                 var entityRead = entity.Read(_entityBuffer, monoCount);
-                if (entityRead <= 0) continue;
+                if(entityRead <= 0) entityRead = monoCount; //Do a full read.
                 entityRead = Pcm16ToFloat(_entityBuffer, entityRead, _monoBuffer); //To IEEEFloat
                 entityRead = PcmFloatMonoToStereo(_monoBuffer, entityRead, _effectBuffer); //To Stereo
                 entityRead = ProcessEffects(_effectBuffer, entityRead, entity); //Process Effects
@@ -169,7 +169,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
     {
         for (var i = 0; i < count; i++)
         {
-            dstBuffer[i] = srcBuffer[i] + dstBuffer[i];
+            dstBuffer[i] = Math.Clamp(srcBuffer[i] + dstBuffer[i], -1f, 1f);
         }
         
         return count;

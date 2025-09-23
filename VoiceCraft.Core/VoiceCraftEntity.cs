@@ -21,6 +21,8 @@ namespace VoiceCraft.Core
         private uint _effectBitmask = uint.MaxValue;
         private Vector3 _position;
         private Vector2 _rotation;
+        private float _caveFactor;
+        private float _muffleFactor;
 
         //Modifiers for modifying data for later?
 
@@ -53,6 +55,8 @@ namespace VoiceCraft.Core
         public event Action<uint, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
+        public event Action<float, VoiceCraftEntity>? OnCaveFactorUpdated;
+        public event Action<float, VoiceCraftEntity>? OnMuffleFactorUpdated;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
         public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
@@ -209,6 +213,28 @@ namespace VoiceCraft.Core
                 if (_rotation == value) return;
                 _rotation = value;
                 OnRotationUpdated?.Invoke(_rotation, this);
+            }
+        }
+
+        public float CaveFactor
+        {
+            get => _caveFactor;
+            set
+            {
+                if (Math.Abs(_caveFactor - value) < Constants.FloatingPointTolerance) return;
+                _caveFactor = Math.Clamp(value, 0f, 1f);
+                OnCaveFactorUpdated?.Invoke(_caveFactor, this);
+            }
+        }
+
+        public float MuffleFactor
+        {
+            get => _muffleFactor;
+            set
+            {
+                if (Math.Abs(_muffleFactor - value) < Constants.FloatingPointTolerance) return;
+                _muffleFactor = Math.Clamp(value, 0f, 1f);
+                OnMuffleFactorUpdated?.Invoke(_muffleFactor, this);
             }
         }
 
