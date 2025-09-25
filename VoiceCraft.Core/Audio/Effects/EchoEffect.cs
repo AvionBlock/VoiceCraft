@@ -61,7 +61,7 @@ namespace VoiceCraft.Core.Audio.Effects
                 var delayed = _delayLine.Read(_delay);
                 var output = data[i] + delayed * Feedback;
                 _delayLine.Write(output);
-                data[i] = data[i] * Dry + output * Wet;
+                data[i] = output * Wet + data[i] * Dry;
             }
         }
 

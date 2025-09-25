@@ -522,8 +522,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (packet.Id == Id)
         {
             Name = packet.Name;
-            Muted = packet.Muted;
-            Deafened = packet.Deafened;
+            //We don't want to update anything else as it may be a concern for privacy.
             return;
         }
         
