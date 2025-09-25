@@ -46,6 +46,7 @@ namespace VoiceCraft.Core
         }
 
         //Entity events.
+        //Properties
         public event Action<string, VoiceCraftEntity>? OnWorldIdUpdated;
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<bool, VoiceCraftEntity>? OnMuteUpdated;
@@ -57,6 +58,8 @@ namespace VoiceCraft.Core
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<float, VoiceCraftEntity>? OnCaveFactorUpdated;
         public event Action<float, VoiceCraftEntity>? OnMuffleFactorUpdated;
+        
+        //Others
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
         public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
@@ -105,6 +108,8 @@ namespace VoiceCraft.Core
             OnEffectBitmaskUpdated = null;
             OnPositionUpdated = null;
             OnRotationUpdated = null;
+            OnCaveFactorUpdated = null;
+            OnMuffleFactorUpdated = null;
             OnVisibleEntityAdded = null;
             OnVisibleEntityRemoved = null;
             OnAudioReceived = null;
