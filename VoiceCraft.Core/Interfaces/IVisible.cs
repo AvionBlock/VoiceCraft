@@ -1,3 +1,5 @@
+using VoiceCraft.Core.World;
+
 namespace VoiceCraft.Core.Interfaces
 {
     public interface IVisible

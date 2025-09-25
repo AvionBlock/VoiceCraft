@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using LiteNetLib;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core.World
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {

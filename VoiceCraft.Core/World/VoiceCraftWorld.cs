@@ -4,7 +4,7 @@ using System.Linq;
 using LiteNetLib;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core.World
 {
     public class VoiceCraftWorld : IResettable, IDisposable
     {

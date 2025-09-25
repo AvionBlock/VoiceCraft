@@ -8,6 +8,7 @@ using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.World;
 using VoiceCraft.Core.Network.Packets;
 
 namespace VoiceCraft.Client.Processes;

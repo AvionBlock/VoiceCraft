@@ -1,5 +1,6 @@
 using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Interfaces
 {

@@ -1,4 +1,4 @@
-using VoiceCraft.Core;
+using VoiceCraft.Core.World;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems;
@@ -37,7 +37,8 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
             }
             finally
             {
-                _lock.Exit();
+                if(_lock.IsHeldByCurrentThread)
+                    _lock.Exit();
             }
         }
     }
