@@ -263,7 +263,6 @@ public class VoiceCraftServer : IResettable, IDisposable
                 HandleSetDeafenPacket(setDeafenPacket, peer);
                 break;
             // Will need to implement these for client sided mode later.
-            case PacketType.Unknown:
             case PacketType.Login:
             case PacketType.Logout:
             case PacketType.SetId:

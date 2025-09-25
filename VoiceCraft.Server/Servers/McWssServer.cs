@@ -203,20 +203,6 @@ public class McWssServer
             case McApiPacketType.Login:
             case McApiPacketType.Accept:
             case McApiPacketType.Deny:
-            case McApiPacketType.Unknown:
-            case McApiPacketType.SetEffect:
-            case McApiPacketType.Audio:
-            case McApiPacketType.SetTitle:
-            case McApiPacketType.SetDescription:
-            case McApiPacketType.EntityCreated:
-            case McApiPacketType.EntityDestroyed:
-            case McApiPacketType.SetName:
-            case McApiPacketType.SetMute:
-            case McApiPacketType.SetDeafen:
-            case McApiPacketType.SetTalkBitmask:
-            case McApiPacketType.SetListenBitmask:
-            case McApiPacketType.SetPosition:
-            case McApiPacketType.SetRotation:
             default:
                 break;
         }

@@ -432,7 +432,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case PacketType.Login:
             case PacketType.Logout:
-            case PacketType.Unknown:
             default:
                 break;
         }

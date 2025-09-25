@@ -4,14 +4,12 @@ namespace VoiceCraft.Core
 
     public enum PositioningType : byte
     {
-        Unknown,
         Server,
         Client
     }
 
     public enum PacketType : byte
     {
-        Unknown,
         Info,
         Login,
         Logout,
@@ -42,31 +40,11 @@ namespace VoiceCraft.Core
 
     public enum McApiPacketType : byte
     {
-        Unknown,
         Login,
         Logout,
         Ping,
         Accept,
-        Deny,
-
-        //Server Stuff
-        SetEffect,
-
-        //Client Entity Stuff
-        Audio,
-        SetTitle,
-        SetDescription,
-
-        //Entity stuff
-        EntityCreated,
-        EntityDestroyed,
-        SetName,
-        SetMute,
-        SetDeafen,
-        SetTalkBitmask,
-        SetListenBitmask,
-        SetPosition,
-        SetRotation
+        Deny
     }
 
     #endregion
