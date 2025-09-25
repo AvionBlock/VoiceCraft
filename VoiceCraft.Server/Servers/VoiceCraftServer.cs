@@ -5,8 +5,8 @@ using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.World;
 using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.World;
 using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 
@@ -15,16 +15,12 @@ namespace VoiceCraft.Server.Servers;
 public class VoiceCraftServer : IResettable, IDisposable
 {
     public static readonly Version Version = new(1, 1, 0);
-
-    //Public Properties
-    public VoiceCraftConfig Config { get; private set; } = new();
-    public VoiceCraftWorld World { get; } = new();
+    private readonly AudioEffectSystem _audioEffectSystem = new();
 
     //Networking
     private readonly NetDataWriter _dataWriter = new();
-    private readonly EventBasedNetListener _listener = new();
-    private readonly AudioEffectSystem _audioEffectSystem = new();
     private readonly EventHandlerSystem _eventHandlerSystem;
+    private readonly EventBasedNetListener _listener = new();
     private readonly NetManager _netManager;
 
     //Systems
@@ -46,6 +42,22 @@ public class VoiceCraftServer : IResettable, IDisposable
         _listener.ConnectionRequestEvent += OnConnectionRequest;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
         _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
+    }
+
+    //Public Properties
+    public VoiceCraftConfig Config { get; private set; } = new();
+    public VoiceCraftWorld World { get; } = new();
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public void Reset()
+    {
+        World.Reset();
+        _audioEffectSystem.Reset();
     }
 
     ~VoiceCraftServer()
@@ -74,12 +86,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         _eventHandlerSystem.Update();
     }
 
-    public void Reset()
-    {
-        World.Reset();
-        _audioEffectSystem.Reset();
-    }
-
     public void Stop()
     {
         if (!_netManager.IsRunning) return;
@@ -87,12 +93,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         DisconnectAll(new LogoutPacket("VoiceCraft.DisconnectReason.Shutdown"));
         _netManager.Stop();
         AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopped);
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     public void RejectRequest<T>(ConnectionRequest request, T? packet = null) where T : VoiceCraftPacket

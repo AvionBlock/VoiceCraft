@@ -38,7 +38,8 @@ namespace VoiceCraft.Core.Network.Packets
             Length = reader.AvailableBytes;
             //Fuck no. we aren't allocating anything higher than the expected amount of bytes (WHICH SHOULD BE COMPRESSED!).
             if (Length > Constants.MaximumEncodedBytes)
-                throw new InvalidOperationException($"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
+                throw new InvalidOperationException(
+                    $"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
             Data = new byte[Length];
             reader.GetBytes(Data, Length);
         }

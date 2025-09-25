@@ -25,7 +25,8 @@ public class SpeexDspEchoCanceler : IEchoCanceler
 
         CleanupEchoCanceler();
 
-        var bufferSamples = recorder.BufferMilliseconds * recorder.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
+        var bufferSamples =
+            recorder.BufferMilliseconds * recorder.SampleRate / 1000; //Calculate buffer size IN SAMPLES!
         var bufferBytes = recorder.BitDepth / 8 * recorder.Channels * bufferSamples;
         var filterLengthSamples = FilterLengthMs * recorder.SampleRate / 1000;
         var filterLengthBytes = player.BitDepth / 8 * player.Channels * filterLengthSamples;
@@ -91,7 +92,7 @@ public class SpeexDspEchoCanceler : IEchoCanceler
             Array.Clear(_captureBufferFrame);
             if (_captureBuffer.Count < _captureBufferFrame.Length)
                 return _captureBufferFrame;
-            
+
             _captureBuffer.Read(_captureBufferFrame, 0, _captureBufferFrame.Length);
             return _captureBufferFrame;
         }

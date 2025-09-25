@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.ViewModels.Settings;
@@ -20,6 +21,7 @@ using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
+using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
 namespace VoiceCraft.Client;
 
@@ -52,7 +54,10 @@ public class App : Application
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
 
-                    desktop.MainWindow.Closing += (__, ___) => { _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate(); };
+                    desktop.MainWindow.Closing += (__, ___) =>
+                    {
+                        _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
+                    };
                     break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
                     singleViewPlatform.MainView = new MainView
@@ -82,6 +87,7 @@ public class App : Application
                     };
                     break;
             }
+
             LogService.Log(ex);
         }
 
@@ -92,7 +98,8 @@ public class App : Application
     {
 #pragma warning disable IL2026
         // Get an array of plugins to remove
-        var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+        var dataValidationPluginsToRemove =
+            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
         foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
@@ -108,7 +115,8 @@ public class App : Application
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
-        ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(x.GetRequiredService<NotificationService>(),
+        ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
+            x.GetRequiredService<NotificationService>(),
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
@@ -158,8 +166,8 @@ public class App : Application
             Constants.DarkThemeGuid,
             "Dark",
             ThemeVariant.Dark,
-            [new Themes.Dark.Styles()],
-            [new Themes.Dark.Colors(), new Themes.Dark.Resources()]));
+            [new Styles()],
+            [new Colors(), new Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkPurpleThemeGuid,
@@ -203,7 +211,7 @@ public class App : Application
             Constants.SineSmpBaseGuid,
             "SineSMP Base",
             "avares://VoiceCraft.Client/Assets/sinesmpbase.png"));
-        
+
         //HotKey Registry
         ServiceCollection.AddSingleton<HotKeyAction, MuteAction>();
         ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();

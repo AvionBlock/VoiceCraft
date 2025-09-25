@@ -18,7 +18,7 @@ public class ThemeSettings : Setting<ThemeSettings>
             OnUpdated?.Invoke(this);
         }
     }
-    
+
     public Guid SelectedTheme
     {
         get => _selectedTheme;

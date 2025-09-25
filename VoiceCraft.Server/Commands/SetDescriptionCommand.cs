@@ -1,6 +1,6 @@
 using System.CommandLine;
-using VoiceCraft.Core.World;
 using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
@@ -26,7 +26,8 @@ public class SetDescriptionCommand : Command
             if (entity is null)
                 throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotFound.Replace("{id}", id.ToString()));
             if (entity is not VoiceCraftNetworkEntity networkEntity)
-                throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotAClient.Replace("{id}", id.ToString()));
+                throw new Exception(
+                    Locales.Locales.Commands_Exceptions_EntityNotAClient.Replace("{id}", id.ToString()));
 
             var packet = new SetDescriptionPacket(string.IsNullOrWhiteSpace(value) ? "" : value);
             server.SendPacket(networkEntity.NetPeer, packet);

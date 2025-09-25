@@ -8,10 +8,10 @@ namespace VoiceCraft.Client.Services;
 
 public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel, uint historyMaxSize = 100)
 {
+    private readonly Lock _lockObject = new();
     private ViewModelBase? _currentViewModel;
     private List<ViewModelBase> _history = [];
     private int _historyIndex = -1;
-    private readonly Lock _lockObject = new();
 
     // ReSharper disable once MemberCanBePrivate.Global
     public bool HasNext
@@ -36,7 +36,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
             }
         }
     }
-    
+
     public event Action<ViewModelBase>? OnViewModelChanged;
 
     private void Push(ViewModelBase item)

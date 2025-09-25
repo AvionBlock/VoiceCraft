@@ -105,10 +105,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Locales\nl-NL.json" />
-        <EmbeddedResource Include="Locales\en-US.json" />
-        <EmbeddedResource Include="Locales\zh-CHS.json" />
-        <EmbeddedResource Include="Locales\zh-CHT.json" />
+        <EmbeddedResource Include="Locales\nl-NL.json"/>
+        <EmbeddedResource Include="Locales\en-US.json"/>
+        <EmbeddedResource Include="Locales\zh-CHS.json"/>
+        <EmbeddedResource Include="Locales\zh-CHT.json"/>
     </ItemGroup>
 
     <ItemGroup>

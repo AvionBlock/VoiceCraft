@@ -10,7 +10,7 @@ namespace VoiceCraft.Core.Network.Packets
         }
 
         public override PacketType PacketType => PacketType.Logout;
-        
+
         public string Reason { get; private set; }
 
         public override void Serialize(NetDataWriter writer)

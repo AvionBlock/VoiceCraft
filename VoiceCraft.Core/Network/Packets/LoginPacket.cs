@@ -45,7 +45,9 @@ namespace VoiceCraft.Core.Network.Packets
             Locale = reader.GetString(Constants.MaxStringLength);
             Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
             var positioningTypeValue = reader.GetByte();
-            PositioningType = Enum.IsDefined(typeof(PositioningType), positioningTypeValue) ? (PositioningType)positioningTypeValue : PositioningType.Unknown;
+            PositioningType = Enum.IsDefined(typeof(PositioningType), positioningTypeValue)
+                ? (PositioningType)positioningTypeValue
+                : PositioningType.Unknown;
         }
     }
 }

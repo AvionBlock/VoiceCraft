@@ -8,24 +8,25 @@ namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class EntityViewModel : ObservableObject
 {
+    private readonly VoiceCraftClientEntity _entity;
+
+    private readonly Guid? _entityUserId;
+    private readonly SettingsService _settingsService;
+
+    private readonly UserSettings _userSettings;
+
     //Entity Display.
     [ObservableProperty] private string _displayName;
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
-    [ObservableProperty] private bool _isVisible;
     [ObservableProperty] private bool _isSpeaking;
+    [ObservableProperty] private bool _isVisible;
+    [ObservableProperty] private bool _userMuted;
+    private bool _userMutedUpdating;
+    private bool _userVolumeUpdating;
 
     //User Settings
     [ObservableProperty] private float _volume;
-    [ObservableProperty] private bool _userMuted;
-
-    private readonly VoiceCraftClientEntity _entity;
-    private readonly UserSettings _userSettings;
-    private readonly SettingsService _settingsService;
-
-    private readonly Guid? _entityUserId;
-    private bool _userVolumeUpdating;
-    private bool _userMutedUpdating;
 
     public EntityViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
     {
@@ -49,7 +50,7 @@ public partial class EntityViewModel : ObservableObject
         _isVisible = entity.IsVisible;
         _isSpeaking = entity.IsSpeaking;
         _volume = entity.Volume;
-        _userMuted =  entity.UserMuted;
+        _userMuted = entity.UserMuted;
 
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;

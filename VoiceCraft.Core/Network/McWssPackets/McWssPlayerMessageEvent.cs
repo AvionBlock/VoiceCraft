@@ -5,7 +5,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
     public class McWssPlayerMessageEvent : McWssPacket<McWssPlayerMessageEvent.McWssPlayerMessageBody>
     {
         public override McWssPlayerMessageBody body { get; set; } = new McWssPlayerMessageBody();
-        
+
         [JsonIgnore]
         public string Message
         {

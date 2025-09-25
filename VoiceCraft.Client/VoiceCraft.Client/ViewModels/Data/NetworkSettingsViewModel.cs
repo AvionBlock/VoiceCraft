@@ -9,9 +9,9 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
 {
     private readonly NetworkSettings _networkSettings;
     private readonly SettingsService _settingsService;
-    
-    [ObservableProperty] private ushort _mcWssHostPort;
     private bool _disposed;
+
+    [ObservableProperty] private ushort _mcWssHostPort;
     private bool _updating;
 
     public NetworkSettingsViewModel(SettingsService settingsService)
@@ -46,7 +46,7 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     {
         if (_updating) return;
         _updating = true;
-        
+
         McWssHostPort = networkSettings.McWssHostPort;
 
         _updating = false;

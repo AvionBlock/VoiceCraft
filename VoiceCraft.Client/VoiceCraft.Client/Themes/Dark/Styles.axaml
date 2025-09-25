@@ -17,7 +17,7 @@
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
     </Style>
-    
+
     <Style Selector="Border.tag">
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Background" Value="{DynamicResource BackgroundTagBrush}" />

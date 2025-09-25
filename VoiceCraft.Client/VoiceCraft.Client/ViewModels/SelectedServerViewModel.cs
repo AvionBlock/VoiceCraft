@@ -20,16 +20,16 @@ public partial class SelectedServerViewModel(
     AudioService audioService)
     : ViewModelBase, IDisposable
 {
+    [ObservableProperty] private string _connectedClients = string.Empty;
+
+    [ObservableProperty] private string _latency = string.Empty;
+    [ObservableProperty] private string _motd = string.Empty;
     private Task? _pinger;
+    [ObservableProperty] private string _positioningType = string.Empty;
 
     [ObservableProperty] private ServerViewModel? _selectedServer;
 
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
-
-    [ObservableProperty] private string _latency = string.Empty;
-    [ObservableProperty] private string _motd = string.Empty;
-    [ObservableProperty] private string _positioningType = string.Empty;
-    [ObservableProperty] private string _connectedClients = string.Empty;
     private bool _stopPinger;
 
     public void Dispose()

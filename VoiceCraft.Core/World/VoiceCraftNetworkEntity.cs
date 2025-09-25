@@ -23,7 +23,7 @@ namespace VoiceCraft.Core.World
             PositioningType = positioningType;
             AddVisibleEntity(this); //Should always be visible to itself.
         }
-        
+
         public NetPeer NetPeer { get; }
         public Guid UserGuid { get; private set; }
         public Guid ServerUserGuid { get; private set; }

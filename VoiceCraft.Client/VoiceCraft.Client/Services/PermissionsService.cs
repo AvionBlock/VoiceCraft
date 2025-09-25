@@ -5,7 +5,9 @@ using Microsoft.Maui.Devices;
 
 namespace VoiceCraft.Client.Services;
 
-public class PermissionsService(NotificationService notificationService, Func<Type, Permissions.BasePermission> getPermission)
+public class PermissionsService(
+    NotificationService notificationService,
+    Func<Type, Permissions.BasePermission> getPermission)
 {
     public async Task<PermissionStatus> CheckAndRequestPermission<TPermission>(string? rationalDescription = null)
         where TPermission : Permissions.BasePermission, new()
@@ -31,7 +33,8 @@ public class PermissionsService(NotificationService notificationService, Func<Ty
 
         status = await permission.RequestAsync();
 
-        if (permission.ShouldShowRationale() && !string.IsNullOrWhiteSpace(rationalDescription)) notificationService.SendErrorNotification(rationalDescription);
+        if (permission.ShouldShowRationale() && !string.IsNullOrWhiteSpace(rationalDescription))
+            notificationService.SendErrorNotification(rationalDescription);
         return status;
     }
 }

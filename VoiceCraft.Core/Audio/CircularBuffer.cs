@@ -4,18 +4,18 @@ using System;
 namespace VoiceCraft.Core.Audio
 {
     /// <summary>
-    /// A very basic circular buffer implementation
+    ///     A very basic circular buffer implementation
     /// </summary>
     public class CircularBuffer<T>
     {
         private readonly T[] _buffer;
-        private int _writePosition;
-        private int _readPosition;
-        private int _count;
         private readonly object _lockObject;
+        private int _count;
+        private int _readPosition;
+        private int _writePosition;
 
         /// <summary>
-        /// Create a new circular buffer
+        ///     Create a new circular buffer
         /// </summary>
         /// <param name="size">Max buffer size in bytes</param>
         public CircularBuffer(int size)
@@ -25,7 +25,26 @@ namespace VoiceCraft.Core.Audio
         }
 
         /// <summary>
-        /// Write data to the buffer
+        ///     Maximum length of this circular buffer
+        /// </summary>
+        public int MaxLength => _buffer.Length;
+
+        /// <summary>
+        ///     Number of bytes currently stored in the circular buffer
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                lock (_lockObject)
+                {
+                    return _count;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Write data to the buffer
         /// </summary>
         /// <param name="data">Data to write</param>
         /// <param name="offset">Offset into data</param>
@@ -47,17 +66,19 @@ namespace VoiceCraft.Core.Audio
                 if (elementsWritten < count)
                 {
                     // must have wrapped round. Write to start
-                    data.Slice(offset + elementsWritten, count - elementsWritten).CopyTo(_buffer.AsSpan(_writePosition));
+                    data.Slice(offset + elementsWritten, count - elementsWritten)
+                        .CopyTo(_buffer.AsSpan(_writePosition));
                     _writePosition += count - elementsWritten;
                     elementsWritten = count;
                 }
+
                 _count += elementsWritten;
                 return elementsWritten;
             }
         }
 
         /// <summary>
-        /// Read from the buffer
+        ///     Read from the buffer
         /// </summary>
         /// <param name="data">Buffer to read into</param>
         /// <param name="offset">Offset into read buffer</param>
@@ -67,10 +88,7 @@ namespace VoiceCraft.Core.Audio
         {
             lock (_lockObject)
             {
-                if (count > _count)
-                {
-                    count = _count;
-                }
+                if (count > _count) count = _count;
                 var elementsRead = 0;
                 var readToEnd = Math.Min(_buffer.Length - _readPosition, count);
                 _buffer.AsSpan(_readPosition, readToEnd).CopyTo(data[offset..]);
@@ -92,26 +110,7 @@ namespace VoiceCraft.Core.Audio
         }
 
         /// <summary>
-        /// Maximum length of this circular buffer
-        /// </summary>
-        public int MaxLength => _buffer.Length;
-
-        /// <summary>
-        /// Number of bytes currently stored in the circular buffer
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                lock (_lockObject)
-                {
-                    return _count;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resets the buffer
+        ///     Resets the buffer
         /// </summary>
         public void Reset()
         {
@@ -129,7 +128,7 @@ namespace VoiceCraft.Core.Audio
         }
 
         /// <summary>
-        /// Advances the buffer, discarding bytes
+        ///     Advances the buffer, discarding bytes
         /// </summary>
         /// <param name="count">Bytes to advance</param>
         public void Advance(int count)

@@ -3,8 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace VoiceCraft.Core.Network.McWssPackets
 {
-    public class McWssCommandRequest: McWssPacket<McWssCommandRequest.McWssCommandRequestBody>
+    public class McWssCommandRequest : McWssPacket<McWssCommandRequest.McWssCommandRequestBody>
     {
+        public McWssCommandRequest(string command = "")
+        {
+            Command = command;
+            header.requestId = Guid.NewGuid().ToString();
+            header.messagePurpose = "commandRequest";
+        }
+
         public override McWssCommandRequestBody body { get; set; } = new McWssCommandRequestBody();
 
         [JsonIgnore]
@@ -14,13 +21,6 @@ namespace VoiceCraft.Core.Network.McWssPackets
             set => body.commandLine = value;
         }
 
-        public McWssCommandRequest(string command = "")
-        {
-            Command = command;
-            header.requestId = Guid.NewGuid().ToString();
-            header.messagePurpose = "commandRequest";
-        }
-        
         //Resharper disable All
         public class McWssCommandRequestBody
         {

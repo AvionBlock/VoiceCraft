@@ -4,7 +4,9 @@ using Avalonia.Threading;
 
 namespace VoiceCraft.Client.Services;
 
-public class NotificationService(INotificationMessageManager notificationMessageManager, SettingsService settingsService)
+public class NotificationService(
+    INotificationMessageManager notificationMessageManager,
+    SettingsService settingsService)
 {
     public void SendNotification(string badge, string message, Action<INotificationMessageButton>? onDismiss = null)
     {
@@ -24,7 +26,8 @@ public class NotificationService(INotificationMessageManager notificationMessage
         });
     }
 
-    public void SendSuccessNotification(string badge, string message, Action<INotificationMessageButton>? onDismiss = null)
+    public void SendSuccessNotification(string badge, string message,
+        Action<INotificationMessageButton>? onDismiss = null)
     {
         Dispatcher.UIThread.Invoke(() =>
         {

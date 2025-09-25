@@ -22,7 +22,7 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.General.General'}" />
             </Button>
-            
+
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToAppearanceSettingsCommand}"
                     Background="Transparent"
@@ -46,7 +46,7 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.Audio.Audio'}" />
             </Button>
-            
+
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToNetworkSettingsCommand}"
                     Background="Transparent"
@@ -58,7 +58,7 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.Network.Network'}" />
             </Button>
-            
+
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToHotKeySettingsCommand}"
                     Background="Transparent"

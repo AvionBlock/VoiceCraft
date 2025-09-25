@@ -37,18 +37,18 @@
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Appearance.Theme}" />
-                    
+
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Themes}"
                               DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding ThemeSettings.SelectedTheme}"
                               SelectedValueBinding="{Binding Id}" />
-                    
+
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Appearance.BackgroundImage}" />
-                    
+
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding BackgroundImages}"
                               DisplayMemberBinding="{Binding Name}"

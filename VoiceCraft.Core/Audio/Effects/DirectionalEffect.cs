@@ -8,7 +8,7 @@ namespace VoiceCraft.Core.Audio.Effects
     public class DirectionalEffect : IAudioEffect
     {
         public EffectType EffectType => EffectType.Directional;
-        
+
         public void Serialize(NetDataWriter writer)
         {
         }

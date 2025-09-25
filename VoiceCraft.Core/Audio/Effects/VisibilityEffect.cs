@@ -22,15 +22,6 @@ namespace VoiceCraft.Core.Audio.Effects
         {
         }
 
-        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
-        {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((effectBitmask & bitmask) == 0) return true; //Disabled, is visible by default.
-            
-            return !string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) && 
-                   from.WorldId == to.WorldId;
-        }
-        
         public void Reset()
         {
             //Nothing to reset
@@ -39,6 +30,15 @@ namespace VoiceCraft.Core.Audio.Effects
         public void Dispose()
         {
             //Nothing to dispose.
+        }
+
+        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
+        {
+            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
+            if ((effectBitmask & bitmask) == 0) return true; //Disabled, is visible by default.
+
+            return !string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) &&
+                   from.WorldId == to.WorldId;
         }
     }
 }

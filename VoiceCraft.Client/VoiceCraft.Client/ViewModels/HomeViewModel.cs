@@ -4,7 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.ViewModels.Home;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -17,7 +16,8 @@ public partial class HomeViewModel : ViewModelBase
     [ObservableProperty] private ListItemTemplate? _selectedListItem;
     [ObservableProperty] private string _title;
 
-    public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits, CrashLogViewModel crashLog)
+    public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits,
+        CrashLogViewModel crashLog)
     {
         _items.Add(new ListItemTemplate("Home.Servers", servers, "HomeRegular"));
         _items.Add(new ListItemTemplate("Home.Settings", settings, "SettingsRegular"));

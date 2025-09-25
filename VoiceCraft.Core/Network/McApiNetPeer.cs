@@ -11,11 +11,11 @@ namespace VoiceCraft.Core.Network
         private readonly ConcurrentQueue<byte[]> _inboundPacketQueue = new ConcurrentQueue<byte[]>();
         private readonly ConcurrentQueue<byte[]> _outboundPacketQueue = new ConcurrentQueue<byte[]>();
 
-        public event Action? OnDisconnected;
-        
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
         public bool Connected { get; private set; }
         public string SessionToken { get; private set; } = string.Empty;
+
+        public event Action? OnDisconnected;
 
         public void Disconnect()
         {
@@ -23,7 +23,7 @@ namespace VoiceCraft.Core.Network
             Connected = false;
             SessionToken = string.Empty;
             OnDisconnected?.Invoke();
-            
+
             Debug.WriteLine("McApi Client Disconnected");
         }
 
@@ -40,11 +40,11 @@ namespace VoiceCraft.Core.Network
         {
             if (packet.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(packet));
-            
+
             LastPing = DateTime.UtcNow;
             _inboundPacketQueue.Enqueue(packet);
         }
-        
+
         public bool RetrieveInboundPacket([NotNullWhen(true)] out byte[]? packet)
         {
             return _inboundPacketQueue.TryDequeue(out packet);
@@ -55,7 +55,7 @@ namespace VoiceCraft.Core.Network
             if (!Connected) return;
             if (writer.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(writer));
-            
+
             _outboundPacketQueue.Enqueue(writer.CopyData());
         }
 

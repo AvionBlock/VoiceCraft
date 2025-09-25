@@ -4,16 +4,19 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Locales;
 
 public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLocalizer
 {
-    private readonly string _languageJsonDirectory = string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
+    private readonly string _languageJsonDirectory =
+        string.IsNullOrWhiteSpace(languageJsonDirectory) ? "Languages.json" : languageJsonDirectory;
+
     private JsonNode? _languageStrings;
 
-    public string FallbackLanguage => Core.Constants.DefaultLanguage;
+    public string FallbackLanguage => Constants.DefaultLanguage;
     public ObservableCollection<string> Languages { get; } = [];
 
     public string Reload(string language)
@@ -33,8 +36,8 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
             var lang = Path.GetFileNameWithoutExtension(file).Replace($"{_languageJsonDirectory}.", "");
             Languages.Add(lang);
         }
-        
-        if(!Languages.Contains(language))
+
+        if (!Languages.Contains(language))
             language = FallbackLanguage;
 
         var languageFile = $"{_languageJsonDirectory}.{language}.json";

@@ -9,7 +9,8 @@ namespace VoiceCraft.Client.Windows;
 public class NativeStorageService : StorageService
 {
     private static readonly string ApplicationDirectory =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.ApplicationDirectory);
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            Constants.ApplicationDirectory);
 
     public override bool Exists(string directory)
     {

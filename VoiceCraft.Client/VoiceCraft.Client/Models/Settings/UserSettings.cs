@@ -26,9 +26,10 @@ public class UserSettings : Setting<UserSettings>
         clone.Users = new Dictionary<Guid, UserSetting>();
         foreach (var user in _users)
         {
-            var clonedEntity = (UserSetting) user.Value.Clone();
-            clone.Users.TryAdd( user.Key, clonedEntity);
+            var clonedEntity = (UserSetting)user.Value.Clone();
+            clone.Users.TryAdd(user.Key, clonedEntity);
         }
+
         clone.OnUpdated = null;
         return clone;
     }

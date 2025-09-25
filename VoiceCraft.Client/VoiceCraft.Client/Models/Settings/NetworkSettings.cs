@@ -16,7 +16,7 @@ public class NetworkSettings : Setting<NetworkSettings>
             OnUpdated?.Invoke(this);
         }
     }
-    
+
     public override event Action<NetworkSettings>? OnUpdated;
 
     public override object Clone()

@@ -1,12 +1,12 @@
-using VoiceCraft.Core.World;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Server.Systems;
 
 public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
     private readonly Lock _lock = new();
-    
+
     public void Update()
     {
         //Possible Race Condition. Will need to test further.
@@ -21,7 +21,6 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
         //Add any new possible entities.
         var visibleNetworkEntities = world.Entities.OfType<VoiceCraftNetworkEntity>();
         foreach (var possibleEntity in visibleNetworkEntities)
-        {
             try
             {
                 if (possibleEntity.Id == entity.Id) continue;
@@ -31,16 +30,15 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
                     entity.RemoveVisibleEntity(possibleEntity);
                     continue;
                 }
-                
+
                 _lock.Enter();
                 entity.AddVisibleEntity(possibleEntity);
             }
             finally
             {
-                if(_lock.IsHeldByCurrentThread)
+                if (_lock.IsHeldByCurrentThread)
                     _lock.Exit();
             }
-        }
     }
 
     private bool EntityVisibility(VoiceCraftEntity from, VoiceCraftNetworkEntity to)

@@ -31,7 +31,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Sample rate must be greater than or equal to zero!");
 
             _sampleRate = value;
         }
@@ -43,7 +44,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 1)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Channels must be greater than or equal to one!");
 
             _channels = value;
         }
@@ -71,7 +73,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Buffer milliseconds must be greater than or equal to zero!");
 
             _bufferMilliseconds = value;
         }

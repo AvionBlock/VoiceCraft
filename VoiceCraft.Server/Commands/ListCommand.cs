@@ -25,7 +25,8 @@ public class ListCommand : Command
         this.SetHandler((clientsOnly, limit) =>
             {
                 if (limit < 0)
-                    throw new ArgumentOutOfRangeException(nameof(limit), Locales.Locales.Commands_List_Exceptions_LimitArgument);
+                    throw new ArgumentOutOfRangeException(nameof(limit),
+                        Locales.Locales.Commands_List_Exceptions_LimitArgument);
 
                 var table = new Table()
                     .AddColumn(Locales.Locales.Tables_ListCommandEntities_Id)

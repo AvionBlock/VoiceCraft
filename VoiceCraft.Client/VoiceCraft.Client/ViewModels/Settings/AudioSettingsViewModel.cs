@@ -74,7 +74,8 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
             _recorder.OnRecordingStopped += OnRecordingStopped;
             _recorder.Initialize();
 
-            _gainController = _audioService.GetAutomaticGainController(AudioSettings.AutomaticGainController)?.Instantiate();
+            _gainController = _audioService.GetAutomaticGainController(AudioSettings.AutomaticGainController)
+                ?.Instantiate();
             _gainController?.Initialize(_recorder);
 
             _denoiser = _audioService.GetDenoiser(AudioSettings.Denoiser)?.Instantiate();
@@ -130,7 +131,7 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
     {
         _gainController?.Process(data);
         _denoiser?.Denoise(data);
-        
+
         var loudness = data.GetFramePeak16(count);
         MicrophoneValue = loudness;
         DetectingVoiceActivity = loudness >= AudioSettings.MicrophoneSensitivity;

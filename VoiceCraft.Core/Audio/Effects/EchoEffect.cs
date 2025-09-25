@@ -7,24 +7,9 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class EchoEffect : IAudioEffect
     {
-        public EffectType EffectType => EffectType.Echo;
         private readonly FractionalDelayLine _delayLine;
         private float _delay;
-        
-        public int SampleRate { get; }
-        public float Delay
-        {
-            get => _delay / SampleRate;
-            set
-            {
-                _delayLine.Ensure(SampleRate, value);
-                _delay = SampleRate * value;
-            }
-        }
-        public float Feedback { get; set; }
-        public float Wet { get; set; } = 1f;
-        public float Dry { get; set; }
-        
+
         public EchoEffect(int samplingRate,
             float delay,
             float feedback = 0.5f)
@@ -34,6 +19,23 @@ namespace VoiceCraft.Core.Audio.Effects
             Delay = delay;
             Feedback = feedback;
         }
+
+        public int SampleRate { get; }
+
+        public float Delay
+        {
+            get => _delay / SampleRate;
+            set
+            {
+                _delayLine.Ensure(SampleRate, value);
+                _delay = SampleRate * value;
+            }
+        }
+
+        public float Feedback { get; set; }
+        public float Wet { get; set; } = 1f;
+        public float Dry { get; set; }
+        public EffectType EffectType => EffectType.Echo;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -70,7 +72,7 @@ namespace VoiceCraft.Core.Audio.Effects
         {
             _delayLine.Reset();
         }
-        
+
         public void Dispose()
         {
             //Nothing to dispose.

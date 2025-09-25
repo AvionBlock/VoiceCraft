@@ -29,7 +29,7 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Android"/>
-        <PackageReference Include="SpeexDSPSharp" />
+        <PackageReference Include="SpeexDSPSharp"/>
         <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen"/>
     </ItemGroup>
 

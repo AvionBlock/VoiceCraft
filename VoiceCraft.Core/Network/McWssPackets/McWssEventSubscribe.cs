@@ -4,6 +4,12 @@ namespace VoiceCraft.Core.Network.McWssPackets
 {
     public class McWssEventSubscribe : McWssPacket<McWssEventSubscribe.McWssEventSubscribeBody>
     {
+        public McWssEventSubscribe(string eventName = "")
+        {
+            EventName = eventName;
+            header.messagePurpose = "subscribe";
+        }
+
         public override McWssEventSubscribeBody body { get; set; } = new McWssEventSubscribeBody();
 
         [JsonIgnore]
@@ -13,12 +19,6 @@ namespace VoiceCraft.Core.Network.McWssPackets
             set => body.eventName = value;
         }
 
-        public McWssEventSubscribe(string eventName = "")
-        {
-            EventName = eventName;
-            header.messagePurpose = "subscribe";
-        }
-        
         //Resharper disable All
         public class McWssEventSubscribeBody
         {
