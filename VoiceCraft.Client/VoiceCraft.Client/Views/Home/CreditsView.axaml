@@ -15,9 +15,9 @@
                 Classes="card">
             <StackPanel Spacing="10">
                 <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding AppVersion }" />
-                
+
                 <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Version}" />
-                
+
                 <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Codec}" />
 
                 <TextBlock FontSize="16" FontWeight="Bold" Text="{locale:Localize Credits.Contributors}" />

@@ -16,12 +16,12 @@ public partial class CreditsViewModel : ViewModelBase
     //private readonly Bitmap? _defaultIcon = LoadImage("avares://VoiceCraft.Client/Assets/Contributors/vc.png");
 
     [ObservableProperty] private string _appVersion = string.Empty;
-    
-    [ObservableProperty] private string _version = string.Empty;
 
     [ObservableProperty] private string _codec = string.Empty;
 
     [ObservableProperty] private ObservableCollection<ContributorViewModel> _contributors;
+
+    [ObservableProperty] private string _version = string.Empty;
 
     public CreditsViewModel()
     {
@@ -40,7 +40,7 @@ public partial class CreditsViewModel : ViewModelBase
                 ["Credits.Roles.Translator"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/unny.png"))
         ];
-        
+
         Localizer.Instance.OnLanguageChanged += UpdateLocalizations;
         UpdateLocalizations();
     }
@@ -49,10 +49,11 @@ public partial class CreditsViewModel : ViewModelBase
     {
         return AssetLoader.Exists(new Uri(path)) ? new Bitmap(AssetLoader.Open(new Uri(path))) : null;
     }
-    
+
     private void UpdateLocalizations(string language = "")
     {
-        AppVersion = Locales.Locales.Credits_AppVersion.Replace("{version}", Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.");
+        AppVersion = Locales.Locales.Credits_AppVersion.Replace("{version}",
+            Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.");
         Version = Locales.Locales.Credits_Version.Replace("{version}", VoiceCraftClient.Version.ToString());
         Codec = Locales.Locales.Credits_Codec.Replace("{version}", OpusInfo.Version());
     }

@@ -20,7 +20,7 @@ public static class App
         var httpServer = Program.ServiceProvider.GetRequiredService<McHttpServer>();
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
-        
+
         try
         {
             //Startup.
@@ -29,8 +29,10 @@ public static class App
 
             //Properties
             properties.Load();
-            Localizer.Instance.Language = properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
-            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Title_Starting}"; //Loaded, Set the title.
+            Localizer.Instance.Language =
+                properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
+            Console.Title =
+                $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Title_Starting}"; //Loaded, Set the title.
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
@@ -58,12 +60,13 @@ public static class App
                 commandCount++;
             }
 
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.Startup_Commands_Success.Replace("{commands}", commandCount.ToString())}[/]");
+            AnsiConsole.MarkupLine(
+                $"[green]{Locales.Locales.Startup_Commands_Success.Replace("{commands}", commandCount.ToString())}[/]");
 
             //Server finished.
             AnsiConsole.Write(serverSetupTable);
             AnsiConsole.MarkupLine($"[bold green]{Locales.Locales.Startup_Success}[/]");
-            
+
             StartCommandTask();
             var startTime = DateTime.UtcNow;
             while (!Cts.IsCancellationRequested)
@@ -113,7 +116,8 @@ public static class App
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]{Locales.Locales.Commands_Exception.Replace("{commandName}", _bufferedCommand)}[/]");
+            AnsiConsole.MarkupLine(
+                $"[red]{Locales.Locales.Commands_Exception.Replace("{commandName}", _bufferedCommand)}[/]");
             AnsiConsole.WriteException(ex);
         }
 

@@ -1,7 +1,7 @@
 using System.Numerics;
-using VoiceCraft.Core.World;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Systems;
@@ -65,9 +65,7 @@ public class EventHandlerSystem : IDisposable
 
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
-            {
                 _server.SendPacket(networkEntity.NetPeer, new SetEffectPacket(effect.Key, effect.Value));
-            }
 
             //Send other entities.
             foreach (var entity in _world.Entities)
@@ -220,7 +218,7 @@ public class EventHandlerSystem : IDisposable
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
         });
     }
-    
+
     private void OnEntityMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
@@ -273,5 +271,6 @@ public class EventHandlerSystem : IDisposable
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
         });
     }
+
     #endregion
 }

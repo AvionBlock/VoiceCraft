@@ -5,7 +5,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
         //Resharper disable All
         public McWssHeader header { get; set; } = new McWssHeader();
         public abstract T body { get; set; }
-        
+
         public class McWssHeader
         {
             public string requestId { get; set; } = string.Empty;

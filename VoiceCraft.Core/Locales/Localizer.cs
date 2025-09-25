@@ -9,16 +9,11 @@ namespace VoiceCraft.Core.Locales
 {
     public sealed class Localizer : INotifyPropertyChanged, INotifyPropertyChanging
     {
-        public static Localizer Instance { get; } = new Localizer();
         private static IBaseLocalizer _baseLocalizer = new EmptyBaseLocalizer();
-        
-        //Property Changed Events
-        public event PropertyChangingEventHandler? PropertyChanging;
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public event Action<string>? OnLanguageChanged;
 
         //Private set language
         private string _language = "";
+        public static Localizer Instance { get; } = new Localizer();
 
         public static IBaseLocalizer BaseLocalizer
         {
@@ -42,7 +37,12 @@ namespace VoiceCraft.Core.Locales
         }
 
         public static ObservableCollection<string> Languages => _baseLocalizer.Languages;
-        
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        //Property Changed Events
+        public event PropertyChangingEventHandler? PropertyChanging;
+        public event Action<string>? OnLanguageChanged;
+
         public static string Get(string key)
         {
             return _baseLocalizer.Get(key);
@@ -55,7 +55,7 @@ namespace VoiceCraft.Core.Locales
             field = value;
             OnPropertyChanged(propertyName);
         }
-        
+
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -72,7 +72,7 @@ namespace VoiceCraft.Core.Locales
             PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
         }
     }
-    
+
     internal class EmptyBaseLocalizer : IBaseLocalizer
     {
         public string FallbackLanguage => throw new NotSupportedException();

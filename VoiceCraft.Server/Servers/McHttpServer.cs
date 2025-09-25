@@ -15,13 +15,14 @@ namespace VoiceCraft.Server.Servers;
 
 public class McHttpServer
 {
-    //Public Properties
-    public McHttpConfig Config { get; private set; } = new();
-
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
+
     private WebserverLite? _httpServer;
+
+    //Public Properties
+    public McHttpConfig Config { get; private set; } = new();
 
     public void Start(McHttpConfig? config = null)
     {
@@ -41,15 +42,12 @@ public class McHttpServer
             throw new Exception(Locales.Locales.McHttpServer_Exceptions_Failed);
         }
     }
-    
+
     public void Update()
     {
-        foreach (var peer in _mcApiPeers)
-        {
-            UpdatePeer(peer.Value);
-        }
+        foreach (var peer in _mcApiPeers) UpdatePeer(peer.Value);
     }
-    
+
     public void Stop()
     {
         if (_httpServer == null) return;
@@ -59,7 +57,7 @@ public class McHttpServer
         _httpServer = null;
         AnsiConsole.MarkupLine($"[green]{Locales.Locales.McHttpServer_Stopped}[/]");
     }
-    
+
     public void SendPacket(McApiNetPeer netPeer, McApiPacket packet)
     {
         _writer.Reset();
@@ -79,13 +77,11 @@ public class McHttpServer
                 await context.Response.Send();
                 return;
             }
-            
+
             var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
             var packets = packet.Packets.Split("|");
             foreach (var data in packets.Where(data => data.Length <= short.MaxValue))
-            {
                 netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
-            }
 
             packet.Packets = string.Empty;
             var first = false;
@@ -97,7 +93,7 @@ public class McHttpServer
                 first = true;
                 stringBuilder.Append('|');
             }
-            
+
             packet.Packets = stringBuilder.ToString();
             var responseData = JsonSerializer.Serialize(packet);
             await context.Response.Send(responseData);
@@ -118,11 +114,10 @@ public class McHttpServer
     {
         return _mcApiPeers.GetOrAdd(ipAddress, _ => new McApiNetPeer());
     }
-    
+
     private void UpdatePeer(McApiNetPeer peer)
     {
         while (peer.RetrieveInboundPacket(out var packetData))
-        {
             try
             {
                 _reader.Clear();
@@ -135,14 +130,10 @@ public class McHttpServer
             {
                 //Do Nothing
             }
-        }
 
-        if (peer.Connected && peer.LastPing.Add(TimeSpan.FromSeconds(5)) <= DateTime.UtcNow)
-        {
-            peer.Disconnect();
-        }
+        if (peer.Connected && peer.LastPing.Add(TimeSpan.FromSeconds(5)) <= DateTime.UtcNow) peer.Disconnect();
     }
-    
+
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer)
     {
         if (packetType == McApiPacketType.Login && !peer.Connected)
@@ -152,8 +143,9 @@ public class McHttpServer
             HandleLoginPacket(loginPacket, peer);
             return;
         }
+
         if (!peer.Connected) return;
-        
+
         // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
         switch (packetType)
         {
@@ -193,7 +185,7 @@ public class McHttpServer
     {
         if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.LoginToken)
             return;
-        
+
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
         SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
     }

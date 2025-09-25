@@ -31,21 +31,21 @@ public class DiscordRpcService : IDisposable
         if (OperatingSystem.IsBrowser()) return;
 
         _rpcClient = new DiscordRpcClient(Constants.ApplicationId);
-        
-        #if DEBUG
+
+#if DEBUG
         _rpcClient.OnConnectionEstablished += (_, msg) => { Debug.WriteLine($"RPC Connected: {msg.Type}"); };
 
         _rpcClient.OnConnectionFailed += (_, msg) => { Debug.WriteLine($"RPC Failed: {msg.Type}"); };
-        
+
         _rpcClient.OnReady += (_, msg) => { Debug.WriteLine($"RPC Ready: {msg.User.Username}"); };
-        
+
         _rpcClient.OnPresenceUpdate += (_, _) => { Debug.WriteLine("RPC Update: Presence updated."); };
-        
+
         _rpcClient.OnClose += (_, msg) => { Debug.WriteLine($"RPC Closed: {msg.Type}"); };
 
         _rpcClient.OnError += (_, msg) => { Debug.WriteLine($"RPC Error: {msg.Type}"); };
-        #endif
-        
+#endif
+
         _rpcClient?.Initialize();
         _rpcClient?.SetPresence(_richPresence);
     }

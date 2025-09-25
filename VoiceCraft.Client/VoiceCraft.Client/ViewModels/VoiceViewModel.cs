@@ -13,16 +13,16 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private EntityViewModel? _selectedEntity;
     [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
     [ObservableProperty] private bool _isSpeaking;
-    [ObservableProperty] private bool _showModal;
     private VoipBackgroundProcess? _process;
+    [ObservableProperty] private EntityViewModel? _selectedEntity;
+    [ObservableProperty] private bool _showModal;
+    [ObservableProperty] private string _statusDescriptionText = string.Empty;
 
     [ObservableProperty] private string _statusTitleText = string.Empty;
-    [ObservableProperty] private string _statusDescriptionText = string.Empty;
     public override bool DisableBackButton { get; protected set; } = true;
 
     public void Dispose()
@@ -78,7 +78,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     {
         if (data is VoiceNavigationData navigationData)
             _process = navigationData.Process;
-        
+
         if (_process == null || _process.HasEnded)
         {
             navigationService.Back();
@@ -140,7 +140,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     {
         Dispatcher.UIThread.Invoke(() => { IsDeafened = deafened; });
     }
-    
+
     private void OnUpdateSpeaking(bool speaking)
     {
         Dispatcher.UIThread.Invoke(() => { IsSpeaking = speaking; });

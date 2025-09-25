@@ -10,37 +10,38 @@ namespace VoiceCraft.Client.Services;
 
 public abstract class AudioService
 {
-    private readonly ConcurrentDictionary<Guid, RegisteredAutomaticGainController> _registeredAutomaticGainControllers = new();
-    private readonly ConcurrentDictionary<Guid, RegisteredEchoCanceler> _registeredEchoCancelers = new();
+    private readonly ConcurrentDictionary<Guid, RegisteredAutomaticGainController> _registeredAutomaticGainControllers =
+        new();
+
     private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
+    private readonly ConcurrentDictionary<Guid, RegisteredEchoCanceler> _registeredEchoCancelers = new();
 
     protected AudioService(
         IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
         IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
         IEnumerable<RegisteredDenoiser> registeredDenoisers)
     {
-        _registeredAutomaticGainControllers.TryAdd(Guid.Empty, new RegisteredAutomaticGainController(Guid.Empty, "None", null));
+        _registeredAutomaticGainControllers.TryAdd(Guid.Empty,
+            new RegisteredAutomaticGainController(Guid.Empty, "None", null));
         _registeredEchoCancelers.TryAdd(Guid.Empty, new RegisteredEchoCanceler(Guid.Empty, "None", null));
         _registeredDenoisers.TryAdd(Guid.Empty, new RegisteredDenoiser(Guid.Empty, "None", null));
 
         foreach (var registeredAutomaticGainController in registeredAutomaticGainControllers)
-        {
-            _registeredAutomaticGainControllers.TryAdd(registeredAutomaticGainController.Id, registeredAutomaticGainController);
-        }
+            _registeredAutomaticGainControllers.TryAdd(registeredAutomaticGainController.Id,
+                registeredAutomaticGainController);
 
         foreach (var registeredEchoCanceler in registeredEchoCancelers)
-        {
             _registeredEchoCancelers.TryAdd(registeredEchoCanceler.Id, registeredEchoCanceler);
-        }
-        
+
         foreach (var registeredDenoiser in registeredDenoisers)
-        {
             _registeredDenoisers.TryAdd(registeredDenoiser.Id, registeredDenoiser);
-        }
     }
 
     public IEnumerable<RegisteredDenoiser> RegisteredDenoisers => _registeredDenoisers.Values.ToArray();
-    public IEnumerable<RegisteredAutomaticGainController> RegisteredAutomaticGainControllers => _registeredAutomaticGainControllers.Values.ToArray();
+
+    public IEnumerable<RegisteredAutomaticGainController> RegisteredAutomaticGainControllers =>
+        _registeredAutomaticGainControllers.Values.ToArray();
+
     public IEnumerable<RegisteredEchoCanceler> RegisteredEchoCancelers => _registeredEchoCancelers.Values.ToArray();
 
     public RegisteredDenoiser? GetDenoiser(Guid id)

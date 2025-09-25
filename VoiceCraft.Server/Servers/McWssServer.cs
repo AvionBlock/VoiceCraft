@@ -19,13 +19,13 @@ public class McWssServer
     private static readonly Regex RawtextRegex = new(Regex.Escape("vc:mcwss_api"));
     private static readonly Version McWssVersion = new(1, 1, 0);
 
-    //Public Properties
-    public McWssConfig Config { get; private set; } = new();
-
     private readonly ConcurrentDictionary<ClientMetadata, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private WatsonWsServer? _wsServer;
+
+    //Public Properties
+    public McWssConfig Config { get; private set; } = new();
 
     public void Start(McWssConfig? config = null)
     {
@@ -58,10 +58,7 @@ public class McWssServer
 
     public void Update()
     {
-        foreach (var peer in _mcApiPeers)
-        {
-            UpdatePeer(peer);
-        }
+        foreach (var peer in _mcApiPeers) UpdatePeer(peer);
     }
 
     public void Stop()
@@ -101,7 +98,6 @@ public class McWssServer
     private void UpdatePeer(KeyValuePair<ClientMetadata, McApiNetPeer> peer)
     {
         while (peer.Value.RetrieveInboundPacket(out var packetData))
-        {
             try
             {
                 _reader.Clear();
@@ -114,17 +110,12 @@ public class McWssServer
             {
                 //Do Nothing
             }
-        }
 
         while (peer.Value.RetrieveOutboundPacket(out var outboundPacketData))
-        {
             SendPacket(peer.Key.Guid, outboundPacketData);
-        }
 
         if (peer.Value.Connected && peer.Value.LastPing.Add(TimeSpan.FromSeconds(5)) <= DateTime.UtcNow)
-        {
             peer.Value.Disconnect();
-        }
     }
 
     private void OnClientConnected(object? sender, ConnectionEventArgs e)
@@ -137,10 +128,7 @@ public class McWssServer
 
     private void OnClientDisconnected(object? sender, DisconnectionEventArgs e)
     {
-        if (_mcApiPeers.TryRemove(e.Client, out var netPeer))
-        {
-            netPeer.Disconnect();
-        }
+        if (_mcApiPeers.TryRemove(e.Client, out var netPeer)) netPeer.Disconnect();
     }
 
     private void OnMessageReceived(object? sender, MessageReceivedEventArgs e)
@@ -173,7 +161,8 @@ public class McWssServer
             case "PlayerMessage":
                 var playerMessagePacket = JsonSerializer.Deserialize<McWssPlayerMessageEvent>(data);
                 if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
-                var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext.FirstOrDefault();
+                var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext
+                    .FirstOrDefault();
                 if (rawtextMessage == null || !rawtextMessage.text.StartsWith("vc:mcwss_api")) return;
                 if (_mcApiPeers.TryGetValue(client, out var peer))
                 {
@@ -185,7 +174,8 @@ public class McWssServer
         }
     }
 
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, ClientMetadata client, McApiNetPeer peer)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, ClientMetadata client,
+        McApiNetPeer peer)
     {
         if (packetType == McApiPacketType.Login)
         {
@@ -245,6 +235,7 @@ public class McWssServer
             SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.InvalidLoginToken"));
             return;
         }
+
         if (packet.Version.Major != McWssVersion.Major || packet.Version.Minor != McWssVersion.Minor)
         {
             SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.IncompatibleVersion"));

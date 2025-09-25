@@ -14,7 +14,7 @@ public partial class GeneralSettingsViewModel
     : ViewModelBase, IDisposable
 {
     private readonly NavigationService _navigationService;
-    
+
     [ObservableProperty] private ObservableCollection<KeyValuePair<string, string>> _locales = [];
 
     //Language Settings
@@ -29,10 +29,8 @@ public partial class GeneralSettingsViewModel
     public GeneralSettingsViewModel(NavigationService navigationService, SettingsService settingsService)
     {
         foreach (var locale in Localizer.Languages)
-        {
             _locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
-        }
-        _navigationService = navigationService;   
+        _navigationService = navigationService;
         _localeSettings = new LocaleSettingsViewModel(settingsService);
         _notificationSettings = new NotificationSettingsViewModel(settingsService);
         _serversSettings = new ServersSettingsViewModel(settingsService);

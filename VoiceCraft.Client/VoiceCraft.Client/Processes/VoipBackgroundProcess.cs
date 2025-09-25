@@ -8,8 +8,8 @@ using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.World;
 using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Processes;
 
@@ -31,17 +31,17 @@ public class VoipBackgroundProcess(
     //Audio
     private IAudioRecorder? _audioRecorder;
     private IDenoiser? _denoiser;
+    private string _description = string.Empty;
+    private bool _disconnected;
+    private string _disconnectReason = "VoiceCraft.DisconnectReason.Error";
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
 
     private bool _stopping;
     private bool _stopRequested;
-    private bool _disconnected;
-    private string _disconnectReason = "VoiceCraft.DisconnectReason.Error";
 
     //Displays
     private string _title = string.Empty;
-    private string _description = string.Empty;
 
     //Public Variables
     public bool HasEnded { get; private set; }

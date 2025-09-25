@@ -8,7 +8,7 @@
                 ? value[..maxLength] + truncationSuffix
                 : value;
         }
-        
+
         public static float GetFramePeak16(this byte[] data, int bytesRead)
         {
             float max = 0;

@@ -1,138 +1,138 @@
 {
-    "Notification": {
-        "Badges": {
-            "Servers": "服务器",
-            "Error": "错误",
-            "GC": "垃圾回收",
-            "VoiceCraft": "VoiceCraft",
-            "CrashLogs": "崩溃日志"
-        }
+  "Notification": {
+    "Badges": {
+      "Servers": "服务器",
+      "Error": "错误",
+      "GC": "垃圾回收",
+      "VoiceCraft": "VoiceCraft",
+      "CrashLogs": "崩溃日志"
+    }
+  },
+  "Home": {
+    "Servers": "服务器",
+    "Settings": "设置",
+    "Credits": "制作人员",
+    "CrashLogs": "崩溃日志"
+  },
+  "AddServer": {
+    "AddServer": "添加服务器",
+    "Name": "服务器名称",
+    "IP": "IP地址",
+    "Port": "端口"
+  },
+  "EditServer": {
+    "EditServer": "修改服务器",
+    "Name": "服务器名称",
+    "IP": "IP地址",
+    "Port": "端口"
+  },
+  "Credits": {
+    "AppVersion": "应用版本: {version}",
+    "Version": "版本: {version}",
+    "Codec": "编解码器: {version}",
+    "Contributors": "贡献者",
+    "Roles": {
+      "Author": "作者",
+      "Translator": "翻译者",
+      "Programmer": "程序员"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "常规设置",
+      "Language": "语言",
+      "NotificationDismiss": "通知消失时间(毫秒)",
+      "DisableNotifications": "禁用通知",
+      "HideServerAddresses": "隐藏服务器地址"
     },
-    "Home": {
-        "Servers": "服务器",
-        "Settings": "设置",
-        "Credits": "制作人员",
-        "CrashLogs": "崩溃日志"
-    },
-    "AddServer": {
-        "AddServer": "添加服务器",
-        "Name": "服务器名称",
-        "IP": "IP地址",
-        "Port": "端口"
-    },
-    "EditServer": {
-        "EditServer": "修改服务器",
-        "Name": "服务器名称",
-        "IP": "IP地址",
-        "Port": "端口"
-    },
-    "Credits": {
-        "AppVersion": "应用版本: {version}",
-        "Version": "版本: {version}",
-        "Codec": "编解码器: {version}",
-        "Contributors": "贡献者",
-        "Roles": {
-            "Author": "作者",
-            "Translator": "翻译者",
-            "Programmer": "程序员"
-        }
-    },
-    "Settings": {
-        "General": {
-            "General": "常规设置",
-            "Language": "语言",
-            "NotificationDismiss": "通知消失时间(毫秒)",
-            "DisableNotifications": "禁用通知",
-            "HideServerAddresses": "隐藏服务器地址"
-        },
-        "Appearance": {
-            "Appearance": "外观设置",
-            "Theme": "主题",
-            "BackgroundImage": "背景图片"
-        },
-        "Audio": {
-            "Audio": "音频设置",
-            "AutomaticGainControllers": "自动增益控制器",
-            "Denoisers": "降噪器",
-            "EchoCancelers": "回声消除器",
-            "InputDevices": "输入设备",
-            "MicrophoneSensitivity": "麦克风灵敏度",
-            "OutputDevices": "输出设备",
-            "TestOutput": "测试输出",
-            "MicrophoneTest": {
-                "MicrophoneTest": "麦克风测试",
-                "Test": "测试"
-            }
-        },
-        "Network": {
-            "Network": "网络设置",
-            "McWssHostPort": "MCWSS主机端口"
-        },
-      "HotKey": {
-        "HotKey": "?",
-        "Actions": {
-          "Mute": "?",
-          "Deafen": "?"
-        }
-      },
-        "Advanced": {
-            "Advanced": "高级设置",
-            "TriggerGc": "触发垃圾回收",
-            "Crash": "测试崩溃"
-        }
-    },
-    "SelectedServer": {
-        "Address": "地址",
-        "PingInformation": "Ping信息",
-        "Connect": "连接",
-        "Edit": "编辑服务器",
-        "Delete": "删除服务器",
-        "ServerInfo": {
-            "ServerInfo": "服务器信息",
-            "Status": {
-                "Latency": "延迟: {latency}",
-                "Motd": "Motd: {motd}",
-                "PositioningType": "定位类型: {positioningType}",
-                "ConnectedClients": "已连接客户端: {connectedClients}",
-                "Pinging": "正在Ping..."
-            }
-        }
+    "Appearance": {
+      "Appearance": "外观设置",
+      "Theme": "主题",
+      "BackgroundImage": "背景图片"
     },
     "Audio": {
-        "Recorder": {
-            "InitFailed": "录音器初始化失败！",
-            "Init": "录音器未初始化！"
-        },
-        "Player": {
-            "InitFailed": "播放器初始化失败！",
-            "Init": "播放器未初始化！"
-        },
-        "AEC": {
-            "InitFailed": "回声消除器初始化失败！",
-            "Init": "回声消除器未初始化！"
-        },
-        "AGC": {
-            "InitFailed": "增益控制器初始化失败！",
-            "Init": "增益控制器未初始化！"
-        },
-        "DN": {
-            "InitFailed": "降噪器初始化失败！",
-            "Init": "降噪器未初始化！"
-        }
+      "Audio": "音频设置",
+      "AutomaticGainControllers": "自动增益控制器",
+      "Denoisers": "降噪器",
+      "EchoCancelers": "回声消除器",
+      "InputDevices": "输入设备",
+      "MicrophoneSensitivity": "麦克风灵敏度",
+      "OutputDevices": "输出设备",
+      "TestOutput": "测试输出",
+      "MicrophoneTest": {
+        "MicrophoneTest": "麦克风测试",
+        "Test": "测试"
+      }
     },
-    "VoiceCraft": {
-        "Status": {
-            "Initializing": "正在初始化...",
-            "Connecting": "正在连接...",
-            "Connected": "已连接！",
-            "Disconnected": "已断开连接！原因: {reason}"
-        },
-        "DisconnectReason": {
-            "Shutdown": "?",
-            "Forced": "?",
-            "IncompatibleVersion": "客户端/服务器版本不兼容！",
-            "ServerFull": "服务器已满！",
-            "Error": "尝试登录时发生错误！"
-        }
+    "Network": {
+      "Network": "网络设置",
+      "McWssHostPort": "MCWSS主机端口"
+    },
+    "HotKey": {
+      "HotKey": "?",
+      "Actions": {
+        "Mute": "?",
+        "Deafen": "?"
+      }
+    },
+    "Advanced": {
+      "Advanced": "高级设置",
+      "TriggerGc": "触发垃圾回收",
+      "Crash": "测试崩溃"
     }
+  },
+  "SelectedServer": {
+    "Address": "地址",
+    "PingInformation": "Ping信息",
+    "Connect": "连接",
+    "Edit": "编辑服务器",
+    "Delete": "删除服务器",
+    "ServerInfo": {
+      "ServerInfo": "服务器信息",
+      "Status": {
+        "Latency": "延迟: {latency}",
+        "Motd": "Motd: {motd}",
+        "PositioningType": "定位类型: {positioningType}",
+        "ConnectedClients": "已连接客户端: {connectedClients}",
+        "Pinging": "正在Ping..."
+      }
+    }
+  },
+  "Audio": {
+    "Recorder": {
+      "InitFailed": "录音器初始化失败！",
+      "Init": "录音器未初始化！"
+    },
+    "Player": {
+      "InitFailed": "播放器初始化失败！",
+      "Init": "播放器未初始化！"
+    },
+    "AEC": {
+      "InitFailed": "回声消除器初始化失败！",
+      "Init": "回声消除器未初始化！"
+    },
+    "AGC": {
+      "InitFailed": "增益控制器初始化失败！",
+      "Init": "增益控制器未初始化！"
+    },
+    "DN": {
+      "InitFailed": "降噪器初始化失败！",
+      "Init": "降噪器未初始化！"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "正在初始化...",
+      "Connecting": "正在连接...",
+      "Connected": "已连接！",
+      "Disconnected": "已断开连接！原因: {reason}"
+    },
+    "DisconnectReason": {
+      "Shutdown": "?",
+      "Forced": "?",
+      "IncompatibleVersion": "客户端/服务器版本不兼容！",
+      "ServerFull": "服务器已满！",
+      "Error": "尝试登录时发生错误！"
+    }
+  }
 }

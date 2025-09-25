@@ -15,11 +15,17 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     private readonly BufferedAudioProvider16 _outputBuffer = new(Constants.OutputBufferShorts)
         { DiscardOnOverflow = true };
 
-    private DateTime _lastPacket = DateTime.MinValue;
     private bool _isReading;
     private bool _isVisible;
-    private float _volume = 1f;
+
+    private DateTime _lastPacket = DateTime.MinValue;
     private bool _userMuted;
+    private float _volume = 1f;
+
+    public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
+    {
+        Task.Run(ReaderLogic);
+    }
 
     public bool IsVisible
     {
@@ -60,11 +66,6 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     public event Action<VoiceCraftClientEntity>? OnStartedSpeaking;
     public event Action<VoiceCraftClientEntity>? OnStoppedSpeaking;
 
-    public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
-    {
-        Task.Run(ReaderLogic);
-    }
-
     public void ClearBuffer()
     {
         lock (_jitterBuffer)
@@ -90,7 +91,10 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         {
             if (!_isReading) return 0;
             lock (_decoder)
+            {
                 _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
+            }
+
             _isReading = false;
             OnStoppedSpeaking?.Invoke(this);
             return 0;
@@ -160,7 +164,6 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         var startTick = Environment.TickCount64;
         var readBuffer = new short[Constants.BytesPerFrame / sizeof(short)];
         while (!Destroyed)
-        {
             try
             {
                 var tick = Environment.TickCount;
@@ -182,6 +185,5 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             {
                 //Ignored. This might end up killing our logging service.
             }
-        }
     }
 }

@@ -9,20 +9,20 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftEntity : IResettable
     {
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
+        private float _caveFactor;
+        private bool _deafened;
+        private uint _effectBitmask = uint.MaxValue;
+        private uint _listenBitmask = uint.MaxValue;
+        private float _loudness;
+        private float _muffleFactor;
 
         //Privates
         private bool _muted;
-        private bool _deafened;
-        private float _loudness;
-        private string _worldId = string.Empty;
         private string _name = "New Entity";
-        private uint _listenBitmask = uint.MaxValue;
-        private uint _talkBitmask = uint.MaxValue;
-        private uint _effectBitmask = uint.MaxValue;
         private Vector3 _position;
         private Vector2 _rotation;
-        private float _caveFactor;
-        private float _muffleFactor;
+        private uint _talkBitmask = uint.MaxValue;
+        private string _worldId = string.Empty;
 
         //Modifiers for modifying data for later?
 
@@ -58,7 +58,7 @@ namespace VoiceCraft.Core.World
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<float, VoiceCraftEntity>? OnCaveFactorUpdated;
         public event Action<float, VoiceCraftEntity>? OnMuffleFactorUpdated;
-        
+
         //Others
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
@@ -80,9 +80,7 @@ namespace VoiceCraft.Core.World
         public void TrimVisibleDeadEntities()
         {
             foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed).ToArray())
-            {
                 _visibleEntities.Remove(entity.Key);
-            }
         }
 
         public virtual void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)

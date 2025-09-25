@@ -17,7 +17,7 @@ namespace VoiceCraft.Core
         Logout,
         SetId,
         SetEffect,
-        
+
         //Client Entity Stuff
         Audio,
         SetTitle,
@@ -48,15 +48,15 @@ namespace VoiceCraft.Core
         Ping,
         Accept,
         Deny,
-        
+
         //Server Stuff
         SetEffect,
-        
+
         //Client Entity Stuff
         Audio,
         SetTitle,
         SetDescription,
-        
+
         //Entity stuff
         EntityCreated,
         EntityDestroyed,
@@ -80,7 +80,7 @@ namespace VoiceCraft.Core
         Proximity,
         Directional,
         ProximityEcho,
-        Echo,
+        Echo
     }
 
     public enum AudioFormat

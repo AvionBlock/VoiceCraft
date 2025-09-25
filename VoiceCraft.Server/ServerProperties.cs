@@ -39,14 +39,16 @@ public class ServerProperties
             AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Loading.Replace("{path}", path)}[/]");
             var text = File.ReadAllText(path);
             var properties =
-                JsonSerializer.Deserialize<ServerPropertiesStructure>(text, ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
+                JsonSerializer.Deserialize<ServerPropertiesStructure>(text,
+                    ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
             if (properties == null)
                 throw new Exception(Locales.Locales.ServerProperties_Exceptions_ParseJson);
             return properties;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Failed.Replace("{errorMessage}", ex.Message)}[/]");
+            AnsiConsole.MarkupLine(
+                $"[yellow]{Locales.Locales.ServerProperties_Failed.Replace("{errorMessage}", ex.Message)}[/]");
         }
 
         return new ServerPropertiesStructure();
@@ -57,13 +59,16 @@ public class ServerProperties
         var properties = new ServerPropertiesStructure();
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath);
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath, FileName);
-        AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Generating_Generating.Replace("{path}", path)}[/]");
+        AnsiConsole.MarkupLine(
+            $"[yellow]{Locales.Locales.ServerProperties_Generating_Generating.Replace("{path}", path)}[/]");
         try
         {
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            File.WriteAllText(filePath, JsonSerializer.Serialize(properties, ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
+            File.WriteAllText(filePath,
+                JsonSerializer.Serialize(properties,
+                    ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Generating_Success}[/]");
         }
         catch (Exception ex)

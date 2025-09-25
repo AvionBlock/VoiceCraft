@@ -22,7 +22,7 @@ public class LocalizeExtension(object arg) : MarkupExtension
         if (arg is not IBinding binding)
             throw new Exception("Argument must be of type IBinding or string!");
 
-        var mb = new MultiBinding()
+        var mb = new MultiBinding
         {
             Bindings = [binding, new Binding(nameof(Localizer.Instance.Language)) { Source = Localizer.Instance }],
             Mode = BindingMode.OneWay,

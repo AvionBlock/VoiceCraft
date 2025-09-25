@@ -2,7 +2,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.Packets
 {
-    public class SetIdPacket: VoiceCraftPacket
+    public class SetIdPacket : VoiceCraftPacket
     {
         public SetIdPacket(int id = 0)
         {

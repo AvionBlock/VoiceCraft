@@ -6,6 +6,11 @@ namespace VoiceCraft.Core.Audio
     {
         private readonly CircularBuffer<short> _circularBuffer;
 
+        public BufferedAudioProvider16(int size)
+        {
+            _circularBuffer = new CircularBuffer<short>(size);
+        }
+
         public int BufferSize => _circularBuffer.MaxLength;
 
         public int BufferedCount => _circularBuffer.Count;
@@ -14,12 +19,10 @@ namespace VoiceCraft.Core.Audio
 
         public bool ReadFully { get; set; }
 
-        public BufferedAudioProvider16(int size)
+        public int Write(short[] buffer, int count)
         {
-            _circularBuffer = new CircularBuffer<short>(size);
+            return Write(buffer.AsSpan(), count);
         }
-
-        public int Write(short[] buffer, int count) => Write(buffer.AsSpan(), count);
 
         public int Write(Span<short> buffer, int count)
         {
@@ -29,7 +32,10 @@ namespace VoiceCraft.Core.Audio
             return written;
         }
 
-        public int Read(short[] buffer, int count) => Read(buffer.AsSpan(), count);
+        public int Read(short[] buffer, int count)
+        {
+            return Read(buffer.AsSpan(), count);
+        }
 
         public int Read(Span<short> buffer, int count)
         {

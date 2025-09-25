@@ -18,7 +18,8 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
         {
             LogService.ClearCrashLogs();
             CrashLogs.Clear();
-            notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_CrashLogs, "Successfully cleared all logs.");
+            notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_CrashLogs,
+                "Successfully cleared all logs.");
         }
         catch (Exception ex)
         {

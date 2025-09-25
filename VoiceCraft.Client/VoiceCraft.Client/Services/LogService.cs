@@ -12,13 +12,17 @@ namespace VoiceCraft.Client.Services;
 
 public static class LogService
 {
-    public static StorageService? NativeStorageService;
     private const int Limit = 50;
+    public static StorageService? NativeStorageService;
     private static ExceptionLogsStructure _exceptionLogs = new();
     private static bool _queueWrite;
     private static bool _writing;
-    public static IEnumerable<KeyValuePair<DateTime, string>> ExceptionLogs => _exceptionLogs.ExceptionLogs.OrderByDescending(d => d.Key);
-    public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs => _exceptionLogs.CrashLogs.OrderByDescending(d => d.Key);
+
+    public static IEnumerable<KeyValuePair<DateTime, string>> ExceptionLogs =>
+        _exceptionLogs.ExceptionLogs.OrderByDescending(d => d.Key);
+
+    public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs =>
+        _exceptionLogs.CrashLogs.OrderByDescending(d => d.Key);
 
     public static void Log(Exception exception)
     {
@@ -26,7 +30,7 @@ public static class LogService
         TrimExceptionLogs();
         _ = SaveAsync();
     }
-    
+
     public static void LogCrash(Exception exception)
     {
         Debug.WriteLine(exception); //Gets omitted on release build.
@@ -44,7 +48,8 @@ public static class LogService
 
             var result = NativeStorageService?.Load(Constants.ExceptionLogsFile);
             var loadedLogs =
-                JsonSerializer.Deserialize<ExceptionLogsStructure>(result, CrashLogGenerationContext.Default.ExceptionLogsStructure);
+                JsonSerializer.Deserialize<ExceptionLogsStructure>(result,
+                    CrashLogGenerationContext.Default.ExceptionLogsStructure);
             if (loadedLogs == null) return;
             _exceptionLogs = loadedLogs;
             TrimExceptionLogs();
@@ -61,7 +66,7 @@ public static class LogService
         _exceptionLogs.CrashLogs.Clear();
         _ = SaveAsync(); //Since we don't to a save immediate, we need to call the save.
     }
-    
+
     public static void ClearExceptionLogs()
     {
         _exceptionLogs.ExceptionLogs.Clear();
@@ -76,7 +81,7 @@ public static class LogService
             _exceptionLogs.ExceptionLogs.TryRemove(log.Key, out _);
         }
     }
-    
+
     private static void TrimCrashLogs()
     {
         foreach (var log in _exceptionLogs.CrashLogs.OrderBy(d => d.Key))
@@ -106,7 +111,8 @@ public static class LogService
     private static void SaveLogs()
     {
         NativeStorageService?.Save(Constants.ExceptionLogsFile,
-            JsonSerializer.SerializeToUtf8Bytes(_exceptionLogs, CrashLogGenerationContext.Default.ExceptionLogsStructure));
+            JsonSerializer.SerializeToUtf8Bytes(_exceptionLogs,
+                CrashLogGenerationContext.Default.ExceptionLogsStructure));
     }
 }
 

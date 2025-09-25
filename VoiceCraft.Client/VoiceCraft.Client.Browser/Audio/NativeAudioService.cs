@@ -32,7 +32,8 @@ public class NativeAudioService(
 
     public override async Task<List<string>> GetInputDevicesAsync()
     {
-        await permissionsService.CheckAndRequestPermission<Microsoft.Maui.ApplicationModel.Permissions.Microphone>(); //I HATE WEB
+        await permissionsService
+            .CheckAndRequestPermission<Microsoft.Maui.ApplicationModel.Permissions.Microphone>(); //I HATE WEB
         var list = new List<string>();
         var devices = JsonSerializer.Deserialize(await JsNativeAudio.GetInputDevicesAsync(),
             MediaDevicesSerializationContext.Default.ListJsMediaDeviceInfo);
@@ -43,7 +44,8 @@ public class NativeAudioService(
 
     public override async Task<List<string>> GetOutputDevicesAsync()
     {
-        await permissionsService.CheckAndRequestPermission<Microsoft.Maui.ApplicationModel.Permissions.Microphone>(); //I HATE WEB
+        await permissionsService
+            .CheckAndRequestPermission<Microsoft.Maui.ApplicationModel.Permissions.Microphone>(); //I HATE WEB
         var list = new List<string>();
         var devices = JsonSerializer.Deserialize(await JsNativeAudio.GetOutputDevicesAsync(),
             MediaDevicesSerializationContext.Default.ListJsMediaDeviceInfo);

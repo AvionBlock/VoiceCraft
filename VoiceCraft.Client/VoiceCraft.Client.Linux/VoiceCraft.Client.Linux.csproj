@@ -17,8 +17,8 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="OpenTK.Audio.OpenAL"/>
-        <PackageReference Include="SharpHook" />
-        <PackageReference Include="SpeexDSPSharp" />
+        <PackageReference Include="SharpHook"/>
+        <PackageReference Include="SpeexDSPSharp"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Locales;
@@ -14,7 +15,7 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
 
     private JsonNode? _languageStrings;
 
-    public string FallbackLanguage => Core.Constants.DefaultLanguage;
+    public string FallbackLanguage => Constants.DefaultLanguage;
     public ObservableCollection<string> Languages { get; } = [];
 
     public string Reload(string language)

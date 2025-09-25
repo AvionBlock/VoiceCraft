@@ -5,16 +5,16 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiLoginPacket : McApiPacket
     {
-        public override McApiPacketType PacketType => McApiPacketType.Login;
-        public string LoginToken { get; private set; }
-        public Version Version { get; private set; }
-
         public McApiLoginPacket(string loginToken = "", Version? version = null)
         {
             LoginToken = loginToken;
             Version = version ?? new Version(0, 0, 0);
         }
-        
+
+        public override McApiPacketType PacketType => McApiPacketType.Login;
+        public string LoginToken { get; private set; }
+        public Version Version { get; private set; }
+
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(LoginToken, Constants.MaxStringLength);

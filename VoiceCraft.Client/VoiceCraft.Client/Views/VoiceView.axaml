@@ -22,8 +22,7 @@
                            Margin="0,10,0,0"
                            Text="{Binding StatusDescriptionText}"
                            TextAlignment="Center"
-                           IsVisible="{Binding StatusDescriptionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                </TextBlock>
+                           IsVisible="{Binding StatusDescriptionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </Grid>
         </Border>
         <ListBox Grid.Row="1"

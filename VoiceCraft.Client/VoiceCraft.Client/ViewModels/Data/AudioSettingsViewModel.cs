@@ -60,7 +60,9 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         InputDevices = ["Default", ..await _audioService.GetInputDevicesAsync()];
         OutputDevices = ["Default", ..await _audioService.GetOutputDevicesAsync()];
         Denoisers = new ObservableCollection<RegisteredDenoiser>(_audioService.RegisteredDenoisers);
-        AutomaticGainControllers = new ObservableCollection<RegisteredAutomaticGainController>(_audioService.RegisteredAutomaticGainControllers);
+        AutomaticGainControllers =
+            new ObservableCollection<RegisteredAutomaticGainController>(
+                _audioService.RegisteredAutomaticGainControllers);
         EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);
 
         if (!InputDevices.Contains(InputDevice))

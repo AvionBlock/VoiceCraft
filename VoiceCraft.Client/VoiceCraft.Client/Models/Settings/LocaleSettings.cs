@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Models.Settings;
@@ -9,7 +10,7 @@ public class LocaleSettings : Setting<LocaleSettings>
 {
     private string _culture = Localizer.Languages.Contains(CultureInfo.CurrentCulture.Name)
         ? CultureInfo.CurrentCulture.Name
-        : Core.Constants.DefaultLanguage;
+        : Constants.DefaultLanguage;
 
     public string Culture
     {

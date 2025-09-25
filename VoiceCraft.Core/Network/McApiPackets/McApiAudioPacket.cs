@@ -5,7 +5,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiAudioPacket : McApiPacket
     {
-        public McApiAudioPacket(string sessionToken = "", int id = 0, uint timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+        public McApiAudioPacket(string sessionToken = "", int id = 0, uint timestamp = 0, float loudness = 0f,
+            int length = 0, byte[]? data = null)
         {
             SessionToken = sessionToken;
             Id = id;
@@ -42,7 +43,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
             Length = reader.AvailableBytes;
             //Fuck no. we aren't allocating anything higher than the expected amount of bytes (WHICH SHOULD BE COMPRESSED!).
             if (Length > Constants.MaximumEncodedBytes)
-                throw new InvalidOperationException($"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
+                throw new InvalidOperationException(
+                    $"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
             Data = new byte[Length];
             reader.GetBytes(Data, Length);
         }

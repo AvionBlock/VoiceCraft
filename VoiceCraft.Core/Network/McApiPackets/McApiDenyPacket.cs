@@ -4,13 +4,13 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiDenyPacket : McApiPacket
     {
-        public override McApiPacketType PacketType => McApiPacketType.Deny;
-        public string ReasonKey { get; private set; }
-
         public McApiDenyPacket(string reasonKey = "")
         {
             ReasonKey = reasonKey;
         }
+
+        public override McApiPacketType PacketType => McApiPacketType.Deny;
+        public string ReasonKey { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {

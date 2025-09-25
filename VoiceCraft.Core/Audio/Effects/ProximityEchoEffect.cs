@@ -8,24 +8,9 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class ProximityEchoEffect : IAudioEffect
     {
-        public EffectType EffectType => EffectType.ProximityEcho;
         private readonly FractionalDelayLine _delayLine;
         private float _delay;
-        
-        public int SampleRate { get; }
-        public float Delay
-        {
-            get => _delay / SampleRate;
-            set
-            {
-                _delayLine.Ensure(SampleRate, value);
-                _delay = SampleRate * value;
-            }
-        }
-        public float Range { get; set; }
-        public float Wet { get; set; } = 1f;
-        public float Dry { get; set; }
-        
+
         public ProximityEchoEffect(int samplingRate,
             float delay,
             float range = 0f)
@@ -35,6 +20,23 @@ namespace VoiceCraft.Core.Audio.Effects
             Delay = delay;
             Range = range;
         }
+
+        public int SampleRate { get; }
+
+        public float Delay
+        {
+            get => _delay / SampleRate;
+            set
+            {
+                _delayLine.Ensure(SampleRate, value);
+                _delay = SampleRate * value;
+            }
+        }
+
+        public float Range { get; set; }
+        public float Wet { get; set; } = 1f;
+        public float Dry { get; set; }
+        public EffectType EffectType => EffectType.ProximityEcho;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -57,7 +59,7 @@ namespace VoiceCraft.Core.Audio.Effects
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
                 return; //There may still be echo from the entity itself but that will phase out over time.
-            
+
             var factor = 0f;
             if (Range != 0)
             {
@@ -79,7 +81,7 @@ namespace VoiceCraft.Core.Audio.Effects
         {
             _delayLine.Reset();
         }
-        
+
         public void Dispose()
         {
             //Nothing to dispose.

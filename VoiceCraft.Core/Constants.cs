@@ -21,16 +21,22 @@ namespace VoiceCraft.Core
         public const int Channels = 1;
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
-        public const int OutputBufferSizeMs = FrameSizeMs * 50; //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
+
+        public const int
+            OutputBufferSizeMs =
+                FrameSizeMs *
+                50; //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
 
         //Audio Calculations
         public const int BlockAlign = Channels * (BitDepth / 8);
         public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
-        public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
+
+        public const int
+            BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
 
         public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
         public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
-        
+
         //Default Country Code & Fallback
         public const string DefaultLanguage = "en-US";
 
@@ -39,10 +45,20 @@ namespace VoiceCraft.Core
         public const string SettingsFile = "Settings.json";
         public const string ExceptionLogsFile = "ExceptionLogs.json";
 
+        //RPC
+        public const string ApplicationId = "1364434932968984669";
+        public const string GithubButton = "VoiceCraft";
+        public const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
+        public const string LargeImageKey = "vc";
+        public const string LargeImageText = "VoiceCraft";
+
         //Settings GUIDS.
         //Speex DSP
         public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
-        public static readonly Guid SpeexDspAutomaticGainControllerGuid = Guid.Parse("AE3F02FF-41A7-41FD-87A0-8EB0DA82B21C");
+
+        public static readonly Guid SpeexDspAutomaticGainControllerGuid =
+            Guid.Parse("AE3F02FF-41A7-41FD-87A0-8EB0DA82B21C");
+
         public static readonly Guid SpeexDspDenoiserGuid = Guid.Parse("6E911874-5D10-4C8C-8E0A-6B30DF16EF78");
 
         //Background Images
@@ -57,12 +73,5 @@ namespace VoiceCraft.Core
         public static readonly Guid LightThemeGuid = Guid.Parse("3aeb95bc-a749-40f0-8f45-9f9070b76125");
         public static readonly Guid DarkPurpleThemeGuid = Guid.Parse("A59F5C67-043E-4052-A060-32D3DCBD43F7");
         public static readonly Guid DarkGreenThemeGuid = Guid.Parse("66BA4F00-C61C-4C04-A62B-CE4277679F14");
-        
-        //RPC
-        public const string ApplicationId = "1364434932968984669";
-        public const string GithubButton = "VoiceCraft";
-        public const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
-        public const string LargeImageKey = "vc";
-        public const string LargeImageText = "VoiceCraft";
     }
 }

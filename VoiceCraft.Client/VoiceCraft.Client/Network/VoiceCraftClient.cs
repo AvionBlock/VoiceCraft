@@ -18,18 +18,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 {
     public static readonly Version Version = new(1, 1, 0);
 
-    //Public Properties
-    public override int Id => _id;
-    public ConnectionState ConnectionState => _serverPeer?.ConnectionState ?? ConnectionState.Disconnected;
-    public float MicrophoneSensitivity { get; set; }
-
-    //Events
-    public event Action? OnConnected;
-    public event Action<string>? OnDisconnected;
-    public event Action<ServerInfo>? OnServerInfo;
-    public event Action<string>? OnSetTitle;
-    public event Action<string>? OnSetDescription;
-    public event Action<bool>? OnSpeakingUpdated;
+    //Systems
+    private readonly AudioSystem _audioSystem;
 
     //Buffers
     private readonly NetDataWriter _dataWriter = new();
@@ -37,22 +27,19 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     //Encoder
     private readonly OpusEncoder _encoder;
+    private readonly EventBasedNetListener _listener;
+    private readonly NetManager _netManager;
 
     //Networking
     private int _id = -1;
-    private readonly NetManager _netManager;
-    private readonly EventBasedNetListener _listener;
-
-    //Systems
-    private readonly AudioSystem _audioSystem;
 
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
-    private bool _speakingState;
     private uint _sendTimestamp;
 
     //Privates
     private NetPeer? _serverPeer;
+    private bool _speakingState;
 
     public VoiceCraftClient() : base(0, new VoiceCraftWorld())
     {
@@ -83,11 +70,24 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _netManager.Start();
     }
 
+    //Public Properties
+    public override int Id => _id;
+    public ConnectionState ConnectionState => _serverPeer?.ConnectionState ?? ConnectionState.Disconnected;
+    public float MicrophoneSensitivity { get; set; }
+
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
+
+    //Events
+    public event Action? OnConnected;
+    public event Action<string>? OnDisconnected;
+    public event Action<ServerInfo>? OnServerInfo;
+    public event Action<string>? OnSetTitle;
+    public event Action<string>? OnSetDescription;
+    public event Action<bool>? OnSpeakingUpdated;
 
     ~VoiceCraftClient()
     {
@@ -526,12 +526,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             //We don't want to update anything else as it may be a concern for privacy.
             return;
         }
-        
+
         var entity = new VoiceCraftClientNetworkEntity(packet.Id, World, packet.UserGuid)
         {
             Name = packet.Name,
             Muted = packet.Muted,
-            Deafened = packet.Deafened,
+            Deafened = packet.Deafened
         };
         World.AddEntity(entity);
     }
@@ -649,12 +649,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             CaveFactor = packet.Value;
             return;
         }
-        
+
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
         entity.CaveFactor = packet.Value;
     }
-    
+
     private void HandleSetMuffleFactorPacket(SetMuffleFactorPacket packet)
     {
         if (packet.Id == Id)
@@ -662,7 +662,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             MuffleFactor = packet.Value;
             return;
         }
-        
+
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
         entity.MuffleFactor = packet.Value;

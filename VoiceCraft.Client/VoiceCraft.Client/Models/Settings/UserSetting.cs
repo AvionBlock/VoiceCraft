@@ -5,8 +5,8 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class UserSetting : Setting<UserSetting>
 {
-    private float _volume = 1f;
     private bool _userMuted;
+    private float _volume = 1f;
 
     public float Volume
     {
@@ -29,7 +29,7 @@ public class UserSetting : Setting<UserSetting>
     }
 
     public override event Action<UserSetting>? OnUpdated;
-    
+
     public override object Clone()
     {
         var clone = (UserSetting)MemberwiseClone();

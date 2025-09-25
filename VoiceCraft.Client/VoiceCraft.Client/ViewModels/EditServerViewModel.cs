@@ -7,7 +7,10 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels;
 
-public partial class EditServerViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
+public partial class EditServerViewModel(
+    NavigationService navigationService,
+    NotificationService notificationService,
+    SettingsService settings)
     : ViewModelBase
 {
     [ObservableProperty] private Server _editableServer = new();
@@ -35,7 +38,8 @@ public partial class EditServerViewModel(NavigationService navigationService, No
             Server.Ip = EditableServer.Ip;
             Server.Port = EditableServer.Port;
 
-            notificationService.SendNotification(Locales.Locales.Notification_Badges_Servers, $"{Server.Name} has been edited.");
+            notificationService.SendNotification(Locales.Locales.Notification_Badges_Servers,
+                $"{Server.Name} has been edited.");
             EditableServer = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();

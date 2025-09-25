@@ -11,8 +11,8 @@ public partial class ServerViewModel : ObservableObject, IDisposable
 
     public readonly Server Server;
     private bool _disposed;
-    [ObservableProperty] private string _name;
     [ObservableProperty] private string _ip;
+    [ObservableProperty] private string _name;
     [ObservableProperty] private ushort _port;
     private bool _updating;
 

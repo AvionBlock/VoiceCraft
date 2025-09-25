@@ -6,7 +6,7 @@ namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class ContributorViewModel(string name, string[] roles, Bitmap? imageIcon = null) : ObservableObject
 {
+    [ObservableProperty] private Bitmap? _imageIcon = imageIcon;
     [ObservableProperty] private string _name = name;
     [ObservableProperty] private ObservableCollection<string> _roles = new(roles);
-    [ObservableProperty] private Bitmap? _imageIcon = imageIcon;
 }

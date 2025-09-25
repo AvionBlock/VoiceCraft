@@ -38,14 +38,6 @@ namespace VoiceCraft.Core.Audio.Effects
             MaxRange = reader.GetInt();
         }
 
-        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
-        {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.
-            var distance = Vector3.Distance(from.Position, to.Position);
-            return distance <= MaxRange;
-        }
-        
         public void Reset()
         {
             //Nothing to reset
@@ -54,6 +46,14 @@ namespace VoiceCraft.Core.Audio.Effects
         public void Dispose()
         {
             //Nothing to dispose.
+        }
+
+        public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask)
+        {
+            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.
+            var distance = Vector3.Distance(from.Position, to.Position);
+            return distance <= MaxRange;
         }
     }
 }

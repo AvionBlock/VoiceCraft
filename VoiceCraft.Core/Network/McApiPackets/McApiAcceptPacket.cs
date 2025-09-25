@@ -4,13 +4,13 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiAcceptPacket : McApiPacket
     {
-        public override McApiPacketType PacketType => McApiPacketType.Accept;
-        public string SessionToken { get; private set; }
-
         public McApiAcceptPacket(string sessionToken = "")
         {
             SessionToken = sessionToken;
         }
+
+        public override McApiPacketType PacketType => McApiPacketType.Accept;
+        public string SessionToken { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {

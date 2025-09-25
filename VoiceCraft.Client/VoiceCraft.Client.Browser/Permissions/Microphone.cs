@@ -12,7 +12,9 @@ public class Microphone : Microsoft.Maui.ApplicationModel.Permissions.Microphone
 
     public override async Task<PermissionStatus> CheckStatusAsync()
     {
-        return await JsNativeMicrophonePermission.CheckStatusAsync() ? PermissionStatus.Granted : PermissionStatus.Denied;
+        return await JsNativeMicrophonePermission.CheckStatusAsync()
+            ? PermissionStatus.Granted
+            : PermissionStatus.Denied;
     }
 
     public override async Task<PermissionStatus> RequestAsync()

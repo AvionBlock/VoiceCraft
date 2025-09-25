@@ -20,31 +20,30 @@ public class ThemesService
     private RegisteredBackgroundImage? _currentBackgroundImage;
     private RegisteredTheme? _currentTheme;
 
-    public ThemesService(IEnumerable<RegisteredTheme> registeredThemes, IEnumerable<RegisteredBackgroundImage> registeredBackgroundImages)
+    public ThemesService(IEnumerable<RegisteredTheme> registeredThemes,
+        IEnumerable<RegisteredBackgroundImage> registeredBackgroundImages)
     {
         _registeredThemes.TryAdd(Guid.Empty, new RegisteredTheme(Guid.Empty, "Default", ThemeVariant.Default, [], []));
         _registeredBackgroundImages.TryAdd(Guid.Empty, new RegisteredBackgroundImage(Guid.Empty, "None", string.Empty));
-        
-        foreach (var registeredTheme in registeredThemes)
-        {
-            _registeredThemes.TryAdd(registeredTheme.Id, registeredTheme);
-        }
-        
+
+        foreach (var registeredTheme in registeredThemes) _registeredThemes.TryAdd(registeredTheme.Id, registeredTheme);
+
         foreach (var registeredBackgroundImage in registeredBackgroundImages)
-        {
             _registeredBackgroundImages.TryAdd(registeredBackgroundImage.Id, registeredBackgroundImage);
-        }
     }
 
     public IEnumerable<RegisteredTheme> RegisteredThemes => _registeredThemes.Values.ToArray();
-    public IEnumerable<RegisteredBackgroundImage> RegisteredBackgroundImages => _registeredBackgroundImages.Values.ToArray();
+
+    public IEnumerable<RegisteredBackgroundImage> RegisteredBackgroundImages =>
+        _registeredBackgroundImages.Values.ToArray();
 
     public event Action<RegisteredTheme?>? OnThemeChanged;
     public event Action<RegisteredBackgroundImage?>? OnBackgroundImageChanged;
 
     public void SwitchTheme(Guid id)
     {
-        if (!_registeredThemes.TryGetValue(id, out var theme) || _currentTheme == theme || Application.Current == null) return;
+        if (!_registeredThemes.TryGetValue(id, out var theme) || _currentTheme == theme ||
+            Application.Current == null) return;
         Application.Current.Resources.MergedDictionaries.Clear();
         if (id == Guid.Empty)
         {
@@ -63,14 +62,16 @@ public class ThemesService
         _currentTheme = theme;
         Application.Current.RequestedThemeVariant = theme.Variant;
         foreach (var themeStyle in theme.ThemeStyles) Application.Current.Styles.Add(themeStyle);
-        foreach (var resource in _currentTheme.Resources) Application.Current.Resources.MergedDictionaries.Add(resource);
+        foreach (var resource in _currentTheme.Resources)
+            Application.Current.Resources.MergedDictionaries.Add(resource);
 
         OnThemeChanged?.Invoke(_currentTheme);
     }
 
     public void SwitchBackgroundImage(Guid id)
     {
-        if (!_registeredBackgroundImages.TryGetValue(id, out var backgroundImage) || _currentBackgroundImage == backgroundImage) return;
+        if (!_registeredBackgroundImages.TryGetValue(id, out var backgroundImage) ||
+            _currentBackgroundImage == backgroundImage) return;
         if (id == Guid.Empty)
         {
             OnBackgroundImageChanged?.Invoke(null);
@@ -93,14 +94,20 @@ public class ThemesService
     /// <returns>An IBrush with the value of <paramref name="key" /> or <paramref name="fallback" /> or the default color.</returns>
     public static IBrush GetBrushResource(string key, IBrush? fallback = null)
     {
-        return Application.Current is not null && Application.Current.TryGetResource(key, Application.Current.ActualThemeVariant, out var val) &&
+        return Application.Current is not null &&
+               Application.Current.TryGetResource(key, Application.Current.ActualThemeVariant, out var val) &&
                val is not null
             ? (IBrush)val
             : fallback ?? new SolidColorBrush(new Color());
     }
 }
 
-public class RegisteredTheme(Guid id, string name, ThemeVariant variant, IStyle[] themeStyles, IResourceDictionary[] resourceDictionaries)
+public class RegisteredTheme(
+    Guid id,
+    string name,
+    ThemeVariant variant,
+    IStyle[] themeStyles,
+    IResourceDictionary[] resourceDictionaries)
 {
     public string Name { get; } = name;
     public Guid Id { get; } = id;
@@ -129,7 +136,8 @@ public class RegisteredBackgroundImage(Guid id, string name, string path)
             return BackgroundImageBitmap;
         }
 
-        if (AssetLoader.Exists(new Uri(Path))) return BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
+        if (AssetLoader.Exists(new Uri(Path)))
+            return BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
 
         throw new FileNotFoundException("Could not find image file.", Path);
     }
