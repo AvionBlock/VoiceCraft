@@ -1,5 +1,5 @@
 using System.Numerics;
-using VoiceCraft.Core;
+using VoiceCraft.Core.World;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Servers;

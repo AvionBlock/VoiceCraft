@@ -10,6 +10,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Network;
 

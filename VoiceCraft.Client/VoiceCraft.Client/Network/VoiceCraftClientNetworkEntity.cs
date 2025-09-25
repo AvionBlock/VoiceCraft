@@ -1,5 +1,5 @@
 using System;
-using VoiceCraft.Core;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Network;
 

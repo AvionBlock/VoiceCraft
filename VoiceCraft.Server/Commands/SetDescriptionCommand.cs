@@ -1,5 +1,5 @@
 using System.CommandLine;
-using VoiceCraft.Core;
+using VoiceCraft.Core.World;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Server.Servers;
 

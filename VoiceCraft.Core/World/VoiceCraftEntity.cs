@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core.World
 {
     public class VoiceCraftEntity : IResettable
     {

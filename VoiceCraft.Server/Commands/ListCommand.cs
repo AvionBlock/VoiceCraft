@@ -1,6 +1,6 @@
 using System.CommandLine;
 using Spectre.Console;
-using VoiceCraft.Core;
+using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;

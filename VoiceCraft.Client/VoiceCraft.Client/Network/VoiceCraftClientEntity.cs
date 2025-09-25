@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using OpusSharp.Core;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Network;
 
