@@ -34,10 +34,7 @@ namespace VoiceCraft.Core.Network.Packets
         {
             Motd = reader.GetString(Constants.MaxStringLength);
             Clients = reader.GetInt();
-            var positioningTypeValue = reader.GetByte();
-            PositioningType = Enum.IsDefined(typeof(PositioningType), positioningTypeValue)
-                ? (PositioningType)positioningTypeValue
-                : PositioningType.Unknown;
+            PositioningType = (PositioningType)reader.GetByte();
             Tick = reader.GetInt();
         }
     }
