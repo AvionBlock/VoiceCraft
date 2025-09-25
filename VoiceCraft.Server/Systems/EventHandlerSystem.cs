@@ -96,6 +96,8 @@ public class EventHandlerSystem : IDisposable
         newEntity.OnEffectBitmaskUpdated += OnEntityEffectBitmaskUpdated;
         newEntity.OnPositionUpdated += OnEntityPositionUpdated;
         newEntity.OnRotationUpdated += OnEntityRotationUpdated;
+        newEntity.OnCaveFactorUpdated += OnEntityCaveFactorUpdated;
+        newEntity.OnMuffleFactorUpdated += OnEntityMuffleFactorUpdated;
         newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
         newEntity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
         newEntity.OnAudioReceived += OnEntityAudioReceived;
@@ -116,6 +118,8 @@ public class EventHandlerSystem : IDisposable
         entity.OnEffectBitmaskUpdated -= OnEntityEffectBitmaskUpdated;
         entity.OnPositionUpdated -= OnEntityPositionUpdated;
         entity.OnRotationUpdated -= OnEntityRotationUpdated;
+        entity.OnCaveFactorUpdated -= OnEntityCaveFactorUpdated;
+        entity.OnMuffleFactorUpdated -= OnEntityMuffleFactorUpdated;
         entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
         entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
         entity.OnAudioReceived -= OnEntityAudioReceived;
@@ -206,6 +210,28 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
+    private void OnEntityCaveFactorUpdated(float caveFactor, VoiceCraftEntity entity)
+    {
+        _tasks.Add(() =>
+        {
+            //Only send updates to visible entities.
+            var packet = new SetCaveFactorPacket(entity.Id, caveFactor);
+            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
+        });
+    }
+    
+    private void OnEntityMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity entity)
+    {
+        _tasks.Add(() =>
+        {
+            //Only send updates to visible entities.
+            var packet = new SetMuffleFactorPacket(entity.Id, muffleFactor);
+            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
+            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
+        });
+    }
+
     //Properties
 
     private void OnEntityVisibleEntityAdded(VoiceCraftEntity addedEntity, VoiceCraftEntity entity)
@@ -247,6 +273,5 @@ public class EventHandlerSystem : IDisposable
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
         });
     }
-
     #endregion
 }
