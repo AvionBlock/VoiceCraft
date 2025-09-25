@@ -9,7 +9,7 @@ namespace VoiceCraft.Core.Network.Packets
         public SetEffectPacket(uint bitmask = 0, IAudioEffect? effect = null)
         {
             Bitmask = bitmask;
-            EffectType = effect?.EffectType ?? EffectType.Unknown;
+            EffectType = effect?.EffectType ?? EffectType.None;
             Effect = effect;
         }
 
@@ -22,17 +22,14 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Bitmask);
-            writer.Put((byte)(Effect?.EffectType ?? EffectType.Unknown));
+            writer.Put((byte)(Effect?.EffectType ?? EffectType.None));
             writer.Put(Effect);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Bitmask = reader.GetUInt();
-            var effectTypeValue = reader.GetByte();
-            EffectType = Enum.IsDefined(typeof(EffectType), effectTypeValue)
-                ? (EffectType)effectTypeValue
-                : EffectType.Unknown;
+            EffectType = (EffectType)reader.GetByte();
         }
     }
 }
