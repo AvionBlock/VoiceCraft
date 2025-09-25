@@ -79,6 +79,7 @@ namespace VoiceCraft.Core
         Visibility,
         Proximity,
         Directional,
+        ProximityEcho,
         Echo,
     }
 
