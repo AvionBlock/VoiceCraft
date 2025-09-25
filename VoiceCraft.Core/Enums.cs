@@ -53,7 +53,7 @@ namespace VoiceCraft.Core
 
     public enum EffectType : byte
     {
-        Unknown,
+        None,
         Visibility,
         Proximity,
         Directional,

@@ -482,10 +482,11 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 echoEffect.Deserialize(reader);
                 _audioSystem.SetEffect(packet.Bitmask, echoEffect);
                 break;
-            case EffectType.Unknown:
-            default:
+            case EffectType.None:
                 _audioSystem.SetEffect(packet.Bitmask, null);
                 break;
+            default: //Unknown, We don't do anything.
+                return;
         }
     }
 
