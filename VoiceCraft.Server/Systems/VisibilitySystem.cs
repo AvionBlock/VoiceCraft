@@ -5,13 +5,12 @@ namespace VoiceCraft.Server.Systems;
 
 public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
+    private readonly Lock _lock = new();
+    
     public void Update()
     {
-        //There was a possible race condition here...
-        foreach (var entity in world.Entities)
-        {
-            UpdateVisibleNetworkEntities(entity);
-        }
+        //Possible Race Condition. Will need to test further.
+        Parallel.ForEach(world.Entities, UpdateVisibleNetworkEntities);
     }
 
     private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
@@ -23,14 +22,23 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
         var visibleNetworkEntities = world.Entities.OfType<VoiceCraftNetworkEntity>();
         foreach (var possibleEntity in visibleNetworkEntities)
         {
-            if (possibleEntity.Id == entity.Id) continue;
-            if (!EntityVisibility(entity, possibleEntity))
+            try
             {
-                entity.RemoveVisibleEntity(possibleEntity);
-                continue;
+                if (possibleEntity.Id == entity.Id) continue;
+                if (!EntityVisibility(entity, possibleEntity))
+                {
+                    _lock.Enter();
+                    entity.RemoveVisibleEntity(possibleEntity);
+                    continue;
+                }
+                
+                _lock.Enter();
+                entity.AddVisibleEntity(possibleEntity);
             }
-
-            entity.AddVisibleEntity(possibleEntity);
+            finally
+            {
+                _lock.Exit();
+            }
         }
     }
 
