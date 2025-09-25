@@ -141,19 +141,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 OnSpeakingUpdated?.Invoke(false);
                 break;
         }
-
-        switch (ConnectionState)
-        {
-            case ConnectionState.Disconnected:
-                return;
-            case ConnectionState.Connected:
-            case ConnectionState.Outgoing:
-            case ConnectionState.ShutdownRequested:
-            case ConnectionState.EndPointChange:
-            case ConnectionState.Any:
-            default:
-                break;
-        }
     }
 
     public int Read(byte[] buffer, int count)
@@ -241,6 +228,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
             OnConnected = null;
             OnDisconnected = null;
+            OnServerInfo = null;
+            OnSetTitle = null;
+            OnSetDescription = null;
+            OnSpeakingUpdated = null;
         }
 
         _isDisposed = true;
