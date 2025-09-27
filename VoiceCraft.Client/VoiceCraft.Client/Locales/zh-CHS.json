@@ -69,10 +69,10 @@
       "McWssHostPort": "MCWSS主机端口"
     },
     "HotKey": {
-      "HotKey": "?",
+      "HotKey": null,
       "Actions": {
-        "Mute": "?",
-        "Deafen": "?"
+        "Mute": null,
+        "Deafen": null
       }
     },
     "Advanced": {
@@ -128,8 +128,8 @@
       "Disconnected": "已断开连接！原因: {reason}"
     },
     "DisconnectReason": {
-      "Shutdown": "?",
-      "Forced": "?",
+      "Shutdown": null,
+      "Forced": null,
       "IncompatibleVersion": "客户端/服务器版本不兼容！",
       "ServerFull": "服务器已满！",
       "Error": "尝试登录时发生错误！"
