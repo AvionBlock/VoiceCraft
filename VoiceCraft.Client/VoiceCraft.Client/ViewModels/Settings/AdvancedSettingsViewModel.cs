@@ -16,8 +16,8 @@ public partial class AdvancedSettingsViewModel(
             var previousSnapshot = GC.GetTotalMemory(false);
             GC.Collect();
             notificationService.SendNotification(
-                Locales.Locales.Notification_Badges_GC,
-                $"Garbage Collection Triggered. Memory Cleared: {Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}mb");
+                $"Garbage Collection Triggered. Memory Cleared: {Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}mb",
+                Locales.Locales.Notification_Badges_GC);
         }
         catch (Exception ex)
         {
