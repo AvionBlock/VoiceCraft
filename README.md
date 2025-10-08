@@ -80,9 +80,9 @@ audio effects, audio simulations, authentication, and more!
 
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
-- [Notification.Avalonia](https://github.com/AvaloniaCommunity/Notification.Avalonia)
+- [Message.Avalonia](https://github.com/xiyaowong/Message.Avalonia)
+- [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
 - [NAudio](https://github.com/naudio/NAudio)
-- [NWaves](https://github.com/ar1st0crat/NWaves)
 - [OpenTK (OpenAL)](https://github.com/opentk/opentk)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
 
