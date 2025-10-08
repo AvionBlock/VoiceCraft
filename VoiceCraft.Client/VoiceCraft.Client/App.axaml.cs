@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Avalonia.Notification;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
@@ -113,7 +112,6 @@ public class App : Application
         ServiceCollection.AddSingleton<ViewLocatorService>(x => new ViewLocatorService(x.GetKeyedService<Control>));
         ServiceCollection.AddSingleton<NavigationService>(x =>
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
-        ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
         ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
             x.GetRequiredService<NotificationService>(),

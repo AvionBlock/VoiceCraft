@@ -1,5 +1,4 @@
 ﻿using Avalonia.Media.Imaging;
-using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Processes;
@@ -13,13 +12,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private Bitmap? _backgroundImage;
     [ObservableProperty] private object? _content;
 
-    [ObservableProperty] private INotificationMessageManager _manager;
-
-    public MainViewModel(NavigationService navigationService, INotificationMessageManager manager,
+    public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
         SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService)
     {
-        _manager = manager;
         themesService.OnBackgroundImageChanged += backgroundImage =>
         {
             BackgroundImage = backgroundImage?.BackgroundImageBitmap;

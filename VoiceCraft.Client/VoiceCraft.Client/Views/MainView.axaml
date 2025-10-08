@@ -3,13 +3,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
-             xmlns:controls="clr-namespace:Avalonia.Notification.Controls;assembly=Notification.Avalonia"
+             xmlns:msg="https://github.com/xiyaowong/Message.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VoiceCraft.Client.Views.MainView"
              x:DataType="vm:MainViewModel">
     <Panel Background="{DynamicResource ApplicationBackgroundBrush}">
         <Image Classes="background" Source="{Binding BackgroundImage}" Stretch="UniformToFill" />
         <TransitioningContentControl Content="{Binding Content}" />
-        <controls:NotificationMessageContainer Manager="{Binding Manager}" />
+        <msg:MessageHost Position="BottomLeft" />
+        <msg:MessageHost HostId="Dialog" Position="BottomCenter" />
     </Panel>
 </UserControl>

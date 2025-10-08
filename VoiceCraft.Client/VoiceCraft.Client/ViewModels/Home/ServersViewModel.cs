@@ -40,8 +40,8 @@ public partial class ServersViewModel(
     private void DeleteServer(ServerViewModel server)
     {
         ServersSettings.ServersSettings.RemoveServer(server.Server);
-        notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_Servers,
-            $"{server.Name} has been removed.");
+        notificationService.SendSuccessNotification($"{server.Name} has been removed.",
+            Locales.Locales.Notification_Badges_Servers);
         _ = settings.SaveAsync();
     }
 

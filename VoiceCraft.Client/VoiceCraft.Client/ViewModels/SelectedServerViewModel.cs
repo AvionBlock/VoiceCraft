@@ -123,8 +123,8 @@ public partial class SelectedServerViewModel(
     {
         if (SelectedServer == null) return;
         ServersSettings.ServersSettings.RemoveServer(SelectedServer.Server);
-        notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_Servers,
-            $"{SelectedServer.Name} has been removed."); //TODO NEED TO LOCALE THESE!
+        notificationService.SendSuccessNotification($"{SelectedServer.Name} has been removed.",
+            Locales.Locales.Notification_Badges_Servers); //TODO NEED TO LOCALE THESE!
         _ = settingsService.SaveAsync();
         navigationService.Back();
     }
