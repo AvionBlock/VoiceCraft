@@ -10,7 +10,7 @@
     <Panel Background="{DynamicResource ApplicationBackgroundBrush}">
         <Image Classes="background" Source="{Binding BackgroundImage}" Stretch="UniformToFill" />
         <TransitioningContentControl Content="{Binding Content}" />
-        <msg:MessageHost Position="BottomLeft" />
-        <msg:MessageHost HostId="Dialog" Position="BottomCenter" />
+        <msg:MessageHost Position="TopRight" />
+        <msg:MessageHost HostId="Dialog" Position="CenterCenter" />
     </Panel>
 </UserControl>
