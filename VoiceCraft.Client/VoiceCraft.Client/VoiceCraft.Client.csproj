@@ -27,9 +27,9 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="DiscordRichPresence"/>
+        <PackageReference Include="Message.Avalonia" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
-        <PackageReference Include="Notification.Avalonia"/>
         <PackageReference Include="OpusSharp"/>
     </ItemGroup>
 

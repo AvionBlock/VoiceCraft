@@ -1,65 +1,39 @@
 using System;
-using Avalonia.Notification;
-using Avalonia.Threading;
+using Message.Avalonia;
+using Message.Avalonia.Models;
 
 namespace VoiceCraft.Client.Services;
 
 public class NotificationService(
-    INotificationMessageManager notificationMessageManager,
     SettingsService settingsService)
 {
-    public void SendNotification(string badge, string message, Action<INotificationMessageButton>? onDismiss = null)
+    public void SendNotification(string message, string? title = null)
     {
-        Dispatcher.UIThread.Invoke(() =>
+        if (settingsService.NotificationSettings.DisableNotifications) return;
+        MessageManager.Default.ShowInformationMessage(message, new MessageOptions()
         {
-            var notificationSettings = settingsService.NotificationSettings;
-            if (!notificationSettings.DisableNotifications)
-                notificationMessageManager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("NotificationAccentBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("NotificationBackgroundBrush"))
-                    .HasBadge(badge)
-                    .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
-                    .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
-                    .Queue();
+            Title = title,
+            Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
         });
     }
 
-    public void SendSuccessNotification(string badge, string message,
-        Action<INotificationMessageButton>? onDismiss = null)
+    public void SendSuccessNotification(string message, string? title = null)
     {
-        Dispatcher.UIThread.Invoke(() =>
+        if (settingsService.NotificationSettings.DisableNotifications) return;
+        MessageManager.Default.ShowSuccessMessage(message, new MessageOptions()
         {
-            var notificationSettings = settingsService.NotificationSettings;
-            if (!notificationSettings.DisableNotifications)
-                notificationMessageManager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("NotificationAccentSuccessBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("NotificationBackgroundSuccessBrush"))
-                    .HasBadge(badge)
-                    .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
-                    .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
-                    .Queue();
+            Title = title,
+            Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
         });
     }
 
-    public void SendErrorNotification(string message, Action<INotificationMessageButton>? onDismiss = null)
+    public void SendErrorNotification(string message)
     {
-        Dispatcher.UIThread.Invoke(() =>
+        if (settingsService.NotificationSettings.DisableNotifications) return;
+        MessageManager.Default.ShowErrorMessage(message, new MessageOptions()
         {
-            var notificationSettings = settingsService.NotificationSettings;
-            if (!notificationSettings.DisableNotifications)
-                notificationMessageManager.CreateMessage()
-                    .Accent(ThemesService.GetBrushResource("NotificationAccentErrorBrush"))
-                    .Animates(true)
-                    .Background(ThemesService.GetBrushResource("NotificationBackgroundErrorBrush"))
-                    .HasBadge(Locales.Locales.Notification_Badges_Error)
-                    .HasMessage(message)
-                    .Dismiss().WithDelay(TimeSpan.FromMilliseconds(notificationSettings.DismissDelayMs))
-                    .Dismiss().WithButton("Dismiss", onDismiss ?? (_ => { }))
-                    .Queue();
+            Title = Locales.Locales.Notification_Badges_Error,
+            Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
         });
     }
 }
