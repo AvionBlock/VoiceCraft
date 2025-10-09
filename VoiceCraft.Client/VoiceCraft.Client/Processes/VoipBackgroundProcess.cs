@@ -153,6 +153,7 @@ public class VoipBackgroundProcess(
         }
         catch (Exception ex)
         {
+            //TODO Locale This!
             notificationService.SendErrorNotification($"Voip Background Error: {ex.Message}");
             _disconnectReason = "VoiceCraft.DisconnectReason.Error";
             throw;
