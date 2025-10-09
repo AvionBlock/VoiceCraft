@@ -28,6 +28,7 @@ public partial class AddServerViewModel(
         {
             Servers.AddServer(Server);
 
+            //TODO Locale This!
             notificationService.SendSuccessNotification($"{Server.Name} has been added.",
                 Locales.Locales.Notification_Badges_Servers);
             Server = new Server();

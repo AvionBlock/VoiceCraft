@@ -38,6 +38,7 @@ public partial class EditServerViewModel(
             Server.Ip = EditableServer.Ip;
             Server.Port = EditableServer.Port;
 
+            //TODO Locale This!
             notificationService.SendNotification($"{Server.Name} has been edited.", Locales.Locales.Notification_Badges_Servers);
             EditableServer = new Server();
             _ = settings.SaveAsync();

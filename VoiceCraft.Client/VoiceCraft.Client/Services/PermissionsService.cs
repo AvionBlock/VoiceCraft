@@ -20,8 +20,8 @@ public class PermissionsService(
             case PermissionStatus.Granted:
                 return status;
             case PermissionStatus.Denied when DeviceInfo.Platform == DevicePlatform.iOS:
-                // Prompt the user to turn on in settings
-                // On iOS once a permission has been denied it may not be requested again from the application
+                if(!string.IsNullOrWhiteSpace(rationalDescription))
+                    notificationService.SendErrorNotification(rationalDescription);
                 return status;
             case PermissionStatus.Unknown:
             case PermissionStatus.Disabled:
