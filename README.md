@@ -48,6 +48,19 @@ VoiceCraft proximity chat is a VOIP program developed on .NET 8.0 MAUI framework
 | PlayStation | ❌ | ❌ | ❌  | ❌ | N.A.          |
 | Switch      | ❌ | ❌ | ❌  | ❌ | N.A.          |
 
+## Test Server
+Every weekend, there is a test server that will open for the full weekend (AUS/AEST time). The test server is public to everyone, allowing anyone to connect with minecraft and voicecraft to test it out. There will also occasionally be v1.1.0 tests that will also open on the server when builds are ready to be tested.
+
+If you wish to participate in these tests, use the Ip and Port below:
+
+### Minecraft
+- IP: mcvc.avion.team
+- Port: 19132
+
+### VoiceCraft
+- IP: mcvc.avion.team
+- Port: 9050
+
 ## Hosts
 
 - Atrioxhosting €0.44/m: https://atrioxhost.com/voicecraft
