@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
@@ -7,14 +8,15 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class EchoEffect : IAudioEffect
     {
-        private readonly FractionalDelayLine _delayLine;
+        private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
+            new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
+
         private float _delay;
 
         public EchoEffect(int samplingRate,
             float delay,
             float feedback = 0.5f)
         {
-            _delayLine = new FractionalDelayLine(samplingRate, delay, InterpolationMode.Nearest);
             SampleRate = samplingRate;
             Delay = delay;
             Feedback = feedback;
@@ -25,11 +27,7 @@ namespace VoiceCraft.Core.Audio.Effects
         public float Delay
         {
             get => _delay / SampleRate;
-            set
-            {
-                _delayLine.Ensure(SampleRate, value);
-                _delay = SampleRate * value;
-            }
+            set => _delay = SampleRate * value;
         }
 
         public float Feedback { get; set; }
@@ -58,24 +56,49 @@ namespace VoiceCraft.Core.Audio.Effects
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
                 return; //There may still be echo from the entity itself but that will phase out over time.
-
+            
+            var delayLine = GetOrCreateDelayLine(from);
+            delayLine.Ensure(SampleRate, Delay);
+            
             for (var i = 0; i < count; i++)
             {
-                var delayed = _delayLine.Read(_delay);
+                var delayed = delayLine.Read(_delay);
                 var output = data[i] + delayed * Feedback;
-                _delayLine.Write(output);
+                delayLine.Write(output);
                 data[i] = output * Wet + data[i] * Dry;
             }
         }
 
         public void Reset()
         {
-            _delayLine.Reset();
+            lock (_delayLines)
+            {
+                _delayLines.Clear();
+            }
         }
 
         public void Dispose()
         {
             //Nothing to dispose.
+        }
+
+        private FractionalDelayLine GetOrCreateDelayLine(VoiceCraftEntity entity)
+        {
+            lock (_delayLines)
+            {
+                if (_delayLines.TryGetValue(entity, out var delayLine))
+                    return delayLine;
+                delayLine = new FractionalDelayLine(SampleRate, Delay, InterpolationMode.Nearest);
+                _delayLines.TryAdd(entity, delayLine);
+                entity.OnDestroyed += RemoveDelayLine;
+                return delayLine;
+            }
+        }
+
+        private void RemoveDelayLine(VoiceCraftEntity entity)
+        {
+            _delayLines.Remove(entity);
+            entity.OnDestroyed -= RemoveDelayLine;
         }
     }
 }
