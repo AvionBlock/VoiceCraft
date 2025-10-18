@@ -4,6 +4,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Core.World;
@@ -37,6 +38,7 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         _eventHandlerSystem = new EventHandlerSystem(this, World, _audioEffectSystem);
         _visibilitySystem = new VisibilitySystem(World, _audioEffectSystem);
+        _audioEffectSystem.SetEffect(uint.MaxValue, new EchoEffect(Constants.SampleRate, 0.5f));
 
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
