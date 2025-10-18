@@ -106,7 +106,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         return read;
     }
 
-    public override void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
+    public override void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
     {
         lock (_jitterBuffer)
         {

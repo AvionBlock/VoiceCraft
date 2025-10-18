@@ -259,7 +259,7 @@ public class EventHandlerSystem : IDisposable
         _tasks.Add(() => { _server.SendPacket(networkEntity.NetPeer, new SetVisibilityPacket(entity.Id)); });
     }
 
-    private void OnEntityAudioReceived(byte[] data, uint timestamp, float frameLoudness, VoiceCraftEntity entity)
+    private void OnEntityAudioReceived(byte[] data, ushort timestamp, float frameLoudness, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
