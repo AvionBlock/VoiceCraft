@@ -10,12 +10,9 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
-
         private float _delay;
 
-        public EchoEffect(int samplingRate,
-            float delay,
-            float feedback = 0.5f)
+        public EchoEffect(int samplingRate, float delay, float feedback = 0.5f)
         {
             SampleRate = samplingRate;
             Delay = delay;
@@ -23,13 +20,11 @@ namespace VoiceCraft.Core.Audio.Effects
         }
 
         public int SampleRate { get; }
-
         public float Delay
         {
             get => _delay / SampleRate;
             set => _delay = SampleRate * value;
         }
-
         public float Feedback { get; set; }
         public float Wet { get; set; } = 1f;
         public float Dry { get; set; }
@@ -56,10 +51,10 @@ namespace VoiceCraft.Core.Audio.Effects
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
                 return; //There may still be echo from the entity itself but that will phase out over time.
-            
+
             var delayLine = GetOrCreateDelayLine(from);
             delayLine.Ensure(SampleRate, Delay);
-            
+
             for (var i = 0; i < count; i++)
             {
                 var delayed = delayLine.Read(_delay);
@@ -97,8 +92,11 @@ namespace VoiceCraft.Core.Audio.Effects
 
         private void RemoveDelayLine(VoiceCraftEntity entity)
         {
-            _delayLines.Remove(entity);
-            entity.OnDestroyed -= RemoveDelayLine;
+            lock (_delayLines)
+            {
+                _delayLines.Remove(entity);
+                entity.OnDestroyed -= RemoveDelayLine;
+            }
         }
     }
 }
