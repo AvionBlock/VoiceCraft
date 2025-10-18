@@ -26,6 +26,7 @@ public static class LogService
 
     public static void Log(Exception exception)
     {
+        Console.WriteLine(exception);
         _exceptionLogs.ExceptionLogs.TryAdd(DateTime.UtcNow, exception.ToString());
         TrimExceptionLogs();
         _ = SaveAsync();
@@ -33,7 +34,7 @@ public static class LogService
 
     public static void LogCrash(Exception exception)
     {
-        Debug.WriteLine(exception); //Gets omitted on release build.
+        Console.WriteLine(exception);
         _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
         TrimCrashLogs();
         SaveLogs();
