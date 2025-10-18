@@ -38,7 +38,6 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         _eventHandlerSystem = new EventHandlerSystem(this, World, _audioEffectSystem);
         _visibilitySystem = new VisibilitySystem(World, _audioEffectSystem);
-        _audioEffectSystem.SetEffect(uint.MaxValue, new EchoEffect(Constants.SampleRate, 0.5f));
 
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
