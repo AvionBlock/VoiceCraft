@@ -2,21 +2,23 @@
   <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <AvaloniaVersion>11.3.5</AvaloniaVersion>
   </PropertyGroup>
   <ItemGroup>
     <!-- Avalonia packages -->
     <!-- Important: keep version in sync! -->
-    <PackageVersion Include="Avalonia" Version="11.3.5" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.5" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.5" />
-    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.5">
+    <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>none</IncludeAssets>
     </PackageVersion>
-    <PackageVersion Include="Avalonia.Desktop" Version="11.3.5" />
-    <PackageVersion Include="Avalonia.iOS" Version="11.2.1" />
-    <PackageVersion Include="Avalonia.Browser" Version="11.3.5" />
-    <PackageVersion Include="Avalonia.Android" Version="11.3.5" />
+    <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.iOS" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Browser" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia.Android" Version="$(AvaloniaVersion)" />
+
     <PackageVersion Include="LiteNetLib" Version="1.3.1" />
     <PackageVersion Include="Message.Avalonia" Version="1.1.0" />
     <PackageVersion Include="SharpHook" Version="7.0.1" />
