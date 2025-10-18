@@ -35,7 +35,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private bool _isDisposed;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
-    private uint _sendTimestamp;
+    private ushort _sendTimestamp;
 
     //Privates
     private NetPeer? _serverPeer;

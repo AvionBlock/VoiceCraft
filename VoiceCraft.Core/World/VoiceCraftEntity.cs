@@ -62,7 +62,7 @@ namespace VoiceCraft.Core.World
         //Others
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityRemoved;
-        public event Action<byte[], uint, float, VoiceCraftEntity>? OnAudioReceived;
+        public event Action<byte[], ushort, float, VoiceCraftEntity>? OnAudioReceived;
         public event Action<VoiceCraftEntity>? OnDestroyed;
 
         public void AddVisibleEntity(VoiceCraftEntity entity)
@@ -83,7 +83,7 @@ namespace VoiceCraft.Core.World
                 _visibleEntities.Remove(entity.Key);
         }
 
-        public virtual void ReceiveAudio(byte[] buffer, uint timestamp, float frameLoudness)
+        public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
         {
             _loudness = frameLoudness;
             LastSpoke = DateTime.UtcNow;

@@ -24,14 +24,14 @@ public class JitterBuffer(TimeSpan maxDropOutTime)
         return IsBeforeWrapAround(packet?.SequenceId ?? 0);
     }
 
-    private static bool IsBeforeWrapAround(uint seq)
+    private static bool IsBeforeWrapAround(ushort seq)
     {
-        return seq > uint.MaxValue / 2 + uint.MaxValue / 4;
+        return seq > ushort.MaxValue / 2 + ushort.MaxValue / 4;
     }
 
     private static bool IsAfterWrapAround(JitterPacket? packet)
     {
-        return packet?.SequenceId < uint.MaxValue / 4;
+        return packet?.SequenceId < ushort.MaxValue / 4;
     }
 
     public bool Get([NotNullWhen(true)] out JitterPacket? packet)
@@ -103,9 +103,9 @@ public class JitterBuffer(TimeSpan maxDropOutTime)
     }
 }
 
-public class JitterPacket(uint sequenceId, byte[] data)
+public class JitterPacket(ushort sequenceId, byte[] data)
 {
     public readonly byte[] Data = data;
     public readonly DateTime ReceivedTime = DateTime.UtcNow;
-    public readonly uint SequenceId = sequenceId;
+    public readonly ushort SequenceId = sequenceId;
 }
