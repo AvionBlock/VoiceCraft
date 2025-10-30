@@ -173,18 +173,18 @@ public class McHttpServer
             return;
 
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
-        SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
+        SendPacket(netPeer, new McApiAcceptPacket(netPeer.Token));
     }
 
     private static void HandleLogoutPacket(McApiLogoutPacket logoutPacket, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != logoutPacket.Token) return;
+        if (netPeer.Token != logoutPacket.Token) return;
         netPeer.Disconnect();
     }
 
     private static void HandlePingPacket(McApiPingPacket pingPacket, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != pingPacket.Token) return; //Needs a session token at least.
+        if (netPeer.Token != pingPacket.Token) return; //Needs a session token at least.
         netPeer.LastPing = DateTime.UtcNow;
     }
 }

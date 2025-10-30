@@ -211,35 +211,35 @@ public class McWssServer
     {
         if (netPeer.Connected)
         {
-            SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
+            SendPacket(netPeer, new McApiAcceptPacket(packet.RequestId, packet.Token));
             return;
         }
 
         if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.Token)
         {
-            SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.InvalidLoginToken"));
+            SendPacket(client.Guid, new McApiDenyPacket(packet.RequestId, packet.Token,"VcMcApi.DisconnectReason.InvalidLoginToken"));
             return;
         }
 
         if (packet.Version.Major != McWssVersion.Major || packet.Version.Minor != McWssVersion.Minor)
         {
-            SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.IncompatibleVersion"));
+            SendPacket(client.Guid, new McApiDenyPacket(packet.RequestId, packet.Token, "VcMcApi.DisconnectReason.IncompatibleVersion"));
             return;
         }
 
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
-        SendPacket(netPeer, new McApiAcceptPacket(netPeer.SessionToken));
+        SendPacket(netPeer, new McApiAcceptPacket(packet.RequestId, netPeer.Token));
     }
 
     private static void HandleLogoutPacket(McApiLogoutPacket packet, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != packet.Token) return;
+        if (netPeer.Token != packet.Token) return;
         netPeer.Disconnect();
     }
 
     private void HandlePingPacket(McApiPingPacket packet, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != packet.Token) return; //Needs a session token at least.
+        if (netPeer.Token != packet.Token) return; //Needs a session token at least.
         SendPacket(netPeer, packet); //Reuse the packet.
     }
 
