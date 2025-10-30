@@ -169,7 +169,7 @@ public class McHttpServer
 
     private void HandleLoginPacket(McApiLoginPacket loginPacket, McApiNetPeer netPeer)
     {
-        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.LoginToken)
+        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.Token)
             return;
 
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
@@ -178,13 +178,13 @@ public class McHttpServer
 
     private static void HandleLogoutPacket(McApiLogoutPacket logoutPacket, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != logoutPacket.SessionToken) return;
+        if (netPeer.SessionToken != logoutPacket.Token) return;
         netPeer.Disconnect();
     }
 
     private static void HandlePingPacket(McApiPingPacket pingPacket, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != pingPacket.SessionToken) return; //Needs a session token at least.
+        if (netPeer.SessionToken != pingPacket.Token) return; //Needs a session token at least.
         netPeer.LastPing = DateTime.UtcNow;
     }
 }
