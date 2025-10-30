@@ -13,7 +13,7 @@ namespace VoiceCraft.Core.Network
 
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
         public bool Connected { get; private set; }
-        public string SessionToken { get; private set; } = string.Empty;
+        public string Token { get; private set; } = string.Empty;
 
         public event Action? OnDisconnected;
 
@@ -21,7 +21,7 @@ namespace VoiceCraft.Core.Network
         {
             if (!Connected) return;
             Connected = false;
-            SessionToken = string.Empty;
+            Token = string.Empty;
             OnDisconnected?.Invoke();
 
             Debug.WriteLine("McApi Client Disconnected");
@@ -30,7 +30,7 @@ namespace VoiceCraft.Core.Network
         public void AcceptConnection(string sessionToken)
         {
             if (Connected) return;
-            SessionToken = sessionToken;
+            Token = sessionToken;
             Connected = true;
             LastPing = DateTime.UtcNow;
             Debug.WriteLine($"McApi Client Connected: Session Token - {sessionToken}");
