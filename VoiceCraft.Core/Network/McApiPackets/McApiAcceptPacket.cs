@@ -4,22 +4,26 @@ namespace VoiceCraft.Core.Network.McApiPackets
 {
     public class McApiAcceptPacket : McApiPacket
     {
-        public McApiAcceptPacket(string sessionToken = "")
+        public McApiAcceptPacket(string requestId = "", string token = "")
         {
-            SessionToken = sessionToken;
+            RequestId = requestId;
+            Token = token;
         }
 
         public override McApiPacketType PacketType => McApiPacketType.Accept;
-        public string SessionToken { get; private set; }
+        public string RequestId { get; private set; }
+        public string Token { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
-            writer.Put(SessionToken);
+            writer.Put(RequestId, Constants.MaxStringLength);
+            writer.Put(Token, Constants.MaxStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
-            SessionToken = reader.GetString(Constants.MaxStringLength);
+            RequestId = reader.GetString(Constants.MaxStringLength);
+            Token = reader.GetString(Constants.MaxStringLength);
         }
     }
 }

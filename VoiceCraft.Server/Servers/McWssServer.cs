@@ -16,7 +16,6 @@ namespace VoiceCraft.Server.Servers;
 public class McWssServer
 {
     private static readonly string SubscribePacket = JsonSerializer.Serialize(new McWssEventSubscribe("PlayerMessage"));
-    private static readonly Regex RawtextRegex = new(Regex.Escape("vc:mcwss_api"));
     private static readonly Version McWssVersion = new(1, 1, 0);
 
     private readonly ConcurrentDictionary<ClientMetadata, McApiNetPeer> _mcApiPeers = [];
@@ -91,7 +90,7 @@ public class McWssServer
 
     private void SendPacket(Guid clientGuid, byte[] packetData)
     {
-        var packet = new McWssCommandRequest($"scriptevent vc:mcwss_api {Z85.GetStringWithPadding(packetData)}");
+        var packet = new McWssCommandRequest($"scriptevent {Config.TunnelId} {Z85.GetStringWithPadding(packetData)}");
         _wsServer?.SendAsync(clientGuid, JsonSerializer.Serialize(packet));
     }
 
@@ -163,10 +162,10 @@ public class McWssServer
                 if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
                 var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext
                     .FirstOrDefault();
-                if (rawtextMessage == null || !rawtextMessage.text.StartsWith("vc:mcwss_api")) return;
+                if (rawtextMessage == null || !rawtextMessage.text.StartsWith(Config.TunnelId)) return;
                 if (_mcApiPeers.TryGetValue(client, out var peer))
                 {
-                    var textData = RawtextRegex.Replace(rawtextMessage.text, "", 1);
+                    var textData = new Regex(Regex.Escape(Config.TunnelId)).Replace(rawtextMessage.text, "", 1);
                     peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(textData));
                 }
 
@@ -216,7 +215,7 @@ public class McWssServer
             return;
         }
 
-        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.LoginToken)
+        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.Token)
         {
             SendPacket(client.Guid, new McApiDenyPacket("VcMcApi.DisconnectReason.InvalidLoginToken"));
             return;
@@ -234,13 +233,13 @@ public class McWssServer
 
     private static void HandleLogoutPacket(McApiLogoutPacket packet, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != packet.SessionToken) return;
+        if (netPeer.SessionToken != packet.Token) return;
         netPeer.Disconnect();
     }
 
     private void HandlePingPacket(McApiPingPacket packet, McApiNetPeer netPeer)
     {
-        if (netPeer.SessionToken != packet.SessionToken) return; //Needs a session token at least.
+        if (netPeer.SessionToken != packet.Token) return; //Needs a session token at least.
         SendPacket(netPeer, packet); //Reuse the packet.
     }
 
