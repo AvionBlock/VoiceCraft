@@ -11,8 +11,9 @@ namespace VoiceCraft.Core.World
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
         private float _caveFactor;
         private bool _deafened;
-        private uint _effectBitmask = uint.MaxValue;
-        private uint _listenBitmask = uint.MaxValue;
+        private ushort _effectBitmask = ushort.MaxValue;
+        private ushort _talkBitmask = ushort.MaxValue;
+        private ushort _listenBitmask = ushort.MaxValue;
         private float _loudness;
         private float _muffleFactor;
 
@@ -21,7 +22,6 @@ namespace VoiceCraft.Core.World
         private string _name = "New Entity";
         private Vector3 _position;
         private Vector2 _rotation;
-        private uint _talkBitmask = uint.MaxValue;
         private string _worldId = string.Empty;
 
         //Modifiers for modifying data for later?
@@ -51,9 +51,9 @@ namespace VoiceCraft.Core.World
         public event Action<string, VoiceCraftEntity>? OnNameUpdated;
         public event Action<bool, VoiceCraftEntity>? OnMuteUpdated;
         public event Action<bool, VoiceCraftEntity>? OnDeafenUpdated;
-        public event Action<uint, VoiceCraftEntity>? OnTalkBitmaskUpdated;
-        public event Action<uint, VoiceCraftEntity>? OnListenBitmaskUpdated;
-        public event Action<uint, VoiceCraftEntity>? OnEffectBitmaskUpdated;
+        public event Action<ushort, VoiceCraftEntity>? OnTalkBitmaskUpdated;
+        public event Action<ushort, VoiceCraftEntity>? OnListenBitmaskUpdated;
+        public event Action<ushort, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
         public event Action<float, VoiceCraftEntity>? OnCaveFactorUpdated;
@@ -164,7 +164,7 @@ namespace VoiceCraft.Core.World
             }
         }
 
-        public uint TalkBitmask
+        public ushort TalkBitmask
         {
             get => _talkBitmask;
             set
@@ -175,7 +175,7 @@ namespace VoiceCraft.Core.World
             }
         }
 
-        public uint ListenBitmask
+        public ushort ListenBitmask
         {
             get => _listenBitmask;
             set
@@ -186,7 +186,7 @@ namespace VoiceCraft.Core.World
             }
         }
 
-        public uint EffectBitmask
+        public ushort EffectBitmask
         {
             get => _effectBitmask;
             set

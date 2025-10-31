@@ -4,7 +4,7 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetTalkBitmaskPacket : VoiceCraftPacket
     {
-        public SetTalkBitmaskPacket(int id = 0, uint value = 0)
+        public SetTalkBitmaskPacket(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;
@@ -13,7 +13,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override PacketType PacketType => PacketType.SetTalkBitmask;
 
         public int Id { get; private set; }
-        public uint Value { get; private set; }
+        public ushort Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Network.Packets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetUInt();
+            Value = reader.GetUShort();
         }
     }
 }

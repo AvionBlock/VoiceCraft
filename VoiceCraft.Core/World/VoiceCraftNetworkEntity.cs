@@ -34,11 +34,14 @@ namespace VoiceCraft.Core.World
         {
             //Doesn't remove the entity from the world.
             Name = "New Client";
+            CaveFactor = 0;
+            MuffleFactor = 0;
             WorldId = string.Empty;
             Position = Vector3.Zero;
             Rotation = Vector2.Zero;
-            TalkBitmask = uint.MaxValue;
-            ListenBitmask = uint.MaxValue;
+            EffectBitmask = ushort.MaxValue;
+            TalkBitmask = ushort.MaxValue;
+            ListenBitmask = ushort.MaxValue;
         }
     }
 }

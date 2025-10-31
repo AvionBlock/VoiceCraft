@@ -12,14 +12,13 @@ namespace VoiceCraft.Core.Audio.Effects
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
         private float _delay;
 
-        public EchoEffect(int samplingRate, float delay, float feedback = 0.5f)
+        public EchoEffect(float delay, float feedback = 0.5f)
         {
-            SampleRate = samplingRate;
             Delay = delay;
             Feedback = feedback;
         }
 
-        public int SampleRate { get; }
+        public int SampleRate { get; } = Constants.SampleRate;
         public float Delay
         {
             get => _delay / SampleRate;
@@ -46,7 +45,7 @@ namespace VoiceCraft.Core.Audio.Effects
             Dry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, uint effectBitmask, Span<float> data, int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
