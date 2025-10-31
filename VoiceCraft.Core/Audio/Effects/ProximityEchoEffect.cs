@@ -13,16 +13,13 @@ namespace VoiceCraft.Core.Audio.Effects
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
         private float _delay;
 
-        public ProximityEchoEffect(int samplingRate,
-            float delay,
-            float range = 0f)
+        public ProximityEchoEffect(float delay = 0.5f, float range = 0f)
         {
-            SampleRate = samplingRate;
             Delay = delay;
             Range = range;
         }
 
-        public int SampleRate { get; }
+        public static int SampleRate => Constants.SampleRate;
         public float Delay
         {
             get => _delay / SampleRate;

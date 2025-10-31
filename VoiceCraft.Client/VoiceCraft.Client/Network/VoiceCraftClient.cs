@@ -468,12 +468,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 _audioSystem.SetEffect(packet.Bitmask, directionalEffect);
                 break;
             case EffectType.ProximityEcho:
-                var proximityEchoEffect = new ProximityEchoEffect(Constants.SampleRate, 0.5f);
+                var proximityEchoEffect = new ProximityEchoEffect();
                 proximityEchoEffect.Deserialize(reader);
                 _audioSystem.SetEffect(packet.Bitmask, proximityEchoEffect);
                 break;
             case EffectType.Echo:
-                var echoEffect = new EchoEffect(Constants.SampleRate, 0.5f);
+                var echoEffect = new EchoEffect();
                 echoEffect.Deserialize(reader);
                 _audioSystem.SetEffect(packet.Bitmask, echoEffect);
                 break;

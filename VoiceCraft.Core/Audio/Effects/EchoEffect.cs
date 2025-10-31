@@ -12,7 +12,7 @@ namespace VoiceCraft.Core.Audio.Effects
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
         private float _delay;
 
-        public EchoEffect(float delay, float feedback = 0.5f)
+        public EchoEffect(float delay = 0.5f, float feedback = 0.5f)
         {
             Delay = delay;
             Feedback = feedback;
