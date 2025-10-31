@@ -1,4 +1,3 @@
-using System;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 
@@ -6,7 +5,7 @@ namespace VoiceCraft.Core.Network.Packets
 {
     public class SetEffectPacket : VoiceCraftPacket
     {
-        public SetEffectPacket(uint bitmask = 0, IAudioEffect? effect = null)
+        public SetEffectPacket(ushort bitmask = 0, IAudioEffect? effect = null)
         {
             Bitmask = bitmask;
             EffectType = effect?.EffectType ?? EffectType.None;
@@ -15,7 +14,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override PacketType PacketType => PacketType.SetEffect;
 
-        public uint Bitmask { get; private set; }
+        public ushort Bitmask { get; private set; }
         public EffectType EffectType { get; private set; }
         public IAudioEffect? Effect { get; }
 
@@ -28,7 +27,7 @@ namespace VoiceCraft.Core.Network.Packets
 
         public override void Deserialize(NetDataReader reader)
         {
-            Bitmask = reader.GetUInt();
+            Bitmask = reader.GetUShort();
             EffectType = (EffectType)reader.GetByte();
         }
     }

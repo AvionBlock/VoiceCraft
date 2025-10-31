@@ -40,7 +40,7 @@ public class EventHandlerSystem : IDisposable
 
     #region Audio Effect Events
 
-    private void OnAudioEffectSet(uint bitmask, IAudioEffect? effect)
+    private void OnAudioEffectSet(ushort bitmask, IAudioEffect? effect)
     {
         _tasks.Add(() =>
         {
@@ -157,7 +157,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityTalkBitmaskUpdated(uint bitmask, VoiceCraftEntity entity)
+    private void OnEntityTalkBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
@@ -167,7 +167,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityListenBitmaskUpdated(uint bitmask, VoiceCraftEntity entity)
+    private void OnEntityListenBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {
@@ -177,7 +177,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityEffectBitmaskUpdated(uint bitmask, VoiceCraftEntity entity)
+    private void OnEntityEffectBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
         _tasks.Add(() =>
         {

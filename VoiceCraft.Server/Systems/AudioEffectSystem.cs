@@ -4,9 +4,9 @@ namespace VoiceCraft.Server.Systems;
 
 public class AudioEffectSystem : IResettable, IDisposable
 {
-    private readonly OrderedDictionary<uint, IAudioEffect> _audioEffects = new();
+    private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
 
-    public IEnumerable<KeyValuePair<uint, IAudioEffect>> Effects => _audioEffects;
+    public IEnumerable<KeyValuePair<ushort, IAudioEffect>> Effects => _audioEffects;
 
     public void Dispose()
     {
@@ -20,9 +20,9 @@ public class AudioEffectSystem : IResettable, IDisposable
         ClearEffects();
     }
 
-    public event Action<uint, IAudioEffect?>? OnEffectSet;
+    public event Action<ushort, IAudioEffect?>? OnEffectSet;
 
-    public void SetEffect(uint bitmask, IAudioEffect? effect)
+    public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
         if (effect == null && _audioEffects.Remove(bitmask, out var audioEffect))
         {
