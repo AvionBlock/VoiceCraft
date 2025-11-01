@@ -12,11 +12,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Fleck" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
         <PackageReference Include="Watson.Lite"/>
-        <PackageReference Include="WatsonWebsocket"/>
     </ItemGroup>
 
     <ItemGroup>

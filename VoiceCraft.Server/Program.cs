@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Fleck;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Commands;
@@ -14,6 +15,7 @@ public static class Program
     public static void Main()
     {
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales");
+        FleckLog.LogAction = (_, _, _) => { }; //Remove all websocket logs.
         App.Start().GetAwaiter().GetResult();
     }
 
