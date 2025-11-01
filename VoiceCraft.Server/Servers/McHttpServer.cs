@@ -31,15 +31,16 @@ public class McHttpServer
 
         try
         {
+            var hostNameUri = new Uri(Config.Hostname);
             AnsiConsole.WriteLine(Locales.Locales.McHttpServer_Starting);
-            var settings = new WebserverSettings();
+            var settings = new WebserverSettings(hostNameUri.Host, hostNameUri.Port);
             _httpServer = new WebserverLite(settings, HandleRequest);
             _httpServer.Start();
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.McHttpServer_Success}[/]");
         }
-        catch
+        catch (Exception ex)
         {
-            throw new Exception(Locales.Locales.McHttpServer_Exceptions_Failed);
+            throw new Exception(Locales.Locales.McHttpServer_Exceptions_Failed, ex);
         }
     }
 

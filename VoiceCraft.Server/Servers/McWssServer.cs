@@ -35,7 +35,7 @@ public class McWssServer
         try
         {
             AnsiConsole.WriteLine(Locales.Locales.McWssServer_Starting);
-            _wsServer = new WebSocketServer($"ws://0.0.0.0:{Config.Port}");
+            _wsServer = new WebSocketServer(Config.Hostname);
 
             _wsServer.Start(socket =>
             {
@@ -45,9 +45,9 @@ public class McWssServer
             });
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Success}[/]");
         }
-        catch
+        catch(Exception ex)
         {
-            throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed);
+            throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed, ex);
         }
     }
 

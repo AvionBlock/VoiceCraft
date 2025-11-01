@@ -47,8 +47,8 @@ public static class App
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
 
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
-            serverSetupTable.AddRow("[green]McWss[/]", mcWssServer.Config.Port.ToString(), "[aqua]TCP/WS[/]");
-            serverSetupTable.AddRow("[green]McHttp[/]", httpServer.Config.Port.ToString(), "[aqua]TCP/HTTP[/]");
+            serverSetupTable.AddRow("[green]McWss[/]", mcWssServer.Config.Hostname, "[aqua]TCP/WS[/]");
+            serverSetupTable.AddRow("[green]McHttp[/]", httpServer.Config.Hostname, "[aqua]TCP/HTTP[/]");
 
             //Register Commands
             AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);
