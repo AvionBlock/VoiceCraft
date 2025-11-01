@@ -294,12 +294,6 @@ public class VoiceCraftServer : IResettable, IDisposable
             return;
         }
 
-        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
-        {
-            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.ServerFull"));
-            return;
-        }
-
         var peer = request.Accept();
         try
         {
@@ -344,9 +338,14 @@ public class VoiceCraftServer : IResettable, IDisposable
 
     private void OnConnectionRequest(ConnectionRequest request)
     {
+        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
+        {
+            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.ServerFull"));
+            return;
+        }
         if (request.Data.IsNull)
         {
-            request.Reject();
+            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.Forced"));
             return;
         }
 

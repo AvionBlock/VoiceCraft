@@ -123,6 +123,9 @@ public class McWssServer
 
     private void OnClientConnected(IWebSocketConnection socket)
     {
+        if(_mcApiPeers.Count >= Config.MaxClients)
+            socket.Close(); //Full.
+        
         var netPeer = new McApiNetPeer();
         _mcApiPeers.TryAdd(socket, netPeer);
         socket.Send(SubscribePacket);
