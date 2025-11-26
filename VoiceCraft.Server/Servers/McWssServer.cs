@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
@@ -14,7 +14,6 @@ namespace VoiceCraft.Server.Servers;
 
 public class McWssServer
 {
-    private static readonly string SubscribePacket = JsonSerializer.Serialize(new McWssEventSubscribe("PlayerMessage"));
     private static readonly Version McWssVersion = new(1, 1, 0);
 
     private readonly ConcurrentDictionary<IWebSocketConnection, McApiNetPeer> _mcApiPeers = [];
@@ -45,7 +44,7 @@ public class McWssServer
             });
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Success}[/]");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed, ex);
         }
@@ -71,6 +70,7 @@ public class McWssServer
                 AnsiConsole.WriteException(ex);
             }
         }
+
         _wsServer.Dispose();
         _wsServer = null;
         AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Stopped}[/]");
@@ -89,12 +89,12 @@ public class McWssServer
         _writer.Reset();
         _writer.Put((byte)packet.PacketType);
         packet.Serialize(_writer);
-        SendPacket(socket, _writer.CopyData());
+        SendPacket(socket, Z85.GetStringWithPadding(_writer.CopyData()));
     }
 
-    private void SendPacket(IWebSocketConnection socket, byte[] packetData)
+    private void SendPacket(IWebSocketConnection socket, string packetData)
     {
-        var packet = new McWssCommandRequest($"scriptevent {Config.TunnelId} {Z85.GetStringWithPadding(packetData)}");
+        var packet = new McWssCommandRequest($"{Config.TunnelCommand} \"{packetData}\"");
         socket.Send(JsonSerializer.Serialize(packet));
     }
 
@@ -114,21 +114,37 @@ public class McWssServer
                 //Do Nothing
             }
 
-        while (peer.Value.RetrieveOutboundPacket(out var outboundPacketData))
-            SendPacket(peer.Key, outboundPacketData);
+        var first = true;
+        var stringBuilder = new StringBuilder();
+        while (peer.Value.RetrieveOutboundPacket(out var outboundPacket))
+        {
+            if(!first)
+                stringBuilder.Append('|');
+            else
+                first = false;
+            stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
+        }
 
-        if (peer.Value.Connected && peer.Value.LastPing.Add(TimeSpan.FromSeconds(5)) <= DateTime.UtcNow)
-            peer.Value.Disconnect();
+        SendPacket(peer.Key, stringBuilder.ToString());
+
+        switch (peer.Value.Connected)
+        {
+            case true when DateTime.UtcNow - peer.Value.LastPing >= TimeSpan.FromMilliseconds(Config.MaxTimeoutMs):
+                peer.Value.Disconnect();
+                break;
+            case true when DateTime.UtcNow - peer.Value.LastPing >= TimeSpan.FromMilliseconds(Config.PingIntervalMs):
+                SendPacket(peer.Value, new McApiPingPacket(peer.Value.Token));
+                break;
+        }
     }
 
     private void OnClientConnected(IWebSocketConnection socket)
     {
-        if(_mcApiPeers.Count >= Config.MaxClients)
+        if (_mcApiPeers.Count >= Config.MaxClients)
             socket.Close(); //Full.
-        
+
         var netPeer = new McApiNetPeer();
         _mcApiPeers.TryAdd(socket, netPeer);
-        socket.Send(SubscribePacket);
     }
 
     private void OnClientDisconnected(IWebSocketConnection socket)
@@ -145,34 +161,21 @@ public class McWssServer
 
             switch (genericPacket.header.messagePurpose)
             {
-                case "event":
-                    HandleEventPacket(socket, genericPacket, message);
+                case "commandResponse":
+                    var commandResponsePacket = JsonSerializer.Deserialize<McWssCommandResponse>(message);
+                    if (commandResponsePacket != null && _mcApiPeers.TryGetValue(socket, out var peer) &&
+                        !string.IsNullOrWhiteSpace(commandResponsePacket.StatusMessage) &&
+                        commandResponsePacket.StatusCode == 0)
+                    {
+                        peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(commandResponsePacket.StatusMessage));
+                    }
+
                     break;
             }
         }
         catch
         {
             // ignored
-        }
-    }
-
-    private void HandleEventPacket(IWebSocketConnection socket, McWssGenericPacket packet, string message)
-    {
-        switch (packet.header.eventName)
-        {
-            case "PlayerMessage":
-                var playerMessagePacket = JsonSerializer.Deserialize<McWssPlayerMessageEvent>(message);
-                if (playerMessagePacket == null || playerMessagePacket.Receiver != playerMessagePacket.Sender) return;
-                var rawtextMessage = JsonSerializer.Deserialize<Rawtext>(playerMessagePacket.Message)?.rawtext
-                    .FirstOrDefault();
-                if (rawtextMessage == null || !rawtextMessage.text.StartsWith(Config.TunnelId)) return;
-                if (_mcApiPeers.TryGetValue(socket, out var peer))
-                {
-                    var textData = new Regex(Regex.Escape(Config.TunnelId)).Replace(rawtextMessage.text, "", 1);
-                    peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(textData));
-                }
-
-                break;
         }
     }
 
