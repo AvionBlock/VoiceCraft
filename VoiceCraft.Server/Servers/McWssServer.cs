@@ -132,9 +132,6 @@ public class McWssServer
             case true when DateTime.UtcNow - peer.Value.LastPing >= TimeSpan.FromMilliseconds(Config.MaxTimeoutMs):
                 peer.Value.Disconnect();
                 break;
-            case true when DateTime.UtcNow - peer.Value.LastPing >= TimeSpan.FromMilliseconds(Config.PingIntervalMs):
-                SendPacket(peer.Value, new McApiPingPacket(peer.Value.Token));
-                break;
         }
     }
 
