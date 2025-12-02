@@ -214,7 +214,7 @@ public class McWssServer
     {
         if (netPeer.Connected)
         {
-            SendPacket(netPeer, new McApiAcceptPacket(packet.RequestId, packet.Token));
+            SendPacket(netPeer, new McApiAcceptPacket(packet.RequestId, netPeer.Token));
             return;
         }
 
