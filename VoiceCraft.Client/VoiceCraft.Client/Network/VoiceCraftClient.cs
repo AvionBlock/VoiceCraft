@@ -129,9 +129,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public void Update()
     {
         _netManager.PollEvents();
-        foreach(var entity in World.Entities.OfType<VoiceCraftClientEntity>())
-            entity.Update();
-        
         switch (_speakingState)
         {
             case false when

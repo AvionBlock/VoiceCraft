@@ -30,9 +30,9 @@ namespace VoiceCraft.Core
         //Audio Calculations
         public const int BlockAlign = Channels * (BitDepth / 8);
         public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
-
         public const int
             BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
+        public const int ShortsPerFrame = BytesPerFrame / sizeof(short);
 
         public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
         public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
