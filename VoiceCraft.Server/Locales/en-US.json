@@ -10,7 +10,8 @@
   },
   "Shutdown": {
     "Starting": "Shutting down server...",
-    "StartingIn": "Shutting down server in {delayMs}ms..."
+    "StartingIn": "Shutting down server in {delayMs}ms...",
+    "Success": "Successfully shutdown server!"
   },
   "ServerProperties": {
     "Loading": "Loading ServerProperties.json file at {path}",
@@ -32,6 +33,8 @@
   "VoiceCraftServer": {
     "Starting": "Starting VoiceCraft server...",
     "Success": "Successfully started the VoiceCraft server!",
+    "Stopping": "Stopping VoiceCraft server...",
+    "Stopped": "Successfully stopped the VoiceCraft server!",
     "Exceptions": {
       "Failed": "Failed to start VoiceCraft Server! Please check if another process is using the same port!"
     }
@@ -39,6 +42,8 @@
   "McWssServer": {
     "Starting": "Starting McWss server...",
     "Success": "Successfully started the McWss server!",
+    "Stopping": "Stopping McWss server...",
+    "Stopped": "Successfully stopped the McWss server!",
     "Exceptions": {
       "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
     }
@@ -46,6 +51,8 @@
   "McHttpServer": {
     "Starting": "Starting McHttp server...",
     "Success": "Successfully started the McHttp server!",
+    "Stopping": "Stopping McHttp server...",
+    "Stopped": "Successfully stopped the McHttp server!",
     "Exceptions": {
       "Failed": "Failed to start McHttp Server! Please check if another process is using the same port!"
     }
@@ -168,6 +175,10 @@
           "Description": "The value to set the entity's Name."
         }
       }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Stops the server."
     }
   }
 }
