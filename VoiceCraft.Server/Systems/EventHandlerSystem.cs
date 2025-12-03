@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Numerics;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.Packets;
@@ -10,7 +11,7 @@ public class EventHandlerSystem : IDisposable
 {
     private readonly AudioEffectSystem _audioEffectSystem;
     private readonly VoiceCraftServer _server;
-    private readonly List<Action> _tasks = [];
+    private readonly ConcurrentQueue<Action> _tasks = [];
     private readonly VoiceCraftWorld _world;
 
     public EventHandlerSystem(VoiceCraftServer server, VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
@@ -34,15 +35,18 @@ public class EventHandlerSystem : IDisposable
 
     public void Update()
     {
-        Parallel.ForEach(_tasks, task => task.Invoke());
-        _tasks.Clear();
+        Parallel.For(0, _tasks.Count, _ =>
+        {
+            if(_tasks.TryDequeue(out var result))
+                result.Invoke();
+        });
     }
 
     #region Audio Effect Events
 
     private void OnAudioEffectSet(ushort bitmask, IAudioEffect? effect)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetEffectPacket(bitmask, effect);
             _server.Broadcast(packet);
@@ -126,7 +130,7 @@ public class EventHandlerSystem : IDisposable
     //Data
     private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetNamePacket(entity.Id, name);
             _server.Broadcast(packet);
@@ -135,7 +139,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityMuteUpdated(bool mute, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetMutePacket(entity.Id, mute);
             if (entity is VoiceCraftNetworkEntity networkEntity)
@@ -147,7 +151,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityDeafenUpdated(bool deafen, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetDeafenPacket(entity.Id, deafen);
             if (entity is VoiceCraftNetworkEntity networkEntity)
@@ -159,7 +163,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityTalkBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetTalkBitmaskPacket(entity.Id, bitmask);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
@@ -169,7 +173,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityListenBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
@@ -179,7 +183,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityEffectBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetEffectBitmaskPacket(entity.Id, bitmask);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
@@ -189,7 +193,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityPositionUpdated(Vector3 position, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var packet = new SetPositionPacket(entity.Id, position);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
@@ -199,7 +203,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityRotationUpdated(Vector2 rotation, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             //Only send updates to visible entities.
             var packet = new SetRotationPacket(entity.Id, rotation);
@@ -210,7 +214,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityCaveFactorUpdated(float caveFactor, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             //Only send updates to visible entities.
             var packet = new SetCaveFactorPacket(entity.Id, caveFactor);
@@ -221,7 +225,7 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             //Only send updates to visible entities.
             var packet = new SetMuffleFactorPacket(entity.Id, muffleFactor);
@@ -235,7 +239,7 @@ public class EventHandlerSystem : IDisposable
     private void OnEntityVisibleEntityAdded(VoiceCraftEntity addedEntity, VoiceCraftEntity entity)
     {
         if (addedEntity is not VoiceCraftNetworkEntity networkEntity) return;
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             var visibilityPacket = new SetVisibilityPacket(entity.Id, true);
             var talkBitmaskPacket = new SetTalkBitmaskPacket(entity.Id, entity.TalkBitmask);
@@ -256,12 +260,12 @@ public class EventHandlerSystem : IDisposable
     private void OnEntityVisibleEntityRemoved(VoiceCraftEntity removedEntity, VoiceCraftEntity entity)
     {
         if (removedEntity is not VoiceCraftNetworkEntity networkEntity) return;
-        _tasks.Add(() => { _server.SendPacket(networkEntity.NetPeer, new SetVisibilityPacket(entity.Id)); });
+        _tasks.Enqueue(() => { _server.SendPacket(networkEntity.NetPeer, new SetVisibilityPacket(entity.Id)); });
     }
 
     private void OnEntityAudioReceived(byte[] data, ushort timestamp, float frameLoudness, VoiceCraftEntity entity)
     {
-        _tasks.Add(() =>
+        _tasks.Enqueue(() =>
         {
             //Only send updates to visible entities.
             var packet = new AudioPacket(entity.Id, timestamp, frameLoudness, data.Length, data);
