@@ -164,15 +164,18 @@ public class McWssServer
                         !string.IsNullOrWhiteSpace(commandResponsePacket.StatusMessage) &&
                         commandResponsePacket.StatusCode == 0)
                     {
-                        peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(commandResponsePacket.StatusMessage));
+                        var packets = commandResponsePacket.StatusMessage.Split("|");
+                        foreach (var packet in packets)
+                        { 
+                            peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet));
+                        }
                     }
-
                     break;
             }
         }
         catch
         {
-            // ignored
+            //Ignored
         }
     }
 
