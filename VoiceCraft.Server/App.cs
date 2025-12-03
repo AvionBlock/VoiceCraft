@@ -36,8 +36,10 @@ public static class App
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
-            httpServer.Start(properties.McHttpConfig);
-            mcWssServer.Start(properties.McWssConfig);
+            if (properties.McHttpConfig.Enabled)
+                httpServer.Start(properties.McHttpConfig);
+            if (properties.McWssConfig.Enabled)
+                mcWssServer.Start(properties.McWssConfig);
 
             //Server Started
             //Table for Server Setup Display
@@ -47,8 +49,10 @@ public static class App
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
 
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
-            serverSetupTable.AddRow("[green]McWss[/]", mcWssServer.Config.Hostname, "[aqua]TCP/WS[/]");
-            serverSetupTable.AddRow("[green]McHttp[/]", httpServer.Config.Hostname, "[aqua]TCP/HTTP[/]");
+            serverSetupTable.AddRow($"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
+                httpServer.Config.Hostname, $"[{(properties.McHttpConfig.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
+            serverSetupTable.AddRow($"[{(properties.McWssConfig.Enabled ? "green" : "red")}]McWss[/]",
+                mcWssServer.Config.Hostname, $"[{(properties.McWssConfig.Enabled ? "aqua" : "red")}]TCP/WS[/]");
 
             //Register Commands
             AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);
@@ -82,7 +86,6 @@ public static class App
                     if (delay > 0)
                         await Task.Delay((int)delay);
                     startTime = DateTime.UtcNow;
-                    //Console.WriteLine(delay);
                 }
                 catch (Exception ex)
                 {
@@ -105,6 +108,17 @@ public static class App
             server.Dispose();
             Cts.Dispose();
         }
+    }
+    
+    public static void Shutdown(uint delayMs = 0)
+    {
+        if (Cts.IsCancellationRequested || _shuttingDown) return;
+        _shuttingDown = true;
+        AnsiConsole.MarkupLine(delayMs > 0
+            ? $"[bold yellow]{Locales.Locales.Shutdown_StartingIn.Replace("{delayMs}", delayMs.ToString())}[/]"
+            : $"[bold yellow]{Locales.Locales.Shutdown_Starting}[/]");
+        Task.Delay((int)delayMs).Wait();
+        Cts.Cancel();
     }
 
     private static async Task FlushCommand(RootCommand rootCommand)
@@ -140,16 +154,5 @@ public static class App
                 if (Cts.IsCancellationRequested || _shuttingDown) return;
             }
         });
-    }
-
-    private static void Shutdown(uint delayMs = 0)
-    {
-        if (Cts.IsCancellationRequested || _shuttingDown) return;
-        _shuttingDown = true;
-        AnsiConsole.MarkupLine(delayMs > 0
-            ? $"[bold yellow]{Locales.Locales.Shutdown_StartingIn.Replace("{delayMs}", delayMs.ToString())}[/]"
-            : $"[bold yellow]{Locales.Locales.Shutdown_Starting}[/]");
-        Task.Delay((int)delayMs).Wait();
-        Cts.Cancel();
     }
 }

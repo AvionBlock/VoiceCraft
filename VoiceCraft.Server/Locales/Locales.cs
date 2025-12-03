@@ -164,4 +164,7 @@ public static class Locales
 
     public static string Commands_SetWorldId_Arguments_Value_Description =>
         Localizer.Get("Commands.SetWorldId.Arguments.Value.Description");
+
+    public static string Commands_Stop_Name => Localizer.Get("Commands.Stop.Name");
+    public static string Commands_Stop_Description => Localizer.Get("Commands.Stop.Description");
 }

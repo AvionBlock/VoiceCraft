@@ -37,6 +37,7 @@ public static class Program
         serviceCollection.AddSingleton<Command, SetTitleCommand>();
         serviceCollection.AddSingleton<Command, SetDescriptionCommand>();
         serviceCollection.AddSingleton<Command, SetNameCommand>();
+        serviceCollection.AddSingleton<Command, StopCommand>();
         return serviceCollection.BuildServiceProvider();
     }
 }
