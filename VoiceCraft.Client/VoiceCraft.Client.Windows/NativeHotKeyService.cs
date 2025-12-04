@@ -7,7 +7,7 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Windows;
 
-public class NativeHotKeyService : HotKeyService, IDisposable
+public class NativeHotKeyService : HotKeyService
 {
     private readonly EventLoopGlobalHook _hook;
     private readonly List<KeyCode> _pressedKeys = [];
@@ -18,20 +18,23 @@ public class NativeHotKeyService : HotKeyService, IDisposable
         _hook = new EventLoopGlobalHook();
         _hook.KeyPressed += OnKeyPressed;
         _hook.KeyReleased += OnKeyReleased;
+    }
+
+    public override void Initialize()
+    {
         _ = _hook.RunAsync();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
         _hook.KeyPressed -= OnKeyPressed;
         try
         {
-            _hook.Stop();
             _hook.Dispose();
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            LogService.Log(ex);
         }
 
         GC.SuppressFinalize(this);

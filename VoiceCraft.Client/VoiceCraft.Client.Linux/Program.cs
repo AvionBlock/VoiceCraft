@@ -21,8 +21,6 @@ internal sealed class Program
         LogService.NativeStorageService = nativeStorage;
         LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-
-        NativeHotKeyService? nativeHotkeyService = null;
         try
         {
             //Register Speex Preprocessors
@@ -40,11 +38,7 @@ internal sealed class Program
                 typeof(SpeexDspDenoiser)));
 
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
-            App.ServiceCollection.AddSingleton<HotKeyService>(x =>
-            {
-                nativeHotkeyService = new NativeHotKeyService(x.GetServices<HotKeyAction>());
-                return nativeHotkeyService;
-            });
+            App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
@@ -52,7 +46,11 @@ internal sealed class Program
         }
         finally
         {
-            nativeHotkeyService?.Dispose();
+            if (App.ServiceProvider != null)
+            {
+                var serviceProvider = App.ServiceProvider;
+                serviceProvider.Dispose();
+            }
         }
     }
 
