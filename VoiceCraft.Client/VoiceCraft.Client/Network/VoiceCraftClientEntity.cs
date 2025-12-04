@@ -11,10 +11,9 @@ namespace VoiceCraft.Client.Network;
 public class VoiceCraftClientEntity: VoiceCraftEntity
 {
     private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
-    private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(160));
+    private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(100));
     private readonly BufferedAudioProvider16 _outputBuffer = new(Constants.OutputBufferShorts)
         { DiscardOnOverflow = true };
-    
 
     private DateTime _lastPacket = DateTime.MinValue;
     private bool _userMuted;
@@ -98,16 +97,12 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
 
         lock (_outputBuffer)
         {
+            if (!Speaking && _outputBuffer.BufferedCount < Constants.PrefillBufferBytes) return 0;
             var read = _outputBuffer.Read(buffer, count);
             if (read <= 0)
             {
-                if (!Speaking) return 0;
-                lock (_decoder)
-                {
-                    read = _decoder.Decode(null, 0, buffer, Constants.SamplesPerFrame, false);
-                }
                 Speaking = false;
-                return Constants.BitDepth / 16 * Constants.Channels * read;
+                return 0;
             }
             
             Speaking = true;
