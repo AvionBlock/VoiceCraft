@@ -14,7 +14,7 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
-        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService)
+        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService, HotKeyService hotKeyService)
     {
         themesService.OnBackgroundImageChanged += backgroundImage =>
         {
@@ -27,11 +27,14 @@ public partial class MainViewModel : ObservableObject
             Content = viewModel;
             discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
         };
+        //Initialize Themes
         var themeSettings = settingsService.ThemeSettings;
         themesService.SwitchTheme(themeSettings.SelectedTheme);
         themesService.SwitchBackgroundImage(themeSettings.SelectedBackgroundImage);
+        //Initialize Locale Settings
         var localeSettings = settingsService.LocaleSettings;
         Localizer.Instance.Language = localeSettings.Culture;
+        hotKeyService.Initialize(); //Initialize the hotkey service.
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();

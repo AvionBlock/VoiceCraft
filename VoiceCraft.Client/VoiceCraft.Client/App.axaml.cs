@@ -27,7 +27,7 @@ namespace VoiceCraft.Client;
 public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
-    public static IServiceProvider? ServiceProvider { get; private set; }
+    public static ServiceProvider? ServiceProvider { get; private set; }
 
     public override void Initialize()
     {
@@ -221,6 +221,5 @@ public class App : Application
     {
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
-        serviceProvider.GetService<HotKeyService>();
     }
 }

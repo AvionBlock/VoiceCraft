@@ -1,17 +1,26 @@
+using System;
 using System.Collections.Generic;
 using VoiceCraft.Client.Processes;
 
 namespace VoiceCraft.Client.Services;
 
-public abstract class HotKeyService
+public abstract class HotKeyService : IDisposable
 {
+    public Dictionary<string, HotKeyAction> HotKeyActions { get; } = new();
+
     public HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions)
     {
         foreach (var registeredHotKeyAction in registeredHotKeyActions)
             HotKeyActions.Add(registeredHotKeyAction.DefaultKeyCombo, registeredHotKeyAction);
     }
 
-    public Dictionary<string, HotKeyAction> HotKeyActions { get; } = new();
+    public abstract void Initialize();
+
+    public virtual void Dispose()
+    {
+        //We do nothing by default
+        GC.SuppressFinalize(this);
+    }
 }
 
 public abstract class HotKeyAction
