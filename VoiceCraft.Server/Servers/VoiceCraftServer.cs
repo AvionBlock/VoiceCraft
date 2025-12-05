@@ -32,9 +32,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             AutoRecycle = true,
             UnconnectedMessagesEnabled = true
         };
-        
+
         _audioEffectSystem = audioEffectSystem;
-        World  = world;
+        World = world;
 
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
@@ -91,7 +91,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopped);
     }
 
-    public void RejectRequest<T>(ConnectionRequest request, T? packet = null) where T : VoiceCraftPacket
+    public void RejectRequest(ConnectionRequest request, VoiceCraftPacket? packet = null)
     {
         if (packet == null)
         {
@@ -107,7 +107,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public void DisconnectPeer<T>(NetPeer peer, T? packet = null) where T : VoiceCraftPacket
+    public void DisconnectPeer(NetPeer peer, VoiceCraftPacket? packet = null)
     {
         if (packet == null)
         {
@@ -123,7 +123,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public void DisconnectAll<T>(T? packet = null) where T : VoiceCraftPacket
+    public void DisconnectAll(VoiceCraftPacket? packet = null)
     {
         if (packet == null)
         {
@@ -140,8 +140,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public bool SendPacket<T>(NetPeer peer, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        where T : VoiceCraftPacket
+    public bool SendPacket(NetPeer peer, VoiceCraftPacket packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
     {
         if (peer.ConnectionState != ConnectionState.Connected) return false;
 
@@ -155,8 +154,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        where T : VoiceCraftPacket
+    public bool SendPacket(NetPeer[] peers, VoiceCraftPacket packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
     {
         lock (_dataWriter)
         {
@@ -180,7 +178,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
+    public bool SendUnconnectedPacket(IPEndPoint remoteEndPoint, VoiceCraftPacket packet)
     {
         lock (_dataWriter)
         {
@@ -191,9 +189,8 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered,
+    public void Broadcast(VoiceCraftPacket packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered,
         params NetPeer?[] excludes)
-        where T : VoiceCraftPacket
     {
         lock (_dataWriter)
         {
