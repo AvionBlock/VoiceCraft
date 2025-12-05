@@ -174,8 +174,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _netManager.DisconnectAll();
     }
 
-    public bool SendPacket<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        where T : VoiceCraftPacket
+    public bool SendPacket(VoiceCraftPacket packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
     {
         if (ConnectionState != ConnectionState.Connected) return false;
 
@@ -189,7 +188,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    public bool SendUnconnectedPacket<T>(IPEndPoint remoteEndPoint, T packet) where T : VoiceCraftPacket
+    public bool SendUnconnectedPacket(IPEndPoint remoteEndPoint, VoiceCraftPacket packet)
     {
         lock (_dataWriter)
         {
@@ -200,7 +199,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    public bool SendUnconnectedPacket<T>(string ip, uint port, T packet) where T : VoiceCraftPacket
+    public bool SendUnconnectedPacket(string ip, uint port, VoiceCraftPacket packet)
     {
         lock (_dataWriter)
         {
