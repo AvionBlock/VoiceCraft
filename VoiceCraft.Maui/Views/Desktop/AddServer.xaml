@@ -9,9 +9,7 @@
              x:DataType="vm:AddServerViewModel"
              Shell.FlyoutBehavior="Disabled">
 
-    <ContentPage.BindingContext>
-        <vm:AddServerViewModel />
-    </ContentPage.BindingContext>
+
 
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">

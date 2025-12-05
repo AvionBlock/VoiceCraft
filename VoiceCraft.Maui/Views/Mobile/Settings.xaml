@@ -8,9 +8,7 @@
              xmlns:vm="clr-namespace:VoiceCraft.Maui.ViewModels"
              Title="Settings"
              x:DataType="vm:SettingsViewModel">
-    <ContentPage.BindingContext>
-        <vm:SettingsViewModel />
-    </ContentPage.BindingContext>
+
 
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">

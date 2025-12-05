@@ -8,9 +8,7 @@
              Title="EditServer"
              x:DataType="vm:EditServerViewModel"
              Shell.FlyoutBehavior="Disabled">
-    <ContentPage.BindingContext>
-        <vm:EditServerViewModel />
-    </ContentPage.BindingContext>
+
 
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">

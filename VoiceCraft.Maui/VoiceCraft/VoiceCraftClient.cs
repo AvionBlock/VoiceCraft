@@ -88,8 +88,8 @@ namespace VoiceCraft.Maui.VoiceCraft
             Encoder = new OpusEncoder(AudioFormat.SampleRate, AudioFormat.Channels, OpusSharp.Core.Enums.PreDefCtl.OPUS_APPLICATION_VOIP)
             {
                 Bitrate = bitrate,
-                SignalType = OpusSharp.Core.Enums.PreDefCtl.OPUS_SIGNAL_VOICE,
-                UseDTX = useDtx, 
+                //SignalType = OpusSharp.Core.Enums.PreDefCtl.OPUS_SIGNAL_VOICE,
+                //UseDTX = useDtx, 
                 PacketLossPerc = 20 // 20% is more reasonable than 50%
             };
             AudioOutput = new MixingSampleProvider(PlaybackFormat) { ReadFully = true };
@@ -414,11 +414,11 @@ namespace VoiceCraft.Maui.VoiceCraft
             OnBinded?.Invoke(Username);
         }
 
-        private void MCWSSFailed(Exception ex)
+        private async void MCWSSFailed(Exception ex)
         {
             if (State != ConnectionState.Connected) return;
 
-            Disconnect(ex.Message);
+            await DisconnectAsync(ex.Message);
         }
 
         private void MCWSSPlayerTravelled(System.Numerics.Vector3 position, string Dimension)
@@ -463,11 +463,11 @@ namespace VoiceCraft.Maui.VoiceCraft
             OnUnbinded?.Invoke();
         }
 
-        private void CustomClientFailed(Exception ex)
+        private async void CustomClientFailed(Exception ex)
         {
             if (State != ConnectionState.Connected) return;
 
-            Disconnect(ex.Message);
+            await DisconnectAsync(ex.Message);
         }
 
         private void CustomClientUpdated(System.Numerics.Vector3 position, float rotation, float caveDensity, bool isUnderwater, string dimensionId, string levelId, string serverId)

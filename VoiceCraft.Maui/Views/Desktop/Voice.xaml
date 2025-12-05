@@ -9,9 +9,7 @@
              Title="Voice"
              x:DataType="vm:VoiceViewModel"
              Shell.FlyoutBehavior="Disabled">
-    <ContentPage.BindingContext>
-        <vm:VoiceViewModel />
-    </ContentPage.BindingContext>
+
 
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="False" IsVisible="False" />

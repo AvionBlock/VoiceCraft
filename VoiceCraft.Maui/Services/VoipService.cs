@@ -29,7 +29,7 @@ namespace VoiceCraft.Maui.Services
         public delegate void ParticipantUpdated(VoiceCraftParticipant participant);
         public delegate void ParticipantStartedSpeaking(VoiceCraftParticipant participant);
         public delegate void ParticipantStoppedSpeaking(VoiceCraftParticipant participant);
-        #endregion
+
 
         #region Events
         public event Started? OnStarted;
@@ -47,6 +47,19 @@ namespace VoiceCraft.Maui.Services
         public event ParticipantUpdated? OnParticipantUpdated;
         public event ParticipantStartedSpeaking? OnParticipantStartedSpeaking;
         public event ParticipantStoppedSpeaking? OnParticipantStoppedSpeaking;
+        #endregion
+
+        #region Fields
+        public SettingsModel Settings { get; private set; }
+        public ServerModel Server { get; private set; }
+        public VoiceCraftClient Client { get; private set; }
+        public string StatusMessage { get; private set; } = string.Empty;
+        public string Username { get; private set; } = string.Empty;
+
+        private IWaveIn AudioRecorder;
+        private IWavePlayer AudioPlayer;
+        private SoftLimiter Normalizer;
+        private long RecordDetection = 0;
         #endregion
 
         public VoipService(ServerModel server, IDatabaseService databaseService)
@@ -80,7 +93,7 @@ namespace VoiceCraft.Maui.Services
         {
             await Task.Run(async () =>
             {
-                var audioManager = new AudioManager();
+                var audioManager = new AudioManager(Settings);
 
                 if (Settings.SoftLimiterEnabled)
                 {

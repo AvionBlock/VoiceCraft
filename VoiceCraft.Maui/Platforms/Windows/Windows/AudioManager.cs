@@ -1,16 +1,21 @@
 ﻿using NAudio.Wave;
 using VoiceCraft.Maui.Interfaces;
 using VoiceCraft.Maui.Services;
+using VoiceCraft.Maui.Models;
 
 namespace VoiceCraft.Maui;
 
 public class AudioManager : IAudioManager
 {
-    public static AudioManager Instance { get; } = new AudioManager();
+    private readonly SettingsModel settings;
+
+    public AudioManager(SettingsModel settings)
+    {
+        this.settings = settings;
+    }
 
     public IWavePlayer CreatePlayer(ISampleProvider waveProvider)
     {
-        var settings = Database.Instance.Settings;
         var deviceNumber = settings.OutputDevice - 1;
 
         if (deviceNumber >= WaveOut.DeviceCount)
@@ -28,7 +33,6 @@ public class AudioManager : IAudioManager
 
     public IWaveIn CreateRecorder(WaveFormat waveFormat, int bufferMS)
     {
-        var settings = Database.Instance.Settings;
         var deviceNumber = settings.InputDevice - 1;
 
         if (deviceNumber >= WaveIn.DeviceCount)

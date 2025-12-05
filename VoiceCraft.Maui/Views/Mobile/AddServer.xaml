@@ -8,9 +8,6 @@
              Title="AddServer"
              x:DataType="vm:AddServerViewModel"
              Shell.TabBarIsVisible="False">
-    <ContentPage.BindingContext>
-        <vm:AddServerViewModel />
-    </ContentPage.BindingContext>
 
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">

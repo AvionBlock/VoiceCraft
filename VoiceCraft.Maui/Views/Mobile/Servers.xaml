@@ -9,9 +9,7 @@
              Title="Servers"
              x:DataType="vm:ServersViewModel">
 
-    <ContentPage.BindingContext>
-        <vm:ServersViewModel />
-    </ContentPage.BindingContext>
+
 
     <Grid>
         <Image Aspect="AspectFill" Source="{AppThemeBinding Default='bgdark.png', Dark='bgdark.png', Light='bglight.png'}" />
