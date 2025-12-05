@@ -78,18 +78,40 @@ public class McWssServer
 
     public void SendPacket(McApiNetPeer netPeer, McApiPacket packet)
     {
-        _writer.Reset();
-        _writer.Put((byte)packet.PacketType);
-        packet.Serialize(_writer);
-        netPeer.SendPacket(_writer);
+        lock (_writer)
+        {
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            packet.Serialize(_writer);
+            netPeer.SendPacket(_writer);
+        }
+    }
+    
+    public void Broadcast(McApiPacket packet, params McApiNetPeer?[] excludes)
+    {
+        lock (_writer)
+        {
+            var netPeers = _mcApiPeers.Where(x => x.Value.Connected);
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            packet.Serialize(_writer);
+            foreach (var netPeer in netPeers)
+            {
+                if (excludes.Contains(netPeer.Value)) continue;
+                netPeer.Value.SendPacket(_writer);
+            }
+        }
     }
 
     private void SendPacket(IWebSocketConnection socket, McApiPacket packet)
     {
-        _writer.Reset();
-        _writer.Put((byte)packet.PacketType);
-        packet.Serialize(_writer);
-        SendPacket(socket, Z85.GetStringWithPadding(_writer.CopyData()));
+        lock (_writer)
+        {
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            packet.Serialize(_writer);
+            SendPacket(socket, Z85.GetStringWithPadding(_writer.CopyData()));
+        }
     }
 
     private void SendPacket(IWebSocketConnection socket, string packetData)
@@ -100,19 +122,22 @@ public class McWssServer
 
     private void UpdatePeer(KeyValuePair<IWebSocketConnection, McApiNetPeer> peer)
     {
-        while (peer.Value.RetrieveInboundPacket(out var packetData))
-            try
-            {
-                _reader.Clear();
-                _reader.SetSource(packetData);
-                var packetType = _reader.GetByte();
-                var pt = (McApiPacketType)packetType;
-                HandlePacket(pt, _reader, peer.Key, peer.Value);
-            }
-            catch
-            {
-                //Do Nothing
-            }
+        lock (_reader)
+        {
+            while (peer.Value.RetrieveInboundPacket(out var packetData))
+                try
+                {
+                    _reader.Clear();
+                    _reader.SetSource(packetData);
+                    var packetType = _reader.GetByte();
+                    var pt = (McApiPacketType)packetType;
+                    HandlePacket(pt, _reader, peer.Key, peer.Value);
+                }
+                catch
+                {
+                    //Do Nothing
+                }
+        }
 
         var first = true;
         var stringBuilder = new StringBuilder();

@@ -11,12 +11,15 @@ public class EventHandlerSystem : IDisposable
 {
     private readonly AudioEffectSystem _audioEffectSystem;
     private readonly VoiceCraftServer _server;
+    private readonly McWssServer _mcWssServer;
     private readonly ConcurrentQueue<Action> _tasks = [];
     private readonly VoiceCraftWorld _world;
 
-    public EventHandlerSystem(VoiceCraftServer server, VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
+    public EventHandlerSystem(VoiceCraftServer server, McWssServer mcWssServer, VoiceCraftWorld world,
+        AudioEffectSystem audioEffectSystem)
     {
         _server = server;
+        _mcWssServer = mcWssServer;
         _world = world;
         _audioEffectSystem = audioEffectSystem;
 
@@ -37,7 +40,7 @@ public class EventHandlerSystem : IDisposable
     {
         Parallel.For(0, _tasks.Count, _ =>
         {
-            if(_tasks.TryDequeue(out var result))
+            if (_tasks.TryDequeue(out var result))
                 result.Invoke();
         });
     }
