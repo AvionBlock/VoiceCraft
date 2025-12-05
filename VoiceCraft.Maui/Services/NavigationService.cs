@@ -5,9 +5,12 @@ namespace VoiceCraft.Maui.Services
     public class NavigationService : INavigationService
     {
         private object? _navigationData;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public async Task NavigateTo(string pageName, object? navigationData = null, string? queries = null)
         {
+            if (!await _semaphore.WaitAsync(200)) return; // Prevent spam clicking
+
             try
             {
                 if (navigationData != null)
@@ -22,10 +25,16 @@ namespace VoiceCraft.Maui.Services
             {
                 await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
             }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
         public async Task GoBack()
         {
+            if (!await _semaphore.WaitAsync(200)) return;
+
             try
             {
                 await Shell.Current.Navigation.PopAsync();
@@ -33,6 +42,10 @@ namespace VoiceCraft.Maui.Services
             catch (Exception ex)
             {
                 await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 

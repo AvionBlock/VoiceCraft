@@ -6,6 +6,7 @@ namespace VoiceCraft.Maui.Interfaces
     {
         SettingsModel Settings { get; }
         List<ServerModel> Servers { get; }
+        Task Initialization { get; }
 
         event Action<ServerModel>? OnServerAdded;
         event Action<ServerModel>? OnServerRemoved;

@@ -35,14 +35,19 @@ namespace VoiceCraft.Maui.ViewModels
         {
             _databaseService = databaseService;
             _audioManager = audioManager;
-            
-            Settings = _databaseService.Settings;
+            LoadSettings();
 
             foreach(var device in _audioManager.GetInputDevices())
                 InputDevices.Add(device);
 
             foreach (var device in _audioManager.GetOutputDevices())
                 OutputDevices.Add(device);
+        }
+
+        private async void LoadSettings()
+        {
+            await _databaseService.Initialization;
+            Settings = _databaseService.Settings;
 
             if (Settings.InputDevice > _audioManager.GetInputDeviceCount())
             {

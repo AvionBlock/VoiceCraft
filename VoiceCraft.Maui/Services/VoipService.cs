@@ -14,20 +14,6 @@ namespace VoiceCraft.Maui.Services
         public const int Channels = 1;
         public const int FrameSizeMS = 20;
 
-        //State Variables
-        public string StatusMessage { get; private set; } = "Connecting...";
-        private string Username = "";
-
-        //VOIP and Audio handler variables
-        public VoiceCraftClient Client { get; private set; }
-        private int RecordDetection;
-        private IWaveIn? AudioRecorder;
-        private IWavePlayer? AudioPlayer;
-        private SoftLimiter? Normalizer;
-        private readonly SettingsModel Settings;
-        private readonly ServerModel Server;
-
-        #region Delegates
         public delegate void Started();
         public delegate void Stopped(string? reason = null);
         public delegate void Deny(string? reason = null);
@@ -208,12 +194,18 @@ namespace VoiceCraft.Maui.Services
             if (Client.Muted || Client.Deafened)
                 return;
 
+            // Guard against odd bytes (16-bit audio requires even bytes)
+            int bytesToProcess = e.BytesRecorded - (e.BytesRecorded % 2);
+
             // Noise Suppression (High Pass Filter 80Hz)
             if (Settings.NoiseSuppression)
             {
-                float alpha = 0.989f; // RC/(RC+dt) for fc=80Hz, fs=48000Hz
-                for (int i = 0; i < e.BytesRecorded; i += 2)
+                float alpha = 0.989f;
+                for (int i = 0; i < bytesToProcess; i += 2)
                 {
+                    // Ensure buffer safety
+                    if (i + 1 >= e.Buffer.Length) break;
+
                     short sample = (short)((e.Buffer[i + 1] << 8) | e.Buffer[i]);
                     float input = sample;
                     float output = alpha * (prevOut + input - prevIn);
@@ -229,10 +221,12 @@ namespace VoiceCraft.Maui.Services
 
             float max = 0;
             // interpret as 16 bit audio
-            for (int index = 0; index < e.BytesRecorded; index += 2)
+            for (int index = 0; index < bytesToProcess; index += 2)
             {
-                short sample = (short)((e.Buffer[index + 1] << 8) |
-                                        e.Buffer[index + 0]);
+                 // Ensure buffer safety
+                if (index + 1 >= e.Buffer.Length) break;
+
+                short sample = (short)((e.Buffer[index + 1] << 8) | e.Buffer[index + 0]);
                 // to floating point
                 var sample32 = sample / 32768f;
                 // absolute value 
@@ -242,12 +236,12 @@ namespace VoiceCraft.Maui.Services
 
             if (max >= Settings.MicrophoneDetectionPercentage)
             {
-                RecordDetection = Environment.TickCount;
+                RecordDetection = Environment.TickCount64;
             }
 
-            if (Environment.TickCount - (long)RecordDetection < 1000)
+            if (Environment.TickCount64 - RecordDetection < 1000)
             {
-                Client.SendAudio(e.Buffer, e.BytesRecorded);
+                Client.SendAudio(e.Buffer, bytesToProcess);
             }
         }
 

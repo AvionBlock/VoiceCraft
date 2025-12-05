@@ -14,7 +14,7 @@ namespace VoiceCraft.Maui.ViewModels
         private readonly INavigationService _navigationService;
 
         [ObservableProperty]
-        ObservableCollection<ServerModel> servers;
+        ObservableCollection<ServerModel> servers = [];
 
         [ObservableProperty]
         SettingsModel settings;
@@ -24,11 +24,20 @@ namespace VoiceCraft.Maui.ViewModels
             _databaseService = databaseService;
             _navigationService = navigationService;
 
-            Servers = new ObservableCollection<ServerModel>(_databaseService.Servers);
+            LoadServers();
             Settings = _databaseService.Settings;
 
             _databaseService.OnServerAdded += ServerAdded;
             _databaseService.OnServerRemoved += ServerRemoved;
+        }
+
+        private async void LoadServers()
+        {
+            await _databaseService.Initialization;
+            foreach (var server in _databaseService.Servers)
+            {
+                Servers.Add(server);
+            }
         }
 
         [RelayCommand]

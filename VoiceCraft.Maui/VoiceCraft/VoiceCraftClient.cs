@@ -199,16 +199,24 @@ namespace VoiceCraft.Maui.VoiceCraft
             }
         }
 
+        private readonly byte[] _audioEncodeBuffer = new byte[1000]; // Reusable buffer for encoding
+        private readonly object _audioLock = new object();
+
         public void SendAudio(byte[] audio, int bytesRecorded)
         {
             if (Deafened || Muted || State != ConnectionState.Connected) return;
-            PacketCount++;
 
-            byte[] audioEncodeBuffer = new byte[1000];
-            var encodedBytes = Encoder.Encode(audio, bytesRecorded, audioEncodeBuffer);
-            byte[] audioTrimmed = audioEncodeBuffer.SkipLast(1000 - encodedBytes).ToArray();
+            lock (_audioLock)
+            {
+                PacketCount++;
+                int encodedBytes = Encoder.Encode(audio, bytesRecorded, _audioEncodeBuffer);
+                
+                // Allocate exact size array - unavoidable due to Packet structure, but faster than Linq
+                byte[] audioTrimmed = new byte[encodedBytes];
+                Buffer.BlockCopy(_audioEncodeBuffer, 0, audioTrimmed, 0, encodedBytes);
 
-            VoiceCraftSocket.Send(new Core.Packets.VoiceCraft.ClientAudio() { Audio = audioTrimmed, PacketCount = PacketCount });
+                VoiceCraftSocket.Send(new Core.Packets.VoiceCraft.ClientAudio() { Audio = audioTrimmed, PacketCount = PacketCount });
+            }
         }
 
         private void ClearParticipants()

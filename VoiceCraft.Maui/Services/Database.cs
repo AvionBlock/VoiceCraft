@@ -22,9 +22,11 @@ namespace VoiceCraft.Maui.Services
         public SettingsModel Settings { get; private set; } = new SettingsModel();
         public List<ServerModel> Servers { get; private set; } = new List<ServerModel>();
 
+        public Task Initialization { get; private set; }
+
         public Database()
         {
-            Initialize().ConfigureAwait(false);
+            Initialization = Initialize();
         }
 
         private async Task Initialize()
