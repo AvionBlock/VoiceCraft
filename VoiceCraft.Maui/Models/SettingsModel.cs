@@ -32,5 +32,14 @@ namespace VoiceCraft.Maui.Models
         string muteKeybind = "LControlKey+M";
         [ObservableProperty]
         string deafenKeybind = "LControlKey+LShiftKey+D";
+        
+        [ObservableProperty]
+        int bitrate = 16000; // 16kbps default for good voice quality/low bandwidth
+        
+        [ObservableProperty]
+        bool useDtx = true; // Variable bitrate/discontinuous transmission
+        
+        [ObservableProperty]
+        bool noiseSuppression = false;
     }
 }

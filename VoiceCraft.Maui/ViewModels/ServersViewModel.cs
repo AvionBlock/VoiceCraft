@@ -4,45 +4,55 @@ using System.Collections.ObjectModel;
 using VoiceCraft.Maui.Services;
 using VoiceCraft.Maui.Views.Desktop;
 using VoiceCraft.Maui.Models;
+using VoiceCraft.Maui.Interfaces;
 
 namespace VoiceCraft.Maui.ViewModels
 {
     public partial class ServersViewModel : ObservableObject
     {
-        [ObservableProperty]
-        ObservableCollection<ServerModel> servers = new ObservableCollection<ServerModel>(Database.Instance.Servers);
+        private readonly IDatabaseService _databaseService;
+        private readonly INavigationService _navigationService;
 
         [ObservableProperty]
-        SettingsModel settings = Database.Instance.Settings;
+        ObservableCollection<ServerModel> servers;
 
-        public ServersViewModel()
+        [ObservableProperty]
+        SettingsModel settings;
+
+        public ServersViewModel(IDatabaseService databaseService, INavigationService navigationService)
         {
-            Database.Instance.OnServerAdded += ServerAdded;
-            Database.Instance.OnServerRemoved += ServerRemoved;
+            _databaseService = databaseService;
+            _navigationService = navigationService;
+
+            Servers = new ObservableCollection<ServerModel>(_databaseService.Servers);
+            Settings = _databaseService.Settings;
+
+            _databaseService.OnServerAdded += ServerAdded;
+            _databaseService.OnServerRemoved += ServerRemoved;
         }
 
         [RelayCommand]
         public async Task DeleteServer(ServerModel server)
         {
-            await Database.Instance.RemoveServer(server);
+            await _databaseService.RemoveServer(server);
         }
 
         [RelayCommand]
         public async Task GoToAddServer()
         {
-            await Navigator.NavigateTo(nameof(AddServer));
+            await _navigationService.NavigateTo(nameof(AddServer));
         }
 
         [RelayCommand]
         public async Task GoToEditServer(ServerModel server)
         {
-            await Navigator.NavigateTo(nameof(EditServer), server);
+            await _navigationService.NavigateTo(nameof(EditServer), server);
         }
 
         [RelayCommand]
         public async Task GoToServer(ServerModel server)
         {
-            await Navigator.NavigateTo(nameof(ServerDetails), server);
+            await _navigationService.NavigateTo(nameof(ServerDetails), server);
         }
 
         private void ServerAdded(ServerModel server)

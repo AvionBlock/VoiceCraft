@@ -74,7 +74,7 @@ namespace VoiceCraft.Maui.VoiceCraft
         public event ChannelLeft? OnChannelLeft;
         #endregion
 
-        public VoiceCraftClient(WaveFormat audioFormat, int frameSizeMS = 20, int ClientPort = 8080, int jitterBufferSize = 80)
+        public VoiceCraftClient(WaveFormat audioFormat, int frameSizeMS = 20, int ClientPort = 8080, int jitterBufferSize = 80, int bitrate = 16000, bool useDtx = true)
         {
             this.ClientPort = ClientPort;
             MCWSS = new Network.Sockets.MCWSS(ClientPort);
@@ -87,8 +87,10 @@ namespace VoiceCraft.Maui.VoiceCraft
 
             Encoder = new OpusEncoder(AudioFormat.SampleRate, AudioFormat.Channels, OpusSharp.Core.Enums.PreDefCtl.OPUS_APPLICATION_VOIP)
             {
-                Bitrate = 32000,
-                PacketLossPerc = 50
+                Bitrate = bitrate,
+                SignalType = OpusSharp.Core.Enums.PreDefCtl.OPUS_SIGNAL_VOICE,
+                UseDTX = useDtx, 
+                PacketLossPerc = 20 // 20% is more reasonable than 50%
             };
             AudioOutput = new MixingSampleProvider(PlaybackFormat) { ReadFully = true };
 

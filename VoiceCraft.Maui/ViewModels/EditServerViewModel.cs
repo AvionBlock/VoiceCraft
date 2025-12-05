@@ -2,17 +2,32 @@
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Maui.Services;
 using VoiceCraft.Maui.Models;
+using VoiceCraft.Maui.Interfaces;
 
 namespace VoiceCraft.Maui.ViewModels
 {
     public partial class EditServerViewModel : ObservableObject
     {
+        private readonly IDatabaseService _databaseService;
+        private readonly INavigationService _navigationService;
+
         [ObservableProperty]
         ServerModel unsavedServer;
 
-        public EditServerViewModel()
+        public EditServerViewModel(IDatabaseService databaseService, INavigationService navigationService)
         {
-            unsavedServer = (ServerModel)Navigator.GetNavigationData<ServerModel>().Clone();
+            _databaseService = databaseService;
+            _navigationService = navigationService;
+            
+            var data = _navigationService.GetNavigationData<ServerModel>();
+            if (data != null)
+            {
+                UnsavedServer = (ServerModel)data.Clone();
+            }
+            else
+            {
+                UnsavedServer = new ServerModel(); // Fallback
+            }
         }
 
         [RelayCommand]
@@ -20,8 +35,8 @@ namespace VoiceCraft.Maui.ViewModels
         {
             try
             {
-                await Database.Instance.EditServer(UnsavedServer);
-                await Navigator.GoBack();
+                await _databaseService.EditServer(UnsavedServer);
+                await _navigationService.GoBack();
             }
             catch (Exception ex)
             {

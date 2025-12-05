@@ -5,11 +5,11 @@ namespace VoiceCraft.Maui.Views.Mobile;
 public partial class Settings : ContentPage
 {
     readonly SettingsViewModel viewModel;
-    public Settings()
+    public Settings(SettingsViewModel viewModel)
     {
         InitializeComponent();
-
-        viewModel = (SettingsViewModel)BindingContext;
+        this.viewModel = viewModel;
+        BindingContext = viewModel;
     }
 
     private void ClientEntryUnfocused(object sender, FocusEventArgs e)

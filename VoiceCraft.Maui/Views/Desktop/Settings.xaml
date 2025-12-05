@@ -43,7 +43,7 @@
                         Margin="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="StartAndExpand">
-                    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
                         <Grid Grid.Row="0" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
@@ -213,6 +213,47 @@
                         </Grid>
 
                         <Grid Grid.Row="11" ColumnDefinitions="290, 0.4*, 0.6*">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="{Binding Settings.Bitrate, StringFormat='Bitrate: {0} bps'}"
+                                   VerticalTextAlignment="Center" />
+
+                            <Slider Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    Maximum="96000"
+                                    Minimum="8000"
+                                    VerticalOptions="Center"
+                                    Value="{Binding Settings.Bitrate}" />
+                        </Grid>
+
+                        <Grid Grid.Row="12" ColumnDefinitions="290, *">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="Use DTX (Save Bandwidth)"
+                                   VerticalTextAlignment="Center" />
+
+                            <Switch Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    IsToggled="{Binding Settings.UseDtx}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Grid.Row="13" ColumnDefinitions="290, *">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="Noise Suppression"
+                                   VerticalTextAlignment="Center" />
+
+                            <Switch Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    IsToggled="{Binding Settings.NoiseSuppression}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Grid.Row="14" ColumnDefinitions="290, 0.4*, 0.6*">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"

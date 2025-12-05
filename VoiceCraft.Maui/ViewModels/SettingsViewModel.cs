@@ -3,14 +3,18 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using VoiceCraft.Maui.Services;
 using VoiceCraft.Maui.Models;
+using VoiceCraft.Maui.Interfaces;
 using NAudio.Wave;
 
 namespace VoiceCraft.Maui.ViewModels
 {
     public partial class SettingsViewModel : ObservableObject
     {
+        private readonly IDatabaseService _databaseService;
+        private readonly IAudioManager _audioManager;
+
         [ObservableProperty]
-        SettingsModel settings = Database.Instance.Settings;
+        SettingsModel settings;
 
         [ObservableProperty]
         ObservableCollection<string> inputDevices = ["Default"];
@@ -27,19 +31,24 @@ namespace VoiceCraft.Maui.ViewModels
         private IWaveIn? Microphone;
         private readonly WaveFormat AudioFormat = new(48000, 1);
 
-        public SettingsViewModel()
+        public SettingsViewModel(IDatabaseService databaseService, IAudioManager audioManager)
         {
-            foreach(var device in AudioManager.Instance.GetInputDevices())
+            _databaseService = databaseService;
+            _audioManager = audioManager;
+            
+            Settings = _databaseService.Settings;
+
+            foreach(var device in _audioManager.GetInputDevices())
                 InputDevices.Add(device);
 
-            foreach (var device in AudioManager.Instance.GetOutputDevices())
+            foreach (var device in _audioManager.GetOutputDevices())
                 OutputDevices.Add(device);
 
-            if (Settings.InputDevice > AudioManager.Instance.GetInputDeviceCount())
+            if (Settings.InputDevice > _audioManager.GetInputDeviceCount())
             {
                 Settings.InputDevice = 0;
             }
-            if (Settings.OutputDevice > AudioManager.Instance.GetOutputDeviceCount())
+            if (Settings.OutputDevice > _audioManager.GetOutputDeviceCount())
             {
                 Settings.OutputDevice = 0;
             }
@@ -57,7 +66,7 @@ namespace VoiceCraft.Maui.ViewModels
                 MicrophoneDetection = 0;
                 IsRecording = false;
             }
-            _ = Database.Instance.SaveSettings();
+            _ = _databaseService.SaveSettings();
         }
 
         [RelayCommand]
@@ -65,8 +74,8 @@ namespace VoiceCraft.Maui.ViewModels
         {
             if (Microphone == null)
             {
-                if (!await AudioManager.Instance.RequestInputPermissions()) return;
-                Microphone = AudioManager.Instance.CreateRecorder(AudioFormat, 20);
+                if (!await _audioManager.RequestInputPermissions()) return;
+                Microphone = _audioManager.CreateRecorder(AudioFormat, 20);
                 Microphone.DataAvailable += Microphone_DataAvailable;
                 Microphone.StartRecording();
                 IsRecording = true;

@@ -4,12 +4,20 @@ using CommunityToolkit.Mvvm.Messaging;
 using System.Collections.ObjectModel;
 using VoiceCraft.Maui.Models;
 using VoiceCraft.Maui.Services;
+using VoiceCraft.Maui.Interfaces;
 
 namespace VoiceCraft.Maui.ViewModels
 {
     [QueryProperty(nameof(StartMode), "startMode")]
     public partial class VoiceViewModel : ObservableObject
     {
+        private readonly INavigationService _navigationService;
+
+        public VoiceViewModel(INavigationService navigationService)
+        {
+            _navigationService = navigationService;
+        }
+
         public string StartMode { set => Start = bool.Parse(value); }
 
         [ObservableProperty]
@@ -50,7 +58,7 @@ namespace VoiceCraft.Maui.ViewModels
         {
             if (!Start && Preferences.Get("VoipServiceRunning", false) == false)
             {
-                await Navigator.GoBack();
+                await _navigationService.GoBack();
                 return;
             }
 
@@ -173,7 +181,7 @@ namespace VoiceCraft.Maui.ViewModels
             {
                 if (!string.IsNullOrWhiteSpace(message.Value))
                     await Shell.Current.DisplayAlert("Disconnected!", message.Value, "OK");
-                await Navigator.GoBack();
+                await _navigationService.GoBack();
             });
 
             WeakReferenceMessenger.Default.Register(this, (object recipient, DenyMSG message) =>
@@ -210,11 +218,11 @@ namespace VoiceCraft.Maui.ViewModels
         }
 
         [RelayCommand]
-        public static async Task Disconnect()
+        public async Task Disconnect()
         {
             WeakReferenceMessenger.Default.Send(new DisconnectMSG());
             Preferences.Set("VoipServiceRunning", false);
-            await Navigator.GoBack();
+            await _navigationService.GoBack();
         }
 
         [RelayCommand]
@@ -255,7 +263,7 @@ namespace VoiceCraft.Maui.ViewModels
         }
 
         [RelayCommand(CanExecute = nameof(CanJoinChannel))]
-        public static async Task JoinChannel(ChannelModel channel)
+        public async Task JoinChannel(ChannelModel channel)
         {
             if (channel.Joined)
             {

@@ -1,11 +1,15 @@
 ﻿using VoiceCraft.Maui.Services;
+using VoiceCraft.Maui.Interfaces;
 
 namespace VoiceCraft.Maui
 {
     public partial class AppShell : Shell
     {
-        public AppShell()
+        private readonly INavigationService _navigationService;
+
+        public AppShell(INavigationService navigationService)
         {
+            _navigationService = navigationService;
             InitializeComponent();
 
             //Routing
@@ -38,7 +42,7 @@ namespace VoiceCraft.Maui
 #if !WINDOWS
             if (Preferences.Get("VoipServiceRunning", false) && AppShell.Current.CurrentPage?.BindingContext is not ViewModels.VoiceViewModel)
             {
-                MainThread.BeginInvokeOnMainThread(async () => await Navigator.NavigateTo(nameof(Views.Desktop.Voice)));
+                MainThread.BeginInvokeOnMainThread(async () => await _navigationService.NavigateTo(nameof(Views.Desktop.Voice)));
             }
 #endif
             base.OnAppearing();

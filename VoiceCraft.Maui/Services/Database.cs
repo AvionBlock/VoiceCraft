@@ -1,57 +1,72 @@
 ﻿using Newtonsoft.Json;
+using VoiceCraft.Maui.Interfaces;
 using VoiceCraft.Maui.Models;
 
 namespace VoiceCraft.Maui.Services
 {
-    public class Database
+    /// <summary>
+    /// Service for managing local data persistence.
+    /// </summary>
+    public class Database : IDatabaseService
     {
         private const string ServerDb = "Servers.json";
         private const string SettingsDb = "Settings.json";
 
-        private string ServersDbPath = Path.Combine(FileSystem.Current.AppDataDirectory, ServerDb);
-        private string SettingsDbPath = Path.Combine(FileSystem.Current.AppDataDirectory, SettingsDb);
+        private readonly string ServersDbPath = Path.Combine(FileSystem.Current.AppDataDirectory, ServerDb);
+        private readonly string SettingsDbPath = Path.Combine(FileSystem.Current.AppDataDirectory, SettingsDb);
+        private readonly object _lock = new();
 
-        public delegate void ServerAdded(ServerModel server);
-        public delegate void ServerRemoved(ServerModel server);
+        public event Action<ServerModel>? OnServerAdded;
+        public event Action<ServerModel>? OnServerRemoved;
 
-        public event ServerAdded? OnServerAdded;
-        public event ServerRemoved? OnServerRemoved;
+        public SettingsModel Settings { get; private set; } = new SettingsModel();
+        public List<ServerModel> Servers { get; private set; } = new List<ServerModel>();
 
-        public SettingsModel Settings { get; } = new SettingsModel();
-        public List<ServerModel> Servers { get; } = new List<ServerModel>();
         public Database()
         {
-            if (!File.Exists(ServersDbPath))
-            {
-                File.WriteAllText(ServersDbPath, JsonConvert.SerializeObject(Servers));
-            }
-            else
-            {
-                var ReadDBData = JsonConvert.DeserializeObject<List<ServerModel>>(File.ReadAllText(ServersDbPath));
-                if (ReadDBData != null)
-                    Servers = ReadDBData;
-            }
+            Initialize().ConfigureAwait(false);
+        }
 
+        private async Task Initialize()
+        {
+            try
+            {
+                if (!File.Exists(ServersDbPath))
+                {
+                    await File.WriteAllTextAsync(ServersDbPath, JsonConvert.SerializeObject(Servers));
+                }
+                else
+                {
+                    var readDBData = JsonConvert.DeserializeObject<List<ServerModel>>(await File.ReadAllTextAsync(ServersDbPath));
+                    if (readDBData != null)
+                        Servers = readDBData;
+                }
 
-            if (!File.Exists(SettingsDbPath))
-            {
-                File.WriteAllText(SettingsDbPath, JsonConvert.SerializeObject(Settings));
+                if (!File.Exists(SettingsDbPath))
+                {
+                    await File.WriteAllTextAsync(SettingsDbPath, JsonConvert.SerializeObject(Settings));
+                }
+                else
+                {
+                    var readDBData = JsonConvert.DeserializeObject<SettingsModel>(await File.ReadAllTextAsync(SettingsDbPath));
+                    if (readDBData != null)
+                        Settings = readDBData;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                var ReadDBData = JsonConvert.DeserializeObject<SettingsModel>(File.ReadAllText(SettingsDbPath));
-                if (ReadDBData != null)
-                    Settings = ReadDBData;
+                System.Diagnostics.Debug.WriteLine($"Error initializing database: {ex}");
             }
         }
 
         public async Task AddServer(ServerModel server)
         {
-            if (string.IsNullOrWhiteSpace(server.Name)) throw new Exception("Name cannot be empty!");
-            else if (string.IsNullOrEmpty(server.IP)) throw new Exception("IP cannot be empty!");
-            else if (server.Port < 1025) throw new Exception("Port cannot be lower than 1025");
-            else if (server.Port > 65535) throw new Exception("Port cannot be higher than 65535");
-            else if (Servers.Exists(x => x.Name == server.Name)) throw new Exception("Name already exists! Name must be unique!");
+            if (string.IsNullOrWhiteSpace(server.Name)) throw new ArgumentException("Name cannot be empty!");
+            if (string.IsNullOrEmpty(server.IP)) throw new ArgumentException("IP cannot be empty!");
+            if (server.Port < 1025) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be lower than 1025");
+            if (server.Port > 65535) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be higher than 65535");
+            if (Servers.Exists(x => x.Name == server.Name)) throw new InvalidOperationException("Name already exists! Name must be unique!");
+
             Servers.Add(server);
             OnServerAdded?.Invoke(server);
             await SaveServers();
@@ -60,20 +75,20 @@ namespace VoiceCraft.Maui.Services
         public async Task EditServer(ServerModel server)
         {
             var foundServer = Servers.FirstOrDefault(x => x.Name == server.Name);
-            if(foundServer != null)
+            if (foundServer != null)
             {
-                if (string.IsNullOrWhiteSpace(server.Name)) throw new Exception("Name cannot be empty!");
-                else if (string.IsNullOrEmpty(server.IP)) throw new Exception("IP cannot be empty!");
-                else if (server.Port < 1025) throw new Exception("Port cannot be lower than 1025");
-                else if (server.Port > 65535) throw new Exception("Port cannot be higher than 65535");
+                if (string.IsNullOrWhiteSpace(server.Name)) throw new ArgumentException("Name cannot be empty!");
+                if (string.IsNullOrEmpty(server.IP)) throw new ArgumentException("IP cannot be empty!");
+                if (server.Port < 1025) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be lower than 1025");
+                if (server.Port > 65535) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be higher than 65535");
 
                 foundServer.IP = server.IP;
                 foundServer.Port = server.Port;
                 foundServer.Key = server.Key;
                 await SaveServers();
-                return; //UI updates automatically as soon as we change a value.
+                return;
             }
-            throw new Exception("Server not found!");
+            throw new KeyNotFoundException("Server not found!");
         }
 
         public async Task RemoveServer(ServerModel server)
@@ -91,14 +106,32 @@ namespace VoiceCraft.Maui.Services
 
         public async Task SaveServers()
         {
-            await File.WriteAllTextAsync(ServersDbPath, JsonConvert.SerializeObject(Servers, Formatting.Indented));
+            await Task.Run(() =>
+            {
+                lock (_lock)
+                {
+                    using var stream = File.Create(ServersDbPath);
+                    using var writer = new StreamWriter(stream);
+                    using var jsonWriter = new JsonTextWriter(writer);
+                    var serializer = new JsonSerializer { Formatting = Formatting.Indented };
+                    serializer.Serialize(jsonWriter, Servers);
+                }
+            });
         }
 
         public async Task SaveSettings()
         {
-            await File.WriteAllTextAsync(SettingsDbPath, JsonConvert.SerializeObject(Settings, Formatting.Indented));
+            await Task.Run(() =>
+            {
+                lock (_lock)
+                {
+                    using var stream = File.Create(SettingsDbPath);
+                    using var writer = new StreamWriter(stream);
+                    using var jsonWriter = new JsonTextWriter(writer);
+                    var serializer = new JsonSerializer { Formatting = Formatting.Indented };
+                    serializer.Serialize(jsonWriter, Settings);
+                }
+            });
         }
-
-        public static Database Instance { get; } = new Database();
     }
 }

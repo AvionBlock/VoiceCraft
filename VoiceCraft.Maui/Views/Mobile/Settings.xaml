@@ -43,7 +43,7 @@
                         Margin="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="StartAndExpand">
-                    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
                         <Grid Grid.Row="0" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
@@ -181,10 +181,50 @@
                                Margin="0,10,0,0"
                                FontAttributes="Bold"
                                FontSize="Small"
+                               Text="{Binding Settings.Bitrate, StringFormat='Bitrate: {0} bps'}"
+                               VerticalTextAlignment="Center" />
+
+                        <Slider Grid.Row="13"
+                                Margin="0,10"
+                                Maximum="96000"
+                                Minimum="8000"
+                                VerticalOptions="Center"
+                                Value="{Binding Settings.Bitrate}" />
+
+                        <Grid Grid.Row="14" ColumnDefinitions="290, *">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="Use DTX (Save Bandwidth)"
+                                   VerticalTextAlignment="Center" />
+
+                            <Switch Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    IsToggled="{Binding Settings.UseDtx}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Grid.Row="15" ColumnDefinitions="290, *">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="Noise Suppression"
+                                   VerticalTextAlignment="Center" />
+
+                            <Switch Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    IsToggled="{Binding Settings.NoiseSuppression}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Label Grid.Row="16"
+                               Margin="0,10,0,0"
+                               FontAttributes="Bold"
+                               FontSize="Small"
                                Text="{Binding Settings.MicrophoneDetectionPercentage, StringFormat='Microphone Detection: {0:P2}'}"
                                VerticalTextAlignment="Center" />
 
-                        <Grid Grid.Row="13"
+                        <Grid Grid.Row="17"
                               Margin="0,10"
                               RowDefinitions="0, Auto">
                             <ahKit:ProgressBar Grid.Row="0"
@@ -201,7 +241,7 @@
                                     Minimum="0.0"
                                     Value="{Binding Settings.MicrophoneDetectionPercentage}" />
                         </Grid>
-                        <Button Grid.Row="14"
+                        <Button Grid.Row="18"
                                 Margin="0,10,0,0"
                                 BackgroundColor="#2fFFFFFF"
                                 Command="{Binding OpenCloseMicrophoneCommand}"

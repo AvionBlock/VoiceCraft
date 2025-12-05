@@ -4,6 +4,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Maui.Models;
 using VoiceCraft.Maui.VoiceCraft;
+using VoiceCraft.Maui.Interfaces;
 
 namespace VoiceCraft.Maui.Services
 {
@@ -62,12 +63,12 @@ namespace VoiceCraft.Maui.Services
         public event ParticipantStoppedSpeaking? OnParticipantStoppedSpeaking;
         #endregion
 
-        public VoipService(ServerModel server)
+        public VoipService(ServerModel server, IDatabaseService databaseService)
         {
-            Settings = Database.Instance.Settings;
+            Settings = databaseService.Settings;
             Server = server;
 
-            Client = new VoiceCraftClient(new WaveFormat(SampleRate, Channels), FrameSizeMS, Settings.ClientPort, Settings.JitterBufferSize)
+            Client = new VoiceCraftClient(new WaveFormat(SampleRate, Channels), FrameSizeMS, Settings.ClientPort, Settings.JitterBufferSize, Settings.Bitrate, Settings.UseDtx)
             {
                 LinearProximity = Settings.LinearVolume,
                 UseCustomProtocol = Settings.CustomClientProtocol,
@@ -197,11 +198,34 @@ namespace VoiceCraft.Maui.Services
             }
         }
 
+        private float prevIn = 0;
+        private float prevOut = 0;
+
         //Audio Events
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
+            if (Client == null) return;
             if (Client.Muted || Client.Deafened)
                 return;
+
+            // Noise Suppression (High Pass Filter 80Hz)
+            if (Settings.NoiseSuppression)
+            {
+                float alpha = 0.989f; // RC/(RC+dt) for fc=80Hz, fs=48000Hz
+                for (int i = 0; i < e.BytesRecorded; i += 2)
+                {
+                    short sample = (short)((e.Buffer[i + 1] << 8) | e.Buffer[i]);
+                    float input = sample;
+                    float output = alpha * (prevOut + input - prevIn);
+                    
+                    prevIn = input;
+                    prevOut = output;
+                    
+                    short outSample = (short)Math.Clamp(output, short.MinValue, short.MaxValue);
+                    e.Buffer[i] = (byte)(outSample & 0xFF);
+                    e.Buffer[i + 1] = (byte)(outSample >> 8);
+                }
+            }
 
             float max = 0;
             // interpret as 16 bit audio
