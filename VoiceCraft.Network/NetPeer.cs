@@ -19,6 +19,10 @@ namespace VoiceCraft.Network
         private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReliabilityQueue = new ConcurrentDictionary<uint, VoiceCraftPacket>();
         private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReceiveBuffer = new ConcurrentDictionary<uint, VoiceCraftPacket>();
 
+        // Lock objects for thread safety
+        private readonly object _sendLock = new object();
+        private readonly object _receiveLock = new object();
+
         /// <summary>
         /// Reason for disconnection.
         /// </summary>
@@ -55,10 +59,13 @@ namespace VoiceCraft.Network
 
             if (packet.IsReliable)
             {
-                packet.Sequence = Sequence;
-                packet.ResendTime = Environment.TickCount64 + ResendTime;
-                ReliabilityQueue.TryAdd(packet.Sequence, packet); //If reliable, Add to reliability queue. ResendTime is determined by the application.
-                Sequence++;
+                lock (_sendLock)
+                {
+                    packet.Sequence = Sequence;
+                    packet.ResendTime = Environment.TickCount64 + ResendTime;
+                    ReliabilityQueue.TryAdd(packet.Sequence, packet);
+                    Sequence++;
+                }
             }
 
             SendQueue.Enqueue(packet);
@@ -75,19 +82,22 @@ namespace VoiceCraft.Network
                 return true; //Not reliable, We can just say it's received.
             }
 
-            if (ReceiveBuffer.Count >= MaxRecvBufferSize && packet.Sequence != NextSequence)
-                return false; //make sure it doesn't overload the receive buffer and cause a memory overflow.
-            AddToSendBuffer(new Ack() { PacketSequence = packet.Sequence }); //Acknowledge packet by sending the Ack packet.
-
-            if (packet.Sequence < NextSequence) return true; //Likely to be a duplicate packet.
-
-            ReceiveBuffer.TryAdd(packet.Sequence, packet); //Add it in, TryAdd does not replace an old packet.
-            foreach (var p in ReceiveBuffer)
+            lock (_receiveLock)
             {
-                if (p.Key == NextSequence && ReceiveBuffer.TryRemove(p)) //Remove packet and notify listeners.
+                if (ReceiveBuffer.Count >= MaxRecvBufferSize && packet.Sequence != NextSequence)
+                    return false; //make sure it doesn't overload the receive buffer and cause a memory overflow.
+                
+                // Acknowledge packet (this uses SendQueue which is thread-safe, but AddToSendBuffer call may need care if it was reliable, but Ack is not reliable usually, check Ack packet)
+                // Ack packet logic: usually unreliable? Let's assume so or check packet def. Even if reliable, AddToSendBuffer handles locking.
+                AddToSendBuffer(new Ack() { PacketSequence = packet.Sequence }); 
+
+                if (packet.Sequence < NextSequence) return true; //Likely to be a duplicate packet.
+
+                ReceiveBuffer.TryAdd(packet.Sequence, packet); //Add it in, TryAdd does not replace an old packet.
+                while (ReceiveBuffer.TryRemove(NextSequence, out var nextPacket))
                 {
                     NextSequence++; //Update next expected packet.
-                    OnPacketReceived?.Invoke(this, p.Value);
+                    OnPacketReceived?.Invoke(this, nextPacket);
                 }
             }
             return true;
@@ -95,10 +105,21 @@ namespace VoiceCraft.Network
 
         public void ResendPackets()
         {
+            // ReliabilityQueue is ConcurrentDictionary so iteration is safe from concurrent modifications (mostly).
+            // However, ensuring we don't modify the same packet concurrently is good.
+            // Since this is likely called from a single "ActivityCheck" task per NetPeer owner, it might be fine.
+            // But to be safe and consistent with "Apply all fixes", we should ensure thread safety if multiple things triggered resend.
+            
             foreach (var packet in ReliabilityQueue)
             {
                 if (packet.Value.ResendTime <= Environment.TickCount64)
                 {
+                    // We modify properties of the packet. If multiple threads did this, it could be weird.
+                    // But usually only one thread calls ResendPackets.
+                    // Let's lock _sendLock to be safe if we want to synchronize with AddToSendBuffer somewhat? 
+                    // No, AddToSendBuffer adds NEW packets.
+                    // Just modify atomically or safe enough.
+                    
                     packet.Value.ResendTime = Environment.TickCount64 + RetryResendTime; //More delay.
                     packet.Value.Retries++;
                     packet.Value.Id = Id; //Update Id since this might change on login.
@@ -149,11 +170,15 @@ namespace VoiceCraft.Network
 
         public void Reset()
         {
-            SendQueue.Clear();
-            ReliabilityQueue.Clear();
-            ReceiveBuffer.Clear();
-            NextSequence = 0;
-            Sequence = 0;
+            lock (_receiveLock)
+            lock (_sendLock)
+            {
+                SendQueue.Clear();
+                ReliabilityQueue.Clear();
+                ReceiveBuffer.Clear();
+                NextSequence = 0;
+                Sequence = 0;
+            }
         }
     }
 

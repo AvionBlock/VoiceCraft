@@ -17,6 +17,9 @@ namespace VoiceCraft.Core
     {
         private int isDisposed; // 0 for false, 1 for true
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has been disposed.
+        /// </summary>
         public bool IsDisposed
         {
             get => Volatile.Read(ref this.isDisposed) != 0;
@@ -35,6 +38,9 @@ namespace VoiceCraft.Core
             }
         }
 
+        /// <summary>
+        /// Disposes the object, releasing all managed and unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             int oldIsDisposed = Interlocked.Exchange(ref this.isDisposed, 1);
@@ -51,9 +57,14 @@ namespace VoiceCraft.Core
             }
         }
 
+        /// <summary>
+        /// Override this method to release managed and unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">True if called from Dispose(), false if called from finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
-            throw new NotImplementedException();
+            // Base implementation does nothing.
+            // Derived classes should override this to clean up resources.
         }
     }
 }

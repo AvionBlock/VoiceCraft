@@ -77,8 +77,8 @@ namespace VoiceCraft.Server.Data
                 throw new Exception("One of the ports is higher than the maximum port 65535!");
             if (ServerProperties.ServerMOTD.Length > 30)
                 throw new Exception("Server MOTD cannot be longer than 30 characters!");
-            if (ServerProperties.DefaultSettings.ProximityDistance > 120 || ServerProperties.DefaultSettings.ProximityDistance < 1)
-                throw new Exception("Default proximity distance can only be between 1 and 120!");
+            if (ServerProperties.DefaultSettings.ProximityDistance > Constants.MaxProximityDistance || ServerProperties.DefaultSettings.ProximityDistance < Constants.MinProximityDistance)
+                throw new Exception($"Default proximity distance can only be between {Constants.MinProximityDistance} and {Constants.MaxProximityDistance}!");
             if (ServerProperties.Channels.Count >= byte.MaxValue)
                 throw new Exception($"Cannot have more than {byte.MaxValue} channels!");
             if (ServerProperties.Channels.Exists(x => x.Name.Length > 12))
@@ -87,8 +87,8 @@ namespace VoiceCraft.Server.Data
                 throw new Exception("Channel name cannot be empty!");
             if (ServerProperties.Channels.Exists(x => x.Password.Length > 12))
                 throw new Exception("Channel password cannot be longer than 12 characters!");
-            if (ServerProperties.Channels.Exists(x => x.OverrideSettings?.ProximityDistance > 120 || x.OverrideSettings?.ProximityDistance < 1))
-                throw new Exception("Channel proximity distance can only be between 1 and 120!");
+            if (ServerProperties.Channels.Exists(x => x.OverrideSettings?.ProximityDistance > Constants.MaxProximityDistance || x.OverrideSettings?.ProximityDistance < Constants.MinProximityDistance))
+                throw new Exception($"Channel proximity distance can only be between {Constants.MinProximityDistance} and {Constants.MaxProximityDistance}!");
 
             if (ServerProperties.Channels.Count <= 0)
             {

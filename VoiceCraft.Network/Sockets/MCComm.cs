@@ -10,7 +10,8 @@ namespace VoiceCraft.Network.Sockets
     public class MCComm : Disposable
     {
         #region Variables
-        public const string Version = "1.0.0";
+        // Keep MCComm protocol version aligned with core version to avoid login denials.
+        public const string Version = Core.Constants.Version;
         private HttpListener WebServer = new HttpListener();
         public string LoginKey { get; private set; } = string.Empty;
         public PacketRegistry PacketRegistry { get; set; } = new PacketRegistry();

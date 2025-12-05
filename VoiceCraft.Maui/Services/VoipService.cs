@@ -126,6 +126,7 @@ namespace VoiceCraft.Maui.Services
                 {
                     Client.OnConnected -= ClientConnected;
                     Client.OnDisconnected -= ClientDisconnected;
+                    Client.OnFailed -= ClientFailed;
                     Client.OnDeny -= ClientDeny;
                     Client.OnBinded -= ClientBinded;
                     Client.OnUnbinded -= ClientUnbinded;
@@ -146,7 +147,7 @@ namespace VoiceCraft.Maui.Services
                     AudioPlayer.Dispose();
                     AudioRecorder.Dispose();
 
-                    Client.Disconnect();
+                    await Client.DisconnectAsync();
                     Client.Dispose();
                 }
             }, CT);
@@ -180,7 +181,9 @@ namespace VoiceCraft.Maui.Services
                         OnParticipantStoppedSpeaking?.Invoke(participant);
                     }
 
-                    var newPart = Client.Participants.Where(x => Environment.TickCount64 - x.Value.LastSpoke < 500);
+                    var newPart = Client.Participants.Where(x => 
+                        Environment.TickCount64 - x.Value.LastSpoke < 500 && 
+                        !talkingParticipants.Contains(x.Value));
                     foreach (var participant in newPart)
                     {
                         talkingParticipants.Add(participant.Value);

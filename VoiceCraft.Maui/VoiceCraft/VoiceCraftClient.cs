@@ -10,7 +10,8 @@ namespace VoiceCraft.Maui.VoiceCraft
     public class VoiceCraftClient : Core.Disposable
     {
         //Private Variables
-        public const string Version = "1.0.5";
+        // Keep client version aligned with server/Core constants to prevent login denial.
+        public const string Version = Core.Constants.Version;
         private ConnectionState State;
         private uint PacketCount;
         private readonly OpusEncoder Encoder;
@@ -143,14 +144,14 @@ namespace VoiceCraft.Maui.VoiceCraft
             });
         }
 
-        public void Disconnect(string? reason = null)
+        public async Task DisconnectAsync(string? reason = null)
         {
             ObjectDisposedException.ThrowIf(IsDisposed && State == ConnectionState.Disconnected, nameof(VoiceCraftClient));
             if (State == ConnectionState.Disconnected || State == ConnectionState.Disconnecting) return;
             State = ConnectionState.Disconnecting;
 
-            VoiceCraftSocket.DisconnectAsync().Wait();
-            CustomClient.StopAsync().Wait();
+            await VoiceCraftSocket.DisconnectAsync();
+            await CustomClient.StopAsync();
             MCWSS.Stop();
             ClearParticipants();
             ClearChannels();
@@ -231,13 +232,16 @@ namespace VoiceCraft.Maui.VoiceCraft
         {
             if(disposing)
             {
-                if (State == ConnectionState.Connected)
-                    Disconnect();
+                // Avoid blocking the calling thread; best-effort async cleanup.
+                if (State == ConnectionState.Connected || State == ConnectionState.Connecting)
+                {
+                    try { DisconnectAsync().Wait(3000); } catch { }
+                }
 
-                VoiceCraftSocket.Dispose();
-                MCWSS.Dispose();
-                CustomClient.Dispose();
-                Encoder.Dispose();
+                try { VoiceCraftSocket.Dispose(); } catch { }
+                try { MCWSS.Dispose(); } catch { }
+                try { CustomClient.Dispose(); } catch { }
+                try { Encoder.Dispose(); } catch { }
                 Channels.Clear();
                 Participants.Clear();
             }
@@ -260,9 +264,9 @@ namespace VoiceCraft.Maui.VoiceCraft
             }
         }
         
-        private void VoiceCraftSocketDisconnected(string? reason = null)
+        private async void VoiceCraftSocketDisconnected(string? reason = null)
         {
-            Disconnect(reason);
+            await DisconnectAsync(reason);
         }
 
         private void VoiceCraftSocketBinded(Core.Packets.VoiceCraft.Binded data, Network.NetPeer peer)
