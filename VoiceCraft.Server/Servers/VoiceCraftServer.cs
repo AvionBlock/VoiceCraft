@@ -15,28 +15,26 @@ namespace VoiceCraft.Server.Servers;
 public class VoiceCraftServer : IResettable, IDisposable
 {
     public static readonly Version Version = new(1, 1, 0);
-    private readonly AudioEffectSystem _audioEffectSystem = new();
 
     //Networking
     private readonly NetDataWriter _dataWriter = new();
-    private readonly EventHandlerSystem _eventHandlerSystem;
     private readonly EventBasedNetListener _listener = new();
     private readonly NetManager _netManager;
 
     //Systems
-    private readonly VisibilitySystem _visibilitySystem;
+    private readonly AudioEffectSystem _audioEffectSystem;
     private bool _isDisposed;
 
-    public VoiceCraftServer()
+    public VoiceCraftServer(AudioEffectSystem audioEffectSystem, VoiceCraftWorld world)
     {
         _netManager = new NetManager(_listener)
         {
             AutoRecycle = true,
             UnconnectedMessagesEnabled = true
         };
-
-        _eventHandlerSystem = new EventHandlerSystem(this, World, _audioEffectSystem);
-        _visibilitySystem = new VisibilitySystem(World, _audioEffectSystem);
+        
+        _audioEffectSystem = audioEffectSystem;
+        World  = world;
 
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
@@ -46,7 +44,7 @@ public class VoiceCraftServer : IResettable, IDisposable
 
     //Public Properties
     public VoiceCraftConfig Config { get; private set; } = new();
-    public VoiceCraftWorld World { get; } = new();
+    public VoiceCraftWorld World { get; }
 
     public void Dispose()
     {
@@ -82,8 +80,6 @@ public class VoiceCraftServer : IResettable, IDisposable
     public void Update()
     {
         _netManager.PollEvents();
-        _visibilitySystem.Update();
-        _eventHandlerSystem.Update();
     }
 
     public void Stop()
@@ -218,11 +214,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         if (_isDisposed) return;
         if (disposing)
         {
-            World.Dispose();
             _netManager.Stop();
-            _audioEffectSystem.Dispose();
-            _eventHandlerSystem.Dispose();
-
             _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
             _listener.ConnectionRequestEvent -= OnConnectionRequest;
             _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
@@ -343,6 +335,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.ServerFull"));
             return;
         }
+
         if (request.Data.IsNull)
         {
             RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.Forced"));

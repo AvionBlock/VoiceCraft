@@ -4,6 +4,7 @@ using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Servers;
+using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
 
@@ -15,10 +16,16 @@ public static class App
 
     public static async Task Start()
     {
+        //Servers
         var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
         var mcWssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
         var httpServer = Program.ServiceProvider.GetRequiredService<McHttpServer>();
+        //Systems
+        var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
+        var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
+        //Commands
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
+        //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
 
         try
@@ -77,6 +84,8 @@ public static class App
                 try
                 {
                     server.Update();
+                    eventHandlerSystem.Update();
+                    visibilitySystem.Update();
                     httpServer.Update();
                     mcWssServer.Update();
                     await FlushCommand(rootCommand);
