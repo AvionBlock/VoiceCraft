@@ -247,6 +247,8 @@ public class EventHandlerSystem : IDisposable
             var effectBitmaskPacket = new SetEffectBitmaskPacket(entity.Id, entity.EffectBitmask);
             var positionPacket = new SetPositionPacket(entity.Id, entity.Position);
             var rotationPacket = new SetRotationPacket(entity.Id, entity.Rotation);
+            var caveFactorPacket = new SetCaveFactorPacket(entity.Id, entity.CaveFactor);
+            var muffleFactorPacket = new SetMuffleFactorPacket(entity.Id, entity.MuffleFactor);
 
             _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
             _server.SendPacket(networkEntity.NetPeer, talkBitmaskPacket);
@@ -254,6 +256,8 @@ public class EventHandlerSystem : IDisposable
             _server.SendPacket(networkEntity.NetPeer, effectBitmaskPacket);
             _server.SendPacket(networkEntity.NetPeer, positionPacket);
             _server.SendPacket(networkEntity.NetPeer, rotationPacket);
+            _server.SendPacket(networkEntity.NetPeer, caveFactorPacket);
+            _server.SendPacket(networkEntity.NetPeer, muffleFactorPacket);
         });
     }
 
