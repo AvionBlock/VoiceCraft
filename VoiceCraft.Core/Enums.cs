@@ -40,11 +40,16 @@ namespace VoiceCraft.Core
 
     public enum McApiPacketType : byte
     {
+        //Networking
         Login,
         Logout,
         Ping,
         Accept,
-        Deny
+        Deny,
+        
+        //Entity Stuff
+        EntityCreated,
+        NetworkEntityCreated,
     }
 
     #endregion

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
@@ -66,9 +67,8 @@ public class EventHandlerSystem : IDisposable
         if (newEntity is VoiceCraftNetworkEntity networkEntity)
         {
             _server.SendPacket(networkEntity.NetPeer, new SetIdPacket(networkEntity.Id));
-            _server.Broadcast(new NetworkEntityCreatedPacket(networkEntity.Id, networkEntity.Name, networkEntity.Muted,
-                networkEntity.Deafened,
-                networkEntity.UserGuid));
+            _server.Broadcast(new NetworkEntityCreatedPacket(networkEntity));
+            _mcWssServer.Broadcast(new McApiNetworkEntityCreatedPacket(networkEntity));
 
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
@@ -79,18 +79,15 @@ public class EventHandlerSystem : IDisposable
             {
                 if (entity == networkEntity) continue;
                 if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                    _server.SendPacket(networkEntity.NetPeer, new NetworkEntityCreatedPacket(entity.Id, entity.Name,
-                        entity.Muted,
-                        entity.Deafened, otherNetworkEntity.UserGuid));
+                    _server.SendPacket(networkEntity.NetPeer, new NetworkEntityCreatedPacket(otherNetworkEntity));
                 else
-                    _server.SendPacket(networkEntity.NetPeer,
-                        new EntityCreatedPacket(entity.Id, entity.Name, entity.Muted, entity.Deafened));
+                    _server.SendPacket(networkEntity.NetPeer, new EntityCreatedPacket(entity));
             }
         }
         else
         {
-            _server.Broadcast(
-                new EntityCreatedPacket(newEntity.Id, newEntity.Name, newEntity.Muted, newEntity.Deafened));
+            _server.Broadcast(new EntityCreatedPacket(newEntity));
+            _mcWssServer.Broadcast(new McApiEntityCreatedPacket(newEntity));
         }
 
         newEntity.OnNameUpdated += OnEntityNameUpdated;
