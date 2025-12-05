@@ -64,7 +64,7 @@ class Network {
         const key = ev.player.getDynamicProperty("VCAutoBind");
         if (key != null) {
           player.sendMessage(`§2Autobinding Enabled. §eBinding to key: ${key}`);
-          this.Bind(key, player)
+          this.Bind(player, key)
             .then(() => {
               player.sendMessage("§aBinding Successful!");
             })
@@ -105,7 +105,7 @@ class Network {
   async Connect(ipAddress, port, key) {
     if (port < 0 || port > 65535) throw "Invalid Port!";
 
-    this.Disconnect("Reconnecting to another server.");
+    await this.Disconnect("Reconnecting to another server.");
     this.IPAddress = ipAddress;
     this.Port = port;
     this.Key = key;

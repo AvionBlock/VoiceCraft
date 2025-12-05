@@ -12,13 +12,13 @@
 		"min_engine_version": [
 			1,
 			21,
-			20
+			124
 		],
 		"uuid": "87b49038-e613-4216-b265-6101b83376e2",
 		"version": [
 			1,
 			0,
-			7
+			8
 		]
 	},
 	"modules": [
@@ -46,7 +46,7 @@
 	"dependencies": [
 		{
 			"module_name": "@minecraft/server",
-			"version": "2.1.0"
+			"version": "2.4.0"
 		},
 		{
 			"module_name": "@minecraft/server-net",
