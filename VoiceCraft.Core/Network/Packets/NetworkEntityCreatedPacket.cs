@@ -1,5 +1,6 @@
 using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Network.Packets
 {
@@ -10,6 +11,11 @@ namespace VoiceCraft.Core.Network.Packets
             base(id, name, muted, deafened)
         {
             UserGuid = userGuid;
+        }
+
+        public NetworkEntityCreatedPacket(VoiceCraftNetworkEntity entity) : base(entity)
+        {
+            UserGuid = entity.UserGuid;
         }
 
         public override PacketType PacketType => PacketType.NetworkEntityCreated;

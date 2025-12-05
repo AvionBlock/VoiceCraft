@@ -1,4 +1,5 @@
 using LiteNetLib.Utils;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Network.Packets
 {
@@ -10,6 +11,14 @@ namespace VoiceCraft.Core.Network.Packets
             Name = name;
             Muted = muted;
             Deafened = deafened;
+        }
+
+        public EntityCreatedPacket(VoiceCraftEntity entity)
+        {
+            Id = entity.Id;
+            Name = entity.Name;
+            Muted = entity.Muted;
+            Deafened = entity.Deafened;
         }
 
         public override PacketType PacketType => PacketType.EntityCreated;
