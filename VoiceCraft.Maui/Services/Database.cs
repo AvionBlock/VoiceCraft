@@ -101,9 +101,11 @@ namespace VoiceCraft.Maui.Services
             if (string.IsNullOrEmpty(server.IP)) throw new ArgumentException("IP cannot be empty!");
             if (server.Port < 1025) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be lower than 1025");
             if (server.Port > 65535) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be higher than 65535");
-            if (Servers.Exists(x => x.Name == server.Name)) throw new InvalidOperationException("Name already exists! Name must be unique!");
-
-            Servers.Add(server);
+            lock (_lock)
+            {
+                if (Servers.Exists(x => x.Name == server.Name)) throw new InvalidOperationException("Name already exists! Name must be unique!");
+                Servers.Add(server);
+            }
             OnServerAdded?.Invoke(server);
             await SaveServers();
         }
@@ -112,28 +114,37 @@ namespace VoiceCraft.Maui.Services
         {
             await Initialization;
 
-            var foundServer = Servers.FirstOrDefault(x => x.Name == server.Name);
-            if (foundServer != null)
+            lock (_lock)
             {
-                if (string.IsNullOrWhiteSpace(server.Name)) throw new ArgumentException("Name cannot be empty!");
-                if (string.IsNullOrEmpty(server.IP)) throw new ArgumentException("IP cannot be empty!");
-                if (server.Port < 1025) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be lower than 1025");
-                if (server.Port > 65535) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be higher than 65535");
+                var foundServer = Servers.FirstOrDefault(x => x.Name == server.Name);
+                if (foundServer != null)
+                {
+                    if (string.IsNullOrWhiteSpace(server.Name)) throw new ArgumentException("Name cannot be empty!");
+                    if (string.IsNullOrEmpty(server.IP)) throw new ArgumentException("IP cannot be empty!");
+                    if (server.Port < 1025) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be lower than 1025");
+                    if (server.Port > 65535) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be higher than 65535");
 
-                foundServer.IP = server.IP;
-                foundServer.Port = server.Port;
-                foundServer.Key = server.Key;
-                await SaveServers();
-                return;
+                    foundServer.IP = server.IP;
+                    foundServer.Port = server.Port;
+                    foundServer.Key = server.Key;
+                    goto Save;
+                }
             }
             throw new KeyNotFoundException("Server not found!");
+            
+            Save:
+            await SaveServers();
+            return;
         }
 
         public async Task RemoveServer(ServerModel server)
         {
             await Initialization; 
 
-            Servers.Remove(server);
+            lock (_lock)
+            {
+                Servers.Remove(server);
+            }
             OnServerRemoved?.Invoke(server);
             await SaveServers();
         }

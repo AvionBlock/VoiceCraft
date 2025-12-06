@@ -14,8 +14,8 @@ namespace VoiceCraft.Network.Sockets
         public const string Version = Core.Constants.Version;
         private HttpListener WebServer = new HttpListener();
         public string LoginKey { get; private set; } = string.Empty;
-        public PacketRegistry PacketRegistry { get; set; } = new PacketRegistry();
-        public ConcurrentDictionary<string, long> Sessions { get; set; } = new ConcurrentDictionary<string, long>();
+        public PacketRegistry PacketRegistry { get; set; } = new();
+        public ConcurrentDictionary<string, long> Sessions { get; set; } = new();
         public int Timeout { get; set; } = 8000;
         private Task? ActivityChecker { get; set; }
         #endregion
@@ -24,8 +24,8 @@ namespace VoiceCraft.Network.Sockets
         public bool LogExceptions { get; set; } = false;
         public bool LogInbound { get; set; } = false;
         public bool LogOutbound { get; set; } = false;
-        public List<MCCommPacketTypes> InboundFilter { get; set; } = new List<MCCommPacketTypes>();
-        public List<MCCommPacketTypes> OutboundFilter { get; set; } = new List<MCCommPacketTypes>();
+        public List<MCCommPacketTypes> InboundFilter { get; set; } = [];
+        public List<MCCommPacketTypes> OutboundFilter { get; set; } = [];
         #endregion
 
         #region Delegates
@@ -320,7 +320,7 @@ namespace VoiceCraft.Network.Sockets
                     }
                 }
 
-                await Task.Delay(1); //1ms to not destroy the cpu.
+                await Task.Delay(1000).ConfigureAwait(false); // Check every second.
             }
         }
 

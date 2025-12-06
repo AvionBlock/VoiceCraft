@@ -57,14 +57,8 @@ namespace VoiceCraft.Core.Packets.VoiceCraft
             }
             else
             {
-                // List<T>.AddRange doesn't support offset/count directly without Linq or Loop
-                // For performance with high frequency audio, a loop might be faster than Linq overhead
-                // But specific for List<byte>, it might not be optimized.
-                // However, we can just use a loop.
-                for(int i=0; i<len; i++)
-                {
-                    dataStream.Add(Audio[i]);
-                }
+                // Optimized usage of AddRange with ArraySegment
+                dataStream.AddRange(new ArraySegment<byte>(Audio, 0, len));
             }
         }
 

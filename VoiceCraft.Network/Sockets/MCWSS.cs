@@ -14,6 +14,7 @@ namespace VoiceCraft.Network.Sockets
         private readonly string[] Dimensions;
         private readonly int Port;
         private readonly MCPacketRegistry MCPacketReg;
+        private readonly object _connectionLock = new();
 
         public bool IsConnected { get; private set; }
         public bool IsDisposed { get; private set; }
@@ -31,7 +32,7 @@ namespace VoiceCraft.Network.Sockets
 
         public MCWSS(int Port)
         {
-            MCPacketReg = new MCPacketRegistry();
+            MCPacketReg = new();
             MCPacketReg.RegisterPacket(new Header() { messagePurpose = "event", eventName = nameof(Core.Packets.MCWSS.PlayerTravelled) }, typeof(MCWSSPacket<Core.Packets.MCWSS.PlayerTravelled>));
             MCPacketReg.RegisterPacket(new Header() { messagePurpose = "commandResponse" }, typeof(MCWSSPacket<LocalPlayerName>));
             this.Port = Port;
@@ -47,25 +48,31 @@ namespace VoiceCraft.Network.Sockets
                 {
                     socket.OnOpen = () =>
                     {
-                        if (ConnectedSocket == null)
+                        lock (_connectionLock)
                         {
-                            //https://gist.github.com/jocopa3/5f718f4198f1ea91a37e3a9da468675c
-                            socket.Send(new MCWSSPacket<Command>() { header = { messagePurpose = "commandRequest", requestId = Guid.NewGuid().ToString() }, body = { commandLine = "/getlocalplayername" } }.SerializePacket());
-                            socket.Send(new MCWSSPacket<Event> { header = { requestId = Guid.NewGuid().ToString(), messagePurpose = "subscribe" }, body = { eventName = "PlayerTravelled" } }.SerializePacket());
-                            ConnectedSocket = socket;
-                            IsConnected = true;
+                            if (ConnectedSocket == null)
+                            {
+                                //https://gist.github.com/jocopa3/5f718f4198f1ea91a37e3a9da468675c
+                                socket.Send(new MCWSSPacket<Command>() { header = { messagePurpose = "commandRequest", requestId = Guid.NewGuid().ToString() }, body = { commandLine = "/getlocalplayername" } }.SerializePacket());
+                                socket.Send(new MCWSSPacket<Event> { header = { requestId = Guid.NewGuid().ToString(), messagePurpose = "subscribe" }, body = { eventName = "PlayerTravelled" } }.SerializePacket());
+                                ConnectedSocket = socket;
+                                IsConnected = true;
+                            }
+                            else
+                                socket.Close();
                         }
-                        else
-                            socket.Close();
                     };
 
                     socket.OnClose = () =>
                     {
-                        if (socket == ConnectedSocket)
+                        lock (_connectionLock)
                         {
-                            ConnectedSocket = null;
-                            IsConnected = false;
-                            OnDisconnected?.Invoke();
+                            if (socket == ConnectedSocket)
+                            {
+                                ConnectedSocket = null;
+                                IsConnected = false;
+                                OnDisconnected?.Invoke();
+                            }
                         }
                     };
 

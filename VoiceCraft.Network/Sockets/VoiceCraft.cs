@@ -22,7 +22,7 @@ namespace VoiceCraft.Network.Sockets
 
         //Private Variables
         private CancellationTokenSource CTS { get; set; } = new CancellationTokenSource();
-        private ConcurrentDictionary<SocketAddress, NetPeer> NetPeers { get; set; } = new ConcurrentDictionary<SocketAddress, NetPeer>(); //Server Variable
+        private ConcurrentDictionary<EndPoint, NetPeer> NetPeers { get; set; } = new(); //Server Variable
         private ConcurrentDictionary<string, RateLimitInfo> _rateLimits = new(); // Security: Rate Limiting
         private const int MaxConnectionsPerIP = 5;
         private const int PacketsPerSecondLimit = 10;
@@ -311,13 +311,11 @@ namespace VoiceCraft.Network.Sockets
         private NetPeer CreateNetPeer(SocketAddress receivedAddress)
         {
             // Create an EndPoint from the SocketAddress
-            var netPeer = new NetPeer(RemoteEndpoint.Create(receivedAddress), long.MinValue, NetPeerState.Requesting);
+            var endpoint = RemoteEndpoint.Create(receivedAddress);
+            var netPeer = new NetPeer(endpoint, long.MinValue, NetPeerState.Requesting);
             netPeer.OnPacketReceived += HandlePacketReceived;
 
-            var lookupCopy = new SocketAddress(receivedAddress.Family, receivedAddress.Size);
-            receivedAddress.Buffer.CopyTo(lookupCopy.Buffer);
-
-            NetPeers.TryAdd(lookupCopy, netPeer);
+            NetPeers.TryAdd(endpoint, netPeer);
             return netPeer;
         }
 
@@ -337,7 +335,8 @@ namespace VoiceCraft.Network.Sockets
                     // In a real high-performance scenario, checking IP limits on every packet involves dictionary lookups.
                     // However, avoiding object creation (NetPeer) is the priority here.
                     
-                    NetPeers.TryGetValue(receivedAddress, out var netPeer);
+                    var receivedEndpoint = RemoteEndpoint.Create(receivedAddress);
+                    NetPeers.TryGetValue(receivedEndpoint, out var netPeer);
 
                     if (netPeer?.State == NetPeerState.Connected)
                     {
@@ -650,10 +649,10 @@ namespace VoiceCraft.Network.Sockets
             if (disposing)
             {
                 if (State == VoiceCraftSocketState.Started || State == VoiceCraftSocketState.Starting)
-                    StopAsync().Wait();
+                    StopAsync().GetAwaiter().GetResult();
 
                 if (State == VoiceCraftSocketState.Connected || State == VoiceCraftSocketState.Connecting)
-                    DisconnectAsync().Wait();
+                    DisconnectAsync().GetAwaiter().GetResult();
 
                 Socket.Dispose();
             }
@@ -672,15 +671,15 @@ namespace VoiceCraft.Network.Sockets
             OnConnected?.Invoke(data.Key);
         }
 
-        private void OnDeny(Deny data, NetPeer peer)
+        private async void OnDeny(Deny data, NetPeer peer)
         {
             if(!IsConnected)
-                DisconnectAsync(data.Reason, false).Wait();
+                await DisconnectAsync(data.Reason, false);
         }
 
-        private void OnLogout(Logout data, NetPeer peer)
+        private async void OnLogout(Logout data, NetPeer peer)
         {
-            DisconnectAsync(data.Reason, false).Wait();
+            await DisconnectAsync(data.Reason, false);
         }
         #endregion
 

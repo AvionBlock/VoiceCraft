@@ -13,7 +13,13 @@ namespace VoiceCraft.Server
     public class VoiceCraftServer : Disposable
     {
         public const string Version = Constants.Version;
-        public ConcurrentDictionary<NetPeer, VoiceCraftParticipant> Participants { get; set; } = new ConcurrentDictionary<NetPeer, VoiceCraftParticipant>();
+        public ConcurrentDictionary<NetPeer, VoiceCraftParticipant> Participants { get; set; } = new();
+        
+        // Caching for performance to avoid iterating ConcurrentDictionary in hot paths
+        // Storing Tuple to avoid secondary lookup
+        private List<(VoiceCraftParticipant Participant, NetPeer Peer)> _participantCache = []; 
+        private readonly object _cacheLock = new();
+
         public Network.Sockets.VoiceCraft VoiceCraftSocket { get; set; }
         public Network.Sockets.MCComm MCComm { get; set; }
         public Properties ServerProperties { get; set; }
@@ -392,7 +398,15 @@ namespace VoiceCraft.Server
                 Key = GetAvailableKey(packet.Key)
             };
             peer.AcceptLogin(participant.Key);
-            Participants.TryAdd(peer, participant);
+            
+            if (Participants.TryAdd(peer, participant))
+            {
+                lock (_cacheLock)
+                {
+                    _participantCache.Add((participant, peer));
+                }
+            }
+
             OnParticipantJoined?.Invoke(participant);
         }
 
@@ -400,6 +414,11 @@ namespace VoiceCraft.Server
         {
             if(Participants.TryRemove(peer, out var client))
             {
+                lock (_cacheLock)
+                {
+                    _participantCache.RemoveAll(x => x.Participant == client);
+                }
+
                 Broadcast(new Core.Packets.VoiceCraft.ParticipantLeft()
                 { 
                     Key = client.Key 
@@ -595,13 +614,19 @@ namespace VoiceCraft.Server
 
                         // Optimize iteration: Collect targets first? No, iteration is fine.
                         // We iterate ConcurrentDictionary.
-                        foreach (var kvp in Participants)
-                        {
-                            var participant = kvp.Value;
-                            // Basic filtering
-                            if (participant == client) continue;
-                            if (!participant.Binded || participant.Deafened || participant.ServerDeafened) continue;
-                            if (participant.Channel != channel) continue;
+                            // Optimized iteration using cached list
+                            List<(VoiceCraftParticipant Participant, NetPeer Peer)> parts;
+                            lock(_cacheLock) 
+                            {
+                                parts = new List<(VoiceCraftParticipant Participant, NetPeer Peer)>(_participantCache); 
+                            }
+                            
+                            foreach (var (participant, peerToSend) in parts)
+                            {
+                                // Basic filtering
+                                if (participant == client) continue;
+                                if (!participant.Binded || participant.Deafened || participant.ServerDeafened) continue;
+                                if (participant.Channel != channel) continue;
 
                             // Complex logic moved here
                             float volume = 1.0f;
@@ -640,7 +665,28 @@ namespace VoiceCraft.Server
                                 if (participant.GetIntersectedListenBitmasks(client.ChecksBitmask) == 0) continue;
                             }
 
-                            kvp.Key.AddToSendBuffer(new Core.Packets.VoiceCraft.ServerAudio()
+                            // Need to find the key (NetPeer) for the participant.
+                            // Since we are iterating participants (Values) now, we don't have the key directly.
+                            // But Wait, we need to send TO the participant. We need their NetPeer.
+                            // The participant object DOES NOT store the NetPeer.
+                            // Reverse lookup is fast if we had a map, but we don't.
+                            // Optimization: Store NetPeer in Participant? Or Iterate Participants which is <NetPeer, Participant>.
+                            // Actually, iterating Participants (dictionary) gives Key (NetPeer). 
+                            // Using Cache (List<Participant>) loses the Key.
+                            
+                            // Reverting to Dictionary iteration for now as we miss the NetPeer to send to.
+                            // To fix this properly, Participant should know its Peer or we need a Peer->Participant and Participant->Peer map.
+                            // OR, since Participants is ConcurrentDictionary, iterating it IS thread safe.
+                            // For now, I will revert to iterating `Participants` but keep the cache logic ready for when Participant has Peer ref.
+                            // BUT, the goal was performance.
+                            // Iterate Participants is fine if N is small.
+                            // Let's stick to dictionary iteration but optimize slightly where possible.
+                            
+                            // Wait, I can't easily revert inside this replacement block without restoring original content EXACTLY.
+                            // I will use `Participants` here.
+                            
+                            if(peerToSend != null)
+                                 peerToSend.AddToSendBuffer(new Core.Packets.VoiceCraft.ServerAudio()
                             {
                                 Key = client.Key,
                                 PacketCount = data.PacketCount,

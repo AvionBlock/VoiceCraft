@@ -17,8 +17,8 @@ namespace VoiceCraft.Network.Sockets
         public IPEndPoint RemoteEndpoint { get; private set; } = new IPEndPoint(IPAddress.Any, 0);
         public Socket Socket { get; set; } = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-        private PacketRegistry PacketRegistry { get; set; } = new PacketRegistry();
-        private CancellationTokenSource CTS { get; set; } = new CancellationTokenSource();
+        private PacketRegistry PacketRegistry { get; set; } = new();
+        private CancellationTokenSource CTS { get; set; } = new();
         private SocketAddress? RemoteAddress { get; set; }
         private Task? ActivityChecker { get; set; }
         private long LastActive { get; set; }
@@ -196,7 +196,7 @@ namespace VoiceCraft.Network.Sockets
                     break;
                 }
 
-                await Task.Delay(1).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
@@ -213,37 +213,37 @@ namespace VoiceCraft.Network.Sockets
         #endregion
 
         #region Event Methods
-        private void LoginReceived(Login data, SocketAddress address)
+        private async void LoginReceived(Login data, SocketAddress address)
         {
             if(RemoteAddress != null && !RemoteAddress.Equals(address))
             {
-                SocketSendToAsync(new Deny() { Reason = "Client is already connected to another instance!" }, address).Wait();
+                await SocketSendToAsync(new Deny() { Reason = "Client is already connected to another instance!" }, address);
                 return;
             }
 
             LastActive = Environment.TickCount64;
             RemoteAddress = new SocketAddress(address.Family, address.Size);
-            SocketSendToAsync(new Accept(), address).Wait();
+            await SocketSendToAsync(new Accept(), address);
             OnConnected?.Invoke(data.Name);
         }
 
-        private void LogoutReceived(Logout data, SocketAddress address)
+        private async void LogoutReceived(Logout data, SocketAddress address)
         {
             if(RemoteAddress != null && RemoteAddress.Equals(address))
             {
                 RemoteAddress = null;
-                SocketSendToAsync(new Accept(), address).Wait();
+                await SocketSendToAsync(new Accept(), address);
                 OnDisconnected?.Invoke();
             }
             return;
         }
 
-        private void UpdateReceived(Update data, SocketAddress address)
+        private async void UpdateReceived(Update data, SocketAddress address)
         {
             if (RemoteAddress != null && RemoteAddress.Equals(address))
             {
                 LastActive = Environment.TickCount64;
-                SocketSendToAsync(new Accept(), address).Wait();
+                await SocketSendToAsync(new Accept(), address);
                 OnUpdated?.Invoke(data.Position, data.Rotation, data.CaveDensity, data.IsUnderwater, data.DimensionId, data.LevelId, data.ServerId);
             }
             return;

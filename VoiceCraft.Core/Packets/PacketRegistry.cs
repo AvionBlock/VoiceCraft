@@ -7,7 +7,7 @@ namespace VoiceCraft.Core.Packets
 {
     public class PacketRegistry
     {
-        private ConcurrentDictionary<byte, Type> RegisteredPackets = new ConcurrentDictionary<byte, Type>();
+        private ConcurrentDictionary<byte, Type> RegisteredPackets = new();
 
         /// <summary>
         /// Registers a packet.
@@ -92,12 +92,15 @@ namespace VoiceCraft.Core.Packets
         /// <exception cref="InvalidOperationException"></exception>
         public MCCommPacket GetPacketFromJsonString(string data)
         {
-            var PacketId = JObject.Parse(data)["PacketId"]?.Value<byte>() ?? byte.MaxValue; //Packet Id.
+            var jObject = JObject.Parse(data);
+            var PacketId = jObject["PacketId"]?.Value<byte>() ?? byte.MaxValue; //Packet Id.
 
             if (!RegisteredPackets.TryGetValue(PacketId, out var packetType))
                 throw new InvalidOperationException($"Invalid packet id {PacketId}");
 
-            MCCommPacket packet = GetMCPacketFromType(data, packetType);
+            var packet = jObject.ToObject(packetType) as MCCommPacket;
+            if (packet == null) throw new Exception("Could not create packet instance.");
+
             return packet;
         }
 
@@ -135,24 +138,6 @@ namespace VoiceCraft.Core.Packets
             if (packet == null) throw new Exception("Could not create packet instance.");
 
             return (CustomClientPacket)packet;
-        }
-
-        /// <summary>
-        /// Create's a packet from the MC packet type.
-        /// </summary>
-        /// <param name="PacketType">The packet type.</param>
-        /// <returns>The packet</returns>
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="Exception"></exception>
-        public static MCCommPacket GetMCPacketFromType(string data, Type PacketType)
-        {
-            if (!typeof(MCCommPacket).IsAssignableFrom(PacketType))
-                throw new ArgumentException($"PacketType needs to inherit from {nameof(MCCommPacket)}", nameof(PacketType));
-
-            var packet = JsonConvert.DeserializeObject(data, PacketType);
-            if (packet == null) throw new Exception("Could not create packet instance.");
-
-            return (MCCommPacket)packet;
         }
     }
 }

@@ -16,12 +16,12 @@ namespace VoiceCraft.Network
         public event PacketReceived? OnPacketReceived;
         
         private int _sequence;
-        private uint NextSequence;
-        private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReliabilityQueue = new ConcurrentDictionary<uint, VoiceCraftPacket>();
-        private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReceiveBuffer = new ConcurrentDictionary<uint, VoiceCraftPacket>();
+        private uint _nextSequence;
+        private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReliabilityQueue = new();
+        private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReceiveBuffer = new();
 
         // Lock objects for thread safety
-        private readonly object _receiveLock = new object();
+        private readonly object _receiveLock = new();
 
         /// <summary>
         /// Reason for disconnection.
@@ -53,7 +53,7 @@ namespace VoiceCraft.Network
         /// <summary>
         /// Send Queue.
         /// </summary>
-        public ConcurrentQueue<VoiceCraftPacket> SendQueue { get; set; } = new ConcurrentQueue<VoiceCraftPacket>();
+        public ConcurrentQueue<VoiceCraftPacket> SendQueue { get; set; } = new();
 
         public void AddToSendBuffer(VoiceCraftPacket packet)
         {
@@ -87,20 +87,20 @@ namespace VoiceCraft.Network
 
             lock (_receiveLock)
             {
-                if (ReceiveBuffer.Count >= MaxRecvBufferSize && packet.Sequence != NextSequence)
+                if (ReceiveBuffer.Count >= MaxRecvBufferSize && packet.Sequence != _nextSequence)
                     return false; //make sure it doesn't overload the receive buffer and cause a memory overflow.
                 
                 // Acknowledge packet
                 AddToSendBuffer(new Ack() { PacketSequence = packet.Sequence }); 
 
-                if (packet.Sequence < NextSequence) return true; //Likely to be a duplicate packet.
+                if (packet.Sequence < _nextSequence) return true; //Likely to be a duplicate packet.
 
                 ReceiveBuffer.TryAdd(packet.Sequence, packet); //Add it in, TryAdd does not replace an old packet.
                 
                 // Process sequential packets
-                while (ReceiveBuffer.TryRemove(NextSequence, out var nextPacket))
+                while (ReceiveBuffer.TryRemove(_nextSequence, out var nextPacket))
                 {
-                    NextSequence++; //Update next expected packet.
+                    _nextSequence++; //Update next expected packet.
                     packetsToProcess.Add(nextPacket);
                 }
             }
@@ -182,7 +182,7 @@ namespace VoiceCraft.Network
                 SendQueue.Clear();
                 ReliabilityQueue.Clear();
                 ReceiveBuffer.Clear();
-                NextSequence = 0;
+                _nextSequence = 0;
                 // Sequence is now managed by Interlocked, resetting it strictly involves race conditions but for Reset() usage (likely disconnect) it's acceptable to just set it.
                 _sequence = 0; 
             }
