@@ -7,9 +7,7 @@
              xmlns:vm="clr-namespace:VoiceCraft.Maui.ViewModels"
              Title="AddServer"
              x:DataType="vm:AddServerViewModel"
-             Shell.FlyoutBehavior="Disabled">
-
-
+             Shell.TabBarIsVisible="False">
 
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
@@ -103,39 +101,14 @@
                                                                     MinimumValue="-32768" />
                             </Entry.Behaviors>
                         </Entry>
-                        <toolkit:ContentButton Grid.Row="9"
-                                               Margin="0,10,0,0"
-                                               Command="{Binding SaveServerCommand}"
-                                               HorizontalOptions="FillAndExpand">
-                            <Border x:Name="addServerBorder"
-                                    Padding="6"
-                                    Background="#2fFFFFFF"
-                                    StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="5.5" />
-                                </Border.StrokeShape>
-                                <Label FontSize="Small"
-                                       HorizontalTextAlignment="Center"
-                                       Text="Add Server" />
-                            </Border>
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroupList>
-                                    <VisualStateGroup>
-                                        <VisualState x:Name="Normal" />
-                                        <VisualState x:Name="Pressed">
-                                            <VisualState.Setters>
-                                                <Setter TargetName="addServerBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState x:Name="PointerOver">
-                                            <VisualState.Setters>
-                                                <Setter TargetName="addServerBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateGroupList>
-                            </VisualStateManager.VisualStateGroups>
-                        </toolkit:ContentButton>
+                        <Button Grid.Row="9"
+                                Margin="0,10,0,0"
+                                BackgroundColor="#2fFFFFFF"
+                                Command="{Binding SaveServerCommand}"
+                                HorizontalOptions="FillAndExpand"
+                                Text="Save"
+                                TextColor="{AppThemeBinding Dark='White',
+                                                            Light='Black'}" />
                     </Grid>
                 </Border>
             </Grid>

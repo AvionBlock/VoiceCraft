@@ -211,11 +211,18 @@ namespace VoiceCraft.Maui.VoiceCraft
                 PacketCount++;
                 int encodedBytes = Encoder.Encode(audio, bytesRecorded, _audioEncodeBuffer);
                 
-                // Allocate exact size array - unavoidable due to Packet structure, but faster than Linq
-                byte[] audioTrimmed = new byte[encodedBytes];
-                Buffer.BlockCopy(_audioEncodeBuffer, 0, audioTrimmed, 0, encodedBytes);
+                // Memory Optimization: Use ArrayPool to avoid allocating new byte[] every 20ms
+                byte[] audioBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(encodedBytes);
+                Buffer.BlockCopy(_audioEncodeBuffer, 0, audioBuffer, 0, encodedBytes);
 
-                VoiceCraftSocket.Send(new Core.Packets.VoiceCraft.ClientAudio() { Audio = audioTrimmed, PacketCount = PacketCount });
+                VoiceCraftSocket.Send(new Core.Packets.VoiceCraft.ClientAudio() 
+                { 
+                    Audio = audioBuffer, 
+                    DataLength = encodedBytes,
+                    PacketCount = PacketCount 
+                });
+                
+                // Note: Array is returned to pool when packet is disposed by VoiceCraftSocket sender loop.
             }
         }
 

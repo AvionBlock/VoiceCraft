@@ -9,6 +9,7 @@ namespace VoiceCraft.Core.Audio.Streams
         private CircularBuffer? circularBuffer;
         private readonly WaveFormat waveFormat;
         private bool IsReady;
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Creates a new buffered WaveProvider
@@ -65,7 +66,10 @@ namespace VoiceCraft.Core.Audio.Streams
         {
             get
             {
-                return circularBuffer == null ? 0 : circularBuffer.Count;
+                lock (_lock)
+                {
+                    return circularBuffer == null ? 0 : circularBuffer.Count;
+                }
             }
         }
 
@@ -90,22 +94,25 @@ namespace VoiceCraft.Core.Audio.Streams
         /// </summary>
         public void AddSamples(byte[] buffer, int offset, int count)
         {
-            // create buffer here to allow user to customise buffer length
-            if (circularBuffer == null)
+            lock (_lock)
             {
-                circularBuffer = new CircularBuffer(BufferLength);
-            }
+                // create buffer here to allow user to customise buffer length
+                if (circularBuffer == null)
+                {
+                    circularBuffer = new CircularBuffer(BufferLength);
+                }
 
-            var written = circularBuffer.Write(buffer, offset, count);
+                var written = circularBuffer.Write(buffer, offset, count);
 
-            if(BufferedBytes >= PreloadedBytesTarget && !IsReady)
-            {
-                IsReady = true;
-            }
+                if (circularBuffer.Count >= PreloadedBytesTarget && !IsReady)
+                {
+                    IsReady = true;
+                }
 
-            if (written < count && !DiscardOnBufferOverflow)
-            {
-                throw new InvalidOperationException("Buffer full");
+                if (written < count && !DiscardOnBufferOverflow)
+                {
+                    throw new InvalidOperationException("Buffer full");
+                }
             }
         }
 
@@ -116,16 +123,19 @@ namespace VoiceCraft.Core.Audio.Streams
         public int Read(byte[] buffer, int offset, int count)
         {
             int read = 0;
-            if (circularBuffer != null && IsReady) // not yet created
+            lock (_lock)
             {
-                read = circularBuffer.Read(buffer, offset, count);
-            }
-            if (ReadFully && read < count)
-            {
-                // zero the end of the buffer
-                Array.Clear(buffer, offset + read, count - read);
-                read = count;
-                IsReady = false;
+                if (circularBuffer != null && IsReady) // not yet created
+                {
+                    read = circularBuffer.Read(buffer, offset, count);
+                }
+                if (ReadFully && read < count)
+                {
+                    // zero the end of the buffer
+                    Array.Clear(buffer, offset + read, count - read);
+                    read = count;
+                    IsReady = false;
+                }
             }
             return read;
         }
@@ -135,9 +145,12 @@ namespace VoiceCraft.Core.Audio.Streams
         /// </summary>
         public void ClearBuffer()
         {
-            if (circularBuffer != null)
+            lock (_lock)
             {
-                circularBuffer.Reset();
+                if (circularBuffer != null)
+                {
+                    circularBuffer.Reset();
+                }
             }
         }
     }

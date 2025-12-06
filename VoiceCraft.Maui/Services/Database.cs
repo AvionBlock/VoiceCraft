@@ -31,38 +31,72 @@ namespace VoiceCraft.Maui.Services
 
         private async Task Initialize()
         {
-            try
+            await Task.Run(() =>
             {
-                if (!File.Exists(ServersDbPath))
+                lock (_lock)
                 {
-                    await File.WriteAllTextAsync(ServersDbPath, JsonConvert.SerializeObject(Servers));
-                }
-                else
-                {
-                    var readDBData = JsonConvert.DeserializeObject<List<ServerModel>>(await File.ReadAllTextAsync(ServersDbPath));
-                    if (readDBData != null)
-                        Servers = readDBData;
-                }
+                    try
+                    {
+                        LoadServers();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error loading servers: {ex}");
+                        // Backup corrupt file
+                        if (File.Exists(ServersDbPath))
+                            File.Copy(ServersDbPath, ServersDbPath + ".bak", true);
+                    }
 
-                if (!File.Exists(SettingsDbPath))
-                {
-                    await File.WriteAllTextAsync(SettingsDbPath, JsonConvert.SerializeObject(Settings));
+                    try
+                    {
+                        LoadSettings();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex}");
+                        if (File.Exists(SettingsDbPath))
+                            File.Copy(SettingsDbPath, SettingsDbPath + ".bak", true);
+                    }
                 }
-                else
-                {
-                    var readDBData = JsonConvert.DeserializeObject<SettingsModel>(await File.ReadAllTextAsync(SettingsDbPath));
-                    if (readDBData != null)
-                        Settings = readDBData;
-                }
-            }
-            catch (Exception ex)
+            });
+        }
+
+        private void LoadServers()
+        {
+            if (!File.Exists(ServersDbPath))
             {
-                System.Diagnostics.Debug.WriteLine($"Error initializing database: {ex}");
+                // Create empty file
+                File.WriteAllText(ServersDbPath, JsonConvert.SerializeObject(Servers));
+            }
+            else
+            {
+                var content = File.ReadAllText(ServersDbPath);
+                var readDBData = JsonConvert.DeserializeObject<List<ServerModel>>(content);
+                if (readDBData != null)
+                    Servers = readDBData;
+            }
+        }
+
+        private void LoadSettings()
+        {
+            if (!File.Exists(SettingsDbPath))
+            {
+                // Create default file
+                File.WriteAllText(SettingsDbPath, JsonConvert.SerializeObject(Settings));
+            }
+            else
+            {
+                var content = File.ReadAllText(SettingsDbPath);
+                var readDBData = JsonConvert.DeserializeObject<SettingsModel>(content);
+                if (readDBData != null)
+                    Settings = readDBData;
             }
         }
 
         public async Task AddServer(ServerModel server)
         {
+            await Initialization; // Ensure loaded
+            
             if (string.IsNullOrWhiteSpace(server.Name)) throw new ArgumentException("Name cannot be empty!");
             if (string.IsNullOrEmpty(server.IP)) throw new ArgumentException("IP cannot be empty!");
             if (server.Port < 1025) throw new ArgumentOutOfRangeException(nameof(server.Port), "Port cannot be lower than 1025");
@@ -76,6 +110,8 @@ namespace VoiceCraft.Maui.Services
 
         public async Task EditServer(ServerModel server)
         {
+            await Initialization;
+
             var foundServer = Servers.FirstOrDefault(x => x.Name == server.Name);
             if (foundServer != null)
             {
@@ -95,6 +131,8 @@ namespace VoiceCraft.Maui.Services
 
         public async Task RemoveServer(ServerModel server)
         {
+            await Initialization; 
+
             Servers.Remove(server);
             OnServerRemoved?.Invoke(server);
             await SaveServers();
@@ -102,12 +140,15 @@ namespace VoiceCraft.Maui.Services
 
         public async Task SaveAllAsync()
         {
+            // Initialization check handled in respective methods
             await SaveServers();
             await SaveSettings();
         }
 
         public async Task SaveServers()
         {
+            await Initialization;
+            
             await Task.Run(() =>
             {
                 lock (_lock)
@@ -123,6 +164,8 @@ namespace VoiceCraft.Maui.Services
 
         public async Task SaveSettings()
         {
+            await Initialization;
+
             await Task.Run(() =>
             {
                 lock (_lock)

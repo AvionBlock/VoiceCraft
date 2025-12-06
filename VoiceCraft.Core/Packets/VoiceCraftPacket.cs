@@ -10,7 +10,10 @@ namespace VoiceCraft.Core.Packets
         public uint Sequence { get; set; }
         public long Id { get; set; } = long.MinValue;
         public long ResendTime { get; set; }
-        public int Retries { get; set; }
+        /// <summary>
+        /// Number of retry attempts for reliable packets. Used atomically with Interlocked.
+        /// </summary>
+        public int Retries;
 
         public virtual int ReadPacket(ref byte[] dataStream, int offset = 0)
         {

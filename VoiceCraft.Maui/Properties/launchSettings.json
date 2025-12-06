@@ -3,6 +3,10 @@
     "Windows Machine": {
       "commandName": "MsixPackage",
       "nativeDebugging": false
+    },
+    "VoiceCraft.Maui": {
+      "commandName": "Project",
+      "nativeDebugging": true
     }
   }
 }

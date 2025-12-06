@@ -1,42 +1,73 @@
 ﻿using NAudio.Wave;
 using System;
-using System.Collections.Generic;
 
 namespace VoiceCraft.Core.Audio
 {
     public class EchoSampleProvider : ISampleProvider
     {
-        private ISampleProvider source;
-        public int EchoLength { get; private set; }
+        private readonly ISampleProvider source;
+        private readonly float[] delayBuffer;
+        private int delayPos;
+        private readonly int delayLength;
+
         public float EchoFactor { get; set; }
         public float DecayFactor { get; set; }
 
-        private Queue<float> Samples;
-
-        public WaveFormat WaveFormat { get { return source.WaveFormat; } }
+        public WaveFormat WaveFormat => source.WaveFormat;
 
         public EchoSampleProvider(ISampleProvider source, int echoDelayMs = 50)
         {
             this.source = source;
-            Samples = new Queue<float>();
-            EchoLength = WaveFormat.ConvertLatencyToByteSize(echoDelayMs);
+            // Calculate delay in samples
+            int channels = source.WaveFormat.Channels;
+            delayLength = (int)((echoDelayMs / 1000.0) * source.WaveFormat.SampleRate * channels);
+            
+            // Ensure alignment with channels to prevent channel bleeding
+            if (channels > 0 && delayLength % channels != 0)
+            {
+                delayLength -= (delayLength % channels);
+            }
+            if (delayLength < channels) delayLength = channels; // Minimum 1 frame
+
+            delayBuffer = new float[delayLength];
+            delayPos = 0;
             EchoFactor = 0.0f;
-
-            for (int i = 0; i < EchoLength; i++) Samples.Enqueue(0.0f);
+            DecayFactor = 0.8f;
         }
-
 
         public int Read(float[] buffer, int offset, int count)
         {
             int read = source.Read(buffer, offset, count);
             if (EchoFactor == 0) return read;
+
+            // Local copies for thread safety (tearing prevention)
+            float ef = EchoFactor;
+            float df = DecayFactor;
+
             for (int i = 0; i < read; i++)
             {
-                for (int ch = 0; ch < source.WaveFormat.Channels; ch++)
+                float input = buffer[offset + i];
+                float delaySample = delayBuffer[delayPos];
+
+                float output = input + (delaySample * ef);
+
+                // Hard clamp for safety
+                if (output > 1.0f) output = 1.0f;
+                else if (output < -1.0f) output = -1.0f;
+
+                buffer[offset + i] = output;
+
+                // Simple feedback loop
+                float feedback = output * df; // Feeding back the wet signal
+                if (feedback > 1.0f) feedback = 1.0f;
+                else if (feedback < -1.0f) feedback = -1.0f;
+
+                delayBuffer[delayPos] = feedback;
+
+                delayPos++;
+                if (delayPos >= delayLength)
                 {
-                    float sample = buffer[offset + i];
-                    buffer[offset + i] = Math.Min(1, Math.Max(-1, sample + EchoFactor * Samples.Dequeue()));
-                    Samples.Enqueue(Math.Min(1, Math.Max(-1, buffer[offset + i] * DecayFactor)));
+                    delayPos = 0;
                 }
             }
 
@@ -44,5 +75,4 @@ namespace VoiceCraft.Core.Audio
         }
     }
 }
-
 //Credits https://www.youtube.com/watch?v=ZiIJRvNx2N0&t

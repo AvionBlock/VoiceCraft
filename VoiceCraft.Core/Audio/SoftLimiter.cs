@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Core.Audio
 {
@@ -8,6 +9,7 @@ namespace VoiceCraft.Core.Audio
 
         public EffectParameter Boost { get; } = new EffectParameter(0f, 0f, 18f, "Boost");
         public EffectParameter Brickwall { get; } = new EffectParameter(-0.1f, -3.0f, 1f, "Output Brickwall(dB)");
+
         public SoftLimiter(ISampleProvider source) : base(source)
         {
             RegisterParameters(Boost, Brickwall);
@@ -30,27 +32,27 @@ namespace VoiceCraft.Core.Audio
 
         protected override void Sample(ref float spl0, ref float spl1)
         {
-            var dB0 = amp_dB * log(abs(spl0)) + boost_dB;
-            var dB1 = amp_dB * log(abs(spl1)) + boost_dB;
+            // Add epsilon to avoid Log(0) which is -Infinity
+            var dB0 = amp_dB * Math.Log(Math.Abs(spl0) + 1e-9) + boost_dB;
+            var dB1 = amp_dB * Math.Log(Math.Abs(spl1) + 1e-9) + boost_dB;
 
             if (dB0 > threshold_dB)
             {
-                var over_dB = dB0 - threshold_dB;
+                var over_dB = (float)(dB0 - threshold_dB);
                 over_dB = a * over_dB + b * over_dB * over_dB;
-                dB0 = min(threshold_dB + over_dB, limit_dB);
+                dB0 = Math.Min(threshold_dB + over_dB, limit_dB);
             }
 
             if (dB1 > threshold_dB)
             {
-                var over_dB = dB1 - threshold_dB;
+                var over_dB = (float)(dB1 - threshold_dB);
                 over_dB = a * over_dB + b * over_dB * over_dB;
-                dB1 = min(threshold_dB + over_dB, limit_dB);
+                dB1 = Math.Min(threshold_dB + over_dB, limit_dB);
             }
 
-            spl0 = exp(dB0 / amp_dB) * sign(spl0);
-            spl1 = exp(dB1 / amp_dB) * sign(spl1);
+            spl0 = (float)(Math.Exp(dB0 / amp_dB) * Math.Sign(spl0));
+            spl1 = (float)(Math.Exp(dB1 / amp_dB) * Math.Sign(spl1));
         }
     }
 }
-
 //Credits: https://www.markheath.net/post/limit-audio-naudio

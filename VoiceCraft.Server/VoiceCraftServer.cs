@@ -92,9 +92,16 @@ namespace VoiceCraft.Server
         }
 
         #region Methods
+        private Task? AudioProcessorTask { get; set; }
+
         public void Start()
         {
             ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraftServer));
+
+            if (AudioQueue.IsAddingCompleted)
+                AudioQueue = new BlockingCollection<(Core.Packets.VoiceCraft.ClientAudio Data, NetPeer Peer)>();
+
+            AudioProcessorTask = Task.Factory.StartNew(ProcessAudioLoop, TaskCreationOptions.LongRunning);
 
             _ = Task.Run(async () => {
                 try
@@ -123,6 +130,10 @@ namespace VoiceCraft.Server
         {
             ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraftServer));
 
+            AudioQueue.CompleteAdding();
+            // We usually don't wait for Audio processing to finish draining, but we could.
+            // if(AudioProcessorTask != null) await AudioProcessorTask;
+
             await VoiceCraftSocket.StopAsync();
             MCComm.Stop();
 
@@ -144,7 +155,7 @@ namespace VoiceCraft.Server
                 if (!participant.Binded) continue;
                 if (participant.Channel == channel)
                 {
-                    participant.Key.AddToSendBuffer(packet.Clone());
+                    kvp.Key.AddToSendBuffer(packet.Clone());
                 }
             }
         }
@@ -159,7 +170,7 @@ namespace VoiceCraft.Server
                 if (excludes != null && excludes.Contains(participant)) continue;
                 if (inChannels != null && !inChannels.Contains(participant.Channel)) continue;
 
-                participant.Key.AddToSendBuffer(packet.Clone());
+                kvp.Key.AddToSendBuffer(packet.Clone());
             }
         }
 
@@ -547,43 +558,89 @@ namespace VoiceCraft.Server
             }
         }
 
+        private BlockingCollection<(Core.Packets.VoiceCraft.ClientAudio Data, NetPeer Peer)> AudioQueue { get; set; } = new BlockingCollection<(Core.Packets.VoiceCraft.ClientAudio Data, NetPeer Peer)>();
+
         private void OnClientAudio(Core.Packets.VoiceCraft.ClientAudio data, NetPeer peer)
         {
-            _ = Task.Run(() => {
-                if (Participants.TryGetValue(peer, out var client) && client.Binded && !client.Muted && !client.Deafened && !client.ServerMuted && !client.ServerDeafened)
+            if (!AudioQueue.IsAddingCompleted)
+            {
+                AudioQueue.Add((data, peer));
+            }
+        }
+
+        private void ProcessAudioLoop()
+        {
+            foreach (var (data, peer) in AudioQueue.GetConsumingEnumerable())
+            {
+                try 
                 {
-                    client.LastSpoke = Environment.TickCount64;
-                    var defaultSettings = ServerProperties.DefaultSettings;
-                    var proximityToggle = client.Channel.OverrideSettings?.ProximityToggle ?? defaultSettings.ProximityToggle;
-                    if (proximityToggle)
+                    if (Participants.TryGetValue(peer, out var client) && client.Binded && !client.Muted && !client.Deafened && !client.ServerMuted && !client.ServerDeafened)
                     {
-                        if (!VoiceCraftParticipant.TalkSettingsDisabled(client.ChecksBitmask, BitmaskSettings.DeathDisabled) && client.Dead || 
-                            !VoiceCraftParticipant.TalkSettingsDisabled(client.ChecksBitmask, BitmaskSettings.EnvironmentDisabled) && string.IsNullOrWhiteSpace(client.EnvironmentId)) 
-                            return;
+                        client.LastSpoke = Environment.TickCount64;
+                        var defaultSettings = ServerProperties.DefaultSettings;
+                        var channel = client.Channel; // Snapshot reference
+                        if(channel == null) continue;
 
-                        var proximityDistance = client.Channel.OverrideSettings?.ProximityDistance ?? defaultSettings.ProximityDistance;
-                        var voiceEffects = client.Channel.OverrideSettings?.VoiceEffects ?? defaultSettings.VoiceEffects;
+                        var proximityToggle = channel.OverrideSettings?.ProximityToggle ?? defaultSettings.ProximityToggle;
+                        var proximityDistance = channel.OverrideSettings?.ProximityDistance ?? defaultSettings.ProximityDistance;
+                        var voiceEffects = channel.OverrideSettings?.VoiceEffects ?? defaultSettings.VoiceEffects;
+                        
+                        // Performance: Check conditions early
+                        if (proximityToggle)
+                        {
+                             if ((client.Dead && !VoiceCraftParticipant.TalkSettingsDisabled(client.ChecksBitmask, BitmaskSettings.DeathDisabled)) ||
+                                 (string.IsNullOrWhiteSpace(client.EnvironmentId) && !VoiceCraftParticipant.TalkSettingsDisabled(client.ChecksBitmask, BitmaskSettings.EnvironmentDisabled)))
+                                continue;
+                        }
 
+                        // Optimize iteration: Collect targets first? No, iteration is fine.
+                        // We iterate ConcurrentDictionary.
                         foreach (var kvp in Participants)
                         {
                             var participant = kvp.Value;
+                            // Basic filtering
                             if (participant == client) continue;
-                            if (!participant.Binded) continue;
-                            if (participant.Deafened || participant.ServerDeafened) continue;
-                            if (participant.Channel != client.Channel) continue;
+                            if (!participant.Binded || participant.Deafened || participant.ServerDeafened) continue;
+                            if (participant.Channel != channel) continue;
 
-                            //Bitmask Checks here
-                            if (participant.GetIntersectedListenBitmasks(client.ChecksBitmask) == 0) continue;
-                            if (!participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.DeathDisabled) && participant.Dead) continue;
-                            if (!participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.EnvironmentDisabled) && (string.IsNullOrWhiteSpace(participant.EnvironmentId) || participant.EnvironmentId != client.EnvironmentId)) continue;
-                            if (!participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.ProximityDisabled) && Vector3.Distance(participant.Position, client.Position) > proximityDistance) continue;
+                            // Complex logic moved here
+                            float volume = 1.0f;
+                            float echo = 0.0f;
+                            bool muffle = false;
+                            float rotation = 1.5f;
 
-                            var volume = participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.ProximityDisabled) ? 1.0f : 1.0f - Math.Clamp(Vector3.Distance(participant.Position, client.Position) / proximityDistance, 0.0f, 1.0f);
-                            var echo = participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.VoiceEffectsDisabled) || !voiceEffects ? 0.0f : Math.Clamp(participant.EchoFactor + client.EchoFactor, 0.0f, 1.0f) * (1.0f - volume);
-                            var muffle = !participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.VoiceEffectsDisabled) && voiceEffects && (participant.Muffled || client.Muffled);
-                            var rotation = participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.ProximityDisabled)? 1.5f : (float)(Math.Atan2(participant.Position.Z - client.Position.Z, participant.Position.X - client.Position.X) - (participant.Rotation * Math.PI / 180));
+                            if (proximityToggle)
+                            {
+                                //Bitmask Checks
+                                if (participant.GetIntersectedListenBitmasks(client.ChecksBitmask) == 0) continue;
+                                if (participant.Dead && !participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.DeathDisabled)) continue;
+                                if ((string.IsNullOrWhiteSpace(participant.EnvironmentId) || participant.EnvironmentId != client.EnvironmentId) && !participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.EnvironmentDisabled)) continue;
+                                
+                                float dist = Vector3.Distance(participant.Position, client.Position);
+                                if (dist > proximityDistance && !participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.ProximityDisabled)) continue;
 
-                            participant.Key.AddToSendBuffer(new Core.Packets.VoiceCraft.ServerAudio()
+                                if (!participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.ProximityDisabled))
+                                {
+                                    volume = 1.0f - Math.Clamp(dist / proximityDistance, 0.0f, 1.0f);
+                                    rotation = (float)(Math.Atan2(participant.Position.Z - client.Position.Z, participant.Position.X - client.Position.X) - (participant.Rotation * Math.PI / 180));
+                                }
+
+                                if (!participant.IntersectedListenSettingsDisabled(client.ChecksBitmask, BitmaskSettings.VoiceEffectsDisabled))
+                                {
+                                    if(voiceEffects) 
+                                    {
+                                        echo = Math.Clamp(participant.EchoFactor + client.EchoFactor, 0.0f, 1.0f) * (1.0f - volume);
+                                        muffle = participant.Muffled || client.Muffled;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Non-proximity checks
+                                if (participant.GetIntersectedListenBitmasks(client.ChecksBitmask) == 0) continue;
+                            }
+
+                            kvp.Key.AddToSendBuffer(new Core.Packets.VoiceCraft.ServerAudio()
                             {
                                 Key = client.Key,
                                 PacketCount = data.PacketCount,
@@ -595,33 +652,13 @@ namespace VoiceCraft.Server
                             });
                         }
                     }
-                    else
-                    {
-                        // Non-proximity mode - direct iteration for better performance
-                        foreach (var kvp in Participants)
-                        {
-                            var participant = kvp.Value;
-                            if (participant != client &&
-                                participant.Binded &&
-                                !participant.Deafened &&
-                                participant.Channel == client.Channel &&
-                                participant.GetIntersectedListenBitmasks(client.ChecksBitmask) != 0)
-                            {
-                                participant.Key.AddToSendBuffer(new Core.Packets.VoiceCraft.ServerAudio()
-                                {
-                                    Key = client.Key,
-                                    PacketCount = data.PacketCount,
-                                    Volume = 1.0f,
-                                    EchoFactor = 0.0f,
-                                    Muffled = false,
-                                    Rotation = 1.5f,
-                                    Audio = data.Audio
-                                });
-                            }
-                        }
-                    }
                 }
-            });
+                catch (Exception ex)
+                {
+                    // Log error but keep loop alive
+                    System.Diagnostics.Debug.WriteLine($"Audio Process Error: {ex}");
+                }
+            }
         }
         #endregion
 

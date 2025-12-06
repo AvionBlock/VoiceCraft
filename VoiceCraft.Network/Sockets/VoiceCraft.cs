@@ -23,6 +23,9 @@ namespace VoiceCraft.Network.Sockets
         //Private Variables
         private CancellationTokenSource CTS { get; set; } = new CancellationTokenSource();
         private ConcurrentDictionary<SocketAddress, NetPeer> NetPeers { get; set; } = new ConcurrentDictionary<SocketAddress, NetPeer>(); //Server Variable
+        private ConcurrentDictionary<string, RateLimitInfo> _rateLimits = new(); // Security: Rate Limiting
+        private const int MaxConnectionsPerIP = 5;
+        private const int PacketsPerSecondLimit = 10;
         private NetPeer? ClientNetPeer { get; set; } //Client Variable
         private Task? ActivityChecker { get; set; }
         private Task? Sender { get; set; }
@@ -252,6 +255,7 @@ namespace VoiceCraft.Network.Sockets
             State = VoiceCraftSocketState.Stopping;
             OnLoginReceived -= OnClientLogin;
             OnLogoutReceived -= OnClientLogout;
+            OnPingReceived -= OnPing;
             OnAckReceived -= OnAck;
 
             DisconnectPeers("Server Shutdown.");
@@ -319,7 +323,7 @@ namespace VoiceCraft.Network.Sockets
 
         private async Task ReceiveAsync()
         {
-            byte[] buffer = GC.AllocateArray<byte>(length: 500, pinned: true);
+            byte[] buffer = GC.AllocateArray<byte>(length: 2048, pinned: true);
             Memory<byte> bufferMem = buffer.AsMemory();
             var receivedAddress = new SocketAddress(Socket.AddressFamily);
 
@@ -328,24 +332,46 @@ namespace VoiceCraft.Network.Sockets
                 try
                 {
                     var receivedBytes = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, receivedAddress, CTS.Token);
-                    var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.ToArray());
-
+                    
+                    // Security: Basic Flood Protection
+                    // In a real high-performance scenario, checking IP limits on every packet involves dictionary lookups.
+                    // However, avoiding object creation (NetPeer) is the priority here.
+                    
                     NetPeers.TryGetValue(receivedAddress, out var netPeer);
+
                     if (netPeer?.State == NetPeerState.Connected)
                     {
+                        // Existing connection logic - Fast path
+                        var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.Slice(0, receivedBytes).ToArray());
+
                         if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
                             OnInboundPacket?.Invoke(packet, netPeer);
 
-                        netPeer.AddToReceiveBuffer(packet); //Only add packets if the client was accepted.
+                        netPeer.AddToReceiveBuffer(packet); 
                     }
-                    else if(packet.PacketId == (byte)VoiceCraftPacketTypes.Login || packet.PacketId == (byte)VoiceCraftPacketTypes.PingInfo) //Null or not connected, we only accept the login or pinginfo packets to try an prevent unauthorized overload spam.
+                    else
                     {
-                        var peer = netPeer ?? CreateNetPeer(receivedAddress);
+                        // New or Handshaking connection - Slow path with Security Checks
+                        
+                        // 1. Check Rate Limit / Blacklist before parsing (Optimized)
+                        if (IsRateLimited(receivedAddress))
+                        {
+                            continue; // Drop packet silently to save resources
+                        }
 
-                        if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
-                            OnInboundPacket?.Invoke(packet, peer);
+                        // 2. Parse Packet
+                        var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.Slice(0, receivedBytes).ToArray());
 
-                        peer.AddToReceiveBuffer(packet);
+                        // 3. Only accept specific handshake packets for new peers
+                        if(packet.PacketId == (byte)VoiceCraftPacketTypes.Login || packet.PacketId == (byte)VoiceCraftPacketTypes.PingInfo)
+                        {
+                            var peer = netPeer ?? CreateNetPeer(receivedAddress);
+
+                            if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
+                                OnInboundPacket?.Invoke(packet, peer);
+
+                            peer.AddToReceiveBuffer(packet);
+                        }
                     }
                 }
                 catch (SocketException ex)
@@ -368,15 +394,15 @@ namespace VoiceCraft.Network.Sockets
 
         private async Task ClientReceiveAsync()
         {
-            byte[] buffer = GC.AllocateArray<byte>(length: 500, pinned: true);
+            byte[] buffer = GC.AllocateArray<byte>(length: 2048, pinned: true);
             Memory<byte> bufferMem = buffer.AsMemory();
 
             while (!CTS.IsCancellationRequested)
             {
                 try
                 {
-                    var receivedBytes = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, RemoteEndpoint, CTS.Token);
-                    var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.ToArray());
+                    var result = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, RemoteEndpoint, CTS.Token);
+                    var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.Slice(0, result.ReceivedBytes).ToArray());
 
                     ClientNetPeer?.AddToReceiveBuffer(packet); //We don't care about wether the client is connected or not, We'll just accept the packet into the buffer.
 
@@ -408,7 +434,7 @@ namespace VoiceCraft.Network.Sockets
                 var dist = Environment.TickCount64 - ClientNetPeer?.LastActive;
                 if (dist > Timeout)
                 {
-                    await DisconnectAsync($"Connection timed out!\nTime since last active {Environment.TickCount - ClientNetPeer?.LastActive}ms.", false);
+                    await DisconnectAsync($"Connection timed out!\nTime since last active {Environment.TickCount64 - ClientNetPeer?.LastActive}ms.", false);
                     break;
                 }
                 ClientNetPeer?.ResendPackets();
@@ -418,7 +444,7 @@ namespace VoiceCraft.Network.Sockets
                     Send(new Ping());
                     time = Environment.TickCount64;
                 }
-                await Task.Delay(1).ConfigureAwait(false);
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
@@ -441,14 +467,34 @@ namespace VoiceCraft.Network.Sockets
                     peer.Value.ResendPackets();
                 }
 
-                await Task.Delay(1).ConfigureAwait(false);
+                // Security: Cleanup Rate Limits to prevent memory leak
+                if (Environment.TickCount64 % 10000 < 100) // Run roughly every 10 seconds
+                {
+                    var now = Environment.TickCount64;
+                    var keysToRemove = new List<string>();
+                    foreach(var kvp in _rateLimits)
+                    {
+                        if (now - kvp.Value.LastReset > 5000) // Remove entries older than 5 seconds
+                        {
+                            keysToRemove.Add(kvp.Key);
+                        }
+                    }
+                    foreach(var key in keysToRemove)
+                    {
+                        _rateLimits.TryRemove(key, out _);
+                    }
+                }
+
+                await Task.Delay(100).ConfigureAwait(false);
             }
         }
 
         private async Task ServerSender()
         {
+            var tasks = new List<Task>();
             while (!CTS.IsCancellationRequested)
             {
+                tasks.Clear();
                 foreach (var peer in NetPeers)
                 {
                     var maxSendTime = Environment.TickCount64 + MaxSendTime;
@@ -459,10 +505,15 @@ namespace VoiceCraft.Network.Sockets
                             peer.Value.Disconnect("Unstable Connection.", true);
                             continue;
                         }
-                        await SocketSendToAsync(packet, peer.Value.RemoteEndPoint);
+                        
+                        tasks.Add(SocketSendToAsync(packet, peer.Value.RemoteEndPoint));
 
                         if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
                             OnOutboundPacket?.Invoke(packet, peer.Value);
+                        
+                        // Optimization: Dispose packet if it uses pooled resources
+                        if (packet is IDisposable disposable)
+                             disposable.Dispose();
                     }
 
                     if (peer.Value.State == NetPeerState.Disconnected)
@@ -471,8 +522,15 @@ namespace VoiceCraft.Network.Sockets
                         OnPeerDisconnected?.Invoke(peer.Value, peer.Value.DisconnectReason);
                     }
                 }
-
-                await Task.Delay(1); //1ms to not destroy the CPU.
+                
+                if (tasks.Count > 0)
+                {
+                    await Task.WhenAll(tasks);
+                }
+                else
+                {
+                    await Task.Delay(1); //1ms to not destroy the CPU.
+                }
             }
         }
 
@@ -491,6 +549,10 @@ namespace VoiceCraft.Network.Sockets
 
                     if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
                         OnOutboundPacket?.Invoke(packet, ClientNetPeer);
+
+                    // Optimization: Dispose packet if it uses pooled resources
+                    if (packet is IDisposable disposable)
+                        disposable.Dispose();
                 }
 
                 await Task.Delay(1); //1ms to not destroy the CPU.
@@ -514,6 +576,42 @@ namespace VoiceCraft.Network.Sockets
                 if(peer.Value.Id == id) return true;
             }
             return false;
+        }
+
+        private bool IsRateLimited(SocketAddress address)
+        {
+            // Simple key based on string representation of address (IP+Port usually, but here we want IP based preferably)
+            // SocketAddress doesn't give easy IP access without parsing, but for UDP, the full address (Endpoint) is the peer.
+            // If we want to limit by IP, we need to extract it.
+            // For now, limiting by EndPoint (SocketAddress) prevents a single port spam, but not a distributed attack or port rotation.
+            // However, parsing IP from SocketAddress every packet is expensive.
+            // Let's rely on the fact that standard clients reuse ports or behave predictably.
+            // A persistent attacker rotating ports will still fill this dictionary, so we need cleanup.
+
+            var updates = _rateLimits.AddOrUpdate(address.ToString(), 
+                new RateLimitInfo { Count = 1, LastReset = Environment.TickCount64 },
+                (key, current) => 
+                {
+                    var now = Environment.TickCount64;
+                     if (now - current.LastReset > 1000)
+                    {
+                        current.Count = 1;
+                        current.LastReset = now;
+                    }
+                    else
+                    {
+                        current.Count++;
+                    }
+                    return current;
+                });
+
+            return updates.Count > PacketsPerSecondLimit;
+        }
+
+        private class RateLimitInfo
+        {
+            public int Count;
+            public long LastReset;
         }
 
         private void HandlePacketReceived(NetPeer peer, VoiceCraftPacket packet)

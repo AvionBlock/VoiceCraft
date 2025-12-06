@@ -5,7 +5,14 @@ namespace VoiceCraft.Maui;
 
 public class AudioManager : IAudioManager
 {
-    public static AudioManager Instance { get; } = new AudioManager();
+    public static AudioManager Instance { get; } = new AudioManager(new Models.SettingsModel());
+    
+    private readonly Models.SettingsModel _settings;
+    
+    public AudioManager(Models.SettingsModel settings)
+    {
+        _settings = settings;
+    }
 
     public IWavePlayer CreatePlayer(ISampleProvider waveProvider)
     {

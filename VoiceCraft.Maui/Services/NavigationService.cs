@@ -37,7 +37,7 @@ namespace VoiceCraft.Maui.Services
 
             try
             {
-                await Shell.Current.Navigation.PopAsync();
+                await Shell.Current.GoToAsync("..");
             }
             catch (Exception ex)
             {

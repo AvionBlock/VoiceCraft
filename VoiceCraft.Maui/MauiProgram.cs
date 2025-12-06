@@ -5,6 +5,7 @@ using SimpleToolkit.Core;
 using VoiceCraft.Maui.Interfaces;
 using VoiceCraft.Maui.Services;
 using VoiceCraft.Maui.ViewModels;
+using VoiceCraft.Maui.Models;
 
 namespace VoiceCraft.Maui
 {
@@ -28,6 +29,7 @@ namespace VoiceCraft.Maui
 #endif
             // Services
             builder.Services.AddSingleton<IDatabaseService, Database>();
+            builder.Services.AddSingleton<SettingsModel>(sp => sp.GetRequiredService<IDatabaseService>().Settings);
             builder.Services.AddSingleton<INavigationService, NavigationService>();
             builder.Services.AddSingleton<IAudioManager, AudioManager>();
 

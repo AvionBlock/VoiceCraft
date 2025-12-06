@@ -40,7 +40,8 @@ namespace VoiceCraft.Maui.ViewModels
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
+                var msg = string.IsNullOrWhiteSpace(ex.Message) ? "Unknown error occurred." : ex.Message;
+                await Shell.Current.DisplayAlert("Error", msg, "OK");
             }
         }
     }

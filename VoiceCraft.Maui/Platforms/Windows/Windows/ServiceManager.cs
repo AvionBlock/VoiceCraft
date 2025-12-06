@@ -14,7 +14,8 @@ namespace VoiceCraft.Maui
         public ServiceManager()
         {
             Cts = new CancellationTokenSource();
-            VoipService = new VoipService(Navigator.GetNavigationData<ServerModel>(), IPlatformApplication.Current.Services.GetService<IDatabaseService>());
+            var navService = IPlatformApplication.Current.Services.GetRequiredService<INavigationService>();
+            VoipService = new VoipService(navService.GetNavigationData<ServerModel>(), IPlatformApplication.Current.Services.GetService<IDatabaseService>());
 
             VoipService.OnStatusUpdated += StatusUpdated;
             VoipService.OnSpeakingStarted += SpeakingStarted;

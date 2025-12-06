@@ -35,26 +35,42 @@ namespace VoiceCraft.Core.Audio.Streams
         {
             return Task.Run(async() =>
             {
-                long startTick = Environment.TickCount;
+                // Allocated once, reused loop-to-loop
+                var buffer = new byte[WaveFormat.ConvertLatencyToByteSize(JitterBuffer.FrameSizeMS)];
+                long nextTick = Environment.TickCount64;
+                int frameMs = JitterBuffer.FrameSizeMS;
+
                 while (!Token.IsCancellationRequested)
                 {
                     try
                     {
-                        long tick = Environment.TickCount;
-                        long dist = startTick - tick;
-                        if (dist > 0)
+                        long now = Environment.TickCount64;
+                        long wait = nextTick - now;
+                        
+                        // If we are ahead of time, wait.
+                        if (wait > 0)
                         {
-                            await Task.Delay((int)dist).ConfigureAwait(false);
-                            continue;
+                            await Task.Delay((int)wait, Token).ConfigureAwait(false);
                         }
-                        startTick += JitterBuffer.FrameSizeMS;
+                        
+                        // Advance expected time for next frame, maintaining average pace
+                        nextTick += frameMs;
 
-                        var buffer = new byte[WaveFormat.ConvertLatencyToByteSize(JitterBuffer.FrameSizeMS)];
+                        // If we fell extremely behind (e.g. system sleep), reset pace to prevent packet burst
+                        if (now - nextTick > 1000) 
+                        {
+                            nextTick = now + frameMs;
+                        }
+
                         var count = JitterBuffer.Get(buffer);
                         if (count > 0)
                         {
                             DecodedAudio.AddSamples(buffer, 0, count);
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
                     }
                     catch (Exception ex)
                     {
@@ -66,10 +82,18 @@ namespace VoiceCraft.Core.Audio.Streams
 
         public void Dispose()
         {
-            TokenSource.Cancel();
-            DecodeThread.Wait();
-            TokenSource.Dispose();
-            DecodeThread.Dispose();
+            if (!TokenSource.IsCancellationRequested)
+            {
+                TokenSource.Cancel();
+                try 
+                {
+                    DecodeThread.Wait(1000); // Wait up to 1 second
+                }
+                catch (AggregateException) {}
+                
+                TokenSource.Dispose();
+                // DecodeThread.Dispose() is not necessary and incorrect for Task
+            }
         }
     }
 }

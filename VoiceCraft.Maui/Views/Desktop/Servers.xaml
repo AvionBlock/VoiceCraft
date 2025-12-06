@@ -89,7 +89,7 @@
                                 <Grid ColumnDefinitions="*, auto, auto" ColumnSpacing="5">
                                     <Label FontSize="Medium" Text="{Binding Name}" />
                                     <toolkit:ContentButton Grid.Column="1"
-                                                           Command="{Binding Source={x:Reference servers}, Path=BindingContext.GoToEditServerCommand}"
+                                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ServersViewModel}}, Path=GoToEditServerCommand}"
                                                            CommandParameter="{Binding}"
                                                            HeightRequest="35"
                                                            HorizontalOptions="End"
@@ -123,7 +123,7 @@
                                     </toolkit:ContentButton>
 
                                     <toolkit:ContentButton Grid.Column="2"
-                                                           Command="{Binding Source={x:Reference servers}, Path=BindingContext.DeleteServerCommand}"
+                                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ServersViewModel}}, Path=DeleteServerCommand}"
                                                            CommandParameter="{Binding}"
                                                            HeightRequest="35"
                                                            HorizontalOptions="End"
@@ -169,7 +169,7 @@
                                     <Label.Style>
                                         <Style TargetType="Label">
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Source={x:Reference servers}, Path=BindingContext.Settings.HideAddress}"
+                                                <DataTrigger Binding="{Binding Source={RelativeSource AncestorType={x:Type vm:ServersViewModel}}, Path=Settings.HideAddress}"
                                                              TargetType="Label"
                                                              Value="True">
                                                     <Setter Property="Text" Value="Address: ****:****" />
@@ -186,7 +186,7 @@
 
                                 <toolkit:ContentButton Grid.Row="3"
                                                        Margin="0,10,0,0"
-                                                       Command="{Binding Source={x:Reference servers}, Path=BindingContext.GoToServerCommand}"
+                                                       Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ServersViewModel}}, Path=GoToServerCommand}"
                                                        CommandParameter="{Binding}"
                                                        HeightRequest="35"
                                                        HorizontalOptions="FillAndExpand">

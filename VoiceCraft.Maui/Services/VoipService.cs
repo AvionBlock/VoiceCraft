@@ -163,7 +163,7 @@ namespace VoiceCraft.Maui.Services
                 await Task.Delay(200, CT);
                 try
                 {
-                    var currentSpeakingState = Environment.TickCount - (long)RecordDetection < 500;
+                    var currentSpeakingState = Environment.TickCount64 - RecordDetection < 500;
                     if (previousSpeakingState != currentSpeakingState)
                     {
                         if(currentSpeakingState)
@@ -203,8 +203,9 @@ namespace VoiceCraft.Maui.Services
         //Audio Events
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
-            if (Client == null) return;
-            if (Client.Muted || Client.Deafened)
+            var client = Client; // Cache locally for thread-safety
+            if (client == null) return;
+            if (client.Muted || client.Deafened)
                 return;
 
             // Guard against odd bytes (16-bit audio requires even bytes)
@@ -254,7 +255,7 @@ namespace VoiceCraft.Maui.Services
 
             if (Environment.TickCount64 - RecordDetection < 1000)
             {
-                Client.SendAudio(e.Buffer, bytesToProcess);
+                client.SendAudio(e.Buffer, bytesToProcess);
             }
         }
 

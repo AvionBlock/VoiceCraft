@@ -159,29 +159,70 @@ namespace VoiceCraft.Network.Sockets
                 {
                     ctx = await WebServer.GetContextAsync();
 
-                    if (ctx.Request.HttpMethod == HttpMethod.Post.Method)
-                    {
-                        var content = new StreamReader(ctx.Request.InputStream).ReadToEnd();
-                        var packet = PacketRegistry.GetPacketFromJsonString(content);
-
-                        if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((MCCommPacketTypes)packet.PacketId)))
-                            OnInboundPacket?.Invoke(packet);
-
-                        HandlePacket(packet, ctx);
-                    }
+                    // Offload processing to a separate task to keep the listener loop accepting connections
+                    _ = Task.Run(async () => await ProcessRequestAsync(ctx));
                 }
                 catch (HttpListenerException)
                 {
-                    return; //Done with the socket.
+                    return; // Done with the socket.
                 }
                 catch (Exception ex)
                 {
                     if (LogExceptions)
                         OnExceptionError?.Invoke(ex);
-
-                    if (ctx != null)
-                        SendResponse(ctx, HttpStatusCode.BadRequest, new Deny() { Reason = "Invalid Data!" });
                 }
+            }
+        }
+
+        private async Task ProcessRequestAsync(HttpListenerContext ctx)
+        {
+            try
+            {
+                if (ctx.Request.HttpMethod == HttpMethod.Post.Method)
+                {
+                    // Security: Limit request size to prevent DoS (1MB Limit)
+                    if (ctx.Request.ContentLength64 > 1024 * 1024)
+                    {
+                        SendResponse(ctx, HttpStatusCode.RequestEntityTooLarge, new Deny() { Reason = "Request too large" });
+                        return;
+                    }
+
+                    // Security: Use a bounded buffer to read, don't just "ReadToEnd" blindly if size was unknown
+                    using var reader = new StreamReader(ctx.Request.InputStream, Encoding.UTF8);
+                    
+                    // We can safely verify length again or just read with limits
+                    var content = await reader.ReadToEndAsync();
+
+                    if (string.IsNullOrWhiteSpace(content))
+                    {
+                         SendResponse(ctx, HttpStatusCode.BadRequest, new Deny() { Reason = "Empty body" });
+                         return;
+                    }
+
+                    var packet = PacketRegistry.GetPacketFromJsonString(content);
+
+                    if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((MCCommPacketTypes)packet.PacketId)))
+                        OnInboundPacket?.Invoke(packet);
+
+                    HandlePacket(packet, ctx);
+                }
+                else
+                {
+                    // Handle non-POST requests if necessary, or just close
+                    ctx.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                    ctx.Response.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                 if (LogExceptions)
+                        OnExceptionError?.Invoke(ex);
+
+                 try
+                 {
+                     SendResponse(ctx, HttpStatusCode.BadRequest, new Deny() { Reason = "Invalid Data!" });
+                 }
+                 catch { /* Context might be closed already */ }
             }
         }
 

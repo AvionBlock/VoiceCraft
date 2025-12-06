@@ -12,7 +12,13 @@ namespace VoiceCraft.Core.Packets.MCWSS
 
         public override bool Equals(object obj)
         {
-            return obj.GetHashCode() == GetHashCode();
+            if (obj is Header other)
+            {
+                return string.Equals(messagePurpose, other.messagePurpose, StringComparison.Ordinal) &&
+                       string.Equals(messageType, other.messageType, StringComparison.Ordinal) &&
+                       string.Equals(eventName, other.eventName, StringComparison.Ordinal);
+            }
+            return false;
         }
 
         public override int GetHashCode()
