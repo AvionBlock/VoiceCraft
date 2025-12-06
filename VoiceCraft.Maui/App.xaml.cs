@@ -1,18 +1,37 @@
 ﻿using OpusSharp.Core;
-using SimpleToolkit.Core;
 
-namespace VoiceCraft.Maui
+namespace VoiceCraft.Maui;
+
+/// <summary>
+/// Main application class for VoiceCraft MAUI client.
+/// </summary>
+public partial class App : Application
 {
-    public partial class App : Application
-    {
-        public static string Version = AppInfo.Current.VersionString;
-        public static string OpusVersion = OpusInfo.Version();
-        
-        public App(AppShell shell)
-        {
-            InitializeComponent();
+    /// <summary>
+    /// Gets the application version string.
+    /// </summary>
+    public static string Version { get; } = AppInfo.Current.VersionString;
 
-            MainPage = shell;
-        }
+    /// <summary>
+    /// Gets the Opus codec version string.
+    /// </summary>
+    public static string OpusVersion { get; } = OpusInfo.Version();
+
+    private readonly AppShell _shell;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="App"/> class.
+    /// </summary>
+    /// <param name="shell">The application shell.</param>
+    public App(AppShell shell)
+    {
+        InitializeComponent();
+        _shell = shell;
+    }
+
+    /// <inheritdoc/>
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        return new Window(_shell);
     }
 }

@@ -1,144 +1,189 @@
 ﻿using Fleck;
 using System.Diagnostics;
 using System.Numerics;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Packets;
 using VoiceCraft.Core.Packets.MCWSS;
 
-namespace VoiceCraft.Network.Sockets
+namespace VoiceCraft.Network.Sockets;
+
+/// <summary>
+/// Minecraft WebSocket Server for receiving player position updates from Bedrock Edition.
+/// Uses the Fleck WebSocket library to handle connections.
+/// </summary>
+public class MCWSS : Disposable
 {
-    public class MCWSS : IDisposable
+    private WebSocketServer _socket;
+    private IWebSocketConnection? _connectedSocket;
+    private readonly string[] _dimensions;
+    private readonly int _port;
+    private readonly MCPacketRegistry _packetRegistry;
+    private readonly object _connectionLock = new();
+
+    /// <summary>
+    /// Gets whether a client is currently connected.
+    /// </summary>
+    public bool IsConnected { get; private set; }
+
+    #region Delegates
+    public delegate void ConnectedHandler(string username);
+    public delegate void FailedHandler(Exception ex);
+    public delegate void PlayerTravelledHandler(Vector3 position, string dimension);
+    public delegate void DisconnectedHandler();
+    #endregion
+
+    #region Events
+    /// <summary>Raised when a player connects.</summary>
+    public event ConnectedHandler? OnConnected;
+    
+    /// <summary>Raised when hosting fails.</summary>
+    public event FailedHandler? OnFailed;
+    
+    /// <summary>Raised when a player moves.</summary>
+    public event PlayerTravelledHandler? OnPlayerTravelled;
+    
+    /// <summary>Raised when a player disconnects.</summary>
+    public event DisconnectedHandler? OnDisconnected;
+    #endregion
+
+    /// <summary>
+    /// Initializes a new instance of the MCWSS class.
+    /// </summary>
+    /// <param name="port">The port to listen on.</param>
+    public MCWSS(int port)
     {
-        //Variables
-        private WebSocketServer Socket;
-        private IWebSocketConnection? ConnectedSocket;
-        private readonly string[] Dimensions;
-        private readonly int Port;
-        private readonly MCPacketRegistry MCPacketReg;
-        private readonly object _connectionLock = new();
+        _port = port;
+        _packetRegistry = new MCPacketRegistry();
+        _packetRegistry.RegisterPacket(
+            new Header { messagePurpose = "event", eventName = nameof(PlayerTravelled) }, 
+            typeof(MCWSSPacket<PlayerTravelled>));
+        _packetRegistry.RegisterPacket(
+            new Header { messagePurpose = "commandResponse" }, 
+            typeof(MCWSSPacket<LocalPlayerName>));
+        
+        _socket = new WebSocketServer($"ws://0.0.0.0:{port}");
+        _dimensions = ["minecraft:overworld", "minecraft:nether", "minecraft:end"];
+    }
 
-        public bool IsConnected { get; private set; }
-        public bool IsDisposed { get; private set; }
-
-        //Events
-        public delegate void Connected(string Username);
-        public delegate void Failed(Exception ex);
-        public delegate void PlayerTravelled(Vector3 position, string Dimension);
-        public delegate void Disconnected();
-
-        public event Connected? OnConnected;
-        public event Failed? OnFailed;
-        public event PlayerTravelled? OnPlayerTravelled;
-        public event Disconnected? OnDisconnected;
-
-        public MCWSS(int Port)
+    /// <summary>
+    /// Starts the WebSocket server.
+    /// </summary>
+    public void Start()
+    {
+        ObjectDisposedException.ThrowIf(IsDisposed, this);
+        
+        try
         {
-            MCPacketReg = new();
-            MCPacketReg.RegisterPacket(new Header() { messagePurpose = "event", eventName = nameof(Core.Packets.MCWSS.PlayerTravelled) }, typeof(MCWSSPacket<Core.Packets.MCWSS.PlayerTravelled>));
-            MCPacketReg.RegisterPacket(new Header() { messagePurpose = "commandResponse" }, typeof(MCWSSPacket<LocalPlayerName>));
-            this.Port = Port;
-            Socket = new WebSocketServer($"ws://0.0.0.0:{Port}");
-            Dimensions = ["minecraft:overworld", "minecraft:nether", "minecraft:end"];
-        }
-
-        public void Start()
-        {
-            try
+            _socket.Start(socket =>
             {
-                Socket.Start(socket =>
+                socket.OnOpen = () =>
                 {
-                    socket.OnOpen = () =>
+                    lock (_connectionLock)
                     {
-                        lock (_connectionLock)
+                        if (_connectedSocket == null)
                         {
-                            if (ConnectedSocket == null)
+                            // https://gist.github.com/jocopa3/5f718f4198f1ea91a37e3a9da468675c
+                            socket.Send(new MCWSSPacket<Command>
                             {
-                                //https://gist.github.com/jocopa3/5f718f4198f1ea91a37e3a9da468675c
-                                socket.Send(new MCWSSPacket<Command>() { header = { messagePurpose = "commandRequest", requestId = Guid.NewGuid().ToString() }, body = { commandLine = "/getlocalplayername" } }.SerializePacket());
-                                socket.Send(new MCWSSPacket<Event> { header = { requestId = Guid.NewGuid().ToString(), messagePurpose = "subscribe" }, body = { eventName = "PlayerTravelled" } }.SerializePacket());
-                                ConnectedSocket = socket;
-                                IsConnected = true;
-                            }
-                            else
-                                socket.Close();
-                        }
-                    };
-
-                    socket.OnClose = () =>
-                    {
-                        lock (_connectionLock)
-                        {
-                            if (socket == ConnectedSocket)
+                                header = { messagePurpose = "commandRequest", requestId = Guid.NewGuid().ToString() },
+                                body = { commandLine = "/getlocalplayername" }
+                            }.SerializePacket());
+                            
+                            socket.Send(new MCWSSPacket<Event>
                             {
-                                ConnectedSocket = null;
-                                IsConnected = false;
-                                OnDisconnected?.Invoke();
-                            }
+                                header = { requestId = Guid.NewGuid().ToString(), messagePurpose = "subscribe" },
+                                body = { eventName = "PlayerTravelled" }
+                            }.SerializePacket());
+                            
+                            _connectedSocket = socket;
+                            IsConnected = true;
                         }
-                    };
-
-                    socket.OnMessage = message =>
-                    {
-                        var packet = MCPacketReg.GetPacketFromJsonString(message);
-
-                        if (packet is MCWSSPacket<LocalPlayerName>)
+                        else
                         {
-                            var data = (MCWSSPacket<LocalPlayerName>)packet;
-                            var name = data.body.localplayername;
+                            socket.Close();
+                        }
+                    }
+                };
+
+                socket.OnClose = () =>
+                {
+                    lock (_connectionLock)
+                    {
+                        if (socket == _connectedSocket)
+                        {
+                            _connectedSocket = null;
+                            IsConnected = false;
+                            OnDisconnected?.Invoke();
+                        }
+                    }
+                };
+
+                socket.OnMessage = message =>
+                {
+                    try
+                    {
+                        var packet = _packetRegistry.GetPacketFromJsonString(message);
+
+                        if (packet is MCWSSPacket<LocalPlayerName> localPlayerPacket)
+                        {
+                            var name = localPlayerPacket.body.localplayername;
                             OnConnected?.Invoke(name);
                         }
-
-                        else if (packet is MCWSSPacket<Core.Packets.MCWSS.PlayerTravelled> data)
+                        else if (packet is MCWSSPacket<PlayerTravelled> travelledPacket)
                         {
-                            var x = data.body.player.position.x;
-                            var y = data.body.player.position.y;
-                            var z = data.body.player.position.z;
-                            var dimensionInt = data.body.player.dimension;
+                            var position = new Vector3(
+                                travelledPacket.body.player.position.x,
+                                travelledPacket.body.player.position.y,
+                                travelledPacket.body.player.position.z);
+                            
+                            var dimensionIndex = travelledPacket.body.player.dimension;
+                            var dimension = dimensionIndex >= 0 && dimensionIndex < _dimensions.Length
+                                ? _dimensions[dimensionIndex]
+                                : "minecraft:overworld";
 
-                            OnPlayerTravelled?.Invoke(new Vector3(x, y, z), Dimensions[dimensionInt]);
+                            OnPlayerTravelled?.Invoke(position, dimension);
 #if DEBUG
-                            Debug.WriteLine($"PlayerTravelled: {x}, {y}, {z}, {Dimensions[dimensionInt]}");
+                            Debug.WriteLine($"PlayerTravelled: {position.X}, {position.Y}, {position.Z}, {dimension}");
 #endif
                         }
-                    };
-                });
-            } 
-            catch(Exception ex)
-            {
-                OnFailed?.Invoke(ex);
-            }
+                    }
+                    catch (Exception)
+                    {
+                        // Silently ignore malformed packets
+                    }
+                };
+            });
         }
-
-        public void Stop()
+        catch (Exception ex)
         {
-            ConnectedSocket?.Close();
-            ConnectedSocket = null;
-            Socket.Dispose();
-            Socket = new WebSocketServer($"ws://0.0.0.0:{Port}");
+            OnFailed?.Invoke(ex);
         }
+    }
 
-        //Dispose Handlers
-        ~MCWSS()
+    /// <summary>
+    /// Stops the WebSocket server.
+    /// </summary>
+    public void Stop()
+    {
+        lock (_connectionLock)
         {
-            Dispose(false);
+            _connectedSocket?.Close();
+            _connectedSocket = null;
         }
+        
+        _socket.Dispose();
+        _socket = new WebSocketServer($"ws://0.0.0.0:{_port}");
+        IsConnected = false;
+    }
 
-        protected virtual void Dispose(bool disposing)
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
         {
-            if (!IsDisposed)
-            {
-                if (disposing)
-                {
-                    Socket.Dispose();
-                    IsConnected = false;
-                }
-                IsDisposed = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            Stop();
+            _socket.Dispose();
         }
     }
 }
+

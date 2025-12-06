@@ -5,99 +5,155 @@ using VoiceCraft.Core.Packets;
 using System.Collections.Concurrent;
 using VoiceCraft.Core.Packets.VoiceCraft;
 
-namespace VoiceCraft.Network.Sockets
+namespace VoiceCraft.Network.Sockets;
+
+/// <summary>
+/// Main VoiceCraft UDP socket handler for voice communication.
+/// Supports both client and server modes with packet reliability and rate limiting.
+/// </summary>
+public class VoiceCraft : Disposable
 {
-    public class VoiceCraft : Disposable
+    /// <summary>
+    /// Maximum time in milliseconds between send operations.
+    /// </summary>
+    public const long MaxSendTime = 100;
+
+    /// <summary>
+    /// Windows socket control code to ignore UDP connection reset errors.
+    /// </summary>
+    public const int SIO_UDP_CONNRESET = -1744830452;
+
+    #region Variables
+    /// <summary>
+    /// Gets or sets the packet registry for serialization/deserialization.
+    /// </summary>
+    public PacketRegistry PacketRegistry { get; set; } = new();
+
+    /// <summary>
+    /// Gets the underlying UDP socket.
+    /// </summary>
+    public Socket Socket { get; private set; } = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+    /// <summary>
+    /// Gets the remote endpoint for client connections.
+    /// </summary>
+    public IPEndPoint RemoteEndpoint { get; private set; } = new(IPAddress.Any, 0);
+
+    /// <summary>
+    /// Gets the current socket state.
+    /// </summary>
+    public VoiceCraftSocketState State { get; private set; }
+
+    /// <summary>
+    /// Gets or sets the connection timeout in milliseconds.
+    /// </summary>
+    public int Timeout { get; set; } = 8000;
+
+    /// <summary>
+    /// Gets whether the client is connected.
+    /// </summary>
+    public bool IsConnected { get; private set; }
+
+    // Private Variables
+    private CancellationTokenSource CTS { get; set; } = new();
+    private ConcurrentDictionary<EndPoint, NetPeer> NetPeers { get; set; } = new();
+    private ConcurrentDictionary<string, RateLimitInfo> _rateLimits = new();
+    private const int MaxConnectionsPerIP = 5;
+    private const int PacketsPerSecondLimit = 10;
+    private NetPeer? ClientNetPeer { get; set; }
+    private Task? ActivityChecker { get; set; }
+    private Task? Sender { get; set; }
+    #endregion
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VoiceCraft"/> class and registers all packet types.
+    /// </summary>
+    public VoiceCraft()
     {
-        public const long MaxSendTime = 100;
-        public const int SIO_UDP_CONNRESET = -1744830452;
-        #region Variables
-        //Public Variables
-        public PacketRegistry PacketRegistry { get; set; } = new PacketRegistry();
-        public Socket Socket { get; private set; } = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        public IPEndPoint RemoteEndpoint { get; private set; } = new IPEndPoint(IPAddress.Any, 0);
-        public VoiceCraftSocketState State { get; private set; }
-        public int Timeout { get; set; } = 8000;
-        public bool IsConnected { get; private set; }
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Login, typeof(Login));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Logout, typeof(Logout));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Accept, typeof(Accept));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Deny, typeof(Deny));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Ack, typeof(Ack));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Ping, typeof(Ping));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.PingInfo, typeof(PingInfo));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Binded, typeof(Binded));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Unbinded, typeof(Unbinded));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ParticipantJoined, typeof(ParticipantJoined));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ParticipantLeft, typeof(ParticipantLeft));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Mute, typeof(Mute));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Unmute, typeof(Unmute));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Deafen, typeof(Deafen));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Undeafen, typeof(Undeafen));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.JoinChannel, typeof(JoinChannel));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.LeaveChannel, typeof(LeaveChannel));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.AddChannel, typeof(AddChannel));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.RemoveChannel, typeof(RemoveChannel));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.UpdatePosition, typeof(UpdatePosition));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.FullUpdatePosition, typeof(FullUpdatePosition));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.UpdateEnvironmentId, typeof(UpdateEnvironmentId));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ClientAudio, typeof(ClientAudio));
+        PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ServerAudio, typeof(ServerAudio));
+    }
 
-        //Private Variables
-        private CancellationTokenSource CTS { get; set; } = new CancellationTokenSource();
-        private ConcurrentDictionary<EndPoint, NetPeer> NetPeers { get; set; } = new(); //Server Variable
-        private ConcurrentDictionary<string, RateLimitInfo> _rateLimits = new(); // Security: Rate Limiting
-        private const int MaxConnectionsPerIP = 5;
-        private const int PacketsPerSecondLimit = 10;
-        private NetPeer? ClientNetPeer { get; set; } //Client Variable
-        private Task? ActivityChecker { get; set; }
-        private Task? Sender { get; set; }
-        #endregion
+    #region Debug Settings
+    /// <summary>Gets or sets whether to log exceptions.</summary>
+    public bool LogExceptions { get; set; }
+    /// <summary>Gets or sets whether to log inbound packets.</summary>
+    public bool LogInbound { get; set; }
+    /// <summary>Gets or sets whether to log outbound packets.</summary>
+    public bool LogOutbound { get; set; }
+    /// <summary>Gets or sets the inbound packet type filter.</summary>
+    public List<VoiceCraftPacketTypes> InboundFilter { get; set; } = [];
+    /// <summary>Gets or sets the outbound packet type filter.</summary>
+    public List<VoiceCraftPacketTypes> OutboundFilter { get; set; } = [];
+    #endregion
 
-        public VoiceCraft()
-        {
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Login, typeof(Login));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Logout, typeof(Logout));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Accept, typeof(Accept));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Deny, typeof(Deny));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Ack, typeof(Ack));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Ping, typeof(Ping));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.PingInfo, typeof(PingInfo));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Binded, typeof(Binded));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Unbinded, typeof(Unbinded));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ParticipantJoined, typeof(ParticipantJoined));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ParticipantLeft, typeof(ParticipantLeft));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Mute, typeof(Mute));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Unmute, typeof(Unmute));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Deafen, typeof(Deafen));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Undeafen, typeof(Undeafen));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.JoinChannel, typeof(JoinChannel));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.LeaveChannel, typeof(LeaveChannel));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.AddChannel, typeof(AddChannel));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.RemoveChannel, typeof(RemoveChannel));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.UpdatePosition, typeof(UpdatePosition));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.FullUpdatePosition, typeof(FullUpdatePosition));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.UpdateEnvironmentId, typeof(UpdateEnvironmentId));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ClientAudio, typeof(ClientAudio));
-            PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.ServerAudio, typeof(ServerAudio));
-        }
+    #region Delegates
+    /// <summary>Delegate for client connected event.</summary>
+    public delegate void Connected(short key);
+    /// <summary>Delegate for client disconnected event.</summary>
+    public delegate void Disconnected(string? reason = null);
 
-        #region Debug Settings
-        public bool LogExceptions { get; set; } = false;
-        public bool LogInbound { get; set; } = false;
-        public bool LogOutbound { get; set; } = false;
-        public List<VoiceCraftPacketTypes> InboundFilter { get; set; } = [];
-        public List<VoiceCraftPacketTypes> OutboundFilter { get; set; } = [];
-        #endregion
+    /// <summary>Delegate for server started event.</summary>
+    public delegate void Started();
+    /// <summary>Delegate for server stopped event.</summary>
+    public delegate void Stopped(string? reason = null);
+    /// <summary>Delegate for peer connected event.</summary>
+    public delegate void PeerConnected(NetPeer peer, Login packet);
+    /// <summary>Delegate for peer disconnected event.</summary>
+    public delegate void PeerDisconnected(NetPeer peer, string? reason = null);
 
-        #region Delegates
-        public delegate void Connected(short key);
-        public delegate void Disconnected(string? reason = null);
+    /// <summary>Delegate for typed packet data events.</summary>
+    public delegate void PacketData<T>(T data, NetPeer peer);
 
-        public delegate void Started();
-        public delegate void Stopped(string? reason = null);
-        public delegate void PeerConnected(NetPeer peer, Login packet);
-        public delegate void PeerDisconnected(NetPeer peer, string? reason = null);
+    /// <summary>Delegate for outbound packet logging.</summary>
+    public delegate void OutboundPacket(VoiceCraftPacket packet, NetPeer peer);
+    /// <summary>Delegate for inbound packet logging.</summary>
+    public delegate void InboundPacket(VoiceCraftPacket packet, NetPeer peer);
+    /// <summary>Delegate for exception errors.</summary>
+    public delegate void ExceptionError(Exception error);
+    /// <summary>Delegate for socket failures.</summary>
+    public delegate void Failed(Exception ex);
+    #endregion
 
-        public delegate void PacketData<T>(T data, NetPeer peer);
+    #region Events
+    /// <summary>Occurs when client connects successfully.</summary>
+    public event Connected? OnConnected;
+    /// <summary>Occurs when client disconnects.</summary>
+    public event Disconnected? OnDisconnected;
 
-        //Error and Debug Events
-        public delegate void OutboundPacket(VoiceCraftPacket packet, NetPeer peer);
-        public delegate void InboundPacket(VoiceCraftPacket packet, NetPeer peer);
-        public delegate void ExceptionError(Exception error);
-        public delegate void Failed(Exception ex);
-        #endregion
+    /// <summary>Occurs when server starts.</summary>
+    public event Started? OnStarted;
+    /// <summary>Occurs when server stops.</summary>
+    public event Stopped? OnStopped;
+    /// <summary>Occurs when a peer connects to server.</summary>
+    public event PeerConnected? OnPeerConnected;
+    /// <summary>Occurs when a peer disconnects from server.</summary>
+    public event PeerDisconnected? OnPeerDisconnected;
 
-        #region Events
-        //Client Events
-        public event Connected? OnConnected;
-        public event Disconnected? OnDisconnected;
-
-        //Server Events
-        public event Started? OnStarted;
-        public event Stopped? OnStopped;
-        public event PeerConnected? OnPeerConnected;
-        public event PeerDisconnected? OnPeerDisconnected;
-
-        //Packet Events
-        public event PacketData<Login>? OnLoginReceived;
+    /// <summary>Occurs when a Login packet is received.</summary>
+    public event PacketData<Login>? OnLoginReceived;
         public event PacketData<Logout>? OnLogoutReceived;
         public event PacketData<Accept>? OnAcceptReceived;
         public event PacketData<Deny>? OnDenyReceived;

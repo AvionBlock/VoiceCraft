@@ -1,74 +1,75 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Concurrent;
 using VoiceCraft.Core.Packets.MCWSS;
 
-namespace VoiceCraft.Core.Packets
+namespace VoiceCraft.Core.Packets;
+
+/// <summary>
+/// Registry for Minecraft WebSocket (MCWSS) packet types.
+/// Manages packet registration and JSON deserialization for Bedrock Edition WebSocket communication.
+/// </summary>
+public class MCPacketRegistry
 {
-    public class MCPacketRegistry
+    private readonly ConcurrentDictionary<Header, Type> _registeredPackets = new();
+
+    /// <summary>
+    /// Registers a packet type with the specified header.
+    /// </summary>
+    /// <param name="header">The packet header for identification.</param>
+    /// <param name="packetType">The packet type to register.</param>
+    public void RegisterPacket(Header header, Type packetType)
     {
-        private ConcurrentDictionary<Header, Type> RegisteredPackets = new ConcurrentDictionary<Header, Type>();
+        _registeredPackets.AddOrUpdate(header, packetType, (_, _) => packetType);
+    }
 
-        /// <summary>
-        /// Registers a packet.
-        /// </summary>
-        /// <param name="Id">The Id of the packet.</param>
-        /// <param name="Type">The type to create for the data to be parsed.</param>
-        /// <param name="IsReliable"></param>
-        public void RegisterPacket(Header header, Type PacketType)
-        {
-            RegisteredPackets.AddOrUpdate(header, PacketType, (key, old) => old = PacketType);
-        }
+    /// <summary>
+    /// Deregisters a packet by header.
+    /// </summary>
+    /// <param name="header">The packet header.</param>
+    /// <returns>The deregistered packet type, or null if not found.</returns>
+    public Type? DeregisterPacket(Header header)
+    {
+        return _registeredPackets.TryRemove(header, out var packet) ? packet : null;
+    }
 
-        /// <summary>
-        /// Deregisters a packet.
-        /// </summary>
-        /// <param name="Id">The Id of the packet.</param>
-        /// <returns>The deregistered packet type.</returns>
-        public Type? DeregisterPacket(Header header)
-        {
-            if (RegisteredPackets.TryRemove(header, out var packet)) return packet;
-            return null;
-        }
+    /// <summary>
+    /// Deregisters all registered packets.
+    /// </summary>
+    public void DeregisterAll()
+    {
+        _registeredPackets.Clear();
+    }
 
-        /// <summary>
-        /// Deregisters all registered packets.
-        /// </summary>
-        public void DeregisterAll()
-        {
-            RegisteredPackets.Clear();
-        }
+    /// <summary>
+    /// Deserializes a packet from a JSON string.
+    /// </summary>
+    /// <param name="data">The JSON data.</param>
+    /// <returns>The deserialized packet object.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when packet header is not registered.</exception>
+    public object GetPacketFromJsonString(string data)
+    {
+        var header = JObject.Parse(data)["header"]?.ToObject<Header>() ?? new Header();
 
-        /// <summary>
-        /// Converts a packet from a json string to the object.
-        /// </summary>
-        /// <param name="data">The raw data.</param>
-        /// <returns>The packet.</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        public object GetPacketFromJsonString(string data)
-        {
-            var header = JObject.Parse(data)["header"]?.ToObject<Header>() ?? new Header(); //Packet Header.
+        if (!_registeredPackets.TryGetValue(header, out var packetType))
+            throw new InvalidOperationException($"Invalid packet header {header}");
 
-            if (!RegisteredPackets.TryGetValue(header, out var packetType))
-                throw new InvalidOperationException($"Invalid packet header {header}");
+        return GetMCWSSPacketFromType(data, packetType);
+    }
 
-            var packet = GetMCWSSPacketFromType(data, packetType);
-            return packet;
-        }
+    /// <summary>
+    /// Deserializes a packet from JSON data into the specified type.
+    /// </summary>
+    /// <param name="data">The JSON data.</param>
+    /// <param name="packetType">The target packet type.</param>
+    /// <returns>The deserialized packet object.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when deserialization fails.</exception>
+    public static object GetMCWSSPacketFromType(string data, Type packetType)
+    {
+        var packet = JsonConvert.DeserializeObject(data, packetType)
+            ?? throw new InvalidOperationException("Could not create packet instance");
 
-        /// <summary>
-        /// Create's a packet from the MCWSS packet body.
-        /// </summary>
-        /// <param name="PacketType">The packet type.</param>
-        /// <returns>The packet</returns>
-        /// <exception cref="Exception"></exception>
-        public static object GetMCWSSPacketFromType(string data, Type PacketType)
-        {
-            var packet = JsonConvert.DeserializeObject(data, PacketType);
-            if (packet == null) throw new Exception("Could not create packet instance.");
-
-            return packet;
-        }
+        return packet;
     }
 }
+

@@ -6,102 +6,156 @@ using VoiceCraft.Core.Packets;
 using VoiceCraft.Network;
 using VoiceCraft.Server.Data;
 
-namespace VoiceCraft.Server
+namespace VoiceCraft.Server;
+
+/// <summary>
+/// Main VoiceCraft server class that manages participants, voice communication, and plugin communication.
+/// Inherits from Disposable for proper resource cleanup.
+/// </summary>
+/// <remarks>
+/// Client = Requesting Participant (the one sending audio)
+/// Participant = Receiving Participant (the one receiving audio)
+/// </remarks>
+public class VoiceCraftServer : Disposable
 {
-    //Client - Requesting Participant
-    //Participant - Receiving Participant
-    public class VoiceCraftServer : Disposable
+    /// <summary>
+    /// Server version string.
+    /// </summary>
+    public const string Version = Constants.Version;
+
+    /// <summary>
+    /// Gets or sets the connected participants dictionary.
+    /// </summary>
+    public ConcurrentDictionary<NetPeer, VoiceCraftParticipant> Participants { get; set; } = new();
+
+    // Performance cache to avoid iterating ConcurrentDictionary in hot paths
+    private List<(VoiceCraftParticipant Participant, NetPeer Peer)> _participantCache = [];
+    private readonly object _cacheLock = new();
+
+    /// <summary>
+    /// Gets or sets the VoiceCraft UDP socket for voice communication.
+    /// </summary>
+    public Network.Sockets.VoiceCraft VoiceCraftSocket { get; set; }
+
+    /// <summary>
+    /// Gets or sets the MCComm HTTP socket for plugin communication.
+    /// </summary>
+    public Network.Sockets.MCComm MCComm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the server properties configuration.
+    /// </summary>
+    public Properties ServerProperties { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of banned IP addresses.
+    /// </summary>
+    public List<string> Banlist { get; set; }
+
+    /// <summary>
+    /// Gets whether the server has started.
+    /// </summary>
+    public bool IsStarted { get; private set; }
+
+    #region Delegates
+    /// <summary>Delegate for server started event.</summary>
+    public delegate void Started();
+    /// <summary>Delegate for socket started event.</summary>
+    public delegate void SocketStarted(Type socket, string version);
+    /// <summary>Delegate for server stopped event.</summary>
+    public delegate void Stopped(string? reason = null);
+    /// <summary>Delegate for server failed event.</summary>
+    public delegate void Failed(Exception ex);
+
+    /// <summary>Delegate for participant joined event.</summary>
+    public delegate void ParticipantJoined(VoiceCraftParticipant participant);
+    /// <summary>Delegate for participant left event.</summary>
+    public delegate void ParticipantLeft(VoiceCraftParticipant participant, string? reason = null);
+    /// <summary>Delegate for participant binded event.</summary>
+    public delegate void ParticipantBinded(VoiceCraftParticipant participant);
+    #endregion
+
+    #region Events
+    /// <summary>Occurs when the server has started.</summary>
+    public event Started? OnStarted;
+    /// <summary>Occurs when a socket has started.</summary>
+    public event SocketStarted? OnSocketStarted;
+    /// <summary>Occurs when the server has stopped.</summary>
+    public event Stopped? OnStopped;
+    /// <summary>Occurs when the server fails to start.</summary>
+    public event Failed? OnFailed;
+
+    /// <summary>Occurs when a participant joins the server.</summary>
+    public event ParticipantJoined? OnParticipantJoined;
+    /// <summary>Occurs when a participant leaves the server.</summary>
+    public event ParticipantLeft? OnParticipantLeft;
+    /// <summary>Occurs when a participant is bound to a Minecraft player.</summary>
+    public event ParticipantBinded? OnParticipantBinded;
+    #endregion
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VoiceCraftServer"/> class.
+    /// </summary>
+    /// <param name="properties">The server configuration.</param>
+    /// <param name="banlist">The list of banned IP addresses.</param>
+    public VoiceCraftServer(Properties properties, List<string> banlist)
     {
-        public const string Version = Constants.Version;
-        public ConcurrentDictionary<NetPeer, VoiceCraftParticipant> Participants { get; set; } = new();
-        
-        // Caching for performance to avoid iterating ConcurrentDictionary in hot paths
-        // Storing Tuple to avoid secondary lookup
-        private List<(VoiceCraftParticipant Participant, NetPeer Peer)> _participantCache = []; 
-        private readonly object _cacheLock = new();
+        ServerProperties = properties;
+        Banlist = banlist;
+        VoiceCraftSocket = new Network.Sockets.VoiceCraft();
+        MCComm = new Network.Sockets.MCComm();
 
-        public Network.Sockets.VoiceCraft VoiceCraftSocket { get; set; }
-        public Network.Sockets.MCComm MCComm { get; set; }
-        public Properties ServerProperties { get; set; }
-        public List<string> Banlist { get; set; }
-        public bool IsStarted { get; private set; }
+        VoiceCraftSocket.OnStarted += VoiceCraftSocketStarted;
+        VoiceCraftSocket.OnFailed += VoiceCraftSocketFailed;
+        VoiceCraftSocket.OnStopped += VoiceCraftSocketStopped;
+        VoiceCraftSocket.OnPingInfoReceived += OnPingInfo;
+        VoiceCraftSocket.OnPeerConnected += OnPeerConnected;
+        VoiceCraftSocket.OnPeerDisconnected += OnPeerDisconnected;
+        VoiceCraftSocket.OnBindedReceived += OnBinded;
+        VoiceCraftSocket.OnUnbindedReceived += VoiceCraftSocketUnbinded;
+        VoiceCraftSocket.OnMuteReceived += OnMute;
+        VoiceCraftSocket.OnUnmuteReceived += OnUnmute;
+        VoiceCraftSocket.OnDeafenReceived += OnDeafen;
+        VoiceCraftSocket.OnUndeafenReceived += OnUndeafen;
+        VoiceCraftSocket.OnJoinChannelReceived += OnJoinChannel;
+        VoiceCraftSocket.OnLeaveChannelReceived += OnLeaveChannel;
+        VoiceCraftSocket.OnUpdatePositionReceived += OnUpdatePosition;
+        VoiceCraftSocket.OnFullUpdatePositionReceived += OnFullUpdatePosition;
+        VoiceCraftSocket.OnUpdateEnvironmentIdReceived += OnUpdateEnvironmentIdReceived;
+        VoiceCraftSocket.OnClientAudioReceived += OnClientAudio;
 
-        #region Delegates
-        public delegate void Started();
-        public delegate void SocketStarted(Type socket, string version);
-        public delegate void Stopped(string? reason = null);
-        public delegate void Failed(Exception ex);
+        MCComm.OnStarted += MCCommStarted;
+        MCComm.OnFailed += MCCommFailed;
+        MCComm.OnBindReceived += MCCommBind;
+        MCComm.OnUpdateReceived += MCCommUpdate;
+        MCComm.OnGetChannelsReceived += MCCommGetChannels;
+        MCComm.OnGetChannelSettingsReceived += MCCommGetChannelSettings;
+        MCComm.OnSetChannelSettingsReceived += MCCommSetChannelSettings;
+        MCComm.OnGetDefaultSettingsReceived += MCCommGetDefaultSettings;
+        MCComm.OnSetDefaultSettingsReceived += MCCommSetDefaultSettings;
+        MCComm.OnGetParticipantsReceived += MCCommGetParticipants;
+        MCComm.OnDisconnectParticipantReceived += MCCommDisconnectParticipant;
+        MCComm.OnGetParticipantBitmaskReceived += MCCommGetParticipantBitmask;
+        MCComm.OnSetParticipantBitmaskReceived += MCCommSetParticipantBitmask;
+        MCComm.OnMuteParticipantReceived += MCCommMuteParticipant;
+        MCComm.OnUnmuteParticipantReceived += MCCommUnmuteParticipant;
+        MCComm.OnDeafenParticipantReceived += MCCommDeafenParticipant;
+        MCComm.OnUndeafenParticipantReceived += MCCommUndeafenParticipant;
+        MCComm.OnANDModParticipantBitmaskReceived += MCCommANDModParticipantBitmask;
+        MCComm.OnORModParticipantBitmaskReceived += MCCommORModParticipantBitmask;
+        MCComm.OnXORModParticipantBitmaskReceived += MCCommXORModParticipantBitmask;
+        MCComm.OnChannelMoveReceived += MCCommChannelMove;
+    }
 
-        public delegate void ParticipantJoined(VoiceCraftParticipant participant);
-        public delegate void ParticipantLeft(VoiceCraftParticipant participant, string? reason = null);
-        public delegate void ParticipantBinded(VoiceCraftParticipant participant);
-        #endregion
+    #region Methods
+    private Task? AudioProcessorTask { get; set; }
 
-        #region Events
-        public event Started? OnStarted;
-        public event SocketStarted? OnSocketStarted;
-        public event Stopped? OnStopped;
-        public event Failed? OnFailed;
-
-        public event ParticipantJoined? OnParticipantJoined;
-        public event ParticipantLeft? OnParticipantLeft;
-        public event ParticipantBinded? OnParticipantBinded;
-        #endregion
-
-        public VoiceCraftServer(Properties properties, List<string> banlist)
-        {
-            ServerProperties = properties;
-            Banlist = banlist;
-            VoiceCraftSocket = new Network.Sockets.VoiceCraft();
-            MCComm = new Network.Sockets.MCComm();
-
-            VoiceCraftSocket.OnStarted += VoiceCraftSocketStarted;
-            VoiceCraftSocket.OnFailed += VoiceCraftSocketFailed;
-            VoiceCraftSocket.OnStopped += VoiceCraftSocketStopped;
-            VoiceCraftSocket.OnPingInfoReceived += OnPingInfo;
-            VoiceCraftSocket.OnPeerConnected += OnPeerConnected;
-            VoiceCraftSocket.OnPeerDisconnected += OnPeerDisconnected;
-            VoiceCraftSocket.OnBindedReceived += OnBinded;
-            VoiceCraftSocket.OnUnbindedReceived += VoiceCraftSocketUnbinded;
-            VoiceCraftSocket.OnMuteReceived += OnMute;
-            VoiceCraftSocket.OnUnmuteReceived += OnUnmute;
-            VoiceCraftSocket.OnDeafenReceived += OnDeafen;
-            VoiceCraftSocket.OnUndeafenReceived += OnUndeafen;
-            VoiceCraftSocket.OnJoinChannelReceived += OnJoinChannel;
-            VoiceCraftSocket.OnLeaveChannelReceived += OnLeaveChannel;
-            VoiceCraftSocket.OnUpdatePositionReceived += OnUpdatePosition;
-            VoiceCraftSocket.OnFullUpdatePositionReceived += OnFullUpdatePosition;
-            VoiceCraftSocket.OnUpdateEnvironmentIdReceived += OnUpdateEnvironmentIdReceived;
-            VoiceCraftSocket.OnClientAudioReceived += OnClientAudio;
-
-            MCComm.OnStarted += MCCommStarted;
-            MCComm.OnFailed += MCCommFailed;
-            MCComm.OnBindReceived += MCCommBind;
-            MCComm.OnUpdateReceived += MCCommUpdate;
-            MCComm.OnGetChannelsReceived += MCCommGetChannels;
-            MCComm.OnGetChannelSettingsReceived += MCCommGetChannelSettings;
-            MCComm.OnSetChannelSettingsReceived += MCCommSetChannelSettings;
-            MCComm.OnGetDefaultSettingsReceived += MCCommGetDefaultSettings;
-            MCComm.OnSetDefaultSettingsReceived += MCCommSetDefaultSettings;
-            MCComm.OnGetParticipantsReceived += MCCommGetParticipants;
-            MCComm.OnDisconnectParticipantReceived += MCCommDisconnectParticipant;
-            MCComm.OnGetParticipantBitmaskReceived += MCCommGetParticipantBitmask;
-            MCComm.OnSetParticipantBitmaskReceived += MCCommSetParticipantBitmask;
-            MCComm.OnMuteParticipantReceived += MCCommMuteParticipant;
-            MCComm.OnUnmuteParticipantReceived += MCCommUnmuteParticipant;
-            MCComm.OnDeafenParticipantReceived += MCCommDeafenParticipant;
-            MCComm.OnUndeafenParticipantReceived += MCCommUndeafenParticipant;
-            MCComm.OnANDModParticipantBitmaskReceived += MCCommANDModParticipantBitmask;
-            MCComm.OnORModParticipantBitmaskReceived += MCCommORModParticipantBitmask;
-            MCComm.OnXORModParticipantBitmaskReceived += MCCommXORModParticipantBitmask;
-            MCComm.OnChannelMoveReceived += MCCommChannelMove;
-        }
-
-        #region Methods
-        private Task? AudioProcessorTask { get; set; }
-
-        public void Start()
-        {
+    /// <summary>
+    /// Starts the VoiceCraft server.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown if the server has been disposed.</exception>
+    public void Start()
+    {
             ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraftServer));
 
             if (AudioQueue.IsAddingCompleted)
@@ -1058,23 +1112,23 @@ namespace VoiceCraft.Server
 
             var channel = ServerProperties.Channels[packet.ChannelId];
             if (channel == client.Value.Channel)
-            {
-                MCComm.SendResponse(ctx, HttpStatusCode.OK, new Core.Packets.MCComm.Deny() { Reason = "Participant is already in the channel!" });
-                return;
-            }
-
-            MoveParticipantToChannel(client.Key, client.Value, channel);
-            MCComm.SendResponse(ctx, HttpStatusCode.OK, new Core.Packets.MCComm.Accept());
-        }
-        #endregion
-
-        protected override void Dispose(bool disposing)
         {
-            if(disposing)
-            {
-                VoiceCraftSocket.Dispose();
-                MCComm.Dispose();
-            }
+            MCComm.SendResponse(ctx, HttpStatusCode.OK, new Core.Packets.MCComm.Deny() { Reason = "Participant is already in the channel!" });
+            return;
+        }
+
+        MoveParticipantToChannel(client.Key, client.Value, channel);
+        MCComm.SendResponse(ctx, HttpStatusCode.OK, new Core.Packets.MCComm.Accept());
+    }
+    #endregion
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            VoiceCraftSocket.Dispose();
+            MCComm.Dispose();
         }
     }
 }

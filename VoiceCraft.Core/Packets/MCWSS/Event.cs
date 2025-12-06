@@ -1,7 +1,11 @@
-﻿namespace VoiceCraft.Core.Packets.MCWSS
+﻿namespace VoiceCraft.Core.Packets.MCWSS;
+
+/// <summary>
+/// Represents an event subscription body for Minecraft WebSocket events.
+/// </summary>
+public class Event
 {
-    public class Event
-    {
-        public string eventName { get; set; } = string.Empty;
-    }
+    /// <summary>Gets or sets the event name to subscribe to.</summary>
+    public string eventName { get; set; } = string.Empty;
 }
+

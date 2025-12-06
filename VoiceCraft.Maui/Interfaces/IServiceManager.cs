@@ -1,10 +1,13 @@
-﻿namespace VoiceCraft.Maui.Interfaces
+﻿namespace VoiceCraft.Maui.Interfaces;
+
+/// <summary>
+/// Interface for managing background services.
+/// </summary>
+public interface IServiceManager
 {
-    public interface IServiceManager
-    {
-        /// <summary>
-        /// Starts the service.
-        /// </summary>
-        void StartService();
-    }
+    /// <summary>
+    /// Starts the background service.
+    /// </summary>
+    void StartService();
 }
+

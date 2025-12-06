@@ -1,65 +1,71 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using VoiceCraft.Maui.Services;
-using VoiceCraft.Maui.Models;
-using VoiceCraft.Maui.Interfaces;
 using NAudio.Wave;
+using System.Collections.ObjectModel;
+using VoiceCraft.Maui.Interfaces;
+using VoiceCraft.Maui.Models;
 
-namespace VoiceCraft.Maui.ViewModels
+namespace VoiceCraft.Maui.ViewModels;
+
+/// <summary>
+/// ViewModel for the settings page.
+/// </summary>
+public partial class SettingsViewModel : ObservableObject
 {
-    public partial class SettingsViewModel : ObservableObject
+    private readonly IDatabaseService _databaseService;
+    private readonly IAudioManager _audioManager;
+
+    [ObservableProperty]
+    private bool _isBusy = true;
+
+    [ObservableProperty]
+    private SettingsModel _settings = new();
+
+    [ObservableProperty]
+    private ObservableCollection<string> _inputDevices = ["Default"];
+
+    [ObservableProperty]
+    private ObservableCollection<string> _outputDevices = ["Default"];
+
+    [ObservableProperty]
+    private float _microphoneDetection;
+
+    [ObservableProperty]
+    private bool _isRecording;
+
+    private IWaveIn? _microphone;
+    private readonly WaveFormat _audioFormat = new(48000, 1);
+
+    [ObservableProperty]
+    private ObservableCollection<string> _profiles = ["Default", "Low Latency", "High Quality"];
+
+    private string _selectedProfile = "Default";
+    public string SelectedProfile
     {
-        private readonly IDatabaseService _databaseService;
-        private readonly IAudioManager _audioManager;
-
-        [ObservableProperty]
-        bool isBusy = true;
-
-        [ObservableProperty]
-        SettingsModel settings = new SettingsModel();
-
-        [ObservableProperty]
-        ObservableCollection<string> inputDevices = ["Default"];
-        
-        [ObservableProperty]
-        ObservableCollection<string> outputDevices = ["Default"];
-
-        [ObservableProperty]
-        float microphoneDetection;
-
-        [ObservableProperty]
-        bool isRecording = false;
-
-        private IWaveIn? Microphone;
-        private readonly WaveFormat AudioFormat = new(48000, 1);
-
-        [ObservableProperty]
-        ObservableCollection<string> profiles = ["Default", "Low Latency", "High Quality"];
-
-        string _selectedProfile = "Default";
-        public string SelectedProfile
+        get => _selectedProfile;
+        set
         {
-            get => _selectedProfile;
-            set
-            {
-                SetProperty(ref _selectedProfile, value);
-                ApplyProfile(value);
-            }
+            SetProperty(ref _selectedProfile, value);
+            ApplyProfile(value);
         }
+    }
 
-        public SettingsViewModel(IDatabaseService databaseService, IAudioManager audioManager)
-        {
-            _databaseService = databaseService;
-            _audioManager = audioManager;
-            LoadSettings();
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
+    /// </summary>
+    public SettingsViewModel(IDatabaseService databaseService, IAudioManager audioManager)
+    {
+        _databaseService = databaseService;
+        _audioManager = audioManager;
+        LoadSettings();
 
-            foreach(var device in _audioManager.GetInputDevices())
-                InputDevices.Add(device);
+        foreach (var device in _audioManager.GetInputDevices())
+            InputDevices.Add(device);
 
-            foreach (var device in _audioManager.GetOutputDevices())
-                OutputDevices.Add(device);
-        }
+        foreach (var device in _audioManager.GetOutputDevices())
+            OutputDevices.Add(device);
+    }
+
 
         private async void LoadSettings()
         {

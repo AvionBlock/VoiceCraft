@@ -1,35 +1,78 @@
 ﻿using Newtonsoft.Json;
 using VoiceCraft.Core;
 
-namespace VoiceCraft.Server.Data
+namespace VoiceCraft.Server.Data;
+
+/// <summary>
+/// Server configuration properties loaded from JSON configuration files.
+/// Handles loading and saving of server properties and banlist.
+/// </summary>
+public class Properties
 {
-    public class Properties
-    {
-        const string ConfigFolder = "config";
-        const string PropertiesFile = "ServerProperties.json";
-        const string BanlistFile = "Banlist.json";
-        const string PropertiesDirectory = $"{ConfigFolder}/{PropertiesFile}";
-        const string BanlistDirectory = $"{ConfigFolder}/{BanlistFile}";
+    private const string ConfigFolder = "config";
+    private const string PropertiesFile = "ServerProperties.json";
+    private const string BanlistFile = "Banlist.json";
+    private const string PropertiesDirectory = $"{ConfigFolder}/{PropertiesFile}";
+    private const string BanlistDirectory = $"{ConfigFolder}/{BanlistFile}";
 
-        #region Properties
-        public ushort VoiceCraftPortUDP { get; set; } = 9050;
-        public ushort MCCommPortTCP { get; set; } = 9050;
+    #region Properties
+    /// <summary>
+    /// Gets or sets the UDP port for VoiceCraft voice communication.
+    /// </summary>
+    public ushort VoiceCraftPortUDP { get; set; } = 9050;
 
-        //Unchangeable Settings
-        public string PermanentServerKey { get; set; } = "";
-        public ConnectionTypes ConnectionType { get; set; } = ConnectionTypes.Server;
-        public int ExternalServerTimeoutMS { get; set; } = 8000;
-        public int ClientTimeoutMS { get; set; } = 8000;
-        public ChannelOverride DefaultSettings { get; set; } = new ChannelOverride();
-        public List<Channel> Channels { get; set; } = [];
-        
-        [JsonIgnore] //Do not write in JSON file.
-        public Channel DefaultChannel { get => Channels[0]; }
+    /// <summary>
+    /// Gets or sets the TCP port for MCComm plugin communication.
+    /// </summary>
+    public ushort MCCommPortTCP { get; set; } = 9050;
 
-        //Changeable Settings
-        public string ServerMOTD { get; set; } = "VoiceCraft Proximity Chat!";
-        public DebugProperties Debugger { get; set; } = new DebugProperties();
-        #endregion
+    /// <summary>
+    /// Gets or sets the permanent server authentication key.
+    /// </summary>
+    public string PermanentServerKey { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the connection type for positioning data.
+    /// </summary>
+    public ConnectionTypes ConnectionType { get; set; } = ConnectionTypes.Server;
+
+    /// <summary>
+    /// Gets or sets the timeout for external server connections in milliseconds.
+    /// </summary>
+    public int ExternalServerTimeoutMS { get; set; } = 8000;
+
+    /// <summary>
+    /// Gets or sets the timeout for client connections in milliseconds.
+    /// </summary>
+    public int ClientTimeoutMS { get; set; } = 8000;
+
+    /// <summary>
+    /// Gets or sets the default channel settings.
+    /// </summary>
+    public ChannelOverride DefaultSettings { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets the list of available channels.
+    /// </summary>
+    public List<Channel> Channels { get; set; } = [];
+
+    /// <summary>
+    /// Gets the default channel (first channel in the list).
+    /// </summary>
+    [JsonIgnore]
+    public Channel DefaultChannel => Channels[0];
+
+    /// <summary>
+    /// Gets or sets the server message of the day.
+    /// </summary>
+    public string ServerMOTD { get; set; } = "VoiceCraft Proximity Chat!";
+
+    /// <summary>
+    /// Gets or sets the debug logging properties.
+    /// </summary>
+    public DebugProperties Debugger { get; set; } = new();
+    #endregion
+
 
         public static Properties LoadProperties()
         {
@@ -149,27 +192,37 @@ namespace VoiceCraft.Server.Data
             return Banlist;
         }
 
-        public static void SaveBanlist(List<string> banlist)
+    /// <summary>
+    /// Saves the banlist to file.
+    /// </summary>
+    /// <param name="banlist">The list of banned player names.</param>
+    public static void SaveBanlist(List<string> banlist)
+    {
+        if (!File.Exists(BanlistDirectory))
         {
-            if (!File.Exists(BanlistDirectory))
-            {
-                Logger.LogToConsole(LogType.Warn, $"{BanlistDirectory} file does not exist. Creating file...", "Banlist");
-                string jsonString = JsonConvert.SerializeObject(banlist, Formatting.Indented);
-                File.WriteAllText(BanlistDirectory, jsonString);
-                Logger.LogToConsole(LogType.Success, $"Successfully created file {BanlistDirectory}.", "Banlist");
-            }
-            else
-            {
-                string jsonString = JsonConvert.SerializeObject(banlist, Formatting.Indented);
-                File.WriteAllText(BanlistDirectory, jsonString);
-            }
+            Logger.LogToConsole(LogType.Warn, $"{BanlistDirectory} file does not exist. Creating file...", "Banlist");
+            string jsonString = JsonConvert.SerializeObject(banlist, Formatting.Indented);
+            File.WriteAllText(BanlistDirectory, jsonString);
+            Logger.LogToConsole(LogType.Success, $"Successfully created file {BanlistDirectory}.", "Banlist");
+        }
+        else
+        {
+            string jsonString = JsonConvert.SerializeObject(banlist, Formatting.Indented);
+            File.WriteAllText(BanlistDirectory, jsonString);
         }
     }
-
-    public enum ConnectionTypes
-    {
-        Server,
-        Client,
-        Hybrid
-    }
 }
+
+/// <summary>
+/// Server connection/positioning mode types.
+/// </summary>
+public enum ConnectionTypes
+{
+    /// <summary>Server-side positioning via Minecraft plugin.</summary>
+    Server,
+    /// <summary>Client-side positioning via WebSocket connection.</summary>
+    Client,
+    /// <summary>Hybrid mode supporting both positioning methods.</summary>
+    Hybrid
+}
+

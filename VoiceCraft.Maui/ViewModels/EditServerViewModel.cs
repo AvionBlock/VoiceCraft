@@ -1,48 +1,46 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Maui.Services;
-using VoiceCraft.Maui.Models;
 using VoiceCraft.Maui.Interfaces;
+using VoiceCraft.Maui.Models;
 
-namespace VoiceCraft.Maui.ViewModels
+namespace VoiceCraft.Maui.ViewModels;
+
+/// <summary>
+/// ViewModel for the edit server page.
+/// </summary>
+public partial class EditServerViewModel : ObservableObject
 {
-    public partial class EditServerViewModel : ObservableObject
+    private readonly IDatabaseService _databaseService;
+    private readonly INavigationService _navigationService;
+
+    [ObservableProperty]
+    private ServerModel _unsavedServer;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EditServerViewModel"/> class.
+    /// </summary>
+    public EditServerViewModel(IDatabaseService databaseService, INavigationService navigationService)
     {
-        private readonly IDatabaseService _databaseService;
-        private readonly INavigationService _navigationService;
+        _databaseService = databaseService;
+        _navigationService = navigationService;
 
-        [ObservableProperty]
-        ServerModel unsavedServer;
+        var data = _navigationService.GetNavigationData<ServerModel>();
+        _unsavedServer = data != null ? (ServerModel)data.Clone() : new ServerModel();
+    }
 
-        public EditServerViewModel(IDatabaseService databaseService, INavigationService navigationService)
+    [RelayCommand]
+    private async Task SaveServer()
+    {
+        try
         {
-            _databaseService = databaseService;
-            _navigationService = navigationService;
-            
-            var data = _navigationService.GetNavigationData<ServerModel>();
-            if (data != null)
-            {
-                UnsavedServer = (ServerModel)data.Clone();
-            }
-            else
-            {
-                UnsavedServer = new ServerModel(); // Fallback
-            }
+            await _databaseService.EditServer(UnsavedServer);
+            await _navigationService.GoBack();
         }
-
-        [RelayCommand]
-        public async Task SaveServer()
+        catch (Exception ex)
         {
-            try
-            {
-                await _databaseService.EditServer(UnsavedServer);
-                await _navigationService.GoBack();
-            }
-            catch (Exception ex)
-            {
-                var msg = string.IsNullOrWhiteSpace(ex.Message) ? "Unknown error occurred." : ex.Message;
-                await Shell.Current.DisplayAlert("Error", msg, "OK");
-            }
+            var msg = string.IsNullOrWhiteSpace(ex.Message) ? "Unknown error occurred." : ex.Message;
+            await Shell.Current.DisplayAlert("Error", msg, "OK");
         }
     }
 }
+
