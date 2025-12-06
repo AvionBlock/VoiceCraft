@@ -26,6 +26,7 @@ public class LowpassSampleProvider : ISampleProvider
     /// <param name="bandWidth">The bandwidth (Q factor).</param>
     public LowpassSampleProvider(ISampleProvider source, int cutOffFreq, int bandWidth)
     {
+        ArgumentNullException.ThrowIfNull(source);
         _source = source;
         _channels = source.WaveFormat.Channels;
         _filters = new BiQuadFilter[_channels];
@@ -42,6 +43,7 @@ public class LowpassSampleProvider : ISampleProvider
     /// <inheritdoc/>
     public int Read(float[] buffer, int offset, int count)
     {
+        ArgumentNullException.ThrowIfNull(buffer);
         int samplesRead = _source.Read(buffer, offset, count);
 
         if (Enabled)
@@ -58,4 +60,3 @@ public class LowpassSampleProvider : ISampleProvider
         return samplesRead;
     }
 }
-

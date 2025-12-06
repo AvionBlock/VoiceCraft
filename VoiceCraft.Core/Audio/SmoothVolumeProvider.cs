@@ -59,6 +59,7 @@ public class SmoothVolumeSampleProvider : ISampleProvider
     /// <param name="fadeDurationMs">The fade duration in milliseconds.</param>
     public SmoothVolumeSampleProvider(ISampleProvider source, float fadeDurationMs)
     {
+        ArgumentNullException.ThrowIfNull(source);
         _source = source;
         _fadeSamplePosition = 0.0f;
         FadeDurationMs = fadeDurationMs;
@@ -67,6 +68,7 @@ public class SmoothVolumeSampleProvider : ISampleProvider
     /// <inheritdoc/>
     public int Read(float[] buffer, int offset, int count)
     {
+        ArgumentNullException.ThrowIfNull(buffer);
         var read = _source.Read(buffer, offset, count);
         int sample = 0;
         
@@ -97,4 +99,3 @@ public class SmoothVolumeSampleProvider : ISampleProvider
         return current * (1 - by) + target * by;
     }
 }
-

@@ -11,8 +11,9 @@ namespace VoiceCraft.Network.Sockets;
 /// Minecraft WebSocket Server for receiving player position updates from Bedrock Edition.
 /// Uses the Fleck WebSocket library to handle connections.
 /// </summary>
-public class MCWSS : Disposable
+public class MinecraftWebSocketServer : Disposable
 {
+#pragma warning disable CA1031 // Do not catch general exception types
     private WebSocketServer _socket;
     private IWebSocketConnection? _connectedSocket;
     private readonly string[] _dimensions;
@@ -25,32 +26,27 @@ public class MCWSS : Disposable
     /// </summary>
     public bool IsConnected { get; private set; }
 
-    #region Delegates
-    public delegate void ConnectedHandler(string username);
-    public delegate void FailedHandler(Exception ex);
-    public delegate void PlayerTravelledHandler(Vector3 position, string dimension);
-    public delegate void DisconnectedHandler();
-    #endregion
-
     #region Events
     /// <summary>Raised when a player connects.</summary>
-    public event ConnectedHandler? OnConnected;
+    public event EventHandler<MCWSSConnectedEventArgs>? OnConnected;
     
     /// <summary>Raised when hosting fails.</summary>
-    public event FailedHandler? OnFailed;
+    public event EventHandler<MCWSSErrorEventArgs>? OnFailed;
     
     /// <summary>Raised when a player moves.</summary>
-    public event PlayerTravelledHandler? OnPlayerTravelled;
+    public event EventHandler<PlayerTravelledEventArgs>? OnPlayerTravelled;
     
     /// <summary>Raised when a player disconnects.</summary>
-    public event DisconnectedHandler? OnDisconnected;
+    public event EventHandler? OnDisconnected;
     #endregion
 
+
+
     /// <summary>
-    /// Initializes a new instance of the MCWSS class.
+    /// Initializes a new instance of the MinecraftWebSocketServer class.
     /// </summary>
     /// <param name="port">The port to listen on.</param>
-    public MCWSS(int port)
+    public MinecraftWebSocketServer(int port)
     {
         _port = port;
         _packetRegistry = new MCPacketRegistry();
@@ -89,7 +85,7 @@ public class MCWSS : Disposable
                                 body = { commandLine = "/getlocalplayername" }
                             }.SerializePacket());
                             
-                            socket.Send(new MCWSSPacket<Event>
+                            socket.Send(new MCWSSPacket<MCWSSEvent>
                             {
                                 header = { requestId = Guid.NewGuid().ToString(), messagePurpose = "subscribe" },
                                 body = { eventName = "PlayerTravelled" }
@@ -113,7 +109,7 @@ public class MCWSS : Disposable
                         {
                             _connectedSocket = null;
                             IsConnected = false;
-                            OnDisconnected?.Invoke();
+                            OnDisconnected?.Invoke(this, EventArgs.Empty);
                         }
                     }
                 };
@@ -127,7 +123,7 @@ public class MCWSS : Disposable
                         if (packet is MCWSSPacket<LocalPlayerName> localPlayerPacket)
                         {
                             var name = localPlayerPacket.body.localplayername;
-                            OnConnected?.Invoke(name);
+                            OnConnected?.Invoke(this, new MCWSSConnectedEventArgs(name));
                         }
                         else if (packet is MCWSSPacket<PlayerTravelled> travelledPacket)
                         {
@@ -141,7 +137,7 @@ public class MCWSS : Disposable
                                 ? _dimensions[dimensionIndex]
                                 : "minecraft:overworld";
 
-                            OnPlayerTravelled?.Invoke(position, dimension);
+                            OnPlayerTravelled?.Invoke(this, new PlayerTravelledEventArgs(position, dimension));
 #if DEBUG
                             Debug.WriteLine($"PlayerTravelled: {position.X}, {position.Y}, {position.Z}, {dimension}");
 #endif
@@ -156,7 +152,7 @@ public class MCWSS : Disposable
         }
         catch (Exception ex)
         {
-            OnFailed?.Invoke(ex);
+            OnFailed?.Invoke(this, new MCWSSErrorEventArgs(ex));
         }
     }
 
@@ -184,6 +180,30 @@ public class MCWSS : Disposable
             Stop();
             _socket.Dispose();
         }
+        base.Dispose(disposing);
     }
 }
 
+public class PlayerTravelledEventArgs : EventArgs
+{
+    public Vector3 Position { get; }
+    public string Dimension { get; }
+
+    public PlayerTravelledEventArgs(Vector3 position, string dimension)
+    {
+        Position = position;
+        Dimension = dimension;
+    }
+}
+
+public class MCWSSConnectedEventArgs : EventArgs
+{
+    public string Name { get; }
+    public MCWSSConnectedEventArgs(string name) => Name = name;
+}
+
+public class MCWSSErrorEventArgs : EventArgs
+{
+    public Exception Error { get; }
+    public MCWSSErrorEventArgs(Exception error) => Error = error;
+}

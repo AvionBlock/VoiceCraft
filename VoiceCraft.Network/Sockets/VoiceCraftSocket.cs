@@ -7,12 +7,15 @@ using VoiceCraft.Core.Packets.VoiceCraft;
 
 namespace VoiceCraft.Network.Sockets;
 
+using System.Collections.ObjectModel;
+
 /// <summary>
 /// Main VoiceCraft UDP socket handler for voice communication.
 /// Supports both client and server modes with packet reliability and rate limiting.
 /// </summary>
-public class VoiceCraft : Disposable
+public class VoiceCraftSocket : Disposable
 {
+#pragma warning disable CA1031 // Do not catch general exception types
     /// <summary>
     /// Maximum time in milliseconds between send operations.
     /// </summary>
@@ -21,7 +24,7 @@ public class VoiceCraft : Disposable
     /// <summary>
     /// Windows socket control code to ignore UDP connection reset errors.
     /// </summary>
-    public const int SIO_UDP_CONNRESET = -1744830452;
+    public const int SioUdpConnReset = -1744830452;
 
     #region Variables
     /// <summary>
@@ -58,7 +61,6 @@ public class VoiceCraft : Disposable
     private CancellationTokenSource CTS { get; set; } = new();
     private ConcurrentDictionary<EndPoint, NetPeer> NetPeers { get; set; } = new();
     private ConcurrentDictionary<string, RateLimitInfo> _rateLimits = new();
-    private const int MaxConnectionsPerIP = 5;
     private const int PacketsPerSecondLimit = 10;
     private NetPeer? ClientNetPeer { get; set; }
     private Task? ActivityChecker { get; set; }
@@ -66,9 +68,9 @@ public class VoiceCraft : Disposable
     #endregion
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="VoiceCraft"/> class and registers all packet types.
+    /// Initializes a new instance of the <see cref="VoiceCraftSocket"/> class and registers all packet types.
     /// </summary>
-    public VoiceCraft()
+    public VoiceCraftSocket()
     {
         PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Login, typeof(Login));
         PacketRegistry.RegisterPacket((byte)VoiceCraftPacketTypes.Logout, typeof(Logout));
@@ -104,12 +106,13 @@ public class VoiceCraft : Disposable
     /// <summary>Gets or sets whether to log outbound packets.</summary>
     public bool LogOutbound { get; set; }
     /// <summary>Gets or sets the inbound packet type filter.</summary>
-    public List<VoiceCraftPacketTypes> InboundFilter { get; set; } = [];
+    public Collection<VoiceCraftPacketTypes> InboundFilter { get; } = [];
     /// <summary>Gets or sets the outbound packet type filter.</summary>
-    public List<VoiceCraftPacketTypes> OutboundFilter { get; set; } = [];
+    public Collection<VoiceCraftPacketTypes> OutboundFilter { get; } = [];
     #endregion
 
     #region Delegates
+    /// <summary>Delegate for client connected event.</summary>
     /// <summary>Delegate for client connected event.</summary>
     public delegate void Connected(short key);
     /// <summary>Delegate for client disconnected event.</summary>
@@ -124,76 +127,67 @@ public class VoiceCraft : Disposable
     /// <summary>Delegate for peer disconnected event.</summary>
     public delegate void PeerDisconnected(NetPeer peer, string? reason = null);
 
-    /// <summary>Delegate for typed packet data events.</summary>
-    public delegate void PacketData<T>(T data, NetPeer peer);
-
-    /// <summary>Delegate for outbound packet logging.</summary>
-    public delegate void OutboundPacket(VoiceCraftPacket packet, NetPeer peer);
-    /// <summary>Delegate for inbound packet logging.</summary>
-    public delegate void InboundPacket(VoiceCraftPacket packet, NetPeer peer);
-    /// <summary>Delegate for exception errors.</summary>
-    public delegate void ExceptionError(Exception error);
-    /// <summary>Delegate for socket failures.</summary>
-    public delegate void Failed(Exception ex);
     #endregion
 
     #region Events
     /// <summary>Occurs when client connects successfully.</summary>
-    public event Connected? OnConnected;
+    public event EventHandler<VoiceCraftConnectedEventArgs>? OnConnected;
     /// <summary>Occurs when client disconnects.</summary>
-    public event Disconnected? OnDisconnected;
+    public event EventHandler<VoiceCraftDisconnectedEventArgs>? OnDisconnected;
 
     /// <summary>Occurs when server starts.</summary>
-    public event Started? OnStarted;
+    public event EventHandler? OnStarted;
     /// <summary>Occurs when server stops.</summary>
-    public event Stopped? OnStopped;
+    public event EventHandler<VoiceCraftStoppedEventArgs>? OnStopped;
     /// <summary>Occurs when a peer connects to server.</summary>
-    public event PeerConnected? OnPeerConnected;
+    public event EventHandler<PacketEventArgs<Login>>? OnPeerConnected;
     /// <summary>Occurs when a peer disconnects from server.</summary>
-    public event PeerDisconnected? OnPeerDisconnected;
+    public event EventHandler<PacketEventArgs<string?>>? OnPeerDisconnected;
 
     /// <summary>Occurs when a Login packet is received.</summary>
-    public event PacketData<Login>? OnLoginReceived;
-        public event PacketData<Logout>? OnLogoutReceived;
-        public event PacketData<Accept>? OnAcceptReceived;
-        public event PacketData<Deny>? OnDenyReceived;
-        public event PacketData<Ack>? OnAckReceived;
-        public event PacketData<Ping>? OnPingReceived;
-        public event PacketData<PingInfo>? OnPingInfoReceived;
-        public event PacketData<Binded>? OnBindedReceived;
-        public event PacketData<Unbinded>? OnUnbindedReceived;
-        public event PacketData<ParticipantJoined>? OnParticipantJoinedReceived;
-        public event PacketData<ParticipantLeft>? OnParticipantLeftReceived;
-        public event PacketData<Mute>? OnMuteReceived;
-        public event PacketData<Unmute>? OnUnmuteReceived;
-        public event PacketData<Deafen>? OnDeafenReceived;
-        public event PacketData<Undeafen>? OnUndeafenReceived;
-        public event PacketData<JoinChannel>? OnJoinChannelReceived;
-        public event PacketData<LeaveChannel>? OnLeaveChannelReceived;
-        public event PacketData<AddChannel>? OnAddChannelReceived;
-        public event PacketData<RemoveChannel>? OnRemoveChannelReceived;
-        public event PacketData<UpdatePosition>? OnUpdatePositionReceived;
-        public event PacketData<FullUpdatePosition>? OnFullUpdatePositionReceived;
-        public event PacketData<UpdateEnvironmentId>? OnUpdateEnvironmentIdReceived;
-        public event PacketData<ClientAudio>? OnClientAudioReceived;
-        public event PacketData<ServerAudio>? OnServerAudioReceived;
+    public event EventHandler<PacketEventArgs<Login>>? OnLoginReceived;
+    public event EventHandler<PacketEventArgs<Logout>>? OnLogoutReceived;
+    public event EventHandler<PacketEventArgs<Accept>>? OnAcceptReceived;
+    public event EventHandler<PacketEventArgs<Deny>>? OnDenyReceived;
+    public event EventHandler<PacketEventArgs<Ack>>? OnAckReceived;
+    public event EventHandler<PacketEventArgs<Ping>>? OnPingReceived;
+    public event EventHandler<PacketEventArgs<PingInfo>>? OnPingInfoReceived;
+    public event EventHandler<PacketEventArgs<Binded>>? OnBindedReceived;
+    public event EventHandler<PacketEventArgs<Unbinded>>? OnUnbindedReceived;
+    public event EventHandler<PacketEventArgs<ParticipantJoined>>? OnParticipantJoinedReceived;
+    public event EventHandler<PacketEventArgs<ParticipantLeft>>? OnParticipantLeftReceived;
+    public event EventHandler<PacketEventArgs<Mute>>? OnMuteReceived;
+    public event EventHandler<PacketEventArgs<Unmute>>? OnUnmuteReceived;
+    public event EventHandler<PacketEventArgs<Deafen>>? OnDeafenReceived;
+    public event EventHandler<PacketEventArgs<Undeafen>>? OnUndeafenReceived;
+    public event EventHandler<PacketEventArgs<JoinChannel>>? OnJoinChannelReceived;
+    public event EventHandler<PacketEventArgs<LeaveChannel>>? OnLeaveChannelReceived;
+    public event EventHandler<PacketEventArgs<AddChannel>>? OnAddChannelReceived;
+    public event EventHandler<PacketEventArgs<RemoveChannel>>? OnRemoveChannelReceived;
+    public event EventHandler<PacketEventArgs<UpdatePosition>>? OnUpdatePositionReceived;
+    public event EventHandler<PacketEventArgs<FullUpdatePosition>>? OnFullUpdatePositionReceived;
+    public event EventHandler<PacketEventArgs<UpdateEnvironmentId>>? OnUpdateEnvironmentIdReceived;
+    public event EventHandler<PacketEventArgs<ClientAudio>>? OnClientAudioReceived;
+    public event EventHandler<PacketEventArgs<ServerAudio>>? OnServerAudioReceived;
 
-        //Error and Debug Events
-        public event OutboundPacket? OnOutboundPacket;
-        public event InboundPacket? OnInboundPacket;
-        public event ExceptionError? OnExceptionError;
-        public event Failed? OnFailed;
-        #endregion
+    //Error and Debug Events
+    public event EventHandler<PacketEventArgs<VoiceCraftPacket>>? OnOutboundPacket;
+    public event EventHandler<PacketEventArgs<VoiceCraftPacket>>? OnInboundPacket;
+    public event EventHandler<VoiceCraftErrorEventArgs>? OnExceptionError;
+    public event EventHandler<VoiceCraftErrorEventArgs>? OnFailed;
+    #endregion
+
+
 
         #region Methods
         public async Task ConnectAsync(string IP, int port, short preferredKey, PositioningTypes positioningType, string version)
         {
-            ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraft));
-            if (State == VoiceCraftSocketState.Started || State == VoiceCraftSocketState.Starting) throw new Exception("Cannot start connection as socket is in a hosting state!");
-            if (State != VoiceCraftSocketState.Stopped) throw new Exception("You must disconnect before reconnecting!");
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraftSocket));
+            if (State == VoiceCraftSocketState.Started || State == VoiceCraftSocketState.Starting) throw new InvalidOperationException("Cannot start connection as socket is in a hosting state!");
+            if (State != VoiceCraftSocketState.Stopped) throw new InvalidOperationException("You must disconnect before reconnecting!");
 
             CTS.Dispose(); //Prevent memory leak for startup.
-            //Socket.IOControl((IOControlCode)SIO_UDP_CONNRESET, [0, 0, 0, 0], null); //I fucking hate this Windows Only
+            //Socket.IOControl((IOControlCode)SioUdpConnReset, [0, 0, 0, 0], null); //I fucking hate this Windows Only
 
             //Reset/Setup
             State = VoiceCraftSocketState.Connecting;
@@ -221,43 +215,32 @@ public class VoiceCraft : Disposable
                 }
                 else
                 {
-                    var addresses = await Dns.GetHostAddressesAsync(IP, CTS.Token);
+                    var addresses = await Dns.GetHostAddressesAsync(IP, CTS.Token).ConfigureAwait(false);
                     if (addresses.Length == 0) throw new ArgumentException("Unable to retrieve address from the specified host name.", nameof(IP));
                     RemoteEndpoint = new IPEndPoint(addresses[0], port);
                 }
                 
                 ActivityChecker = Task.Run(ActivityCheck);
                 Send(new Login() { Key = preferredKey, PositioningType = positioningType, Version = version });
-                await ClientReceiveAsync();
+                await ClientReceiveAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                OnFailed?.Invoke(ex);
-                await DisconnectAsync(ex.Message, false);
+                OnFailed?.Invoke(this, new VoiceCraftErrorEventArgs(ex));
+                await DisconnectAsync(ex.Message, false).ConfigureAwait(false);
             }
         }
 
         public async Task DisconnectAsync(string? reason = null, bool notifyServer = true)
         {
-            ObjectDisposedException.ThrowIf(IsDisposed && State == VoiceCraftSocketState.Stopped, nameof(VoiceCraft));
+            ObjectDisposedException.ThrowIf(IsDisposed && State == VoiceCraftSocketState.Stopped, nameof(VoiceCraftSocket));
             if (State == VoiceCraftSocketState.Starting || State == VoiceCraftSocketState.Started) throw new InvalidOperationException("Cannot stop hosting as the socket is in a connection state.");
-            if (State == VoiceCraftSocketState.Stopped || State == VoiceCraftSocketState.Disconnecting) return;
-
-            //We don't need to wait until we are connected because the Cancellation Token already takes care of cancelling other thread related requests.
-
-            if (notifyServer && State == VoiceCraftSocketState.Connected) //Only send if we are connected.
-                await SocketSendAsync(new Logout() { Id = ClientNetPeer?.Id ?? long.MinValue });
-
-            State = VoiceCraftSocketState.Disconnecting;
-            //Deregister the Events
-            OnAcceptReceived -= OnAccept;
-            OnDenyReceived -= OnDeny;
             OnLogoutReceived -= OnLogout;
             OnAckReceived -= OnAck;
             if(ClientNetPeer != null)
                 ClientNetPeer.OnPacketReceived -= HandlePacketReceived;
 
-            CTS.Cancel();
+            await CTS.CancelAsync().ConfigureAwait(false);
             CTS.Dispose();
             Socket.Close();
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -265,17 +248,17 @@ public class VoiceCraft : Disposable
             ActivityChecker = null;
             Sender = null;
             State = VoiceCraftSocketState.Stopped;
-            OnDisconnected?.Invoke(reason);
+            OnDisconnected?.Invoke(this, new VoiceCraftDisconnectedEventArgs(reason));
         }
 
         public async Task HostAsync(int Port)
         {
-            ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraft));
-            if (State == VoiceCraftSocketState.Connected || State == VoiceCraftSocketState.Connecting) throw new Exception("Cannot start hosting as socket is in a connection state!");
-            if (State != VoiceCraftSocketState.Stopped) throw new Exception("You must stop hosting before starting a host!");
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraftSocket));
+            if (State == VoiceCraftSocketState.Connected || State == VoiceCraftSocketState.Connecting) throw new InvalidOperationException("Cannot start hosting as socket is in a connection state!");
+            if (State != VoiceCraftSocketState.Stopped) throw new InvalidOperationException("You must stop hosting before starting a host!");
 
             CTS.Dispose(); //Prevent memory leak for startup.
-            //Socket.IOControl((IOControlCode)SIO_UDP_CONNRESET, [0, 0, 0, 0], null); //I fucking hate this Windows Only
+            //Socket.IOControl((IOControlCode)SioUdpConnReset, [0, 0, 0, 0], null); //I fucking hate this Windows Only
 
             State = VoiceCraftSocketState.Starting;
             CTS = new CancellationTokenSource();
@@ -292,19 +275,19 @@ public class VoiceCraft : Disposable
                 ActivityChecker = Task.Run(ServerCheck);
                 Sender = Task.Run(ServerSender);
                 State = VoiceCraftSocketState.Started;
-                OnStarted?.Invoke();
-                await ReceiveAsync();
+                OnStarted?.Invoke(this, EventArgs.Empty);
+                await ReceiveAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                OnFailed?.Invoke(ex);
-                await StopAsync(ex.Message);
+                OnFailed?.Invoke(this, new VoiceCraftErrorEventArgs(ex));
+                await StopAsync(ex.Message).ConfigureAwait(false);
             }
         }
 
         public async Task StopAsync(string? reason = null)
         {
-            ObjectDisposedException.ThrowIf(IsDisposed && State == VoiceCraftSocketState.Stopped, nameof(VoiceCraft));
+            ObjectDisposedException.ThrowIf(IsDisposed && State == VoiceCraftSocketState.Stopped, nameof(VoiceCraftSocket));
             if (State == VoiceCraftSocketState.Connecting || State == VoiceCraftSocketState.Connected) throw new InvalidOperationException("Cannot stop hosting as the socket is in a connection state.");
             if (State == VoiceCraftSocketState.Stopping || State == VoiceCraftSocketState.Stopped) return;
 
@@ -316,24 +299,24 @@ public class VoiceCraft : Disposable
 
             DisconnectPeers("Server Shutdown.");
 
-            while(NetPeers.Count > 0)
+            while(!NetPeers.IsEmpty)
             {
-                await Task.Delay(1); //Wait until all peers are disconnected.
+                await Task.Delay(1).ConfigureAwait(false); //Wait until all peers are disconnected.
             }
 
-            CTS.Cancel();
+            await CTS.CancelAsync().ConfigureAwait(false);
             CTS.Dispose();
             Socket.Close();
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             ActivityChecker = null;
             Sender = null;
             State = VoiceCraftSocketState.Stopped;
-            OnStopped?.Invoke(reason);
+            OnStopped?.Invoke(this, new VoiceCraftStoppedEventArgs(reason));
         }
 
         public void Send(VoiceCraftPacket packet)
         {
-            ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraft));
+            ObjectDisposedException.ThrowIf(IsDisposed, nameof(VoiceCraftSocket));
             if (State == VoiceCraftSocketState.Connecting || State == VoiceCraftSocketState.Connected)
             {
                 ClientNetPeer?.AddToSendBuffer(packet);
@@ -352,16 +335,32 @@ public class VoiceCraft : Disposable
 
         private async Task SocketSendToAsync(VoiceCraftPacket packet, EndPoint ep)
         {
-            var buffer = new List<byte>();
-            packet.WritePacket(ref buffer);
-            await Socket.SendToAsync(buffer.ToArray(), ep, CTS.Token);
+            var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(2048);
+            try
+            {
+                packet.Write(buffer.AsSpan());
+                // TODO: Optimize length. For now send 2048 bytes (MTU compliant receivers handle this)
+                // Sending smaller length if possible would be better.
+                await Socket.SendToAsync(new ArraySegment<byte>(buffer, 0, 2048), ep, CTS.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         private async Task SocketSendAsync(VoiceCraftPacket packet)
         {
-            var buffer = new List<byte>();
-            packet.WritePacket(ref buffer);
-            await Socket.SendToAsync(buffer.ToArray(), RemoteEndpoint, CTS.Token);
+            var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(2048);
+            try
+            {
+                packet.Write(buffer.AsSpan());
+                await Socket.SendToAsync(new ArraySegment<byte>(buffer, 0, 2048), RemoteEndpoint, CTS.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
 
         private NetPeer CreateNetPeer(SocketAddress receivedAddress)
@@ -385,7 +384,7 @@ public class VoiceCraft : Disposable
             {
                 try
                 {
-                    var receivedBytes = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, receivedAddress, CTS.Token);
+                    var receivedBytes = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, receivedAddress, CTS.Token).ConfigureAwait(false);
                     
                     // Security: Basic Flood Protection
                     // In a real high-performance scenario, checking IP limits on every packet involves dictionary lookups.
@@ -400,7 +399,7 @@ public class VoiceCraft : Disposable
                         var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.Slice(0, receivedBytes).ToArray());
 
                         if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
-                            OnInboundPacket?.Invoke(packet, netPeer);
+                            OnInboundPacket?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, netPeer));
 
                         netPeer.AddToReceiveBuffer(packet); 
                     }
@@ -423,7 +422,7 @@ public class VoiceCraft : Disposable
                             var peer = netPeer ?? CreateNetPeer(receivedAddress);
 
                             if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
-                                OnInboundPacket?.Invoke(packet, peer);
+                                OnInboundPacket?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, peer));
 
                             peer.AddToReceiveBuffer(packet);
                         }
@@ -432,7 +431,7 @@ public class VoiceCraft : Disposable
                 catch (SocketException ex)
                 {
                     if (ex.SocketErrorCode == SocketError.ConnectionReset || ex.SocketErrorCode == SocketError.ConnectionAborted || ex.SocketErrorCode == SocketError.TimedOut) continue;
-                    await StopAsync(ex.Message);
+                    await StopAsync(ex.Message).ConfigureAwait(false);
                     return;
                 }
                 catch(OperationCanceledException)
@@ -442,7 +441,7 @@ public class VoiceCraft : Disposable
                 catch(Exception ex)
                 {
                     if (LogExceptions)
-                        OnExceptionError?.Invoke(ex);
+                        OnExceptionError?.Invoke(this, new VoiceCraftErrorEventArgs(ex));
                 }
             }
         }
@@ -456,17 +455,17 @@ public class VoiceCraft : Disposable
             {
                 try
                 {
-                    var result = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, RemoteEndpoint, CTS.Token);
+                    var result = await Socket.ReceiveFromAsync(bufferMem, SocketFlags.None, RemoteEndpoint, CTS.Token).ConfigureAwait(false);
                     var packet = PacketRegistry.GetPacketFromDataStream(bufferMem.Slice(0, result.ReceivedBytes).ToArray());
 
                     ClientNetPeer?.AddToReceiveBuffer(packet); //We don't care about wether the client is connected or not, We'll just accept the packet into the buffer.
 
                     if (ClientNetPeer != null && LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
-                        OnInboundPacket?.Invoke(packet, ClientNetPeer);
+                        OnInboundPacket?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, ClientNetPeer));
                 }
                 catch (SocketException ex)
                 {
-                    await DisconnectAsync(ex.Message, false); //Socket is basically closed at this point, We can't send a message.
+                    await DisconnectAsync(ex.Message, false).ConfigureAwait(false);
                     return;
                 }
                 catch (OperationCanceledException)
@@ -475,8 +474,8 @@ public class VoiceCraft : Disposable
                 }
                 catch (Exception ex)
                 {
-                    if (LogExceptions)
-                        OnExceptionError?.Invoke(ex);
+                if (LogExceptions)
+                        OnExceptionError?.Invoke(this, new VoiceCraftErrorEventArgs(ex));
                 }
             }
         }
@@ -489,7 +488,7 @@ public class VoiceCraft : Disposable
                 var dist = Environment.TickCount64 - ClientNetPeer?.LastActive;
                 if (dist > Timeout)
                 {
-                    await DisconnectAsync($"Connection timed out!\nTime since last active {Environment.TickCount64 - ClientNetPeer?.LastActive}ms.", false);
+                    await DisconnectAsync($"Connection timed out!\nTime since last active {Environment.TickCount64 - ClientNetPeer?.LastActive}ms.", false).ConfigureAwait(false);
                     break;
                 }
                 ClientNetPeer?.ResendPackets();
@@ -564,7 +563,7 @@ public class VoiceCraft : Disposable
                         tasks.Add(SocketSendToAsync(packet, peer.Value.RemoteEndPoint));
 
                         if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
-                            OnOutboundPacket?.Invoke(packet, peer.Value);
+                            OnOutboundPacket?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, peer.Value));
                         
                         // Optimization: Dispose packet if it uses pooled resources
                         if (packet is IDisposable disposable)
@@ -574,17 +573,17 @@ public class VoiceCraft : Disposable
                     if (peer.Value.State == NetPeerState.Disconnected)
                     {
                         NetPeers.TryRemove(peer);
-                        OnPeerDisconnected?.Invoke(peer.Value, peer.Value.DisconnectReason);
+                        OnPeerDisconnected?.Invoke(this, new PacketEventArgs<string?>(peer.Value.DisconnectReason, peer.Value));
                     }
                 }
                 
                 if (tasks.Count > 0)
                 {
-                    await Task.WhenAll(tasks);
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
                 else
                 {
-                    await Task.Delay(1); //1ms to not destroy the CPU.
+                await Task.Delay(1).ConfigureAwait(false);
                 }
             }
         }
@@ -597,20 +596,20 @@ public class VoiceCraft : Disposable
                 {
                     if (packet.Retries > NetPeer.MaxSendRetries)
                     {
-                        await DisconnectAsync("Unstable Connection.");
+                        await DisconnectAsync("Unstable Connection.").ConfigureAwait(false);
                         continue;
                     }
-                    await SocketSendAsync(packet);
+                    await SocketSendAsync(packet).ConfigureAwait(false);
 
                     if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((VoiceCraftPacketTypes)packet.PacketId)))
-                        OnOutboundPacket?.Invoke(packet, ClientNetPeer);
+                        OnOutboundPacket?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, ClientNetPeer));
 
                     // Optimization: Dispose packet if it uses pooled resources
                     if (packet is IDisposable disposable)
                         disposable.Dispose();
                 }
 
-                await Task.Delay(1); //1ms to not destroy the CPU.
+                await Task.Delay(1).ConfigureAwait(false);
             }
         }
 
@@ -663,40 +662,45 @@ public class VoiceCraft : Disposable
             return updates.Count > PacketsPerSecondLimit;
         }
 
-        private class RateLimitInfo
+        private sealed class RateLimitInfo
         {
             public int Count;
             public long LastReset;
         }
 
-        private void HandlePacketReceived(NetPeer peer, VoiceCraftPacket packet)
+        private void HandlePacketReceived(object? sender, PacketEventArgs<VoiceCraftPacket> e)
         {
+            var packet = e.Packet;
+            var peer = (NetPeer?)e.Source;
+            
+            if (peer == null) return;
+
             switch ((VoiceCraftPacketTypes)packet.PacketId)
             {
-                case VoiceCraftPacketTypes.Login: OnLoginReceived?.Invoke((Login)packet, peer); break;
-                case VoiceCraftPacketTypes.Logout: OnLogoutReceived?.Invoke((Logout)packet, peer); break;
-                case VoiceCraftPacketTypes.Accept: OnAcceptReceived?.Invoke((Accept)packet, peer); break;
-                case VoiceCraftPacketTypes.Deny: OnDenyReceived?.Invoke((Deny)packet, peer); break;
-                case VoiceCraftPacketTypes.Ack: OnAckReceived?.Invoke((Ack)packet, peer); break;
-                case VoiceCraftPacketTypes.Ping: OnPingReceived?.Invoke((Ping)packet, peer); break;
-                case VoiceCraftPacketTypes.PingInfo: OnPingInfoReceived?.Invoke((PingInfo)packet, peer); break;
-                case VoiceCraftPacketTypes.Binded: OnBindedReceived?.Invoke((Binded)packet, peer); break;
-                case VoiceCraftPacketTypes.Unbinded: OnUnbindedReceived?.Invoke((Unbinded)packet, peer); break;
-                case VoiceCraftPacketTypes.ParticipantJoined: OnParticipantJoinedReceived?.Invoke((ParticipantJoined)packet, peer); break;
-                case VoiceCraftPacketTypes.ParticipantLeft: OnParticipantLeftReceived?.Invoke((ParticipantLeft)packet, peer); break;
-                case VoiceCraftPacketTypes.Mute: OnMuteReceived?.Invoke((Mute)packet, peer); break;
-                case VoiceCraftPacketTypes.Unmute: OnUnmuteReceived?.Invoke((Unmute)packet, peer); break;
-                case VoiceCraftPacketTypes.Deafen: OnDeafenReceived?.Invoke((Deafen)packet, peer); break;
-                case VoiceCraftPacketTypes.Undeafen: OnUndeafenReceived?.Invoke((Undeafen)packet, peer); break;
-                case VoiceCraftPacketTypes.JoinChannel: OnJoinChannelReceived?.Invoke((JoinChannel)packet, peer); break;
-                case VoiceCraftPacketTypes.LeaveChannel: OnLeaveChannelReceived?.Invoke((LeaveChannel)packet, peer); break;
-                case VoiceCraftPacketTypes.AddChannel: OnAddChannelReceived?.Invoke((AddChannel)packet, peer); break;
-                case VoiceCraftPacketTypes.RemoveChannel: OnRemoveChannelReceived?.Invoke((RemoveChannel)packet, peer); break;
-                case VoiceCraftPacketTypes.UpdatePosition: OnUpdatePositionReceived?.Invoke((UpdatePosition)packet, peer); break;
-                case VoiceCraftPacketTypes.FullUpdatePosition: OnFullUpdatePositionReceived?.Invoke((FullUpdatePosition)packet, peer); break;
-                case VoiceCraftPacketTypes.UpdateEnvironmentId: OnUpdateEnvironmentIdReceived?.Invoke((UpdateEnvironmentId)packet, peer); break;
-                case VoiceCraftPacketTypes.ClientAudio: OnClientAudioReceived?.Invoke((ClientAudio)packet, peer); break;
-                case VoiceCraftPacketTypes.ServerAudio: OnServerAudioReceived?.Invoke((ServerAudio)packet, peer); break;
+                case VoiceCraftPacketTypes.Login: OnLoginReceived?.Invoke(this, new PacketEventArgs<Login>((Login)packet, peer)); break;
+                case VoiceCraftPacketTypes.Logout: OnLogoutReceived?.Invoke(this, new PacketEventArgs<Logout>((Logout)packet, peer)); break;
+                case VoiceCraftPacketTypes.Accept: OnAcceptReceived?.Invoke(this, new PacketEventArgs<Accept>((Accept)packet, peer)); break;
+                case VoiceCraftPacketTypes.Deny: OnDenyReceived?.Invoke(this, new PacketEventArgs<Deny>((Deny)packet, peer)); break;
+                case VoiceCraftPacketTypes.Ack: OnAckReceived?.Invoke(this, new PacketEventArgs<Ack>((Ack)packet, peer)); break;
+                case VoiceCraftPacketTypes.Ping: OnPingReceived?.Invoke(this, new PacketEventArgs<Ping>((Ping)packet, peer)); break;
+                case VoiceCraftPacketTypes.PingInfo: OnPingInfoReceived?.Invoke(this, new PacketEventArgs<PingInfo>((PingInfo)packet, peer)); break;
+                case VoiceCraftPacketTypes.Binded: OnBindedReceived?.Invoke(this, new PacketEventArgs<Binded>((Binded)packet, peer)); break;
+                case VoiceCraftPacketTypes.Unbinded: OnUnbindedReceived?.Invoke(this, new PacketEventArgs<Unbinded>((Unbinded)packet, peer)); break;
+                case VoiceCraftPacketTypes.ParticipantJoined: OnParticipantJoinedReceived?.Invoke(this, new PacketEventArgs<ParticipantJoined>((ParticipantJoined)packet, peer)); break;
+                case VoiceCraftPacketTypes.ParticipantLeft: OnParticipantLeftReceived?.Invoke(this, new PacketEventArgs<ParticipantLeft>((ParticipantLeft)packet, peer)); break;
+                case VoiceCraftPacketTypes.Mute: OnMuteReceived?.Invoke(this, new PacketEventArgs<Mute>((Mute)packet, peer)); break;
+                case VoiceCraftPacketTypes.Unmute: OnUnmuteReceived?.Invoke(this, new PacketEventArgs<Unmute>((Unmute)packet, peer)); break;
+                case VoiceCraftPacketTypes.Deafen: OnDeafenReceived?.Invoke(this, new PacketEventArgs<Deafen>((Deafen)packet, peer)); break;
+                case VoiceCraftPacketTypes.Undeafen: OnUndeafenReceived?.Invoke(this, new PacketEventArgs<Undeafen>((Undeafen)packet, peer)); break;
+                case VoiceCraftPacketTypes.JoinChannel: OnJoinChannelReceived?.Invoke(this, new PacketEventArgs<JoinChannel>((JoinChannel)packet, peer)); break;
+                case VoiceCraftPacketTypes.LeaveChannel: OnLeaveChannelReceived?.Invoke(this, new PacketEventArgs<LeaveChannel>((LeaveChannel)packet, peer)); break;
+                case VoiceCraftPacketTypes.AddChannel: OnAddChannelReceived?.Invoke(this, new PacketEventArgs<AddChannel>((AddChannel)packet, peer)); break;
+                case VoiceCraftPacketTypes.RemoveChannel: OnRemoveChannelReceived?.Invoke(this, new PacketEventArgs<RemoveChannel>((RemoveChannel)packet, peer)); break;
+                case VoiceCraftPacketTypes.UpdatePosition: OnUpdatePositionReceived?.Invoke(this, new PacketEventArgs<UpdatePosition>((UpdatePosition)packet, peer)); break;
+                case VoiceCraftPacketTypes.FullUpdatePosition: OnFullUpdatePositionReceived?.Invoke(this, new PacketEventArgs<FullUpdatePosition>((FullUpdatePosition)packet, peer)); break;
+                case VoiceCraftPacketTypes.UpdateEnvironmentId: OnUpdateEnvironmentIdReceived?.Invoke(this, new PacketEventArgs<UpdateEnvironmentId>((UpdateEnvironmentId)packet, peer)); break;
+                case VoiceCraftPacketTypes.ClientAudio: OnClientAudioReceived?.Invoke(this, new PacketEventArgs<ClientAudio>((ClientAudio)packet, peer)); break;
+                case VoiceCraftPacketTypes.ServerAudio: OnServerAudioReceived?.Invoke(this, new PacketEventArgs<ServerAudio>((ServerAudio)packet, peer)); break;
             }
         }
 
@@ -712,36 +716,38 @@ public class VoiceCraft : Disposable
 
                 Socket.Dispose();
             }
+            base.Dispose(disposing);
         }
         #endregion
 
         #region Client Event Methods
-        private void OnAccept(Accept data, NetPeer peer)
+        private void OnAccept(object? sender, PacketEventArgs<Accept> e)
         {
-            if(ClientNetPeer != null)
+            if (ClientNetPeer != null)
             {
-                ClientNetPeer.Id = data.Id;
+                ClientNetPeer.Id = e.Packet.Id;
                 IsConnected = true;
             }
             State = VoiceCraftSocketState.Connected;
-            OnConnected?.Invoke(data.Key);
+            OnConnected?.Invoke(this, new VoiceCraftConnectedEventArgs(e.Packet.Key));
         }
 
-        private async void OnDeny(Deny data, NetPeer peer)
+        private async void OnDeny(object? sender, PacketEventArgs<Deny> e)
         {
-            if(!IsConnected)
-                await DisconnectAsync(data.Reason, false);
+            if (!IsConnected)
+                await DisconnectAsync(e.Packet.Reason, false).ConfigureAwait(false);
         }
 
-        private async void OnLogout(Logout data, NetPeer peer)
+        private async void OnLogout(object? sender, PacketEventArgs<Logout> e)
         {
-            await DisconnectAsync(data.Reason, false);
+            await DisconnectAsync(e.Packet.Reason, false).ConfigureAwait(false);
         }
         #endregion
 
         #region Server Event Methods
-        private void OnClientLogin(Login data, NetPeer peer)
+        private void OnClientLogin(object? sender, PacketEventArgs<Login> e)
         {
+            var peer = (NetPeer)e.Source;
             if (peer.State == NetPeerState.Connected)
             {
                 peer.AddToSendBuffer(new Accept());
@@ -751,24 +757,24 @@ public class VoiceCraft : Disposable
             var Id = GetAvailableId();
 
             peer.Id = Id;
-            OnPeerConnected?.Invoke(peer, data); //Leave wether the client should be accepted or denied by the application.
+            OnPeerConnected?.Invoke(this, new PacketEventArgs<Login>(e.Packet, peer)); //Leave wether the client should be accepted or denied by the application.
         }
 
-        private void OnClientLogout(Logout data, NetPeer peer)
+        private void OnClientLogout(object? sender, PacketEventArgs<Logout> e)
         {
-            peer.Disconnect(null, false);
+            ((NetPeer)e.Source).Disconnect(null, false);
         }
 
-        private void OnPing(Ping data, NetPeer peer)
+        private void OnPing(object? sender, PacketEventArgs<Ping> e)
         {
-            peer.AddToSendBuffer(new Ping());
+            ((NetPeer)e.Source).AddToSendBuffer(new Ping());
         }
         #endregion
 
         #region Global Event Methods
-        private void OnAck(Ack data, NetPeer peer)
+        private void OnAck(object? sender, PacketEventArgs<Ack> e)
         {
-            peer.AcknowledgePacket(data.PacketSequence);
+            ((NetPeer)e.Source).AcknowledgePacket(e.Packet.PacketSequence);
         }
         #endregion
     }
@@ -787,4 +793,27 @@ public class VoiceCraft : Disposable
         Started,
         Stopping
     }
-}
+
+    public class VoiceCraftConnectedEventArgs : EventArgs
+    {
+        public short Key { get; }
+        public VoiceCraftConnectedEventArgs(short key) => Key = key;
+    }
+
+    public class VoiceCraftDisconnectedEventArgs : EventArgs
+    {
+        public string? Reason { get; }
+        public VoiceCraftDisconnectedEventArgs(string? reason) => Reason = reason;
+    }
+
+    public class VoiceCraftStoppedEventArgs : EventArgs
+    {
+        public string? Reason { get; }
+        public VoiceCraftStoppedEventArgs(string? reason) => Reason = reason;
+    }
+
+    public class VoiceCraftErrorEventArgs : EventArgs
+    {
+        public Exception Error { get; }
+        public VoiceCraftErrorEventArgs(Exception error) => Error = error;
+    }

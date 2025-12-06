@@ -35,6 +35,7 @@ public class EchoSampleProvider : ISampleProvider
     /// <param name="echoDelayMs">The echo delay in milliseconds.</param>
     public EchoSampleProvider(ISampleProvider source, int echoDelayMs = 50)
     {
+        ArgumentNullException.ThrowIfNull(source);
         _source = source;
         
         // Calculate delay in samples
@@ -60,6 +61,7 @@ public class EchoSampleProvider : ISampleProvider
     /// <inheritdoc/>
     public int Read(float[] buffer, int offset, int count)
     {
+        ArgumentNullException.ThrowIfNull(buffer);
         int read = _source.Read(buffer, offset, count);
         
         // Skip processing if echo is disabled

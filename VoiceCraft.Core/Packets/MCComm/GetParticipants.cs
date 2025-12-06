@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 
-namespace VoiceCraft.Core.Packets.MCComm
+namespace VoiceCraft.Core.Packets.MCComm;
+
+public class GetParticipants : MCCommPacket
 {
-    public class GetParticipants : MCCommPacket
-    {
-        public override byte PacketId => (byte)MCCommPacketTypes.GetParticipants;
-        public List<string> Players { get; set; } = new List<string>();
-    }
+    public override byte PacketId => (byte)MCCommPacketTypes.GetParticipants;
+    public Collection<string> Players { get; } = new Collection<string>();
 }

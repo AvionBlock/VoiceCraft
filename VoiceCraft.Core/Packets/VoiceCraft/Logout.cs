@@ -1,37 +1,46 @@
-﻿using System.Text;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Text;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class Logout : VoiceCraftPacket
 {
-    public class Logout : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.Logout;
+    public override bool IsReliable => false;
+
+    //Packet Variables
+    public string Reason { get; set; } = string.Empty;
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.Logout;
-        public override bool IsReliable => false;
+        base.Read(buffer);
+        // Offset: Id(8) = 8
+        int offset = 8;
 
-        //Packet Variables
-        public string Reason { get; set; } = string.Empty;
+        int reasonLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        if (reasonLength > 0)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
-
-            var reasonLength = BitConverter.ToInt32(dataStream, offset); //Read Reason length - 4 bytes.
-            offset += sizeof(int);
-
-            if (reasonLength > 0)
-                Reason = Encoding.UTF8.GetString(dataStream, offset, reasonLength); //Read Reason.
-
-            offset += reasonLength;
-            return offset;
+            Reason = Encoding.UTF8.GetString(buffer.Slice(offset, reasonLength));
         }
+    }
 
-        public override void WritePacket(ref List<byte> dataStream)
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        // Offset: Type(1) + Id(8) = 9
+        int offset = 9;
+
+        int reasonBytes = Encoding.UTF8.GetByteCount(Reason);
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), reasonBytes);
+        offset += sizeof(int);
+
+        if (reasonBytes > 0)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Reason.Length));
-            if (Reason.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(Reason));
+            Encoding.UTF8.GetBytes(Reason, buffer.Slice(offset));
         }
     }
 }

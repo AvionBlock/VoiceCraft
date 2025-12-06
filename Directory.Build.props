@@ -1,13 +1,17 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <!-- Common properties -->
-    <!-- Enable strict analysis -->
+    
+    <!-- Strict Mode: Enforce Quality -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest-all</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    
+    <!-- Common Properties -->
+    <Authors>VoiceCraft Team</Authors>
+    <Company>Sine</Company>
+    <Copyright>Copyright © 2025</Copyright>
   </PropertyGroup>
 </Project>

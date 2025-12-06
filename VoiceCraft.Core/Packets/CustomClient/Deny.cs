@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System;
+using System.Buffers.Binary;
 
 namespace VoiceCraft.Core.Packets.CustomClient
 {
@@ -10,27 +11,33 @@ namespace VoiceCraft.Core.Packets.CustomClient
 
         public string Reason { get; set; } = string.Empty;
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        public override void Read(ReadOnlySpan<byte> buffer)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
+            base.Read(buffer);
+            int offset = 0;
 
-            var reasonLength = BitConverter.ToInt32(dataStream, offset);
+            int reasonLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
             offset += sizeof(int);
 
             if (reasonLength > 0)
-                Encoding.UTF8.GetString(dataStream, offset, reasonLength);
-
-            offset += reasonLength;
-
-            return offset;
+            {
+                Reason = Encoding.UTF8.GetString(buffer.Slice(offset, reasonLength));
+            }
         }
 
-        public override void WritePacket(ref List<byte> dataStream)
+        public override void Write(Span<byte> buffer)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Reason.Length));
-            if (Reason.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(Reason));
+            base.Write(buffer);
+            int offset = 1;
+
+            int reasonBytes = Encoding.UTF8.GetByteCount(Reason);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), reasonBytes);
+            offset += sizeof(int);
+
+            if (reasonBytes > 0)
+            {
+                Encoding.UTF8.GetBytes(Reason, buffer.Slice(offset));
+            }
         }
     }
 }

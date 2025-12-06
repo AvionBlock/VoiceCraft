@@ -4,6 +4,7 @@ using System.Numerics;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Packets;
 using VoiceCraft.Core.Packets.CustomClient;
+using System.Collections.ObjectModel;
 
 namespace VoiceCraft.Network.Sockets;
 
@@ -11,12 +12,13 @@ namespace VoiceCraft.Network.Sockets;
 /// Custom UDP client for handling game client connections with position updates.
 /// Implements the VoiceCraft custom client protocol.
 /// </summary>
-public class CustomClient : Disposable
+public class CustomClientSocket : Disposable
 {
+#pragma warning disable CA1031 // Do not catch general exception types
     /// <summary>
     /// IO control code to prevent ICMP connection reset errors on Windows.
     /// </summary>
-    public const int SIO_UDP_CONNRESET = -1744830452;
+    public const int SioUdpConnReset = -1744830452;
 
     #region Properties
     /// <summary>
@@ -61,21 +63,13 @@ public class CustomClient : Disposable
     /// Gets or sets whether to log outbound packets.
     /// </summary>
     public bool LogOutbound { get; set; }
-    
-    /// <summary>
-    /// Gets or sets the filter for inbound packet logging.
-    /// </summary>
-    public List<CustomClientTypes> InboundFilter { get; set; } = [];
-    
-    /// <summary>
-    /// Gets or sets the filter for outbound packet logging.
-    /// </summary>
-    public List<CustomClientTypes> OutboundFilter { get; set; } = [];
-    #endregion
 
-    #region Delegates
-    public delegate void StartedHandler();
-    public delegate void StoppedHandler(string? reason = null);
+    /// <summary>Gets the filter for inbound packet logging.</summary>
+    public Collection<CustomClientTypes> InboundFilter { get; } = [];
+
+    /// <summary>Gets the filter for outbound packet logging.</summary>
+    public Collection<CustomClientTypes> OutboundFilter { get; } = [];
+
     public delegate void ConnectedHandler(string name);
     public delegate void DisconnectedHandler();
     public delegate void UpdatedHandler(Vector3 position, float rotation, float caveDensity, bool isUnderwater, string dimensionId, string levelId, string serverId);
@@ -88,52 +82,52 @@ public class CustomClient : Disposable
 
     #region Events
     /// <summary>Raised when the socket starts hosting.</summary>
-    public event StartedHandler? OnStarted;
+    public event EventHandler? OnStarted;
     
     /// <summary>Raised when the socket stops.</summary>
-    public event StoppedHandler? OnStopped;
+    public event EventHandler<CustomClientStoppedEventArgs>? OnStopped;
     
     /// <summary>Raised when a client connects.</summary>
-    public event ConnectedHandler? OnConnected;
+    public event EventHandler<CustomClientConnectedEventArgs>? OnConnected;
     
     /// <summary>Raised when a client disconnects.</summary>
-    public event DisconnectedHandler? OnDisconnected;
+    public event EventHandler? OnDisconnected;
     
     /// <summary>Raised when position update is received.</summary>
-    public event UpdatedHandler? OnUpdated;
+    public event EventHandler<PacketEventArgs<Update>>? OnUpdated;
 
     /// <summary>Raised when a login packet is received.</summary>
-    public event PacketDataHandler<Login>? OnLoginReceived;
+    public event EventHandler<PacketEventArgs<Login>>? OnLoginReceived;
     
     /// <summary>Raised when a logout packet is received.</summary>
-    public event PacketDataHandler<Logout>? OnLogoutReceived;
+    public event EventHandler<PacketEventArgs<Logout>>? OnLogoutReceived;
     
     /// <summary>Raised when an accept packet is received.</summary>
-    public event PacketDataHandler<Accept>? OnAcceptReceived;
+    public event EventHandler<PacketEventArgs<Accept>>? OnAcceptReceived;
     
     /// <summary>Raised when a deny packet is received.</summary>
-    public event PacketDataHandler<Deny>? OnDenyReceived;
+    public event EventHandler<PacketEventArgs<Deny>>? OnDenyReceived;
     
     /// <summary>Raised when an update packet is received.</summary>
-    public event PacketDataHandler<Update>? OnUpdateReceived;
+    public event EventHandler<PacketEventArgs<Update>>? OnUpdateReceived;
 
     /// <summary>Raised when a packet is sent (debug).</summary>
-    public event OutboundPacketHandler? OnOutboundPacket;
+    public event EventHandler<PacketEventArgs<CustomClientPacket>>? OnOutboundPacket;
     
     /// <summary>Raised when a packet is received (debug).</summary>
-    public event InboundPacketHandler? OnInboundPacket;
+    public event EventHandler<PacketEventArgs<CustomClientPacket>>? OnInboundPacket;
     
     /// <summary>Raised when an exception occurs.</summary>
-    public event ExceptionErrorHandler? OnExceptionError;
+    public event EventHandler<CustomClientErrorEventArgs>? OnExceptionError;
     
     /// <summary>Raised when hosting fails to start.</summary>
-    public event FailedHandler? OnFailed;
+    public event EventHandler<CustomClientErrorEventArgs>? OnFailed;
     #endregion
 
     /// <summary>
-    /// Initializes a new instance of the CustomClient class.
+    /// Initializes a new instance of the CustomClientSocket class.
     /// </summary>
-    public CustomClient()
+    public CustomClientSocket()
     {
         PacketRegistry.RegisterPacket((byte)CustomClientTypes.Login, typeof(Login));
         PacketRegistry.RegisterPacket((byte)CustomClientTypes.Logout, typeof(Logout));
@@ -158,22 +152,18 @@ public class CustomClient : Disposable
         State = CustomClientSocketState.Starting;
         CTS = new CancellationTokenSource();
 
-        OnLoginReceived += LoginReceived;
-        OnLogoutReceived += LogoutReceived;
-        OnUpdateReceived += UpdateReceived;
-
         try
         {
             RemoteEndpoint = new IPEndPoint(IPAddress.Any, port);
             Socket.Bind(RemoteEndpoint);
             ActivityChecker = Task.Run(CheckerLoopAsync);
             State = CustomClientSocketState.Started;
-            OnStarted?.Invoke();
+            OnStarted?.Invoke(this, EventArgs.Empty);
             await ReceiveAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            OnFailed?.Invoke(ex);
+            OnFailed?.Invoke(this, new CustomClientErrorEventArgs(ex));
             await StopAsync(ex.Message).ConfigureAwait(false);
         }
     }
@@ -190,11 +180,6 @@ public class CustomClient : Disposable
             return;
             
         State = CustomClientSocketState.Stopping;
-
-        // Unsubscribe from events to prevent memory leaks
-        OnLoginReceived -= LoginReceived;
-        OnLogoutReceived -= LogoutReceived;
-        OnUpdateReceived -= UpdateReceived;
 
         if (RemoteAddress != null)
         {
@@ -215,17 +200,24 @@ public class CustomClient : Disposable
         ActivityChecker = null;
         RemoteAddress = null;
         State = CustomClientSocketState.Stopped;
-        OnStopped?.Invoke(reason);
+        OnStopped?.Invoke(this, new CustomClientStoppedEventArgs(reason));
     }
 
     private async Task SocketSendToAsync(CustomClientPacket packet, SocketAddress address)
     {
-        List<byte> buffer = [];
-        packet.WritePacket(ref buffer);
-        await Socket.SendToAsync(buffer.ToArray(), SocketFlags.None, address, CTS.Token).ConfigureAwait(false);
+        var buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(2048);
+        try
+        {
+            packet.Write(buffer.AsSpan());
+            await Socket.SendToAsync(new ArraySegment<byte>(buffer, 0, 2048), SocketFlags.None, address, CTS.Token).ConfigureAwait(false);
 
-        if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((CustomClientTypes)packet.PacketId)))
-            OnOutboundPacket?.Invoke(packet);
+            if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((CustomClientTypes)packet.PacketId)))
+                OnOutboundPacket?.Invoke(this, new PacketEventArgs<CustomClientPacket>(packet, address));
+        }
+        finally
+        {
+            System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     private async Task ReceiveAsync()
@@ -242,7 +234,7 @@ public class CustomClient : Disposable
                 var packet = PacketRegistry.GetCustomPacketFromDataStream(bufferMem.ToArray());
 
                 if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((CustomClientTypes)packet.PacketId)))
-                    OnInboundPacket?.Invoke(packet);
+                    OnInboundPacket?.Invoke(this, new PacketEventArgs<CustomClientPacket>(packet, receivedAddress));
 
                 await HandlePacketReceivedAsync(receivedAddress, packet).ConfigureAwait(false);
             }
@@ -258,7 +250,7 @@ public class CustomClient : Disposable
             catch (Exception ex)
             {
                 if (LogExceptions)
-                    OnExceptionError?.Invoke(ex);
+                    OnExceptionError?.Invoke(this, new CustomClientErrorEventArgs(ex));
             }
         }
     }
@@ -274,10 +266,10 @@ public class CustomClient : Disposable
                 await HandleLogoutAsync((Logout)packet, address).ConfigureAwait(false);
                 break;
             case CustomClientTypes.Accept:
-                OnAcceptReceived?.Invoke((Accept)packet, address);
+                OnAcceptReceived?.Invoke(this, new PacketEventArgs<Accept>((Accept)packet, address));
                 break;
             case CustomClientTypes.Deny:
-                OnDenyReceived?.Invoke((Deny)packet, address);
+                OnDenyReceived?.Invoke(this, new PacketEventArgs<Deny>((Deny)packet, address));
                 break;
             case CustomClientTypes.Update:
                 await HandleUpdateAsync((Update)packet, address).ConfigureAwait(false);
@@ -293,7 +285,7 @@ public class CustomClient : Disposable
             if (RemoteAddress != null && elapsed > Timeout)
             {
                 RemoteAddress = null;
-                OnDisconnected?.Invoke();
+                OnDisconnected?.Invoke(this, EventArgs.Empty);
                 break;
             }
 
@@ -312,6 +304,7 @@ public class CustomClient : Disposable
             Socket.Dispose();
             CTS.Dispose();
         }
+        base.Dispose(disposing);
     }
     #endregion
 
@@ -327,22 +320,8 @@ public class CustomClient : Disposable
         LastActive = Environment.TickCount64;
         RemoteAddress = new SocketAddress(address.Family, address.Size);
         await SocketSendToAsync(new Accept(), address).ConfigureAwait(false);
-        OnConnected?.Invoke(data.Name);
-        OnLoginReceived?.Invoke(data, address);
-    }
-
-    // Kept for event compatibility - now wraps async handler
-    private async void LoginReceived(Login data, SocketAddress address)
-    {
-        try
-        {
-            // Already handled in HandleLoginAsync, this is for external subscribers
-        }
-        catch (Exception ex)
-        {
-            if (LogExceptions)
-                OnExceptionError?.Invoke(ex);
-        }
+        OnConnected?.Invoke(this, new CustomClientConnectedEventArgs(data.Name));
+        OnLoginReceived?.Invoke(this, new PacketEventArgs<Login>(data, address));
     }
 
     private async Task HandleLogoutAsync(Logout data, SocketAddress address)
@@ -351,14 +330,9 @@ public class CustomClient : Disposable
         {
             RemoteAddress = null;
             await SocketSendToAsync(new Accept(), address).ConfigureAwait(false);
-            OnDisconnected?.Invoke();
-            OnLogoutReceived?.Invoke(data, address);
+            OnDisconnected?.Invoke(this, EventArgs.Empty);
+            OnLogoutReceived?.Invoke(this, new PacketEventArgs<Logout>(data, address));
         }
-    }
-
-    private async void LogoutReceived(Logout data, SocketAddress address)
-    {
-        // Handled internally via HandleLogoutAsync
     }
 
     private async Task HandleUpdateAsync(Update data, SocketAddress address)
@@ -367,14 +341,9 @@ public class CustomClient : Disposable
         {
             LastActive = Environment.TickCount64;
             await SocketSendToAsync(new Accept(), address).ConfigureAwait(false);
-            OnUpdated?.Invoke(data.Position, data.Rotation, data.CaveDensity, data.IsUnderwater, data.DimensionId, data.LevelId, data.ServerId);
-            OnUpdateReceived?.Invoke(data, address);
+            OnUpdated?.Invoke(this, new PacketEventArgs<Update>(data, address));
+            OnUpdateReceived?.Invoke(this, new PacketEventArgs<Update>(data, address));
         }
-    }
-
-    private async void UpdateReceived(Update data, SocketAddress address)
-    {
-        // Handled internally via HandleUpdateAsync
     }
     #endregion
 }
@@ -397,3 +366,20 @@ public enum CustomClientSocketState
     Started
 }
 
+public class CustomClientStoppedEventArgs : EventArgs
+{
+    public string? Reason { get; }
+    public CustomClientStoppedEventArgs(string? reason) => Reason = reason;
+}
+
+public class CustomClientConnectedEventArgs : EventArgs
+{
+    public string Name { get; }
+    public CustomClientConnectedEventArgs(string name) => Name = name;
+}
+
+public class CustomClientErrorEventArgs : EventArgs
+{
+    public Exception Error { get; }
+    public CustomClientErrorEventArgs(Exception error) => Error = error;
+}

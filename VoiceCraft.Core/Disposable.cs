@@ -19,13 +19,13 @@ namespace VoiceCraft.Core;
 [Serializable]
 public abstract class Disposable : IDisposable
 {
-    private int _isDisposed; // 0 for false, 1 for true
+    private bool _isDisposed;
 
     /// <summary>
     /// Gets a value indicating whether this instance has been disposed.
     /// </summary>
     /// <value><c>true</c> if disposed; otherwise, <c>false</c>.</value>
-    public bool IsDisposed => Volatile.Read(ref _isDisposed) != 0;
+    public bool IsDisposed => _isDisposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Disposable"/> class.
@@ -39,11 +39,7 @@ public abstract class Disposable : IDisposable
     /// </summary>
     ~Disposable()
     {
-        int oldIsDisposed = Interlocked.Exchange(ref _isDisposed, 1);
-        if (oldIsDisposed == 0)
-        {
-            Dispose(false);
-        }
+        Dispose(false);
     }
 
     /// <summary>
@@ -51,18 +47,8 @@ public abstract class Disposable : IDisposable
     /// </summary>
     public void Dispose()
     {
-        int oldIsDisposed = Interlocked.Exchange(ref _isDisposed, 1);
-        if (oldIsDisposed == 0)
-        {
-            try
-            {
-                Dispose(true);
-            }
-            finally
-            {
-                GC.SuppressFinalize(this);
-            }
-        }
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -72,13 +58,13 @@ public abstract class Disposable : IDisposable
     /// <c>true</c> if called from <see cref="Dispose()"/>; 
     /// <c>false</c> if called from the finalizer.
     /// </param>
-    /// <remarks>
-    /// When <paramref name="disposing"/> is <c>true</c>, dispose managed resources.
-    /// Always dispose unmanaged resources.
-    /// </remarks>
     protected virtual void Dispose(bool disposing)
     {
-        // Base implementation does nothing.
-        // Derived classes should override this to clean up resources.
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
     }
 }

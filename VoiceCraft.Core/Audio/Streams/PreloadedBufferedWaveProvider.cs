@@ -19,6 +19,7 @@ public class PreloadedBufferedWaveProvider : IWaveProvider
     /// </summary>
     public PreloadedBufferedWaveProvider(WaveFormat waveFormat)
     {
+        ArgumentNullException.ThrowIfNull(waveFormat);
         this.waveFormat = waveFormat;
         BufferLength = waveFormat.AverageBytesPerSecond * 5;
         ReadFully = true;

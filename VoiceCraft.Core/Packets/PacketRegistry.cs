@@ -57,13 +57,15 @@ public class PacketRegistry
     /// <exception cref="InvalidOperationException">Thrown when packet ID is not registered.</exception>
     public VoiceCraftPacket GetPacketFromDataStream(byte[] dataStream)
     {
+        ArgumentNullException.ThrowIfNull(dataStream);
         byte packetId = dataStream[0];
 
         if (!_registeredPackets.TryGetValue(packetId, out var packetType))
             throw new InvalidOperationException($"Invalid packet id {packetId}");
 
         var packet = GetPacketFromType(packetType);
-        packet.ReadPacket(ref dataStream, 1); // Offset by 1 byte to skip ID
+        // Skip PacketId (1 byte)
+        packet.Read(dataStream.AsSpan(1));
 
         return packet;
     }
@@ -76,13 +78,15 @@ public class PacketRegistry
     /// <exception cref="InvalidOperationException">Thrown when packet ID is not registered.</exception>
     public CustomClientPacket GetCustomPacketFromDataStream(byte[] dataStream)
     {
+        ArgumentNullException.ThrowIfNull(dataStream);
         byte packetId = dataStream[0];
 
         if (!_registeredPackets.TryGetValue(packetId, out var packetType))
             throw new InvalidOperationException($"Invalid packet id {packetId}");
 
         var packet = GetCustomPacketFromType(packetType);
-        packet.ReadPacket(ref dataStream, 1); // Offset by 1 byte to skip ID
+        // Skip PacketId (1 byte)
+        packet.Read(dataStream.AsSpan(1));
 
         return packet;
     }
@@ -95,6 +99,7 @@ public class PacketRegistry
     /// <exception cref="InvalidOperationException">Thrown when packet ID is not registered or deserialization fails.</exception>
     public MCCommPacket GetPacketFromJsonString(string data)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var jObject = JObject.Parse(data);
         byte packetId = jObject["PacketId"]?.Value<byte>() ?? byte.MaxValue;
 
@@ -143,4 +148,3 @@ public class PacketRegistry
         return packet;
     }
 }
-

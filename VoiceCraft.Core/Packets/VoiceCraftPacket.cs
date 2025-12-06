@@ -1,10 +1,12 @@
-﻿namespace VoiceCraft.Core.Packets;
+﻿using System.Buffers.Binary;
+
+namespace VoiceCraft.Core.Packets;
 
 /// <summary>
 /// Abstract base class for all VoiceCraft network packets.
 /// Provides common serialization/deserialization logic for the custom binary protocol.
 /// </summary>
-public abstract class VoiceCraftPacket
+public abstract class VoiceCraftPacket : IPacket
 {
     /// <summary>
     /// Gets the unique packet type identifier.
@@ -34,40 +36,67 @@ public abstract class VoiceCraftPacket
     /// <summary>
     /// Number of retry attempts for reliable packets. Used atomically with Interlocked.
     /// </summary>
-    public int Retries;
+    private int _retries;
 
     /// <summary>
-    /// Reads packet data from a byte array.
+    /// Gets the number of retry attempts.
     /// </summary>
-    /// <param name="dataStream">The raw data.</param>
-    /// <param name="offset">The offset to start reading from.</param>
-    /// <returns>The new offset after reading.</returns>
-    public virtual int ReadPacket(ref byte[] dataStream, int offset = 0)
+    public int Retries
     {
-        Id = BitConverter.ToInt64(dataStream, offset);
+        get => _retries;
+        set => _retries = value;
+    }
+
+    /// <summary>
+    /// Atomically increments the retry count.
+    /// </summary>
+    /// <returns>The incremented value.</returns>
+    public int IncrementRetries()
+    {
+        return System.Threading.Interlocked.Increment(ref _retries);
+    }
+
+    /// <summary>
+    /// Reads packet data from a read-only byte span.
+    /// </summary>
+    /// <param name="buffer">The source buffer.</param>
+    public virtual void Read(ReadOnlySpan<byte> buffer)
+    {
+        int offset = 0;
+        
+        // Read Id (long)
+        Id = BinaryPrimitives.ReadInt64LittleEndian(buffer.Slice(offset));
         offset += sizeof(long);
 
         if (IsReliable)
         {
-            Sequence = BitConverter.ToUInt32(dataStream, offset);
-            offset += sizeof(uint);
+            // Read Sequence (uint)
+            Sequence = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(offset));
+            // offset += sizeof(uint); // Not strictly needed if this is the end
         }
-
-        return offset;
     }
 
     /// <summary>
-    /// Writes packet data to a byte list.
+    /// Writes packet data to a byte span.
     /// </summary>
-    /// <param name="dataStream">The list to write to.</param>
-    public virtual void WritePacket(ref List<byte> dataStream)
+    /// <param name="buffer">The destination buffer.</param>
+    public virtual void Write(Span<byte> buffer)
     {
-        dataStream.Clear();
-        dataStream.Add(PacketId);
-        dataStream.AddRange(BitConverter.GetBytes(Id));
+        int offset = 0;
+        
+        // Write PacketId (byte)
+        buffer[offset++] = PacketId;
+
+        // Write Id (long)
+        BinaryPrimitives.WriteInt64LittleEndian(buffer.Slice(offset), Id);
+        offset += sizeof(long);
 
         if (IsReliable)
-            dataStream.AddRange(BitConverter.GetBytes(Sequence));
+        {
+            // Write Sequence (uint)
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), Sequence);
+            // offset += sizeof(uint);
+        }
     }
 
     /// <summary>
@@ -80,7 +109,7 @@ public abstract class VoiceCraftPacket
 /// <summary>
 /// Enumeration of all VoiceCraft packet types.
 /// </summary>
-public enum VoiceCraftPacketTypes : byte
+public enum VoiceCraftPacketTypes : int
 {
     // System/Protocol Packets
     /// <summary>Login request packet.</summary>

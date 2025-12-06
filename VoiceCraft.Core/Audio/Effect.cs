@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using System;
 
 namespace VoiceCraft.Core.Audio;
 
@@ -35,6 +36,7 @@ public abstract class Effect : ISampleProvider
     /// <param name="source">The audio source to process.</param>
     protected Effect(ISampleProvider source)
     {
+        ArgumentNullException.ThrowIfNull(source);
         _source = source;
         SampleRate = source.WaveFormat.SampleRate;
     }
@@ -45,6 +47,7 @@ public abstract class Effect : ISampleProvider
     /// <param name="parameters">The parameters to register.</param>
     protected void RegisterParameters(params EffectParameter[] parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
         _paramsChanged = true;
         foreach (var param in parameters)
         {
@@ -58,15 +61,16 @@ public abstract class Effect : ISampleProvider
     protected abstract void ParamsChanged();
 
     /// <inheritdoc/>
-    public int Read(float[] samples, int offset, int count)
+    public int Read(float[] buffer, int offset, int count)
     {
+        ArgumentNullException.ThrowIfNull(buffer);
         if (_paramsChanged)
         {
             ParamsChanged();
             _paramsChanged = false;
         }
 
-        var samplesAvailable = _source.Read(samples, offset, count);
+        var samplesAvailable = _source.Read(buffer, offset, count);
         Block(samplesAvailable);
 
         if (WaveFormat.Channels == 1)
@@ -74,14 +78,14 @@ public abstract class Effect : ISampleProvider
             for (int n = 0; n < samplesAvailable; n++)
             {
                 float right = 0.0f;
-                Sample(ref samples[n], ref right);
+                Sample(ref buffer[offset + n], ref right);
             }
         }
         else if (WaveFormat.Channels == 2)
         {
             for (int n = 0; n < samplesAvailable; n += 2)
             {
-                Sample(ref samples[n], ref samples[n + 1]);
+                Sample(ref buffer[offset + n], ref buffer[offset + n + 1]);
             }
         }
 

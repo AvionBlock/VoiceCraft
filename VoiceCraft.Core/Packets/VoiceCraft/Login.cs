@@ -1,48 +1,62 @@
-﻿using System.Text;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Text;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class Login : VoiceCraftPacket
 {
-    public class Login : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.Login;
+    public override bool IsReliable => true;
+
+    //Packet Variables
+    public short Key { get; set; }
+    public PositioningTypes PositioningType { get; set; }
+    public string Version { get; set; } = string.Empty;
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.Login;
-        public override bool IsReliable => true;
+        base.Read(buffer);
+        
+        int offset = sizeof(long); // Id
+        if (IsReliable) offset += sizeof(uint); // Sequence
 
-        //Packet Variables
-        public short Key { get; set; }
-        public PositioningTypes PositioningType { get; set; }
-        public string Version { get; set; } = string.Empty;
+        Key = BinaryPrimitives.ReadInt16LittleEndian(buffer.Slice(offset));
+        offset += sizeof(short);
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        PositioningType = (PositioningTypes)buffer[offset];
+        offset++;
+
+        int versionLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
+
+        if (versionLength > 0)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
-
-            Key = BitConverter.ToInt16(dataStream, offset); //Read Key - 2 bytes.
-            offset += sizeof(short);
-
-            PositioningType = (PositioningTypes)dataStream[offset]; //Read PositioningType - 1 byte.
-            offset++;
-
-            var versionLength = BitConverter.ToInt32(dataStream, offset); //Read Name length - 4 bytes.
-            offset += sizeof(int);
-
-            if (versionLength > 0)
-                Version = Encoding.UTF8.GetString(dataStream, offset, versionLength); //Read Version string.
-
-            offset += versionLength;
-
-            return offset;
+            Version = Encoding.UTF8.GetString(buffer.Slice(offset, versionLength));
         }
+    }
 
-        public override void WritePacket(ref List<byte> dataStream)
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        
+        int offset = 1; // PacketId
+        offset += sizeof(long); // Id
+        if (IsReliable) offset += sizeof(uint); // Sequence
+
+        BinaryPrimitives.WriteInt16LittleEndian(buffer.Slice(offset), Key);
+        offset += sizeof(short);
+
+        buffer[offset++] = (byte)PositioningType;
+
+        int versionBytes = Encoding.UTF8.GetByteCount(Version);
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), versionBytes);
+        offset += sizeof(int);
+
+        if (versionBytes > 0)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Key));
-            dataStream.Add((byte)PositioningType);
-            dataStream.AddRange(BitConverter.GetBytes(Version.Length));
-            if (Version.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(Version));
+            Encoding.UTF8.GetBytes(Version, buffer.Slice(offset));
         }
     }
 }

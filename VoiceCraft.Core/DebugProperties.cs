@@ -1,4 +1,5 @@
 ﻿using VoiceCraft.Core.Packets;
+using System.Collections.ObjectModel;
 
 namespace VoiceCraft.Core;
 
@@ -33,26 +34,26 @@ public class DebugProperties
     public bool LogOutboundMCCommPackets { get; set; }
 
     /// <summary>
-    /// Gets or sets the filter for inbound VoiceCraft packet types to log.
+    /// Gets the filter for inbound VoiceCraft packet types to log.
     /// Empty list means log all types.
     /// </summary>
-    public List<VoiceCraftPacketTypes> InboundPacketFilter { get; set; } = [];
+    public Collection<VoiceCraftPacketTypes> InboundPacketFilter { get; } = [];
 
     /// <summary>
-    /// Gets or sets the filter for outbound VoiceCraft packet types to log.
+    /// Gets the filter for outbound VoiceCraft packet types to log.
     /// Empty list means log all types.
     /// </summary>
-    public List<VoiceCraftPacketTypes> OutboundPacketFilter { get; set; } = [];
+    public Collection<VoiceCraftPacketTypes> OutboundPacketFilter { get; } = [];
 
     /// <summary>
-    /// Gets or sets the filter for inbound MCComm packet types to log.
+    /// Gets the filter for inbound MCComm packet types to log.
     /// Empty list means log all types.
     /// </summary>
-    public List<MCCommPacketTypes> InboundMCCommFilter { get; set; } = [];
+    public Collection<MCCommPacketTypes> InboundMCCommFilter { get; } = [];
 
     /// <summary>
-    /// Gets or sets the filter for outbound MCComm packet types to log.
+    /// Gets the filter for outbound MCComm packet types to log.
     /// Empty list means log all types.
     /// </summary>
-    public List<MCCommPacketTypes> OutboundMCCommFilter { get; set; } = [];
+    public Collection<MCCommPacketTypes> OutboundMCCommFilter { get; } = [];
 }

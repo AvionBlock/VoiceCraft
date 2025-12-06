@@ -28,7 +28,7 @@ public abstract class MCCommPacket
 /// <summary>
 /// Enumeration of all MCComm packet types.
 /// </summary>
-public enum MCCommPacketTypes : byte
+public enum MCCommPacketTypes : int
 {
     /// <summary>Login request packet.</summary>
     Login,
@@ -84,4 +84,3 @@ public enum MCCommPacketTypes : byte
     /// <summary>Move participant to different channel.</summary>
     ChannelMove
 }
-

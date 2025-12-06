@@ -1,52 +1,65 @@
-﻿using System.Numerics;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Numerics;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class FullUpdatePosition : VoiceCraftPacket
 {
-    public class FullUpdatePosition : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.FullUpdatePosition;
+    public override bool IsReliable => false;
+
+    public Vector3 Position { get; set; }
+    public float Rotation { get; set; }
+    public float EchoFactor { get; set; }
+    public bool Muffled { get; set; }
+    public bool IsDead { get; set; }
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.FullUpdatePosition;
-        public override bool IsReliable => false;
+        base.Read(buffer);
+        // Offset: Id(8) = 8
+        int offset = 8;
+        
+        float x = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+        float y = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+        float z = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+        Position = new Vector3(x, y, z);
 
-        public Vector3 Position { get; set; }
-        public float Rotation { get; set; }
-        public float EchoFactor { get; set; }
-        public bool Muffled { get; set; }
-        public bool IsDead { get; set; }
+        Rotation = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
-        {
-            offset = base.ReadPacket(ref dataStream, offset);
+        EchoFactor = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
 
-            Position = new Vector3(BitConverter.ToSingle(dataStream, offset), BitConverter.ToSingle(dataStream, offset += sizeof(float)), BitConverter.ToSingle(dataStream, offset += sizeof(float))); //Read Position - 12 bytes.
-            offset += sizeof(float);
+        Muffled = buffer[offset++] != 0;
+        IsDead = buffer[offset++] != 0;
+    }
 
-            Rotation = BitConverter.ToSingle(dataStream, offset); //read rotation - 4 bytes.
-            offset += sizeof(float);
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        // Offset: Type(1) + Id(8) = 9
+        int offset = 9;
 
-            EchoFactor = BitConverter.ToSingle(dataStream, offset); //read echo factor - 4 bytes.
-            offset += sizeof(float);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Position.X);
+        offset += sizeof(float);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Position.Y);
+        offset += sizeof(float);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Position.Z);
+        offset += sizeof(float);
 
-            Muffled = BitConverter.ToBoolean(dataStream, offset); //read muffled value - 1 byte.
-            offset += sizeof(bool);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Rotation);
+        offset += sizeof(float);
 
-            IsDead = BitConverter.ToBoolean(dataStream, offset); //read dead value - 1 byte.
-            offset += sizeof(bool);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), EchoFactor);
+        offset += sizeof(float);
 
-            return offset;
-        }
-
-        public override void WritePacket(ref List<byte> dataStream)
-        {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Position.X));
-            dataStream.AddRange(BitConverter.GetBytes(Position.Y));
-            dataStream.AddRange(BitConverter.GetBytes(Position.Z));
-            dataStream.AddRange(BitConverter.GetBytes(Rotation));
-            dataStream.AddRange(BitConverter.GetBytes(EchoFactor));
-            dataStream.AddRange(BitConverter.GetBytes(Muffled));
-            dataStream.AddRange(BitConverter.GetBytes(IsDead));
-        }
+        buffer[offset++] = Muffled ? (byte)1 : (byte)0;
+        buffer[offset++] = IsDead ? (byte)1 : (byte)0;
     }
 }

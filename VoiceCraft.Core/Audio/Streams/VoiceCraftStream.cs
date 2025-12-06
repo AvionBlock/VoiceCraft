@@ -7,6 +7,7 @@ namespace VoiceCraft.Core.Audio.Streams;
 /// Audio stream that provides decoded audio from a jitter buffer.
 /// Handles buffering and pacing of audio frames for smooth playback.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Kept for compatibility, though it implements IWaveProvider.")]
 public class VoiceCraftStream : IWaveProvider, IDisposable
 {
     /// <summary>
@@ -27,6 +28,7 @@ public class VoiceCraftStream : IWaveProvider, IDisposable
     /// <param name="jitterBuffer">The jitter buffer to read from.</param>
     public VoiceCraftStream(WaveFormat waveFormat, VoiceCraftJitterBuffer jitterBuffer)
     {
+        ArgumentNullException.ThrowIfNull(waveFormat);
         WaveFormat = waveFormat;
         DecodedAudio = new PreloadedBufferedWaveProvider(waveFormat)
         {
@@ -48,6 +50,7 @@ public class VoiceCraftStream : IWaveProvider, IDisposable
         return DecodedAudio.Read(buffer, offset, count);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Background loop resilience")]
     private Task Run()
     {
         return Task.Run(async () =>
@@ -97,17 +100,26 @@ public class VoiceCraftStream : IWaveProvider, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (!TokenSource.IsCancellationRequested)
-        {
-            TokenSource.Cancel();
-            try
-            {
-                DecodeThread.Wait(1000);
-            }
-            catch (AggregateException) { }
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-            TokenSource.Dispose();
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            JitterBuffer?.Dispose();
+            if (TokenSource != null && !TokenSource.IsCancellationRequested)
+            {
+                TokenSource.Cancel();
+                try
+                {
+                    DecodeThread.Wait(1000);
+                }
+                catch (AggregateException) { }
+
+                TokenSource.Dispose();
+            }
         }
     }
 }
-

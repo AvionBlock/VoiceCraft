@@ -54,7 +54,7 @@ public class Player
 /// <summary>
 /// 3D position coordinates.
 /// </summary>
-public struct Position
+public struct Position : IEquatable<Position>
 {
     /// <summary>Gets or sets the X coordinate.</summary>
     public float x { get; set; }
@@ -64,5 +64,31 @@ public struct Position
 
     /// <summary>Gets or sets the Z coordinate.</summary>
     public float z { get; set; }
-}
 
+    public override bool Equals(object? obj)
+    {
+        return obj is Position position && Equals(position);
+    }
+
+    public bool Equals(Position other)
+    {
+        return x == other.x &&
+               y == other.y &&
+               z == other.z;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(x, y, z);
+    }
+
+    public static bool operator ==(Position left, Position right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Position left, Position right)
+    {
+        return !(left == right);
+    }
+}

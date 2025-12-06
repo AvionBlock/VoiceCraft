@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using VoiceCraft.Core;
@@ -7,12 +7,15 @@ using VoiceCraft.Core.Packets.MCComm;
 
 namespace VoiceCraft.Network.Sockets;
 
+using System.Collections.ObjectModel;
+
 /// <summary>
 /// Minecraft Communication server using HTTP for server-side plugin communication.
 /// Handles authentication, session management, and player updates.
 /// </summary>
-public class MCComm : Disposable
+public class MCCommunication : Disposable
 {
+#pragma warning disable CA1031 // Do not catch general exception types
     #region Constants and Properties
     /// <summary>
     /// Protocol version - matches Core.Constants.Version.
@@ -40,7 +43,7 @@ public class MCComm : Disposable
     /// Gets the active sessions by token.
     /// </summary>
     public ConcurrentDictionary<string, long> Sessions { get; } = new();
-    
+            
     /// <summary>
     /// Gets or sets the session timeout in milliseconds.
     /// </summary>
@@ -61,79 +64,67 @@ public class MCComm : Disposable
     public bool LogOutbound { get; set; }
     
     /// <summary>Gets or sets the filter for inbound packet logging.</summary>
-    public List<MCCommPacketTypes> InboundFilter { get; set; } = [];
+    public Collection<MCCommPacketTypes> InboundFilter { get; } = [];
     
     /// <summary>Gets or sets the filter for outbound packet logging.</summary>
-    public List<MCCommPacketTypes> OutboundFilter { get; set; } = [];
-    #endregion
-
-    #region Delegates
-    public delegate void StartedHandler();
-    public delegate void StoppedHandler(string? reason = null);
-    public delegate void ServerConnectedHandler(string token, string address);
-    public delegate void ServerDisconnectedHandler(string reason, string token);
-    public delegate void PacketDataHandler<T>(T packet, HttpListenerContext ctx);
-    public delegate void InboundPacketHandler(MCCommPacket packet);
-    public delegate void OutboundPacketHandler(MCCommPacket packet);
-    public delegate void ExceptionErrorHandler(Exception error);
-    public delegate void FailedHandler(Exception ex);
+    public Collection<MCCommPacketTypes> OutboundFilter { get; } = [];
     #endregion
 
     #region Events
     /// <summary>Raised when the server starts.</summary>
-    public event StartedHandler? OnStarted;
+    public event EventHandler? OnStarted;
     
     /// <summary>Raised when the server stops.</summary>
-    public event StoppedHandler? OnStopped;
+    public event EventHandler<MCStoppedEventArgs>? OnStopped;
     
     /// <summary>Raised when a Minecraft server connects.</summary>
-    public event ServerConnectedHandler? OnServerConnected;
+    public event EventHandler<ServerConnectedEventArgs>? OnServerConnected;
     
     /// <summary>Raised when a Minecraft server disconnects.</summary>
-    public event ServerDisconnectedHandler? OnServerDisconnected;
-
-    public event PacketDataHandler<Login>? OnLoginReceived;
-    public event PacketDataHandler<Logout>? OnLogoutReceived;
-    public event PacketDataHandler<Accept>? OnAcceptReceived;
-    public event PacketDataHandler<Deny>? OnDenyReceived;
-    public event PacketDataHandler<Bind>? OnBindReceived;
-    public event PacketDataHandler<Update>? OnUpdateReceived;
-    public event PacketDataHandler<AckUpdate>? OnAckUpdateReceived;
-    public event PacketDataHandler<GetChannels>? OnGetChannelsReceived;
-    public event PacketDataHandler<GetChannelSettings>? OnGetChannelSettingsReceived;
-    public event PacketDataHandler<SetChannelSettings>? OnSetChannelSettingsReceived;
-    public event PacketDataHandler<GetDefaultSettings>? OnGetDefaultSettingsReceived;
-    public event PacketDataHandler<SetDefaultSettings>? OnSetDefaultSettingsReceived;
-    public event PacketDataHandler<GetParticipants>? OnGetParticipantsReceived;
-    public event PacketDataHandler<DisconnectParticipant>? OnDisconnectParticipantReceived;
-    public event PacketDataHandler<GetParticipantBitmask>? OnGetParticipantBitmaskReceived;
-    public event PacketDataHandler<SetParticipantBitmask>? OnSetParticipantBitmaskReceived;
-    public event PacketDataHandler<MuteParticipant>? OnMuteParticipantReceived;
-    public event PacketDataHandler<UnmuteParticipant>? OnUnmuteParticipantReceived;
-    public event PacketDataHandler<DeafenParticipant>? OnDeafenParticipantReceived;
-    public event PacketDataHandler<UndeafenParticipant>? OnUndeafenParticipantReceived;
-    public event PacketDataHandler<ANDModParticipantBitmask>? OnANDModParticipantBitmaskReceived;
-    public event PacketDataHandler<ORModParticipantBitmask>? OnORModParticipantBitmaskReceived;
-    public event PacketDataHandler<XORModParticipantBitmask>? OnXORModParticipantBitmaskReceived;
-    public event PacketDataHandler<ChannelMove>? OnChannelMoveReceived;
+    public event EventHandler<ServerDisconnectedEventArgs>? OnServerDisconnected;
+    
+    public event EventHandler<PacketEventArgs<Login>>? OnLoginReceived;
+    public event EventHandler<PacketEventArgs<Logout>>? OnLogoutReceived;
+    public event EventHandler<PacketEventArgs<Accept>>? OnAcceptReceived;
+    public event EventHandler<PacketEventArgs<Deny>>? OnDenyReceived;
+    public event EventHandler<PacketEventArgs<Bind>>? OnBindReceived;
+    public event EventHandler<PacketEventArgs<Update>>? OnUpdateReceived;
+    public event EventHandler<PacketEventArgs<AckUpdate>>? OnAckUpdateReceived;
+    public event EventHandler<PacketEventArgs<GetChannels>>? OnGetChannelsReceived;
+    public event EventHandler<PacketEventArgs<GetChannelSettings>>? OnGetChannelSettingsReceived;
+    public event EventHandler<PacketEventArgs<SetChannelSettings>>? OnSetChannelSettingsReceived;
+    public event EventHandler<PacketEventArgs<GetDefaultSettings>>? OnGetDefaultSettingsReceived;
+    public event EventHandler<PacketEventArgs<SetDefaultSettings>>? OnSetDefaultSettingsReceived;
+    public event EventHandler<PacketEventArgs<GetParticipants>>? OnGetParticipantsReceived;
+    public event EventHandler<PacketEventArgs<DisconnectParticipant>>? OnDisconnectParticipantReceived;
+    public event EventHandler<PacketEventArgs<GetParticipantBitmask>>? OnGetParticipantBitmaskReceived;
+    public event EventHandler<PacketEventArgs<SetParticipantBitmask>>? OnSetParticipantBitmaskReceived;
+    public event EventHandler<PacketEventArgs<MuteParticipant>>? OnMuteParticipantReceived;
+    public event EventHandler<PacketEventArgs<UnmuteParticipant>>? OnUnmuteParticipantReceived;
+    public event EventHandler<PacketEventArgs<DeafenParticipant>>? OnDeafenParticipantReceived;
+    public event EventHandler<PacketEventArgs<UndeafenParticipant>>? OnUndeafenParticipantReceived;
+    public event EventHandler<PacketEventArgs<ANDModParticipantBitmask>>? OnANDModParticipantBitmaskReceived;
+    public event EventHandler<PacketEventArgs<ORModParticipantBitmask>>? OnORModParticipantBitmaskReceived;
+    public event EventHandler<PacketEventArgs<XORModParticipantBitmask>>? OnXORModParticipantBitmaskReceived;
+    public event EventHandler<PacketEventArgs<ChannelMove>>? OnChannelMoveReceived;
 
     /// <summary>Raised when a packet is received (debug).</summary>
-    public event InboundPacketHandler? OnInboundPacket;
+    public event EventHandler<PacketEventArgs<MCCommPacket>>? OnInboundPacket;
     
     /// <summary>Raised when a packet is sent (debug).</summary>
-    public event OutboundPacketHandler? OnOutboundPacket;
+    public event EventHandler<PacketEventArgs<MCCommPacket>>? OnOutboundPacket;
     
     /// <summary>Raised when an exception occurs.</summary>
-    public event ExceptionErrorHandler? OnExceptionError;
+    public event EventHandler<MCErrorEventArgs>? OnExceptionError;
     
     /// <summary>Raised when starting fails.</summary>
-    public event FailedHandler? OnFailed;
+    public event EventHandler<MCErrorEventArgs>? OnFailed;
     #endregion
 
     /// <summary>
-    /// Initializes a new instance of the MCComm class.
+    /// Initializes a new instance of the MCCommunication class.
     /// </summary>
-    public MCComm()
+    public MCCommunication()
     {
         RegisterPackets();
     }
@@ -186,13 +177,13 @@ public class MCComm : Disposable
             OnLogoutReceived += HandleLogoutReceived;
             
             _activityChecker = Task.Run(ActivityCheckAsync);
-            OnStarted?.Invoke();
+            OnStarted?.Invoke(this, EventArgs.Empty);
             
             await ListenAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            OnFailed?.Invoke(ex);
+            OnFailed?.Invoke(this, new MCErrorEventArgs(ex));
         }
     }
 
@@ -214,7 +205,7 @@ public class MCComm : Disposable
         Sessions.Clear();
         _activityChecker = null;
         
-        OnStopped?.Invoke(reason);
+        OnStopped?.Invoke(this, new MCStoppedEventArgs(reason));
     }
 
     /// <summary>
@@ -225,8 +216,10 @@ public class MCComm : Disposable
     /// <param name="packet">The packet to send.</param>
     public void SendResponse(HttpListenerContext ctx, HttpStatusCode code, MCCommPacket packet)
     {
-        if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((MCCommPacketTypes)packet.PacketId)))
-            OnOutboundPacket?.Invoke(packet);
+        ArgumentNullException.ThrowIfNull(ctx);
+        ArgumentNullException.ThrowIfNull(packet);
+                if (LogOutbound && (OutboundFilter.Count == 0 || OutboundFilter.Contains((MCCommPacketTypes)packet.PacketId)))
+            OnOutboundPacket?.Invoke(this, new PacketEventArgs<MCCommPacket>(packet, ctx));
 
         var content = Encoding.UTF8.GetBytes(packet.SerializePacket());
         ctx.Response.StatusCode = (int)code;
@@ -257,7 +250,7 @@ public class MCComm : Disposable
             catch (Exception ex)
             {
                 if (LogExceptions)
-                    OnExceptionError?.Invoke(ex);
+                    OnExceptionError?.Invoke(this, new MCErrorEventArgs(ex));
             }
         }
     }
@@ -292,14 +285,14 @@ public class MCComm : Disposable
             var packet = PacketRegistry.GetPacketFromJsonString(content);
 
             if (LogInbound && (InboundFilter.Count == 0 || InboundFilter.Contains((MCCommPacketTypes)packet.PacketId)))
-                OnInboundPacket?.Invoke(packet);
+                OnInboundPacket?.Invoke(this, new PacketEventArgs<MCCommPacket>(packet, ctx));
 
             HandlePacket(packet, ctx);
         }
         catch (Exception ex)
         {
             if (LogExceptions)
-                OnExceptionError?.Invoke(ex);
+                OnExceptionError?.Invoke(this, new MCErrorEventArgs(ex));
 
             try
             {
@@ -335,7 +328,7 @@ public class MCComm : Disposable
         catch (Exception ex)
         {
             if (LogExceptions)
-                OnExceptionError?.Invoke(ex);
+                OnExceptionError?.Invoke(this, new MCErrorEventArgs(ex));
 
             SendResponse(ctx, HttpStatusCode.BadRequest, new Deny { Reason = "Invalid Data!" });
         }
@@ -346,82 +339,85 @@ public class MCComm : Disposable
         switch ((MCCommPacketTypes)packet.PacketId)
         {
             case MCCommPacketTypes.Login:
-                OnLoginReceived?.Invoke((Login)packet, ctx);
+                OnLoginReceived?.Invoke(this, new PacketEventArgs<Login>((Login)packet, ctx));
                 break;
             case MCCommPacketTypes.Logout:
-                OnLogoutReceived?.Invoke((Logout)packet, ctx);
+                OnLogoutReceived?.Invoke(this, new PacketEventArgs<Logout>((Logout)packet, ctx));
                 break;
             case MCCommPacketTypes.Accept:
-                OnAcceptReceived?.Invoke((Accept)packet, ctx);
+                OnAcceptReceived?.Invoke(this, new PacketEventArgs<Accept>((Accept)packet, ctx));
                 break;
             case MCCommPacketTypes.Deny:
-                OnDenyReceived?.Invoke((Deny)packet, ctx);
+                OnDenyReceived?.Invoke(this, new PacketEventArgs<Deny>((Deny)packet, ctx));
                 break;
             case MCCommPacketTypes.Bind:
-                OnBindReceived?.Invoke((Bind)packet, ctx);
+                OnBindReceived?.Invoke(this, new PacketEventArgs<Bind>((Bind)packet, ctx));
                 break;
             case MCCommPacketTypes.Update:
-                OnUpdateReceived?.Invoke((Update)packet, ctx);
+                OnUpdateReceived?.Invoke(this, new PacketEventArgs<Update>((Update)packet, ctx));
                 break;
             case MCCommPacketTypes.GetChannels:
-                OnGetChannelsReceived?.Invoke((GetChannels)packet, ctx);
+                OnGetChannelsReceived?.Invoke(this, new PacketEventArgs<GetChannels>((GetChannels)packet, ctx));
                 break;
             case MCCommPacketTypes.AckUpdate:
-                OnAckUpdateReceived?.Invoke((AckUpdate)packet, ctx);
+                OnAckUpdateReceived?.Invoke(this, new PacketEventArgs<AckUpdate>((AckUpdate)packet, ctx));
                 break;
             case MCCommPacketTypes.GetChannelSettings:
-                OnGetChannelSettingsReceived?.Invoke((GetChannelSettings)packet, ctx);
+                OnGetChannelSettingsReceived?.Invoke(this, new PacketEventArgs<GetChannelSettings>((GetChannelSettings)packet, ctx));
                 break;
             case MCCommPacketTypes.SetChannelSettings:
-                OnSetChannelSettingsReceived?.Invoke((SetChannelSettings)packet, ctx);
+                OnSetChannelSettingsReceived?.Invoke(this, new PacketEventArgs<SetChannelSettings>((SetChannelSettings)packet, ctx));
                 break;
             case MCCommPacketTypes.GetDefaultSettings:
-                OnGetDefaultSettingsReceived?.Invoke((GetDefaultSettings)packet, ctx);
+                OnGetDefaultSettingsReceived?.Invoke(this, new PacketEventArgs<GetDefaultSettings>((GetDefaultSettings)packet, ctx));
                 break;
             case MCCommPacketTypes.SetDefaultSettings:
-                OnSetDefaultSettingsReceived?.Invoke((SetDefaultSettings)packet, ctx);
+                OnSetDefaultSettingsReceived?.Invoke(this, new PacketEventArgs<SetDefaultSettings>((SetDefaultSettings)packet, ctx));
                 break;
             case MCCommPacketTypes.GetParticipants:
-                OnGetParticipantsReceived?.Invoke((GetParticipants)packet, ctx);
+                OnGetParticipantsReceived?.Invoke(this, new PacketEventArgs<GetParticipants>((GetParticipants)packet, ctx));
                 break;
             case MCCommPacketTypes.DisconnectParticipant:
-                OnDisconnectParticipantReceived?.Invoke((DisconnectParticipant)packet, ctx);
+                OnDisconnectParticipantReceived?.Invoke(this, new PacketEventArgs<DisconnectParticipant>((DisconnectParticipant)packet, ctx));
                 break;
             case MCCommPacketTypes.GetParticipantBitmask:
-                OnGetParticipantBitmaskReceived?.Invoke((GetParticipantBitmask)packet, ctx);
+                OnGetParticipantBitmaskReceived?.Invoke(this, new PacketEventArgs<GetParticipantBitmask>((GetParticipantBitmask)packet, ctx));
                 break;
             case MCCommPacketTypes.SetParticipantBitmask:
-                OnSetParticipantBitmaskReceived?.Invoke((SetParticipantBitmask)packet, ctx);
+                OnSetParticipantBitmaskReceived?.Invoke(this, new PacketEventArgs<SetParticipantBitmask>((SetParticipantBitmask)packet, ctx));
                 break;
             case MCCommPacketTypes.MuteParticipant:
-                OnMuteParticipantReceived?.Invoke((MuteParticipant)packet, ctx);
+                OnMuteParticipantReceived?.Invoke(this, new PacketEventArgs<MuteParticipant>((MuteParticipant)packet, ctx));
                 break;
             case MCCommPacketTypes.UnmuteParticipant:
-                OnUnmuteParticipantReceived?.Invoke((UnmuteParticipant)packet, ctx);
+                OnUnmuteParticipantReceived?.Invoke(this, new PacketEventArgs<UnmuteParticipant>((UnmuteParticipant)packet, ctx));
                 break;
             case MCCommPacketTypes.DeafenParticipant:
-                OnDeafenParticipantReceived?.Invoke((DeafenParticipant)packet, ctx);
+                OnDeafenParticipantReceived?.Invoke(this, new PacketEventArgs<DeafenParticipant>((DeafenParticipant)packet, ctx));
                 break;
             case MCCommPacketTypes.UndeafenParticipant:
-                OnUndeafenParticipantReceived?.Invoke((UndeafenParticipant)packet, ctx);
+                OnUndeafenParticipantReceived?.Invoke(this, new PacketEventArgs<UndeafenParticipant>((UndeafenParticipant)packet, ctx));
                 break;
             case MCCommPacketTypes.ANDModParticipantBitmask:
-                OnANDModParticipantBitmaskReceived?.Invoke((ANDModParticipantBitmask)packet, ctx);
+                OnANDModParticipantBitmaskReceived?.Invoke(this, new PacketEventArgs<ANDModParticipantBitmask>((ANDModParticipantBitmask)packet, ctx));
                 break;
             case MCCommPacketTypes.ORModParticipantBitmask:
-                OnORModParticipantBitmaskReceived?.Invoke((ORModParticipantBitmask)packet, ctx);
+                OnORModParticipantBitmaskReceived?.Invoke(this, new PacketEventArgs<ORModParticipantBitmask>((ORModParticipantBitmask)packet, ctx));
                 break;
             case MCCommPacketTypes.XORModParticipantBitmask:
-                OnXORModParticipantBitmaskReceived?.Invoke((XORModParticipantBitmask)packet, ctx);
+                OnXORModParticipantBitmaskReceived?.Invoke(this, new PacketEventArgs<XORModParticipantBitmask>((XORModParticipantBitmask)packet, ctx));
                 break;
             case MCCommPacketTypes.ChannelMove:
-                OnChannelMoveReceived?.Invoke((ChannelMove)packet, ctx);
+                OnChannelMoveReceived?.Invoke(this, new PacketEventArgs<ChannelMove>((ChannelMove)packet, ctx));
                 break;
         }
     }
 
-    private void HandleLoginReceived(Login packet, HttpListenerContext ctx)
+    private void HandleLoginReceived(object? sender, PacketEventArgs<Login> e)
     {
+        var packet = e.Packet;
+        var ctx = (HttpListenerContext)e.Source;
+
         if (packet.LoginKey != LoginKey)
         {
             SendResponse(ctx, HttpStatusCode.OK, new Deny { Reason = "Invalid Login Key!" });
@@ -437,15 +433,18 @@ public class MCComm : Disposable
         var token = Guid.NewGuid().ToString();
         Sessions.TryAdd(token, Environment.TickCount64);
         SendResponse(ctx, HttpStatusCode.OK, new Accept { Token = token });
-        OnServerConnected?.Invoke(token, ctx.Request.RemoteEndPoint.Address.ToString());
+        OnServerConnected?.Invoke(this, new ServerConnectedEventArgs(token, ctx.Request.RemoteEndPoint.Address.ToString()));
     }
 
-    private void HandleLogoutReceived(Logout packet, HttpListenerContext ctx)
+    private void HandleLogoutReceived(object? sender, PacketEventArgs<Logout> e)
     {
+        var packet = e.Packet;
+        var ctx = (HttpListenerContext)e.Source;
+        
         if (Sessions.TryRemove(packet.Token, out _))
         {
             SendResponse(ctx, HttpStatusCode.OK, new Accept());
-            OnServerDisconnected?.Invoke("Server disconnected gracefully", packet.Token);
+            OnServerDisconnected?.Invoke(this, new ServerDisconnectedEventArgs("Server disconnected gracefully", packet.Token));
             return;
         }
         
@@ -461,7 +460,7 @@ public class MCComm : Disposable
                 var elapsed = Environment.TickCount64 - session.Value;
                 if (elapsed > Timeout && Sessions.TryRemove(session))
                 {
-                    OnServerDisconnected?.Invoke($"Server timed out after {elapsed}ms", session.Key);
+                    OnServerDisconnected?.Invoke(this, new ServerDisconnectedEventArgs($"Server timed out after {elapsed}ms", session.Key));
                 }
             }
 
@@ -487,6 +486,32 @@ public class MCComm : Disposable
             _cts?.Dispose();
             _webServer.Close();
         }
+        base.Dispose(disposing);
     }
 }
 
+public class ServerConnectedEventArgs : EventArgs
+{
+    public string Token { get; }
+    public string Address { get; }
+    public ServerConnectedEventArgs(string token, string address) { Token = token; Address = address; }
+}
+
+public class ServerDisconnectedEventArgs : EventArgs
+{
+    public string Reason { get; }
+    public string Token { get; }
+    public ServerDisconnectedEventArgs(string reason, string token) { Reason = reason; Token = token; }
+}
+
+public class MCStoppedEventArgs : EventArgs
+{
+    public string? Reason { get; }
+    public MCStoppedEventArgs(string? reason) => Reason = reason;
+}
+
+public class MCErrorEventArgs : EventArgs
+{
+    public Exception Error { get; }
+    public MCErrorEventArgs(Exception error) => Error = error;
+}

@@ -1,68 +1,46 @@
-////////////////////////////////////////////////////////////////////////////////////////
-// MIT License                                                                        //
-//                                                                                    //
-// Copyright (c) [10/10/2025] [SineVector241]                                         //
-//                                                                                    //
-// Permission is hereby granted, free of charge, to any person obtaining a copy       //
-// of this software and associated documentation files (the "Software"), to deal      //
-// in the Software without restriction, including without limitation the rights       //
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell          //
-// copies of the Software, and to permit persons to whom the Software is              //
-// furnished to do so, subject to the following conditions:                           //
-//                                                                                    //
-// The above copyright notice and this permission notice shall be included in all     //
-// copies or substantial portions of the Software.                                    //
-//                                                                                    //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR         //
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,           //
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE        //
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER             //
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,      //
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE      //
-// SOFTWARE.                                                                          //
-////////////////////////////////////////////////////////////////////////////////////////
-
 using NAudio.Wave;
 using OpusSharp.Core;
+using System;
+using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace VoiceCraft.Core.Audio.Streams;
 
 /// <summary>
 /// Jitter buffer for handling out-of-order and delayed audio packets.
-/// Thread-safe implementation with optimized frame management.
+/// Thread-safe implementation with optimized frame management using Memory&lt;byte&gt;.
 /// </summary>
 public class JitterBuffer
 {
+    private readonly object _lock = new();
+    private readonly int _queueLength;
+    private readonly Frame[] _queuedFrames;
+
+    private int _count;
+    private bool _isFirst = true;
+    private bool _isPreloaded;
+    private uint _sequence;
+    private int _silencedFrames;
+
     /// <summary>
-    /// Gets or sets the wave format.
+    /// Gets the wave format.
     /// </summary>
-    public WaveFormat WaveFormat { get; set; }
+    public WaveFormat WaveFormat { get; }
 
     /// <summary>
     /// Gets the current frame count in the buffer.
     /// </summary>
-    public int Count => _count;
+    public int Count
+    {
+        get { lock (_lock) return _count; }
+    }
 
-    private int _count;
-    private bool IsFirst;
-    private bool IsPreloaded;
-    private Frame[] QueuedFrames;
-    private int QueueLength;
-    private int MaxQueueLength;
-    private uint Sequence;
-    private int SilencedFrames;
-    private readonly object _lock = new();
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="JitterBuffer"/> class.
-    /// </summary>
     public JitterBuffer(WaveFormat waveFormat, int bufferMilliseconds = 80, int maxBufferSizeMilliseconds = 1000, int frameSizeMS = 20)
     {
+        ArgumentNullException.ThrowIfNull(waveFormat);
         WaveFormat = waveFormat;
-        QueueLength = bufferMilliseconds / frameSizeMS;
-        MaxQueueLength = maxBufferSizeMilliseconds / frameSizeMS;
-        QueuedFrames = new Frame[MaxQueueLength];
-        IsFirst = true;
+        _queueLength = bufferMilliseconds / frameSizeMS;
+        _queuedFrames = new Frame[maxBufferSizeMilliseconds / frameSizeMS];
     }
 
     /// <summary>
@@ -72,37 +50,37 @@ public class JitterBuffer
     {
         lock (_lock)
         {
-            if (IsFirst)
+            if (_isFirst)
             {
-                QueuedFrames[0] = frame;
+                _queuedFrames[0] = frame;
                 _count = 1;
-                Sequence = frame.Sequence;
-                SilencedFrames = 0;
-                IsFirst = false;
+                _sequence = frame.Sequence;
+                _silencedFrames = 0;
+                _isFirst = false;
                 return;
             }
 
             RemoveOldFrames();
 
-            if (frame.Sequence > Sequence)
+            if (frame.Sequence > _sequence)
             {
                 var empty = FindEmptySlot();
                 if (empty != -1)
                 {
-                    QueuedFrames[empty] = frame;
+                    _queuedFrames[empty] = frame;
                     _count++;
                 }
             }
             else
             {
                 var oldest = FindOldestSlot();
-                if (QueuedFrames[oldest].Buffer == null) _count++;
-                QueuedFrames[oldest] = frame;
+                if (_queuedFrames[oldest].Buffer.IsEmpty) _count++;
+                _queuedFrames[oldest] = frame;
             }
 
-            if (!IsPreloaded && _count >= QueueLength)
+            if (!_isPreloaded && _count >= _queueLength)
             {
-                IsPreloaded = true;
+                _isPreloaded = true;
             }
         }
     }
@@ -111,8 +89,7 @@ public class JitterBuffer
     {
         lock (_lock)
         {
-            var status = StatusCode.Failed;
-            if (!IsPreloaded)
+            if (!_isPreloaded)
                 return StatusCode.NotReady;
 
             RemoveOldFrames();
@@ -120,59 +97,59 @@ public class JitterBuffer
             var earliest = FindEarliestSlot();
             if (earliest != -1)
             {
-                uint earliestSequence = QueuedFrames[earliest].Sequence;
-                uint currentSequence = Sequence;
+                uint earliestSequence = _queuedFrames[earliest].Sequence;
+                uint currentSequence = _sequence;
                 var distance = earliestSequence - currentSequence;
 
-                if (distance == 0 || IsFirst)
+                if (distance == 0 || _isFirst)
                 {
-                    Sequence = QueuedFrames[earliest].Sequence;
-                    IsFirst = false;
-                    SilencedFrames = 0;
+                    _sequence = _queuedFrames[earliest].Sequence;
+                    _isFirst = false;
+                    _silencedFrames = 0;
 
-                    outFrame.Buffer = QueuedFrames[earliest].Buffer;
-                    outFrame.Length = QueuedFrames[earliest].Length;
-                    outFrame.Sequence = QueuedFrames[earliest].Sequence;
+                    outFrame = _queuedFrames[earliest];
 
-                    QueuedFrames[earliest].Buffer = null;
+                    // Clear the slot
+                    _queuedFrames[earliest] = default;
                     _count--;
 
-                    status = StatusCode.Success;
+                    return StatusCode.Success;
                 }
-                else if (distance == 1)
+                
+                if (distance == 1)
                 {
-                    Sequence++;
-                    outFrame.Buffer = QueuedFrames[earliest].Buffer;
-                    outFrame.Length = QueuedFrames[earliest].Length;
-                    outFrame.Sequence = Sequence;
-                    status = StatusCode.Missed;
+                    _sequence++;
+                    outFrame = _queuedFrames[earliest];
+                    outFrame.Sequence = _sequence; // Force sequence match for "Missed" logic? 
+                    
+                    return StatusCode.Missed; 
                 }
-                else
-                {
-                    Sequence++;
-                    status = StatusCode.Failed;
-                }
+
+                // Gap too large
+                _sequence++;
+                return StatusCode.Failed;
             }
-            else if (!IsFirst)
+            
+            if (!_isFirst)
             {
-                if (SilencedFrames < 5)
-                    SilencedFrames++;
+                if (_silencedFrames < 5)
+                    _silencedFrames++;
                 else
                 {
-                    IsFirst = true;
-                    IsPreloaded = false;
+                    _isFirst = true;
+                    _isPreloaded = false;
                 }
             }
-            Sequence++;
-            return status;
+            _sequence++;
+            return StatusCode.Failed;
         }
     }
 
     private int FindEmptySlot()
     {
-        for (int i = 0; i < QueuedFrames.Length; i++)
+        for (int i = 0; i < _queuedFrames.Length; i++)
         {
-            if (QueuedFrames[i].Buffer == null)
+            if (_queuedFrames[i].Buffer.IsEmpty)
             {
                 return i;
             }
@@ -183,12 +160,12 @@ public class JitterBuffer
     private int FindOldestSlot()
     {
         int index = 0;
-        uint oldest = QueuedFrames[index].Sequence;
-        for (int i = 1; i < QueuedFrames.Length; i++)
+        uint oldest = _queuedFrames[index].Sequence;
+        for (int i = 1; i < _queuedFrames.Length; i++)
         {
-            if (QueuedFrames[i].Sequence > oldest)
+            if (_queuedFrames[i].Sequence > oldest)
             {
-                oldest = QueuedFrames[i].Sequence;
+                oldest = _queuedFrames[i].Sequence;
                 index = i;
             }
         }
@@ -198,17 +175,17 @@ public class JitterBuffer
     private int FindEarliestSlot()
     {
         uint earliest = uint.MaxValue;
-        if (QueuedFrames[0].Buffer != null) earliest = QueuedFrames[0].Sequence;
+        if (!_queuedFrames[0].Buffer.IsEmpty) earliest = _queuedFrames[0].Sequence;
 
         int index = -1;
 
-        for (int i = 0; i < QueuedFrames.Length; i++)
+        for (int i = 0; i < _queuedFrames.Length; i++)
         {
-            if (QueuedFrames[i].Buffer != null)
+            if (!_queuedFrames[i].Buffer.IsEmpty)
             {
-                if (index == -1 || QueuedFrames[i].Sequence < earliest)
+                if (index == -1 || _queuedFrames[i].Sequence < earliest)
                 {
-                    earliest = QueuedFrames[i].Sequence;
+                    earliest = _queuedFrames[i].Sequence;
                     index = i;
                 }
             }
@@ -219,83 +196,150 @@ public class JitterBuffer
 
     private void RemoveOldFrames()
     {
-        for (int i = 0; i < QueuedFrames.Length; i++)
+        for (int i = 0; i < _queuedFrames.Length; i++)
         {
-            if (QueuedFrames[i].Buffer != null && QueuedFrames[i].Sequence < Sequence)
+            if (!_queuedFrames[i].Buffer.IsEmpty && _queuedFrames[i].Sequence < _sequence)
             {
-                QueuedFrames[i].Buffer = null;
+                _queuedFrames[i] = default;
                 _count--;
             }
         }
     }
+    
+    public Frame GetFrame(int index) => _queuedFrames[index];
 }
 
 /// <summary>
 /// VoiceCraft-specific jitter buffer with Opus decoding.
 /// </summary>
-public class VoiceCraftJitterBuffer
+public sealed class VoiceCraftJitterBuffer : IDisposable
 {
-    public readonly int FrameSizeMS;
-    private Frame inFrame;
-    private Frame outFrame;
-    private readonly JitterBuffer JitterBuffer;
-    private readonly OpusDecoder Decoder;
+    private readonly int _frameSizeMS;
+    private readonly JitterBuffer _jitterBuffer;
+    private readonly OpusDecoder _decoder;
     private readonly object _lock = new();
+
+    private Frame _inFrame;
+    private Frame _outFrame;
+    private bool _disposed;
+
+    /// <summary>
+    /// Gets the frame size in milliseconds.
+    /// </summary>
+    public int FrameSizeMS => _frameSizeMS;
 
     public VoiceCraftJitterBuffer(WaveFormat waveFormat, int frameSizeMS = 20, int jitterBufferSize = 80)
     {
-        FrameSizeMS = frameSizeMS;
-        JitterBuffer = new JitterBuffer(waveFormat, jitterBufferSize, 2000, frameSizeMS);
-        Decoder = new OpusDecoder(waveFormat.SampleRate, waveFormat.Channels);
+        ArgumentNullException.ThrowIfNull(waveFormat);
+        _frameSizeMS = frameSizeMS;
+        _jitterBuffer = new JitterBuffer(waveFormat, jitterBufferSize, 2000, frameSizeMS);
+        _decoder = new OpusDecoder(waveFormat.SampleRate, waveFormat.Channels);
     }
 
-    public int Get(byte[] decodedFrame)
+    public int Get(Span<byte> decodedFrame)
     {
-        if (outFrame.Buffer == null)
-        {
-            outFrame.Buffer = new byte[decodedFrame.Length];
-        }
-
-        var bytesRead = 0;
-
         lock (_lock)
         {
-            var status = JitterBuffer.Get(ref outFrame);
+            if (_disposed) return 0;
+
+            var status = _jitterBuffer.Get(ref _outFrame);
 
             if (status == StatusCode.Success)
             {
-                bytesRead = Decoder.Decode(outFrame.Buffer, outFrame.Length, decodedFrame, decodedFrame.Length);
+                if (MemoryMarshal.TryGetArray(_outFrame.Buffer, out ArraySegment<byte> segment))
+                {
+                    byte[] outputBuffer = ArrayPool<byte>.Shared.Rent(decodedFrame.Length);
+                    try
+                    {
+                        int read = _decoder.Decode(segment.Array, segment.Count, outputBuffer, outputBuffer.Length);
+                        new ReadOnlySpan<byte>(outputBuffer, 0, read).CopyTo(decodedFrame);
+                        return read;
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(outputBuffer);
+                    }
+                }
             }
             else if (status == StatusCode.NotReady)
             {
                 return 0;
             }
-            else
+            
+            // Packet Loss / Concealment
+            byte[] concealmentBuffer = ArrayPool<byte>.Shared.Rent(decodedFrame.Length);
+            try
             {
-                bytesRead = Decoder.Decode(null, 0, decodedFrame, decodedFrame.Length);
+                int read = _decoder.Decode(null, 0, concealmentBuffer, concealmentBuffer.Length);
+                new ReadOnlySpan<byte>(concealmentBuffer, 0, read).CopyTo(decodedFrame);
+                return read;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(concealmentBuffer);
             }
         }
-
-        return bytesRead;
     }
 
-    public void Put(byte[] data, uint packetCount)
+    public void Put(ReadOnlySpan<byte> data, uint packetCount)
     {
         lock (_lock)
         {
-            inFrame.Buffer = data;
-            inFrame.Length = data.Length;
-            inFrame.Sequence = packetCount;
-            JitterBuffer.Put(inFrame);
+            if (_disposed) return;
+            
+            byte[] storage = new byte[data.Length];
+            data.CopyTo(storage);
+            
+            _inFrame.Buffer = new Memory<byte>(storage);
+            _inFrame.Length = data.Length;
+            _inFrame.Sequence = packetCount;
+            
+            _jitterBuffer.Put(_inFrame);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _decoder?.Dispose();
+            _disposed = true;
         }
     }
 }
 
-public struct Frame
+public struct Frame : IEquatable<Frame>
 {
-    public byte[]? Buffer;
-    public int Length;
-    public uint Sequence;
+    public Memory<byte> Buffer { get; set; }
+    public int Length { get; set; }
+    public uint Sequence { get; set; }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Frame frame && Equals(frame);
+    }
+
+    public bool Equals(Frame other)
+    {
+        return Buffer.Equals(other.Buffer) &&
+               Length == other.Length &&
+               Sequence == other.Sequence;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Buffer, Length, Sequence);
+    }
+
+    public static bool operator ==(Frame left, Frame right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Frame left, Frame right)
+    {
+        return !(left == right);
+    }
 }
 
 public enum StatusCode

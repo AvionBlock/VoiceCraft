@@ -4,7 +4,7 @@
 /// Abstract base class for custom client packets used for local network discovery.
 /// These are binary-serialized packets sent via UDP for client-to-client communication.
 /// </summary>
-public abstract class CustomClientPacket
+public abstract class CustomClientPacket : IPacket
 {
     /// <summary>
     /// Gets the unique packet type identifier.
@@ -12,31 +12,28 @@ public abstract class CustomClientPacket
     public abstract byte PacketId { get; }
 
     /// <summary>
-    /// Reads packet data from a byte array.
+    /// Reads packet data from a read-only byte span.
     /// </summary>
-    /// <param name="dataStream">The raw data.</param>
-    /// <param name="offset">The offset to start reading from.</param>
-    /// <returns>The new offset after reading.</returns>
-    public virtual int ReadPacket(ref byte[] dataStream, int offset = 0)
+    /// <param name="buffer">The source buffer.</param>
+    public virtual void Read(ReadOnlySpan<byte> buffer)
     {
-        return offset;
+        // Default implementation does nothing (for empty packets)
     }
 
     /// <summary>
-    /// Writes packet data to a byte list.
+    /// Writes packet data to a byte span.
     /// </summary>
-    /// <param name="dataStream">The list to write to.</param>
-    public virtual void WritePacket(ref List<byte> dataStream)
+    /// <param name="buffer">The destination buffer.</param>
+    public virtual void Write(Span<byte> buffer)
     {
-        dataStream.Clear();
-        dataStream.Add(PacketId);
+        buffer[0] = PacketId;
     }
 }
 
 /// <summary>
 /// Enumeration of custom client packet types.
 /// </summary>
-public enum CustomClientTypes : byte
+public enum CustomClientTypes : int
 {
     /// <summary>Login request.</summary>
     Login,

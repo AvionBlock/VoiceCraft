@@ -5,6 +5,8 @@ using VoiceCraft.Core.Packets.VoiceCraft;
 
 namespace VoiceCraft.Network;
 
+using System.Security.Cryptography;
+
 /// <summary>
 /// Represents a network peer with reliable and unreliable packet transmission support.
 /// Handles packet sequencing, acknowledgment, and retry logic.
@@ -35,14 +37,9 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
     public const int MaxRecvBufferSize = 30;
 
     /// <summary>
-    /// Delegate for packet received events.
-    /// </summary>
-    public delegate void PacketReceived(NetPeer peer, VoiceCraftPacket packet);
-    
-    /// <summary>
     /// Event raised when a packet is received and ready to be processed.
     /// </summary>
-    public event PacketReceived? OnPacketReceived;
+    public event EventHandler<PacketEventArgs<VoiceCraftPacket>>? OnPacketReceived;
     
     private int _sequence;
     private uint _nextSequence;
@@ -95,6 +92,8 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
     /// <param name="packet">The packet to send.</param>
     public void AddToSendBuffer(VoiceCraftPacket packet)
     {
+        ArgumentNullException.ThrowIfNull(packet);
+
         packet.Id = Id;
 
         if (packet.IsReliable)
@@ -117,6 +116,8 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
     /// <returns>True if the packet was accepted, false otherwise.</returns>
     public bool AddToReceiveBuffer(VoiceCraftPacket packet)
     {
+        ArgumentNullException.ThrowIfNull(packet);
+
         LastActive = Environment.TickCount64;
         
         // Reject packets with invalid ID when connected
@@ -125,7 +126,7 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
 
         if (!packet.IsReliable)
         {
-            OnPacketReceived?.Invoke(this, packet);
+            OnPacketReceived?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, this));
             return true;
         }
 
@@ -158,7 +159,7 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
         // Invoke events outside the lock to prevent deadlocks
         foreach (var p in packetsToProcess)
         {
-            OnPacketReceived?.Invoke(this, p);
+            OnPacketReceived?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(p, this));
         }
 
         return true;
@@ -174,16 +175,10 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
         foreach (var kvp in _reliabilityQueue)
         {
             var packet = kvp.Value;
-            if (packet.ResendTime <= now)
+            if (now >= packet.ResendTime)
             {
-                // Update resend time
+                packet.Retries++;
                 packet.ResendTime = now + RetryResendTime;
-                
-                // Increment retries atomically
-                Interlocked.Increment(ref packet.Retries);
-                
-                // Update Id since this might change on login
-                packet.Id = Id;
                 SendQueue.Enqueue(packet);
             }
         }
@@ -248,7 +243,8 @@ public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerSt
     public static long GenerateId()
     {
         // long.MinValue is reserved to indicate no ID
-        return Random.Shared.NextInt64(long.MinValue + 1, long.MaxValue);
+        byte[] buffer = RandomNumberGenerator.GetBytes(8);
+        return BitConverter.ToInt64(buffer, 0);
     }
 
     /// <summary>
