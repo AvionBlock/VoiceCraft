@@ -1,83 +1,95 @@
 ﻿using Newtonsoft.Json;
 using System.Net;
+using VoiceCraft.Core;
 using VoiceCraft.Network.Sockets;
 using VoiceCraft.Server.Data;
 
-namespace VoiceCraft.Server
-{
-    public class ServerApp
-    {
-        const string Version = "1.0.7";
-        VoiceCraftServer Server { get; set; }
+namespace VoiceCraft.Server;
 
-        public ServerApp()
-        {
-            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Loading...";
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(@"__     __    _           ____            __ _");
-            Console.WriteLine(@"\ \   / /__ (_) ___ ___ / ___|_ __ __ _ / _| |_");
-            Console.WriteLine(@" \ \ / / _ \| |/ __/ _ \ |   | '__/ _` | |_| __|");
-            Console.WriteLine(@"  \ V / (_) | | (_|  __/ |___| | | (_| |  _| |_");
-            Console.WriteLine(@"   \_/ \___/|_|\___\___|\____|_|  \__,_|_|  \__|");
+/// <summary>
+/// Main server application class that handles initialization, startup, and console commands.
+/// </summary>
+public class ServerApp
+{
+    private VoiceCraftServer Server { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ServerApp"/> class.
+    /// Loads configuration, registers events, and sets up command handlers.
+    /// </summary>
+    public ServerApp()
+    {
+        Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: Loading...";
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(@"__     __    _           ____            __ _");
+        Console.WriteLine(@"\ \   / /__ (_) ___ ___ / ___|_ __ __ _ / _| |_");
+        Console.WriteLine(@" \ \ / / _ \| |/ __/ _ \ |   | '__/ _` | |_| __|");
+        Console.WriteLine(@"  \ V / (_) | | (_|  __/ |___| | | (_| |  _| |_");
+        Console.WriteLine(@"   \_/ \___/|_|\___\___|\_____|_|  \__,_|_|  \__|");
 #if DEBUG
-            Console.WriteLine($"[App: {Version}][Server: {VoiceCraftServer.Version}]==============[DEBUG]\n");
+        Console.WriteLine($"[App: {Constants.Version}][Server: {VoiceCraftServer.Version}]==============[DEBUG]\n");
 #else
-            Console.WriteLine($"[App: {Version}][Server: {VoiceCraftServer.Version}]============[RELEASE]\n");
+        Console.WriteLine($"[App: {Constants.Version}][Server: {VoiceCraftServer.Version}]============[RELEASE]\n");
 #endif
 
-            var properties = Properties.LoadProperties();
-            var banlist = Properties.LoadBanlist();
-            Server = new VoiceCraftServer(properties, banlist);
+        var properties = Properties.LoadProperties();
+        var banlist = Properties.LoadBanlist();
+        Server = new VoiceCraftServer(properties, banlist);
 
-            foreach (var channel in Server.ServerProperties.Channels)
-            {
-                Logger.LogToConsole(LogType.Success, $"Channel Added - Name: {channel.Name}, Password?: {!string.IsNullOrWhiteSpace(channel.Password)}, Locked: {channel.Locked}, Hidden: {channel.Hidden}", "Channel");
-            }
-
-            //Server Events
-            Server.OnStarted += ServerStarted;
-            Server.OnSocketStarted += ServerSocketStarted;
-            Server.OnFailed += ServerFailed;
-            Server.OnStopped += OnStopped;
-            Server.OnParticipantJoined += ParticipantJoined;
-            Server.OnParticipantBinded += ParticipantBinded;
-            Server.OnParticipantLeft += ParticipantLeft;
-
-            //MCComm Socket
-            Server.MCComm.OnServerConnected += MCCommServerConnected;
-            Server.MCComm.OnServerDisconnected += MCCommServerDisconnected;
-
-            //Debug Stuff
-            Server.VoiceCraftSocket.OnInboundPacket += VoiceCraftSocketInbound;
-            Server.VoiceCraftSocket.OnOutboundPacket += VoiceCraftSocketOutbound;
-            Server.VoiceCraftSocket.OnExceptionError += ExceptionError;
-            Server.MCComm.OnInboundPacket += MCCommInbound;
-            Server.MCComm.OnOutboundPacket += MCCommOutbound;
-            Server.MCComm.OnExceptionError += ExceptionError;
-
-            //Command Register
-            CommandHandler.RegisterCommand("help", HelpCommand);
-            CommandHandler.RegisterCommand("exit", ExitCommand);
-            CommandHandler.RegisterCommand("list", ListCommand);
-            CommandHandler.RegisterCommand("mute", MuteCommand);
-            CommandHandler.RegisterCommand("unmute", DeafenCommand);
-            CommandHandler.RegisterCommand("deafen", UndeafenCommand);
-            CommandHandler.RegisterCommand("undeafen", UnmuteCommand);
-            CommandHandler.RegisterCommand("kick", KickCommand);
-            CommandHandler.RegisterCommand("ban", BanCommand);
-            CommandHandler.RegisterCommand("unban", UnbanCommand);
-            CommandHandler.RegisterCommand("banlist", BanlistCommand);
-            CommandHandler.RegisterCommand("setproximity", SetProximityCommand);
-            CommandHandler.RegisterCommand("toggleproximity", ToggleProximityCommand);
-            CommandHandler.RegisterCommand("setmotd", SetMotdCommand);
-            CommandHandler.RegisterCommand("toggleeffects", ToggleEffectsCommand);
-            CommandHandler.RegisterCommand("debug", DebugCommand);
-            CommandHandler.RegisterCommand("fakebindparticipant", FakeBindParticipant);
+        foreach (var channel in Server.ServerProperties.Channels)
+        {
+            Logger.LogToConsole(LogType.Success, 
+                $"Channel Added - Name: {channel.Name}, Password?: {!string.IsNullOrWhiteSpace(channel.Password)}, Locked: {channel.Locked}, Hidden: {channel.Hidden}", 
+                "Channel");
         }
 
-        public void Start()
-        {
-            Console.Title = $"VoiceCraft - App: {Version}, Server: {VoiceCraftServer.Version}: Starting...";
+        // Server Events
+        Server.OnStarted += ServerStarted;
+        Server.OnSocketStarted += ServerSocketStarted;
+        Server.OnFailed += ServerFailed;
+        Server.OnStopped += OnStopped;
+        Server.OnParticipantJoined += ParticipantJoined;
+        Server.OnParticipantBinded += ParticipantBinded;
+        Server.OnParticipantLeft += ParticipantLeft;
+
+        // MCComm Socket
+        Server.MCComm.OnServerConnected += MCCommServerConnected;
+        Server.MCComm.OnServerDisconnected += MCCommServerDisconnected;
+
+        // Debug Logging
+        Server.VoiceCraftSocket.OnInboundPacket += VoiceCraftSocketInbound;
+        Server.VoiceCraftSocket.OnOutboundPacket += VoiceCraftSocketOutbound;
+        Server.VoiceCraftSocket.OnExceptionError += ExceptionError;
+        Server.MCComm.OnInboundPacket += MCCommInbound;
+        Server.MCComm.OnOutboundPacket += MCCommOutbound;
+        Server.MCComm.OnExceptionError += ExceptionError;
+
+        // Command Registration
+        CommandHandler.RegisterCommand("help", HelpCommand);
+        CommandHandler.RegisterCommand("exit", ExitCommand);
+        CommandHandler.RegisterCommand("list", ListCommand);
+        CommandHandler.RegisterCommand("mute", MuteCommand);
+        CommandHandler.RegisterCommand("unmute", UnmuteCommand);
+        CommandHandler.RegisterCommand("deafen", DeafenCommand);
+        CommandHandler.RegisterCommand("undeafen", UndeafenCommand);
+        CommandHandler.RegisterCommand("kick", KickCommand);
+        CommandHandler.RegisterCommand("ban", BanCommand);
+        CommandHandler.RegisterCommand("unban", UnbanCommand);
+        CommandHandler.RegisterCommand("banlist", BanlistCommand);
+        CommandHandler.RegisterCommand("setproximity", SetProximityCommand);
+        CommandHandler.RegisterCommand("toggleproximity", ToggleProximityCommand);
+        CommandHandler.RegisterCommand("setmotd", SetMotdCommand);
+        CommandHandler.RegisterCommand("toggleeffects", ToggleEffectsCommand);
+        CommandHandler.RegisterCommand("debug", DebugCommand);
+        CommandHandler.RegisterCommand("fakebindparticipant", FakeBindParticipant);
+    }
+
+    /// <summary>
+    /// Starts the server and enters the command processing loop.
+    /// </summary>
+    public void Start()
+    {
+            Console.Title = $"VoiceCraft - App: {Constants.Version}, Server: {VoiceCraftServer.Version}: Starting...";
             Server.Start();
 
             while (true)
@@ -102,7 +114,7 @@ namespace VoiceCraft.Server
         #region Server Event Methods
         private void ServerStarted()
         {
-            Console.Title = $"VoiceCraft - App: {Version}, Server: {VoiceCraftServer.Version}: Started.";
+            Console.Title = $"VoiceCraft - App: {Constants.Version}, Server: {VoiceCraftServer.Version}: Started.";
 
             if(Server.ServerProperties.ConnectionType == ConnectionTypes.Server || Server.ServerProperties.ConnectionType == ConnectionTypes.Hybrid)
                 Logger.LogToConsole(LogType.Success, $"Server Started - Key: {Server.ServerProperties.PermanentServerKey}", nameof(VoiceCraftServer));
@@ -117,7 +129,7 @@ namespace VoiceCraft.Server
 
         private void ServerFailed(Exception ex)
         {
-            Console.Title = $"VoiceCraft - App: {Version}, Server: {VoiceCraftServer.Version}: Failed.";
+            Console.Title = $"VoiceCraft - App: {Constants.Version}, Server: {VoiceCraftServer.Version}: Failed.";
             Logger.LogToConsole(LogType.Error, $"Server Failed - Reason: {ex.Message}, Exception Type: {ex.GetType().Name}", nameof(VoiceCraftServer));
             Logger.LogToConsole(LogType.Error, "Shutting down server in 10 seconds...", nameof(VoiceCraftServer));
             Task.Delay(10000).Wait();
@@ -127,7 +139,7 @@ namespace VoiceCraft.Server
         private void OnStopped(string? reason = null)
         {
             Logger.LogToConsole(LogType.Warn, $"Server Stopped - Reason: {reason}", nameof(VoiceCraftServer));
-            Console.Title = $"VoiceCraft - App: {Version}, Server: {VoiceCraftServer.Version}: Shutting Down...";
+            Console.Title = $"VoiceCraft - App: {Constants.Version}, Server: {VoiceCraftServer.Version}: Shutting Down...";
             Logger.LogToConsole(LogType.Info, "Shutting down server...", "Server");
             Server.Dispose();
             Environment.Exit(0);
@@ -214,9 +226,9 @@ namespace VoiceCraft.Server
 
         void ExitCommand(string[] args)
         {
-            Console.Title = $"VoiceCraft - App: {Version}, Server: {VoiceCraftServer.Version}: Shutting Down...";
+            Console.Title = $"VoiceCraft - App: {Constants.Version}, Server: {VoiceCraftServer.Version}: Shutting Down...";
             Logger.LogToConsole(LogType.Info, "Shutting down server...", "Server");
-            Server.Stop("Shutdown.");
+            Server.StopAsync("Shutdown.").Wait();
             Server.Dispose();
             Environment.Exit(0);
         }
@@ -427,8 +439,8 @@ namespace VoiceCraft.Server
 
             if (short.TryParse(args[0], out short value))
             {
-                if (value > 120 || value < 1)
-                    throw new ArgumentException("Invalid distance! Distance can only be between 1 and 120!");
+                if (value > Constants.MaxProximityDistance || value < Constants.MinProximityDistance)
+                    throw new ArgumentException($"Invalid distance! Distance can only be between {Constants.MinProximityDistance} and {Constants.MaxProximityDistance}!");
                 Server.ServerProperties.DefaultSettings.ProximityDistance = value;
                 Logger.LogToConsole(LogType.Success, $"Set proximity distance: {value}", "Commands");
             }
@@ -553,6 +565,6 @@ namespace VoiceCraft.Server
                 throw new Exception("Invalid arguments!");
             }
         }
+        #endregion
     }
-    #endregion
 }

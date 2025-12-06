@@ -4,6 +4,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Maui.Models;
 using VoiceCraft.Maui.VoiceCraft;
+using VoiceCraft.Maui.Interfaces;
 
 namespace VoiceCraft.Maui.Services
 {
@@ -13,20 +14,6 @@ namespace VoiceCraft.Maui.Services
         public const int Channels = 1;
         public const int FrameSizeMS = 20;
 
-        //State Variables
-        public string StatusMessage { get; private set; } = "Connecting...";
-        private string Username = "";
-
-        //VOIP and Audio handler variables
-        public VoiceCraftClient Client { get; private set; }
-        private int RecordDetection;
-        private IWaveIn? AudioRecorder;
-        private IWavePlayer? AudioPlayer;
-        private SoftLimiter? Normalizer;
-        private readonly SettingsModel Settings;
-        private readonly ServerModel Server;
-
-        #region Delegates
         public delegate void Started();
         public delegate void Stopped(string? reason = null);
         public delegate void Deny(string? reason = null);
@@ -42,7 +29,7 @@ namespace VoiceCraft.Maui.Services
         public delegate void ParticipantUpdated(VoiceCraftParticipant participant);
         public delegate void ParticipantStartedSpeaking(VoiceCraftParticipant participant);
         public delegate void ParticipantStoppedSpeaking(VoiceCraftParticipant participant);
-        #endregion
+
 
         #region Events
         public event Started? OnStarted;
@@ -62,12 +49,25 @@ namespace VoiceCraft.Maui.Services
         public event ParticipantStoppedSpeaking? OnParticipantStoppedSpeaking;
         #endregion
 
-        public VoipService(ServerModel server)
+        #region Fields
+        public SettingsModel Settings { get; private set; }
+        public ServerModel Server { get; private set; }
+        public VoiceCraftClient Client { get; private set; }
+        public string StatusMessage { get; private set; } = string.Empty;
+        public string Username { get; private set; } = string.Empty;
+
+        private IWaveIn AudioRecorder;
+        private IWavePlayer AudioPlayer;
+        private SoftLimiter Normalizer;
+        private long RecordDetection = 0;
+        #endregion
+
+        public VoipService(ServerModel server, IDatabaseService databaseService)
         {
-            Settings = Database.Instance.Settings;
+            Settings = databaseService.Settings;
             Server = server;
 
-            Client = new VoiceCraftClient(new WaveFormat(SampleRate, Channels), FrameSizeMS, Settings.ClientPort, Settings.JitterBufferSize)
+            Client = new VoiceCraftClient(new WaveFormat(SampleRate, Channels), FrameSizeMS, Settings.ClientPort, Settings.JitterBufferSize, Settings.Bitrate, Settings.UseDtx)
             {
                 LinearProximity = Settings.LinearVolume,
                 UseCustomProtocol = Settings.CustomClientProtocol,
@@ -93,7 +93,7 @@ namespace VoiceCraft.Maui.Services
         {
             await Task.Run(async () =>
             {
-                var audioManager = new AudioManager();
+                var audioManager = new AudioManager(Settings);
 
                 if (Settings.SoftLimiterEnabled)
                 {
@@ -126,6 +126,7 @@ namespace VoiceCraft.Maui.Services
                 {
                     Client.OnConnected -= ClientConnected;
                     Client.OnDisconnected -= ClientDisconnected;
+                    Client.OnFailed -= ClientFailed;
                     Client.OnDeny -= ClientDeny;
                     Client.OnBinded -= ClientBinded;
                     Client.OnUnbinded -= ClientUnbinded;
@@ -146,7 +147,7 @@ namespace VoiceCraft.Maui.Services
                     AudioPlayer.Dispose();
                     AudioRecorder.Dispose();
 
-                    Client.Disconnect();
+                    await Client.DisconnectAsync();
                     Client.Dispose();
                 }
             }, CT);
@@ -162,7 +163,7 @@ namespace VoiceCraft.Maui.Services
                 await Task.Delay(200, CT);
                 try
                 {
-                    var currentSpeakingState = Environment.TickCount - (long)RecordDetection < 500;
+                    var currentSpeakingState = Environment.TickCount64 - RecordDetection < 500;
                     if (previousSpeakingState != currentSpeakingState)
                     {
                         if(currentSpeakingState)
@@ -180,7 +181,9 @@ namespace VoiceCraft.Maui.Services
                         OnParticipantStoppedSpeaking?.Invoke(participant);
                     }
 
-                    var newPart = Client.Participants.Where(x => Environment.TickCount64 - x.Value.LastSpoke < 500);
+                    var newPart = Client.Participants.Where(x => 
+                        Environment.TickCount64 - x.Value.LastSpoke < 500 && 
+                        !talkingParticipants.Contains(x.Value));
                     foreach (var participant in newPart)
                     {
                         talkingParticipants.Add(participant.Value);
@@ -194,18 +197,50 @@ namespace VoiceCraft.Maui.Services
             }
         }
 
+        private float prevIn = 0;
+        private float prevOut = 0;
+
         //Audio Events
         private void DataAvailable(object? sender, WaveInEventArgs e)
         {
-            if (Client.Muted || Client.Deafened)
+            var client = Client; // Cache locally for thread-safety
+            if (client == null) return;
+            if (client.Muted || client.Deafened)
                 return;
+
+            // Guard against odd bytes (16-bit audio requires even bytes)
+            int bytesToProcess = e.BytesRecorded - (e.BytesRecorded % 2);
+
+            // Noise Suppression (High Pass Filter 80Hz)
+            if (Settings.NoiseSuppression)
+            {
+                float alpha = 0.989f;
+                for (int i = 0; i < bytesToProcess; i += 2)
+                {
+                    // Ensure buffer safety
+                    if (i + 1 >= e.Buffer.Length) break;
+
+                    short sample = (short)((e.Buffer[i + 1] << 8) | e.Buffer[i]);
+                    float input = sample;
+                    float output = alpha * (prevOut + input - prevIn);
+                    
+                    prevIn = input;
+                    prevOut = output;
+                    
+                    short outSample = (short)Math.Clamp(output, short.MinValue, short.MaxValue);
+                    e.Buffer[i] = (byte)(outSample & 0xFF);
+                    e.Buffer[i + 1] = (byte)(outSample >> 8);
+                }
+            }
 
             float max = 0;
             // interpret as 16 bit audio
-            for (int index = 0; index < e.BytesRecorded; index += 2)
+            for (int index = 0; index < bytesToProcess; index += 2)
             {
-                short sample = (short)((e.Buffer[index + 1] << 8) |
-                                        e.Buffer[index + 0]);
+                 // Ensure buffer safety
+                if (index + 1 >= e.Buffer.Length) break;
+
+                short sample = (short)((e.Buffer[index + 1] << 8) | e.Buffer[index + 0]);
                 // to floating point
                 var sample32 = sample / 32768f;
                 // absolute value 
@@ -215,12 +250,12 @@ namespace VoiceCraft.Maui.Services
 
             if (max >= Settings.MicrophoneDetectionPercentage)
             {
-                RecordDetection = Environment.TickCount;
+                RecordDetection = Environment.TickCount64;
             }
 
-            if (Environment.TickCount - (long)RecordDetection < 1000)
+            if (Environment.TickCount64 - RecordDetection < 1000)
             {
-                Client.SendAudio(e.Buffer, e.BytesRecorded);
+                client.SendAudio(e.Buffer, bytesToProcess);
             }
         }
 

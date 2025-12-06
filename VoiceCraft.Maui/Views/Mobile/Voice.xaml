@@ -9,9 +9,7 @@
              Title="Voice"
              x:DataType="vm:VoiceViewModel"
              Shell.TabBarIsVisible="False">
-    <ContentPage.BindingContext>
-        <vm:VoiceViewModel />
-    </ContentPage.BindingContext>
+
 
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="False" IsVisible="False" />
@@ -19,440 +17,447 @@
 
     <Grid>
         <Image Aspect="AspectFill" Source="{AppThemeBinding Default='bgdark.png', Dark='bgdark.png', Light='bglight.png'}" />
-        <ScrollView>
-            <Grid RowDefinitions="Auto, *">
-                <Border Grid.Row="0"
-                        HorizontalOptions="Fill"
-                        VerticalOptions="StartAndExpand">
-                    <Grid ColumnDefinitions="Auto, Auto, *, Auto">
-                        <toolkit:Icon Grid.Column="0"
-                                      Margin="3,3,20,3"
-                                      HeightRequest="35"
-                                      Source="microphone.png"
-                                      TintColor="{AppThemeBinding Dark='White',
-                                                                  Light='Black'}" />
-                        <Label Grid.Column="1"
-                               FontAttributes="Bold"
-                               FontSize="Title"
-                               Text="Voice"
-                               VerticalTextAlignment="Center" />
-                        <Label Grid.Column="2"
-                               FontAttributes="Bold"
-                               FontSize="Title"
-                               HorizontalTextAlignment="End"
-                               Text="{Binding Participants.Count, StringFormat='Connected Participants: {0}'}"
-                               VerticalTextAlignment="Center" />
+        <Grid RowDefinitions="Auto, *">
+            <Border Grid.Row="0"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="StartAndExpand">
+                <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                    <toolkit:Icon Grid.Column="0"
+                                  Margin="3,3,20,3"
+                                  HeightRequest="35"
+                                  Source="microphone.png"
+                                  TintColor="{AppThemeBinding Dark='White',
+                                                              Light='Black'}" />
+                    <Label Grid.Column="1"
+                           FontAttributes="Bold"
+                           FontSize="Title"
+                           Text="Voice"
+                           VerticalTextAlignment="Center" />
+                    <Label Grid.Column="2"
+                           FontAttributes="Bold"
+                           FontSize="Title"
+                           HorizontalTextAlignment="End"
+                           Text="{Binding Participants.Count, StringFormat='Connected Participants: {0}'}"
+                           VerticalTextAlignment="Center" />
 
-                        <toolkit:ContentButton Grid.Column="3"
-                                               Margin="10,0"
-                                               Command="{Binding ShowHideChannelsCommand}"
-                                               HeightRequest="45"
-                                               HorizontalOptions="FillAndExpand"
-                                               WidthRequest="45">
-                            <Border x:Name="channelsBorder"
-                                    Padding="2"
-                                    Background="#2fFFFFFF"
-                                    StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="5.5" />
-                                </Border.StrokeShape>
-                                <toolkit:Icon Source="view_list.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
-                            </Border>
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroupList>
-                                    <VisualStateGroup>
-                                        <VisualState x:Name="Normal" />
-                                        <VisualState x:Name="Pressed">
-                                            <VisualState.Setters>
-                                                <Setter TargetName="channelsBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState x:Name="PointerOver">
-                                            <VisualState.Setters>
-                                                <Setter TargetName="channelsBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateGroupList>
-                            </VisualStateManager.VisualStateGroups>
-                        </toolkit:ContentButton>
+                    <toolkit:ContentButton Grid.Column="3"
+                                           Margin="10,0"
+                                           Command="{Binding ShowHideChannelsCommand}"
+                                           HeightRequest="45"
+                                           HorizontalOptions="FillAndExpand"
+                                           WidthRequest="45">
+                        <Border x:Name="channelsBorder"
+                                Padding="2"
+                                Background="#2fFFFFFF"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="5.5" />
+                            </Border.StrokeShape>
+                            <toolkit:Icon Source="view_list.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
+                        </Border>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroupList>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter TargetName="channelsBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter TargetName="channelsBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </VisualStateManager.VisualStateGroups>
+                    </toolkit:ContentButton>
 
-                    </Grid>
-                </Border>
-                <Grid Grid.Row="1">
-                    <Grid RowDefinitions="Auto, *, Auto">
-                        <Grid.Style>
-                            <Style TargetType="Grid">
+                </Grid>
+            </Border>
+            <Grid Grid.Row="1">
+                <Grid RowDefinitions="Auto, *, Auto">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowChannels}"
+                                             TargetType="Grid"
+                                             Value="True">
+                                    <Setter Property="IsVisible" Value="Collapse" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ShowParticipantVolume}"
+                                             TargetType="Grid"
+                                             Value="True">
+                                    <Setter Property="IsVisible" Value="Collapse" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Border Grid.Row="0"
+                            Margin="10"
+                            HorizontalOptions="Fill"
+                            VerticalOptions="StartAndExpand">
+                        <Label FontSize="Title"
+                               HorizontalTextAlignment="Center"
+                               Text="{Binding StatusText}" />
+                    </Border>
+                    <CollectionView Grid.Row="1"
+                                    Margin="10"
+                                    ItemsSource="{Binding Participants}">
+                        <CollectionView.EmptyView>
+                            <Grid>
+                                <Label FontAttributes="Bold"
+                                       FontSize="Medium"
+                                       HorizontalOptions="Center"
+                                       Text="Waiting for participants..."
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout ItemSpacing="10" Orientation="Vertical" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:ParticipantModel">
+                                <Border HorizontalOptions="Fill"
+                                        StrokeThickness="2.5"
+                                        VerticalOptions="StartAndExpand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSpeaking}"
+                                                             TargetType="Border"
+                                                             Value="True">
+                                                    <Setter Property="Stroke" Value="#3f11FF11" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid ColumnDefinitions="*, 38, 38, 38">
+                                        <Label Grid.Column="0"
+                                               Margin="5"
+                                               FontSize="Title"
+                                               Text="{Binding Participant.Name}"
+                                               VerticalTextAlignment="Center" />
+                                        <toolkit:Icon Grid.Column="1"
+                                                      HorizontalOptions="End"
+                                                      Source="microphone_off.png"
+                                                      TintColor="{AppThemeBinding Dark='White',
+                                                                                  Light='Black'}">
+                                            <toolkit:Icon.Style>
+                                                <Style TargetType="toolkit:Icon">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsMuted}"
+                                                                     TargetType="toolkit:Icon"
+                                                                     Value="True">
+                                                            <Setter Property="IsVisible" Value="Visible" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsMuted}"
+                                                                     TargetType="toolkit:Icon"
+                                                                     Value="False">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </toolkit:Icon.Style>
+                                        </toolkit:Icon>
+                                        <toolkit:Icon Grid.Column="2"
+                                                      HorizontalOptions="End"
+                                                      Source="headphones_off.png"
+                                                      TintColor="{AppThemeBinding Dark='White',
+                                                                                  Light='Black'}">
+                                            <toolkit:Icon.Style>
+                                                <Style TargetType="toolkit:Icon">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsDeafened}"
+                                                                     TargetType="toolkit:Icon"
+                                                                     Value="True">
+                                                            <Setter Property="IsVisible" Value="Visible" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsDeafened}"
+                                                                     TargetType="toolkit:Icon"
+                                                                     Value="False">
+                                                            <Setter Property="IsVisible" Value="False" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </toolkit:Icon.Style>
+                                        </toolkit:Icon>
+                                        <toolkit:ContentButton Grid.Column="3"
+                                                               Command="{Binding Source={x:Reference voice}, Path=BindingContext.ShowVolumeCommand}"
+                                                               CommandParameter="{Binding}">
+                                            <Border x:Name="volumeBorder"
+                                                    Padding="2"
+                                                    Background="#2fFFFFFF"
+                                                    StrokeThickness="0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="5.5" />
+                                                </Border.StrokeShape>
+                                                <toolkit:Icon Source="volume_high.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
+                                            </Border>
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroupList>
+                                                    <VisualStateGroup>
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="Pressed">
+                                                            <VisualState.Setters>
+                                                                <Setter TargetName="volumeBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                        <VisualState x:Name="PointerOver">
+                                                            <VisualState.Setters>
+                                                                <Setter TargetName="volumeBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateGroupList>
+                                            </VisualStateManager.VisualStateGroups>
+                                        </toolkit:ContentButton>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Border Grid.Row="2"
+                            Margin="10"
+                            HorizontalOptions="Fill"
+                            StrokeThickness="2.5"
+                            VerticalOptions="StartAndExpand">
+                        <Border.Style>
+                            <Style TargetType="Border">
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ShowChannels}"
-                                                 TargetType="Grid"
+                                    <DataTrigger Binding="{Binding IsSpeaking}"
+                                                 TargetType="Border"
                                                  Value="True">
-                                        <Setter Property="IsVisible" Value="Collapse" />
+                                        <Setter Property="Stroke" Value="#3f11FF11" />
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding ShowParticipantVolume}"
-                                                 TargetType="Grid"
+                                    <DataTrigger Binding="{Binding ShowChannels}"
+                                                 TargetType="Border"
                                                  Value="True">
                                         <Setter Property="IsVisible" Value="Collapse" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </Grid.Style>
-                        <Border Grid.Row="0"
-                                Margin="10"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="StartAndExpand">
-                            <Label FontSize="Title"
-                                   HorizontalTextAlignment="Center"
-                                   Text="{Binding StatusText}" />
-                        </Border>
-                        <CollectionView Grid.Row="1"
-                                        Margin="10"
-                                        ItemsSource="{Binding Participants}">
+                        </Border.Style>
+                        <Grid ColumnDefinitions="*, *, *" ColumnSpacing="5">
+                            <Button Grid.Column="0"
+                                    BackgroundColor="#4fF00000"
+                                    Command="{Binding DisconnectCommand}"
+                                    CommandParameter="{Binding}"
+                                    Text="Disconnect"
+                                    TextColor="{AppThemeBinding Dark='White',
+                                                                Light='Black'}" />
+                            <Button Grid.Column="1"
+                                    BackgroundColor="#2fFFFFFF"
+                                    Command="{Binding MuteUnmuteCommand}"
+                                    CommandParameter="{Binding}"
+                                    Text="Mute"
+                                    TextColor="{AppThemeBinding Dark='White',
+                                                                Light='Black'}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMuted}"
+                                                         TargetType="Button"
+                                                         Value="True">
+                                                <Setter Property="Background" Value="#3fFFFFFF" />
+                                                <Setter Property="Text" Value="Unmute" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Grid.Column="2"
+                                    BackgroundColor="#2fFFFFFF"
+                                    Command="{Binding DeafenUndeafenCommand}"
+                                    CommandParameter="{Binding}"
+                                    Text="Deafen"
+                                    TextColor="{AppThemeBinding Dark='White',
+                                                                Light='Black'}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDeafened}"
+                                                         TargetType="Button"
+                                                         Value="True">
+                                                <Setter Property="Background" Value="#3fFFFFFF" />
+                                                <Setter Property="Text" Value="Undeafen" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Grid>
+                <Grid Margin="10,10,10,10" RowDefinitions="Auto, *">
+                    <Border Grid.Row="0" VerticalOptions="StartAndExpand">
+                        <Grid ColumnDefinitions="Auto, Auto, *">
+                            <toolkit:Icon Grid.Column="0"
+                                          Margin="3,3,20,3"
+                                          HeightRequest="35"
+                                          Source="view_list.png"
+                                          TintColor="{AppThemeBinding Dark='White',
+                                                                      Light='Black'}" />
+                            <Label Grid.Column="1"
+                                   FontAttributes="Bold"
+                                   FontSize="Title"
+                                   Text="Channels"
+                                   VerticalTextAlignment="Center" />
+
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="1" Margin="0,10,0,0">
+                        <CollectionView ItemsSource="{Binding Channels}">
                             <CollectionView.ItemsLayout>
-                                <LinearItemsLayout ItemSpacing="10" Orientation="Vertical" />
+                                <LinearItemsLayout ItemSpacing="5" Orientation="Vertical" />
                             </CollectionView.ItemsLayout>
                             <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="model:ParticipantModel">
-                                    <Border HorizontalOptions="Fill"
-                                            StrokeThickness="2.5"
-                                            VerticalOptions="StartAndExpand">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSpeaking}"
-                                                                 TargetType="Border"
-                                                                 Value="True">
-                                                        <Setter Property="Stroke" Value="#3f11FF11" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid ColumnDefinitions="*, 38, 38, 38">
-                                            <Label Grid.Column="0"
-                                                   Margin="5"
-                                                   FontSize="Title"
-                                                   Text="{Binding Participant.Name}"
-                                                   VerticalTextAlignment="Center" />
-                                            <toolkit:Icon Grid.Column="1"
-                                                          HorizontalOptions="End"
-                                                          Source="microphone_off.png"
-                                                          TintColor="{AppThemeBinding Dark='White',
-                                                                                      Light='Black'}">
-                                                <toolkit:Icon.Style>
-                                                    <Style TargetType="toolkit:Icon">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsMuted}"
-                                                                         TargetType="toolkit:Icon"
-                                                                         Value="True">
-                                                                <Setter Property="IsVisible" Value="Visible" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsMuted}"
-                                                                         TargetType="toolkit:Icon"
-                                                                         Value="False">
-                                                                <Setter Property="IsVisible" Value="False" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </toolkit:Icon.Style>
-                                            </toolkit:Icon>
-                                            <toolkit:Icon Grid.Column="2"
-                                                          HorizontalOptions="End"
-                                                          Source="headphones_off.png"
-                                                          TintColor="{AppThemeBinding Dark='White',
-                                                                                      Light='Black'}">
-                                                <toolkit:Icon.Style>
-                                                    <Style TargetType="toolkit:Icon">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsDeafened}"
-                                                                         TargetType="toolkit:Icon"
-                                                                         Value="True">
-                                                                <Setter Property="IsVisible" Value="Visible" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsDeafened}"
-                                                                         TargetType="toolkit:Icon"
-                                                                         Value="False">
-                                                                <Setter Property="IsVisible" Value="False" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </toolkit:Icon.Style>
-                                            </toolkit:Icon>
-                                            <toolkit:ContentButton Grid.Column="3"
-                                                                   Command="{Binding Source={x:Reference voice}, Path=BindingContext.ShowVolumeCommand}"
-                                                                   CommandParameter="{Binding}">
-                                                <Border x:Name="volumeBorder"
-                                                        Padding="2"
-                                                        Background="#2fFFFFFF"
-                                                        StrokeThickness="0">
-                                                    <Border.StrokeShape>
-                                                        <RoundRectangle CornerRadius="5.5" />
-                                                    </Border.StrokeShape>
-                                                    <toolkit:Icon Source="volume_high.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
-                                                </Border>
-                                                <VisualStateManager.VisualStateGroups>
-                                                    <VisualStateGroupList>
-                                                        <VisualStateGroup>
-                                                            <VisualState x:Name="Normal" />
-                                                            <VisualState x:Name="Pressed">
-                                                                <VisualState.Setters>
-                                                                    <Setter TargetName="volumeBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-                                                            <VisualState x:Name="PointerOver">
-                                                                <VisualState.Setters>
-                                                                    <Setter TargetName="volumeBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-                                                        </VisualStateGroup>
-                                                    </VisualStateGroupList>
-                                                </VisualStateManager.VisualStateGroups>
-                                            </toolkit:ContentButton>
-                                        </Grid>
-                                    </Border>
+                                <DataTemplate x:DataType="model:ChannelModel">
+                                    <Grid ColumnDefinitions="Auto, *, Auto">
+                                        <Label Grid.Column="0"
+                                               FontSize="Medium"
+                                               Text="{Binding Name}"
+                                               VerticalTextAlignment="Center" />
+                                        <toolkit:Icon Grid.Column="1"
+                                                      HeightRequest="45"
+                                                      HorizontalOptions="EndAndExpand"
+                                                      Source="lock_outline.png"
+                                                      TintColor="{AppThemeBinding Dark='White',
+                                                                                  Light='Black'}"
+                                                      WidthRequest="45">
+                                            <toolkit:Icon.Style>
+                                                <Style TargetType="toolkit:Icon">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RequiresPassword}"
+                                                                     TargetType="toolkit:Icon"
+                                                                     Value="False">
+                                                            <Setter Property="IsVisible" Value="Collapse" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </toolkit:Icon.Style>
+                                        </toolkit:Icon>
+                                        <toolkit:ContentButton Grid.Column="2"
+                                                               Command="{Binding Source={x:Reference voice}, Path=BindingContext.JoinChannelCommand}"
+                                                               CommandParameter="{Binding}"
+                                                               HeightRequest="45"
+                                                               HorizontalOptions="EndAndExpand"
+                                                               WidthRequest="45">
+                                            <Border x:Name="channelBorder"
+                                                    Padding="2"
+                                                    Background="#2fFFFFFF"
+                                                    StrokeThickness="0">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="5.5" />
+                                                </Border.StrokeShape>
+                                                <toolkit:Icon Source="arrow_right_thick.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}">
+                                                    <toolkit:Icon.Style>
+                                                        <Style TargetType="toolkit:Icon">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Joined}"
+                                                                             TargetType="toolkit:Icon"
+                                                                             Value="True">
+                                                                    <Setter Property="Source" Value="exit_run.png" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </toolkit:Icon.Style>
+                                                </toolkit:Icon>
+                                            </Border>
+                                            <VisualStateManager.VisualStateGroups>
+                                                <VisualStateGroupList>
+                                                    <VisualStateGroup>
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="Pressed">
+                                                            <VisualState.Setters>
+                                                                <Setter TargetName="channelBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                        <VisualState x:Name="PointerOver">
+                                                            <VisualState.Setters>
+                                                                <Setter TargetName="channelBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateGroupList>
+                                            </VisualStateManager.VisualStateGroups>
+                                        </toolkit:ContentButton>
+                                    </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
-                        <Border Grid.Row="2"
-                                Margin="10"
-                                HorizontalOptions="Fill"
-                                StrokeThickness="2.5"
-                                VerticalOptions="StartAndExpand">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsSpeaking}"
-                                                     TargetType="Border"
-                                                     Value="True">
-                                            <Setter Property="Stroke" Value="#3f11FF11" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ShowChannels}"
-                                                     TargetType="Border"
-                                                     Value="True">
-                                            <Setter Property="IsVisible" Value="Collapse" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <Grid ColumnDefinitions="*, *, *" ColumnSpacing="5">
-                                <Button Grid.Column="0"
-                                        BackgroundColor="#4fF00000"
-                                        Command="{Binding DisconnectCommand}"
-                                        CommandParameter="{Binding}"
-                                        Text="Disconnect"
-                                        TextColor="{AppThemeBinding Dark='White',
-                                                                    Light='Black'}" />
-                                <Button Grid.Column="1"
-                                        BackgroundColor="#2fFFFFFF"
-                                        Command="{Binding MuteUnmuteCommand}"
-                                        CommandParameter="{Binding}"
-                                        Text="Mute"
-                                        TextColor="{AppThemeBinding Dark='White',
-                                                                    Light='Black'}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsMuted}"
-                                                             TargetType="Button"
-                                                             Value="True">
-                                                    <Setter Property="Background" Value="#3fFFFFFF" />
-                                                    <Setter Property="Text" Value="Unmute" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
+                    </Border>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowChannels}"
+                                             TargetType="Grid"
+                                             Value="False">
+                                    <Setter Property="IsVisible" Value="Collapse" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+                <Grid Margin="10,10,10,10" RowDefinitions="Auto, Auto">
+                    <Border Grid.Row="0" VerticalOptions="StartAndExpand">
+                        <Grid ColumnDefinitions="Auto, Auto, *">
+                            <toolkit:Icon Grid.Column="0"
+                                          Margin="3,3,20,3"
+                                          HeightRequest="35"
+                                          Source="volume_high.png"
+                                          TintColor="{AppThemeBinding Dark='White',
+                                                                      Light='Black'}" />
+                            <Label Grid.Column="1"
+                                   FontAttributes="Bold"
+                                   FontSize="Title"
+                                   Text="{Binding SelectedParticipant.Participant.Name}"
+                                   VerticalTextAlignment="Center" />
 
-                                <Button Grid.Column="2"
-                                        BackgroundColor="#2fFFFFFF"
-                                        Command="{Binding DeafenUndeafenCommand}"
-                                        CommandParameter="{Binding}"
-                                        Text="Deafen"
-                                        TextColor="{AppThemeBinding Dark='White',
-                                                                    Light='Black'}">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsDeafened}"
-                                                             TargetType="Button"
-                                                             Value="True">
-                                                    <Setter Property="Background" Value="#3fFFFFFF" />
-                                                    <Setter Property="Text" Value="Undeafen" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                    <Grid Margin="10,10,10,10" RowDefinitions="Auto, *">
-                        <Border Grid.Row="0" VerticalOptions="StartAndExpand">
-                            <Grid ColumnDefinitions="Auto, Auto, *">
-                                <toolkit:Icon Grid.Column="0"
-                                              Margin="3,3,20,3"
-                                              HeightRequest="35"
-                                              Source="view_list.png"
-                                              TintColor="{AppThemeBinding Dark='White',
-                                                                          Light='Black'}" />
-                                <Label Grid.Column="1"
-                                       FontAttributes="Bold"
-                                       FontSize="Title"
-                                       Text="Channels"
-                                       VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Border>
 
-                            </Grid>
-                        </Border>
-                        <Border Grid.Row="1" Margin="0,10,0,0">
-                            <CollectionView ItemsSource="{Binding Channels}">
-                                <CollectionView.ItemsLayout>
-                                    <LinearItemsLayout ItemSpacing="5" Orientation="Vertical" />
-                                </CollectionView.ItemsLayout>
-                                <CollectionView.ItemTemplate>
-                                    <DataTemplate x:DataType="model:ChannelModel">
-                                        <Grid ColumnDefinitions="Auto, *, Auto">
-                                            <Label Grid.Column="0"
-                                                   FontSize="Medium"
-                                                   Text="{Binding Name}"
-                                                   VerticalTextAlignment="Center" />
-                                            <toolkit:Icon Grid.Column="1"
-                                                          HeightRequest="45"
-                                                          HorizontalOptions="EndAndExpand"
-                                                          Source="lock_outline.png"
-                                                          TintColor="{AppThemeBinding Dark='White',
-                                                                                      Light='Black'}"
-                                                          WidthRequest="45">
-                                                <toolkit:Icon.Style>
-                                                    <Style TargetType="toolkit:Icon">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding RequiresPassword}"
-                                                                         TargetType="toolkit:Icon"
-                                                                         Value="False">
-                                                                <Setter Property="IsVisible" Value="Collapse" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </toolkit:Icon.Style>
-                                            </toolkit:Icon>
-                                            <toolkit:ContentButton Grid.Column="2"
-                                                                   Command="{Binding Source={x:Reference voice}, Path=BindingContext.JoinChannelCommand}"
-                                                                   CommandParameter="{Binding}"
-                                                                   HeightRequest="45"
-                                                                   HorizontalOptions="EndAndExpand"
-                                                                   WidthRequest="45">
-                                                <Border x:Name="channelBorder"
-                                                        Padding="2"
-                                                        Background="#2fFFFFFF"
-                                                        StrokeThickness="0">
-                                                    <Border.StrokeShape>
-                                                        <RoundRectangle CornerRadius="5.5" />
-                                                    </Border.StrokeShape>
-                                                    <toolkit:Icon Source="arrow_right_thick.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}">
-                                                        <toolkit:Icon.Style>
-                                                            <Style TargetType="toolkit:Icon">
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding Joined}"
-                                                                                 TargetType="toolkit:Icon"
-                                                                                 Value="True">
-                                                                        <Setter Property="Source" Value="exit_run.png" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </toolkit:Icon.Style>
-                                                    </toolkit:Icon>
-                                                </Border>
-                                                <VisualStateManager.VisualStateGroups>
-                                                    <VisualStateGroupList>
-                                                        <VisualStateGroup>
-                                                            <VisualState x:Name="Normal" />
-                                                            <VisualState x:Name="Pressed">
-                                                                <VisualState.Setters>
-                                                                    <Setter TargetName="channelBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonPressedLight}, Light={StaticResource Key=PrimaryButtonPressedDark}}" />
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-                                                            <VisualState x:Name="PointerOver">
-                                                                <VisualState.Setters>
-                                                                    <Setter TargetName="channelBorder" Property="Background" Value="{AppThemeBinding Dark={StaticResource Key=PrimaryButtonHoverLight}, Light={StaticResource Key=PrimaryButtonHoverDark}}" />
-                                                                </VisualState.Setters>
-                                                            </VisualState>
-                                                        </VisualStateGroup>
-                                                    </VisualStateGroupList>
-                                                </VisualStateManager.VisualStateGroups>
-                                            </toolkit:ContentButton>
-                                        </Grid>
-                                    </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
-                        </Border>
-                        <Grid.Style>
-                            <Style TargetType="Grid">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ShowChannels}"
-                                                 TargetType="Grid"
-                                                 Value="False">
-                                        <Setter Property="IsVisible" Value="Collapse" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Style>
-                    </Grid>
-                    <Grid Margin="10,10,10,10" RowDefinitions="Auto, Auto">
-                        <Border Grid.Row="0" VerticalOptions="StartAndExpand">
-                            <Grid ColumnDefinitions="Auto, Auto, *">
-                                <toolkit:Icon Grid.Column="0"
-                                              Margin="3,3,20,3"
-                                              HeightRequest="35"
-                                              Source="volume_high.png"
-                                              TintColor="{AppThemeBinding Dark='White',
-                                                                          Light='Black'}" />
-                                <Label Grid.Column="1"
-                                       FontAttributes="Bold"
-                                       FontSize="Title"
-                                       Text="{Binding SelectedParticipant.Participant.Name}"
-                                       VerticalTextAlignment="Center" />
+                    <Border Grid.Row="1" Margin="0,10,0,0">
+                        <Grid RowDefinitions="Auto, Auto, *">
+                            <Label Grid.Row="0"
+                                   Margin="5,0,5,0"
+                                   FontSize="Medium"
+                                   Text="{Binding SelectedParticipant.Volume, StringFormat='{0:P0}'}"
+                                   VerticalOptions="Center" />
+                            <Slider Grid.Row="1"
+                                    Maximum="2"
+                                    Minimum="0"
+                                    Value="{Binding SelectedParticipant.Volume}" />
+                            <Button Grid.Row="2"
+                                    Margin="0,15,0,0"
+                                    BackgroundColor="#4fF00000"
+                                    Command="{Binding HideVolumeCommand}"
+                                    Text="Exit"
+                                    TextColor="{AppThemeBinding Dark='White',
+                                                                Light='Black'}" />
+                        </Grid>
+                    </Border>
 
-                            </Grid>
-                        </Border>
-
-                        <Border Grid.Row="1" Margin="0,10,0,0">
-                            <Grid RowDefinitions="Auto, Auto, *">
-                                <Label Grid.Row="0"
-                                       Margin="5,0,5,0"
-                                       FontSize="Medium"
-                                       Text="{Binding SelectedParticipant.Volume, StringFormat='{0:P0}'}"
-                                       VerticalOptions="Center" />
-                                <Slider Grid.Row="1"
-                                        Maximum="2"
-                                        Minimum="0"
-                                        Value="{Binding SelectedParticipant.Volume}" />
-                                <Button Grid.Row="2"
-                                        Margin="0,15,0,0"
-                                        BackgroundColor="#4fF00000"
-                                        Command="{Binding HideVolumeCommand}"
-                                        Text="Exit"
-                                        TextColor="{AppThemeBinding Dark='White',
-                                                                    Light='Black'}" />
-                            </Grid>
-                        </Border>
-
-                        <Grid.Style>
-                            <Style TargetType="Grid">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ShowParticipantVolume}"
-                                                 TargetType="Grid"
-                                                 Value="False">
-                                        <Setter Property="IsVisible" Value="Collapse" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ShowChannels}"
-                                                 TargetType="Grid"
-                                                 Value="True">
-                                        <Setter Property="IsVisible" Value="Collapse" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Style>
-                    </Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowParticipantVolume}"
+                                             TargetType="Grid"
+                                             Value="False">
+                                    <Setter Property="IsVisible" Value="Collapse" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ShowChannels}"
+                                             TargetType="Grid"
+                                             Value="True">
+                                    <Setter Property="IsVisible" Value="Collapse" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                 </Grid>
             </Grid>
-        </ScrollView>
+        </Grid>
     </Grid>
 </ContentPage>

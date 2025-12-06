@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Buffers.Binary;
 
 namespace VoiceCraft.Core.Packets.VoiceCraft
 {
@@ -10,20 +11,18 @@ namespace VoiceCraft.Core.Packets.VoiceCraft
 
         public short Key { get; set; }
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        public override void Read(ReadOnlySpan<byte> buffer)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
-
-            Key = BitConverter.ToInt16(dataStream, offset); //Read Key - 2 bytes.
-            offset += sizeof(short);
-
-            return offset;
+            base.Read(buffer);
+            // Offset: Id(8) + Sequence(4) = 12
+            Key = BinaryPrimitives.ReadInt16LittleEndian(buffer.Slice(12));
         }
 
-        public override void WritePacket(ref List<byte> dataStream)
+        public override void Write(Span<byte> buffer)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Key));
+            base.Write(buffer);
+            // Offset: Type(1) + Id(8) + Sequence(4) = 13
+            BinaryPrimitives.WriteInt16LittleEndian(buffer.Slice(13), Key);
         }
     }
 }

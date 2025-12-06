@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
 
-namespace VoiceCraft.Core.Packets.MCComm
+namespace VoiceCraft.Core.Packets.MCComm;
+
+public class AckUpdate : MCCommPacket
 {
-    public class AckUpdate : MCCommPacket
-    {
-        public override byte PacketId => (byte)MCCommPacketTypes.AckUpdate;
+    public override byte PacketId => (byte)MCCommPacketTypes.AckUpdate;
 
-        public List<string> SpeakingPlayers = new List<string>();
-    }
+    public Collection<string> SpeakingPlayers { get; } = new Collection<string>();
 }

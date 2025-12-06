@@ -10,7 +10,8 @@ namespace VoiceCraft.Maui.VoiceCraft
     public class VoiceCraftClient : Core.Disposable
     {
         //Private Variables
-        public const string Version = "1.0.5";
+        // Keep client version aligned with server/Core constants to prevent login denial.
+        public const string Version = Core.Constants.Version;
         private ConnectionState State;
         private uint PacketCount;
         private readonly OpusEncoder Encoder;
@@ -73,7 +74,7 @@ namespace VoiceCraft.Maui.VoiceCraft
         public event ChannelLeft? OnChannelLeft;
         #endregion
 
-        public VoiceCraftClient(WaveFormat audioFormat, int frameSizeMS = 20, int ClientPort = 8080, int jitterBufferSize = 80)
+        public VoiceCraftClient(WaveFormat audioFormat, int frameSizeMS = 20, int ClientPort = 8080, int jitterBufferSize = 80, int bitrate = 16000, bool useDtx = true)
         {
             this.ClientPort = ClientPort;
             MCWSS = new Network.Sockets.MCWSS(ClientPort);
@@ -86,8 +87,10 @@ namespace VoiceCraft.Maui.VoiceCraft
 
             Encoder = new OpusEncoder(AudioFormat.SampleRate, AudioFormat.Channels, OpusSharp.Core.Enums.PreDefCtl.OPUS_APPLICATION_VOIP)
             {
-                Bitrate = 32000,
-                PacketLossPerc = 50
+                Bitrate = bitrate,
+                //SignalType = OpusSharp.Core.Enums.PreDefCtl.OPUS_SIGNAL_VOICE,
+                //UseDTX = useDtx, 
+                PacketLossPerc = 20 // 20% is more reasonable than 50%
             };
             AudioOutput = new MixingSampleProvider(PlaybackFormat) { ReadFully = true };
 
@@ -143,14 +146,14 @@ namespace VoiceCraft.Maui.VoiceCraft
             });
         }
 
-        public void Disconnect(string? reason = null)
+        public async Task DisconnectAsync(string? reason = null)
         {
             ObjectDisposedException.ThrowIf(IsDisposed && State == ConnectionState.Disconnected, nameof(VoiceCraftClient));
             if (State == ConnectionState.Disconnected || State == ConnectionState.Disconnecting) return;
             State = ConnectionState.Disconnecting;
 
-            VoiceCraftSocket.DisconnectAsync().Wait();
-            CustomClient.StopAsync().Wait();
+            await VoiceCraftSocket.DisconnectAsync();
+            await CustomClient.StopAsync();
             MCWSS.Stop();
             ClearParticipants();
             ClearChannels();
@@ -196,16 +199,31 @@ namespace VoiceCraft.Maui.VoiceCraft
             }
         }
 
+        private readonly byte[] _audioEncodeBuffer = new byte[1000]; // Reusable buffer for encoding
+        private readonly object _audioLock = new object();
+
         public void SendAudio(byte[] audio, int bytesRecorded)
         {
             if (Deafened || Muted || State != ConnectionState.Connected) return;
-            PacketCount++;
 
-            byte[] audioEncodeBuffer = new byte[1000];
-            var encodedBytes = Encoder.Encode(audio, bytesRecorded, audioEncodeBuffer);
-            byte[] audioTrimmed = audioEncodeBuffer.SkipLast(1000 - encodedBytes).ToArray();
+            lock (_audioLock)
+            {
+                PacketCount++;
+                int encodedBytes = Encoder.Encode(audio, bytesRecorded, _audioEncodeBuffer);
+                
+                // Memory Optimization: Use ArrayPool to avoid allocating new byte[] every 20ms
+                byte[] audioBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(encodedBytes);
+                Buffer.BlockCopy(_audioEncodeBuffer, 0, audioBuffer, 0, encodedBytes);
 
-            VoiceCraftSocket.Send(new Core.Packets.VoiceCraft.ClientAudio() { Audio = audioTrimmed, PacketCount = PacketCount });
+                VoiceCraftSocket.Send(new Core.Packets.VoiceCraft.ClientAudio() 
+                { 
+                    Audio = audioBuffer, 
+                    DataLength = encodedBytes,
+                    PacketCount = PacketCount 
+                });
+                
+                // Note: Array is returned to pool when packet is disposed by VoiceCraftSocket sender loop.
+            }
         }
 
         private void ClearParticipants()
@@ -231,13 +249,16 @@ namespace VoiceCraft.Maui.VoiceCraft
         {
             if(disposing)
             {
-                if (State == ConnectionState.Connected)
-                    Disconnect();
+                // Avoid blocking the calling thread; best-effort async cleanup.
+                if (State == ConnectionState.Connected || State == ConnectionState.Connecting)
+                {
+                    try { DisconnectAsync().Wait(3000); } catch { }
+                }
 
-                VoiceCraftSocket.Dispose();
-                MCWSS.Dispose();
-                CustomClient.Dispose();
-                Encoder.Dispose();
+                try { VoiceCraftSocket.Dispose(); } catch { }
+                try { MCWSS.Dispose(); } catch { }
+                try { CustomClient.Dispose(); } catch { }
+                try { Encoder.Dispose(); } catch { }
                 Channels.Clear();
                 Participants.Clear();
             }
@@ -260,9 +281,9 @@ namespace VoiceCraft.Maui.VoiceCraft
             }
         }
         
-        private void VoiceCraftSocketDisconnected(string? reason = null)
+        private async void VoiceCraftSocketDisconnected(string? reason = null)
         {
-            Disconnect(reason);
+            await DisconnectAsync(reason);
         }
 
         private void VoiceCraftSocketBinded(Core.Packets.VoiceCraft.Binded data, Network.NetPeer peer)
@@ -400,11 +421,11 @@ namespace VoiceCraft.Maui.VoiceCraft
             OnBinded?.Invoke(Username);
         }
 
-        private void MCWSSFailed(Exception ex)
+        private async void MCWSSFailed(Exception ex)
         {
             if (State != ConnectionState.Connected) return;
 
-            Disconnect(ex.Message);
+            await DisconnectAsync(ex.Message);
         }
 
         private void MCWSSPlayerTravelled(System.Numerics.Vector3 position, string Dimension)
@@ -449,11 +470,11 @@ namespace VoiceCraft.Maui.VoiceCraft
             OnUnbinded?.Invoke();
         }
 
-        private void CustomClientFailed(Exception ex)
+        private async void CustomClientFailed(Exception ex)
         {
             if (State != ConnectionState.Connected) return;
 
-            Disconnect(ex.Message);
+            await DisconnectAsync(ex.Message);
         }
 
         private void CustomClientUpdated(System.Numerics.Vector3 position, float rotation, float caveDensity, bool isUnderwater, string dimensionId, string levelId, string serverId)

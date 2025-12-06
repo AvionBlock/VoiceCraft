@@ -96,13 +96,14 @@ namespace VoiceCraft.Maui
         [return: GeneratedEnum]
         public override StartCommandResult OnStartCommand(Intent? intent, [GeneratedEnum] StartCommandFlags flags, int startId)
         {
+            StartVoiceCraftService();
             Cts = new CancellationTokenSource();
             Task.Run(() =>
             {
                 try
                 {
-                    StartVoiceCraftService();
-                    VoipService = new VoipService(Navigator.GetNavigationData<ServerModel>());
+                    var navService = IPlatformApplication.Current.Services.GetRequiredService<INavigationService>();
+                    VoipService = new VoipService(navService.GetNavigationData<ServerModel>(), IPlatformApplication.Current.Services.GetService<IDatabaseService>());
 
                     VoipService.OnStatusUpdated += StatusUpdated;
                     VoipService.OnSpeakingStarted += SpeakingStarted;
@@ -249,7 +250,7 @@ namespace VoiceCraft.Maui
                     easterEggLoop = null;
                 }
             }, Cts.Token);
-            return StartCommandResult.Sticky;
+            return StartCommandResult.NotSticky;
         }
 
         public override void OnDestroy()

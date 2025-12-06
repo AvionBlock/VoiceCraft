@@ -2,6 +2,7 @@
 using System;
 using System.Numerics;
 using System.Text;
+using System.Buffers.Binary;
 
 namespace VoiceCraft.Core.Packets.CustomClient
 {
@@ -17,72 +18,98 @@ namespace VoiceCraft.Core.Packets.CustomClient
         public string LevelId { get; set; } = string.Empty;
         public string ServerId { get; set; } = string.Empty;
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        public override void Read(ReadOnlySpan<byte> buffer)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
+            base.Read(buffer);
+            int offset = 0;
 
-            Position = new Vector3(BitConverter.ToSingle(dataStream, offset), BitConverter.ToSingle(dataStream, offset += sizeof(float)), BitConverter.ToSingle(dataStream, offset += sizeof(float)));
+            float x = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+            offset += sizeof(float);
+            float y = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+            offset += sizeof(float);
+            float z = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+            offset += sizeof(float);
+            Position = new Vector3(x, y, z);
+
+            Rotation = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
             offset += sizeof(float);
 
-            Rotation = BitConverter.ToSingle(dataStream, offset);
+            CaveDensity = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
             offset += sizeof(float);
 
-            CaveDensity = BitConverter.ToSingle(dataStream, offset);
-            offset += sizeof(float);
+            IsUnderwater = buffer[offset++] != 0;
 
-            IsUnderwater = BitConverter.ToBoolean(dataStream, offset);
-            offset += sizeof(bool);
-
-            var dimensionIdLength = BitConverter.ToInt32(dataStream, offset);
+            int dimLen = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
             offset += sizeof(int);
+            if (dimLen > 0)
+            {
+                DimensionId = Encoding.UTF8.GetString(buffer.Slice(offset, dimLen));
+                offset += dimLen;
+            }
 
-            if (dimensionIdLength > 0)
-                DimensionId = Encoding.UTF8.GetString(dataStream, offset, dimensionIdLength);
-
-            offset += dimensionIdLength;
-
-            var levelIdLength = BitConverter.ToInt32(dataStream, offset);
+            int levelLen = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
             offset += sizeof(int);
+            if (levelLen > 0)
+            {
+                LevelId = Encoding.UTF8.GetString(buffer.Slice(offset, levelLen));
+                offset += levelLen;
+            }
 
-            if (levelIdLength > 0)
-                LevelId = Encoding.UTF8.GetString(dataStream, offset, levelIdLength);
-
-            offset += levelIdLength;
-
-            var serverIdLength = BitConverter.ToInt32(dataStream, offset);
+            int serverLen = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
             offset += sizeof(int);
-
-            if (serverIdLength > 0)
-                Encoding.UTF8.GetString(dataStream, offset, serverIdLength);
-
-            offset += serverIdLength;
-
-            return offset;
+            if (serverLen > 0)
+            {
+                ServerId = Encoding.UTF8.GetString(buffer.Slice(offset, serverLen));
+                offset += serverLen; // Unnecessary for last field, but good practice
+            }
         }
 
-        public override void WritePacket(ref List<byte> dataStream)
+        public override void Write(Span<byte> buffer)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Position.X));
-            dataStream.AddRange(BitConverter.GetBytes(Position.Y));
-            dataStream.AddRange(BitConverter.GetBytes(Position.Z));
-            dataStream.AddRange(BitConverter.GetBytes(Rotation));
-            dataStream.AddRange(BitConverter.GetBytes(CaveDensity));
-            dataStream.AddRange(BitConverter.GetBytes(IsUnderwater));
-            dataStream.AddRange(BitConverter.GetBytes(DimensionId.Length));
+            base.Write(buffer);
+            int offset = 1;
 
-            if(DimensionId.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(DimensionId));
+            BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Position.X);
+            offset += sizeof(float);
+            BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Position.Y);
+            offset += sizeof(float);
+            BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Position.Z);
+            offset += sizeof(float);
 
-            dataStream.AddRange(BitConverter.GetBytes(LevelId.Length));
+            BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Rotation);
+            offset += sizeof(float);
 
-            if(LevelId.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(LevelId));
+            BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), CaveDensity);
+            offset += sizeof(float);
 
-            dataStream.AddRange(BitConverter.GetBytes(ServerId.Length));
+            buffer[offset++] = IsUnderwater ? (byte)1 : (byte)0;
 
-            if(ServerId.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(ServerId));
+            int dimBytes = Encoding.UTF8.GetByteCount(DimensionId);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), dimBytes);
+            offset += sizeof(int);
+            if (dimBytes > 0)
+            {
+                Encoding.UTF8.GetBytes(DimensionId, buffer.Slice(offset));
+                offset += dimBytes;
+            }
+
+            int levelBytes = Encoding.UTF8.GetByteCount(LevelId);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), levelBytes);
+            offset += sizeof(int);
+            if (levelBytes > 0)
+            {
+                Encoding.UTF8.GetBytes(LevelId, buffer.Slice(offset));
+                offset += levelBytes;
+            }
+
+            int serverBytes = Encoding.UTF8.GetByteCount(ServerId);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), serverBytes);
+            offset += sizeof(int);
+            if (serverBytes > 0)
+            {
+                Encoding.UTF8.GetBytes(ServerId, buffer.Slice(offset));
+                // offset += serverBytes;
+            }
         }
     }
 }

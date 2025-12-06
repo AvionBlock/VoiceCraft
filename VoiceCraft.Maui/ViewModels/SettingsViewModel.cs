@@ -1,48 +1,140 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using VoiceCraft.Maui.Services;
-using VoiceCraft.Maui.Models;
 using NAudio.Wave;
+using System.Collections.ObjectModel;
+using VoiceCraft.Maui.Interfaces;
+using VoiceCraft.Maui.Models;
 
-namespace VoiceCraft.Maui.ViewModels
+namespace VoiceCraft.Maui.ViewModels;
+
+/// <summary>
+/// ViewModel for the settings page.
+/// </summary>
+public partial class SettingsViewModel : ObservableObject
 {
-    public partial class SettingsViewModel : ObservableObject
+    private readonly IDatabaseService _databaseService;
+    private readonly IAudioManager _audioManager;
+
+    [ObservableProperty]
+    private bool _isBusy = true;
+
+    [ObservableProperty]
+    private SettingsModel _settings = new();
+
+    [ObservableProperty]
+    private ObservableCollection<string> _inputDevices = ["Default"];
+
+    [ObservableProperty]
+    private ObservableCollection<string> _outputDevices = ["Default"];
+
+    [ObservableProperty]
+    private float _microphoneDetection;
+
+    [ObservableProperty]
+    private bool _isRecording;
+
+    private IWaveIn? _microphone;
+    private readonly WaveFormat _audioFormat = new(48000, 1);
+
+    [ObservableProperty]
+    private ObservableCollection<string> _profiles = ["Default", "Low Latency", "High Quality"];
+
+    private string _selectedProfile = "Default";
+    public string SelectedProfile
     {
-        [ObservableProperty]
-        SettingsModel settings = Database.Instance.Settings;
-
-        [ObservableProperty]
-        ObservableCollection<string> inputDevices = ["Default"];
-        
-        [ObservableProperty]
-        ObservableCollection<string> outputDevices = ["Default"];
-
-        [ObservableProperty]
-        float microphoneDetection;
-
-        [ObservableProperty]
-        bool isRecording = false;
-
-        private IWaveIn? Microphone;
-        private readonly WaveFormat AudioFormat = new(48000, 1);
-
-        public SettingsViewModel()
+        get => _selectedProfile;
+        set
         {
-            foreach(var device in AudioManager.Instance.GetInputDevices())
-                InputDevices.Add(device);
+            SetProperty(ref _selectedProfile, value);
+            ApplyProfile(value);
+        }
+    }
 
-            foreach (var device in AudioManager.Instance.GetOutputDevices())
-                OutputDevices.Add(device);
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
+    /// </summary>
+    public SettingsViewModel(IDatabaseService databaseService, IAudioManager audioManager)
+    {
+        _databaseService = databaseService;
+        _audioManager = audioManager;
+        LoadSettings();
 
-            if (Settings.InputDevice > AudioManager.Instance.GetInputDeviceCount())
+        foreach (var device in _audioManager.GetInputDevices())
+            InputDevices.Add(device);
+
+        foreach (var device in _audioManager.GetOutputDevices())
+            OutputDevices.Add(device);
+    }
+
+
+        private async void LoadSettings()
+        {
+            IsBusy = true;
+            try
             {
-                Settings.InputDevice = 0;
+                await _databaseService.Initialization;
+                Settings = _databaseService.Settings;
+
+                if (Settings.InputDevice >= _audioManager.GetInputDeviceCount())
+                {
+                    Settings.InputDevice = 0;
+                }
+                if (Settings.OutputDevice >= _audioManager.GetOutputDeviceCount())
+                {
+                    Settings.OutputDevice = 0;
+                }
             }
-            if (Settings.OutputDevice > AudioManager.Instance.GetOutputDeviceCount())
+            finally
             {
-                Settings.OutputDevice = 0;
+                IsBusy = false;
             }
+        }
+
+        private void ApplyProfile(string profile)
+        {
+            switch (profile)
+            {
+                case "Default":
+                    Settings.Bitrate = 16000;
+                    Settings.JitterBufferSize = 80;
+                    Settings.UseDtx = true;
+                    Settings.NoiseSuppression = false;
+                    Settings.SoftLimiterEnabled = true;
+                    Settings.DirectionalAudioEnabled = false; 
+                    break;
+                case "Low Latency":
+                    Settings.Bitrate = 16000;
+                    Settings.JitterBufferSize = 40;
+                    Settings.UseDtx = true;
+                    Settings.NoiseSuppression = false;
+                    Settings.SoftLimiterEnabled = false;
+                    Settings.DirectionalAudioEnabled = false;
+                    break;
+                case "High Quality":
+                    Settings.Bitrate = 48000;
+                    Settings.JitterBufferSize = 100;
+                    Settings.UseDtx = false;
+                    Settings.NoiseSuppression = true;
+                    Settings.SoftLimiterEnabled = true;
+                    Settings.DirectionalAudioEnabled = true;
+                    break;
+            }
+        }
+
+        [RelayCommand]
+        public void ResetToDefaults()
+        {
+            SelectedProfile = "Default";
+            // Also reset keybinds/ports which aren't part of the profile switching logic usually, but are part of "Reset"
+            Settings.ClientPort = 8080;
+            Settings.ClientSidedPositioning = false;
+            Settings.CustomClientProtocol = false;
+            Settings.HideAddress = false;
+            Settings.LinearVolume = true;
+            Settings.MuteKeybind = "LControlKey+M";
+            Settings.DeafenKeybind = "LControlKey+LShiftKey+D";
+            Settings.SoftLimiterGain = 5.0f;
+            Settings.MicrophoneDetectionPercentage = 0.04f;
         }
 
         [RelayCommand]
@@ -57,7 +149,7 @@ namespace VoiceCraft.Maui.ViewModels
                 MicrophoneDetection = 0;
                 IsRecording = false;
             }
-            _ = Database.Instance.SaveSettings();
+            _ = _databaseService.SaveSettings();
         }
 
         [RelayCommand]
@@ -65,8 +157,8 @@ namespace VoiceCraft.Maui.ViewModels
         {
             if (Microphone == null)
             {
-                if (!await AudioManager.Instance.RequestInputPermissions()) return;
-                Microphone = AudioManager.Instance.CreateRecorder(AudioFormat, 20);
+                if (!await _audioManager.RequestInputPermissions()) return;
+                Microphone = _audioManager.CreateRecorder(AudioFormat, 20);
                 Microphone.DataAvailable += Microphone_DataAvailable;
                 Microphone.StartRecording();
                 IsRecording = true;

@@ -9,135 +9,140 @@
              Title="Servers"
              x:DataType="vm:ServersViewModel">
 
-    <ContentPage.BindingContext>
-        <vm:ServersViewModel />
-    </ContentPage.BindingContext>
+
 
     <Grid>
         <Image Aspect="AspectFill" Source="{AppThemeBinding Default='bgdark.png', Dark='bgdark.png', Light='bglight.png'}" />
-        <ScrollView>
-            <Grid RowDefinitions="Auto, *">
-                <Border Grid.Row="0"
-                        HorizontalOptions="Fill"
-                        VerticalOptions="StartAndExpand">
-                    <Grid ColumnDefinitions="Auto, Auto, *">
-                        <toolkit:Icon Grid.Column="0"
-                                      Margin="3,3,20,3"
-                                      HeightRequest="35"
-                                      Source="server.png"
-                                      TintColor="{AppThemeBinding Dark='White',
-                                                                  Light='Black'}" />
-                        <Label Grid.Column="1"
-                               FontAttributes="Bold"
-                               FontSize="Title"
-                               Text="Servers"
-                               VerticalTextAlignment="Center" />
+        <Grid RowDefinitions="Auto, *">
+            <Border Grid.Row="0"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="StartAndExpand">
+                <Grid ColumnDefinitions="Auto, Auto, *">
+                    <toolkit:Icon Grid.Column="0"
+                                  Margin="3,3,20,3"
+                                  HeightRequest="35"
+                                  Source="server.png"
+                                  TintColor="{AppThemeBinding Dark='White',
+                                                              Light='Black'}" />
+                    <Label Grid.Column="1"
+                           FontAttributes="Bold"
+                           FontSize="Title"
+                           Text="Servers"
+                           VerticalTextAlignment="Center" />
 
-                        <toolkit:ContentButton Grid.Column="2"
-                                               Command="{Binding GoToAddServerCommand}"
-                                               HeightRequest="45"
-                                               HorizontalOptions="End"
-                                               WidthRequest="45">
-                            <Border x:Name="addServerBorder"
-                                    Padding="2"
-                                    Background="#2fFFFFFF"
-                                    StrokeThickness="0">
-                                <Border.StrokeShape>
-                                    <RoundRectangle CornerRadius="5.5" />
-                                </Border.StrokeShape>
-                                <toolkit:Icon Source="server_plus.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
-                            </Border>
-                        </toolkit:ContentButton>
+                    <toolkit:ContentButton Grid.Column="2"
+                                           Command="{Binding GoToAddServerCommand}"
+                                           HeightRequest="45"
+                                           HorizontalOptions="End"
+                                           WidthRequest="45">
+                        <Border x:Name="addServerBorder"
+                                Padding="2"
+                                Background="#2fFFFFFF"
+                                StrokeThickness="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="5.5" />
+                            </Border.StrokeShape>
+                            <toolkit:Icon Source="server_plus.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
+                        </Border>
+                    </toolkit:ContentButton>
+                </Grid>
+            </Border>
+            <CollectionView Grid.Row="1"
+                            Margin="20"
+                            ItemsSource="{Binding Servers}">
+                <CollectionView.EmptyView>
+                    <Grid>
+                        <Label FontAttributes="Bold"
+                               FontSize="Medium"
+                               HorizontalOptions="Center"
+                               Text="No servers found. Add one to get started!"
+                               VerticalOptions="Center" />
                     </Grid>
-                </Border>
-                <CollectionView Grid.Row="1"
-                                Margin="20"
-                                ItemsSource="{Binding Servers}">
-                    <CollectionView.ItemsLayout>
-                        <LinearItemsLayout ItemSpacing="20" Orientation="Vertical" />
-                    </CollectionView.ItemsLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout ItemSpacing="20" Orientation="Vertical" />
+                </CollectionView.ItemsLayout>
 
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="model:ServerModel">
-                            <Border Padding="20">
-                                <Grid RowDefinitions="auto, auto, auto, auto">
-                                    <Grid ColumnDefinitions="*, auto, auto" ColumnSpacing="5">
-                                        <Label FontSize="Medium" Text="{Binding Name}" />
-                                        <toolkit:ContentButton Grid.Column="1"
-                                                               Command="{Binding Source={x:Reference servers}, Path=BindingContext.GoToEditServerCommand}"
-                                                               CommandParameter="{Binding}"
-                                                               HeightRequest="35"
-                                                               HorizontalOptions="End"
-                                                               WidthRequest="35">
-                                            <Border x:Name="editBorder"
-                                                    Padding="2"
-                                                    Background="#2fFFFFFF"
-                                                    StrokeThickness="0">
-                                                <Border.StrokeShape>
-                                                    <RoundRectangle CornerRadius="5.5" />
-                                                </Border.StrokeShape>
-                                                <toolkit:Icon Source="pencil.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
-                                            </Border>
-                                        </toolkit:ContentButton>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:ServerModel">
+                        <Border Padding="20">
+                            <Grid RowDefinitions="auto, auto, auto, auto">
+                                <Grid ColumnDefinitions="*, auto, auto" ColumnSpacing="5">
+                                    <Label FontSize="Medium" Text="{Binding Name}" />
+                                    <toolkit:ContentButton Grid.Column="1"
+                                                           Command="{Binding Source={x:Reference servers}, Path=BindingContext.GoToEditServerCommand}"
+                                                           CommandParameter="{Binding}"
+                                                           HeightRequest="35"
+                                                           HorizontalOptions="End"
+                                                           WidthRequest="35">
+                                        <Border x:Name="editBorder"
+                                                Padding="2"
+                                                Background="#2fFFFFFF"
+                                                StrokeThickness="0">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="5.5" />
+                                            </Border.StrokeShape>
+                                            <toolkit:Icon Source="pencil.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
+                                        </Border>
+                                    </toolkit:ContentButton>
 
-                                        <toolkit:ContentButton Grid.Column="2"
-                                                               Command="{Binding Source={x:Reference servers}, Path=BindingContext.DeleteServerCommand}"
-                                                               CommandParameter="{Binding}"
-                                                               HeightRequest="35"
-                                                               HorizontalOptions="End"
-                                                               WidthRequest="35">
-                                            <Border x:Name="deleteBorder"
-                                                    Padding="2"
-                                                    Background="#4fF00000"
-                                                    StrokeThickness="0">
-                                                <Border.StrokeShape>
-                                                    <RoundRectangle CornerRadius="5.5" />
-                                                </Border.StrokeShape>
-                                                <toolkit:Icon Source="delete.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
-                                            </Border>
-                                        </toolkit:ContentButton>
-                                    </Grid>
-
-                                    <Label Grid.Row="1"
-                                           FontSize="Subtitle"
-                                           VerticalTextAlignment="Center">
-                                        <Label.Text>
-                                            <MultiBinding StringFormat="Address: {0}:{1}">
-                                                <Binding Path="IP" />
-                                                <Binding Path="Port" />
-                                            </MultiBinding>
-                                        </Label.Text>
-                                        <Label.Style>
-                                            <Style TargetType="Label">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Source={x:Reference servers}, Path=BindingContext.Settings.HideAddress}"
-                                                                 TargetType="Label"
-                                                                 Value="True">
-                                                        <Setter Property="Text" Value="Address: ****:****" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Label.Style>
-                                    </Label>
-
-                                    <Label Grid.Row="2"
-                                           FontSize="Subtitle"
-                                           Text="{Binding Key, StringFormat='Key: {0}'}"
-                                           VerticalTextAlignment="Center" />
-                                    <Button Grid.Row="3"
-                                            Margin="0,10,0,0"
-                                            BackgroundColor="#4f00F000"
-                                            Command="{Binding Source={x:Reference servers}, Path=BindingContext.GoToServerCommand}"
-                                            CommandParameter="{Binding}"
-                                            Text="View"
-                                            TextColor="{AppThemeBinding Dark='White',
-                                                                        Light='Black'}" />
+                                    <toolkit:ContentButton Grid.Column="2"
+                                                           Command="{Binding Source={x:Reference servers}, Path=BindingContext.DeleteServerCommand}"
+                                                           CommandParameter="{Binding}"
+                                                           HeightRequest="35"
+                                                           HorizontalOptions="End"
+                                                           WidthRequest="35">
+                                        <Border x:Name="deleteBorder"
+                                                Padding="2"
+                                                Background="#4fF00000"
+                                                StrokeThickness="0">
+                                            <Border.StrokeShape>
+                                                <RoundRectangle CornerRadius="5.5" />
+                                            </Border.StrokeShape>
+                                            <toolkit:Icon Source="delete.png" TintColor="{AppThemeBinding Dark='White', Light='Black'}" />
+                                        </Border>
+                                    </toolkit:ContentButton>
                                 </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </Grid>
-        </ScrollView>
+
+                                <Label Grid.Row="1"
+                                       FontSize="Subtitle"
+                                       VerticalTextAlignment="Center">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="Address: {0}:{1}">
+                                            <Binding Path="IP" />
+                                            <Binding Path="Port" />
+                                        </MultiBinding>
+                                    </Label.Text>
+                                    <Label.Style>
+                                        <Style TargetType="Label">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Source={x:Reference servers}, Path=BindingContext.Settings.HideAddress}"
+                                                             TargetType="Label"
+                                                             Value="True">
+                                                    <Setter Property="Text" Value="Address: ****:****" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Label.Style>
+                                </Label>
+
+                                <Label Grid.Row="2"
+                                       FontSize="Subtitle"
+                                       Text="{Binding Key, StringFormat='Key: {0}'}"
+                                       VerticalTextAlignment="Center" />
+                                <Button Grid.Row="3"
+                                        Margin="0,10,0,0"
+                                        BackgroundColor="#4f00F000"
+                                        Command="{Binding Source={x:Reference servers}, Path=BindingContext.GoToServerCommand}"
+                                        CommandParameter="{Binding}"
+                                        Text="View"
+                                        TextColor="{AppThemeBinding Dark='White',
+                                                                    Light='Black'}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
     </Grid>
 </ContentPage>

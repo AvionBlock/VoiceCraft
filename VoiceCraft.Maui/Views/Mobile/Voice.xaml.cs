@@ -4,10 +4,11 @@ namespace VoiceCraft.Maui.Views.Mobile;
 public partial class Voice : ContentPage
 {
     VoiceViewModel viewModel;
-    public Voice()
+    public Voice(VoiceViewModel viewModel)
     {
         InitializeComponent();
-        viewModel = (VoiceViewModel)BindingContext;
+        this.viewModel = viewModel;
+        BindingContext = viewModel;
     }
 
     protected override void OnAppearing()

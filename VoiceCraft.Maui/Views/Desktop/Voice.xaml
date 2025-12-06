@@ -9,9 +9,7 @@
              Title="Voice"
              x:DataType="vm:VoiceViewModel"
              Shell.FlyoutBehavior="Disabled">
-    <ContentPage.BindingContext>
-        <vm:VoiceViewModel />
-    </ContentPage.BindingContext>
+
 
     <Shell.BackButtonBehavior>
         <BackButtonBehavior IsEnabled="False" IsVisible="False" />
@@ -19,8 +17,7 @@
 
     <Grid>
         <Image Aspect="AspectFill" Source="{AppThemeBinding Default='bgdark.png', Dark='bgdark.png', Light='bglight.png'}" />
-        <ScrollView>
-            <Grid RowDefinitions="Auto, *">
+        <Grid RowDefinitions="Auto, *">
                 <Border Grid.Row="0"
                         HorizontalOptions="Fill"
                         VerticalOptions="StartAndExpand">
@@ -473,7 +470,6 @@
                         </Border>
                     </Grid>
                 </Grid>
-            </Grid>
-        </ScrollView>
+        </Grid>
     </Grid>
 </ContentPage>

@@ -1,46 +1,58 @@
-﻿using System.Text;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Text;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class PingInfo : VoiceCraftPacket
 {
-    public class PingInfo : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.PingInfo;
+    public override bool IsReliable => false;
+
+    public PositioningTypes PositioningType { get; set; }
+    public int ConnectedParticipants { get; set; }
+    public string MOTD { get; set; } = string.Empty;
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.PingInfo;
-        public override bool IsReliable => false;
+        base.Read(buffer);
+        // Offset: Id(8) = 8
+        int offset = 8;
+        
+        PositioningType = (PositioningTypes)buffer[offset];
+        offset++;
 
-        public PositioningTypes PositioningType { get; set; }
-        public int ConnectedParticipants { get; set; }
-        public string MOTD { get; set; } = string.Empty;
+        ConnectedParticipants = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        int motdLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
+
+        if (motdLength > 0)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
-
-            PositioningType = (PositioningTypes)dataStream[offset]; //Read Positioning Type - 1 byte.
-            offset++;
-
-            ConnectedParticipants = BitConverter.ToInt32(dataStream, offset); //Read Connected Participants - 4 bytes.
-            offset += sizeof(int);
-
-            var motdLength = BitConverter.ToInt32(dataStream, offset); //Read MOTD Length - 4 bytes.
-            offset += sizeof(int);
-
-            if(motdLength > 0)
-                MOTD = Encoding.UTF8.GetString(dataStream, offset, motdLength); //Read MOTD.
-
-            offset += motdLength;
-            return offset;
+            MOTD = Encoding.UTF8.GetString(buffer.Slice(offset, motdLength));
         }
+    }
 
-        public override void WritePacket(ref List<byte> dataStream)
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        // Offset: Type(1) + Id(8) = 9
+        int offset = 9;
+
+        buffer[offset++] = (byte)PositioningType;
+
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), ConnectedParticipants);
+        offset += sizeof(int);
+
+        int motdBytes = Encoding.UTF8.GetByteCount(MOTD);
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), motdBytes);
+        offset += sizeof(int);
+
+        if (motdBytes > 0)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.Add((byte)PositioningType);
-            dataStream.AddRange(BitConverter.GetBytes(ConnectedParticipants));
-            dataStream.AddRange(BitConverter.GetBytes(MOTD.Length));
-            if (MOTD.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(MOTD));
+            Encoding.UTF8.GetBytes(MOTD, buffer.Slice(offset));
         }
     }
 }

@@ -1,56 +1,76 @@
 ﻿using NAudio.Wave;
 
-namespace VoiceCraft.Core.Audio
+namespace VoiceCraft.Core.Audio;
+
+/// <summary>
+/// A soft clipper/limiter audio effect that prevents harsh clipping while limiting peaks.
+/// </summary>
+/// <remarks>
+/// Credits: https://www.markheath.net/post/limit-audio-naudio
+/// </remarks>
+public class SoftLimiter : Effect
 {
-    public class SoftLimiter : Effect
+    /// <inheritdoc/>
+    public override string Name => "Soft Clipper/Limiter";
+
+    /// <summary>
+    /// Gets the boost parameter (0-18 dB).
+    /// </summary>
+    public EffectParameter Boost { get; } = new(0f, 0f, 18f, "Boost");
+    
+    /// <summary>
+    /// Gets the brickwall limiter threshold parameter (-3 to 1 dB).
+    /// </summary>
+    public EffectParameter Brickwall { get; } = new(-0.1f, -3.0f, 1f, "Output Brickwall(dB)");
+
+    private const float AmpDb = 8.6562f;
+    private const float BaselineThresholdDb = -9f;
+    private const float CurveA = 1.017f;
+    private const float CurveB = -0.025f;
+    
+    private float _boostDb;
+    private float _limitDb;
+    private float _thresholdDb;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SoftLimiter"/> class.
+    /// </summary>
+    /// <param name="source">The audio source to process.</param>
+    public SoftLimiter(ISampleProvider source) : base(source)
     {
-        public override string Name => "Soft Clipper/ Limiter";
+        RegisterParameters(Boost, Brickwall);
+    }
 
-        public EffectParameter Boost { get; } = new EffectParameter(0f, 0f, 18f, "Boost");
-        public EffectParameter Brickwall { get; } = new EffectParameter(-0.1f, -3.0f, 1f, "Output Brickwall(dB)");
-        public SoftLimiter(ISampleProvider source) : base(source)
+    /// <inheritdoc/>
+    protected override void ParamsChanged()
+    {
+        _boostDb = Boost.CurrentValue;
+        _limitDb = Brickwall.CurrentValue;
+        _thresholdDb = BaselineThresholdDb + _limitDb;
+    }
+
+    /// <inheritdoc/>
+    protected override void Sample(ref float spl0, ref float spl1)
+    {
+        // Add epsilon to avoid Log(0) which is -Infinity
+        var dB0 = AmpDb * Math.Log(Math.Abs(spl0) + 1e-9) + _boostDb;
+        var dB1 = AmpDb * Math.Log(Math.Abs(spl1) + 1e-9) + _boostDb;
+
+        if (dB0 > _thresholdDb)
         {
-            RegisterParameters(Boost, Brickwall);
+            var overDb = (float)(dB0 - _thresholdDb);
+            overDb = CurveA * overDb + CurveB * overDb * overDb;
+            dB0 = Math.Min(_thresholdDb + overDb, _limitDb);
         }
 
-        private float amp_dB = 8.6562f;
-        private float baseline_threshold_dB = -9f;
-        private float a = 1.017f;
-        private float b = -0.025f;
-        private float boost_dB;
-        private float limit_dB;
-        private float threshold_dB;
-
-        protected override void ParamsChanged()
+        if (dB1 > _thresholdDb)
         {
-            boost_dB = Boost.CurrentValue;
-            limit_dB = Brickwall.CurrentValue;
-            threshold_dB = baseline_threshold_dB + limit_dB;
+            var overDb = (float)(dB1 - _thresholdDb);
+            overDb = CurveA * overDb + CurveB * overDb * overDb;
+            dB1 = Math.Min(_thresholdDb + overDb, _limitDb);
         }
 
-        protected override void Sample(ref float spl0, ref float spl1)
-        {
-            var dB0 = amp_dB * log(abs(spl0)) + boost_dB;
-            var dB1 = amp_dB * log(abs(spl1)) + boost_dB;
-
-            if (dB0 > threshold_dB)
-            {
-                var over_dB = dB0 - threshold_dB;
-                over_dB = a * over_dB + b * over_dB * over_dB;
-                dB0 = min(threshold_dB + over_dB, limit_dB);
-            }
-
-            if (dB1 > threshold_dB)
-            {
-                var over_dB = dB1 - threshold_dB;
-                over_dB = a * over_dB + b * over_dB * over_dB;
-                dB1 = min(threshold_dB + over_dB, limit_dB);
-            }
-
-            spl0 = exp(dB0 / amp_dB) * sign(spl0);
-            spl1 = exp(dB1 / amp_dB) * sign(spl1);
-        }
+        spl0 = (float)(Math.Exp(dB0 / AmpDb) * Math.Sign(spl0));
+        spl1 = (float)(Math.Exp(dB1 / AmpDb) * Math.Sign(spl1));
     }
 }
-
-//Credits: https://www.markheath.net/post/limit-audio-naudio

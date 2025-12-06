@@ -10,20 +10,18 @@ namespace VoiceCraft.Core.Packets.VoiceCraft
 
         public byte ChannelId { get; set; }
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        public override void Read(ReadOnlySpan<byte> buffer)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
-
-            ChannelId = dataStream[offset]; //Read Channel Id - 1 byte.
-            offset++;
-
-            return offset;
+            base.Read(buffer);
+            // Offset: Id(8) + Sequence(4) = 12
+            ChannelId = buffer[12];
         }
 
-        public override void WritePacket(ref List<byte> dataStream)
+        public override void Write(Span<byte> buffer)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.Add(ChannelId);
+            base.Write(buffer);
+            // Offset: Type(1) + Id(8) + Sequence(4) = 13
+            buffer[13] = ChannelId;
         }
     }
 }

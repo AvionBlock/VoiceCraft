@@ -4,58 +4,67 @@
 // All Rights Reserved.                                                        //
 /////////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Threading;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core;
+
+/// <summary>
+/// Provides a standard implementation of <see cref="IDisposable"/> with thread-safe dispose tracking.
+/// </summary>
+/// <remarks>
+/// Derived classes should override <see cref="Dispose(bool)"/> to clean up resources.
+/// The base implementation is thread-safe and tracks disposal state atomically.
+/// </remarks>
+/// <seealso href="https://gist.github.com/rickbrew/fc3e660c0930747f031e64ab7696c60d"/>
+[Serializable]
+public abstract class Disposable : IDisposable
 {
+    private bool _isDisposed;
+
     /// <summary>
-    /// Provides a standard implementation of IDisposable and IIsDisposed.
+    /// Gets a value indicating whether this instance has been disposed.
     /// </summary>
-    [Serializable]
-    public abstract class Disposable : IDisposable
+    /// <value><c>true</c> if disposed; otherwise, <c>false</c>.</value>
+    public bool IsDisposed => _isDisposed;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Disposable"/> class.
+    /// </summary>
+    protected Disposable()
     {
-        private int isDisposed; // 0 for false, 1 for true
+    }
 
-        public bool IsDisposed
+    /// <summary>
+    /// Finalizer - calls Dispose(false).
+    /// </summary>
+    ~Disposable()
+    {
+        Dispose(false);
+    }
+
+    /// <summary>
+    /// Disposes the object, releasing all managed and unmanaged resources.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Override this method to release managed and unmanaged resources.
+    /// </summary>
+    /// <param name="disposing">
+    /// <c>true</c> if called from <see cref="Dispose()"/>; 
+    /// <c>false</c> if called from the finalizer.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_isDisposed)
         {
-            get => Volatile.Read(ref this.isDisposed) != 0;
+            return;
         }
 
-        protected Disposable()
-        {
-        }
-
-        ~Disposable()
-        {
-            int oldIsDisposed = Interlocked.Exchange(ref this.isDisposed, 1);
-            if (oldIsDisposed == 0)
-            {
-                Dispose(false);
-            }
-        }
-
-        public void Dispose()
-        {
-            int oldIsDisposed = Interlocked.Exchange(ref this.isDisposed, 1);
-            if (oldIsDisposed == 0)
-            {
-                try
-                {
-                    Dispose(true);
-                }
-                finally
-                {
-                    GC.SuppressFinalize(this);
-                }
-            }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            throw new NotImplementedException();
-        }
+        _isDisposed = true;
     }
 }
-
-// https://gist.github.com/rickbrew/fc3e660c0930747f031e64ab7696c60d

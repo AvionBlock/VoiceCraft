@@ -1,15 +1,30 @@
-﻿namespace VoiceCraft.Core
-{
-    public abstract class Participant
-    {
-        public string Name { get; set; }
-        public bool Deafened { get; set; }
-        public bool Muted { get; set; }
-        public long LastSpoke { get; set; }
+﻿namespace VoiceCraft.Core;
 
-        public Participant(string name)
-        {
-            Name = name;
-        }
-    }
+/// <summary>
+/// Abstract base class representing a participant in the voice chat system.
+/// </summary>
+/// <param name="name">The display name of the participant.</param>
+public abstract class Participant(string name)
+{
+    /// <summary>
+    /// Gets or sets the display name of the participant.
+    /// </summary>
+    public string Name { get; set; } = name;
+
+    /// <summary>
+    /// Gets or sets whether the participant is deafened (cannot hear others).
+    /// </summary>
+    public bool Deafened { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the participant is muted (cannot speak).
+    /// </summary>
+    public bool Muted { get; set; }
+
+    /// <summary>
+    /// Gets or sets the tick count when this participant last spoke.
+    /// Used for voice activity detection and UI indicators.
+    /// </summary>
+    public long LastSpoke { get; set; }
 }
+

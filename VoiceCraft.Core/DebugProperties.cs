@@ -1,18 +1,59 @@
-﻿using System.Collections.Generic;
-using VoiceCraft.Core.Packets;
+﻿using VoiceCraft.Core.Packets;
+using System.Collections.ObjectModel;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Core;
+
+/// <summary>
+/// Configuration properties for debugging and logging packet traffic.
+/// </summary>
+public class DebugProperties
 {
-    public class DebugProperties
-    {
-        public bool LogExceptions { get; set; } = false;
-        public bool LogInboundPackets { get; set; } = false;
-        public bool LogOutboundPackets { get; set; } = false;
-        public bool LogInboundMCCommPackets { get; set; } = false;
-        public bool LogOutboundMCCommPackets { get; set; } = false;
-        public List<VoiceCraftPacketTypes> InboundPacketFilter { get; set; } = new List<VoiceCraftPacketTypes>();
-        public List<VoiceCraftPacketTypes> OutboundPacketFilter { get; set; } = new List<VoiceCraftPacketTypes>();
-        public List<MCCommPacketTypes> InboundMCCommFilter { get; set; } = new List<MCCommPacketTypes>();
-        public List<MCCommPacketTypes> OutboundMCCommFilter { get; set; } = new List<MCCommPacketTypes>();
-    }
+    /// <summary>
+    /// Gets or sets whether to log exceptions.
+    /// </summary>
+    public bool LogExceptions { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to log inbound VoiceCraft packets.
+    /// </summary>
+    public bool LogInboundPackets { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to log outbound VoiceCraft packets.
+    /// </summary>
+    public bool LogOutboundPackets { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to log inbound MCComm packets.
+    /// </summary>
+    public bool LogInboundMCCommPackets { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to log outbound MCComm packets.
+    /// </summary>
+    public bool LogOutboundMCCommPackets { get; set; }
+
+    /// <summary>
+    /// Gets the filter for inbound VoiceCraft packet types to log.
+    /// Empty list means log all types.
+    /// </summary>
+    public Collection<VoiceCraftPacketTypes> InboundPacketFilter { get; } = [];
+
+    /// <summary>
+    /// Gets the filter for outbound VoiceCraft packet types to log.
+    /// Empty list means log all types.
+    /// </summary>
+    public Collection<VoiceCraftPacketTypes> OutboundPacketFilter { get; } = [];
+
+    /// <summary>
+    /// Gets the filter for inbound MCComm packet types to log.
+    /// Empty list means log all types.
+    /// </summary>
+    public Collection<MCCommPacketTypes> InboundMCCommFilter { get; } = [];
+
+    /// <summary>
+    /// Gets the filter for outbound MCComm packet types to log.
+    /// Empty list means log all types.
+    /// </summary>
+    public Collection<MCCommPacketTypes> OutboundMCCommFilter { get; } = [];
 }

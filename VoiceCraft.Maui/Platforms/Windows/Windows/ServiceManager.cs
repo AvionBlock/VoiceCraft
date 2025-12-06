@@ -14,7 +14,10 @@ namespace VoiceCraft.Maui
         public ServiceManager()
         {
             Cts = new CancellationTokenSource();
-            VoipService = new VoipService(Navigator.GetNavigationData<ServerModel>());
+            var services = IPlatformApplication.Current?.Services ?? throw new InvalidOperationException("Platform Services are not initialized.");
+            var navService = services.GetRequiredService<INavigationService>();
+            var databaseService = services.GetRequiredService<IDatabaseService>();
+            VoipService = new VoipService(navService.GetNavigationData<ServerModel>() ?? new ServerModel(), databaseService);
 
             VoipService.OnStatusUpdated += StatusUpdated;
             VoipService.OnSpeakingStarted += SpeakingStarted;

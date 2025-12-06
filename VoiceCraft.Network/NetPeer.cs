@@ -3,164 +3,284 @@ using System.Net;
 using VoiceCraft.Core.Packets;
 using VoiceCraft.Core.Packets.VoiceCraft;
 
-namespace VoiceCraft.Network
+namespace VoiceCraft.Network;
+
+using System.Security.Cryptography;
+
+/// <summary>
+/// Represents a network peer with reliable and unreliable packet transmission support.
+/// Handles packet sequencing, acknowledgment, and retry logic.
+/// </summary>
+/// <param name="ep">The remote endpoint of the peer.</param>
+/// <param name="Id">The unique identifier for this peer.</param>
+/// <param name="initialState">The initial connection state.</param>
+public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerState.Disconnected)
 {
-    public class NetPeer(EndPoint ep, long Id, NetPeerState initialState = NetPeerState.Disconnected)
+    /// <summary>
+    /// Initial resend time in milliseconds for reliable packets.
+    /// </summary>
+    public const int ResendTime = 300;
+    
+    /// <summary>
+    /// Retry resend time in milliseconds after initial attempt.
+    /// </summary>
+    public const int RetryResendTime = 500;
+    
+    /// <summary>
+    /// Maximum number of retry attempts for reliable packets.
+    /// </summary>
+    public const int MaxSendRetries = 20;
+    
+    /// <summary>
+    /// Maximum size of the receive buffer in packets.
+    /// </summary>
+    public const int MaxRecvBufferSize = 30;
+
+    /// <summary>
+    /// Event raised when a packet is received and ready to be processed.
+    /// </summary>
+    public event EventHandler<PacketEventArgs<VoiceCraftPacket>>? OnPacketReceived;
+    
+    private int _sequence;
+    private uint _nextSequence;
+    private readonly ConcurrentDictionary<uint, VoiceCraftPacket> _reliabilityQueue = new();
+    private readonly ConcurrentDictionary<uint, VoiceCraftPacket> _receiveBuffer = new();
+
+    // Lock objects for thread safety
+    private readonly object _receiveLock = new();
+
+    /// <summary>
+    /// Reason for disconnection.
+    /// </summary>
+    public string? DisconnectReason { get; private set; }
+
+    /// <summary>
+    /// Defines whether the client is successfully requesting, connected or disconnected.
+    /// Uses volatile backing field for thread-safety.
+    /// </summary>
+    private volatile NetPeerState _state = initialState;
+    
+    /// <summary>
+    /// Gets the current connection state of this peer.
+    /// </summary>
+    public NetPeerState State => _state;
+
+    /// <summary>
+    /// Gets or sets the remote endpoint of this peer.
+    /// </summary>
+    public EndPoint RemoteEndPoint { get; set; } = ep;
+
+    /// <summary>
+    /// Gets or sets the tick count when this peer was last active.
+    /// </summary>
+    public long LastActive { get; set; } = Environment.TickCount64;
+
+    /// <summary>
+    /// Gets or sets the unique identifier for this peer.
+    /// Used to update the endpoint if invalid.
+    /// </summary>
+    public long Id { get; set; } = Id;
+
+    /// <summary>
+    /// Gets the queue of packets waiting to be sent.
+    /// </summary>
+    public ConcurrentQueue<VoiceCraftPacket> SendQueue { get; } = new();
+
+    /// <summary>
+    /// Adds a packet to the send buffer, handling reliability if needed.
+    /// </summary>
+    /// <param name="packet">The packet to send.</param>
+    public void AddToSendBuffer(VoiceCraftPacket packet)
     {
-        public const int ResendTime = 300;
-        public const int RetryResendTime = 500;
-        public const int MaxSendRetries = 20;
-        public const int MaxRecvBufferSize = 30; //30 packets.
+        ArgumentNullException.ThrowIfNull(packet);
 
-        public delegate void PacketReceived(NetPeer peer, VoiceCraftPacket packet);
-        public event PacketReceived? OnPacketReceived;
-        private uint Sequence;
-        private uint NextSequence;
-        private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReliabilityQueue = new ConcurrentDictionary<uint, VoiceCraftPacket>();
-        private readonly ConcurrentDictionary<uint, VoiceCraftPacket> ReceiveBuffer = new ConcurrentDictionary<uint, VoiceCraftPacket>();
+        packet.Id = Id;
 
-        /// <summary>
-        /// Reason for disconnection.
-        /// </summary>
-        public string? DisconnectReason { get; private set; }
-
-        /// <summary>
-        /// Defines wether the client is sucessfully requesting, connected or disconnected.
-        /// </summary>
-        public NetPeerState State { get; private set; } = initialState;
-
-        /// <summary>
-        /// Endpoint of the NetPeer.
-        /// </summary>
-        public EndPoint RemoteEndPoint { get; set; } = ep;
-
-        /// <summary>
-        /// When the client was last active.
-        /// </summary>
-        public long LastActive { get; set; } = Environment.TickCount64;
-
-        /// <summary>
-        /// The ID of the NetPeer, Used to update the endpoint if invalid.
-        /// </summary>
-        public long Id { get; set; } = Id;
-
-        /// <summary>
-        /// Send Queue.
-        /// </summary>
-        public ConcurrentQueue<VoiceCraftPacket> SendQueue { get; set; } = new ConcurrentQueue<VoiceCraftPacket>();
-
-        public void AddToSendBuffer(VoiceCraftPacket packet)
+        if (packet.IsReliable)
         {
-            packet.Id = Id;
-
-            if (packet.IsReliable)
-            {
-                packet.Sequence = Sequence;
-                packet.ResendTime = Environment.TickCount64 + ResendTime;
-                ReliabilityQueue.TryAdd(packet.Sequence, packet); //If reliable, Add to reliability queue. ResendTime is determined by the application.
-                Sequence++;
-            }
-
-            SendQueue.Enqueue(packet);
+            // Atomically increment sequence
+            uint seq = (uint)Interlocked.Increment(ref _sequence) - 1;
+            packet.Sequence = seq;
+            packet.ResendTime = Environment.TickCount64 + ResendTime;
+            
+            _reliabilityQueue.TryAdd(seq, packet);
         }
 
-        public bool AddToReceiveBuffer(VoiceCraftPacket packet)
+        SendQueue.Enqueue(packet);
+    }
+
+    /// <summary>
+    /// Adds a received packet to the buffer and processes it.
+    /// </summary>
+    /// <param name="packet">The received packet.</param>
+    /// <returns>True if the packet was accepted, false otherwise.</returns>
+    public bool AddToReceiveBuffer(VoiceCraftPacket packet)
+    {
+        ArgumentNullException.ThrowIfNull(packet);
+
+        LastActive = Environment.TickCount64;
+        
+        // Reject packets with invalid ID when connected
+        if (State == NetPeerState.Connected && packet.Id != Id) 
+            return false;
+
+        if (!packet.IsReliable)
         {
-            LastActive = Environment.TickCount64;
-            if (State == NetPeerState.Connected && packet.Id != Id) return false; //Invalid Id.
-
-            if (!packet.IsReliable)
-            {
-                OnPacketReceived?.Invoke(this, packet);
-                return true; //Not reliable, We can just say it's received.
-            }
-
-            if (ReceiveBuffer.Count >= MaxRecvBufferSize && packet.Sequence != NextSequence)
-                return false; //make sure it doesn't overload the receive buffer and cause a memory overflow.
-            AddToSendBuffer(new Ack() { PacketSequence = packet.Sequence }); //Acknowledge packet by sending the Ack packet.
-
-            if (packet.Sequence < NextSequence) return true; //Likely to be a duplicate packet.
-
-            ReceiveBuffer.TryAdd(packet.Sequence, packet); //Add it in, TryAdd does not replace an old packet.
-            foreach (var p in ReceiveBuffer)
-            {
-                if (p.Key == NextSequence && ReceiveBuffer.TryRemove(p)) //Remove packet and notify listeners.
-                {
-                    NextSequence++; //Update next expected packet.
-                    OnPacketReceived?.Invoke(this, p.Value);
-                }
-            }
+            OnPacketReceived?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(packet, this));
             return true;
         }
 
-        public void ResendPackets()
+        List<VoiceCraftPacket> packetsToProcess = [];
+
+        lock (_receiveLock)
         {
-            foreach (var packet in ReliabilityQueue)
+            // Prevent buffer overflow attacks
+            if (_receiveBuffer.Count >= MaxRecvBufferSize && packet.Sequence != _nextSequence)
+                return false;
+            
+            // Send acknowledgment
+            AddToSendBuffer(new Ack { PacketSequence = packet.Sequence });
+
+            // Ignore duplicate packets
+            if (packet.Sequence < _nextSequence) 
+                return true;
+
+            // Add to buffer (TryAdd won't replace existing)
+            _receiveBuffer.TryAdd(packet.Sequence, packet);
+            
+            // Process sequential packets
+            while (_receiveBuffer.TryRemove(_nextSequence, out var nextPacket))
             {
-                if (packet.Value.ResendTime <= Environment.TickCount64)
-                {
-                    packet.Value.ResendTime = Environment.TickCount64 + RetryResendTime; //More delay.
-                    packet.Value.Retries++;
-                    packet.Value.Id = Id; //Update Id since this might change on login.
-                    SendQueue.Enqueue(packet.Value);
-                }
+                _nextSequence++;
+                packetsToProcess.Add(nextPacket);
             }
         }
 
-        public void AcceptLogin(short key)
+        // Invoke events outside the lock to prevent deadlocks
+        foreach (var p in packetsToProcess)
         {
-            if (State == NetPeerState.Requesting)
+            OnPacketReceived?.Invoke(this, new PacketEventArgs<VoiceCraftPacket>(p, this));
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Resends packets that have timed out waiting for acknowledgment.
+    /// </summary>
+    public void ResendPackets()
+    {
+        long now = Environment.TickCount64;
+
+        foreach (var kvp in _reliabilityQueue)
+        {
+            var packet = kvp.Value;
+            if (now >= packet.ResendTime)
             {
-                AddToSendBuffer(new Accept() { Key = key });
-                State = NetPeerState.Connected;
+                packet.Retries++;
+                packet.ResendTime = now + RetryResendTime;
+                SendQueue.Enqueue(packet);
             }
         }
+    }
 
-        public void DenyLogin(string? reason = null)
+    /// <summary>
+    /// Accepts a login request and moves to Connected state.
+    /// </summary>
+    /// <param name="key">The session key to assign.</param>
+    public void AcceptLogin(short key)
+    {
+        if (State == NetPeerState.Requesting)
         {
-            if (State == NetPeerState.Requesting)
-            {
-                AddToSendBuffer(new Deny() { Reason = reason ?? string.Empty });
-                DisconnectReason = reason;
-                State = NetPeerState.Disconnected;
-            }
+            AddToSendBuffer(new Accept { Key = key });
+            _state = NetPeerState.Connected;
         }
+    }
 
-        public void Disconnect(string? reason = null, bool notify = true)
+    /// <summary>
+    /// Denies a login request with an optional reason.
+    /// </summary>
+    /// <param name="reason">The reason for denial.</param>
+    public void DenyLogin(string? reason = null)
+    {
+        if (State == NetPeerState.Requesting)
         {
-            if (State != NetPeerState.Disconnected)
-            {
-                if (notify)
-                    AddToSendBuffer(new Logout() { Reason = reason ?? string.Empty });
-                DisconnectReason = reason;
-                State = NetPeerState.Disconnected;
-            }
+            AddToSendBuffer(new Deny { Reason = reason ?? string.Empty });
+            DisconnectReason = reason;
+            _state = NetPeerState.Disconnected;
         }
+    }
 
-        public void AcknowledgePacket(uint packetId)
+    /// <summary>
+    /// Disconnects this peer with an optional reason.
+    /// </summary>
+    /// <param name="reason">The reason for disconnection.</param>
+    /// <param name="notify">Whether to notify the remote peer.</param>
+    public void Disconnect(string? reason = null, bool notify = true)
+    {
+        if (State != NetPeerState.Disconnected)
         {
-            ReliabilityQueue.TryRemove(packetId, out var _);
+            if (notify)
+                AddToSendBuffer(new Logout { Reason = reason ?? string.Empty });
+            DisconnectReason = reason;
+            _state = NetPeerState.Disconnected;
         }
+    }
 
-        public static long GenerateId()
-        {
-            return Random.Shared.NextInt64(long.MinValue + 1, long.MaxValue); //long.MinValue is used to specify no Id.
-        }
+    /// <summary>
+    /// Acknowledges receipt of a packet by removing it from the reliability queue.
+    /// </summary>
+    /// <param name="packetId">The sequence number of the acknowledged packet.</param>
+    public void AcknowledgePacket(uint packetId)
+    {
+        _reliabilityQueue.TryRemove(packetId, out _);
+    }
 
-        public void Reset()
+    /// <summary>
+    /// Generates a unique random ID for a peer.
+    /// </summary>
+    /// <returns>A random long value suitable for peer identification.</returns>
+    public static long GenerateId()
+    {
+        // long.MinValue is reserved to indicate no ID
+        byte[] buffer = RandomNumberGenerator.GetBytes(8);
+        return BitConverter.ToInt64(buffer, 0);
+    }
+
+    /// <summary>
+    /// Resets all buffers and state for reuse.
+    /// </summary>
+    public void Reset()
+    {
+        lock (_receiveLock)
         {
             SendQueue.Clear();
-            ReliabilityQueue.Clear();
-            ReceiveBuffer.Clear();
-            NextSequence = 0;
-            Sequence = 0;
+            _reliabilityQueue.Clear();
+            _receiveBuffer.Clear();
+            _nextSequence = 0;
+            _sequence = 0;
         }
     }
-
-    public enum NetPeerState
-    {
-        Disconnected,
-        Requesting,
-        Connected
-    }
 }
+
+/// <summary>
+/// Represents the connection state of a network peer.
+/// </summary>
+public enum NetPeerState
+{
+    /// <summary>
+    /// The peer is disconnected.
+    /// </summary>
+    Disconnected,
+    
+    /// <summary>
+    /// The peer is requesting to connect.
+    /// </summary>
+    Requesting,
+    
+    /// <summary>
+    /// The peer is connected and active.
+    /// </summary>
+    Connected
+}
+

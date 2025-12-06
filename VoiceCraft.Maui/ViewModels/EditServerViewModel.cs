@@ -1,32 +1,46 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Maui.Services;
+using VoiceCraft.Maui.Interfaces;
 using VoiceCraft.Maui.Models;
 
-namespace VoiceCraft.Maui.ViewModels
+namespace VoiceCraft.Maui.ViewModels;
+
+/// <summary>
+/// ViewModel for the edit server page.
+/// </summary>
+public partial class EditServerViewModel : ObservableObject
 {
-    public partial class EditServerViewModel : ObservableObject
+    private readonly IDatabaseService _databaseService;
+    private readonly INavigationService _navigationService;
+
+    [ObservableProperty]
+    private ServerModel _unsavedServer;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EditServerViewModel"/> class.
+    /// </summary>
+    public EditServerViewModel(IDatabaseService databaseService, INavigationService navigationService)
     {
-        [ObservableProperty]
-        ServerModel unsavedServer;
+        _databaseService = databaseService;
+        _navigationService = navigationService;
 
-        public EditServerViewModel()
+        var data = _navigationService.GetNavigationData<ServerModel>();
+        _unsavedServer = data != null ? (ServerModel)data.Clone() : new ServerModel();
+    }
+
+    [RelayCommand]
+    private async Task SaveServer()
+    {
+        try
         {
-            unsavedServer = (ServerModel)Navigator.GetNavigationData<ServerModel>().Clone();
+            await _databaseService.EditServer(UnsavedServer);
+            await _navigationService.GoBack();
         }
-
-        [RelayCommand]
-        public async Task SaveServer()
+        catch (Exception ex)
         {
-            try
-            {
-                await Database.Instance.EditServer(UnsavedServer);
-                await Navigator.GoBack();
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-            }
+            var msg = string.IsNullOrWhiteSpace(ex.Message) ? "Unknown error occurred." : ex.Message;
+            await Shell.Current.DisplayAlert("Error", msg, "OK");
         }
     }
 }
+

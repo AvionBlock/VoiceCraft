@@ -1,43 +1,87 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Buffers.Binary;
+using VoiceCraft.Core.Packets;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class ClientAudio : VoiceCraftPacket, IDisposable
 {
-    public class ClientAudio : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.ClientAudio;
+    public override bool IsReliable => false;
+
+    public uint PacketCount { get; set; }
+    
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Performance critical buffer access")]
+    public byte[] Audio { get; set; } = Array.Empty<byte>();
+    
+    /// <summary>
+    /// The actual length of valid audio data in the Audio buffer.
+    /// </summary>
+    public int DataLength { get; set; }
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.ClientAudio;
-        public override bool IsReliable => false;
+        base.Read(buffer);
+        
+        int offset = sizeof(long); // Id
+        if (IsReliable) offset += sizeof(uint); // Sequence
 
-        public uint PacketCount { get; set; }
-        public byte[] Audio { get; set; } = Array.Empty<byte>();
+        PacketCount = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(uint);
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        var audioLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
+
+        if (audioLength > 0)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
+            // Return old buffer if it exists (though Read is usually called on new object)
+            if (Audio.Length > 0) ArrayPool<byte>.Shared.Return(Audio);
 
-            PacketCount = BitConverter.ToUInt32(dataStream, offset); //Read Packet Count - 4 bytes.
-            offset += sizeof(uint);
+            // Rent from pool
+            Audio = ArrayPool<byte>.Shared.Rent(audioLength);
+            buffer.Slice(offset, audioLength).CopyTo(Audio);
+            DataLength = audioLength;
+        }
+    }
 
-            var audioLength = BitConverter.ToInt32(dataStream, offset); //Read Audio Length - 4 bytes.
-            offset += sizeof(int);
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        
+        int offset = 1; // PacketId
+        offset += sizeof(long); // Id
+        if (IsReliable) offset += sizeof(uint); // Sequence
 
-            if (audioLength > 0)
+        BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), PacketCount);
+        offset += sizeof(uint);
+
+        var len = DataLength > 0 ? DataLength : Audio.Length;
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), len);
+        offset += sizeof(int);
+
+        if (len > 0)
+        {
+            Audio.AsSpan(0, len).CopyTo(buffer.Slice(offset));
+        }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            if (Audio != null)
             {
-                Audio = new byte[audioLength];
-                Buffer.BlockCopy(dataStream, offset, Audio, 0, audioLength);
+                if (Audio.Length > 0)
+                    ArrayPool<byte>.Shared.Return(Audio);
+                Audio = Array.Empty<byte>();
             }
-
-            offset += audioLength;
-
-            return offset;
         }
+    }
 
-        public override void WritePacket(ref List<byte> dataStream)
-        {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(PacketCount));
-            dataStream.AddRange(BitConverter.GetBytes(Audio.Length));
-            dataStream.AddRange(Audio);
-        }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -8,9 +8,7 @@
              xmlns:vm="clr-namespace:VoiceCraft.Maui.ViewModels"
              Title="Settings"
              x:DataType="vm:SettingsViewModel">
-    <ContentPage.BindingContext>
-        <vm:SettingsViewModel />
-    </ContentPage.BindingContext>
+
 
     <ContentPage.Resources>
         <Style x:Key="InvalidEntryStyle" TargetType="Entry">
@@ -43,8 +41,20 @@
                         Margin="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="StartAndExpand">
-                    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
-                        <Grid Grid.Row="0" ColumnDefinitions="290, *">
+                    <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                        <Label Grid.Row="0"
+                               FontAttributes="Bold"
+                               FontSize="Small"
+                               Text="Configuration Profile"
+                               VerticalTextAlignment="Center" />
+
+                        <Picker Grid.Row="1"
+                                Margin="0,10,0,0"
+                                ItemsSource="{Binding Profiles}"
+                                SelectedItem="{Binding SelectedProfile}"
+                                VerticalOptions="Center" />
+
+                        <Grid Grid.Row="2" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"
@@ -57,7 +67,7 @@
                                     VerticalOptions="Center" />
                         </Grid>
 
-                        <Grid Grid.Row="1" ColumnDefinitions="290, *">
+                        <Grid Grid.Row="3" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"
@@ -70,7 +80,7 @@
                                     VerticalOptions="Center" />
                         </Grid>
 
-                        <Grid Grid.Row="2" ColumnDefinitions="290, *">
+                        <Grid Grid.Row="4" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"
@@ -83,7 +93,7 @@
                                     VerticalOptions="Center" />
                         </Grid>
 
-                        <Grid Grid.Row="3" ColumnDefinitions="290, *">
+                        <Grid Grid.Row="5" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"
@@ -96,7 +106,7 @@
                                     VerticalOptions="Center" />
                         </Grid>
 
-                        <Grid Grid.Row="4" ColumnDefinitions="290, *">
+                        <Grid Grid.Row="6" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"
@@ -109,7 +119,7 @@
                                     VerticalOptions="Center" />
                         </Grid>
 
-                        <Grid Grid.Row="5" ColumnDefinitions="290, *">
+                        <Grid Grid.Row="7" ColumnDefinitions="290, *">
                             <Label Grid.Column="0"
                                    FontAttributes="Bold"
                                    FontSize="Small"
@@ -122,14 +132,14 @@
                                     VerticalOptions="Center" />
                         </Grid>
 
-                        <Label Grid.Row="6"
+                        <Label Grid.Row="8"
                                Margin="0,10,0,0"
                                FontAttributes="Bold"
                                FontSize="Small"
                                Text="Client Port:"
                                VerticalTextAlignment="Center" />
 
-                        <Entry Grid.Row="7"
+                        <Entry Grid.Row="9"
                                Margin="0,10,0,0"
                                Keyboard="Numeric"
                                Text="{Binding Settings.ClientPort}"
@@ -143,13 +153,13 @@
                             </Entry.Behaviors>
                         </Entry>
 
-                        <Label Grid.Row="8"
+                        <Label Grid.Row="10"
                                Margin="0,10,0,0"
                                FontAttributes="Bold"
                                FontSize="Small"
                                Text="Jitter Buffer Size (MS):"
                                VerticalTextAlignment="Center" />
-                        <Entry Grid.Row="9"
+                        <Entry Grid.Row="11"
                                Margin="0,10,0,0"
                                Keyboard="Numeric"
                                Text="{Binding Settings.JitterBufferSize}"
@@ -163,28 +173,90 @@
                             </Entry.Behaviors>
                         </Entry>
 
-                        <Label Grid.Row="10"
+                        <Label Grid.Row="12"
                                Margin="0,10,0,0"
                                FontAttributes="Bold"
                                FontSize="Small"
                                Text="{Binding Settings.SoftLimiterGain, StringFormat='SoftLimiter Gain(DB): {0:F2}'}"
                                VerticalTextAlignment="Center" />
 
-                        <Slider Grid.Row="11"
+                        <Slider Grid.Row="13"
                                 Margin="0,10"
                                 Maximum="20.0"
                                 Minimum="1.0"
                                 VerticalOptions="Center"
                                 Value="{Binding Settings.SoftLimiterGain}" />
 
-                        <Label Grid.Row="12"
+                        <Label Grid.Row="14"
+                               Margin="0,10,0,0"
+                               FontAttributes="Bold"
+                               FontSize="Small"
+                               Text="{Binding Settings.Bitrate, StringFormat='Bitrate: {0} bps'}"
+                               VerticalTextAlignment="Center" />
+
+                        <Slider Grid.Row="15"
+                                Margin="0,10"
+                                Maximum="96000"
+                                Minimum="8000"
+                                VerticalOptions="Center"
+                                Value="{Binding Settings.Bitrate}" />
+
+                        <Grid Grid.Row="16" ColumnDefinitions="290, *">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="Use DTX (Save Bandwidth)"
+                                   VerticalTextAlignment="Center" />
+
+                            <Switch Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    IsToggled="{Binding Settings.UseDtx}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Grid Grid.Row="17" ColumnDefinitions="290, *">
+                            <Label Grid.Column="0"
+                                   FontAttributes="Bold"
+                                   FontSize="Small"
+                                   Text="Noise Suppression"
+                                   VerticalTextAlignment="Center" />
+
+                            <Switch Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    IsToggled="{Binding Settings.NoiseSuppression}"
+                                    VerticalOptions="Center" />
+                        </Grid>
+
+                        <Label Grid.Row="18"
+                               Margin="0,10,0,0"
+                               FontAttributes="Bold"
+                               FontSize="Small"
+                               Text="Mute Keybind"
+                               VerticalTextAlignment="Center" />
+
+                        <Entry Grid.Row="19"
+                               Margin="0,10,0,0"
+                               Text="{Binding Settings.MuteKeybind}" />
+
+                        <Label Grid.Row="20"
+                               Margin="0,10,0,0"
+                               FontAttributes="Bold"
+                               FontSize="Small"
+                               Text="Deafen Keybind"
+                               VerticalTextAlignment="Center" />
+
+                        <Entry Grid.Row="21"
+                               Margin="0,10,0,0"
+                               Text="{Binding Settings.DeafenKeybind}" />
+
+                        <Label Grid.Row="22"
                                Margin="0,10,0,0"
                                FontAttributes="Bold"
                                FontSize="Small"
                                Text="{Binding Settings.MicrophoneDetectionPercentage, StringFormat='Microphone Detection: {0:P2}'}"
                                VerticalTextAlignment="Center" />
 
-                        <Grid Grid.Row="13"
+                        <Grid Grid.Row="23"
                               Margin="0,10"
                               RowDefinitions="0, Auto">
                             <ahKit:ProgressBar Grid.Row="0"
@@ -201,7 +273,7 @@
                                     Minimum="0.0"
                                     Value="{Binding Settings.MicrophoneDetectionPercentage}" />
                         </Grid>
-                        <Button Grid.Row="14"
+                        <Button Grid.Row="24"
                                 Margin="0,10,0,0"
                                 BackgroundColor="#2fFFFFFF"
                                 Command="{Binding OpenCloseMicrophoneCommand}"
@@ -221,6 +293,14 @@
                                 </Style>
                             </Button.Style>
                         </Button>
+
+                        <Button Grid.Row="25"
+                                Margin="0,10,10,10"
+                                BackgroundColor="#2fFF0000"
+                                Command="{Binding ResetToDefaultsCommand}"
+                                Text="Reset to Defaults"
+                                TextColor="{AppThemeBinding Dark='White',
+                                                            Light='Black'}" />
                     </Grid>
                 </Border>
             </Grid>

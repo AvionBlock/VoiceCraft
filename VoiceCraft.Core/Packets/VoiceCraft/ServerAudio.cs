@@ -1,69 +1,132 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Numerics;
+using VoiceCraft.Core.Packets;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class ServerAudio : VoiceCraftPacket, IDisposable
 {
-    public class ServerAudio : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.ServerAudio;
+    public override bool IsReliable => false;
+
+    public short Key { get; set; }
+    public uint PacketCount { get; set; }
+    public byte ChannelId { get; set; }
+    public float Distance { get; set; }
+    public Vector3 Location { get; set; }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Performance critical buffer access")]
+    public byte[] Audio { get; set; } = Array.Empty<byte>();
+
+    /// <summary>
+    /// The actual length of valid audio data in the Audio buffer.
+    /// </summary>
+    public int DataLength { get; set; }
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.ServerAudio;
-        public override bool IsReliable => false;
+        base.Read(buffer);
+        
+        int offset = sizeof(long); // Id
+        if (IsReliable) offset += sizeof(uint); // Sequence
 
-        public short Key { get; set; }
-        public uint PacketCount { get; set; }
-        public float Volume { get; set; }
-        public float Rotation { get; set; }
-        public float EchoFactor { get; set; }
-        public bool Muffled { get; set; }
-        public byte[] Audio { get; set; } = Array.Empty<byte>();
+        // Read Key (short)
+        Key = BinaryPrimitives.ReadInt16LittleEndian(buffer.Slice(offset));
+        offset += sizeof(short);
 
-        //16 byte overhead
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        // Read PacketCount (uint)
+        PacketCount = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(uint);
+
+        // Read ChannelId (byte)
+        ChannelId = buffer[offset++];
+
+        // Read Distance (float)
+        Distance = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+
+        // Read Location (Vector3)
+        float x = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+        float y = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+        float z = BinaryPrimitives.ReadSingleLittleEndian(buffer.Slice(offset));
+        offset += sizeof(float);
+        Location = new Vector3(x, y, z);
+
+        // Read Audio Length (int)
+        var audioLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
+
+        if (audioLength > 0)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
+            if (Audio.Length > 0) ArrayPool<byte>.Shared.Return(Audio);
+            Audio = ArrayPool<byte>.Shared.Rent(audioLength);
+            buffer.Slice(offset, audioLength).CopyTo(Audio);
+            DataLength = audioLength;
+        }
+    }
 
-            Key = BitConverter.ToInt16(dataStream, offset); //Read Id - 2 bytes.
-            offset += sizeof(short);
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        
+        int offset = 1; // PacketId
+        offset += sizeof(long); // Id
+        if (IsReliable) offset += sizeof(uint); // Sequence
 
-            PacketCount = BitConverter.ToUInt32(dataStream, offset); //read packet count - 4 bytes.
-            offset += sizeof(uint);
+        // Write Key
+        BinaryPrimitives.WriteInt16LittleEndian(buffer.Slice(offset), Key);
+        offset += sizeof(short);
 
-            Volume = BitConverter.ToSingle(dataStream, offset); //read volume - 4 bytes.
-            offset += sizeof(float);
+        // Write PacketCount
+        BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), PacketCount);
+        offset += sizeof(uint);
 
-            Rotation = BitConverter.ToSingle(dataStream, offset); //read rotation - 4 bytes.
-            offset += sizeof(float);
+        // Write ChannelId
+        buffer[offset++] = ChannelId;
 
-            EchoFactor = BitConverter.ToSingle(dataStream, offset); //read echo factor - 4 bytes.
-            offset += sizeof(float);
+        // Write Distance
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Distance);
+        offset += sizeof(float);
 
-            Muffled = BitConverter.ToBoolean(dataStream, offset); //read muffled - 1 byte.
-            offset += sizeof(bool);
+        // Write Location
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Location.X);
+        offset += sizeof(float);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Location.Y);
+        offset += sizeof(float);
+        BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(offset), Location.Z);
+        offset += sizeof(float);
 
-            var audioLength = BitConverter.ToInt32(dataStream, offset); //Read audio length - 4 bytes.
-            offset += sizeof(int);
+        // Write Audio
+        var len = DataLength > 0 ? DataLength : Audio.Length;
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), len);
+        offset += sizeof(int);
 
-            if(audioLength > 0)
+        if (len > 0)
+        {
+            Audio.AsSpan(0, len).CopyTo(buffer.Slice(offset));
+        }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            if (Audio != null)
             {
-                Audio = new byte[audioLength];
-                Buffer.BlockCopy(dataStream, offset, Audio, 0, audioLength);
+                if (Audio.Length > 0)
+                    ArrayPool<byte>.Shared.Return(Audio);
+                Audio = Array.Empty<byte>();
             }
-
-            offset += audioLength;
-
-            return offset;
         }
+    }
 
-        public override void WritePacket(ref List<byte> dataStream)
-        {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Key));
-            dataStream.AddRange(BitConverter.GetBytes(PacketCount));
-            dataStream.AddRange(BitConverter.GetBytes(Volume));
-            dataStream.AddRange(BitConverter.GetBytes(Rotation));
-            dataStream.AddRange(BitConverter.GetBytes(EchoFactor));
-            dataStream.AddRange(BitConverter.GetBytes(Muffled));
-            dataStream.AddRange(BitConverter.GetBytes(Audio.Length));
-            dataStream.AddRange(Audio);
-        }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

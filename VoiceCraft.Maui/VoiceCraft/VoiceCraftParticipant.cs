@@ -75,8 +75,8 @@ namespace VoiceCraft.Maui.VoiceCraft
                 if (disposing)
                 {
                     VoiceCraftStream.Dispose();
-                    IsDisposed = true;
                 }
+                IsDisposed = true; // Set outside if block for proper tracking
             }
         }
 

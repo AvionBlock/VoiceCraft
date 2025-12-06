@@ -1,0 +1,20 @@
+  VoiceCraft.Core -> C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Core\bin\Debug\net9.0\VoiceCraft.Core.dll
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(218,43): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(284,23): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(302,19): error CA1836: Prefer 'IsEmpty' over 'Count' to determine whether the object is empty (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1836) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(491,27): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(743,19): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(738,23): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+
+Build FAILED.
+
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(218,43): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(284,23): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(302,19): error CA1836: Prefer 'IsEmpty' over 'Count' to determine whether the object is empty (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1836) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(491,27): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(743,19): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\Sockets\VoiceCraftSocket.cs(738,23): error CA2007: Consider calling ConfigureAwait on the awaited task (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007) [C:\Users\TG\Documents\VoiceCraft\VoiceCraft.Network\VoiceCraft.Network.csproj]
+    0 Warning(s)
+    6 Error(s)
+
+Time Elapsed 00:00:00.93

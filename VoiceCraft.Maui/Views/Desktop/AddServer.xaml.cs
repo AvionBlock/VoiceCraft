@@ -5,10 +5,11 @@ namespace VoiceCraft.Maui.Views.Desktop;
 public partial class AddServer : ContentPage
 {
     AddServerViewModel viewModel;
-	public AddServer()
+	public AddServer(AddServerViewModel viewModel)
 	{
 		InitializeComponent();
-        viewModel = (AddServerViewModel)BindingContext;
+        this.viewModel = viewModel;
+        BindingContext = viewModel;
 	}
 
     private void PortEntryUnfocused(object sender, FocusEventArgs e)

@@ -1,27 +1,43 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using VoiceCraft.Maui.Services;
+using VoiceCraft.Maui.Interfaces;
 using VoiceCraft.Maui.Models;
 
-namespace VoiceCraft.Maui.ViewModels
-{
-    public partial class AddServerViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        ServerModel server = new ServerModel();
+namespace VoiceCraft.Maui.ViewModels;
 
-        [RelayCommand]
-        public async Task SaveServer()
+/// <summary>
+/// ViewModel for the add server page.
+/// </summary>
+public partial class AddServerViewModel : ObservableObject
+{
+    private readonly IDatabaseService _databaseService;
+    private readonly INavigationService _navigationService;
+
+    [ObservableProperty]
+    private ServerModel _server = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AddServerViewModel"/> class.
+    /// </summary>
+    public AddServerViewModel(IDatabaseService databaseService, INavigationService navigationService)
+    {
+        _databaseService = databaseService;
+        _navigationService = navigationService;
+    }
+
+    [RelayCommand]
+    private async Task SaveServer()
+    {
+        try
         {
-            try
-            {
-                await Database.Instance.AddServer(Server);
-                await Navigator.GoBack();
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", ex.Message, "OK");
-            }
+            await _databaseService.AddServer(Server);
+            await _navigationService.GoBack();
+        }
+        catch (Exception ex)
+        {
+            var msg = string.IsNullOrWhiteSpace(ex.Message) ? "Unknown error occurred." : ex.Message;
+            await Shell.Current.DisplayAlert("Error", msg, "OK");
         }
     }
 }
+

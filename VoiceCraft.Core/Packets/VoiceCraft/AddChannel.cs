@@ -1,52 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Text;
 
-namespace VoiceCraft.Core.Packets.VoiceCraft
+namespace VoiceCraft.Core.Packets.VoiceCraft;
+
+public class AddChannel : VoiceCraftPacket
 {
-    public class AddChannel : VoiceCraftPacket
+    public override byte PacketId => (byte)VoiceCraftPacketTypes.AddChannel;
+    public override bool IsReliable => true;
+
+    public bool RequiresPassword { get; set; }
+    public byte ChannelId { get; set; }
+    public bool Locked { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    public override void Read(ReadOnlySpan<byte> buffer)
     {
-        public override byte PacketId => (byte)VoiceCraftPacketTypes.AddChannel;
-        public override bool IsReliable => true;
+        base.Read(buffer);
+        // Offset: Id(8) + Sequence(4) = 12
+        int offset = 12;
 
-        public bool RequiresPassword { get; set; }
-        public byte ChannelId { get; set; }
-        public bool Locked { get; set; }
-        public string Name { get; set; } = string.Empty;
+        RequiresPassword = buffer[offset++] != 0;
+        ChannelId = buffer[offset++];
+        Locked = buffer[offset++] != 0;
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        int nameLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
+        offset += sizeof(int);
+
+        if (nameLength > 0)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
-
-            RequiresPassword = BitConverter.ToBoolean(dataStream, offset); //Read Password Requirement - 1 byte.
-            offset += sizeof(bool);
-
-            ChannelId = dataStream[offset]; //Read Channel Id - 1 byte.
-            offset++;
-
-            Locked = BitConverter.ToBoolean(dataStream, offset);
-            offset += sizeof(bool);
-
-            var nameLength = BitConverter.ToInt32(dataStream, offset); //Read Name Length - 4 bytes.
-            offset += sizeof(int);
-
-            if(nameLength > 0) 
-                Name = Encoding.UTF8.GetString(dataStream, offset, nameLength); //Read Name.
-
-            offset += nameLength;
-
-            return offset;
+            Name = Encoding.UTF8.GetString(buffer.Slice(offset, nameLength));
         }
+    }
 
-        public override void WritePacket(ref List<byte> dataStream)
+    public override void Write(Span<byte> buffer)
+    {
+        base.Write(buffer);
+        // Offset: Type(1) + Id(8) + Sequence(4) = 13
+        int offset = 13;
+
+        buffer[offset++] = RequiresPassword ? (byte)1 : (byte)0;
+        buffer[offset++] = ChannelId;
+        buffer[offset++] = Locked ? (byte)1 : (byte)0;
+
+        int nameBytes = Encoding.UTF8.GetByteCount(Name);
+        BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), nameBytes);
+        offset += sizeof(int);
+
+        if (nameBytes > 0)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(RequiresPassword));
-            dataStream.Add(ChannelId);
-            dataStream.AddRange(BitConverter.GetBytes(Locked));
-            dataStream.AddRange(BitConverter.GetBytes(Name.Length));
-            if(Name.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(Name));
+            Encoding.UTF8.GetBytes(Name, buffer.Slice(offset));
         }
     }
 }

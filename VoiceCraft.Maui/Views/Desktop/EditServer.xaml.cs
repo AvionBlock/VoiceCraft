@@ -5,10 +5,11 @@ namespace VoiceCraft.Maui.Views.Desktop;
 public partial class EditServer : ContentPage
 {
     EditServerViewModel viewModel;
-	public EditServer()
+	public EditServer(EditServerViewModel viewModel)
 	{
 		InitializeComponent();
-        viewModel = (EditServerViewModel)BindingContext;
+        this.viewModel = viewModel;
+        BindingContext = viewModel;
 	}
 
     private void PortEntryUnfocused(object sender, FocusEventArgs e)

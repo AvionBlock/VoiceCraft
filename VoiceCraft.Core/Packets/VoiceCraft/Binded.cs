@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System;
+using System.Buffers.Binary;
 
 namespace VoiceCraft.Core.Packets.VoiceCraft
 {
@@ -11,26 +12,35 @@ namespace VoiceCraft.Core.Packets.VoiceCraft
 
         public string Name { get; set; } = string.Empty;
 
-        public override int ReadPacket(ref byte[] dataStream, int offset = 0)
+        public override void Read(ReadOnlySpan<byte> buffer)
         {
-            offset = base.ReadPacket(ref dataStream, offset);
+            base.Read(buffer);
+            // Offset: Id(8) + Sequence(4) = 12
+            int offset = 12;
 
-            var nameLength = BitConverter.ToInt32(dataStream, offset); //Read Name length - 4 bytes.
+            int nameLength = BinaryPrimitives.ReadInt32LittleEndian(buffer.Slice(offset));
             offset += sizeof(int);
 
             if (nameLength > 0)
-                Name = Encoding.UTF8.GetString(dataStream, offset, nameLength); //Read Name.
-
-            offset += nameLength;
-            return offset;
+            {
+                Name = Encoding.UTF8.GetString(buffer.Slice(offset, nameLength));
+            }
         }
 
-        public override void WritePacket(ref List<byte> dataStream)
+        public override void Write(Span<byte> buffer)
         {
-            base.WritePacket(ref dataStream);
-            dataStream.AddRange(BitConverter.GetBytes(Name.Length));
-            if (Name.Length > 0)
-                dataStream.AddRange(Encoding.UTF8.GetBytes(Name));
+            base.Write(buffer);
+            // Offset: Type(1) + Id(8) + Sequence(4) = 13
+            int offset = 13;
+
+            int nameBytes = Encoding.UTF8.GetByteCount(Name);
+            BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset), nameBytes);
+            offset += sizeof(int);
+
+            if (nameBytes > 0)
+            {
+                Encoding.UTF8.GetBytes(Name, buffer.Slice(offset));
+            }
         }
     }
 }
