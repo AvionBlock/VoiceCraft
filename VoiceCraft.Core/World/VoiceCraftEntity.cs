@@ -81,8 +81,15 @@ namespace VoiceCraft.Core.World
 
         public void TrimDeadEntities()
         {
-            foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed).ToArray())
-                _visibleEntities.Remove(entity.Key);
+            List<int>? keysToRemove = null;
+            foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed))
+            {
+                (keysToRemove ??= new List<int>()).Add(entity.Key);
+            }
+
+            if (keysToRemove == null) return;
+            foreach (var key in keysToRemove)
+                _visibleEntities.Remove(key);
         }
 
         public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
@@ -173,7 +180,7 @@ namespace VoiceCraft.Core.World
             {
                 if (_talkBitmask == value) return;
                 _talkBitmask = value;
-                OnListenBitmaskUpdated?.Invoke(_talkBitmask, this);
+                OnTalkBitmaskUpdated?.Invoke(_talkBitmask, this);
             }
         }
 
@@ -184,7 +191,7 @@ namespace VoiceCraft.Core.World
             {
                 if (_listenBitmask == value) return;
                 _listenBitmask = value;
-                OnTalkBitmaskUpdated?.Invoke(_listenBitmask, this);
+                OnListenBitmaskUpdated?.Invoke(_listenBitmask, this);
             }
         }
 

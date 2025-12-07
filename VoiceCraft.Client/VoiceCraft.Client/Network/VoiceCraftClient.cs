@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -244,22 +245,17 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public async Task<T> GetResponseAsync<T>(Guid requestId, TimeSpan timeout)
     {
-        IVoiceCraftPacket? callbackData = null;
-        var expiryTime = DateTime.UtcNow.Add(timeout);
+        var tcs = new TaskCompletionSource<IVoiceCraftPacket>();
+        using var cts = new CancellationTokenSource(timeout);
+        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+        
         OnPacket += EventCallback;
         try
         {
             if (!_requestIds.Add(requestId))
                 throw new TaskCanceledException("A request with the same id already exists!");
-            while (expiryTime > DateTime.UtcNow)
-            {
-                if (!_requestIds.Contains(requestId))
-                    throw new TaskCanceledException();
-                if (callbackData is T tType) return tType;
-                await Task.Delay(1); //Don't burn the CPU.
-            }
-
-            throw new TimeoutException();
+            var result = await tcs.Task.ConfigureAwait(false);
+            return result is T typedResult ? typedResult : throw new InvalidCastException();
         }
         finally
         {
@@ -270,7 +266,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         void EventCallback(IVoiceCraftPacket packet)
         {
             if (packet is not IVoiceCraftRIdPacket rIdPacket || rIdPacket.RequestId != requestId) return;
-            callbackData = packet;
+            tcs.TrySetResult(packet);
         }
     }
 
@@ -606,7 +602,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             OnPacket?.Invoke(packet);
             Name = packet.Value;
         }
-        catch
+        finally
         {
             PacketPool<VcSetNameRequestPacket>.Return(packet);
         }
