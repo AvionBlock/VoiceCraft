@@ -65,8 +65,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
         public override void Serialize(NetDataWriter writer)
         {
             base.Serialize(writer);
-            writer.Put(UserGuid);
-            writer.Put(ServerUserGuid);
+            writer.Put(UserGuid.ToString(), Constants.MaxStringLength);
+            writer.Put(ServerUserGuid.ToString(), Constants.MaxStringLength);
             writer.Put(Locale, Constants.MaxStringLength);
             writer.Put((byte)PositioningType);
         }
@@ -74,8 +74,8 @@ namespace VoiceCraft.Core.Network.McApiPackets
         public override void Deserialize(NetDataReader reader)
         {
             base.Deserialize(reader);
-            UserGuid = reader.GetGuid();
-            ServerUserGuid = reader.GetGuid();
+            UserGuid = Guid.Parse(reader.GetString(Constants.MaxStringLength));
+            ServerUserGuid = Guid.Parse(reader.GetString(Constants.MaxStringLength));
             Locale = reader.GetString(Constants.MaxStringLength);
             PositioningType = (PositioningType)reader.GetByte();
         }
