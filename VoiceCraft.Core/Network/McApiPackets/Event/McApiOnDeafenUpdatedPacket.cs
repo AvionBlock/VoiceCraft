@@ -2,7 +2,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnDeafenUpdatedPacket : McApiPacket
+    public class McApiOnDeafenUpdatedPacket : IMcApiPacket
     {
         public McApiOnDeafenUpdatedPacket(int id = 0, bool value = false)
         {
@@ -10,21 +10,27 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.OnEntityDeafenUpdated;
+        public McApiPacketType PacketType => McApiPacketType.OnEntityDeafenUpdated;
 
         public int Id { get; private set; }
         public bool Value { get; private set; }
 
-        public override void Serialize(NetDataWriter writer)
+        public void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
             writer.Put(Value);
         }
 
-        public override void Deserialize(NetDataReader reader)
+        public void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
             Value = reader.GetBool();
+        }
+
+        public void Set(int id = 0, bool value = false)
+        {
+            Id = id;
+            Value = value;
         }
     }
 }

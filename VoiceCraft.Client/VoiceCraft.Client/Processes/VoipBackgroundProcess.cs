@@ -222,13 +222,13 @@ public class VoipBackgroundProcess(
     public void ToggleMute(bool value)
     {
         _voiceCraftClient.Muted = value;
-        _voiceCraftClient.SendPacket(new SetMutePacket(value: value));
+        _voiceCraftClient.SendPacket(new VcOnMuteUpdatedPacket(value: value));
     }
 
     public void ToggleDeafen(bool value)
     {
         _voiceCraftClient.Deafened = value;
-        _voiceCraftClient.SendPacket(new SetDeafenPacket(value: value));
+        _voiceCraftClient.SendPacket(new VcOnDeafenUpdatedPacket(value: value));
     }
 
     public void Disconnect()

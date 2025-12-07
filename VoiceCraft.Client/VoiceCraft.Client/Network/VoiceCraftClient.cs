@@ -96,7 +96,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public bool Ping(string ip, uint port)
     {
-        var packet = new InfoPacket(tick: Environment.TickCount);
+        var packet = new InfoRequestPacket(tick: Environment.TickCount);
         try
         {
             SendUnconnectedPacket(ip, port, packet);
@@ -164,7 +164,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         Array.Clear(_encodeBuffer);
         var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-        var packet = new AudioPacket(_serverPeer.RemoteId, _sendTimestamp, frameLoudness, bytesEncoded, _encodeBuffer);
+        var packet = new AudioRequestPacket(_serverPeer.RemoteId, _sendTimestamp, frameLoudness, bytesEncoded, _encodeBuffer);
         SendPacket(packet);
     }
 
@@ -287,7 +287,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         try
         {
             var packetType = reader.GetByte();
-            var pt = (PacketType)packetType;
+            var pt = (VcPacketType)packetType;
             ProcessPacket(pt, reader);
         }
         catch (Exception ex)
@@ -304,7 +304,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         try
         {
             var packetType = reader.GetByte();
-            var pt = (PacketType)packetType;
+            var pt = (VcPacketType)packetType;
             ProcessPacket(pt, reader);
         }
         catch (Exception ex)
@@ -316,118 +316,118 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     }
 
     //Packet Handling
-    private void ProcessPacket(PacketType packetType, NetPacketReader reader)
+    private void ProcessPacket(VcPacketType packetType, NetPacketReader reader)
     {
         switch (packetType)
         {
-            case PacketType.Info:
-                var infoPacket = new InfoPacket();
+            case VcPacketType.Info:
+                var infoPacket = new InfoRequestPacket();
                 infoPacket.Deserialize(reader);
                 HandleInfoPacket(infoPacket);
                 break;
-            case PacketType.SetId:
+            case VcPacketType.SetId:
                 var setIdPacket = new SetIdPacket();
                 setIdPacket.Deserialize(reader);
                 HandleSetIdPacket(setIdPacket);
                 break;
-            case PacketType.SetEffect:
-                var setEffectPacket = new SetEffectPacket();
+            case VcPacketType.SetEffect:
+                var setEffectPacket = new VcOnEffectUpdatedPacket();
                 setEffectPacket.Deserialize(reader);
                 HandleSetEffectPacket(setEffectPacket, reader);
                 break;
-            case PacketType.Audio:
-                var audioPacket = new AudioPacket();
+            case VcPacketType.Audio:
+                var audioPacket = new AudioRequestPacket();
                 audioPacket.Deserialize(reader);
                 HandleAudioPacket(audioPacket);
                 break;
-            case PacketType.SetTitle:
+            case VcPacketType.SetTitle:
                 var setTitlePacket = new SetTitlePacket();
                 setTitlePacket.Deserialize(reader);
                 HandleSetTitlePacket(setTitlePacket);
                 break;
-            case PacketType.SetDescription:
+            case VcPacketType.SetDescription:
                 var setDescriptionPacket = new SetDescriptionPacket();
                 setDescriptionPacket.Deserialize(reader);
                 HandleSetDescriptionPacket(setDescriptionPacket);
                 break;
-            case PacketType.EntityCreated:
+            case VcPacketType.EntityCreated:
                 var entityCreatedPacket = new EntityCreatedPacket();
                 entityCreatedPacket.Deserialize(reader);
                 HandleEntityCreatedPacket(entityCreatedPacket);
                 break;
-            case PacketType.NetworkEntityCreated:
-                var networkEntityCreatedPacket = new NetworkEntityCreatedPacket();
+            case VcPacketType.NetworkEntityCreated:
+                var networkEntityCreatedPacket = new VcOnNetworkEntityCreatedPacket();
                 networkEntityCreatedPacket.Deserialize(reader);
                 HandleNetworkEntityCreatedPacket(networkEntityCreatedPacket);
                 break;
-            case PacketType.EntityDestroyed:
-                var entityDestroyedPacket = new EntityDestroyedPacket();
+            case VcPacketType.EntityDestroyed:
+                var entityDestroyedPacket = new VcOnEntityDestroyedPacket();
                 entityDestroyedPacket.Deserialize(reader);
                 HandleEntityDestroyedPacket(entityDestroyedPacket);
                 break;
-            case PacketType.SetVisibility:
-                var setVisibilityPacket = new SetVisibilityPacket();
+            case VcPacketType.SetVisibility:
+                var setVisibilityPacket = new VcSetEntityVisibilityRequestPacket();
                 setVisibilityPacket.Deserialize(reader);
                 HandleSetVisibilityPacket(setVisibilityPacket);
                 break;
-            case PacketType.SetName:
-                var setNamePacket = new SetNamePacket();
+            case VcPacketType.SetName:
+                var setNamePacket = new VcOnEntityNameUpdatedPacket();
                 setNamePacket.Deserialize(reader);
                 HandleSetNamePacket(setNamePacket);
                 break;
-            case PacketType.SetMute:
-                var setMutePacket = new SetMutePacket();
+            case VcPacketType.SetMute:
+                var setMutePacket = new VcOnMuteUpdatedPacket();
                 setMutePacket.Deserialize(reader);
                 HandleSetMutePacket(setMutePacket);
                 break;
-            case PacketType.SetDeafen:
-                var setDeafen = new SetDeafenPacket();
+            case VcPacketType.SetDeafen:
+                var setDeafen = new VcOnDeafenUpdatedPacket();
                 setDeafen.Deserialize(reader);
                 HandleSetDeafenPacket(setDeafen);
                 break;
-            case PacketType.SetTalkBitmask:
+            case VcPacketType.SetTalkBitmask:
                 var setTalkBitmaskPacket = new SetTalkBitmaskPacket();
                 setTalkBitmaskPacket.Deserialize(reader);
                 HandleSetTalkBitmaskPacket(setTalkBitmaskPacket);
                 break;
-            case PacketType.SetListenBitmask:
-                var setListenBitmaskPacket = new SetListenBitmaskPacket();
+            case VcPacketType.SetListenBitmask:
+                var setListenBitmaskPacket = new VcOnEntityListenBitmaskUpdatedPacket();
                 setListenBitmaskPacket.Deserialize(reader);
                 HandleSetListenBitmaskPacket(setListenBitmaskPacket);
                 break;
-            case PacketType.SetEffectBitmask:
-                var setEffectBitmaskPacket = new SetEffectBitmaskPacket();
+            case VcPacketType.SetEffectBitmask:
+                var setEffectBitmaskPacket = new VcOnEntityEffectBitmaskUpdatedPacket();
                 setEffectBitmaskPacket.Deserialize(reader);
                 HandleSetEffectBitmaskPacket(setEffectBitmaskPacket);
                 break;
-            case PacketType.SetPosition:
-                var setPositionPacket = new SetPositionPacket();
+            case VcPacketType.SetPosition:
+                var setPositionPacket = new VcOnEntityPositionUpdatedPacket();
                 setPositionPacket.Deserialize(reader);
                 HandleSetPositionPacket(setPositionPacket);
                 break;
-            case PacketType.SetRotation:
-                var setRotationPacket = new SetRotationPacket();
+            case VcPacketType.SetRotation:
+                var setRotationPacket = new VcOnEntityRotationUpdatedPacket();
                 setRotationPacket.Deserialize(reader);
                 HandleSetRotationPacket(setRotationPacket);
                 break;
-            case PacketType.SetCaveFactor:
-                var setCaveFactorPacket = new SetCaveFactorPacket();
+            case VcPacketType.SetCaveFactor:
+                var setCaveFactorPacket = new VcOnCaveFactorUpdatedPacket();
                 setCaveFactorPacket.Deserialize(reader);
                 HandleSetCaveFactorPacket(setCaveFactorPacket);
                 break;
-            case PacketType.SetMuffleFactor:
+            case VcPacketType.SetMuffleFactor:
                 var setMuffleFactorPacket = new SetMuffleFactorPacket();
                 setMuffleFactorPacket.Deserialize(reader);
                 HandleSetMuffleFactorPacket(setMuffleFactorPacket);
                 break;
-            case PacketType.Login:
-            case PacketType.Logout:
+            case VcPacketType.Login:
+            case VcPacketType.Logout:
             default:
                 break;
         }
     }
 
-    private void HandleInfoPacket(InfoPacket infoPacket)
+    private void HandleInfoPacket(InfoRequestPacket infoPacket)
     {
         OnServerInfo?.Invoke(new ServerInfo(infoPacket));
     }
@@ -437,7 +437,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _id = setIdPacket.Id;
     }
 
-    private void HandleSetEffectPacket(SetEffectPacket packet, NetDataReader reader)
+    private void HandleSetEffectPacket(VcOnEffectUpdatedPacket packet, NetDataReader reader)
     {
         if (_audioSystem.TryGetEffect(packet.Bitmask, out var effect) && effect.EffectType == packet.EffectType)
         {
@@ -480,7 +480,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    private void HandleAudioPacket(AudioPacket packet)
+    private void HandleAudioPacket(AudioRequestPacket packet)
     {
         if (Deafened) return;
         var entity = World.GetEntity(packet.Id);
@@ -508,7 +508,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         World.AddEntity(entity);
     }
 
-    private void HandleNetworkEntityCreatedPacket(NetworkEntityCreatedPacket packet)
+    private void HandleNetworkEntityCreatedPacket(VcOnNetworkEntityCreatedPacket packet)
     {
         if (packet.Id == Id)
         {
@@ -526,12 +526,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         World.AddEntity(entity);
     }
 
-    private void HandleEntityDestroyedPacket(EntityDestroyedPacket packet)
+    private void HandleEntityDestroyedPacket(VcOnEntityDestroyedPacket packet)
     {
         World.DestroyEntity(packet.Id);
     }
 
-    private void HandleSetVisibilityPacket(SetVisibilityPacket packet)
+    private void HandleSetVisibilityPacket(VcSetEntityVisibilityRequestPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
         if (entity is not VoiceCraftClientEntity clientEntity) return;
@@ -540,7 +540,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         clientEntity.ClearBuffer();
     }
 
-    private void HandleSetNamePacket(SetNamePacket packet)
+    private void HandleSetNamePacket(VcOnEntityNameUpdatedPacket packet)
     {
         if (packet.Id == Id)
         {
@@ -553,14 +553,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity.Name = packet.Value;
     }
 
-    private void HandleSetMutePacket(SetMutePacket packet)
+    private void HandleSetMutePacket(VcOnMuteUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
         entity.Muted = packet.Value;
     }
 
-    private void HandleSetDeafenPacket(SetDeafenPacket packet)
+    private void HandleSetDeafenPacket(VcOnDeafenUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
         if (entity == null) return;
@@ -580,7 +580,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity.TalkBitmask = packet.Value;
     }
 
-    private void HandleSetListenBitmaskPacket(SetListenBitmaskPacket packet)
+    private void HandleSetListenBitmaskPacket(VcOnEntityListenBitmaskUpdatedPacket packet)
     {
         if (packet.Id == Id)
         {
@@ -593,7 +593,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity.ListenBitmask = packet.Value;
     }
 
-    private void HandleSetEffectBitmaskPacket(SetEffectBitmaskPacket packet)
+    private void HandleSetEffectBitmaskPacket(VcOnEntityEffectBitmaskUpdatedPacket packet)
     {
         if (packet.Id == Id)
         {
@@ -606,7 +606,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity.EffectBitmask = packet.Value;
     }
 
-    private void HandleSetPositionPacket(SetPositionPacket packet)
+    private void HandleSetPositionPacket(VcOnEntityPositionUpdatedPacket packet)
     {
         if (packet.Id == Id)
         {
@@ -619,7 +619,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity.Position = packet.Value;
     }
 
-    private void HandleSetRotationPacket(SetRotationPacket packet)
+    private void HandleSetRotationPacket(VcOnEntityRotationUpdatedPacket packet)
     {
         if (packet.Id == Id)
         {
@@ -632,7 +632,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity.Rotation = packet.Value;
     }
 
-    private void HandleSetCaveFactorPacket(SetCaveFactorPacket packet)
+    private void HandleSetCaveFactorPacket(VcOnCaveFactorUpdatedPacket packet)
     {
         if (packet.Id == Id)
         {

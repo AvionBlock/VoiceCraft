@@ -1,38 +1,34 @@
 using System;
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.Packets
+namespace VoiceCraft.Core.Network.VcPackets.Request
 {
-    public class AudioPacket : VoiceCraftPacket
+    public class VcAudioRequestPacket : IVoiceCraftPacket
     {
-        public AudioPacket(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+        public VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
         {
-            Id = id;
             Timestamp = timestamp;
             FrameLoudness = loudness;
             Length = length;
             Data = data ?? Array.Empty<byte>();
         }
 
-        public override PacketType PacketType => PacketType.Audio;
-
-        public int Id { get; private set; }
+        public VcPacketType PacketType => VcPacketType.AudioRequest;
+        
         public ushort Timestamp { get; private set; }
         public float FrameLoudness { get; private set; }
         public int Length { get; private set; }
         public byte[] Data { get; private set; }
 
-        public override void Serialize(NetDataWriter writer)
+        public void Serialize(NetDataWriter writer)
         {
-            writer.Put(Id);
             writer.Put(Timestamp);
             writer.Put(FrameLoudness);
             writer.Put(Data, 0, Length);
         }
 
-        public override void Deserialize(NetDataReader reader)
+        public void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetInt();
             Timestamp = reader.GetUShort();
             FrameLoudness = Math.Clamp(reader.GetFloat(), 0f, 1f);
             Length = reader.AvailableBytes;
@@ -42,6 +38,15 @@ namespace VoiceCraft.Core.Network.Packets
                     $"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
             Data = new byte[Length];
             reader.GetBytes(Data, Length);
+        }
+        
+        public VcAudioRequestPacket Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+        {
+            Timestamp = timestamp;
+            FrameLoudness = loudness;
+            Length = length;
+            Data = data ?? Array.Empty<byte>();
+            return this;
         }
     }
 }

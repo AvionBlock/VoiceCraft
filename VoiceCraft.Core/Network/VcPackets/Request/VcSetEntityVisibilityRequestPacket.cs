@@ -1,16 +1,16 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets.Event
+namespace VoiceCraft.Core.Network.VcPackets.Request
 {
-    public class McApiOnMuteUpdatedPacket : IMcApiPacket
+    public class VcSetEntityVisibilityRequestPacket : IVoiceCraftPacket
     {
-        public McApiOnMuteUpdatedPacket(int id = 0, bool value = false)
+        public VcSetEntityVisibilityRequestPacket(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;
         }
 
-        public McApiPacketType PacketType => McApiPacketType.OnEntityMuteUpdated;
+        public VcPacketType PacketType => VcPacketType.SetEntityVisibilityRequest;
 
         public int Id { get; private set; }
         public bool Value { get; private set; }
@@ -26,11 +26,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = reader.GetBool();
         }
-        
-        public void Set(int id = 0, bool value = false)
+
+        public VcSetEntityVisibilityRequestPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

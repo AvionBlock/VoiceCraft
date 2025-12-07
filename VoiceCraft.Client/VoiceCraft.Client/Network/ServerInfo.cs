@@ -10,7 +10,7 @@ public struct ServerInfo
     public PositioningType PositioningType { get; set; }
     public int Tick { get; set; }
 
-    public ServerInfo(InfoPacket infoPacket)
+    public ServerInfo(InfoRequestPacket infoPacket)
     {
         Motd = infoPacket.Motd;
         Clients = infoPacket.Clients;

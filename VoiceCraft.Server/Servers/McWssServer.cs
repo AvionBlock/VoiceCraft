@@ -78,7 +78,7 @@ public class McWssServer
         AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Stopped}[/]");
     }
 
-    public void SendPacket(McApiNetPeer netPeer, McApiPacket packet)
+    public void SendPacket(McApiNetPeer netPeer, IMcApiPacket packet)
     {
         lock (_writer)
         {
@@ -89,7 +89,7 @@ public class McWssServer
         }
     }
     
-    public void Broadcast(McApiPacket packet, params McApiNetPeer?[] excludes)
+    public void Broadcast(IMcApiPacket packet, params McApiNetPeer?[] excludes)
     {
         lock (_writer)
         {
@@ -105,7 +105,7 @@ public class McWssServer
         }
     }
 
-    private void SendPacket(IWebSocketConnection socket, McApiPacket packet)
+    private void SendPacket(IWebSocketConnection socket, IMcApiPacket packet)
     {
         lock (_writer)
         {
