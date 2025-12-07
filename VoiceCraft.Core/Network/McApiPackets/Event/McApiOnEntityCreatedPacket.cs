@@ -3,7 +3,7 @@ using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.World;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnEntityCreatedPacket : McApiPacket
     {

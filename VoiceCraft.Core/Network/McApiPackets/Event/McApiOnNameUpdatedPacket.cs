@@ -1,16 +1,16 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnWorldIdUpdatedPacket : McApiPacket
+    public class McApiOnNameUpdatedPacket : McApiPacket
     {
-        public McApiOnWorldIdUpdatedPacket(int id = 0, string value = "")
+        public McApiOnNameUpdatedPacket(int id = 0, string value = "")
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.OnEntityWorldIdUpdated;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityNameUpdated;
 
         public int Id { get; private set; }
         public string Value { get; private set; }

@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnEntityDestroyedPacket : McApiPacket
     {

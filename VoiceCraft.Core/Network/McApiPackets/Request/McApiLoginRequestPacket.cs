@@ -1,7 +1,7 @@
 using System;
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
     public class McApiLoginRequestPacket : McApiPacket
     {

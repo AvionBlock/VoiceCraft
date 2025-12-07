@@ -1,19 +1,19 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnMuteUpdatedPacket : McApiPacket
+    public class McApiOnEffectBitmaskUpdatedPacket : McApiPacket
     {
-        public McApiOnMuteUpdatedPacket(int id = 0, bool value = false)
+        public McApiOnEffectBitmaskUpdatedPacket(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.OnEntityMuteUpdated;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityEffectBitmaskUpdated;
 
         public int Id { get; private set; }
-        public bool Value { get; private set; }
+        public ushort Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetBool();
+            Value = reader.GetUShort();
         }
     }
 }
