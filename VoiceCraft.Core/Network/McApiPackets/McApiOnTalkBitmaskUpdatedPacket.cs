@@ -2,18 +2,18 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiSetMuffleFactorPacket : McApiPacket
+    public class McApiOnTalkBitmaskUpdatedPacket : McApiPacket
     {
-        public McApiSetMuffleFactorPacket(int id = 0, float value = 0.0f)
+        public McApiOnTalkBitmaskUpdatedPacket(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.SetMuffleFactor;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityTalkBitmaskUpdated;
 
         public int Id { get; private set; }
-        public float Value { get; private set; }
+        public ushort Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetFloat();
+            Value = reader.GetUShort();
         }
     }
 }

@@ -2,29 +2,25 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiSetNamePacket : McApiPacket
+    public class McApiOnEntityDestroyedPacket : McApiPacket
     {
-        public McApiSetNamePacket(int id = 0, string value = "")
+        public McApiOnEntityDestroyedPacket(int id = 0)
         {
             Id = id;
-            Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.SetName;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityDestroyed;
 
         public int Id { get; private set; }
-        public string Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put(Value, Constants.MaxStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetString(Constants.MaxStringLength);
         }
     }
 }

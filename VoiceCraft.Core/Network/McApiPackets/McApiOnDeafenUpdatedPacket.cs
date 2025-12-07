@@ -2,15 +2,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiSetDeafenPacket : McApiPacket
+    public class McApiOnDeafenUpdatedPacket : McApiPacket
     {
-        public McApiSetDeafenPacket(int id = 0, bool value = false)
+        public McApiOnDeafenUpdatedPacket(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.SetDeafen;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityDeafenUpdated;
 
         public int Id { get; private set; }
         public bool Value { get; private set; }

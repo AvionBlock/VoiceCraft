@@ -1,36 +1,33 @@
-using System;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiLoginPacket : McApiPacket
+    public class McApiDenyResponsePacket : McApiPacket
     {
-        public McApiLoginPacket(string requestId = "", string token = "", Version? version = null)
+        public McApiDenyResponsePacket(string requestId = "", string token = "", string reasonKey = "")
         {
             RequestId = requestId;
             Token = token;
-            Version = version ?? new Version(0, 0, 0);
+            ReasonKey = reasonKey;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.Login;
+        public override McApiPacketType PacketType => McApiPacketType.DenyResponse;
         public string RequestId { get; private set; }
         public string Token { get; private set; }
-        public Version Version { get; private set; }
+        public string ReasonKey { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(RequestId, Constants.MaxStringLength);
             writer.Put(Token, Constants.MaxStringLength);
-            writer.Put(Version.Major);
-            writer.Put(Version.Minor);
-            writer.Put(Version.Build);
+            writer.Put(ReasonKey, Constants.MaxStringLength);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             RequestId = reader.GetString(Constants.MaxStringLength);
             Token = reader.GetString(Constants.MaxStringLength);
-            Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
+            ReasonKey = reader.GetString(Constants.MaxStringLength);
         }
     }
 }

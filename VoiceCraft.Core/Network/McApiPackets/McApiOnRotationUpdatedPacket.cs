@@ -3,31 +3,30 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiSetPositionPacket : McApiPacket
+    public class McApiOnRotationUpdatedPacket : McApiPacket
     {
-        public McApiSetPositionPacket(int id = 0, Vector3 value = new Vector3())
+        public McApiOnRotationUpdatedPacket(int id = 0, Vector2 value = new Vector2())
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.SetPosition;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityRotationUpdated;
 
         public int Id { get; private set; }
-        public Vector3 Value { get; private set; }
+        public Vector2 Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
             writer.Put(Value.X);
             writer.Put(Value.Y);
-            writer.Put(Value.Z);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
+            Value = new Vector2(reader.GetFloat(), reader.GetFloat());
         }
     }
 }

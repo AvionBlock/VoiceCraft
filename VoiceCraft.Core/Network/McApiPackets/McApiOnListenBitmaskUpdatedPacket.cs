@@ -1,32 +1,30 @@
-using System.Numerics;
 using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiSetRotationPacket : McApiPacket
+    public class McApiOnListenBitmaskUpdatedPacket : McApiPacket
     {
-        public McApiSetRotationPacket(int id = 0, Vector2 value = new Vector2())
+        public McApiOnListenBitmaskUpdatedPacket(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.SetRotation;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityListenBitmaskUpdated;
 
         public int Id { get; private set; }
-        public Vector2 Value { get; private set; }
+        public ushort Value { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
-            writer.Put(Value.X);
-            writer.Put(Value.Y);
+            writer.Put(Value);
         }
 
         public override void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = new Vector2(reader.GetFloat(), reader.GetFloat());
+            Value = reader.GetUShort();
         }
     }
 }

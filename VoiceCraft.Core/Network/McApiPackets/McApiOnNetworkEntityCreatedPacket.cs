@@ -5,9 +5,9 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiNetworkEntityCreatedPacket : McApiEntityCreatedPacket
+    public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
     {
-        public McApiNetworkEntityCreatedPacket(
+        public McApiOnNetworkEntityCreatedPacket(
             int id = 0,
             float loudness = 0.0f,
             DateTime lastSpoke = new DateTime(),
@@ -47,7 +47,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
             PositioningType = positioningType;
         }
 
-        public McApiNetworkEntityCreatedPacket(VoiceCraftNetworkEntity entity) : base(entity)
+        public McApiOnNetworkEntityCreatedPacket(VoiceCraftNetworkEntity entity) : base(entity)
         {
             UserGuid = entity.UserGuid;
             ServerUserGuid = entity.ServerUserGuid;
@@ -55,7 +55,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
             PositioningType = entity.PositioningType;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.NetworkEntityCreated;
+        public override McApiPacketType PacketType => McApiPacketType.OnNetworkEntityCreated;
 
         public Guid UserGuid { get; private set; }
         public Guid ServerUserGuid { get; private set; }

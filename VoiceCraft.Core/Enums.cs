@@ -10,6 +10,7 @@ namespace VoiceCraft.Core
 
     public enum PacketType : byte
     {
+        //Requests
         Info,
         Login,
         Logout,
@@ -21,7 +22,7 @@ namespace VoiceCraft.Core
         SetTitle,
         SetDescription,
 
-        //Entity stuff
+        //Events
         EntityCreated,
         NetworkEntityCreated,
         EntityDestroyed,
@@ -40,29 +41,31 @@ namespace VoiceCraft.Core
 
     public enum McApiPacketType : byte
     {
-        //Networking
-        Login,
-        Logout,
-        Ping,
-        Accept,
-        Deny,
+        //Requests
+        LoginRequest,
+        LogoutRequest,
+        PingRequest,
         
-        //Entity Stuff
-        EntityCreated,
-        NetworkEntityCreated,
-        EntityDestroyed,
-        SetVisibility,
-        SetWorldId,
-        SetName,
-        SetMute,
-        SetDeafen,
-        SetTalkBitmask,
-        SetListenBitmask,
-        SetEffectBitmask,
-        SetPosition,
-        SetRotation,
-        SetCaveFactor,
-        SetMuffleFactor,
+        //Responses
+        AcceptResponse,
+        DenyResponse,
+        
+        //Events
+        OnEntityCreated,
+        OnNetworkEntityCreated,
+        OnEntityDestroyed,
+        OnEntityVisibilityUpdated,
+        OnEntityWorldIdUpdated,
+        OnEntityNameUpdated,
+        OnEntityMuteUpdated,
+        OnEntityDeafenUpdated,
+        OnEntityTalkBitmaskUpdated,
+        OnEntityListenBitmaskUpdated,
+        OnEntityEffectBitmaskUpdated,
+        OnEntityPositionUpdated,
+        OnEntityRotationUpdated,
+        OnEntityCaveFactorUpdated,
+        OnEntityMuffleFactorUpdated,
     }
 
     #endregion
