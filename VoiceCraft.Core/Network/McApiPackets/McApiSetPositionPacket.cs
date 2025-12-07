@@ -1,17 +1,17 @@
 using System.Numerics;
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.Packets
+namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class SetPositionPacket : VoiceCraftPacket
+    public class McApiSetPositionPacket : McApiPacket
     {
-        public SetPositionPacket(int id = 0, Vector3 value = new Vector3())
+        public McApiSetPositionPacket(int id = 0, Vector3 value = new Vector3())
         {
             Id = id;
             Value = value;
         }
 
-        public override PacketType PacketType => PacketType.SetPosition;
+        public override McApiPacketType PacketType => McApiPacketType.SetPosition;
 
         public int Id { get; private set; }
         public Vector3 Value { get; private set; }

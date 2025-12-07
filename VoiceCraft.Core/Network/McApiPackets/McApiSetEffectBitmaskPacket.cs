@@ -1,0 +1,30 @@
+using LiteNetLib.Utils;
+
+namespace VoiceCraft.Core.Network.McApiPackets
+{
+    public class McApiSetEffectBitmaskPacket : McApiPacket
+    {
+        public McApiSetEffectBitmaskPacket(int id = 0, ushort value = 0)
+        {
+            Id = id;
+            Value = value;
+        }
+
+        public override McApiPacketType PacketType => McApiPacketType.SetEffectBitmask;
+
+        public int Id { get; private set; }
+        public ushort Value { get; private set; }
+
+        public override void Serialize(NetDataWriter writer)
+        {
+            writer.Put(Id);
+            writer.Put(Value);
+        }
+
+        public override void Deserialize(NetDataReader reader)
+        {
+            Id = reader.GetInt();
+            Value = reader.GetUShort();
+        }
+    }
+}

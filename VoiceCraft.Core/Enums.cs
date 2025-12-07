@@ -50,6 +50,19 @@ namespace VoiceCraft.Core
         //Entity Stuff
         EntityCreated,
         NetworkEntityCreated,
+        EntityDestroyed,
+        SetVisibility,
+        SetWorldId,
+        SetName,
+        SetMute,
+        SetDeafen,
+        SetTalkBitmask,
+        SetListenBitmask,
+        SetEffectBitmask,
+        SetPosition,
+        SetRotation,
+        SetCaveFactor,
+        SetMuffleFactor,
     }
 
     #endregion
