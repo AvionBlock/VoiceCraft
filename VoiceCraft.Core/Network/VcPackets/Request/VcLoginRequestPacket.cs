@@ -3,21 +3,26 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.VcPackets.Request
 {
-    public class VcLoginRequestPacket : IVoiceCraftPacket
+    public class VcLoginRequestPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
     {
+        public VcLoginRequestPacket() : this(Guid.Empty, Guid.Empty, Guid.Empty, string.Empty, new Version(0, 0, 0),
+            PositioningType.Server)
+        {
+        }
+
         public VcLoginRequestPacket(
-            Guid requestId = new Guid(),
-            Guid userGuid = new Guid(),
-            Guid serverUserGuid = new Guid(),
-            string locale = "",
-            Version? version = null,
-            PositioningType positioningType = PositioningType.Server)
+            Guid requestId,
+            Guid userGuid,
+            Guid serverUserGuid,
+            string locale,
+            Version version,
+            PositioningType positioningType)
         {
             RequestId = requestId;
             UserGuid = userGuid;
             ServerUserGuid = serverUserGuid;
             Locale = locale;
-            Version = version ?? new Version(0, 0, 0);
+            Version = version;
             PositioningType = positioningType;
         }
 

@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityNameUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityNameUpdatedPacket(int id = 0, string value = "")
+        public VcOnEntityNameUpdatedPacket() : this(0, string.Empty)
+        {
+        }
+
+        public VcOnEntityNameUpdatedPacket(int id, string value)
         {
             Id = id;
             Value = value;
@@ -26,7 +30,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Id = reader.GetInt();
             Value = reader.GetString(Constants.MaxStringLength);
         }
-        
+
         public VcOnEntityNameUpdatedPacket Set(int id = 0, string value = "")
         {
             Id = id;

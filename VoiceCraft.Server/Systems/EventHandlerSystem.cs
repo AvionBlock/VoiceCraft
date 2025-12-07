@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
 using System.Numerics;
+using LiteNetLib;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.McApiPackets.Event;
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core.Network.VcPackets.Event;
+using VoiceCraft.Core.Network.VcPackets.Request;
 using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
@@ -52,7 +55,7 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new VcOnEffectUpdatedPacket(bitmask, effect);
+            var packet = PacketPool<VcOnEffectUpdatedPacket>.GetPacket().Set(bitmask, effect);
             _server.Broadcast(packet);
         });
     }
@@ -66,28 +69,32 @@ public class EventHandlerSystem : IDisposable
     {
         if (newEntity is VoiceCraftNetworkEntity networkEntity)
         {
-            _server.SendPacket(networkEntity.NetPeer, new SetIdPacket(networkEntity.Id));
-            _server.Broadcast(new VcOnNetworkEntityCreatedPacket(networkEntity));
-            _mcWssServer.Broadcast(new McApiOnNetworkEntityCreatedPacket(networkEntity));
+            _server.SendPacket(networkEntity.NetPeer,
+                PacketPool<VcSetNameRequestPacket>.GetPacket().Set(networkEntity.Name));
+            _server.Broadcast(PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity),
+                DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+            _mcWssServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
 
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
-                _server.SendPacket(networkEntity.NetPeer, new VcOnEffectUpdatedPacket(effect.Key, effect.Value));
+                _server.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
 
             //Send other entities.
-            foreach (var entity in _world.Entities)
+            foreach (var entity in _world.Entities.Where(x => x != networkEntity))
             {
-                if (entity == networkEntity) continue;
                 if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                    _server.SendPacket(networkEntity.NetPeer, new VcOnNetworkEntityCreatedPacket(otherNetworkEntity));
+                    _server.SendPacket(networkEntity.NetPeer,
+                        PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
                 else
-                    _server.SendPacket(networkEntity.NetPeer, new EntityCreatedPacket(entity));
+                    _server.SendPacket(networkEntity.NetPeer,
+                        PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(entity));
             }
         }
         else
         {
-            _server.Broadcast(new EntityCreatedPacket(newEntity));
-            _mcWssServer.Broadcast(new McApiOnEntityCreatedPacket(newEntity));
+            _server.Broadcast(PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(newEntity));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(newEntity));
         }
 
         newEntity.OnWorldIdUpdated += OnEntityWorldIdUpdated;
@@ -108,9 +115,9 @@ public class EventHandlerSystem : IDisposable
 
     private void OnEntityDestroyed(VoiceCraftEntity entity)
     {
-        var entityDestroyedPacket = new VcOnEntityDestroyedPacket(entity.Id);
+        var entityDestroyedPacket = PacketPool<VcOnEntityDestroyedPacket>.GetPacket().Set(entity.Id);
         if (entity is VoiceCraftNetworkEntity networkEntity)
-            _server.DisconnectPeer(networkEntity.NetPeer, new LogoutPacket("VoiceCraft.DisconnectReason.Forced"));
+            _server.DisconnectPeer(networkEntity.NetPeer, "VoiceCraft.DisconnectReason.Forced");
         _server.Broadcast(entityDestroyedPacket);
 
         entity.OnWorldIdUpdated -= OnEntityWorldIdUpdated;
@@ -134,16 +141,20 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            _mcWssServer.Broadcast(McApiOnWorldIdUpdatedPacket.PacketPool.GetPacket());
+            _mcWssServer.Broadcast(PacketPool<McApiOnWorldIdUpdatedPacket>.GetPacket().Set(entity.Id, worldId));
         });
     }
-    
+
     private void OnEntityNameUpdated(string name, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
-            _server.Broadcast(new VcOnEntityNameUpdatedPacket(entity.Id, name));
-            _mcWssServer.Broadcast(new McApiOnNameUpdatedPacket(entity.Id, name));
+            var packet = PacketPool<VcOnEntityNameUpdatedPacket>.GetPacket().Set(entity.Id, name);
+            if (entity is VoiceCraftNetworkEntity networkEntity)
+                _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+            else
+                _server.Broadcast(packet);
+            _mcWssServer.Broadcast(PacketPool<McApiOnNameUpdatedPacket>.GetPacket().Set(entity.Id, name));
         });
     }
 
@@ -151,13 +162,12 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new VcOnMuteUpdatedPacket(entity.Id, mute);
+            var packet = PacketPool<VcOnEntityMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute);
             if (entity is VoiceCraftNetworkEntity networkEntity)
-                _server.Broadcast(packet, excludes: networkEntity.NetPeer);
+                _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             else
                 _server.Broadcast(packet);
-            
-            _mcWssServer.Broadcast(new McApiOnMuteUpdatedPacket(entity.Id, mute));
+            _mcWssServer.Broadcast(PacketPool<McApiOnMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute));
         });
     }
 
@@ -165,13 +175,12 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new VcOnDeafenUpdatedPacket(entity.Id, deafen);
+            var packet = PacketPool<VcOnEntityDeafenUpdatedPacket>.GetPacket().Set(entity.Id, deafen);
             if (entity is VoiceCraftNetworkEntity networkEntity)
-                _server.Broadcast(packet, excludes: networkEntity.NetPeer);
+                _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             else
                 _server.Broadcast(packet);
-            
-            _mcWssServer.Broadcast(new McApiOnDeafenUpdatedPacket(entity.Id, deafen));
+            _mcWssServer.Broadcast(PacketPool<McApiOnDeafenUpdatedPacket>.GetPacket().Set(entity.Id, deafen));
         });
     }
 
@@ -179,10 +188,12 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new SetTalkBitmaskPacket(entity.Id, bitmask);
-            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnTalkBitmaskUpdatedPacket(entity.Id, bitmask));
+            var packet = PacketPool<VcOnEntityTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask);
+            if (entity is VoiceCraftNetworkEntity networkEntity)
+                _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+            else
+                _server.Broadcast(packet);
+            _mcWssServer.Broadcast(PacketPool<McApiOnTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
         });
     }
 
@@ -190,10 +201,12 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new VcOnEntityListenBitmaskUpdatedPacket(entity.Id, bitmask);
-            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnListenBitmaskUpdatedPacket(entity.Id, bitmask));
+            var packet = PacketPool<VcOnEntityListenBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask);
+            if (entity is VoiceCraftNetworkEntity networkEntity)
+                _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+            else
+                _server.Broadcast(packet);
+            _mcWssServer.Broadcast(PacketPool<McApiOnListenBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
         });
     }
 
@@ -201,22 +214,24 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new VcOnEntityEffectBitmaskUpdatedPacket(entity.Id, bitmask);
-            var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
-            foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnEffectBitmaskUpdatedPacket(entity.Id, bitmask));
+            var packet = PacketPool<VcOnEntityEffectBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask);
+            if (entity is VoiceCraftNetworkEntity networkEntity)
+                _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+            else
+                _server.Broadcast(packet);
+            _mcWssServer.Broadcast(PacketPool<McApiOnEffectBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
         });
     }
-    
+
     //Properties
     private void OnEntityPositionUpdated(Vector3 position, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
-            var packet = new VcOnEntityPositionUpdatedPacket(entity.Id, position);
+            var packet = PacketPool<VcOnEntityPositionUpdatedPacket>.GetPacket().Set(entity.Id, position);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnPositionUpdatedPacket(entity.Id, position));
+            _mcWssServer.Broadcast(PacketPool<McApiOnPositionUpdatedPacket>.GetPacket().Set(entity.Id, position));
         });
     }
 
@@ -224,11 +239,10 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            //Only send updates to visible entities.
-            var packet = new VcOnEntityRotationUpdatedPacket(entity.Id, rotation);
+            var packet = PacketPool<VcOnEntityRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnRotationUpdatedPacket(entity.Id, rotation));
+            _mcWssServer.Broadcast(PacketPool<McApiOnRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation));
         });
     }
 
@@ -236,40 +250,48 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            //Only send updates to visible entities.
-            var packet = new VcOnCaveFactorUpdatedPacket(entity.Id, caveFactor);
+            var packet = PacketPool<VcOnEntityCaveFactorUpdatedPacket>.GetPacket().Set(entity.Id, caveFactor);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnEntityCaveFactorUpdatedPacket(entity.Id, caveFactor));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityCaveFactorUpdatedPacket>.GetPacket()
+                .Set(entity.Id, caveFactor));
         });
     }
-    
+
     private void OnEntityMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
-            //Only send updates to visible entities.
-            var packet = new SetMuffleFactorPacket(entity.Id, muffleFactor);
+            var packet = PacketPool<VcOnEntityMuffleFactorUpdatedPacket>.GetPacket().Set(entity.Id, muffleFactor);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiOnMuffleFactorUpdatedPacket(entity.Id, muffleFactor));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityMuffleFactorUpdatedPacket>.GetPacket()
+                .Set(entity.Id, muffleFactor));
         });
     }
-    
+
     //Visible Entities
     private void OnEntityVisibleEntityAdded(VoiceCraftEntity addedEntity, VoiceCraftEntity entity)
     {
         if (addedEntity is not VoiceCraftNetworkEntity networkEntity) return;
         _tasks.Enqueue(() =>
         {
-            var visibilityPacket = new VcSetEntityVisibilityRequestPacket(entity.Id, true);
-            var talkBitmaskPacket = new SetTalkBitmaskPacket(entity.Id, entity.TalkBitmask);
-            var listenBitmaskPacket = new VcOnEntityListenBitmaskUpdatedPacket(entity.Id, entity.ListenBitmask);
-            var effectBitmaskPacket = new VcOnEntityEffectBitmaskUpdatedPacket(entity.Id, entity.EffectBitmask);
-            var positionPacket = new VcOnEntityPositionUpdatedPacket(entity.Id, entity.Position);
-            var rotationPacket = new VcOnEntityRotationUpdatedPacket(entity.Id, entity.Rotation);
-            var caveFactorPacket = new VcOnCaveFactorUpdatedPacket(entity.Id, entity.CaveFactor);
-            var muffleFactorPacket = new SetMuffleFactorPacket(entity.Id, entity.MuffleFactor);
+            var visibilityPacket = PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket()
+                .Set(entity.Id, true);
+            var talkBitmaskPacket = PacketPool<VcOnEntityTalkBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.TalkBitmask);
+            var listenBitmaskPacket = PacketPool<VcOnEntityListenBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.ListenBitmask);
+            var effectBitmaskPacket = PacketPool<VcOnEntityEffectBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.EffectBitmask);
+            var positionPacket = PacketPool<VcOnEntityPositionUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.Position);
+            var rotationPacket = PacketPool<VcOnEntityRotationUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.Rotation);
+            var caveFactorPacket = PacketPool<VcOnEntityCaveFactorUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.CaveFactor);
+            var muffleFactorPacket = PacketPool<VcOnEntityMuffleFactorUpdatedPacket>.GetPacket()
+                .Set(entity.Id, entity.MuffleFactor);
 
             _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
             _server.SendPacket(networkEntity.NetPeer, talkBitmaskPacket);
@@ -285,15 +307,19 @@ public class EventHandlerSystem : IDisposable
     private void OnEntityVisibleEntityRemoved(VoiceCraftEntity removedEntity, VoiceCraftEntity entity)
     {
         if (removedEntity is not VoiceCraftNetworkEntity networkEntity) return;
-        _tasks.Enqueue(() => { _server.SendPacket(networkEntity.NetPeer, new VcSetEntityVisibilityRequestPacket(entity.Id)); });
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(networkEntity.NetPeer,
+                PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket().Set(entity.Id));
+        });
     }
 
     private void OnEntityAudioReceived(byte[] data, ushort timestamp, float frameLoudness, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
-            //Only send updates to visible entities.
-            var packet = new AudioRequestPacket(entity.Id, timestamp, frameLoudness, data.Length, data);
+            var packet = PacketPool<VcOnEntityAudioReceivedPacket>.GetPacket()
+                .Set(entity.Id, timestamp, frameLoudness, data.Length, data);
             var visibleNetworkEntities =
                 entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>()
                     .Where(x => x != entity && !x.Deafened);

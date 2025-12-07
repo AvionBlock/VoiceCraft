@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityDeafenUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityDeafenUpdatedPacket(int id = 0, bool value = true)
+        public VcOnEntityDeafenUpdatedPacket() : this(0, false)
+        {
+        }
+
+        public VcOnEntityDeafenUpdatedPacket(int id, bool value)
         {
             Id = id;
             Value = value;
@@ -26,7 +30,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Id = reader.GetInt();
             Value = reader.GetBool();
         }
-        
+
         public VcOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = true)
         {
             Id = id;

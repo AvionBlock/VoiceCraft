@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityEffectBitmaskUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityEffectBitmaskUpdatedPacket(int id = 0, ushort value = 0)
+        public VcOnEntityEffectBitmaskUpdatedPacket(): this(0, 0)
+        {
+        }
+        
+        public VcOnEntityEffectBitmaskUpdatedPacket(int id, ushort value)
         {
             Id = id;
             Value = value;

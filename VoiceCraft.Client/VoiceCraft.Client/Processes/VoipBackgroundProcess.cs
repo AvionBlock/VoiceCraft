@@ -8,7 +8,6 @@ using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Processes;
@@ -131,7 +130,7 @@ public class VoipBackgroundProcess(
                 Thread.Sleep(1); //Don't burn the CPU.
             }
 
-            _voiceCraftClient.Connect(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port, locale);
+            _ = _voiceCraftClient.ConnectAsync(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port, locale);
             Title = Locales.Locales.VoiceCraft_Status_Connecting;
 
             var startTime = DateTime.UtcNow;
@@ -222,13 +221,11 @@ public class VoipBackgroundProcess(
     public void ToggleMute(bool value)
     {
         _voiceCraftClient.Muted = value;
-        _voiceCraftClient.SendPacket(new VcOnMuteUpdatedPacket(value: value));
     }
 
     public void ToggleDeafen(bool value)
     {
         _voiceCraftClient.Deafened = value;
-        _voiceCraftClient.SendPacket(new VcOnDeafenUpdatedPacket(value: value));
     }
 
     public void Disconnect()

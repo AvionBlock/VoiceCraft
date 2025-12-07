@@ -6,8 +6,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnNetworkEntityCreatedPacket : VcOnEntityCreatedPacket
     {
-        public VcOnNetworkEntityCreatedPacket(int id = 0, string name = "", bool muted = false, bool deafened = false,
-            Guid userGuid = new Guid()) :
+        public VcOnNetworkEntityCreatedPacket() : this(0, string.Empty, false, false, Guid.Empty)
+        {
+        }
+
+        public VcOnNetworkEntityCreatedPacket(int id, string name, bool muted, bool deafened, Guid userGuid) :
             base(id, name, muted, deafened)
         {
             UserGuid = userGuid;
@@ -34,15 +37,17 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             UserGuid = reader.GetGuid();
         }
 
-        public void Set(int id = 0, string name = "", bool muted = false, bool deafened = false,
+        public VcOnNetworkEntityCreatedPacket Set(int id = 0, string name = "", bool muted = false, bool deafened = false,
             Guid userGuid = new Guid())
         {
             base.Set(id, name, muted, deafened);
             UserGuid = userGuid;
+            return this;
         }
 
         public VcOnNetworkEntityCreatedPacket Set(VoiceCraftNetworkEntity entity)
         {
+            base.Set(entity);
             UserGuid = entity.UserGuid;
             return this;
         }

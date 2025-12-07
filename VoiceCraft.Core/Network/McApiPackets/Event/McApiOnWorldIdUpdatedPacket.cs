@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnWorldIdUpdatedPacket : IMcApiPacket
     {
-        public McApiOnWorldIdUpdatedPacket(int id = 0, string value = "")
+        public McApiOnWorldIdUpdatedPacket() : this(0, string.Empty)
+        {
+        }
+
+        public McApiOnWorldIdUpdatedPacket(int id, string value)
         {
             Id = id;
             Value = value;
@@ -26,11 +30,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = reader.GetString(Constants.MaxStringLength);
         }
-        
-        public void Set(int id = 0, string value = "")
+
+        public McApiOnWorldIdUpdatedPacket Set(int id = 0, string value = "")
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

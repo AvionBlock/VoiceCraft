@@ -2,9 +2,13 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnMuffleFactorUpdatedPacket : IMcApiPacket
+    public class McApiOnEntityMuffleFactorUpdatedPacket : IMcApiPacket
     {
-        public McApiOnMuffleFactorUpdatedPacket(int id = 0, float value = 0.0f)
+        public McApiOnEntityMuffleFactorUpdatedPacket() : this(0, 0.0f)
+        {
+        }
+
+        public McApiOnEntityMuffleFactorUpdatedPacket(int id, float value)
         {
             Id = id;
             Value = value;
@@ -26,11 +30,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = reader.GetFloat();
         }
-        
-        public void Set(int id = 0, float value = 0.0f)
+
+        public McApiOnEntityMuffleFactorUpdatedPacket Set(int id = 0, float value = 0.0f)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

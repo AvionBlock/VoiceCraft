@@ -5,7 +5,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityPositionUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityPositionUpdatedPacket(int id = 0, Vector3 value = new Vector3())
+        public VcOnEntityPositionUpdatedPacket() : this(0, Vector3.Zero)
+        {
+        }
+
+        public VcOnEntityPositionUpdatedPacket(int id, Vector3 value)
         {
             Id = id;
             Value = value;
@@ -29,7 +33,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Id = reader.GetInt();
             Value = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         }
-        
+
         public VcOnEntityPositionUpdatedPacket Set(int id = 0, Vector3 value = new Vector3())
         {
             Id = id;

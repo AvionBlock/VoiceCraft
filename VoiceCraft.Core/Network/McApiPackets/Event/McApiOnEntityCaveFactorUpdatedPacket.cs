@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnEntityCaveFactorUpdatedPacket : IMcApiPacket
     {
-        public McApiOnEntityCaveFactorUpdatedPacket(int id = 0, float value = 0.0f)
+        public McApiOnEntityCaveFactorUpdatedPacket() : this(0, 0.0f)
+        {
+        }
+
+        public McApiOnEntityCaveFactorUpdatedPacket(int id, float value)
         {
             Id = id;
             Value = value;
@@ -26,11 +30,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = reader.GetFloat();
         }
-        
-        public void Set(int id = 0, float value = 0)
+
+        public McApiOnEntityCaveFactorUpdatedPacket Set(int id = 0, float value = 0)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

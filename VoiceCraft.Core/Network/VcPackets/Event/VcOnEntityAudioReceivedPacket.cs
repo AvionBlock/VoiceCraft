@@ -1,24 +1,26 @@
 using System;
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.VcPackets.Request
+namespace VoiceCraft.Core.Network.VcPackets.Event
 {
-    public class VcAudioRequestPacket : IVoiceCraftPacket
+    public class VcOnEntityAudioReceivedPacket : IVoiceCraftPacket
     {
-        public VcAudioRequestPacket() : this(0)
+        public VcOnEntityAudioReceivedPacket() : this(0, 0, 0.0f, 0, Array.Empty<byte>())
         {
         }
 
-        public VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+        public VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] data)
         {
+            Id = id;
             Timestamp = timestamp;
             FrameLoudness = loudness;
             Length = length;
-            Data = data ?? Array.Empty<byte>();
+            Data = data;
         }
 
-        public VcPacketType PacketType => VcPacketType.AudioRequest;
+        public VcPacketType PacketType => VcPacketType.OnEntityAudioReceived;
 
+        public int Id { get; private set; }
         public ushort Timestamp { get; private set; }
         public float FrameLoudness { get; private set; }
         public int Length { get; private set; }
@@ -26,6 +28,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 
         public void Serialize(NetDataWriter writer)
         {
+            writer.Put(Id);
             writer.Put(Timestamp);
             writer.Put(FrameLoudness);
             writer.Put(Data, 0, Length);
@@ -44,8 +47,10 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
             reader.GetBytes(Data, Length);
         }
 
-        public VcAudioRequestPacket Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+        public VcOnEntityAudioReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
+            byte[]? data = null)
         {
+            Id = id;
             Timestamp = timestamp;
             FrameLoudness = loudness;
             Length = length;

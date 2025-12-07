@@ -22,9 +22,10 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             Token = reader.GetString(Constants.MaxStringLength);
         }
         
-        public void Set(string token = "")
+        public McApiLogoutRequestPacket Set(string token = "")
         {
             Token = token;
+            return this;
         }
     }
 }

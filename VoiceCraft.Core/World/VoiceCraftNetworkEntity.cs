@@ -21,7 +21,6 @@ namespace VoiceCraft.Core.World
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
-            AddVisibleEntity(this); //Should always be visible to itself.
         }
 
         public NetPeer NetPeer { get; }

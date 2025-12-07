@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Response
 {
     public class McApiDenyResponsePacket : IMcApiPacket
     {
-        public McApiDenyResponsePacket(string requestId = "", string token = "", string reasonKey = "")
+        public McApiDenyResponsePacket() : this(string.Empty, string.Empty, string.Empty)
+        {
+        }
+
+        public McApiDenyResponsePacket(string requestId, string token, string reasonKey)
         {
             RequestId = requestId;
             Token = token;
@@ -29,7 +33,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Response
             Token = reader.GetString(Constants.MaxStringLength);
             ReasonKey = reader.GetString(Constants.MaxStringLength);
         }
-        
+
         public void Set(string requestId = "", string token = "", string reasonKey = "")
         {
             RequestId = requestId;

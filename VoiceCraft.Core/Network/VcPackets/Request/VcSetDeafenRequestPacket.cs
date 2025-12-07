@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 {
     public class VcSetDeafenRequestPacket : IVoiceCraftPacket
     {
-        public VcSetDeafenRequestPacket(bool value = true)
+        public VcSetDeafenRequestPacket() : this(false)
+        {
+        }
+        
+        public VcSetDeafenRequestPacket(bool value)
         {
             Value = value;
         }

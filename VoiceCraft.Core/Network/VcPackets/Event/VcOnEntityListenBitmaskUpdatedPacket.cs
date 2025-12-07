@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityListenBitmaskUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityListenBitmaskUpdatedPacket(int id = 0, ushort value = 0)
+        public VcOnEntityListenBitmaskUpdatedPacket() : this(0, 0)
+        {
+        }
+
+        public VcOnEntityListenBitmaskUpdatedPacket(int id, ushort value)
         {
             Id = id;
             Value = value;
@@ -26,7 +30,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Id = reader.GetInt();
             Value = reader.GetUShort();
         }
-        
+
         public VcOnEntityListenBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
         {
             Id = id;
