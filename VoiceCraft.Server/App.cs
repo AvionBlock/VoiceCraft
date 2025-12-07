@@ -19,7 +19,7 @@ public static class App
         //Servers
         var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
         var mcWssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
-        var httpServer = Program.ServiceProvider.GetRequiredService<McHttpServer>();
+        //var httpServer = Program.ServiceProvider.GetRequiredService<McHttpServer>();
         //Systems
         var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
         var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
@@ -43,8 +43,8 @@ public static class App
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
-            if (properties.McHttpConfig.Enabled)
-                httpServer.Start(properties.McHttpConfig);
+            //if (properties.McHttpConfig.Enabled)
+            //    httpServer.Start(properties.McHttpConfig);
             if (properties.McWssConfig.Enabled)
                 mcWssServer.Start(properties.McWssConfig);
 
@@ -56,8 +56,8 @@ public static class App
                 .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
 
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
-            serverSetupTable.AddRow($"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
-                httpServer.Config.Hostname, $"[{(properties.McHttpConfig.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
+            //serverSetupTable.AddRow($"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
+            //    httpServer.Config.Hostname, $"[{(properties.McHttpConfig.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
             serverSetupTable.AddRow($"[{(properties.McWssConfig.Enabled ? "green" : "red")}]McWss[/]",
                 mcWssServer.Config.Hostname, $"[{(properties.McWssConfig.Enabled ? "aqua" : "red")}]TCP/WS[/]");
 
@@ -86,7 +86,7 @@ public static class App
                     server.Update();
                     eventHandlerSystem.Update();
                     visibilitySystem.Update();
-                    httpServer.Update();
+                    //httpServer.Update();
                     mcWssServer.Update();
                     await FlushCommand(rootCommand);
 
@@ -102,7 +102,7 @@ public static class App
                 }
 
             mcWssServer.Stop();
-            httpServer.Stop();
+            //httpServer.Stop();
             server.Stop();
             AnsiConsole.MarkupLine($"[green]{Locales.Locales.Shutdown_Success}[/]");
         }

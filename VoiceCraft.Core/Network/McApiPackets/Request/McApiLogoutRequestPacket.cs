@@ -1,15 +1,15 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
-    public class McApiPingRequestPacket : McApiPacket
+    public class McApiLogoutRequestPacket : McApiPacket
     {
-        public McApiPingRequestPacket(string token = "")
+        public McApiLogoutRequestPacket(string token = "")
         {
             Token = token;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.PingRequest;
+        public override McApiPacketType PacketType => McApiPacketType.LogoutRequest;
         public string Token { get; private set; }
 
         public override void Serialize(NetDataWriter writer)

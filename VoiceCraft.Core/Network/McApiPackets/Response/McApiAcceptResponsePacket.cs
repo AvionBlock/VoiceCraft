@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Response
 {
     public class McApiAcceptResponsePacket : McApiPacket
     {

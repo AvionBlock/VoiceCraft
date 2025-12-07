@@ -1,16 +1,16 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets
+namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnMuffleFactorUpdatedPacket : McApiPacket
+    public class McApiOnEntityCaveFactorUpdatedPacket : McApiPacket
     {
-        public McApiOnMuffleFactorUpdatedPacket(int id = 0, float value = 0.0f)
+        public McApiOnEntityCaveFactorUpdatedPacket(int id = 0, float value = 0.0f)
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.OnEntityMuffleFactorUpdated;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityCaveFactorUpdated;
 
         public int Id { get; private set; }
         public float Value { get; private set; }

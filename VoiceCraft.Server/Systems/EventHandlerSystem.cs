@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Network.McApiPackets;
+using VoiceCraft.Core.Network.McApiPackets.Event;
 using VoiceCraft.Core.Network.Packets;
 using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;

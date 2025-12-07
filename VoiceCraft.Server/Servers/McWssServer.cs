@@ -9,6 +9,8 @@ using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Server.Config;
 using Fleck;
+using VoiceCraft.Core.Network.McApiPackets.Request;
+using VoiceCraft.Core.Network.McApiPackets.Response;
 
 namespace VoiceCraft.Server.Servers;
 
