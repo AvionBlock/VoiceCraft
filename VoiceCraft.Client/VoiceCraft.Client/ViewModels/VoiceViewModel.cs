@@ -3,11 +3,11 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LiteNetLib;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -65,7 +65,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     [RelayCommand]
     private void Disconnect()
     {
-        if (_process == null || _process.ConnectionState == ConnectionState.Disconnected)
+        if (_process == null || _process.ConnectionState == VcConnectionState.Disconnected)
         {
             navigationService.Back(); //If disconnected. Return to previous page.
             return;

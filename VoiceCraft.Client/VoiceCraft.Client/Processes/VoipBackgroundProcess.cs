@@ -45,7 +45,7 @@ public class VoipBackgroundProcess(
     //Public Variables
     public bool HasEnded { get; private set; }
 
-    public ConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
+    public VcConnectionState ConnectionState => _voiceCraftClient.ConnectionState;
 
     public bool Muted => _voiceCraftClient.Muted;
 

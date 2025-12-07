@@ -78,7 +78,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     }
 
     //Public Properties
-    public ConnectionState ConnectionState => _serverPeer?.ConnectionState ?? ConnectionState.Disconnected;
+    public VcConnectionState ConnectionState { get; private set; } = VcConnectionState.Disconnected;
+
     public float MicrophoneSensitivity { get; set; }
 
     public void Dispose()
@@ -119,7 +120,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public async Task ConnectAsync(Guid userGuid, Guid serverUserGuid, string ip, int port, string locale)
     {
         ThrowIfDisposed();
-        if (ConnectionState != ConnectionState.Disconnected)
+        if (ConnectionState != VcConnectionState.Disconnected)
             throw new InvalidOperationException("This client is already connected or is connecting to a server!");
 
         _speakingState = false;
@@ -135,15 +136,17 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 loginPacket.Serialize(_dataWriter);
                 _serverPeer = _netManager.Connect(ip, port, _dataWriter) ??
                               throw new InvalidOperationException("A connection request is awaiting!");
+                ConnectionState = VcConnectionState.Connecting;
             }
 
             _ = await GetResponseAsync<VcAcceptResponsePacket>(loginPacket.RequestId,
-                TimeSpan.FromMilliseconds(_netManager.DisconnectTimeout));
+                TimeSpan.FromMilliseconds(_netManager.DisconnectTimeout * 2));
+            ConnectionState = VcConnectionState.Connected;
             OnConnected?.Invoke();
         }
         catch
         {
-            OnDisconnected?.Invoke("Failed to connect to server!");
+            Disconnect("An error occured while trying to connect to the server!");
         }
         finally
         {
@@ -151,9 +154,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    public void Disconnect()
+    public void Disconnect(string? reason = null)
     {
-        if (_isDisposed || ConnectionState == ConnectionState.Disconnected) return;
+        if (_isDisposed || ConnectionState == VcConnectionState.Disconnected) return;
+        ConnectionState = VcConnectionState.Disconnecting;
         _netManager.DisconnectAll();
     }
 
@@ -191,7 +195,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
         if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
             _serverPeer == null ||
-            ConnectionState != ConnectionState.Connected || Muted) return;
+            ConnectionState != VcConnectionState.Connected || Muted) return;
 
         Array.Clear(_encodeBuffer);
         var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
@@ -202,7 +206,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public bool SendPacket<T>(T packet,
         DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : IVoiceCraftPacket
     {
-        if (ConnectionState != ConnectionState.Connected) return false;
+        if (ConnectionState != VcConnectionState.Connected) return false;
         try
         {
             lock (_dataWriter)
@@ -245,7 +249,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         OnPacket += EventCallback;
         try
         {
-            if(!_requestIds.Add(requestId))
+            if (!_requestIds.Add(requestId))
                 throw new TaskCanceledException("A request with the same id already exists!");
             while (expiryTime > DateTime.UtcNow)
             {
@@ -278,7 +282,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _netManager.Stop();
             _encoder.Dispose();
             World.Dispose();
-            
+
             _listener.PeerDisconnectedEvent -= OnDisconnectedEvent;
             _listener.ConnectionRequestEvent -= OnConnectionRequestEvent;
             _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
@@ -325,6 +329,9 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                     var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket();
                     OnDisconnected?.Invoke(logoutPacket.Reason);
                     break;
+                case DisconnectReason.DisconnectPeerCalled:
+                    OnDisconnected?.Invoke("Manual Disconnection");
+                    return;
             }
 
             OnDisconnected?.Invoke(info.Reason.ToString());
@@ -332,6 +339,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         catch
         {
             OnDisconnected?.Invoke(info.Reason.ToString());
+        }
+        finally
+        {
+            ConnectionState = VcConnectionState.Disconnected;
         }
     }
 
@@ -587,7 +598,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             PacketPool<VcLogoutRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetNameRequestPacket(VcSetNameRequestPacket packet)
     {
         try
