@@ -2,15 +2,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiSetEffectBitmaskPacket : McApiPacket
+    public class McApiOnEffectBitmaskUpdatedPacket : McApiPacket
     {
-        public McApiSetEffectBitmaskPacket(int id = 0, ushort value = 0)
+        public McApiOnEffectBitmaskUpdatedPacket(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.SetEffectBitmask;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityEffectBitmaskUpdated;
 
         public int Id { get; private set; }
         public ushort Value { get; private set; }

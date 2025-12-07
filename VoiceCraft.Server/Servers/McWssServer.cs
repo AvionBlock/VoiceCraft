@@ -207,9 +207,9 @@ public class McWssServer
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, IWebSocketConnection socket,
         McApiNetPeer peer)
     {
-        if (packetType == McApiPacketType.Login)
+        if (packetType == McApiPacketType.LoginRequest)
         {
-            var loginPacket = new McApiLoginPacket();
+            var loginPacket = new McApiLoginRequestPacket();
             loginPacket.Deserialize(reader);
             HandleLoginPacket(loginPacket, socket, peer);
             return;
@@ -220,57 +220,57 @@ public class McWssServer
         // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
         switch (packetType)
         {
-            case McApiPacketType.Logout:
-                var logoutPacket = new McApiLogoutPacket();
+            case McApiPacketType.LogoutRequest:
+                var logoutPacket = new McApiLogoutRequestPacket();
                 logoutPacket.Deserialize(reader);
                 HandleLogoutPacket(logoutPacket, peer);
                 break;
-            case McApiPacketType.Ping:
-                var pingPacket = new McApiPingPacket();
+            case McApiPacketType.PingRequest:
+                var pingPacket = new McApiPingRequestPacket();
                 pingPacket.Deserialize(reader);
                 HandlePingPacket(pingPacket, peer);
                 break;
-            case McApiPacketType.Login:
-            case McApiPacketType.Accept:
-            case McApiPacketType.Deny:
+            case McApiPacketType.LoginRequest:
+            case McApiPacketType.AcceptResponse:
+            case McApiPacketType.DenyResponse:
             default:
                 break;
         }
     }
 
-    private void HandleLoginPacket(McApiLoginPacket packet, IWebSocketConnection socket, McApiNetPeer netPeer)
+    private void HandleLoginPacket(McApiLoginRequestPacket packet, IWebSocketConnection socket, McApiNetPeer netPeer)
     {
         if (netPeer.Connected)
         {
-            SendPacket(netPeer, new McApiAcceptPacket(packet.RequestId, netPeer.Token));
+            SendPacket(netPeer, new McApiAcceptResponsePacket(packet.RequestId, netPeer.Token));
             return;
         }
 
         if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.Token)
         {
             SendPacket(socket,
-                new McApiDenyPacket(packet.RequestId, packet.Token, "VcMcApi.DisconnectReason.InvalidLoginToken"));
+                new McApiDenyResponsePacket(packet.RequestId, packet.Token, "VcMcApi.DisconnectReason.InvalidLoginToken"));
             return;
         }
 
         if (packet.Version.Major != McWssVersion.Major || packet.Version.Minor != McWssVersion.Minor)
         {
             SendPacket(socket,
-                new McApiDenyPacket(packet.RequestId, packet.Token, "VcMcApi.DisconnectReason.IncompatibleVersion"));
+                new McApiDenyResponsePacket(packet.RequestId, packet.Token, "VcMcApi.DisconnectReason.IncompatibleVersion"));
             return;
         }
 
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
-        SendPacket(netPeer, new McApiAcceptPacket(packet.RequestId, netPeer.Token));
+        SendPacket(netPeer, new McApiAcceptResponsePacket(packet.RequestId, netPeer.Token));
     }
 
-    private static void HandleLogoutPacket(McApiLogoutPacket packet, McApiNetPeer netPeer)
+    private static void HandleLogoutPacket(McApiLogoutRequestPacket packet, McApiNetPeer netPeer)
     {
         if (netPeer.Token != packet.Token) return;
         netPeer.Disconnect();
     }
 
-    private void HandlePingPacket(McApiPingPacket packet, McApiNetPeer netPeer)
+    private void HandlePingPacket(McApiPingRequestPacket packet, McApiNetPeer netPeer)
     {
         if (netPeer.Token != packet.Token) return; //Needs a session token at least.
         SendPacket(netPeer, packet); //Reuse the packet.

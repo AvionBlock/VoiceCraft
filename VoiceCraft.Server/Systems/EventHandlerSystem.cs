@@ -68,7 +68,7 @@ public class EventHandlerSystem : IDisposable
         {
             _server.SendPacket(networkEntity.NetPeer, new SetIdPacket(networkEntity.Id));
             _server.Broadcast(new NetworkEntityCreatedPacket(networkEntity));
-            _mcWssServer.Broadcast(new McApiNetworkEntityCreatedPacket(networkEntity));
+            _mcWssServer.Broadcast(new McApiOnNetworkEntityCreatedPacket(networkEntity));
 
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
@@ -87,7 +87,7 @@ public class EventHandlerSystem : IDisposable
         else
         {
             _server.Broadcast(new EntityCreatedPacket(newEntity));
-            _mcWssServer.Broadcast(new McApiEntityCreatedPacket(newEntity));
+            _mcWssServer.Broadcast(new McApiOnEntityCreatedPacket(newEntity));
         }
 
         newEntity.OnWorldIdUpdated += OnEntityWorldIdUpdated;
@@ -134,7 +134,7 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            _mcWssServer.Broadcast(new McApiSetWorldIdPacket(entity.Id, worldId));
+            _mcWssServer.Broadcast(new McApiOnWorldIdUpdatedPacket(entity.Id, worldId));
         });
     }
     
@@ -143,7 +143,7 @@ public class EventHandlerSystem : IDisposable
         _tasks.Enqueue(() =>
         {
             _server.Broadcast(new SetNamePacket(entity.Id, name));
-            _mcWssServer.Broadcast(new McApiSetNamePacket(entity.Id, name));
+            _mcWssServer.Broadcast(new McApiOnNameUpdatedPacket(entity.Id, name));
         });
     }
 
@@ -157,7 +157,7 @@ public class EventHandlerSystem : IDisposable
             else
                 _server.Broadcast(packet);
             
-            _mcWssServer.Broadcast(new McApiSetMutePacket(entity.Id, mute));
+            _mcWssServer.Broadcast(new McApiOnMuteUpdatedPacket(entity.Id, mute));
         });
     }
 
@@ -171,7 +171,7 @@ public class EventHandlerSystem : IDisposable
             else
                 _server.Broadcast(packet);
             
-            _mcWssServer.Broadcast(new McApiSetDeafenPacket(entity.Id, deafen));
+            _mcWssServer.Broadcast(new McApiOnDeafenUpdatedPacket(entity.Id, deafen));
         });
     }
 
@@ -182,7 +182,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetTalkBitmaskPacket(entity.Id, bitmask);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetTalkBitmaskPacket(entity.Id, bitmask));
+            _mcWssServer.Broadcast(new McApiOnTalkBitmaskUpdatedPacket(entity.Id, bitmask));
         });
     }
 
@@ -193,7 +193,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetListenBitmaskPacket(entity.Id, bitmask);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetListenBitmaskPacket(entity.Id, bitmask));
+            _mcWssServer.Broadcast(new McApiOnListenBitmaskUpdatedPacket(entity.Id, bitmask));
         });
     }
 
@@ -204,7 +204,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetEffectBitmaskPacket(entity.Id, bitmask);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetEffectBitmaskPacket(entity.Id, bitmask));
+            _mcWssServer.Broadcast(new McApiOnEffectBitmaskUpdatedPacket(entity.Id, bitmask));
         });
     }
     
@@ -216,7 +216,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetPositionPacket(entity.Id, position);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetPositionPacket(entity.Id, position));
+            _mcWssServer.Broadcast(new McApiOnPositionUpdatedPacket(entity.Id, position));
         });
     }
 
@@ -228,7 +228,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetRotationPacket(entity.Id, rotation);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetRotationPacket(entity.Id, rotation));
+            _mcWssServer.Broadcast(new McApiOnRotationUpdatedPacket(entity.Id, rotation));
         });
     }
 
@@ -240,7 +240,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetCaveFactorPacket(entity.Id, caveFactor);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetCaveFactorPacket(entity.Id, caveFactor));
+            _mcWssServer.Broadcast(new McApiOnEntityCaveFactorUpdatedPacket(entity.Id, caveFactor));
         });
     }
     
@@ -252,7 +252,7 @@ public class EventHandlerSystem : IDisposable
             var packet = new SetMuffleFactorPacket(entity.Id, muffleFactor);
             var visibleNetworkEntities = entity.VisibleEntities.OfType<VoiceCraftNetworkEntity>();
             foreach (var visibleEntity in visibleNetworkEntities) _server.SendPacket(visibleEntity.NetPeer, packet);
-            _mcWssServer.Broadcast(new McApiSetMuffleFactorPacket(entity.Id, muffleFactor));
+            _mcWssServer.Broadcast(new McApiOnMuffleFactorUpdatedPacket(entity.Id, muffleFactor));
         });
     }
     

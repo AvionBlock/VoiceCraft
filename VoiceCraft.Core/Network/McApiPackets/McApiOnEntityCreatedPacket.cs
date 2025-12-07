@@ -5,9 +5,9 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Network.McApiPackets
 {
-    public class McApiEntityCreatedPacket : McApiPacket
+    public class McApiOnEntityCreatedPacket : McApiPacket
     {
-        public McApiEntityCreatedPacket(
+        public McApiOnEntityCreatedPacket(
             int id = 0,
             float loudness = 0.0f,
             DateTime lastSpoke = new DateTime(),
@@ -39,7 +39,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
             MuffleFactor = muffleFactor;
         }
 
-        public McApiEntityCreatedPacket(VoiceCraftEntity entity)
+        public McApiOnEntityCreatedPacket(VoiceCraftEntity entity)
         {
             Id = entity.Id;
             Loudness = entity.Loudness;
@@ -57,7 +57,7 @@ namespace VoiceCraft.Core.Network.McApiPackets
             MuffleFactor = entity.MuffleFactor;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.EntityCreated;
+        public override McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
         
         public int Id { get; private set; }
         public float Loudness { get; private set; }

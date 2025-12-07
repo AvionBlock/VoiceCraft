@@ -137,9 +137,9 @@ public class McHttpServer
 
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer)
     {
-        if (packetType == McApiPacketType.Login && !peer.Connected)
+        if (packetType == McApiPacketType.LoginRequest && !peer.Connected)
         {
-            var loginPacket = new McApiLoginPacket();
+            var loginPacket = new McApiLoginRequestPacket();
             loginPacket.Deserialize(reader);
             HandleLoginPacket(loginPacket, peer);
             return;
@@ -150,42 +150,42 @@ public class McHttpServer
         // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
         switch (packetType)
         {
-            case McApiPacketType.Logout:
-                var logoutPacket = new McApiLogoutPacket();
+            case McApiPacketType.LogoutRequest:
+                var logoutPacket = new McApiLogoutRequestPacket();
                 logoutPacket.Deserialize(reader);
                 HandleLogoutPacket(logoutPacket, peer);
                 break;
-            case McApiPacketType.Ping:
-                var pingPacket = new McApiPingPacket();
+            case McApiPacketType.PingRequest:
+                var pingPacket = new McApiPingRequestPacket();
                 pingPacket.Deserialize(reader);
                 HandlePingPacket(pingPacket, peer);
                 break;
-            case McApiPacketType.Login:
-            case McApiPacketType.Accept:
-            case McApiPacketType.Deny:
+            case McApiPacketType.LoginRequest:
+            case McApiPacketType.AcceptResponse:
+            case McApiPacketType.DenyResponse:
             default:
                 break;
         }
     }
 
-    private void HandleLoginPacket(McApiLoginPacket loginPacket, McApiNetPeer netPeer)
+    private void HandleLoginPacket(McApiLoginRequestPacket loginRequestPacket, McApiNetPeer netPeer)
     {
-        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginPacket.Token)
+        if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != loginRequestPacket.Token)
             return;
 
         netPeer.AcceptConnection(Guid.NewGuid().ToString());
-        SendPacket(netPeer, new McApiAcceptPacket(netPeer.Token));
+        SendPacket(netPeer, new McApiAcceptResponsePacket(netPeer.Token));
     }
 
-    private static void HandleLogoutPacket(McApiLogoutPacket logoutPacket, McApiNetPeer netPeer)
+    private static void HandleLogoutPacket(McApiLogoutRequestPacket logoutRequestPacket, McApiNetPeer netPeer)
     {
-        if (netPeer.Token != logoutPacket.Token) return;
+        if (netPeer.Token != logoutRequestPacket.Token) return;
         netPeer.Disconnect();
     }
 
-    private static void HandlePingPacket(McApiPingPacket pingPacket, McApiNetPeer netPeer)
+    private static void HandlePingPacket(McApiPingRequestPacket pingRequestPacket, McApiNetPeer netPeer)
     {
-        if (netPeer.Token != pingPacket.Token) return; //Needs a session token at least.
+        if (netPeer.Token != pingRequestPacket.Token) return; //Needs a session token at least.
         netPeer.LastPing = DateTime.UtcNow;
     }
 }
