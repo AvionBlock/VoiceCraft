@@ -16,6 +16,7 @@ namespace VoiceCraft.Core
         public const int MaxDescriptionStringLength = 500; //500 characters.
         public const float FloatingPointTolerance = 0.001f;
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
+        public const int MaxPacketPoolSize = 100; //100 Packets Per type.
 
         //Audio
         public const AudioFormat Format = AudioFormat.Pcm16;

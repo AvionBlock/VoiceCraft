@@ -45,7 +45,8 @@ namespace VoiceCraft.Core
             if (_cts.IsCancellationRequested) return;
             _cts.Cancel();
 
-            while (!IsCompleted) Thread.Sleep(10);
+            var sw = new SpinWait();
+            while (!IsCompleted) sw.SpinOnce();
         }
 
         private void ThrowIfDisposed()

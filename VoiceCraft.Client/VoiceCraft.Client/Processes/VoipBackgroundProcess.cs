@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using LiteNetLib;
 using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
