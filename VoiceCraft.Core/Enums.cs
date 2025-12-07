@@ -74,6 +74,14 @@ namespace VoiceCraft.Core
         OnEntityMuffleFactorUpdated,
     }
 
+    public enum VcConnectionState : byte
+    {
+        Disconnected,
+        Connecting,
+        Connected,
+        Disconnecting,
+    }
+
     #endregion
 
     #region Audio
