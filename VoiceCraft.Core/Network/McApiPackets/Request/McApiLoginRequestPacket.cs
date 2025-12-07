@@ -33,11 +33,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
         }
         
-        public void Set(string requestId = "", string token = "", Version? version = null)
+        public McApiLoginRequestPacket Set(string requestId = "", string token = "", Version? version = null)
         {
             RequestId = requestId;
             Token = token;
             Version = version ?? new Version(0, 0, 0);
+            return this;
         }
     }
 }

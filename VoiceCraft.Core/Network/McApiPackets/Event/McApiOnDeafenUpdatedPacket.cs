@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnDeafenUpdatedPacket : IMcApiPacket
     {
-        public McApiOnDeafenUpdatedPacket(int id = 0, bool value = false)
+        public McApiOnDeafenUpdatedPacket() : this(0, false)
+        {
+        }
+
+        public McApiOnDeafenUpdatedPacket(int id, bool value)
         {
             Id = id;
             Value = value;
@@ -27,10 +31,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = reader.GetBool();
         }
 
-        public void Set(int id = 0, bool value = false)
+        public McApiOnDeafenUpdatedPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace VoiceCraft.Core
         InfoRequest,
         LoginRequest,
         LogoutRequest,
+        SetNameRequest,
         AudioRequest,
         SetMuteRequest,
         SetDeafenRequest,
@@ -22,11 +23,9 @@ namespace VoiceCraft.Core
         SetEntityVisibilityRequest,
         
         //Responses
+        InfoResponse,
         AcceptResponse,
         DenyResponse,
-        
-        //Internal Responses
-        SetIdAcceptResponse,
 
         //Events
         OnEffectUpdated,
@@ -43,7 +42,7 @@ namespace VoiceCraft.Core
         OnEntityRotationUpdated,
         OnEntityCaveFactorUpdated,
         OnEntityMuffleFactorUpdated,
-        OnEntityAudioUpdated,
+        OnEntityAudioReceived,
     }
 
     public enum McApiPacketType : byte

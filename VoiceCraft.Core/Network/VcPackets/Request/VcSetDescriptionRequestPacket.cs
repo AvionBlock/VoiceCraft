@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 {
     public class VcSetDescriptionRequestPacket : IVoiceCraftPacket
     {
-        public VcSetDescriptionRequestPacket(string value = "")
+        public VcSetDescriptionRequestPacket() : this(string.Empty)
+        {
+        }
+        
+        public VcSetDescriptionRequestPacket(string value)
         {
             Value = value;
         }

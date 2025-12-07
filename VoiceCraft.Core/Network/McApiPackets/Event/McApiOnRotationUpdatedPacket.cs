@@ -5,7 +5,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnRotationUpdatedPacket : IMcApiPacket
     {
-        public McApiOnRotationUpdatedPacket(int id = 0, Vector2 value = new Vector2())
+        public McApiOnRotationUpdatedPacket() : this(0, Vector2.Zero)
+        {
+        }
+
+        public McApiOnRotationUpdatedPacket(int id, Vector2 value)
         {
             Id = id;
             Value = value;
@@ -28,11 +32,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = new Vector2(reader.GetFloat(), reader.GetFloat());
         }
-        
-        public void Set(int id = 0, Vector2 value = new Vector2())
+
+        public McApiOnRotationUpdatedPacket Set(int id = 0, Vector2 value = new Vector2())
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

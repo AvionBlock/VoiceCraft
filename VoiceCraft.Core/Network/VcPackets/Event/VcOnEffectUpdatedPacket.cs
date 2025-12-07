@@ -5,7 +5,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEffectUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEffectUpdatedPacket(ushort bitmask = 0, IAudioEffect? effect = null)
+        public VcOnEffectUpdatedPacket() : this(0, null)
+        {
+        }
+
+        public VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect)
         {
             Bitmask = bitmask;
             EffectType = effect?.EffectType ?? EffectType.None;
@@ -30,7 +34,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Bitmask = reader.GetUShort();
             EffectType = (EffectType)reader.GetByte();
         }
-        
+
         public VcOnEffectUpdatedPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
         {
             Bitmask = bitmask;

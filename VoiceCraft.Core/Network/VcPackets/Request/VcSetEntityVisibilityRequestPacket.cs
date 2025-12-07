@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 {
     public class VcSetEntityVisibilityRequestPacket : IVoiceCraftPacket
     {
-        public VcSetEntityVisibilityRequestPacket(int id = 0, bool value = false)
+        public VcSetEntityVisibilityRequestPacket() : this(0, false)
+        {
+        }
+
+        public VcSetEntityVisibilityRequestPacket(int id, bool value)
         {
             Id = id;
             Value = value;

@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityDestroyedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityDestroyedPacket(int id = 0)
+        public VcOnEntityDestroyedPacket() : this(0)
+        {
+        }
+
+        public VcOnEntityDestroyedPacket(int id)
         {
             Id = id;
         }

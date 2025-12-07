@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -6,8 +5,8 @@ using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.VcPackets;
-using VoiceCraft.Core.Network.VcPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Request;
+using VoiceCraft.Core.Network.VcPackets.Response;
 using VoiceCraft.Core.World;
 using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
@@ -16,7 +15,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class VoiceCraftServer : IResettable, IDisposable
 {
-    public static readonly Version Version = new(1, 1, 0);
+    public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
 
     //Networking
     private readonly NetDataWriter _dataWriter = new();
@@ -88,97 +87,137 @@ public class VoiceCraftServer : IResettable, IDisposable
     {
         if (!_netManager.IsRunning) return;
         AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopping);
-        DisconnectAll(PacketPool<VcLogoutRequestPacket>.GetPacket().Set("VoiceCraft.DisconnectReason.Shutdown"));
+        DisconnectAll("VoiceCraft.DisconnectReason.Shutdown");
         _netManager.Stop();
         AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopped);
     }
 
-    public void RejectRequest(ConnectionRequest request, IVoiceCraftPacket? packet = null)
+    public void RejectRequest(ConnectionRequest request, string? reason = null)
     {
-        if (packet == null)
+        if (reason == null)
         {
             request.Reject();
             return;
         }
 
-        lock (_dataWriter)
+        var packet = PacketPool<VcDenyResponsePacket>.GetPacket().Set(reason: reason);
+        try
         {
-            _dataWriter.Reset();
-            packet.Serialize(_dataWriter);
-            request.Reject(_dataWriter);
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                request.Reject(_dataWriter);
+            }
+        }
+        finally
+        {
+            PacketPool<VcDenyResponsePacket>.Return(packet);
         }
     }
 
-    public void DisconnectPeer(NetPeer peer, IVoiceCraftPacket? packet = null)
+    public void DisconnectPeer(NetPeer peer, string? reason = null)
     {
-        if (packet == null)
+        if (reason == null)
         {
             peer.Disconnect();
             return;
         }
 
-        lock (_dataWriter)
+        var packet = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
+        try
         {
-            _dataWriter.Reset();
-            packet.Serialize(_dataWriter);
-            peer.Disconnect(_dataWriter);
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                peer.Disconnect(_dataWriter);
+            }
+        }
+        finally
+        {
+            PacketPool<VcLogoutRequestPacket>.Return(packet);
         }
     }
 
-    public void DisconnectAll(IVoiceCraftPacket? packet = null)
+    public void DisconnectAll(string? reason = null)
     {
-        if (packet == null)
+        if (reason == null)
         {
             _netManager.DisconnectAll();
             return;
         }
 
-        lock (_dataWriter)
+        var packet = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
+        try
         {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            _netManager.DisconnectAll(_dataWriter.Data, 0, _dataWriter.Length);
-        }
-    }
-
-    public bool SendPacket(NetPeer peer, IVoiceCraftPacket packet,
-        DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-    {
-        if (peer.ConnectionState != ConnectionState.Connected) return false;
-
-        lock (_dataWriter)
-        {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            peer.Send(_dataWriter, deliveryMethod);
-            return true;
-        }
-    }
-
-    public bool SendPacket(NetPeer[] peers, IVoiceCraftPacket packet,
-        DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-    {
-        lock (_dataWriter)
-        {
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-
-            var status = true;
-            foreach (var peer in peers)
+            lock (_dataWriter)
             {
-                if (peer.ConnectionState != ConnectionState.Connected)
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                _netManager.DisconnectAll(_dataWriter.Data, 0, _dataWriter.Length);
+            }
+        }
+        finally
+        {
+            PacketPool<VcLogoutRequestPacket>.Return(packet);
+        }
+    }
+
+    public bool SendPacket<T>(NetPeer peer, T packet,
+        DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered) where T : IVoiceCraftPacket
+    {
+        try
+        {
+            if (peer.ConnectionState != ConnectionState.Connected) return false;
+
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                peer.Send(_dataWriter, deliveryMethod);
+                return true;
+            }
+        }
+        finally
+        {
+            PacketPool<T>.Return(packet);
+        }
+    }
+
+    public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
+        where T : IVoiceCraftPacket
+    {
+        try
+        {
+            lock (_dataWriter)
+            {
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+
+                var status = true;
+                foreach (var peer in peers)
                 {
-                    status = false;
-                    continue;
+                    if (peer.ConnectionState != ConnectionState.Connected)
+                    {
+                        status = false;
+                        continue;
+                    }
+
+                    peer.Send(_dataWriter, deliveryMethod);
                 }
 
-                peer.Send(_dataWriter, deliveryMethod);
+                return status;
             }
-
-            return status;
+        }
+        finally
+        {
+            PacketPool<T>.Return(packet);
         }
     }
 
@@ -200,20 +239,27 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    public void Broadcast(IVoiceCraftPacket packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered,
-        params NetPeer?[] excludes)
+    public void Broadcast<T>(T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered,
+        params NetPeer?[] excludes) where T : IVoiceCraftPacket
     {
-        lock (_dataWriter)
+        try
         {
-            var networkEntities = World.Entities.OfType<VoiceCraftNetworkEntity>();
-            _dataWriter.Reset();
-            _dataWriter.Put((byte)packet.PacketType);
-            packet.Serialize(_dataWriter);
-            foreach (var networkEntity in networkEntities)
+            lock (_dataWriter)
             {
-                if (excludes.Contains(networkEntity.NetPeer)) continue;
-                networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
+                var networkEntities = World.Entities.OfType<VoiceCraftNetworkEntity>();
+                _dataWriter.Reset();
+                _dataWriter.Put((byte)packet.PacketType);
+                packet.Serialize(_dataWriter);
+                foreach (var networkEntity in networkEntities)
+                {
+                    if (excludes.Contains(networkEntity.NetPeer)) continue;
+                    networkEntity.NetPeer.Send(_dataWriter, deliveryMethod);
+                }
             }
+        }
+        finally
+        {
+            PacketPool<T>.Return(packet);
         }
     }
 
@@ -232,32 +278,85 @@ public class VoiceCraftServer : IResettable, IDisposable
         _isDisposed = true;
     }
 
+    //Network Events
+    private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
+    {
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+        World.DestroyEntity(networkEntity.Id);
+    }
+
+    private void OnConnectionRequest(ConnectionRequest request)
+    {
+        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.ServerFull");
+            return;
+        }
+
+        if (request.Data.IsNull)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Forced");
+            return;
+        }
+
+        try
+        {
+            var loginPacket = PacketPool<VcLoginRequestPacket>.GetPacket();
+            loginPacket.Deserialize(request.Data);
+            HandleLoginRequestPacket(loginPacket, request);
+        }
+        catch
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
+        }
+    }
+
+    private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
+        DeliveryMethod deliveryMethod)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessPacket(pt, reader, peer);
+        }
+        catch
+        {
+            //Do Nothing
+        }
+    }
+
+    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
+        UnconnectedMessageType messageType)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
+        }
+        catch
+        {
+            //Do Nothing
+        }
+    }
+
     //Packet Handling
-    private void ProcessPacket(VcPacketType packetType, NetPacketReader reader, NetPeer? peer = null,
-        IPEndPoint? remoteEndPoint = null)
+    private static void ProcessPacket(VcPacketType packetType, NetPacketReader reader, NetPeer peer)
     {
         switch (packetType)
         {
-            case VcPacketType.InfoRequest:
-                if (remoteEndPoint == null) return;
-                var infoRequestPacket = PacketPool<VcInfoRequestPacket>.GetPacket();
-                infoRequestPacket.Deserialize(reader);
-                HandleInfoRequestPacket(infoRequestPacket, remoteEndPoint);
-                break;
             case VcPacketType.AudioRequest:
-                if (peer == null) return;
                 var audioRequestPacket = PacketPool<VcAudioRequestPacket>.GetPacket();
                 audioRequestPacket.Deserialize(reader);
                 HandleAudioRequestPacket(audioRequestPacket, peer);
                 break;
             case VcPacketType.SetMuteRequest:
-                if (peer == null) return;
                 var setMuteRequestPacket = PacketPool<VcSetMuteRequestPacket>.GetPacket();
                 setMuteRequestPacket.Deserialize(reader);
                 HandleSetMuteRequestPacket(setMuteRequestPacket, peer);
                 break;
             case VcPacketType.SetDeafenRequest:
-                if (peer == null) return;
                 var setDeafenRequestPacket = PacketPool<VcSetDeafenRequestPacket>.GetPacket();
                 setDeafenRequestPacket.Deserialize(reader);
                 HandleSetDeafenRequestPacket(setDeafenRequestPacket, peer);
@@ -265,23 +364,42 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
+    private void ProcessUnconnectedPacket(VcPacketType packetType, NetPacketReader reader, IPEndPoint remoteEndPoint)
+    {
+        switch (packetType)
+        {
+            case VcPacketType.InfoRequest:
+                var infoRequestPacket = PacketPool<VcInfoRequestPacket>.GetPacket();
+                infoRequestPacket.Deserialize(reader);
+                HandleInfoRequestPacket(infoRequestPacket, remoteEndPoint);
+                break;
+        }
+    }
+
     private void HandleLoginRequestPacket(VcLoginRequestPacket packet, ConnectionRequest request)
     {
-        if (packet.Version.Major != Version.Major || packet.Version.Minor != Version.Minor)
-        {
-            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.IncompatibleVersion"));
-            return;
-        }
-
-        var peer = request.Accept();
         try
         {
-            World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
+            if (packet.Version.Major != Version.Major || packet.Version.Minor != Version.Minor)
+            {
+                RejectRequest(request, "VoiceCraft.DisconnectReason.IncompatibleVersion");
+                return;
+            }
+
+            var peer = request.Accept();
+            try
+            {
+                World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
+                SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
+            }
+            catch
+            {
+                DisconnectPeer(peer, "VoiceCraft.DisconnectReason.Error");
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            Debug.WriteLine(ex);
-            DisconnectPeer(peer, new LogoutPacket("VoiceCraft.DisconnectReason.Error"));
+            PacketPool<VcLoginRequestPacket>.Return(packet);
         }
     }
 
@@ -290,7 +408,8 @@ public class VoiceCraftServer : IResettable, IDisposable
         try
         {
             SendUnconnectedPacket(remoteEndPoint,
-                new VcInfoRequestPacket(Config.Motd, _netManager.ConnectedPeersCount, Config.PositioningType,
+                PacketPool<VcInfoResponsePacket>.GetPacket().Set(Config.Motd, _netManager.ConnectedPeersCount,
+                    Config.PositioningType,
                     packet.Tick));
         }
         finally
@@ -335,69 +454,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         finally
         {
             PacketPool<VcSetDeafenRequestPacket>.Return(packet);
-        }
-    }
-
-    private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
-    {
-        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
-        World.DestroyEntity(networkEntity.Id);
-    }
-
-    private void OnConnectionRequest(ConnectionRequest request)
-    {
-        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
-        {
-            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.ServerFull"));
-            return;
-        }
-
-        if (request.Data.IsNull)
-        {
-            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.Forced"));
-            return;
-        }
-
-        try
-        {
-            var loginPacket = new LoginPacket();
-            loginPacket.Deserialize(request.Data);
-            HandleLoginRequestPacket(loginPacket, request);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-            RejectRequest(request, new LogoutPacket("VoiceCraft.DisconnectReason.Error"));
-        }
-    }
-
-    private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
-        DeliveryMethod deliveryMethod)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessPacket(pt, reader, peer);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-        }
-    }
-
-    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
-        UnconnectedMessageType messageType)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessPacket(pt, reader, remoteEndPoint: remoteEndPoint);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
         }
     }
 }

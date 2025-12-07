@@ -4,13 +4,17 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 {
     public class VcSetMuteRequestPacket : IVoiceCraftPacket
     {
-        public VcSetMuteRequestPacket(bool value = true)
+        public VcSetMuteRequestPacket() : this(false)
+        {
+        }
+
+        public VcSetMuteRequestPacket(bool value)
         {
             Value = value;
         }
 
         public VcPacketType PacketType => VcPacketType.SetMuteRequest;
-        
+
         public bool Value { get; private set; }
 
         public void Serialize(NetDataWriter writer)
@@ -22,7 +26,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
         {
             Value = reader.GetBool();
         }
-        
+
         public VcSetMuteRequestPacket Set(bool value = true)
         {
             Value = value;

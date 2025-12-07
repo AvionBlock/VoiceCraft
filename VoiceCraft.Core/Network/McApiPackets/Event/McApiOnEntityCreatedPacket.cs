@@ -7,21 +7,26 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnEntityCreatedPacket : IMcApiPacket
     {
+        public McApiOnEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, string.Empty, string.Empty, false, false,
+            0, 0, 0, Vector3.Zero, Vector2.Zero, 0.0f, 0.0f)
+        {
+        }
+
         public McApiOnEntityCreatedPacket(
-            int id = 0,
-            float loudness = 0.0f,
-            DateTime lastSpoke = new DateTime(),
-            string worldId = "",
-            string name = "",
-            bool muted = false,
-            bool deafened = false,
-            ushort talkBitmask = 0,
-            ushort listenBitmask = 0,
-            ushort effectBitmask = 0,
-            Vector3 position = new Vector3(),
-            Vector2 rotation = new Vector2(),
-            float caveFactor = 0,
-            float muffleFactor = 0)
+            int id,
+            float loudness,
+            DateTime lastSpoke,
+            string worldId,
+            string name,
+            bool muted,
+            bool deafened,
+            ushort talkBitmask,
+            ushort listenBitmask,
+            ushort effectBitmask,
+            Vector3 position,
+            Vector2 rotation,
+            float caveFactor,
+            float muffleFactor)
         {
             Id = id;
             Loudness = loudness;
@@ -58,7 +63,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         }
 
         public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
-        
+
         public int Id { get; private set; }
         public float Loudness { get; private set; }
         public DateTime LastSpoke { get; private set; }
@@ -112,8 +117,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             CaveFactor = reader.GetFloat();
             MuffleFactor = reader.GetFloat();
         }
-        
-        public void Set(
+
+        public McApiOnEntityCreatedPacket Set(
             int id = 0,
             float loudness = 0.0f,
             DateTime lastSpoke = new DateTime(),
@@ -143,9 +148,10 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Rotation = rotation;
             CaveFactor = caveFactor;
             MuffleFactor = muffleFactor;
+            return this;
         }
-        
-        public void Set(VoiceCraftEntity entity)
+
+        public McApiOnEntityCreatedPacket Set(VoiceCraftEntity entity)
         {
             Id = entity.Id;
             Loudness = entity.Loudness;
@@ -161,6 +167,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Rotation = entity.Rotation;
             CaveFactor = entity.CaveFactor;
             MuffleFactor = entity.MuffleFactor;
+            return this;
         }
     }
 }

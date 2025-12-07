@@ -5,7 +5,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnPositionUpdatedPacket : IMcApiPacket
     {
-        public McApiOnPositionUpdatedPacket(int id = 0, Vector3 value = new Vector3())
+        public McApiOnPositionUpdatedPacket() : this(0, Vector3.Zero)
+        {
+        }
+
+        public McApiOnPositionUpdatedPacket(int id, Vector3 value)
         {
             Id = id;
             Value = value;
@@ -29,11 +33,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         }
-        
-        public void Set(int id = 0, Vector3 value = new Vector3())
+
+        public McApiOnPositionUpdatedPacket Set(int id = 0, Vector3 value = new Vector3())
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

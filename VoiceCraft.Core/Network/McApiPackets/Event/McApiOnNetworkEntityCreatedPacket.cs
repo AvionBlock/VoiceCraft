@@ -7,25 +7,31 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
     {
+        public McApiOnNetworkEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, string.Empty, string.Empty, false,
+            false, 0, 0, 0, Vector3.Zero, Vector2.Zero, 0.0f, 0.0f, Guid.Empty, Guid.Empty, string.Empty,
+            PositioningType.Server)
+        {
+        }
+
         public McApiOnNetworkEntityCreatedPacket(
-            int id = 0,
-            float loudness = 0.0f,
-            DateTime lastSpoke = new DateTime(),
-            string worldId = "",
-            string name = "",
-            bool muted = false,
-            bool deafened = false,
-            ushort talkBitmask = 0,
-            ushort listenBitmask = 0,
-            ushort effectBitmask = 0,
-            Vector3 position = new Vector3(),
-            Vector2 rotation = new Vector2(),
-            float caveFactor = 0,
-            float muffleFactor = 0,
-            Guid userGuid = new Guid(),
-            Guid serverUserGuid = new Guid(),
-            string locale = "",
-            PositioningType positioningType = PositioningType.Server) :
+            int id,
+            float loudness,
+            DateTime lastSpoke,
+            string worldId,
+            string name,
+            bool muted,
+            bool deafened,
+            ushort talkBitmask,
+            ushort listenBitmask,
+            ushort effectBitmask,
+            Vector3 position,
+            Vector2 rotation,
+            float caveFactor,
+            float muffleFactor,
+            Guid userGuid,
+            Guid serverUserGuid,
+            string locale,
+            PositioningType positioningType) :
             base(id,
                 loudness,
                 lastSpoke,
@@ -80,7 +86,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             PositioningType = (PositioningType)reader.GetByte();
         }
 
-        public void Set(
+        public McApiOnNetworkEntityCreatedPacket Set(
             int id = 0,
             float loudness = 0.0f,
             DateTime lastSpoke = new DateTime(),
@@ -106,15 +112,17 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
+            return this;
         }
 
-        public void Set(VoiceCraftNetworkEntity entity)
+        public McApiOnNetworkEntityCreatedPacket Set(VoiceCraftNetworkEntity entity)
         {
             base.Set(entity);
             UserGuid = entity.UserGuid;
             ServerUserGuid = entity.ServerUserGuid;
             Locale = entity.Locale;
             PositioningType = entity.PositioningType;
+            return this;
         }
     }
 }

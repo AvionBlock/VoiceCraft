@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 {
     public class VcLogoutRequestPacket : IVoiceCraftPacket
     {
-        public VcLogoutRequestPacket(string reason = "")
+        public VcLogoutRequestPacket(): this(string.Empty)
+        {
+        }
+        
+        public VcLogoutRequestPacket(string reason)
         {
             Reason = reason;
         }

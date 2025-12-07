@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnTalkBitmaskUpdatedPacket : IMcApiPacket
     {
-        public McApiOnTalkBitmaskUpdatedPacket(int id = 0, ushort value = 0)
+        public McApiOnTalkBitmaskUpdatedPacket() : this(0, 0)
+        {
+        }
+
+        public McApiOnTalkBitmaskUpdatedPacket(int id, ushort value)
         {
             Id = id;
             Value = value;
@@ -26,11 +30,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Id = reader.GetInt();
             Value = reader.GetUShort();
         }
-        
-        public void Set(int id = 0, ushort value = 0)
+
+        public McApiOnTalkBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

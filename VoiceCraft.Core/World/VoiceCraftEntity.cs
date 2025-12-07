@@ -67,12 +67,14 @@ namespace VoiceCraft.Core.World
 
         public void AddVisibleEntity(VoiceCraftEntity entity)
         {
+            if (entity == this) return;
             if (!_visibleEntities.TryAdd(entity.Id, entity)) return;
             OnVisibleEntityAdded?.Invoke(entity, this);
         }
 
         public void RemoveVisibleEntity(VoiceCraftEntity entity)
         {
+            if (entity == this) return;
             if (!_visibleEntities.Remove(entity.Id)) return;
             OnVisibleEntityRemoved?.Invoke(entity, this);
         }

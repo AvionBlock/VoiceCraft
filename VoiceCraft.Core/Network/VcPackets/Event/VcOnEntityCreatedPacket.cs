@@ -5,7 +5,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityCreatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityCreatedPacket(int id = 0, string name = "", bool muted = false, bool deafened = false)
+        public VcOnEntityCreatedPacket() : this(0, string.Empty, false, false)
+        {
+        }
+
+        public VcOnEntityCreatedPacket(int id, string name, bool muted, bool deafened)
         {
             Id = id;
             Name = name;
@@ -43,7 +47,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Muted = reader.GetBool();
             Deafened = reader.GetBool();
         }
-        
+
         public void Set(int id = 0, string name = "", bool muted = false, bool deafened = false)
         {
             Id = id;
@@ -51,7 +55,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Muted = muted;
             Deafened = deafened;
         }
-        
+
         public VcOnEntityCreatedPacket Set(VoiceCraftEntity entity)
         {
             Id = entity.Id;

@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Response
 {
     public class McApiAcceptResponsePacket : IMcApiPacket
     {
-        public McApiAcceptResponsePacket(string requestId = "", string token = "")
+        public McApiAcceptResponsePacket() : this(string.Empty, string.Empty)
+        {
+        }
+
+        public McApiAcceptResponsePacket(string requestId, string token)
         {
             RequestId = requestId;
             Token = token;
@@ -25,7 +29,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Response
             RequestId = reader.GetString(Constants.MaxStringLength);
             Token = reader.GetString(Constants.MaxStringLength);
         }
-        
+
         public void Set(string requestId = "", string token = "")
         {
             RequestId = requestId;

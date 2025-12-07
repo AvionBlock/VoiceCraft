@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnEntityDestroyedPacket : IMcApiPacket
     {
-        public McApiOnEntityDestroyedPacket(int id = 0)
+        public McApiOnEntityDestroyedPacket() : this(0)
+        {
+        }
+
+        public McApiOnEntityDestroyedPacket(int id)
         {
             Id = id;
         }
@@ -22,10 +26,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         {
             Id = reader.GetInt();
         }
-        
-        public void Set(int id = 0)
+
+        public McApiOnEntityDestroyedPacket Set(int id = 0)
         {
             Id = id;
+            return this;
         }
     }
 }

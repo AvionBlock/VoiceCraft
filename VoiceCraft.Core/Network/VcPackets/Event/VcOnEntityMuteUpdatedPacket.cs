@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityMuteUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityMuteUpdatedPacket(int id = 0, bool value = false)
+        public VcOnEntityMuteUpdatedPacket() : this(0, false)
+        {
+        }
+
+        public VcOnEntityMuteUpdatedPacket(int id, bool value)
         {
             Id = id;
             Value = value;
@@ -26,7 +30,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Id = reader.GetInt();
             Value = reader.GetBool();
         }
-        
+
         public VcOnEntityMuteUpdatedPacket Set(int id = 0, bool value = false)
         {
             Id = id;

@@ -4,7 +4,11 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 {
     public class VcOnEntityCaveFactorUpdatedPacket : IVoiceCraftPacket
     {
-        public VcOnEntityCaveFactorUpdatedPacket(int id = 0, float value = 0f)
+        public VcOnEntityCaveFactorUpdatedPacket() : this(0, 0.0f)
+        {
+        }
+
+        public VcOnEntityCaveFactorUpdatedPacket(int id, float value)
         {
             Id = id;
             Value = value;
@@ -26,7 +30,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Id = reader.GetInt();
             Value = reader.GetFloat();
         }
-        
+
         public VcOnEntityCaveFactorUpdatedPacket Set(int id = 0, float value = 0f)
         {
             Id = id;
