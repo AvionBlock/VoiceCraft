@@ -1,11 +1,11 @@
-using System;
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.Packets
+namespace VoiceCraft.Core.Network.VcPackets.Request
 {
-    public class InfoPacket : VoiceCraftPacket
+    public class VcInfoRequestPacket : IVoiceCraftPacket
     {
-        public InfoPacket(string motd = "", int clients = 0, PositioningType positioningType = PositioningType.Server,
+        public VcInfoRequestPacket(string motd = "", int clients = 0,
+            PositioningType positioningType = PositioningType.Server,
             int tick = 0)
         {
             Motd = motd;
@@ -14,7 +14,7 @@ namespace VoiceCraft.Core.Network.Packets
             Tick = tick;
         }
 
-        public override PacketType PacketType => PacketType.Info;
+        public VcPacketType PacketType => VcPacketType.InfoRequest;
 
         public string Motd { get; private set; }
         public int Clients { get; private set; }
@@ -22,7 +22,7 @@ namespace VoiceCraft.Core.Network.Packets
         public int Tick { get; private set; }
 
 
-        public override void Serialize(NetDataWriter writer)
+        public void Serialize(NetDataWriter writer)
         {
             writer.Put(Motd, Constants.MaxStringLength);
             writer.Put(Clients);
@@ -30,12 +30,22 @@ namespace VoiceCraft.Core.Network.Packets
             writer.Put(Tick);
         }
 
-        public override void Deserialize(NetDataReader reader)
+        public void Deserialize(NetDataReader reader)
         {
             Motd = reader.GetString(Constants.MaxStringLength);
             Clients = reader.GetInt();
             PositioningType = (PositioningType)reader.GetByte();
             Tick = reader.GetInt();
+        }
+
+        public VcInfoRequestPacket Set(string motd = "", int clients = 0, PositioningType positioningType = PositioningType.Server,
+            int tick = 0)
+        {
+            Motd = motd;
+            Clients = clients;
+            PositioningType = positioningType;
+            Tick = tick;
+            return this;
         }
     }
 }

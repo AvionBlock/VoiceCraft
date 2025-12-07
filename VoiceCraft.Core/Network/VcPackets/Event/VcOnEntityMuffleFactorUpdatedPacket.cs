@@ -1,16 +1,16 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets.Event
+namespace VoiceCraft.Core.Network.VcPackets.Event
 {
-    public class McApiOnEntityCaveFactorUpdatedPacket : IMcApiPacket
+    public class VcOnEntityMuffleFactorUpdatedPacket : IVoiceCraftPacket
     {
-        public McApiOnEntityCaveFactorUpdatedPacket(int id = 0, float value = 0.0f)
+        public VcOnEntityMuffleFactorUpdatedPacket(int id = 0, float value = 0f)
         {
             Id = id;
             Value = value;
         }
 
-        public McApiPacketType PacketType => McApiPacketType.OnEntityCaveFactorUpdated;
+        public VcPacketType PacketType => VcPacketType.OnEntityMuffleFactorUpdated;
 
         public int Id { get; private set; }
         public float Value { get; private set; }
@@ -27,10 +27,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = reader.GetFloat();
         }
         
-        public void Set(int id = 0, float value = 0)
+        public VcOnEntityMuffleFactorUpdatedPacket Set(int id = 0, float value = 0f)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

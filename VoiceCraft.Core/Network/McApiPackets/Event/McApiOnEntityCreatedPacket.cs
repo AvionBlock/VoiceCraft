@@ -5,7 +5,7 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnEntityCreatedPacket : McApiPacket
+    public class McApiOnEntityCreatedPacket : IMcApiPacket
     {
         public McApiOnEntityCreatedPacket(
             int id = 0,
@@ -57,7 +57,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             MuffleFactor = entity.MuffleFactor;
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
+        public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
         
         public int Id { get; private set; }
         public float Loudness { get; private set; }
@@ -74,7 +74,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         public float CaveFactor { get; private set; }
         public float MuffleFactor { get; private set; }
 
-        public override void Serialize(NetDataWriter writer)
+        public virtual void Serialize(NetDataWriter writer)
         {
             writer.Put(Id);
             writer.Put(Loudness);
@@ -95,7 +95,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             writer.Put(MuffleFactor);
         }
 
-        public override void Deserialize(NetDataReader reader)
+        public virtual void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
             Loudness = reader.GetFloat();
@@ -111,6 +111,56 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Rotation = new Vector2(reader.GetFloat(), reader.GetFloat());
             CaveFactor = reader.GetFloat();
             MuffleFactor = reader.GetFloat();
+        }
+        
+        public void Set(
+            int id = 0,
+            float loudness = 0.0f,
+            DateTime lastSpoke = new DateTime(),
+            string worldId = "",
+            string name = "",
+            bool muted = false,
+            bool deafened = false,
+            ushort talkBitmask = 0,
+            ushort listenBitmask = 0,
+            ushort effectBitmask = 0,
+            Vector3 position = new Vector3(),
+            Vector2 rotation = new Vector2(),
+            float caveFactor = 0,
+            float muffleFactor = 0)
+        {
+            Id = id;
+            Loudness = loudness;
+            LastSpoke = lastSpoke;
+            WorldId = worldId;
+            Name = name;
+            Muted = muted;
+            Deafened = deafened;
+            TalkBitmask = talkBitmask;
+            ListenBitmask = listenBitmask;
+            EffectBitmask = effectBitmask;
+            Position = position;
+            Rotation = rotation;
+            CaveFactor = caveFactor;
+            MuffleFactor = muffleFactor;
+        }
+        
+        public void Set(VoiceCraftEntity entity)
+        {
+            Id = entity.Id;
+            Loudness = entity.Loudness;
+            LastSpoke = entity.LastSpoke;
+            WorldId = entity.WorldId;
+            Name = entity.Name;
+            Muted = entity.Muted;
+            Deafened = entity.Deafened;
+            TalkBitmask = entity.TalkBitmask;
+            ListenBitmask = entity.ListenBitmask;
+            EffectBitmask = entity.EffectBitmask;
+            Position = entity.Position;
+            Rotation = entity.Rotation;
+            CaveFactor = entity.CaveFactor;
+            MuffleFactor = entity.MuffleFactor;
         }
     }
 }

@@ -79,5 +79,42 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Locale = reader.GetString(Constants.MaxStringLength);
             PositioningType = (PositioningType)reader.GetByte();
         }
+
+        public void Set(
+            int id = 0,
+            float loudness = 0.0f,
+            DateTime lastSpoke = new DateTime(),
+            string worldId = "",
+            string name = "",
+            bool muted = false,
+            bool deafened = false,
+            ushort talkBitmask = 0,
+            ushort listenBitmask = 0,
+            ushort effectBitmask = 0,
+            Vector3 position = new Vector3(),
+            Vector2 rotation = new Vector2(),
+            float caveFactor = 0,
+            float muffleFactor = 0,
+            Guid userGuid = new Guid(),
+            Guid serverUserGuid = new Guid(),
+            string locale = "",
+            PositioningType positioningType = PositioningType.Server)
+        {
+            base.Set(id, loudness, lastSpoke, worldId, name, muted, deafened, talkBitmask, listenBitmask, effectBitmask,
+                position, rotation, caveFactor, muffleFactor);
+            UserGuid = userGuid;
+            ServerUserGuid = serverUserGuid;
+            Locale = locale;
+            PositioningType = positioningType;
+        }
+
+        public void Set(VoiceCraftNetworkEntity entity)
+        {
+            base.Set(entity);
+            UserGuid = entity.UserGuid;
+            ServerUserGuid = entity.ServerUserGuid;
+            Locale = entity.Locale;
+            PositioningType = entity.PositioningType;
+        }
     }
 }

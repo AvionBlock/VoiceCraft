@@ -1,19 +1,19 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets.Event
+namespace VoiceCraft.Core.Network.VcPackets.Event
 {
-    public class McApiOnEntityCaveFactorUpdatedPacket : IMcApiPacket
+    public class VcOnEntityDeafenUpdatedPacket : IVoiceCraftPacket
     {
-        public McApiOnEntityCaveFactorUpdatedPacket(int id = 0, float value = 0.0f)
+        public VcOnEntityDeafenUpdatedPacket(int id = 0, bool value = true)
         {
             Id = id;
             Value = value;
         }
 
-        public McApiPacketType PacketType => McApiPacketType.OnEntityCaveFactorUpdated;
+        public VcPacketType PacketType => VcPacketType.OnEntityDeafenUpdated;
 
         public int Id { get; private set; }
-        public float Value { get; private set; }
+        public bool Value { get; private set; }
 
         public void Serialize(NetDataWriter writer)
         {
@@ -24,13 +24,14 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         public void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetFloat();
+            Value = reader.GetBool();
         }
         
-        public void Set(int id = 0, float value = 0)
+        public VcOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = true)
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

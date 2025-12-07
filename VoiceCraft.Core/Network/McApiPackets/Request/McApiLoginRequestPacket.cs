@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
-    public class McApiLoginRequestPacket : McApiPacket
+    public class McApiLoginRequestPacket : IMcApiPacket
     {
         public McApiLoginRequestPacket(string requestId = "", string token = "", Version? version = null)
         {
@@ -12,12 +12,12 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             Version = version ?? new Version(0, 0, 0);
         }
 
-        public override McApiPacketType PacketType => McApiPacketType.LoginRequest;
+        public McApiPacketType PacketType => McApiPacketType.LoginRequest;
         public string RequestId { get; private set; }
         public string Token { get; private set; }
         public Version Version { get; private set; }
 
-        public override void Serialize(NetDataWriter writer)
+        public void Serialize(NetDataWriter writer)
         {
             writer.Put(RequestId, Constants.MaxStringLength);
             writer.Put(Token, Constants.MaxStringLength);
@@ -26,11 +26,18 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             writer.Put(Version.Build);
         }
 
-        public override void Deserialize(NetDataReader reader)
+        public void Deserialize(NetDataReader reader)
         {
             RequestId = reader.GetString(Constants.MaxStringLength);
             Token = reader.GetString(Constants.MaxStringLength);
             Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
+        }
+        
+        public void Set(string requestId = "", string token = "", Version? version = null)
+        {
+            RequestId = requestId;
+            Token = token;
+            Version = version ?? new Version(0, 0, 0);
         }
     }
 }

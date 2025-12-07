@@ -1,5 +1,6 @@
 using System.CommandLine;
-using VoiceCraft.Core.Network.Packets;
+using VoiceCraft.Core;
+using VoiceCraft.Core.Network.VcPackets.Request;
 using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
@@ -29,8 +30,9 @@ public class SetTitleCommand : Command
                 throw new Exception(
                     Locales.Locales.Commands_Exceptions_EntityNotAClient.Replace("{id}", id.ToString()));
 
-            var packet = new SetTitlePacket(string.IsNullOrWhiteSpace(value) ? "" : value);
-            server.SendPacket(networkEntity.NetPeer, packet);
+            server.SendPacket(networkEntity.NetPeer,
+                PacketPool<VcSetTitleRequestPacket>.GetPacket()
+                    .Set(string.IsNullOrWhiteSpace(value) ? "" : value));
         }, idArgument, valueArgument);
     }
 }

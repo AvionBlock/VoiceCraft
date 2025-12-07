@@ -1,17 +1,17 @@
 using System.Numerics;
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets.Event
+namespace VoiceCraft.Core.Network.VcPackets.Event
 {
-    public class McApiOnRotationUpdatedPacket : IMcApiPacket
+    public class VcOnEntityRotationUpdatedPacket : IVoiceCraftPacket
     {
-        public McApiOnRotationUpdatedPacket(int id = 0, Vector2 value = new Vector2())
+        public VcOnEntityRotationUpdatedPacket(int id = 0, Vector2 value = new Vector2())
         {
             Id = id;
             Value = value;
         }
 
-        public McApiPacketType PacketType => McApiPacketType.OnEntityRotationUpdated;
+        public VcPacketType PacketType => VcPacketType.OnEntityRotationUpdated;
 
         public int Id { get; private set; }
         public Vector2 Value { get; private set; }
@@ -29,10 +29,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = new Vector2(reader.GetFloat(), reader.GetFloat());
         }
         
-        public void Set(int id = 0, Vector2 value = new Vector2())
+        public VcOnEntityRotationUpdatedPacket Set(int id = 0, Vector2 value = new Vector2())
         {
             Id = id;
             Value = value;
+            return this;
         }
     }
 }

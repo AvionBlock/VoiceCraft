@@ -8,35 +8,42 @@ namespace VoiceCraft.Core
         Client
     }
 
-    public enum PacketType : byte
+    public enum VcPacketType : byte
     {
         //Requests
-        Info,
-        Login,
-        Logout,
-        SetId,
-        SetEffect,
-
-        //Client Entity Stuff
-        Audio,
-        SetTitle,
-        SetDescription,
+        InfoRequest,
+        LoginRequest,
+        LogoutRequest,
+        AudioRequest,
+        SetMuteRequest,
+        SetDeafenRequest,
+        SetTitleRequest,
+        SetDescriptionRequest,
+        SetEntityVisibilityRequest,
+        
+        //Responses
+        AcceptResponse,
+        DenyResponse,
+        
+        //Internal Responses
+        SetIdAcceptResponse,
 
         //Events
-        EntityCreated,
-        NetworkEntityCreated,
-        EntityDestroyed,
-        SetVisibility,
-        SetName,
-        SetMute,
-        SetDeafen,
-        SetTalkBitmask,
-        SetListenBitmask,
-        SetEffectBitmask,
-        SetPosition,
-        SetRotation,
-        SetCaveFactor,
-        SetMuffleFactor
+        OnEffectUpdated,
+        OnEntityCreated,
+        OnNetworkEntityCreated,
+        OnEntityDestroyed,
+        OnEntityNameUpdated,
+        OnEntityMuteUpdated,
+        OnEntityDeafenUpdated,
+        OnEntityTalkBitmaskUpdated,
+        OnEntityListenBitmaskUpdated,
+        OnEntityEffectBitmaskUpdated,
+        OnEntityPositionUpdated,
+        OnEntityRotationUpdated,
+        OnEntityCaveFactorUpdated,
+        OnEntityMuffleFactorUpdated,
+        OnEntityAudioUpdated,
     }
 
     public enum McApiPacketType : byte
