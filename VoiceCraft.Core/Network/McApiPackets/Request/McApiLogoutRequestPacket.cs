@@ -4,6 +4,10 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
     public class McApiLogoutRequestPacket : IMcApiPacket
     {
+        public McApiLogoutRequestPacket() : this(string.Empty)
+        {
+        }
+
         public McApiLogoutRequestPacket(string token = "")
         {
             Token = token;
@@ -21,7 +25,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
         {
             Token = reader.GetString(Constants.MaxStringLength);
         }
-        
+
         public McApiLogoutRequestPacket Set(string token = "")
         {
             Token = token;

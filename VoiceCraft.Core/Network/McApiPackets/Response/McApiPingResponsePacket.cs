@@ -1,19 +1,19 @@
 using LiteNetLib.Utils;
 
-namespace VoiceCraft.Core.Network.McApiPackets.Request
+namespace VoiceCraft.Core.Network.McApiPackets.Response
 {
-    public class McApiPingRequestPacket : IMcApiPacket
+    public class McApiPingResponsePacket : IMcApiPacket
     {
-        public McApiPingRequestPacket() : this(string.Empty)
+        public McApiPingResponsePacket() : this(string.Empty)
         {
         }
 
-        public McApiPingRequestPacket(string token = "")
+        public McApiPingResponsePacket(string token = "")
         {
             Token = token;
         }
 
-        public McApiPacketType PacketType => McApiPacketType.PingRequest;
+        public McApiPacketType PacketType => McApiPacketType.PingResponse;
         public string Token { get; private set; }
 
         public void Serialize(NetDataWriter writer)
@@ -26,7 +26,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             Token = reader.GetString(Constants.MaxStringLength);
         }
 
-        public McApiPingRequestPacket Set(string token = "")
+        public McApiPingResponsePacket Set(string token = "")
         {
             Token = token;
             return this;

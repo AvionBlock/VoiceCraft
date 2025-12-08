@@ -36,6 +36,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
 
         public void Deserialize(NetDataReader reader)
         {
+            Id = reader.GetInt();
             Timestamp = reader.GetUShort();
             FrameLoudness = Math.Clamp(reader.GetFloat(), 0f, 1f);
             Length = reader.AvailableBytes;
