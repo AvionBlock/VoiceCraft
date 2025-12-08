@@ -28,7 +28,7 @@ namespace VoiceCraft.Core
         SetTitleRequest,
         SetDescriptionRequest,
         SetEntityVisibilityRequest,
-        
+
         //Responses
         InfoResponse,
         AcceptResponse,
@@ -58,11 +58,12 @@ namespace VoiceCraft.Core
         LoginRequest,
         LogoutRequest,
         PingRequest,
-        
+
         //Responses
         AcceptResponse,
         DenyResponse,
-        
+        PingResponse,
+
         //Events
         OnEntityCreated,
         OnNetworkEntityCreated,
@@ -79,6 +80,7 @@ namespace VoiceCraft.Core
         OnEntityRotationUpdated,
         OnEntityCaveFactorUpdated,
         OnEntityMuffleFactorUpdated,
+        OnEntityAudioReceived
     }
 
     public enum VcConnectionState : byte

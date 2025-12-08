@@ -2,7 +2,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Response
 {
-    public class McApiAcceptResponsePacket : IMcApiPacket
+    public class McApiAcceptResponsePacket : IMcApiPacket, IMcApiRIdPacket
     {
         public McApiAcceptResponsePacket() : this(string.Empty, string.Empty)
         {
@@ -30,10 +30,11 @@ namespace VoiceCraft.Core.Network.McApiPackets.Response
             Token = reader.GetString(Constants.MaxStringLength);
         }
 
-        public void Set(string requestId = "", string token = "")
+        public McApiAcceptResponsePacket Set(string requestId = "", string token = "")
         {
             RequestId = requestId;
             Token = token;
+            return this;
         }
     }
 }

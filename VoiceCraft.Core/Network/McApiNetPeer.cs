@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using LiteNetLib.Utils;
 
@@ -23,8 +22,6 @@ namespace VoiceCraft.Core.Network
             Connected = false;
             Token = string.Empty;
             OnDisconnected?.Invoke();
-
-            Debug.WriteLine("McApi Client Disconnected");
         }
 
         public void AcceptConnection(string sessionToken)
@@ -33,7 +30,6 @@ namespace VoiceCraft.Core.Network
             Token = sessionToken;
             Connected = true;
             LastPing = DateTime.UtcNow;
-            Debug.WriteLine($"McApi Client Connected: Session Token - {sessionToken}");
         }
 
         public void ReceiveInboundPacket(byte[] packet)

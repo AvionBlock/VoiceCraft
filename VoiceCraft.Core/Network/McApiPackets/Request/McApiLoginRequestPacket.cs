@@ -3,13 +3,17 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
-    public class McApiLoginRequestPacket : IMcApiPacket
+    public class McApiLoginRequestPacket : IMcApiPacket, IMcApiRIdPacket
     {
-        public McApiLoginRequestPacket(string requestId = "", string token = "", Version? version = null)
+        public McApiLoginRequestPacket() : this(string.Empty, string.Empty, new Version(0, 0, 0))
+        {
+        }
+
+        public McApiLoginRequestPacket(string requestId, string token, Version version)
         {
             RequestId = requestId;
             Token = token;
-            Version = version ?? new Version(0, 0, 0);
+            Version = version;
         }
 
         public McApiPacketType PacketType => McApiPacketType.LoginRequest;
@@ -32,7 +36,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             Token = reader.GetString(Constants.MaxStringLength);
             Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
         }
-        
+
         public McApiLoginRequestPacket Set(string requestId = "", string token = "", Version? version = null)
         {
             RequestId = requestId;
