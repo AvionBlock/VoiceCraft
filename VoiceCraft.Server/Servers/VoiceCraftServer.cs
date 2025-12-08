@@ -311,7 +311,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         }
     }
 
-    private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
+    private static void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
         DeliveryMethod deliveryMethod)
     {
         try

@@ -433,6 +433,41 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 setDeafenRequestPacket.Deserialize(reader);
                 HandleSetDeafenRequestPacket(setDeafenRequestPacket);
                 break;
+            case VcPacketType.SetTalkBitmaskRequest:
+                var setTalkBitmaskRequestPacket = PacketPool<VcSetTalkBitmaskRequestPacket>.GetPacket();
+                setTalkBitmaskRequestPacket.Deserialize(reader);
+                HandleSetTalkBitmaskRequestPacket(setTalkBitmaskRequestPacket);
+                break;
+            case VcPacketType.SetListenBitmaskRequest:
+                var setListenBitmaskRequestPacket = PacketPool<VcSetListenBitmaskRequestPacket>.GetPacket();
+                setListenBitmaskRequestPacket.Deserialize(reader);
+                HandleSetListenBitmaskRequestPacket(setListenBitmaskRequestPacket);
+                break;
+            case VcPacketType.SetEffectBitmaskRequest:
+                var setEffectBitmaskRequestPacket = PacketPool<VcSetEffectBitmaskRequestPacket>.GetPacket();
+                setEffectBitmaskRequestPacket.Deserialize(reader);
+                HandleSetEffectBitmaskRequestPacket(setEffectBitmaskRequestPacket);
+                break;
+            case VcPacketType.SetPositionRequest:
+                var setPositionRequestPacket = PacketPool<VcSetPositionRequestPacket>.GetPacket();
+                setPositionRequestPacket.Deserialize(reader);
+                HandleSetPositionBitmaskRequestPacket(setPositionRequestPacket);
+                break;
+            case VcPacketType.SetRotationRequest:
+                var setRotationRequestPacket = PacketPool<VcSetRotationRequestPacket>.GetPacket();
+                setRotationRequestPacket.Deserialize(reader);
+                HandleSetRotationBitmaskRequestPacket(setRotationRequestPacket);
+                break;
+            case VcPacketType.SetCaveFactorRequest:
+                var setCaveFactorRequestPacket = PacketPool<VcSetCaveFactorRequest>.GetPacket();
+                setCaveFactorRequestPacket.Deserialize(reader);
+                HandleSetCaveFactorRequestPacket(setCaveFactorRequestPacket);
+                break;
+            case VcPacketType.SetMuffleFactorRequest:
+                var setMuffleFactorRequestPacket = PacketPool<VcSetMuffleFactorRequest>.GetPacket();
+                setMuffleFactorRequestPacket.Deserialize(reader);
+                HandleSetMuffleFactorRequestPacket(setMuffleFactorRequestPacket);
+                break;
             case VcPacketType.SetTitleRequest:
                 var setTitleRequestPacket = PacketPool<VcSetTitleRequestPacket>.GetPacket();
                 setTitleRequestPacket.Deserialize(reader);
@@ -542,6 +577,8 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 onEntityAudioReceivedPacket.Deserialize(reader);
                 HandleOnEntityAudioReceivedPacket(onEntityAudioReceivedPacket);
                 break;
+            default:
+                return;
         }
     }
 
@@ -641,6 +678,97 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         finally
         {
             PacketPool<VcSetDeafenRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleSetTalkBitmaskRequestPacket(VcSetTalkBitmaskRequestPacket packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            TalkBitmask = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetTalkBitmaskRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetListenBitmaskRequestPacket(VcSetListenBitmaskRequestPacket packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            ListenBitmask = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetListenBitmaskRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEffectBitmaskRequestPacket(VcSetEffectBitmaskRequestPacket packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            EffectBitmask = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetEffectBitmaskRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetPositionBitmaskRequestPacket(VcSetPositionRequestPacket packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            Position = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetPositionRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetRotationBitmaskRequestPacket(VcSetRotationRequestPacket packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            Rotation = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetRotationRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetCaveFactorRequestPacket(VcSetCaveFactorRequest packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            CaveFactor = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetCaveFactorRequest>.Return(packet);
+        }
+    }
+    
+    private void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet)
+    {
+        try
+        {
+            OnPacket?.Invoke(packet);
+            MuffleFactor = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetMuffleFactorRequest>.Return(packet);
         }
     }
 
