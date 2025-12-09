@@ -6,6 +6,10 @@ namespace VoiceCraft.Core.World
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
+        //Events
+        public event Action<string, VoiceCraftNetworkEntity>? OnSetTitle;
+        public event Action<string, VoiceCraftNetworkEntity>? OnSetDescription;
+        
         public VoiceCraftNetworkEntity(
             NetPeer netPeer,
             int id,
@@ -29,6 +33,16 @@ namespace VoiceCraft.Core.World
         public string Locale { get; private set; }
         public PositioningType PositioningType { get; }
 
+        public void SetTitle(string title)
+        {
+            OnSetTitle?.Invoke(title, this);
+        }
+
+        public void SetDescription(string description)
+        {
+            OnSetDescription?.Invoke(description, this);
+        }
+
         public override void Reset()
         {
             //Doesn't remove the entity from the world.
@@ -41,6 +55,13 @@ namespace VoiceCraft.Core.World
             EffectBitmask = ushort.MaxValue;
             TalkBitmask = ushort.MaxValue;
             ListenBitmask = ushort.MaxValue;
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            OnSetTitle = null;
+            OnSetDescription = null;
         }
     }
 }

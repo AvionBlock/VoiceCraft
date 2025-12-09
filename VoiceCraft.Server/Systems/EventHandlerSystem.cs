@@ -3,6 +3,7 @@ using System.Numerics;
 using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Request;
@@ -30,6 +31,8 @@ public class EventHandlerSystem : IDisposable
         _world.OnEntityCreated += OnEntityCreated;
         _world.OnEntityDestroyed += OnEntityDestroyed;
         _audioEffectSystem.OnEffectSet += OnAudioEffectSet;
+        _mcWssServer.OnPeerConnected += OnMcApiPeerConnected;
+        _mcWssServer.OnPeerDisconnected += OnMcApiPeerDisconnected;
     }
 
     public void Dispose()
@@ -37,6 +40,8 @@ public class EventHandlerSystem : IDisposable
         _world.OnEntityCreated -= OnEntityCreated;
         _world.OnEntityDestroyed -= OnEntityDestroyed;
         _audioEffectSystem.OnEffectSet -= OnAudioEffectSet;
+        _mcWssServer.OnPeerConnected -= OnMcApiPeerConnected;
+        _mcWssServer.OnPeerDisconnected -= OnMcApiPeerDisconnected;
         GC.SuppressFinalize(this);
     }
 
@@ -87,6 +92,9 @@ public class EventHandlerSystem : IDisposable
                     _server.SendPacket(networkEntity.NetPeer,
                         PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(entity));
             }
+
+            networkEntity.OnSetTitle += OnNetworkEntitySetTitle;
+            networkEntity.OnSetDescription += OnNetworkEntitySetDescription;
         }
         else
         {
@@ -114,8 +122,12 @@ public class EventHandlerSystem : IDisposable
     {
         var entityDestroyedPacket = PacketPool<VcOnEntityDestroyedPacket>.GetPacket().Set(entity.Id);
         if (entity is VoiceCraftNetworkEntity networkEntity)
+        {
             _server.DisconnectPeer(networkEntity.NetPeer, "VoiceCraft.DisconnectReason.Forced");
+        }
+
         _server.Broadcast(entityDestroyedPacket);
+        _mcWssServer.Broadcast(PacketPool<McApiOnEntityDestroyedPacket>.GetPacket().Set(entity.Id));
 
         entity.OnWorldIdUpdated -= OnEntityWorldIdUpdated;
         entity.OnNameUpdated -= OnEntityNameUpdated;
@@ -133,7 +145,48 @@ public class EventHandlerSystem : IDisposable
         entity.OnAudioReceived -= OnEntityAudioReceived;
     }
 
+    private void OnMcApiPeerConnected(McApiNetPeer peer)
+    {
+        //Send Effects
+        /* TODO
+        foreach (var effect in _audioEffectSystem.Effects)
+            _mcWssServer.SendPacket(peer, PacketPool<McApiOn>.GetPacket().Set(effect.Key, effect.Value));
+            */
+
+        //Send other entities.
+        foreach (var entity in _world.Entities)
+        {
+            if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
+                _mcWssServer.SendPacket(peer,
+                    PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
+            else
+                _mcWssServer.SendPacket(peer,
+                    PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
+        }
+    }
+
+    private void OnMcApiPeerDisconnected(McApiNetPeer peer)
+    {
+        //Do nothing for now.
+    }
+
     //Data
+    private void OnNetworkEntitySetTitle(string title, VoiceCraftNetworkEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(entity.NetPeer, PacketPool<VcSetTitleRequestPacket>.GetPacket().Set(title));
+        });
+    }
+    
+    private void OnNetworkEntitySetDescription(string description, VoiceCraftNetworkEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(entity.NetPeer, PacketPool<VcSetDescriptionRequestPacket>.GetPacket().Set(description));
+        });
+    }
+    
     private void OnEntityWorldIdUpdated(string worldId, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
@@ -388,7 +441,9 @@ public class EventHandlerSystem : IDisposable
                     .Set(entity.Id, timestamp, frameLoudness, data.Length, data);
                 _server.SendPacket(visibleEntity.NetPeer, packet);
             }
-            _mcWssServer.Broadcast(PacketPool<McApiOnEntityAudioReceivedPacket>.GetPacket().Set(entity.Id, timestamp, frameLoudness));
+
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityAudioReceivedPacket>.GetPacket()
+                .Set(entity.Id, timestamp, frameLoudness));
         });
     }
 

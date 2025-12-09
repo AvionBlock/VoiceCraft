@@ -58,6 +58,8 @@ namespace VoiceCraft.Core
         LoginRequest,
         LogoutRequest,
         PingRequest,
+        SetEntityTitleRequest,
+        SetEntityDescriptionRequest,
 
         //Responses
         AcceptResponse,
