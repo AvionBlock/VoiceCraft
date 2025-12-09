@@ -10,20 +10,26 @@ using VoiceCraft.Server.Config;
 using Fleck;
 using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.McApiPackets.Response;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Server.Servers;
 
-public class McWssServer
+public class McWssServer(VoiceCraftWorld world)
 {
     private static readonly Version McWssVersion = new(Constants.Minor, Constants.Major, 0);
 
     private readonly ConcurrentDictionary<IWebSocketConnection, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
+    private readonly VoiceCraftWorld _world = world;
     private WebSocketServer? _wsServer;
 
     //Public Properties
     public McWssConfig Config { get; private set; } = new();
+
+    //Events
+    public event Action<McApiNetPeer>? OnPeerConnected;
+    public event Action<McApiNetPeer>? OnPeerDisconnected;
 
     public void Start(McWssConfig? config = null)
     {
@@ -167,8 +173,8 @@ public class McWssServer
             sent = true;
             SendPacket(peer.Key, Z85.GetStringWithPadding(outboundPacket));
         }
-        
-        if(!sent)
+
+        if (!sent)
             SendPacket(peer.Key, string.Empty);
 
         switch (peer.Value.Connected)
@@ -186,11 +192,16 @@ public class McWssServer
 
         var netPeer = new McApiNetPeer();
         _mcApiPeers.TryAdd(socket, netPeer);
+        netPeer.OnConnected += McApiNetPeerOnConnected;
+        netPeer.OnDisconnected += McApiNetPeerOnDisconnected;
     }
 
     private void OnClientDisconnected(IWebSocketConnection socket)
     {
-        if (_mcApiPeers.TryRemove(socket, out var netPeer)) netPeer.Disconnect();
+        if (!_mcApiPeers.TryRemove(socket, out var netPeer)) return;
+        netPeer.Disconnect();
+        netPeer.OnConnected -= McApiNetPeerOnConnected;
+        netPeer.OnDisconnected -= McApiNetPeerOnDisconnected;
     }
 
     private void OnMessageReceived(IWebSocketConnection socket, string message)
@@ -237,7 +248,6 @@ public class McWssServer
 
         if (!peer.Connected) return;
 
-        // ReSharper disable once UnreachableSwitchCaseDueToIntegerAnalysis
         switch (packetType)
         {
             case McApiPacketType.LogoutRequest:
@@ -250,10 +260,32 @@ public class McWssServer
                 pingRequestPacket.Deserialize(reader);
                 HandlePingRequestPacket(pingRequestPacket, peer);
                 break;
+            case McApiPacketType.SetEntityTitleRequest:
+                var setEntityTitleRequestPacket = PacketPool<McApiSetEntityTitleRequestPacket>.GetPacket();
+                setEntityTitleRequestPacket.Deserialize(reader);
+                HandleSetEntityTitleRequestPacket(setEntityTitleRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityDescriptionRequest:
+                var setEntityDescriptionRequestPacket =
+                    PacketPool<McApiSetEntityDescriptionRequestPacket>.GetPacket();
+                setEntityDescriptionRequestPacket.Deserialize(reader);
+                HandleSetEntityDescriptionRequestPacket(setEntityDescriptionRequestPacket, peer);
+                break;
         }
     }
 
-    private void HandleLoginRequestPacket(McApiLoginRequestPacket packet, IWebSocketConnection socket, McApiNetPeer netPeer)
+    private void McApiNetPeerOnConnected(McApiNetPeer peer)
+    {
+        OnPeerConnected?.Invoke(peer);
+    }
+
+    private void McApiNetPeerOnDisconnected(McApiNetPeer peer)
+    {
+        OnPeerDisconnected?.Invoke(peer);
+    }
+
+    private void HandleLoginRequestPacket(McApiLoginRequestPacket packet, IWebSocketConnection socket,
+        McApiNetPeer netPeer)
     {
         try
         {
@@ -261,6 +293,7 @@ public class McWssServer
             {
                 SendPacket(netPeer,
                     PacketPool<McApiAcceptResponsePacket>.GetPacket().Set(packet.RequestId, netPeer.Token));
+                OnPeerConnected?.Invoke(netPeer);
                 return;
             }
 
@@ -310,6 +343,37 @@ public class McWssServer
         finally
         {
             PacketPool<McApiPingRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleSetEntityTitleRequestPacket(McApiSetEntityTitleRequestPacket packet, McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity is not VoiceCraftNetworkEntity networkEntity) return;
+            networkEntity.SetTitle(packet.Value);
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityTitleRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleSetEntityDescriptionRequestPacket(McApiSetEntityDescriptionRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity is not VoiceCraftNetworkEntity networkEntity) return;
+            networkEntity.SetDescription(packet.Value);
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityDescriptionRequestPacket>.Return(packet);
         }
     }
 

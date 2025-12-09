@@ -14,14 +14,21 @@ namespace VoiceCraft.Core.Network
         public bool Connected { get; private set; }
         public string Token { get; private set; } = string.Empty;
 
-        public event Action? OnDisconnected;
+        public event Action<McApiNetPeer>? OnConnected;
+        public event Action<McApiNetPeer>? OnDisconnected;
+
+        ~McApiNetPeer()
+        {
+            OnConnected = null;
+            OnDisconnected = null;
+        }
 
         public void Disconnect()
         {
             if (!Connected) return;
             Connected = false;
             Token = string.Empty;
-            OnDisconnected?.Invoke();
+            OnDisconnected?.Invoke(this);
         }
 
         public void AcceptConnection(string sessionToken)
@@ -30,6 +37,7 @@ namespace VoiceCraft.Core.Network
             Token = sessionToken;
             Connected = true;
             LastPing = DateTime.UtcNow;
+            OnConnected?.Invoke(this);
         }
 
         public void ReceiveInboundPacket(byte[] packet)
