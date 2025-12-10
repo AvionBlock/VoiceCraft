@@ -271,6 +271,54 @@ public class McWssServer(VoiceCraftWorld world)
                 setEntityDescriptionRequestPacket.Deserialize(reader);
                 HandleSetEntityDescriptionRequestPacket(setEntityDescriptionRequestPacket, peer);
                 break;
+            case McApiPacketType.SetEntityWorldIdRequest:
+                var setEntityWorldIdRequestPacket = PacketPool<McApiSetEntityWorldIdRequestPacket>.GetPacket();
+                setEntityWorldIdRequestPacket.Deserialize(reader);
+                HandleSetEntityWorldIdRequestPacket(setEntityWorldIdRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityNameRequest:
+                var setEntityNameRequestPacket = PacketPool<McApiSetEntityNameRequestPacket>.GetPacket();
+                setEntityNameRequestPacket.Deserialize(reader);
+                HandleSetEntityNameRequestPacket(setEntityNameRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityTalkBitmaskRequest:
+                var setEntityTalkBitmaskRequestPacket = PacketPool<McApiSetEntityTalkBitmaskRequestPacket>.GetPacket();
+                setEntityTalkBitmaskRequestPacket.Deserialize(reader);
+                HandleSetEntityTalkBitmaskRequestPacket(setEntityTalkBitmaskRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityListenBitmaskRequest:
+                var setEntityListenBitmaskRequestPacket =
+                    PacketPool<McApiSetEntityListenBitmaskRequestPacket>.GetPacket();
+                setEntityListenBitmaskRequestPacket.Deserialize(reader);
+                HandleSetEntityListenBitmaskRequestPacket(setEntityListenBitmaskRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityEffectBitmaskRequest:
+                var setEntityEffectBitmaskRequestPacket =
+                    PacketPool<McApiSetEntityEffectBitmaskRequestPacket>.GetPacket();
+                setEntityEffectBitmaskRequestPacket.Deserialize(reader);
+                HandleSetEntityEffectBitmaskRequestPacket(setEntityEffectBitmaskRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityPositionRequest:
+                var setEntityPositionRequestPacket = PacketPool<McApiSetEntityPositionRequestPacket>.GetPacket();
+                setEntityPositionRequestPacket.Deserialize(reader);
+                HandleSetEntityPositionRequestPacket(setEntityPositionRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityRotationRequest:
+                var setEntityRotationRequestPacket = PacketPool<McApiSetEntityRotationRequestPacket>.GetPacket();
+                setEntityRotationRequestPacket.Deserialize(reader);
+                HandleSetEntityRotationRequestPacket(setEntityRotationRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityCaveFactorRequest:
+                var setEntityCaveFactorRequestPacket = PacketPool<McApiSetEntityCaveFactorRequestPacket>.GetPacket();
+                setEntityCaveFactorRequestPacket.Deserialize(reader);
+                HandleSetEntityCaveFactorRequestPacket(setEntityCaveFactorRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityMuffleFactorRequest:
+                var setEntityMuffleFactorRequestPacket =
+                    PacketPool<McApiSetEntityMuffleFactorRequestPacket>.GetPacket();
+                setEntityMuffleFactorRequestPacket.Deserialize(reader);
+                HandleSetEntityMuffleFactorRequestPacket(setEntityMuffleFactorRequestPacket, peer);
+                break;
         }
     }
 
@@ -374,6 +422,150 @@ public class McWssServer(VoiceCraftWorld world)
         finally
         {
             PacketPool<McApiSetEntityDescriptionRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityWorldIdRequestPacket(McApiSetEntityWorldIdRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.WorldId = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityWorldIdRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityNameRequestPacket(McApiSetEntityNameRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.Name = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityNameRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityTalkBitmaskRequestPacket(McApiSetEntityTalkBitmaskRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.TalkBitmask = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityTalkBitmaskRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityListenBitmaskRequestPacket(McApiSetEntityListenBitmaskRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.ListenBitmask = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityListenBitmaskRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityEffectBitmaskRequestPacket(McApiSetEntityEffectBitmaskRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.EffectBitmask = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityEffectBitmaskRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityPositionRequestPacket(McApiSetEntityPositionRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.Position = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityPositionRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityRotationRequestPacket(McApiSetEntityRotationRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.Rotation = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityRotationRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityCaveFactorRequestPacket(McApiSetEntityCaveFactorRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.CaveFactor = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityCaveFactorRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityMuffleFactorRequestPacket(McApiSetEntityMuffleFactorRequestPacket packet,
+        McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            entity.MuffleFactor = packet.Value;
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityMuffleFactorRequestPacket>.Return(packet);
         }
     }
 

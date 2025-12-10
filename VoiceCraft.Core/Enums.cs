@@ -60,6 +60,15 @@ namespace VoiceCraft.Core
         PingRequest,
         SetEntityTitleRequest,
         SetEntityDescriptionRequest,
+        SetEntityWorldIdRequest,
+        SetEntityNameRequest,
+        SetEntityTalkBitmaskRequest,
+        SetEntityListenBitmaskRequest,
+        SetEntityEffectBitmaskRequest,
+        SetEntityPositionRequest,
+        SetEntityRotationRequest,
+        SetEntityCaveFactorRequest,
+        SetEntityMuffleFactorRequest,
 
         //Responses
         AcceptResponse,
