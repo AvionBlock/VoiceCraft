@@ -295,7 +295,7 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         if (request.Data.IsNull)
         {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.Forced");
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Kicked");
             return;
         }
 
