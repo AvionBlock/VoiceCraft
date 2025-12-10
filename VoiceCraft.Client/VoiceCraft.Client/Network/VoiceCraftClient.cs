@@ -147,7 +147,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         catch
         {
-            Disconnect("An error occured while trying to connect to the server!");
+            Disconnect("VoiceCraft.DisconnectReason.Error");
         }
         finally
         {
@@ -326,7 +326,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                     OnDisconnected?.Invoke(logoutPacket.Reason);
                     break;
                 case DisconnectReason.DisconnectPeerCalled:
-                    OnDisconnected?.Invoke("Manual Disconnection");
+                    OnDisconnected?.Invoke("VoiceCraft.Client.Manual");
                     return;
             }
 

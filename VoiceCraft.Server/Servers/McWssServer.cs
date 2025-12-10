@@ -424,7 +424,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityDescriptionRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityWorldIdRequestPacket(McApiSetEntityWorldIdRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -440,7 +440,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityWorldIdRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityNameRequestPacket(McApiSetEntityNameRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -456,7 +456,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityNameRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityTalkBitmaskRequestPacket(McApiSetEntityTalkBitmaskRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -472,7 +472,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityTalkBitmaskRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityListenBitmaskRequestPacket(McApiSetEntityListenBitmaskRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -488,7 +488,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityListenBitmaskRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityEffectBitmaskRequestPacket(McApiSetEntityEffectBitmaskRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -504,7 +504,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityEffectBitmaskRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityPositionRequestPacket(McApiSetEntityPositionRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -520,7 +520,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityPositionRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityRotationRequestPacket(McApiSetEntityRotationRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -536,7 +536,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityRotationRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityCaveFactorRequestPacket(McApiSetEntityCaveFactorRequestPacket packet,
         McApiNetPeer netPeer)
     {
@@ -552,7 +552,7 @@ public class McWssServer(VoiceCraftWorld world)
             PacketPool<McApiSetEntityCaveFactorRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityMuffleFactorRequestPacket(McApiSetEntityMuffleFactorRequestPacket packet,
         McApiNetPeer netPeer)
     {

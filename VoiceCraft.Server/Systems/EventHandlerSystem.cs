@@ -123,7 +123,7 @@ public class EventHandlerSystem : IDisposable
         var entityDestroyedPacket = PacketPool<VcOnEntityDestroyedPacket>.GetPacket().Set(entity.Id);
         if (entity is VoiceCraftNetworkEntity networkEntity)
         {
-            _server.DisconnectPeer(networkEntity.NetPeer, "VoiceCraft.DisconnectReason.Forced");
+            _server.DisconnectPeer(networkEntity.NetPeer, "VoiceCraft.DisconnectReason.Kicked");
         }
 
         _server.Broadcast(entityDestroyedPacket);
