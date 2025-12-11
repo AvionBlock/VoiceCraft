@@ -147,22 +147,26 @@ public class EventHandlerSystem : IDisposable
 
     private void OnMcApiPeerConnected(McApiNetPeer peer)
     {
-        //Send Effects
-        /* TODO
-        foreach (var effect in _audioEffectSystem.Effects)
-            _mcWssServer.SendPacket(peer, PacketPool<McApiOn>.GetPacket().Set(effect.Key, effect.Value));
-            */
-
-        //Send other entities.
-        foreach (var entity in _world.Entities)
+        //Guarantee packet order here.
+        _tasks.Enqueue(() =>
         {
-            if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
+            //Send Effects
+            foreach (var effect in _audioEffectSystem.Effects)
                 _mcWssServer.SendPacket(peer,
-                    PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
-            else
-                _mcWssServer.SendPacket(peer,
-                    PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
-        }
+                    PacketPool<McApiOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
+
+
+            //Send other entities.
+            foreach (var entity in _world.Entities)
+            {
+                if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
+                    _mcWssServer.SendPacket(peer,
+                        PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
+                else
+                    _mcWssServer.SendPacket(peer,
+                        PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
+            }
+        });
     }
 
     private void OnMcApiPeerDisconnected(McApiNetPeer peer)
@@ -178,15 +182,16 @@ public class EventHandlerSystem : IDisposable
             _server.SendPacket(entity.NetPeer, PacketPool<VcSetTitleRequestPacket>.GetPacket().Set(title));
         });
     }
-    
+
     private void OnNetworkEntitySetDescription(string description, VoiceCraftNetworkEntity entity)
     {
         _tasks.Enqueue(() =>
         {
-            _server.SendPacket(entity.NetPeer, PacketPool<VcSetDescriptionRequestPacket>.GetPacket().Set(description));
+            _server.SendPacket(entity.NetPeer,
+                PacketPool<VcSetDescriptionRequestPacket>.GetPacket().Set(description));
         });
     }
-    
+
     private void OnEntityWorldIdUpdated(string worldId, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
