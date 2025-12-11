@@ -222,7 +222,14 @@ public class McWssServer(VoiceCraftWorld world)
                         var packets = commandResponsePacket.StatusMessage.Split("|");
                         foreach (var packet in packets)
                         {
-                            peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet));
+                            try
+                            {
+                                peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet));
+                            }
+                            catch
+                            {
+                                //Ignored
+                            }
                         }
                     }
 

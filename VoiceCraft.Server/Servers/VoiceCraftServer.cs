@@ -3,6 +3,7 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.VcPackets;
 using VoiceCraft.Core.Network.VcPackets.Request;
@@ -37,6 +38,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         _audioEffectSystem = audioEffectSystem;
         World = world;
 
+        _audioEffectSystem.SetEffect(ushort.MaxValue, new ProximityEffect() { MaxRange = 30 });
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
