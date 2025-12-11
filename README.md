@@ -1,10 +1,16 @@
 # VoiceCraft Proximity Chat
 
-Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
+Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS (soon), Linux and MacOS 
+(soon).
 
 <p align="center">
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
+
+> [!NOTE]
+> This version of VoiceCraft is still in beta! This is only on the master branch as it is currently the most stable
+> build available and nearing the completion for a full release! If you wish to use the latest stable/legacy v1.0.7
+> version, You can go to the [Latest Stable Release](https://github.com/AvionBlock/VoiceCraft/releases/latest).
 
 > [!WARNING]
 > VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
@@ -38,7 +44,7 @@ audio effects, audio simulations, authentication, and more!
 - ### [Wiki](https://avionblock.github.io/VoiceCraft/)
 - ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
 - ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
-- ### [Geyser Plugin](https://github.com/AvionBlock/GeyserVoice)
+- ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
 - ### [PocketMine Plugin](https://github.com/AvionBlock/VoiceCraft-PocketMine)
 - ### [Docker Package](https://github.com/AvionBlock/VoiceCraft-Docker/pkgs/container/voicecraft)
 - ### [Docker Page](https://hub.docker.com/r/sinevector241/voicecraft/tags)
