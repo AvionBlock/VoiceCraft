@@ -326,7 +326,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                     OnDisconnected?.Invoke(logoutPacket.Reason);
                     break;
                 case DisconnectReason.DisconnectPeerCalled:
-                    OnDisconnected?.Invoke("VoiceCraft.Client.Manual");
+                    OnDisconnected?.Invoke("VoiceCraft.DisconnectReason.Manual");
                     return;
             }
 
