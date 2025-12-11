@@ -58,6 +58,8 @@ namespace VoiceCraft.Core
         LoginRequest,
         LogoutRequest,
         PingRequest,
+        SetEffectRequest,
+        ClearEffectsRequest,
         SetEntityTitleRequest,
         SetEntityDescriptionRequest,
         SetEntityWorldIdRequest,
@@ -76,6 +78,7 @@ namespace VoiceCraft.Core
         PingResponse,
 
         //Events
+        OnEffectUpdated,
         OnEntityCreated,
         OnNetworkEntityCreated,
         OnEntityDestroyed,

@@ -8,13 +8,15 @@ using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Server.Config;
 using Fleck;
+using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.McApiPackets.Response;
 using VoiceCraft.Core.World;
+using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
 
-public class McWssServer(VoiceCraftWorld world)
+public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
     private static readonly Version McWssVersion = new(Constants.Minor, Constants.Major, 0);
 
@@ -22,6 +24,7 @@ public class McWssServer(VoiceCraftWorld world)
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private readonly VoiceCraftWorld _world = world;
+    private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
     private WebSocketServer? _wsServer;
 
     //Public Properties
@@ -267,6 +270,16 @@ public class McWssServer(VoiceCraftWorld world)
                 pingRequestPacket.Deserialize(reader);
                 HandlePingRequestPacket(pingRequestPacket, peer);
                 break;
+            case McApiPacketType.SetEffectRequest:
+                var setEffectRequestPacket = PacketPool<McApiSetEffectRequestPacket>.GetPacket();
+                setEffectRequestPacket.Deserialize(reader);
+                HandleSetEffectRequestPacket(setEffectRequestPacket, peer, reader);
+                break;
+            case McApiPacketType.ClearEffectsRequest:
+                var clearEffectsRequestPacket = PacketPool<McApiClearEffectsRequestPacket>.GetPacket();
+                clearEffectsRequestPacket.Deserialize(reader);
+                HandleClearEffectsRequestPacket(clearEffectsRequestPacket, peer);
+                break;
             case McApiPacketType.SetEntityTitleRequest:
                 var setEntityTitleRequestPacket = PacketPool<McApiSetEntityTitleRequestPacket>.GetPacket();
                 setEntityTitleRequestPacket.Deserialize(reader);
@@ -398,6 +411,71 @@ public class McWssServer(VoiceCraftWorld world)
         finally
         {
             PacketPool<McApiPingRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleSetEffectRequestPacket(McApiSetEffectRequestPacket packet, McApiNetPeer netPeer,
+        NetDataReader reader)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least
+            if (_audioEffectSystem.TryGetEffect(packet.Bitmask, out var effect) &&
+                effect.EffectType == packet.EffectType)
+            {
+                return;
+            }
+
+            switch (packet.EffectType)
+            {
+                case EffectType.Visibility:
+                    var visibilityEffect = new VisibilityEffect();
+                    visibilityEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, visibilityEffect);
+                    break;
+                case EffectType.Proximity:
+                    var proximityEffect = new ProximityEffect();
+                    proximityEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityEffect);
+                    break;
+                case EffectType.Directional:
+                    var directionalEffect = new DirectionalEffect();
+                    directionalEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, directionalEffect);
+                    break;
+                case EffectType.ProximityEcho:
+                    var proximityEchoEffect = new ProximityEchoEffect();
+                    proximityEchoEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityEchoEffect);
+                    break;
+                case EffectType.Echo:
+                    var echoEffect = new EchoEffect();
+                    echoEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, echoEffect);
+                    break;
+                case EffectType.None:
+                    _audioEffectSystem.SetEffect(packet.Bitmask, null);
+                    break;
+                default: //Unknown, We don't do anything.
+                    return;
+            }
+        }
+        finally
+        {
+            PacketPool<McApiSetEffectRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleClearEffectsRequestPacket(McApiClearEffectsRequestPacket packet, McApiNetPeer netPeer)
+    {
+        try
+        {
+            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
+            _audioEffectSystem.ClearEffects();
+        }
+        finally
+        {
+            PacketPool<McApiClearEffectsRequestPacket>.Return(packet);
         }
     }
 
