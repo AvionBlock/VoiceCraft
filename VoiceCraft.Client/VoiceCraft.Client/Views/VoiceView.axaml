@@ -6,7 +6,8 @@
              x:Class="VoiceCraft.Client.Views.VoiceView"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
              xmlns:vmData="clr-namespace:VoiceCraft.Client.ViewModels.Data"
-             x:DataType="vm:VoiceViewModel">
+             x:DataType="vm:VoiceViewModel"
+             xmlns:locale="using:VoiceCraft.Client.Locales">
     <Grid RowDefinitions="Auto, *">
         <Border Grid.Row="0"
                 Padding="0,10,0,10"
@@ -16,11 +17,11 @@
                            VerticalAlignment="Center"
                            FontSize="20"
                            FontWeight="Bold"
-                           Text="{Binding StatusTitleText}"
+                           Text="{locale:Localize {Binding $parent[UserControl].((vm:VoiceViewModel)DataContext).StatusTitleText }}"
                            TextAlignment="Center" />
                 <TextBlock Grid.Row="1"
                            Margin="0,10,0,0"
-                           Text="{Binding StatusDescriptionText}"
+                           Text="{locale:Localize {Binding $parent[UserControl].((vm:VoiceViewModel)DataContext).StatusDescriptionText }}"
                            TextAlignment="Center"
                            IsVisible="{Binding StatusDescriptionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </Grid>

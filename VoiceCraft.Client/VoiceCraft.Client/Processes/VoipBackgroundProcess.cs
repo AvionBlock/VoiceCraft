@@ -78,7 +78,7 @@ public class VoipBackgroundProcess(
     {
         try
         {
-            Title = Locales.Locales.VoiceCraft_Status_Initializing;
+            Title = "VoiceCraft.Status.Initializing";
             var audioSettings = settingsService.AudioSettings;
 
             _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
@@ -130,7 +130,7 @@ public class VoipBackgroundProcess(
             }
 
             _ = _voiceCraftClient.ConnectAsync(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port, locale);
-            Title = Locales.Locales.VoiceCraft_Status_Connecting;
+            Title = "VoiceCraft.Status.Connecting";
 
             var startTime = DateTime.UtcNow;
             while (!_disconnected)
@@ -234,7 +234,7 @@ public class VoipBackgroundProcess(
 
     private void ClientOnConnected()
     {
-        Title = Locales.Locales.VoiceCraft_Status_Connected;
+        Title = "VoiceCraft.Status.Connected";
         OnConnected?.Invoke();
     }
 
