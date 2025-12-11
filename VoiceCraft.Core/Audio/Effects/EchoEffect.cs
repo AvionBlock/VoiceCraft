@@ -18,7 +18,7 @@ namespace VoiceCraft.Core.Audio.Effects
             Feedback = feedback;
         }
 
-        public int SampleRate { get; } = Constants.SampleRate;
+        public int SampleRate => Constants.SampleRate;
         public float Delay
         {
             get => _delay / SampleRate;

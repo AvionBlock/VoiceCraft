@@ -37,7 +37,7 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         _audioEffectSystem = audioEffectSystem;
         World = world;
-
+        
         _audioEffectSystem.SetEffect(ushort.MaxValue, new ProximityEffect() { MaxRange = 30 });
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
