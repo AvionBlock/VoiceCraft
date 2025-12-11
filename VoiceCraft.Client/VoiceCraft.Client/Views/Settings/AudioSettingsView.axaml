@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="vm:Settings.AudioSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.AudioSettingsView">
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{locale:Localize Settings.Audio.Audio}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border VerticalAlignment="Top"
+                    Padding="15"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Audio.InputDevices}" />
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding AudioSettings.InputDevices}"
+                              SelectedItem="{Binding AudioSettings.InputDevice}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Audio.OutputDevices}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding AudioSettings.OutputDevices}"
+                              SelectedItem="{Binding AudioSettings.OutputDevice}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Audio.Denoisers}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding AudioSettings.Denoisers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding AudioSettings.Denoiser}"
+                              SelectedValueBinding="{Binding Id}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Audio.AutomaticGainControllers}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding AudioSettings.AutomaticGainControllers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding AudioSettings.AutomaticGainController}"
+                              SelectedValueBinding="{Binding Id}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Audio.EchoCancelers}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding AudioSettings.EchoCancelers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding AudioSettings.EchoCanceler}"
+                              SelectedValueBinding="{Binding Id}" />
+
+                    <StackPanel>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                       Text="{locale:Localize Settings.Audio.MicrophoneSensitivity}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       Text="{Binding AudioSettings.MicrophoneSensitivity, StringFormat='{} {0:P0}'}" />
+                        </Grid>
+
+                        <Slider Maximum="1.0"
+                                Minimum="0.0"
+                                Value="{Binding AudioSettings.MicrophoneSensitivity}" />
+                    </StackPanel>
+
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="15"
+                                   Text="{locale:Localize Settings.Audio.MicrophoneTest.MicrophoneTest}" />
+
+                        <Grid Margin="0,10,0,0" ColumnDefinitions="Auto, *">
+                            <ToggleButton Grid.Column="0"
+                                          HorizontalAlignment="Stretch"
+                                          Command="{Binding TestRecorderCommand}"
+                                          IsChecked="{Binding IsRecording}">
+                                <TextBlock Text="{locale:Localize Settings.Audio.MicrophoneTest.Test}" />
+                            </ToggleButton>
+                            <ProgressBar Grid.Column="1"
+                                         MinWidth="10"
+                                         Margin="1"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch"
+                                         Maximum="1"
+                                         Minimum="0"
+                                         ShowProgressText="True"
+                                         Value="{Binding MicrophoneValue}"
+                                         Classes.IsDetectingVoice="{Binding DetectingVoiceActivity}">
+                                <ProgressBar.Styles>
+                                    <Style Selector="ProgressBar.IsDetectingVoice">
+                                        <Style.Setters>
+                                            <Setter Property="Background" Value="#AA008800" />
+                                        </Style.Setters>
+                                    </Style>
+                                </ProgressBar.Styles>
+                            </ProgressBar>
+                        </Grid>
+                    </StackPanel>
+
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  Command="{Binding TestPlayerCommand}"
+                                  IsChecked="{Binding IsPlaying}">
+                        <TextBlock Text="{locale:Localize Settings.Audio.TestOutput}" />
+                    </ToggleButton>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

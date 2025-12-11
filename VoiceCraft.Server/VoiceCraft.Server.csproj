@@ -1,14 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VoiceCraft.Network\VoiceCraft.Network.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Fleck" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+        <PackageReference Include="Spectre.Console"/>
+        <PackageReference Include="System.CommandLine"/>
+        <PackageReference Include="Watson.Lite"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Locales\nl-NL.json"/>
+        <EmbeddedResource Include="Locales\en-US.json"/>
+        <EmbeddedResource Include="Locales\zh-CN.json"/>
+        <EmbeddedResource Include="Locales\zh-TW.json"/>
+    </ItemGroup>
 
 </Project>

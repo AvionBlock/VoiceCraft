@@ -1,0 +1,138 @@
+{
+  "Notification": {
+    "Badges": {
+      "Servers": "伺服器",
+      "Error": "錯誤",
+      "GC": "垃圾回收",
+      "VoiceCraft": "VoiceCraft",
+      "CrashLogs": "崩潰日志"
+    }
+  },
+  "Home": {
+    "Servers": "伺服器",
+    "Settings": "設置",
+    "Credits": "製作人員",
+    "CrashLogs": "崩潰日志"
+  },
+  "AddServer": {
+    "AddServer": "添加伺服器",
+    "Name": "伺服器名稱",
+    "IP": "IP地址",
+    "Port": "端口"
+  },
+  "EditServer": {
+    "EditServer": "修改伺服器",
+    "Name": "伺服器名稱",
+    "IP": "IP地址",
+    "Port": "端口"
+  },
+  "Credits": {
+    "AppVersion": "應用版本: {version}",
+    "Version": "版本: {version}",
+    "Codec": "編解碼器: {version}",
+    "Contributors": "貢獻者",
+    "Roles": {
+      "Author": "作者",
+      "Translator": "翻譯者",
+      "Programmer": "程序員"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "常規設置",
+      "Language": "語言",
+      "NotificationDismiss": "通知消失時間(毫秒)",
+      "DisableNotifications": "禁用通知",
+      "HideServerAddresses": "隱藏伺服器地址"
+    },
+    "Appearance": {
+      "Appearance": "外觀設置",
+      "Theme": "主題",
+      "BackgroundImage": "背景圖片"
+    },
+    "Audio": {
+      "Audio": "音頻設置",
+      "AutomaticGainControllers": "自動增益控制器",
+      "Denoisers": "降噪器",
+      "EchoCancelers": "回聲消除器",
+      "InputDevices": "輸入設備",
+      "MicrophoneSensitivity": "麥克風靈敏度",
+      "OutputDevices": "輸出設備",
+      "TestOutput": "測試輸出",
+      "MicrophoneTest": {
+        "MicrophoneTest": "麥克風測試",
+        "Test": "測試"
+      }
+    },
+    "Network": {
+      "Network": "網路設置",
+      "McWssHostPort": "MCWSS主機端口"
+    },
+    "HotKey": {
+      "HotKey": null,
+      "Actions": {
+        "Mute": null,
+        "Deafen": null
+      }
+    },
+    "Advanced": {
+      "Advanced": "高級設置",
+      "TriggerGc": "觸發垃圾回收",
+      "Crash": "測試崩潰"
+    }
+  },
+  "SelectedServer": {
+    "Address": "地址",
+    "PingInformation": "Ping信息",
+    "Connect": "連接",
+    "Edit": "編輯伺服器",
+    "Delete": "刪除伺服器",
+    "ServerInfo": {
+      "ServerInfo": "伺服器信息",
+      "Status": {
+        "Latency": "延遲: {latency}",
+        "Motd": "Motd: {motd}",
+        "PositioningType": "定位類型: {positioningType}",
+        "ConnectedClients": "已連接客戶端: {connectedClients}",
+        "Pinging": "正在Ping..."
+      }
+    }
+  },
+  "Audio": {
+    "Recorder": {
+      "InitFailed": "錄音器初始化失敗！",
+      "Init": "錄音器未初始化！"
+    },
+    "Player": {
+      "InitFailed": "播放器初始化失敗！",
+      "Init": "播放器未初始化！"
+    },
+    "AEC": {
+      "InitFailed": "回聲消除器初始化失敗！",
+      "Init": "回聲消除器未初始化！"
+    },
+    "AGC": {
+      "InitFailed": "增益控制器初始化失敗！",
+      "Init": "增益控制器未初始化！"
+    },
+    "DN": {
+      "InitFailed": "降噪器初始化失敗！",
+      "Init": "降噪器未初始化！"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "正在初始化...",
+      "Connecting": "正在連接...",
+      "Connected": "已連接！",
+      "Disconnected": "已斷開連接！原因: {reason}"
+    },
+    "DisconnectReason": {
+      "Shutdown": null,
+      "Forced": null,
+      "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
+      "ServerFull": "伺服器已滿！",
+      "Error": "嘗試登錄時發生錯誤！"
+    }
+  }
+}

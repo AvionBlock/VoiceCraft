@@ -18,8 +18,9 @@ Steps to reproduce the behavior:
 If applicable, add screenshots to help explain your problem.
 
 **Platform (please complete the following information):**
- - OS: [e.g. Android]
- - Version [e.g. v1.0.0]
+
+- OS: [e.g. Android]
+- Version [e.g. v1.0.0]
 
 **Additional context**
 Add any other context about the problem here.

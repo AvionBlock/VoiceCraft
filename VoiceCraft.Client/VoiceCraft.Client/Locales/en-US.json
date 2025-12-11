@@ -1,0 +1,139 @@
+{
+  "Notification": {
+    "Badges": {
+      "Servers": "Servers",
+      "Error": "Error",
+      "GC": "GC",
+      "VoiceCraft": "VoiceCraft",
+      "CrashLogs": "CrashLogs"
+    }
+  },
+  "Home": {
+    "Servers": "Servers",
+    "Settings": "Settings",
+    "Credits": "Credits",
+    "CrashLogs": "Crash Logs"
+  },
+  "AddServer": {
+    "AddServer": "Add Server",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port"
+  },
+  "EditServer": {
+    "EditServer": "Edit Server",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port"
+  },
+  "Credits": {
+    "AppVersion": "App Version: {version}",
+    "Version": "Version: {version}",
+    "Codec": "Codec: {version}",
+    "Contributors": "Contributors",
+    "Roles": {
+      "Author": "Author",
+      "Translator": "Translator",
+      "Programmer": "Programmer"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "General Settings",
+      "Language": "Language",
+      "NotificationDismiss": "Notification Dismiss(ms)",
+      "DisableNotifications": "Disable Notifications",
+      "HideServerAddresses": "Hide Server Addresses"
+    },
+    "Appearance": {
+      "Appearance": "Appearance",
+      "Theme": "Theme",
+      "BackgroundImage": "Background Image"
+    },
+    "Audio": {
+      "Audio": "Audio Settings",
+      "AutomaticGainControllers": "Automatic Gain Controllers",
+      "Denoisers": "Denoisers",
+      "EchoCancelers": "Echo Cancelers",
+      "InputDevices": "Input Devices",
+      "MicrophoneSensitivity": "Microphone Sensitivity",
+      "OutputDevices": "Output Devices",
+      "TestOutput": "Test Output",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Microphone Test",
+        "Test": "Test"
+      }
+    },
+    "Network": {
+      "Network": "Network Settings",
+      "McWssHostPort": "MCWSS Host Port"
+    },
+    "HotKey": {
+      "HotKey": "HotKey",
+      "Actions": {
+        "Mute": "Mute",
+        "Deafen": "Deafen"
+      }
+    },
+    "Advanced": {
+      "Advanced": "Advanced Settings",
+      "TriggerGc": "Trigger Garbage Collector",
+      "Crash": "Test Crash"
+    }
+  },
+  "SelectedServer": {
+    "Address": "Address",
+    "PingInformation": "Ping Information",
+    "Connect": "Connect",
+    "Edit": "Edit Server",
+    "Delete": "Delete Server",
+    "ServerInfo": {
+      "ServerInfo": "Server Info",
+      "Status": {
+        "Latency": "Latency: {latency}",
+        "Motd": "Motd: {motd}",
+        "PositioningType": "Positioning Type: {positioningType}",
+        "ConnectedClients": "Connected Clients: {connectedClients}",
+        "Pinging": "Pinging..."
+      }
+    }
+  },
+  "Audio": {
+    "Recorder": {
+      "InitFailed": "Recorder failed to initialize!",
+      "Init": "Recorder is not initialized!"
+    },
+    "Player": {
+      "InitFailed": "Player failed to initialize!",
+      "Init": "Player is not initialized!"
+    },
+    "AEC": {
+      "InitFailed": "Echo canceler failed to initialize!",
+      "Init": "Echo canceler is not initialized!"
+    },
+    "AGC": {
+      "InitFailed": "Gain controller failed to initialize!",
+      "Init": "Gain controller is not initialized!"
+    },
+    "DN": {
+      "InitFailed": "Denoiser failed to initialize!",
+      "Init": "Denoiser is not initialized!"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "Initializing...",
+      "Connecting": "Connecting...",
+      "Connected": "Connected!",
+      "Disconnected": "Disconnected! Reason: {reason}"
+    },
+    "DisconnectReason": {
+      "Manual": "Manual Disconnection.",
+      "ServerFull": "Server is full!",
+      "IncompatibleVersion": "Incompatible client/server version!",
+      "Kicked": "Kicked!",
+      "Shutdown": "Server shutdown!",
+      "Error": "An error occurred while trying to connect!"
+    }
+  }
+}

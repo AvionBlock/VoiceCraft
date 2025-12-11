@@ -1,0 +1,29 @@
+<Styles x:Class="VoiceCraft.Client.Themes.Light.Styles" xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    </Style>
+
+    <Style Selector="Expander">
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style Selector="Border.card">
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+    </Style>
+
+    <Style Selector="Border.tag">
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundTagBrush}" />
+    </Style>
+
+    <Style Selector="Image.background">
+        <Setter Property="Opacity" Value="150" />
+    </Style>
+</Styles>

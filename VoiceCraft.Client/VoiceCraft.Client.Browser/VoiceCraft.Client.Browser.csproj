@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+    <PropertyGroup>
+        <TargetFramework>net9.0-browser</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Browser"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <NativeFileReference Include="opus.a"/>
+    </ItemGroup>
+</Project>

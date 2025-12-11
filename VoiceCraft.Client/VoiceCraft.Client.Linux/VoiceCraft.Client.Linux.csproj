@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
+        One for Windows with net9.0-windows TFM, one for MacOS with net9.0-macos and one with net9.0 TFM for Linux.-->
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <TrimMode>link</TrimMode>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop"/>
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Include="Avalonia.Diagnostics">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="OpenTK.Audio.OpenAL"/>
+        <PackageReference Include="SharpHook"/>
+        <PackageReference Include="SpeexDSPSharp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+    </ItemGroup>
+</Project>

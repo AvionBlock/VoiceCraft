@@ -1,0 +1,70 @@
+<UserControl x:Class="VoiceCraft.Client.Views.Home.CreditsView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             x:DataType="vm:CreditsViewModel"
+             mc:Ignorable="d">
+    <ScrollViewer>
+        <Border Padding="15"
+                VerticalAlignment="Top"
+                Classes="card">
+            <StackPanel Spacing="10">
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding AppVersion }" />
+
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Version}" />
+
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Codec}" />
+
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{locale:Localize Credits.Contributors}" />
+
+                <ListBox Background="Transparent"
+                         ItemsSource="{Binding Contributors}"
+                         IsHitTestVisible="False">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel Orientation="Horizontal">
+                                <Image VerticalAlignment="Center"
+                                       Source="{Binding ImageIcon}"
+                                       Height="50" />
+
+                                <TextBlock FontSize="16"
+                                           FontWeight="Bold"
+                                           VerticalAlignment="Center"
+                                           Text="{Binding Name, StringFormat='{} {0}:'}" />
+
+                                <ListBox ItemsSource="{Binding Roles}"
+                                         Background="Transparent"
+                                         VerticalAlignment="Center">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Classes="tag" Padding="5">
+                                                <TextBlock Text="{locale:Localize {Binding}}" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Padding" Value="3" />
+                                        </Style>
+                                    </ListBox.Styles>
+                                </ListBox>
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+        </Border>
+    </ScrollViewer>
+</UserControl>

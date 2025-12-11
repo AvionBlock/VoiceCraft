@@ -1,0 +1,12 @@
+- name: Introduction
+  href: introduction.md
+- name: Client Installation
+  href: client_installation/
+- name: Server Installation
+  href: server_installation/
+- name: Server Properties
+  href: server_properties.md
+- name: VoiceCraft Protocol
+  href: voicecraft_protocol.md
+- name: MCComm Protocol
+  href: mccomm_protocol.md

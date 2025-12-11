@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0-android</TargetFramework>
+        <MinimumRequiredVersion>21</MinimumRequiredVersion>
+        <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+        <TargetPlatformVersion>35</TargetPlatformVersion>
+        <Nullable>enable</Nullable>
+        <ApplicationId>com.AvionBlock.VoiceCraft.Client</ApplicationId>
+        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+        <RunAOTCompilation>true</RunAOTCompilation>
+
+        <TrimMode>link</TrimMode>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AndroidResource Include="Icon.png">
+            <Link>Resources\drawable\Icon.png</Link>
+        </AndroidResource>
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$([MSBuild]::IsOSUnixLike())' == 'true'">
+        <AndroidSDKDirectory>$(HOME)/Android/Sdk</AndroidSDKDirectory>
+        <JavaSdkDirectory>$(HOME)/.jdk-21.0.9+10/</JavaSdkDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Android"/>
+        <PackageReference Include="SpeexDSPSharp"/>
+        <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+    </ItemGroup>
+</Project>

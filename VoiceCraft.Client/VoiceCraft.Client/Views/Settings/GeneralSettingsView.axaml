@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="vm:Settings.GeneralSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.GeneralSettingsView">
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{locale:Localize Settings.General.General}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border VerticalAlignment="Top"
+                    Padding="15"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.General.Language}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Locales}"
+                              DisplayMemberBinding="{Binding Key}"
+                              SelectedValue="{Binding LocaleSettings.Culture}"
+                              SelectedValueBinding="{Binding Value}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.General.NotificationDismiss}" />
+
+                    <NumericUpDown Increment="1"
+                                   Maximum="65535"
+                                   Minimum="0"
+                                   Value="{Binding NotificationSettings.DismissDelayMs}" />
+
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding ServersSettings.HideServerAddresses}">
+                        <TextBlock Text="{locale:Localize Settings.General.HideServerAddresses}" />
+                    </ToggleButton>
+
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding NotificationSettings.DisableNotifications}">
+                        <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
+                    </ToggleButton>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

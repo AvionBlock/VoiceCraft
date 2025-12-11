@@ -1,27 +1,49 @@
 # VoiceCraft Proximity Chat
 
-Proximity voice chat for Minecraft Bedrock Edition supporting Windows and Android.
+Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS (soon), Linux and MacOS
+(soon).
 
 <p align="center">
-  <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Maui/Resources/AppIcon/vc.png"/>
+  <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
 > [!WARNING]
-> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE ADDON/WORLD!
-
-> [!NOTE]
-> THIS VERSION DOES NOT REQUIRE THE USE OF DISCORD OR ANY THIRD PARTY VC SOFTWARE. EVERYTHING IS BUILT-IN AND WORKS WITH THE VANILLA BDS SOFTWARE.
+> VOICECRAFT IS UNDERGOING A MASSIVE CHANGE! This version of VoiceCraft is still in beta! This is only on the master
+> branch as it is currently the most stable
+> build available and nearing the completion for a full release! If you wish to use the latest stable/legacy v1.0.7
+> version, You can go to the [Latest Stable Release](https://github.com/AvionBlock/VoiceCraft/releases/latest).
 
 > [!WARNING]
-> For Windows users. since it has been more than 6 months since v1.0.7 released, the certificate expired meaning that to install the application properly, you will need to turn back the time on your device. We are working hard on v1.1.0 to resolve this issue. If you wish to help speedup the development then please join the discord to talk to me directly for guidance.
+> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
+> ADDON/WORLD! It is a collection of both addons, servers and client software working together in order to simulate
+> proximity chat.
+
+> [!NOTE]
+> VoiceCraft is also not a standard voice chat that comes with groups or channels. It is designed to be customized
+> through the api allowing recreation of channels, proximity, effects and more through the session based Addon API. This
+> is essentially up to the server owner to install or add-on developer to implement.
 
 ## Project Description
-VoiceCraft proximity chat is a VOIP program developed on .NET 8.0 MAUI framework and .NET 8.0 Console, started by SineVector241, this project enables Voice Proximity chat for the game Minecraft on the bedrock platform which gives a more immersive, communicative experience. This project will also expand into supporting more platforms such as IOS and MAC devices. This project only allows for a self-hosted framework giving the owners more control on how they want it to be setup however the project may also expand into allowing multiple server instances on a single server that does not require a self-hosted framework and allows other users to host for other Minecraft server owners.
 
-![Voice](./Images/VC.png)
+VoiceCraft is a cross-platform proximity voice chat solution for minecraft bedrock edition. VoiceCraft supports a wide
+range of devices to increase its availability to players and can indirectly support any other devices such as consoles
+through the standard binding system.
 
-## Packages & Resources
-- ### [Wiki](https://avionblock.github.io/VoiceCraft/v1.0.7/introduction.html)
+VoiceCraft is developed in C# for both the server and client application which uses the avalonia framework and uses an
+addon developed in JavaScript to establish a connection to the vanilla minecraft server.
+VoiceCraft also uses the opus codec for audio data compression and SpeexDSP for voice enhancements with optional support
+for hardware related preprocessors on android devices.
+
+There is also a comprehensive API system in place that addon developer's can use to customize VoiceCraft's behavior,
+audio effects, audio simulations, authentication, and more!
+
+<p align="center">
+  <img width="800" src="./Images/MainPage.png">
+</p>
+
+## Packages, Guides And Resources
+
+- ### [Wiki](https://avionblock.github.io/VoiceCraft/)
 - ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
 - ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
 - ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
@@ -34,36 +56,47 @@ VoiceCraft proximity chat is a VOIP program developed on .NET 8.0 MAUI framework
 - ✅ Fully and natively supported.
 - ❎ Can be supported but no reason to.
 - ❗ Unknown status (limited support)
-- ❌ Not supported.
+- ❌ Not planned, Not supported.
 
 | Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
-|-------------|--|--|----|--|---------------|
-| Linux       | ❌ | ❌ | ❌   | ❌ | N.A.          |
-| Android     | ❌ | ❌ | ✅  | ✅ | Android API   |
-| Windows     | ✅ | ❌ | ❌  | ❌ | WinMM         |
-| iOS         | ❌ | ❌ | ❌   | ❌ | N.A.          |
-| MacOS       | ❌ | ❌ | ❌  | ❌ | N.A.          |
-| Web         | ❌ | ❌ | ❌   | ❌ | N.A.          |
-| XBOX        | ❌ | ❌ | ❌  | ❌ | N.A.          |
-| PlayStation | ❌ | ❌ | ❌  | ❌ | N.A.          |
-| Switch      | ❌ | ❌ | ❌  | ❌ | N.A.          |
-
-## Test Server
-Every weekend, there is a test server that will open for the full weekend (AUS/AEST time). The test server is public to everyone, allowing anyone to connect with minecraft and voicecraft to test it out. There will also occasionally be v1.1.0 tests that will also open on the server when builds are ready to be tested.
-
-If you wish to participate in these tests, use the Ip and Port below:
-
-### Minecraft
-- IP: mcvc.avion.team
-- Port: 19132
-
-### VoiceCraft
-- IP: mcvc.avion.team
-- Port: 9050
+|-------------|-----|-----|-------|-------|---------------|
+| Linux       | ✅   | ❌   | ✅     | ✅     | OpenAL        |
+| Android     | ❎   | ❎   | ✅     | ✅     | Android API   |
+| Windows     | ✅   | ✅   | ❌     | ✅     | WinMM         |
+| iOS         | ❌   | ❌   | ✅     | ✅     | N.A.          |
+| MacOS       | ✅   | ❌   | ❌     | ✅     | N.A.          |
+| Web         | ❗   | ❗   | ❗     | ❗     | Web API       |
+| XBOX        | ❌   | ❌   | ❌     | ❌     | N.A.          |
+| PlayStation | ❌   | ❌   | ❌     | ❌     | N.A.          |
+| Switch      | ❌   | ❌   | ❌     | ❌     | N.A.          |
 
 ## Hosts
 
 - Atrioxhosting €0.44/m: https://atrioxhost.com/voicecraft
 
-## Discord Server
-[![Discord Shield](https://discordapp.com/api/guilds/847396393068265472/widget.png?style=shield)](https://discord.gg/fJGsRY5hh9)
+## Project Dependencies
+
+> [!NOTE]
+> All dotnet and microsoft extension packages aren't listed. If you wish to view all dependencies, You can look at
+> the [Directory.Packages.props](./Directory.Packages.props) file.
+
+### All Projects
+
+- [Avalonia](https://github.com/AvaloniaUI/Avalonia)
+- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
+
+### Client
+
+- [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
+- [OpusSharp](https://github.com/AvionBlock/OpusSharp)
+- [Message.Avalonia](https://github.com/xiyaowong/Message.Avalonia)
+- [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
+- [NAudio](https://github.com/naudio/NAudio)
+- [OpenTK (OpenAL)](https://github.com/opentk/opentk)
+- [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
+
+### Server
+
+- [WatsonWebsocket](https://github.com/jchristn/WatsonWebsocket)
+- [Watson.Lite](https://github.com/dotnet/WatsonWebserver)
+- [Spectre.Console](https://github.com/spectreconsole/spectre.console)

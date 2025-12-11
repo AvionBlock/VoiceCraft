@@ -2,7 +2,7 @@ name: Repository Dispatch Docker
 
 on:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
   dispatch:

@@ -1,0 +1,138 @@
+{
+  "Notification": {
+    "Badges": {
+      "Servers": "Servers",
+      "Error": "Fout",
+      "GC": "GC",
+      "VoiceCraft": "VoiceCraft",
+      "CrashLogs": "CrashLogs"
+    }
+  },
+  "Home": {
+    "Servers": "Servers",
+    "Settings": "Instellingen",
+    "Credits": "Credits",
+    "CrashLogs": "Crashlogboeken"
+  },
+  "AddServer": {
+    "AddServer": "Server toevoegen",
+    "Name": "Naam",
+    "IP": "IP",
+    "Port": "Poort"
+  },
+  "EditServer": {
+    "EditServer": "Server bewerken",
+    "Name": "Naam",
+    "IP": "IP",
+    "Port": "Poort"
+  },
+  "Credits": {
+    "AppVersion": "App Versie: {version}",
+    "Version": "Versie: {version}",
+    "Codec": "Codec: {version}",
+    "Contributors": "Bijdragers",
+    "Roles": {
+      "Author": "Auteur",
+      "Translator": "Vertaler",
+      "Programmer": "Programmeur"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "Algemene Instellingen",
+      "Language": "Taal",
+      "NotificationDismiss": "Meldingen afwijzen(ms)",
+      "DisableNotifications": "Notificaties uitschakelen",
+      "HideServerAddresses": "Serveradressen verbergen"
+    },
+    "Appearance": {
+      "Appearance": "Uiterlijk",
+      "Theme": "Thema",
+      "BackgroundImage": "Achtergrondafbeelding"
+    },
+    "Audio": {
+      "Audio": "Audio Instellingen",
+      "AutomaticGainControllers": "Automatische versterkingsregelaars",
+      "Denoisers": "Ruis-onderdrukkers",
+      "EchoCancelers": "Echo-onderdrukkers",
+      "InputDevices": "Invoerapparaten",
+      "MicrophoneSensitivity": "Microfoon gevoeligheid",
+      "OutputDevices": "Uitvoerapparaten",
+      "TestOutput": "Uitvoer testen",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Microfoon Test",
+        "Test": "Test"
+      }
+    },
+    "Network": {
+      "Network": "Netwerk Instellingen",
+      "McWssHostPort": "MCWSS host poort"
+    },
+    "HotKey": {
+      "HotKey": null,
+      "Actions": {
+        "Mute": null,
+        "Deafen": null
+      }
+    },
+    "Advanced": {
+      "Advanced": "Geavanceerde instellingen",
+      "TriggerGc": "Trigger Garbage Collector",
+      "Crash": "Test Crash"
+    }
+  },
+  "SelectedServer": {
+    "Address": "Adres",
+    "PingInformation": "Ping informatie",
+    "Connect": "Verbind",
+    "Edit": "Bewerk server",
+    "Delete": "Verwijder server",
+    "ServerInfo": {
+      "ServerInfo": "Server info",
+      "Status": {
+        "Latency": "Latentie: {latency}",
+        "Motd": "Motd: {motd}",
+        "PositioningType": "Positioneringstype: {positioningType}",
+        "ConnectedClients": "Verbonden clients: {connectedClients}",
+        "Pinging": "Pingen..."
+      }
+    }
+  },
+  "Audio": {
+    "Recorder": {
+      "InitFailed": "Recorder kan niet worden geïnitialiseerd!",
+      "Init": "Recorder is niet geïnitialiseerd!"
+    },
+    "Player": {
+      "InitFailed": "Audiospeler kan niet worden geïnitialiseerd!",
+      "Init": "Audiospeler is niet geïnitialiseerd!"
+    },
+    "AEC": {
+      "InitFailed": "Echo-onderdrukker kan niet worden geïnitialiseerd!",
+      "Init": "Echo-onderdrukker is niet geïnitialiseerd!"
+    },
+    "AGC": {
+      "InitFailed": "Gain-controller kan niet worden geïnitialiseerd!",
+      "Init": "Gain-controller is niet geïnitialiseerd!"
+    },
+    "DN": {
+      "InitFailed": "Denoiser kan niet worden geïnitialiseerd!",
+      "Init": "Denoiser is niet geïnitialiseerd!"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "Initialiseren...",
+      "Connecting": "Verbinden...",
+      "Connected": "Verbonden!",
+      "Disconnected": "Verbinding verbroken! Reden: {reason}"
+    },
+    "DisconnectReason": {
+      "Shutdown": null,
+      "Forced": null,
+      "IncompatibleVersion": "Incompatibele client/server versie!",
+      "ServerFull": "Server is vol!",
+      "Error": "Er is een fout opgetreden bij het inloggen!"
+    }
+  }
+}

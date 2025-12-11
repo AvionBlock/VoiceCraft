@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <Nullable>enable</Nullable>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NAudio.Core" Version="2.2.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OpusSharp.Core" Version="1.0.4" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="LiteNetLib"/>
+        <PackageReference Include="System.ComponentModel.Annotations"/>
+        <PackageReference Include="System.Text.Json"/>
+    </ItemGroup>
 </Project>

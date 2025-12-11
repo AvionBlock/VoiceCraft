@@ -1,0 +1,103 @@
+<UserControl x:Class="VoiceCraft.Client.Views.SelectedServerView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             x:DataType="vm:SelectedServerViewModel"
+             mc:Ignorable="d">
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{Binding SelectedServer.Name, FallbackValue='N.A'}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+            </Button>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border Padding="15"
+                    VerticalAlignment="Top"
+                    Classes="card">
+                <StackPanel Spacing="5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Text="{locale:Localize 'SelectedServer.Address'}" />
+                        <TextBlock VerticalAlignment="Center" FontSize="15"
+                                   Classes.ShowAddress="{Binding !ServersSettings.HideServerAddresses}"
+                                   Classes.HideAddress="{Binding ServersSettings.HideServerAddresses}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.ShowAddress">
+                                    <Setter Property="Text">
+                                        <Setter.Value>
+                                            <MultiBinding StringFormat="{}: {0}:{1}">
+                                                <Binding Path="SelectedServer.Ip" FallbackValue="N.A" />
+                                                <Binding Path="SelectedServer.Port" FallbackValue="N.A" />
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+
+                                <Style Selector="TextBlock.HideAddress">
+                                    <Setter Property="Text" Value=": ****:****" />
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <TextBlock Margin="0,10,0,0"
+                               VerticalAlignment="Center"
+                               FontSize="17"
+                               FontWeight="Bold"
+                               Text="{locale:Localize 'SelectedServer.PingInformation'}" />
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding Latency}" />
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding Motd}" />
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding PositioningType}" />
+
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{Binding ConnectedClients}" />
+
+                    <Button Background="#AA008800"
+                            Command="{Binding ConnectCommand}"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize 'SelectedServer.Connect'}" />
+                    </Button>
+                    <Button Command="{Binding EditServerCommand}"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize 'SelectedServer.Edit'}" />
+                    </Button>
+                    <Button Command="{Binding DeleteServerCommand}"
+                            HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize 'SelectedServer.Delete'}" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
