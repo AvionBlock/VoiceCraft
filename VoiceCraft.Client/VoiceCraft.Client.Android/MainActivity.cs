@@ -94,12 +94,27 @@ public class MainActivity : AvaloniaMainActivity<App>
             typeof(SpeexDspDenoiser)));
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+        App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
         App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Permissions.Microphone>();
 
         Platform.Init(this, app);
         base.OnCreate(app);
+    }
+
+    protected override void OnDestroy()
+    {
+        try
+        {
+            if (App.ServiceProvider == null) return;
+            var serviceProvider = App.ServiceProvider;
+            serviceProvider.Dispose();
+        }
+        finally
+        {
+            base.OnDestroy();
+        }
     }
 
     private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
