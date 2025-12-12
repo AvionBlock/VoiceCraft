@@ -3,6 +3,7 @@ using System.Threading;
 using NAudio.Wave;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using PlaybackState = VoiceCraft.Core.PlaybackState;
 
 namespace VoiceCraft.Client.Windows.Audio;
@@ -96,7 +97,7 @@ public class AudioPlayer : IAudioPlayer
             ThrowIfDisposed();
 
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous player.
             CleanupPlayer();
@@ -247,7 +248,7 @@ public class AudioPlayer : IAudioPlayer
     private void ThrowIfNotInitialized()
     {
         if (_nativePlayer == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)

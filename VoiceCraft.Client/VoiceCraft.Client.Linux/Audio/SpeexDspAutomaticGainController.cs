@@ -1,6 +1,7 @@
 using System;
 using SpeexDSPSharp.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux.Audio;
 
@@ -15,7 +16,7 @@ public class SpeexDspAutomaticGainController : IAutomaticGainController
         ThrowIfDisposed();
 
         if (recorder.Channels != 1)
-            throw new InvalidOperationException(Locales.Locales.Audio_AGC_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.AGC.InitFailed"));
 
         CleanupGainController();
 
@@ -71,7 +72,7 @@ public class SpeexDspAutomaticGainController : IAutomaticGainController
     private void ThrowIfNotInitialized()
     {
         if (_gainController == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_AGC_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.AGC.InitFailed"));
     }
 
     private void Dispose(bool disposing)

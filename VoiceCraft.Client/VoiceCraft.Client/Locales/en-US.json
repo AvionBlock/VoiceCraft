@@ -27,9 +27,9 @@
     "Port": "Port"
   },
   "Credits": {
-    "AppVersion": "App Version: {version}",
-    "Version": "Version: {version}",
-    "Codec": "Codec: {version}",
+    "AppVersion": "App Version: {0}",
+    "Version": "Version: {0}",
+    "Codec": "Codec: {0}",
     "Contributors": "Contributors",
     "Roles": {
       "Author": "Author",
@@ -90,10 +90,10 @@
     "ServerInfo": {
       "ServerInfo": "Server Info",
       "Status": {
-        "Latency": "Latency: {latency}",
-        "Motd": "Motd: {motd}",
-        "PositioningType": "Positioning Type: {positioningType}",
-        "ConnectedClients": "Connected Clients: {connectedClients}",
+        "Latency": "Latency: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "Positioning Type: {0}",
+        "ConnectedClients": "Connected Clients: {0}",
         "Pinging": "Pinging..."
       }
     }
@@ -125,7 +125,7 @@
       "Initializing": "Initializing...",
       "Connecting": "Connecting...",
       "Connected": "Connected!",
-      "Disconnected": "Disconnected! Reason: {reason}"
+      "Disconnected": "Disconnected! Reason: {0}"
     },
     "DisconnectReason": {
       "Manual": "Manual Disconnection.",

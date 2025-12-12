@@ -160,11 +160,10 @@ public class VoipBackgroundProcess(
         {
             HasEnded = true;
             OnDisconnected?.Invoke();
-            var localeReason =
-                $"{Locales.Locales.VoiceCraft_Status_Disconnected.Replace("{reason}", Localizer.Get(_disconnectReason))}";
+            var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{_disconnectReason}");
             Title = localeReason;
             Description = localeReason;
-            notificationService.SendNotification(localeReason, Locales.Locales.Notification_Badges_VoiceCraft);
+            notificationService.SendNotification(localeReason, Localizer.Get("Notification.Badges.VoiceCraft"));
 
             if (_audioRecorder != null)
             {

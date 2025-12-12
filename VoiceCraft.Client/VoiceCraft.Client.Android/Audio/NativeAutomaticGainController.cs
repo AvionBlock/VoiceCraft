@@ -1,6 +1,7 @@
 using System;
 using Android.Media.Audiofx;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Android.Audio;
 
@@ -16,13 +17,13 @@ public class NativeAutomaticGainController : IAutomaticGainController
         ThrowIfDisposed();
 
         if (recorder is not AudioRecorder audioRecorder)
-            throw new InvalidOperationException(Locales.Locales.Audio_AGC_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.AGC.InitFailed"));
 
         CleanupGainController();
         _gainController = AutomaticGainControl.Create(audioRecorder.SessionId);
 
         if (_gainController == null || _gainController.SetEnabled(true) != AudioEffectStatus.Success)
-            throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.AGC.InitFailed"));
     }
 
     public void Process(byte[] buffer)
@@ -63,7 +64,7 @@ public class NativeAutomaticGainController : IAutomaticGainController
     private void ThrowIfNotInitialized()
     {
         if (_gainController == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_AGC_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.AGC.Init"));
     }
 
     private void Dispose(bool disposing)

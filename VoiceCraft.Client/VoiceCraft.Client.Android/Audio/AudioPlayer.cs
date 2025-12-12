@@ -4,6 +4,7 @@ using System.Threading;
 using Android.Media;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using AudioFormat = Android.Media.AudioFormat;
 
 namespace VoiceCraft.Client.Android.Audio;
@@ -38,7 +39,8 @@ public class AudioPlayer : IAudioPlayer
 
     public AudioContentType ContentType { get; set; } = AudioContentType.Music;
 
-    public int SessionId => _nativePlayer?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+    public int SessionId => _nativePlayer?.AudioSessionId ??
+                            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
 
     //Public Properties
     public int SampleRate
@@ -47,7 +49,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Sample rate must be greater than or equal to zero!");
 
             _sampleRate = value;
         }
@@ -59,7 +62,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 1)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Channels must be greater than or equal to one!");
 
             _channels = value;
         }
@@ -87,7 +91,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Buffer milliseconds must be greater than or equal to zero!");
 
             _bufferMilliseconds = value;
         }
@@ -110,7 +115,7 @@ public class AudioPlayer : IAudioPlayer
 
             //Check if already playing.
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous player.
             CleanupPlayer();
@@ -132,37 +137,41 @@ public class AudioPlayer : IAudioPlayer
                 2 => ChannelOut.Stereo,
                 _ => throw new NotSupportedException()
             };
-            
+
             //Determine the buffer size
             var blockAlign = Channels * (BitDepth / 8);
             var bytesPerSecond = _sampleRate * blockAlign;
 
             var audioAttributes = new AudioAttributes.Builder().SetUsage(Usage)?.SetContentType(ContentType)?.Build();
-            var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)?.SetSampleRate(SampleRate)?.SetChannelMask(channelMask).Build();
+            var audioFormat = new AudioFormat.Builder().SetEncoding(encoding)?.SetSampleRate(SampleRate)
+                ?.SetChannelMask(channelMask).Build();
 
             if (audioAttributes == null || audioFormat == null)
                 throw new InvalidOperationException();
 
             //Calculate total buffer bytes.
             var totalBufferBytes = (int)(bytesPerSecond / 1000.0 * BufferMilliseconds);
-            if (totalBufferBytes % blockAlign != 0) totalBufferBytes = totalBufferBytes + blockAlign - totalBufferBytes % blockAlign;
-            totalBufferBytes = Math.Max(totalBufferBytes, AudioTrack.GetMinBufferSize(SampleRate, channelMask, encoding));
+            if (totalBufferBytes % blockAlign != 0)
+                totalBufferBytes = totalBufferBytes + blockAlign - totalBufferBytes % blockAlign;
+            totalBufferBytes = Math.Max(totalBufferBytes,
+                AudioTrack.GetMinBufferSize(SampleRate, channelMask, encoding));
 
             _nativePlayer = new AudioTrack.Builder().SetAudioAttributes(audioAttributes).SetAudioFormat(audioFormat)
                 .SetBufferSizeInBytes(totalBufferBytes).SetTransferMode(AudioTrackMode.Stream).Build();
-            
+
             _bufferBytes = (_nativePlayer.BufferSizeInFrames + NumberOfBuffers - 1) / NumberOfBuffers * blockAlign;
             _bufferBytes = (_bufferBytes + 3) & ~3;
             _byteBuffer = new byte[_bufferBytes];
             _shortBuffer = new short[_bufferBytes / sizeof(short)];
             _floatBuffer = new float[_bufferBytes / sizeof(float)];
-            
+
             if (_nativePlayer.State != AudioTrackState.Initialized)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             _nativePlayer.SetVolume(1.0f);
             var selectedDevice = _audioManager.GetDevices(GetDevicesTargets.Outputs)
-                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
+                ?.FirstOrDefault(x =>
+                    x.ProductName != null && $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
             _nativePlayer.SetPreferredDevice(selectedDevice);
         }
         catch
@@ -295,7 +304,7 @@ public class AudioPlayer : IAudioPlayer
     private void ThrowIfNotInitialized()
     {
         if (_nativePlayer == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void Resume()
@@ -385,7 +394,7 @@ public class AudioPlayer : IAudioPlayer
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         _nativePlayer?.Flush();
     }
 

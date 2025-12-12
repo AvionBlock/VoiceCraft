@@ -2,6 +2,7 @@ using System;
 using SpeexDSPSharp.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux.Audio;
 
@@ -21,7 +22,7 @@ public class SpeexDspEchoCanceler : IEchoCanceler
         ThrowIfDisposed();
 
         if (recorder.SampleRate != player.SampleRate)
-            throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.AEC.InitFailed"));
 
         CleanupEchoCanceler();
 
@@ -120,7 +121,7 @@ public class SpeexDspEchoCanceler : IEchoCanceler
     private void ThrowIfNotInitialized()
     {
         if (_echoCanceler == null || _captureBuffer == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.AEC.InitFailed"));
     }
 
     private void Dispose(bool disposing)

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -30,7 +31,7 @@ public partial class AddServerViewModel(
 
             //TODO Locale This!
             notificationService.SendSuccessNotification($"{Server.Name} has been added.",
-                Locales.Locales.Notification_Badges_Servers);
+                Localizer.Get("Notification.Badges.Servers"));
             Server = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();

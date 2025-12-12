@@ -1,6 +1,7 @@
 using System;
 using Message.Avalonia;
 using Message.Avalonia.Models;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Services;
 
@@ -32,7 +33,7 @@ public class NotificationService(
         if (settingsService.NotificationSettings.DisableNotifications) return;
         MessageManager.Default.ShowErrorMessage(message, new MessageOptions()
         {
-            Title = Locales.Locales.Notification_Badges_Error,
+            Title = Localizer.Get("Notification.Badges.Error"),
             Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
         });
     }

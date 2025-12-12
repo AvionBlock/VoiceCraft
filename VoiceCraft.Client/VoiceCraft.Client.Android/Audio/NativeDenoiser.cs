@@ -1,6 +1,7 @@
 using System;
 using Android.Media.Audiofx;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Android.Audio;
 
@@ -15,13 +16,13 @@ public class NativeDenoiser : IDenoiser
         ThrowIfDisposed();
 
         if (recorder is not AudioRecorder audioRecorder)
-            throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.DN.InitFailed"));
 
         CleanupDenoiser();
         _denoiser = NoiseSuppressor.Create(audioRecorder.SessionId);
 
         if (_denoiser == null || _denoiser.SetEnabled(true) != AudioEffectStatus.Success)
-            throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.DN.InitFailed"));
     }
 
     public void Denoise(byte[] buffer)
@@ -62,7 +63,7 @@ public class NativeDenoiser : IDenoiser
     private void ThrowIfNotInitialized()
     {
         if (_denoiser == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_DN_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.DN.Init"));
     }
 
     private void Dispose(bool disposing)

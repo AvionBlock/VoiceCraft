@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -20,7 +21,7 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
             CrashLogs.Clear();
             //TODO Locale This!
             notificationService.SendSuccessNotification("Successfully cleared all logs.",
-                Locales.Locales.Notification_Badges_CrashLogs);
+                Localizer.Get("Notification.Badges.CrashLogs"));
         }
         catch (Exception ex)
         {

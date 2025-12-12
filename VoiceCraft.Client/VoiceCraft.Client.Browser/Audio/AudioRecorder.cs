@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Browser.Audio;
 
@@ -99,7 +100,7 @@ public class AudioRecorder : IAudioRecorder
             ThrowIfDisposed();
 
             if (CaptureState != CaptureState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous recorder.
             CleanupRecorder();
