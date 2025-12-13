@@ -244,7 +244,14 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
-            peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
+            string? token = null;
+            if (data.Contains('\0'))
+            {
+                var splitData = data.Split('\0', 2);
+                token = splitData[0];
+                data = splitData[1];
+            }
+            peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data), token);
         }
         catch
         {
