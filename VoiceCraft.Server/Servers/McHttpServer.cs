@@ -14,6 +14,7 @@ using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 using WatsonWebserver.Core;
 using WatsonWebserver.Lite;
+using HttpMethod = WatsonWebserver.Core.HttpMethod;
 
 namespace VoiceCraft.Server.Servers;
 
@@ -117,6 +118,12 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
+            if (context.Request.Method != HttpMethod.POST)
+            {
+                context.Response.StatusCode = 403;
+                await context.Response.Send();
+                return;
+            }
             if (context.Request.ContentLength >= 1e+6) //Do not accept anything higher than a mb.
             {
                 context.Response.StatusCode = 413;
