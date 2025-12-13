@@ -13,6 +13,7 @@ namespace VoiceCraft.Core.Network
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
         public bool Connected { get; private set; }
         public string Token { get; private set; } = string.Empty;
+        public int OutgoingQueueCount { get; set; }
 
         public event Action<McApiNetPeer>? OnConnected;
         public event Action<McApiNetPeer>? OnDisconnected;

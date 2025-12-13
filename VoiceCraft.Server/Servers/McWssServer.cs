@@ -136,7 +136,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 packet.Serialize(_writer);
-                SendPacket(socket, Z85.GetStringWithPadding(_writer.CopyData()));
+                SendPacketCommand(socket, Z85.GetStringWithPadding(_writer.CopyData()));
             }
         }
         finally
@@ -145,9 +145,16 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         }
     }
 
-    private void SendPacket(IWebSocketConnection socket, string packetData)
+    private void SendPacketCommand(IWebSocketConnection socket, string packetData)
     {
-        var packet = new McWssCommandRequest($"{Config.TunnelCommand} \"{packetData}\"");
+        var packet = new McWssCommandRequest($"{Config.SendTunnelCommand} \"{packetData}\"")
+            { header = { requestId = Guid.Empty.ToString() } };
+        socket.Send(JsonSerializer.Serialize(packet));
+    }
+
+    private void SendReceiveCommand(IWebSocketConnection socket)
+    {
+        var packet = new McWssCommandRequest($"{Config.ReceiveTunnelCommand}");
         socket.Send(JsonSerializer.Serialize(packet));
     }
 
@@ -174,11 +181,17 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         while (peer.Value.RetrieveOutboundPacket(out var outboundPacket))
         {
             sent = true;
-            SendPacket(peer.Key, Z85.GetStringWithPadding(outboundPacket));
+            SendPacketCommand(peer.Key, Z85.GetStringWithPadding(outboundPacket));
         }
 
         if (!sent)
-            SendPacket(peer.Key, string.Empty);
+            SendPacketCommand(peer.Key, string.Empty);
+
+        while (peer.Value.OutgoingQueueCount > 0)
+        {
+            peer.Value.OutgoingQueueCount--;
+            SendReceiveCommand(peer.Key);
+        }
 
         switch (peer.Value.Connected)
         {
@@ -212,32 +225,41 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message);
-            if (genericPacket == null) return;
+            if (genericPacket == null || genericPacket.header.messagePurpose != "commandResponse") return;
+            var commandResponsePacket = JsonSerializer.Deserialize<McWssCommandResponse>(message);
+            if (commandResponsePacket is not { StatusCode: 0 }) return;
 
-            switch (genericPacket.header.messagePurpose)
-            {
-                case "commandResponse":
-                    var commandResponsePacket = JsonSerializer.Deserialize<McWssCommandResponse>(message);
-                    if (commandResponsePacket != null && _mcApiPeers.TryGetValue(socket, out var peer) &&
-                        !string.IsNullOrWhiteSpace(commandResponsePacket.StatusMessage) &&
-                        commandResponsePacket.StatusCode == 0)
-                    {
-                        var packets = commandResponsePacket.StatusMessage.Split("|");
-                        foreach (var packet in packets)
-                        {
-                            try
-                            {
-                                peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet));
-                            }
-                            catch
-                            {
-                                //Ignored
-                            }
-                        }
-                    }
+            if (commandResponsePacket.header.requestId == Guid.Empty.ToString())
+                HandleSendCommandResponse(socket, commandResponsePacket.body.statusMessage);
+            else
+                HandleReceiveCommandResponse(socket, commandResponsePacket.body.statusMessage);
+        }
+        catch
+        {
+            //Ignored
+        }
+    }
 
-                    break;
-            }
+    private void HandleSendCommandResponse(IWebSocketConnection socket, string data)
+    {
+        try
+        {
+            if (!_mcApiPeers.TryGetValue(socket, out var peer) || !int.TryParse(data, out var count) ||
+                string.IsNullOrWhiteSpace(data)) return;
+            peer.OutgoingQueueCount = count;
+        }
+        catch
+        {
+            //Ignored
+        }
+    }
+
+    private void HandleReceiveCommandResponse(IWebSocketConnection socket, string data)
+    {
+        try
+        {
+            if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
+            peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
         }
         catch
         {
@@ -654,7 +676,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         }
     }
 
-    //Resharper disable All
+//Resharper disable All
     private class Rawtext
     {
         public RawtextMessage[] rawtext { get; set; } = [];
@@ -664,5 +686,6 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
     {
         public string text { get; set; } = string.Empty;
     }
-    //Resharper enable All
+
+//Resharper enable All
 }
