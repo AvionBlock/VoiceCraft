@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using System.Numerics;
 using LiteNetLib;
+using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Event;
@@ -22,7 +24,7 @@ public class EventHandlerSystem : IDisposable
     private readonly ConcurrentQueue<Action> _tasks = [];
 
     public EventHandlerSystem(
-        VoiceCraftServer server, 
+        VoiceCraftServer server,
         McWssServer mcWssServer,
         McHttpServer mcHttpServer,
         VoiceCraftWorld world,
@@ -79,39 +81,10 @@ public class EventHandlerSystem : IDisposable
     //World
     private void OnEntityCreated(VoiceCraftEntity newEntity)
     {
-        if (newEntity is VoiceCraftNetworkEntity networkEntity)
+        if (newEntity is VoiceCraftNetworkEntity netEntity)
         {
-            _server.SendPacket(networkEntity.NetPeer,
-                PacketPool<VcSetNameRequestPacket>.GetPacket().Set(networkEntity.Name));
-            _server.Broadcast(PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity),
-                DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
-            _mcWssServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
-
-            //Send Effects
-            foreach (var effect in _audioEffectSystem.Effects)
-                _server.SendPacket(networkEntity.NetPeer,
-                    PacketPool<VcOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
-
-            //Send other entities.
-            foreach (var entity in _world.Entities.Where(x => x != networkEntity))
-            {
-                if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                    _server.SendPacket(networkEntity.NetPeer,
-                        PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
-                else
-                    _server.SendPacket(networkEntity.NetPeer,
-                        PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(entity));
-            }
-
-            networkEntity.OnSetTitle += OnNetworkEntitySetTitle;
-            networkEntity.OnSetDescription += OnNetworkEntitySetDescription;
-        }
-        else
-        {
-            _server.Broadcast(PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(newEntity));
-            _mcWssServer.Broadcast(PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(newEntity));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(newEntity));
+            netEntity.OnSetTitle += OnNetworkEntitySetTitle;
+            netEntity.OnSetDescription += OnNetworkEntitySetDescription;
         }
 
         newEntity.OnWorldIdUpdated += OnEntityWorldIdUpdated;
@@ -128,20 +101,54 @@ public class EventHandlerSystem : IDisposable
         newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
         newEntity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
         newEntity.OnAudioReceived += OnEntityAudioReceived;
+
+        _tasks.Enqueue(() =>
+        {
+            if (newEntity is VoiceCraftNetworkEntity networkEntity)
+            {
+                _server.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcSetNameRequestPacket>.GetPacket().Set(networkEntity.Name));
+                _server.Broadcast(PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity),
+                    DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+                _mcWssServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
+                _mcHttpServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
+
+                //Send Effects
+                foreach (var effect in _audioEffectSystem.Effects)
+                    _server.SendPacket(networkEntity.NetPeer,
+                        PacketPool<VcOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
+
+                //Send other entities.
+                foreach (var entity in _world.Entities.Where(x => x != networkEntity))
+                {
+                    if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
+                        _server.SendPacket(networkEntity.NetPeer,
+                            PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
+                    else
+                        _server.SendPacket(networkEntity.NetPeer,
+                            PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(entity));
+                }
+
+                AnsiConsole.MarkupLine(
+                    $"[green]{Localizer.Get($"Events.Client.Connected:{networkEntity.UserGuid}")}[/]");
+            }
+            else
+            {
+                _server.Broadcast(PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(newEntity));
+                _mcWssServer.Broadcast(PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(newEntity));
+                _mcHttpServer.Broadcast(PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(newEntity));
+            }
+        });
     }
 
     private void OnEntityDestroyed(VoiceCraftEntity entity)
     {
-        var entityDestroyedPacket = PacketPool<VcOnEntityDestroyedPacket>.GetPacket().Set(entity.Id);
-        if (entity is VoiceCraftNetworkEntity networkEntity)
+        if (entity is VoiceCraftNetworkEntity netEntity)
         {
-            _server.DisconnectPeer(networkEntity.NetPeer, "VoiceCraft.DisconnectReason.Kicked");
+            netEntity.OnSetTitle -= OnNetworkEntitySetTitle;
+            netEntity.OnSetDescription -= OnNetworkEntitySetDescription;
         }
 
-        _server.Broadcast(entityDestroyedPacket);
-        _mcWssServer.Broadcast(PacketPool<McApiOnEntityDestroyedPacket>.GetPacket().Set(entity.Id));
-        _mcHttpServer.Broadcast(PacketPool<McApiOnEntityDestroyedPacket>.GetPacket().Set(entity.Id));
-        
         entity.OnWorldIdUpdated -= OnEntityWorldIdUpdated;
         entity.OnNameUpdated -= OnEntityNameUpdated;
         entity.OnMuteUpdated -= OnEntityMuteUpdated;
@@ -156,11 +163,25 @@ public class EventHandlerSystem : IDisposable
         entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
         entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
         entity.OnAudioReceived -= OnEntityAudioReceived;
+
+        _tasks.Enqueue(() =>
+        {
+            var entityDestroyedPacket = PacketPool<VcOnEntityDestroyedPacket>.GetPacket().Set(entity.Id);
+            if (entity is VoiceCraftNetworkEntity networkEntity)
+            {
+                _server.DisconnectPeer(networkEntity.NetPeer, "VoiceCraft.DisconnectReason.Kicked");
+                AnsiConsole.MarkupLine(
+                    $"[yellow]{Localizer.Get($"Events.Client.Disconnected:{networkEntity.UserGuid}")}[/]");
+            }
+
+            _server.Broadcast(entityDestroyedPacket);
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityDestroyedPacket>.GetPacket().Set(entity.Id));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityDestroyedPacket>.GetPacket().Set(entity.Id));
+        });
     }
 
     private void OnMcApiPeerConnected(McApiNetPeer peer)
     {
-        //Guarantee packet order here.
         _tasks.Enqueue(() =>
         {
             //Send Effects
@@ -191,12 +212,17 @@ public class EventHandlerSystem : IDisposable
                         PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
                 }
             }
+
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{peer.Token}")}[/]");
         });
     }
 
     private void OnMcApiPeerDisconnected(McApiNetPeer peer)
     {
-        //Do nothing for now.
+        _tasks.Enqueue(() =>
+        {
+            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get($"Events.McApi.Client.Disconnected:{peer.Token}")}[/]");
+        });
     }
 
     //Data

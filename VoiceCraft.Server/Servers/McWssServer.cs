@@ -9,6 +9,7 @@ using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Server.Config;
 using Fleck;
 using VoiceCraft.Core.Audio.Effects;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.McApiPackets.Response;
 using VoiceCraft.Core.World;
@@ -43,7 +44,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
 
         try
         {
-            AnsiConsole.WriteLine(Locales.Locales.McWssServer_Starting);
+            AnsiConsole.WriteLine(Localizer.Get("McWssServer.Starting"));
             _wsServer = new WebSocketServer(Config.Hostname);
 
             _wsServer.Start(socket =>
@@ -52,11 +53,11 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 socket.OnClose = () => OnClientDisconnected(socket);
                 socket.OnMessage = message => OnMessageReceived(socket, message);
             });
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
         }
         catch (Exception ex)
         {
-            throw new Exception(Locales.Locales.McWssServer_Exceptions_Failed, ex);
+            throw new Exception(Localizer.Get("McWssServer.Exceptions.Failed"), ex);
         }
     }
 
@@ -69,7 +70,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
     public void Stop()
     {
         if (_wsServer == null) return;
-        AnsiConsole.WriteLine(Locales.Locales.McWssServer_Stopping);
+        AnsiConsole.WriteLine(Localizer.Get("McWssServer.Stopping"));
         foreach (var client in _mcApiPeers)
         {
             try
@@ -84,7 +85,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
 
         _wsServer.Dispose();
         _wsServer = null;
-        AnsiConsole.MarkupLine($"[green]{Locales.Locales.McWssServer_Stopped}[/]");
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Stopped")}[/]");
     }
 
     public void SendPacket<T>(McApiNetPeer netPeer, T packet) where T : IMcApiPacket
@@ -251,6 +252,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 token = splitData[0];
                 data = splitData[1];
             }
+
             peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data), token);
         }
         catch
@@ -259,7 +261,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         }
     }
 
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token = null)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token)
     {
         switch (packetType)
         {

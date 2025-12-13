@@ -7,15 +7,15 @@ namespace VoiceCraft.Server.Commands;
 public class SetNameCommand : Command
 {
     public SetNameCommand(VoiceCraftServer server) : base(
-        Locales.Locales.Commands_SetName_Name,
-        Locales.Locales.Commands_SetName_Description)
+        Localizer.Get("Commands.SetName.Name"),
+        Localizer.Get("Commands.SetName.Description"))
     {
         var idArgument = new Argument<int>(
-            Locales.Locales.Commands_SetName_Arguments_Id_Name,
-            Locales.Locales.Commands_SetName_Arguments_Id_Description);
+            Localizer.Get("Commands.SetName.Arguments.Id.Name"),
+            Localizer.Get("Commands.SetName.Arguments.Id.Description"));
         var valueArgument = new Argument<string>(
-            Locales.Locales.Commands_SetName_Arguments_Value_Name,
-            Locales.Locales.Commands_SetName_Arguments_Value_Description);
+            Localizer.Get("Commands.SetName.Arguments.Value.Name"),
+            Localizer.Get("Commands.SetName.Arguments.Value.Description"));
         AddArgument(idArgument);
         AddArgument(valueArgument);
 

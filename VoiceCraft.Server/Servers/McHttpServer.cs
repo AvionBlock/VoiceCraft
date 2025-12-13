@@ -4,6 +4,7 @@ using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio.Effects;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McApiPackets.Request;
@@ -43,15 +44,15 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
         try
         {
-            AnsiConsole.WriteLine(Locales.Locales.McHttpServer_Starting);
+            AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Starting"));
             var settings = new WebserverSettings();
             _httpServer = new WebserverLite(settings, HandleRequest);
             _httpServer.Start();
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.McHttpServer_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Success")}[/]");
         }
         catch
         {
-            throw new Exception(Locales.Locales.McHttpServer_Exceptions_Failed);
+            throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
     }
 
@@ -64,11 +65,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     public void Stop()
     {
         if (_httpServer == null) return;
-        AnsiConsole.WriteLine(Locales.Locales.McHttpServer_Stopping);
+        AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Stopping"));
         _httpServer.Stop();
         _httpServer.Dispose();
         _httpServer = null;
-        AnsiConsole.MarkupLine($"[green]{Locales.Locales.McHttpServer_Stopped}[/]");
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Stopped")}[/]");
     }
 
     public void SendPacket<T>(McApiNetPeer netPeer, T packet) where T : IMcApiPacket
@@ -211,7 +212,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         RemovePeer(peer.Key);
     }
 
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token = null)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token)
     {
         switch (packetType)
         {

@@ -42,7 +42,7 @@ namespace VoiceCraft.Core.Network
             OnConnected?.Invoke(this);
         }
 
-        public void ReceiveInboundPacket(byte[] packet, string? token = null)
+        public void ReceiveInboundPacket(byte[] packet, string? token)
         {
             if (packet.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(packet));

@@ -32,14 +32,14 @@ public static class App
         {
             //Startup.
             AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
-            AnsiConsole.WriteLine(Locales.Locales.Startup_Starting);
+            AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
             properties.Load();
-            Localizer.Instance.Language =
-                properties.VoiceCraftConfig.Language; //Set locale. May not set the first 2 messages, but it works.
-            Console.Title =
-                $"VoiceCraft - {VoiceCraftServer.Version}: {Locales.Locales.Title_Starting}"; //Loaded, Set the title.
+            //Set locale. May not set the first 2 messages, but it works.
+            Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
+            //Loaded, Set the title.
+            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Starting")}";
 
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
@@ -51,9 +51,9 @@ public static class App
             //Server Started
             //Table for Server Setup Display
             var serverSetupTable = new Table()
-                .AddColumn(Locales.Locales.Tables_ServerSetup_Server)
-                .AddColumn(Locales.Locales.Tables_ServerSetup_Port)
-                .AddColumn(Locales.Locales.Tables_ServerSetup_Protocol);
+                .AddColumn(Localizer.Get("Tables.ServerSetup.Server"))
+                .AddColumn(Localizer.Get("Tables.ServerSetup.Port"))
+                .AddColumn(Localizer.Get("Tables.ServerSetup.Protocol"));
 
             serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
             serverSetupTable.AddRow($"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
@@ -62,8 +62,8 @@ public static class App
                 mcWssServer.Config.Hostname, $"[{(properties.McWssConfig.Enabled ? "aqua" : "red")}]TCP/WS[/]");
 
             //Register Commands
-            AnsiConsole.WriteLine(Locales.Locales.Startup_Commands_Registering);
-            rootCommand.Description = Locales.Locales.Commands_RootCommand_Description;
+            AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
+            rootCommand.Description = Localizer.Get("Commands.RootCommand.Description");
             var commandCount = 0;
             foreach (var command in Program.ServiceProvider.GetServices<Command>())
             {
@@ -71,12 +71,12 @@ public static class App
                 commandCount++;
             }
 
-            AnsiConsole.MarkupLine(
-                $"[green]{Locales.Locales.Startup_Commands_Success.Replace("{commands}", commandCount.ToString())}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Startup.Commands.Success:{commandCount}")}[/]");
 
             //Server finished.
             AnsiConsole.Write(serverSetupTable);
-            AnsiConsole.MarkupLine($"[bold green]{Locales.Locales.Startup_Success}[/]");
+            AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
+            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
 
             StartCommandTask();
             var startTime = DateTime.UtcNow;
@@ -84,10 +84,10 @@ public static class App
                 try
                 {
                     server.Update();
-                    eventHandlerSystem.Update();
-                    visibilitySystem.Update();
                     httpServer.Update();
                     mcWssServer.Update();
+                    visibilitySystem.Update();
+                    eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
 
                     var dist = DateTime.UtcNow - startTime;
@@ -104,11 +104,11 @@ public static class App
             mcWssServer.Stop();
             httpServer.Stop();
             server.Stop();
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.Shutdown_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("Shutdown.Success")}[/]");
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]{Locales.Locales.Startup_Failed}[/]");
+            AnsiConsole.MarkupLine($"[red]{Localizer.Get("Startup.Failed")}[/]");
             AnsiConsole.WriteException(ex);
             Shutdown(10000);
         }
@@ -124,8 +124,8 @@ public static class App
         if (Cts.IsCancellationRequested || _shuttingDown) return;
         _shuttingDown = true;
         AnsiConsole.MarkupLine(delayMs > 0
-            ? $"[bold yellow]{Locales.Locales.Shutdown_StartingIn.Replace("{delayMs}", delayMs.ToString())}[/]"
-            : $"[bold yellow]{Locales.Locales.Shutdown_Starting}[/]");
+            ? $"[bold yellow]{Localizer.Get($"Shutdown.StartingIn:{delayMs}")}[/]"
+            : $"[bold yellow]{Localizer.Get("Shutdown.Starting")}[/]");
         Task.Delay((int)delayMs).Wait();
         Cts.Cancel();
     }
@@ -140,7 +140,7 @@ public static class App
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine(
-                $"[red]{Locales.Locales.Commands_Exception.Replace("{commandName}", _bufferedCommand)}[/]");
+                $"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
             AnsiConsole.WriteException(ex);
         }
 

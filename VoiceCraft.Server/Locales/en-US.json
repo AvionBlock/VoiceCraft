@@ -5,30 +5,43 @@
     "Failed": "An error occurred while trying to startup the server!",
     "Commands": {
       "Registering": "Registering commands...",
-      "Success": "Successfully registered {commands} commands!"
+      "Success": "Successfully registered {0} commands!"
     }
   },
   "Shutdown": {
     "Starting": "Shutting down server...",
-    "StartingIn": "Shutting down server in {delayMs}ms...",
+    "StartingIn": "Shutting down server in {0}ms...",
     "Success": "Successfully shutdown server!"
   },
   "ServerProperties": {
-    "Loading": "Loading ServerProperties.json file at {path}",
+    "Loading": "Loading ServerProperties.json file at {0}",
     "Success": "Successfully loaded server properties!",
-    "Failed": "Failed to load server properties! Falling back to default properties! Error: {errorMessage}",
+    "Failed": "Failed to load server properties! Falling back to default properties! Error: {0}",
     "NotFound": "ServerProperties.json was not found in the current and/or sub directories! Generating file...",
     "Generating": {
-      "Generating": "Generating ServerProperties.json file at {path}",
-      "Success": "Successfully generated ServerProperties.json file at {path}",
-      "Failed": "Failed to generate ServerProperties.json file at {path}! Error: {errorMessage}"
+      "Generating": "Generating ServerProperties.json file at {0}",
+      "Success": "Successfully generated ServerProperties.json file at {0}",
+      "Failed": "Failed to generate ServerProperties.json file at {0}! Error: {1}"
     },
     "Exceptions": {
       "ParseJson": "Failed to parse JSON data from the loaded file!"
     }
   },
   "Title": {
-    "Starting": "Starting..."
+    "Starting": "Starting...",
+    "Running": "Running!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Client Connected! UserGuid: {0}",
+      "Disconnected": "Client Disconnected! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi Client Connected! Token: {0}",
+        "Disconnected": "McApi Client Disconnected! Token: {0}"
+      }
+    }
   },
   "VoiceCraftServer": {
     "Starting": "Starting VoiceCraft server...",
@@ -72,10 +85,10 @@
     }
   },
   "Commands": {
-    "Exception": "An error occurred while trying to execute the command {commandName}!",
+    "Exception": "An error occurred while trying to execute the command {0}!",
     "Exceptions": {
-      "EntityNotFound": "Could not find entity with the id: {id}",
-      "EntityNotAClient": "Entity with id {id} is not a client entity!"
+      "EntityNotFound": "Could not find entity with the id: {0}",
+      "EntityNotAClient": "Entity with id {0} is not a client entity!"
     },
     "RootCommand": {
       "Description": "Executes a VoiceCraft command."
@@ -83,7 +96,7 @@
     "List": {
       "Name": "list",
       "Description": "Lists entities.",
-      "Showing": "Showing {limit} entities.",
+      "Showing": "Showing {0} entities.",
       "Options": {
         "ClientsOnly": {
           "Name": "clientsOnly",
