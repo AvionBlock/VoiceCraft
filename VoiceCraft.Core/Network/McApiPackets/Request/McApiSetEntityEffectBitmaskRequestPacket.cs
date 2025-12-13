@@ -4,40 +4,35 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
     public class McApiSetEntityEffectBitmaskRequestPacket : IMcApiPacket
     {
-        public McApiSetEntityEffectBitmaskRequestPacket() : this(string.Empty, 0, 0)
+        public McApiSetEntityEffectBitmaskRequestPacket() : this(0, 0)
         {
         }
         
-        public McApiSetEntityEffectBitmaskRequestPacket(string token, int id, ushort value)
+        public McApiSetEntityEffectBitmaskRequestPacket(int id, ushort value)
         {
-            Token = token;
             Id = id;
             Value = value;
         }
 
         public McApiPacketType PacketType => McApiPacketType.SetEntityEffectBitmaskRequest;
-
-        public string Token { get; private set; }
+        
         public int Id { get; private set; }
         public ushort Value { get; private set; }
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(Token, Constants.MaxStringLength);
             writer.Put(Id);
             writer.Put(Value);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            Token = reader.GetString(Constants.MaxStringLength);
             Id = reader.GetInt();
             Value = reader.GetUShort();
         }
         
-        public McApiSetEntityEffectBitmaskRequestPacket Set(string token = "", int id = 0, ushort value = 0)
+        public McApiSetEntityEffectBitmaskRequestPacket Set(int id = 0, ushort value = 0)
         {
-            Token = token;
             Id = id;
             Value = value;
             return this;

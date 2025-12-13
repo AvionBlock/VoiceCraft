@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using LiteNetLib.Utils;
@@ -7,7 +8,7 @@ namespace VoiceCraft.Core.Network
 {
     public class McApiNetPeer
     {
-        private readonly ConcurrentQueue<byte[]> _inboundPacketQueue = new ConcurrentQueue<byte[]>();
+        private readonly ConcurrentQueue<QueuedPacket> _inboundPacketQueue = new ConcurrentQueue<QueuedPacket>();
         private readonly ConcurrentQueue<byte[]> _outboundPacketQueue = new ConcurrentQueue<byte[]>();
 
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
@@ -32,27 +33,36 @@ namespace VoiceCraft.Core.Network
             OnDisconnected?.Invoke(this);
         }
 
-        public void AcceptConnection(string sessionToken)
+        public void AcceptConnection(string token)
         {
             if (Connected) return;
-            Token = sessionToken;
+            Token = token;
             Connected = true;
             LastPing = DateTime.UtcNow;
             OnConnected?.Invoke(this);
         }
 
-        public void ReceiveInboundPacket(byte[] packet)
+        public void ReceiveInboundPacket(byte[] packet, string? token = null)
         {
             if (packet.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(packet));
 
             LastPing = DateTime.UtcNow;
-            _inboundPacketQueue.Enqueue(packet);
+            _inboundPacketQueue.Enqueue(new QueuedPacket() { Data = packet, Token =  token });
         }
 
-        public bool RetrieveInboundPacket([NotNullWhen(true)] out byte[]? packet)
+        public bool RetrieveInboundPacket([NotNullWhen(true)] out byte[]? packet, out string? token)
         {
-            return _inboundPacketQueue.TryDequeue(out packet);
+            if (_inboundPacketQueue.TryDequeue(out var queuedPacket))
+            {
+                packet = queuedPacket.Data;
+                token = queuedPacket.Token;
+                return true;
+            }
+
+            packet = null;
+            token = null;
+            return false;
         }
 
         public void SendPacket(NetDataWriter writer)
@@ -67,6 +77,12 @@ namespace VoiceCraft.Core.Network
         public bool RetrieveOutboundPacket([NotNullWhen(true)] out byte[]? packet)
         {
             return _outboundPacketQueue.TryDequeue(out packet);
+        }
+
+        private struct QueuedPacket
+        {
+            public byte[] Data;
+            public string? Token;
         }
     }
 }

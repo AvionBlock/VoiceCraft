@@ -30,8 +30,8 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     private WebserverLite? _httpServer;
 
     //Config
-    public McHttpConfig Config { get; private set; } = new(); 
-    
+    public McHttpConfig Config { get; private set; } = new();
+
     //Events
     public event Action<McApiNetPeer>? OnPeerConnected;
     public event Action<McApiNetPeer>? OnPeerDisconnected;
@@ -89,7 +89,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             PacketPool<T>.Return(packet);
         }
     }
-    
+
     public void Broadcast<T>(T packet, params McApiNetPeer?[] excludes) where T : IMcApiPacket
     {
         if (_httpServer == null) return;
@@ -124,13 +124,14 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 await context.Response.Send();
                 return;
             }
+
             if (context.Request.ContentLength >= 1e+6) //Do not accept anything higher than a mb.
             {
                 context.Response.StatusCode = 413;
                 await context.Response.Send();
                 return;
             }
-            
+
             var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.Data);
             if (packet == null)
             {
@@ -138,19 +139,21 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 await context.Response.Send();
                 return;
             }
-            
+
             var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
-            foreach(var data in packet.Packets)
+            foreach (var data in packet.Packets)
             {
                 if (data.Length <= 0) continue;
-                netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data));
+                var token = context.Request.Authorization.BearerToken;
+                netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data), token);
             }
-            
+
             var sendData = new List<string>();
             while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
             {
                 sendData.Add(Z85.GetStringWithPadding(outboundPacket));
             }
+
             packet.Packets = sendData.ToArray();
             var responseData = JsonSerializer.Serialize(packet);
             context.Response.StatusCode = 200;
@@ -171,7 +174,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     private McApiNetPeer GetOrCreatePeer(string ipAddress)
     {
         return _mcApiPeers.GetOrAdd(ipAddress, _ =>
-        { 
+        {
             var netPeer = new McApiNetPeer();
             netPeer.OnConnected += McApiNetPeerOnConnected;
             netPeer.OnDisconnected += McApiNetPeerOnDisconnected;
@@ -183,19 +186,19 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         _mcApiPeers.TryRemove(ipAddress, out _);
     }
-    
+
     private void UpdatePeer(KeyValuePair<string, McApiNetPeer> peer)
     {
         lock (_reader)
         {
-            while (peer.Value.RetrieveInboundPacket(out var packetData))
+            while (peer.Value.RetrieveInboundPacket(out var packetData, out var token))
                 try
                 {
                     _reader.Clear();
                     _reader.SetSource(packetData);
                     var packetType = _reader.GetByte();
                     var pt = (McApiPacketType)packetType;
-                    HandlePacket(pt, _reader, peer.Value);
+                    HandlePacket(pt, _reader, peer.Value, token);
                 }
                 catch
                 {
@@ -207,8 +210,8 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         peer.Value.Disconnect();
         RemovePeer(peer.Key);
     }
-    
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer)
+
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token = null)
     {
         if (packetType == McApiPacketType.LoginRequest)
         {
@@ -219,6 +222,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
 
         if (!peer.Connected) return;
+        if (peer.Token != token) return;
 
         switch (packetType)
         {
@@ -328,15 +332,17 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
             if (!string.IsNullOrEmpty(Config.LoginToken) && Config.LoginToken != packet.Token)
             {
-                SendPacket(netPeer, PacketPool<McApiDenyResponsePacket>.GetPacket().Set(packet.RequestId, packet.Token,
-                    "VcMcApi.DisconnectReason.InvalidLoginToken"));
+                SendPacket(netPeer,
+                    PacketPool<McApiDenyResponsePacket>.GetPacket()
+                        .Set(packet.RequestId, "VcMcApi.DisconnectReason.InvalidLoginToken"));
                 return;
             }
 
             if (packet.Version.Major != McHttpVersion.Major || packet.Version.Minor != McHttpVersion.Minor)
             {
-                SendPacket(netPeer, PacketPool<McApiDenyResponsePacket>.GetPacket().Set(packet.RequestId, packet.Token,
-                    "VcMcApi.DisconnectReason.IncompatibleVersion"));
+                SendPacket(netPeer,
+                    PacketPool<McApiDenyResponsePacket>.GetPacket().Set(packet.RequestId,
+                        "VcMcApi.DisconnectReason.IncompatibleVersion"));
                 return;
             }
 
@@ -353,7 +359,6 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
-            if (netPeer.Token != packet.Token) return;
             netPeer.Disconnect();
         }
         finally
@@ -366,8 +371,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
-            SendPacket(netPeer, PacketPool<McApiPingResponsePacket>.GetPacket().Set(packet.Token));
+            SendPacket(netPeer, PacketPool<McApiPingResponsePacket>.GetPacket().Set());
         }
         finally
         {
@@ -375,12 +379,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEffectRequestPacket(McApiSetEffectRequestPacket packet, McApiNetPeer netPeer,
-        NetDataReader reader)
+    private void HandleSetEffectRequestPacket(McApiSetEffectRequestPacket packet, McApiNetPeer _, NetDataReader reader)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least
             if (_audioEffectSystem.TryGetEffect(packet.Bitmask, out var effect) &&
                 effect.EffectType == packet.EffectType)
             {
@@ -427,11 +429,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleClearEffectsRequestPacket(McApiClearEffectsRequestPacket packet, McApiNetPeer netPeer)
+    private void HandleClearEffectsRequestPacket(McApiClearEffectsRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             _audioEffectSystem.ClearEffects();
         }
         finally
@@ -440,11 +441,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityTitleRequestPacket(McApiSetEntityTitleRequestPacket packet, McApiNetPeer netPeer)
+    private void HandleSetEntityTitleRequestPacket(McApiSetEntityTitleRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity is not VoiceCraftNetworkEntity networkEntity) return;
             networkEntity.SetTitle(packet.Value);
@@ -455,12 +455,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityDescriptionRequestPacket(McApiSetEntityDescriptionRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityDescriptionRequestPacket(McApiSetEntityDescriptionRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity is not VoiceCraftNetworkEntity networkEntity) return;
             networkEntity.SetDescription(packet.Value);
@@ -471,12 +469,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityWorldIdRequestPacket(McApiSetEntityWorldIdRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityWorldIdRequestPacket(McApiSetEntityWorldIdRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.WorldId = packet.Value;
@@ -487,12 +483,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityNameRequestPacket(McApiSetEntityNameRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityNameRequestPacket(McApiSetEntityNameRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Name = packet.Value;
@@ -503,12 +497,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityTalkBitmaskRequestPacket(McApiSetEntityTalkBitmaskRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityTalkBitmaskRequestPacket(McApiSetEntityTalkBitmaskRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.TalkBitmask = packet.Value;
@@ -520,11 +512,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     }
 
     private void HandleSetEntityListenBitmaskRequestPacket(McApiSetEntityListenBitmaskRequestPacket packet,
-        McApiNetPeer netPeer)
+        McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.ListenBitmask = packet.Value;
@@ -536,11 +527,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     }
 
     private void HandleSetEntityEffectBitmaskRequestPacket(McApiSetEntityEffectBitmaskRequestPacket packet,
-        McApiNetPeer netPeer)
+        McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.EffectBitmask = packet.Value;
@@ -551,12 +541,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityPositionRequestPacket(McApiSetEntityPositionRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityPositionRequestPacket(McApiSetEntityPositionRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Position = packet.Value;
@@ -567,12 +555,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityRotationRequestPacket(McApiSetEntityRotationRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityRotationRequestPacket(McApiSetEntityRotationRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.Rotation = packet.Value;
@@ -583,12 +569,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void HandleSetEntityCaveFactorRequestPacket(McApiSetEntityCaveFactorRequestPacket packet,
-        McApiNetPeer netPeer)
+    private void HandleSetEntityCaveFactorRequestPacket(McApiSetEntityCaveFactorRequestPacket packet, McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.CaveFactor = packet.Value;
@@ -600,11 +584,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     }
 
     private void HandleSetEntityMuffleFactorRequestPacket(McApiSetEntityMuffleFactorRequestPacket packet,
-        McApiNetPeer netPeer)
+        McApiNetPeer _)
     {
         try
         {
-            if (netPeer.Token != packet.Token) return; //Needs a session token at least.
             var entity = _world.GetEntity(packet.Id);
             if (entity == null) return;
             entity.MuffleFactor = packet.Value;
