@@ -213,12 +213,22 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token = null)
     {
-        if (packetType == McApiPacketType.LoginRequest)
+        switch (packetType)
         {
-            var loginRequestPacket = PacketPool<McApiLoginRequestPacket>.GetPacket();
-            loginRequestPacket.Deserialize(reader);
-            HandleLoginRequestPacket(loginRequestPacket, peer);
-            return;
+            case McApiPacketType.LoginRequest:
+            {
+                var loginRequestPacket = PacketPool<McApiLoginRequestPacket>.GetPacket();
+                loginRequestPacket.Deserialize(reader);
+                HandleLoginRequestPacket(loginRequestPacket, peer);
+                return;
+            }
+            case McApiPacketType.LogoutRequest:
+            {
+                var logoutRequestPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket();
+                logoutRequestPacket.Deserialize(reader);
+                HandleLogoutRequestPacket(logoutRequestPacket, peer);
+                return;
+            }
         }
 
         if (!peer.Connected) return;
@@ -226,11 +236,6 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
         switch (packetType)
         {
-            case McApiPacketType.LogoutRequest:
-                var logoutRequestPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket();
-                logoutRequestPacket.Deserialize(reader);
-                HandleLogoutRequestPacket(logoutRequestPacket, peer);
-                break;
             case McApiPacketType.PingRequest:
                 var pingRequestPacket = PacketPool<McApiPingRequestPacket>.GetPacket();
                 pingRequestPacket.Deserialize(reader);
@@ -359,6 +364,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
+            if (packet.Token != netPeer.Token) return;
             netPeer.Disconnect();
         }
         finally
