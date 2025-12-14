@@ -142,20 +142,9 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             }
 
             var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
-            foreach (var data in packet.Packets)
-            {
-                if (data.Length <= 0) continue;
-                var token = context.Request.Authorization.BearerToken;
-                netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data), token);
-            }
-
-            var sendData = new List<string>();
-            while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
-            {
-                sendData.Add(Z85.GetStringWithPadding(outboundPacket));
-            }
-
-            packet.Packets = sendData.ToArray();
+            var token = context.Request.Authorization.BearerToken;
+            ReceivePacketsLogic(netPeer, packet.Packets, token);
+            packet.Packets = SendPacketsLogic(netPeer);
             var responseData = JsonSerializer.Serialize(packet);
             context.Response.StatusCode = 200;
             await context.Response.Send(responseData);
@@ -169,6 +158,26 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         {
             context.Response.StatusCode = 500;
             await context.Response.Send();
+        }
+    }
+
+    private static string[] SendPacketsLogic(McApiNetPeer netPeer)
+    {
+        var sendData = new List<string>();
+        while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
+        {
+            sendData.Add(Z85.GetStringWithPadding(outboundPacket));
+        }
+
+        return sendData.ToArray();
+    }
+
+    private static void ReceivePacketsLogic(McApiNetPeer netPeer, string[] packets, string? token)
+    {
+        foreach (var data in packets)
+        {
+            if (data.Length <= 0) continue;
+            netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data), token);
         }
     }
 

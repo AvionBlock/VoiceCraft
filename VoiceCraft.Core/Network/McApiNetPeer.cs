@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using LiteNetLib.Utils;
@@ -14,8 +13,7 @@ namespace VoiceCraft.Core.Network
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
         public bool Connected { get; private set; }
         public string Token { get; private set; } = string.Empty;
-        public int OutgoingQueueCount { get; set; }
-
+        
         public event Action<McApiNetPeer>? OnConnected;
         public event Action<McApiNetPeer>? OnDisconnected;
 
@@ -67,7 +65,6 @@ namespace VoiceCraft.Core.Network
 
         public void SendPacket(NetDataWriter writer)
         {
-            if (!Connected) return;
             if (writer.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(writer));
 
