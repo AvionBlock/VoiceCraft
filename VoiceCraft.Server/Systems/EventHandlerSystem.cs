@@ -512,7 +512,7 @@ public class EventHandlerSystem : IDisposable
                 if (ve is not VoiceCraftNetworkEntity visibleEntity || ve == entity || visibleEntity.Deafened) continue;
                 var packet = PacketPool<VcOnEntityAudioReceivedPacket>.GetPacket()
                     .Set(entity.Id, timestamp, frameLoudness, data.Length, data);
-                _server.SendPacket(visibleEntity.NetPeer, packet);
+                _server.SendPacket(visibleEntity.NetPeer, packet, DeliveryMethod.Unreliable);
             }
 
             _mcWssServer.Broadcast(PacketPool<McApiOnEntityAudioReceivedPacket>.GetPacket()
