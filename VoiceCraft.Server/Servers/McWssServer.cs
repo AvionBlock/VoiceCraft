@@ -160,7 +160,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 }
         }
 
-        for (var i = 0; i < 5; i++)
+        for (var i = 0; i < Config.CommandsPerTick; i++)
         {
             if (!SendPacketsLogic(peer.Key, peer.Value))
             {
@@ -181,7 +181,8 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         var stringBuilder = new StringBuilder();
         if (!netPeer.RetrieveOutboundPacket(out var outboundPacket)) return false;
         stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
-        while (stringBuilder.Length < 500 && netPeer.RetrieveOutboundPacket(out outboundPacket))
+        while (stringBuilder.Length < Config.MaxStringLengthPerCommand &&
+               netPeer.RetrieveOutboundPacket(out outboundPacket))
         {
             stringBuilder.Append($"|{Z85.GetStringWithPadding(outboundPacket)}");
         }
@@ -232,7 +233,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         {
             if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
             var packets = data.Split("|");
-            
+
             foreach (var packet in packets)
             {
                 peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
