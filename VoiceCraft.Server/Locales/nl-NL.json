@@ -1,63 +1,197 @@
 {
-  "Startup.Title.Starting": "Starten...",
-  "Startup.ServerSetupTable.Server": "Server",
-  "Startup.ServerSetupTable.Port": "Poort",
-  "Startup.ServerSetupTable.Protocol": "Protocol",
-  "Startup.ServerProperties.Loading": "Server Properties Laden...",
-  "Startup.ServerProperties.Success": "Succesvol server properties geladen!",
-  "Startup.VoiceCraftServer.Starting": "VoiceCraft Server Starten...",
-  "Startup.VoiceCraftServer.Failed": "Het starten van VoiceCraft Server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!",
-  "Startup.VoiceCraftServer.Success": "VoiceCraft server gestart!",
-  "Startup.Finished": "Server gestart!",
-  "Startup.Exception": "Er is een fout opgetreden bij het opstarten van de server!",
-  "Command.Exception": "Er is een fout opgetreden bij het uitvoeren van de opdracht {0}!",
-  "Shutdown.StartingIn": "Server wordt afgesloten over {0}ms...",
-  "Shutdown.Starting": "Server wordt afgesloten...",
-  "Shutdown.Success": "Server succesvol afgesloten!",
-  "ServerProperties.LoadFile.NotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen! Terug naar standaard servereigenschappen!",
-  "ServerProperties.LoadFile.Loading": "Bestand ServerProperties.json laden op {0}...",
-  "ServerProperties.LoadFile.JSONFailed": "JSON-parsing mislukt.",
-  "ServerProperties.LoadFile.Failed": "Servereigenschappen laden mislukt! Terug naar standaardeigenschappen! Fout: {0}",
-  "ServerProperties.CreateFile.Generating": "Bestand ServerProperties.json genereren op {0}...",
-  "ServerProperties.CreateFile.Success": "Bestand ServerProperties.json succesvol gegenereerd op {0}",
-  "ServerProperties.CreateFile.Failed": "Het is niet gelukt om het bestand ServerProperties.json te genereren op {0}! Fout: {1}",
-  "Commands.Exceptions.CannotFindEntity": "Kan entiteit met id: {0} niet vinden",
-  "Commands.Root.Description": "VoiceCraft opdrachten.",
-  "Commands.Options.id.Name": "id",
-  "Commands.Options.id.Description": "De entiteit id.",
-  "Commands.SetProperty.Name": "seteigenschap",
-  "Commands.SetProperty.Description": "Stel een eigenschap in voor een bepaalde entiteit.",
-  "Commands.SetProperty.Options.key.Name": "sleutel",
-  "Commands.SetProperty.Options.key.Description": "The eigenschap sleutel.",
-  "Commands.SetProperty.Options.value.Name": "waarde",
-  "Commands.SetProperty.Options.value.Description": "The eigenschap waarde.",
-  "Commands.SetPosition.Name": "setpositie",
-  "Commands.SetPosition.Description": "Stel de positie in op een bepaalde entiteit.",
-  "Commands.SetPosition.Options.x.Description": "De X positie.",
-  "Commands.SetPosition.Options.y.Description": "De Y positie.",
-  "Commands.SetPosition.Options.z.Description": "De Z positie.",
-  "Commands.SetWorldId.Name": "setwereldid",
-  "Commands.SetWorldId.Description": "Stel de wereld-ID in op een bepaalde entiteit.",
-  "Commands.SetWorldId.Options.world.Name": "wereld",
-  "Commands.SetWorldId.Options.world.Description": "De wereld ID om in te stellen.",
-  "Commands.List.Name": "lijst",
-  "Commands.List.Description": "Geeft een overzicht van alle entiteiten.",
-  "Commands.List.Options.clientsOnly.Name": "clientsAlleen",
-  "Commands.List.Options.clientsOnly.Description": "Toon alleen clients.",
-  "Commands.List.Options.limit.Name": "limiet",
-  "Commands.List.Options.limit.Description": "Beperk het aantal weergegeven entiteiten.",
-  "Commands.List.Exceptions.Limit": "Limiet mag niet kleiner zijn dan nul!",
-  "Commands.List.EntityTable.Id": "Id",
-  "Commands.List.EntityTable.Name": "Naam",
-  "Commands.List.EntityTable.Position": "Positie",
-  "Commands.List.EntityTable.Rotation": "Rotatie",
-  "Commands.List.Showing": "{0} entiteiten worden weergegeven.",
-  "Commands.SetTitle.Name": "settitel",
-  "Commands.SetTitle.Description": "Stelt een titel in voor een client.",
-  "Commands.SetTitle.Options.title.Name": "titel",
-  "Commands.SetTitle.Options.title.Description": "De in te stellen titel.",
-  "Commands.SetTitle.Exceptions.NotAClientEntity": "Entiteit met id {0} is geen cliententiteit!",
-  "AudioEffectSystem.FailedToAddEffect": "Effect toevoegen mislukt!",
-  "AudioEffectSystem.FailedToRemoveEffect": "Effect verwijderen mislukt!",
-  "AudioEffectSystem.NoAvailableIdFound": "Kan geen beschikbare ID vinden!"
+  "Startup": {
+    "Starting": "Server starten...",
+    "Success": "Server succesvol gestart!",
+    "Failed": "Er is een fout opgetreden tijdens het opstarten van de server!",
+    "Commands": {
+      "Registering": "Opdrachten registeren...",
+      "Success": "Succesvol {0} opdrachten geregistreerd!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Server wordt afgesloten...",
+    "StartingIn": "Server wordt afgesloten over {0}ms...",
+    "Success": "Server succesvol afgesloten!"
+  },
+  "ServerProperties": {
+    "Loading": "Laden van ServerProperties.json bestand op {0}",
+    "Success": "Servereigenschappen succesvol geladen!",
+    "Failed": "Laden van de servereigenschappen is mislukt! Terugvallen op standaardeigenschappen! Fout: {0}",
+    "NotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen! Bestand genereren...",
+    "Generating": {
+      "Generating": "Genereren van het ServerProperties.json-bestand op {0}",
+      "Success": "Succesvol het ServerProperties.json-bestand gegenereerd op {0}",
+      "Failed": "Het genereren van het ServerProperties.json-bestand op {0} is mislukt! Fout: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "Het is niet gelukt om de JSON-gegevens uit het geladen bestand te parseren!"
+    }
+  },
+  "Title": {
+    "Starting": "Starten...",
+    "Running": "Draaiende!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Client verbonden! GebruikerGuid: {0}",
+      "Disconnected": "Client verbinding verbroken! GebruikerGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi Client verbonden! Token: {0}",
+        "Disconnected": "McApi Client verbinding verbroken! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "VoiceCraft-server starten...",
+    "Success": "De VoiceCraft-server is succesvol gestart!",
+    "Stopping": "VoiceCraft-server stoppen...",
+    "Stopped": "De VoiceCraft-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van VoiceCraft-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "McWss-server starten...",
+    "Success": "De McWss-server is succesvol gestart!",
+    "Stopping": "McWss-server stoppen...",
+    "Stopped": "De McWss-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van McWss-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "McHttp-server starten...",
+    "Success": "De McHttp-server is succesvol gestart!",
+    "Stopping": "McHttp-server stoppen...",
+    "Stopped": "De McHttp-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van McHttp-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Server",
+      "Port": "Poort",
+      "Protocol": "Protocol"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "Naam",
+      "Position": "Positie",
+      "Rotation": "Rotatie",
+      "WorldId": "WereldId"
+    }
+  },
+  "Commands": {
+    "Exception": "Er is een fout opgetreden bij het uitvoeren van de opdracht {0}!",
+    "Exceptions": {
+      "EntityNotFound": "Kan geen entiteit vinden met het id: {0}",
+      "EntityNotAClient": "Entiteit met id {0} is geen client entiteit!"
+    },
+    "RootCommand": {
+      "Description": "Voert een VoiceCraft opdracht uit."
+    },
+    "List": {
+      "Name": "lijst",
+      "Description": "Geeft een overzicht van alle entiteiten.",
+      "Showing": "{0} entiteiten worden weergegeven.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "alleenClients",
+          "Description": "Toon alleen netwerk verbonden client entiteiten."
+        },
+        "Limit": {
+          "Name": "limiet",
+          "Description": "Limiteer het aantal weergegeven entiteiten."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Limiet mag niet kleiner zijn dan nul!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitel",
+      "Description": "Stelt een titel in voor de applicatie van een client entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De client z'n entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "De waarde om in te stellen van de titel."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "seteigenschap",
+      "Description": "Stelt een beschrijving in voor de applicatie van een client entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De client z'n entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "The waarde om in te stellen van de beschrijving."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setpositie",
+      "Description": "Stelt de positie in voor een entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "De X positie om in te stellen."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "De Y positie om in te stellen."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "De Z positie om in te stellen."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setwereldid",
+      "Description": "Stelt een WereldId in voor een entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "De wereld ID om in te stellen."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setnaam",
+      "Description": "Stelt een naam in voor een entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "De waarde om in te stellen voor de entiteit z'n naam."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Stopt de server."
+    }
+  }
 }

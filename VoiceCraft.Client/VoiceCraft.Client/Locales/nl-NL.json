@@ -1,11 +1,29 @@
 {
+  "BackgroundService": {
+    "BackgroundError": "Achtergrondwerker fout: {0}"
+  },
   "Notification": {
-    "Badges": {
-      "Servers": "Servers",
-      "Error": "Fout",
-      "GC": "GC",
-      "VoiceCraft": "VoiceCraft",
-      "CrashLogs": "CrashLogs"
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "Servers",
+      "Added": "{0} is toegevoegd.",
+      "Edited": "{0} is bewerkt.",
+      "Removed": "{0} is verwijderd."
+    },
+    "GC": {
+      "Badge": "GC",
+      "Triggered": "Garbage Collection Triggered. Geheuge opgeschoond: {0}mb."
+    },
+    "CrashLogs": {
+      "Badge": "CrashLogs",
+      "Cleared": "Alle logs zijn succesvol geleegd."
+    },
+    "Error": {
+      "Badge": "Fout",
+      "VoipFailedToStart": "De achtergrondworker is er niet in geslaagd het VOIP-proces te starten!",
+      "VoipBackgroundError": "Voip achtergrondwerker fout: {0}"
     }
   },
   "Home": {
@@ -27,9 +45,9 @@
     "Port": "Poort"
   },
   "Credits": {
-    "AppVersion": "App Versie: {version}",
-    "Version": "Versie: {version}",
-    "Codec": "Codec: {version}",
+    "AppVersion": "App Versie: {0}",
+    "Version": "Versie: {0}",
+    "Codec": "Codec: {0}",
     "Contributors": "Bijdragers",
     "Roles": {
       "Author": "Auteur",
@@ -69,31 +87,31 @@
       "McWssHostPort": "MCWSS host poort"
     },
     "HotKey": {
-      "HotKey": null,
+      "HotKey": "Sneltoetsen",
       "Actions": {
-        "Mute": null,
-        "Deafen": null
+        "Mute": "Dempen",
+        "Deafen": "Doof maken"
       }
     },
     "Advanced": {
       "Advanced": "Geavanceerde instellingen",
-      "TriggerGc": "Trigger Garbage Collector",
-      "Crash": "Test Crash"
+      "TriggerGc": "Garbage Collector Triggeren",
+      "Crash": "Crash Testen"
     }
   },
   "SelectedServer": {
     "Address": "Adres",
-    "PingInformation": "Ping informatie",
+    "PingInformation": "Ping Informatie",
     "Connect": "Verbind",
-    "Edit": "Bewerk server",
-    "Delete": "Verwijder server",
+    "Edit": "Server bewerken",
+    "Delete": "Server verwijderen",
     "ServerInfo": {
       "ServerInfo": "Server info",
       "Status": {
-        "Latency": "Latentie: {latency}",
-        "Motd": "Motd: {motd}",
-        "PositioningType": "Positioneringstype: {positioningType}",
-        "ConnectedClients": "Verbonden clients: {connectedClients}",
+        "Latency": "Latentie: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "Positioneringstype: {0}",
+        "ConnectedClients": "Verbonden clients: {0}",
         "Pinging": "Pingen..."
       }
     }
@@ -125,14 +143,15 @@
       "Initializing": "Initialiseren...",
       "Connecting": "Verbinden...",
       "Connected": "Verbonden!",
-      "Disconnected": "Verbinding verbroken! Reden: {reason}"
+      "Disconnected": "Verbinding verbroken! Reden: {0}"
     },
     "DisconnectReason": {
-      "Shutdown": null,
-      "Forced": null,
-      "IncompatibleVersion": "Incompatibele client/server versie!",
+      "Manual": "Handmatig verbinding verbroken.",
       "ServerFull": "Server is vol!",
-      "Error": "Er is een fout opgetreden bij het inloggen!"
+      "IncompatibleVersion": "Incompatibele client/server versie!",
+      "Kicked": "Verwijderd!",
+      "Shutdown": "Server afgesloten!",
+      "Error": "Er is een fout opgetreden tijdens het verbinden!"
     }
   }
 }
