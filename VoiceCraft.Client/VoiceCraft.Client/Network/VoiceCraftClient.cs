@@ -862,7 +862,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 effect.Deserialize(reader); //Do not recreate the effect instance! Could hold audio instance data!
                 return;
             }
-
+            
             switch (packet.EffectType)
             {
                 case EffectType.Visibility:

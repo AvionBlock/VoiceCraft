@@ -26,7 +26,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
         {
             writer.Put(Bitmask);
             writer.Put((byte)(Effect?.EffectType ?? EffectType.None));
-            writer.Put(Effect);
+            if(Effect != null)
+                writer.Put(Effect);
         }
 
         public void Deserialize(NetDataReader reader)
