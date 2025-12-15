@@ -41,9 +41,8 @@ public partial class ServersViewModel(
     private void DeleteServer(ServerViewModel server)
     {
         ServersSettings.ServersSettings.RemoveServer(server.Server);
-        //TODO Locale This!
-        notificationService.SendSuccessNotification($"{server.Name} has been removed.",
-            Localizer.Get("Notification_Badges_Servers"));
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Badge:{server.Name}"),
+            Localizer.Get("Notification.Servers.Badge"));
         _ = settings.SaveAsync();
     }
 

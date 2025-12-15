@@ -180,7 +180,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnMcApiPeerConnected(McApiNetPeer peer)
+    private void OnMcApiPeerConnected(McApiNetPeer peer, string token)
     {
         _tasks.Enqueue(() =>
         {
@@ -213,15 +213,15 @@ public class EventHandlerSystem : IDisposable
                 }
             }
 
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{peer.Token}")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{token}")}[/]");
         });
     }
 
-    private void OnMcApiPeerDisconnected(McApiNetPeer peer)
+    private void OnMcApiPeerDisconnected(McApiNetPeer peer, string token)
     {
         _tasks.Enqueue(() =>
         {
-            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get($"Events.McApi.Client.Disconnected:{peer.Token}")}[/]");
+            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get($"Events.McApi.Client.Disconnected:{token}")}[/]");
         });
     }
 

@@ -19,9 +19,8 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
         {
             LogService.ClearCrashLogs();
             CrashLogs.Clear();
-            //TODO Locale This!
-            notificationService.SendSuccessNotification("Successfully cleared all logs.",
-                Localizer.Get("Notification.Badges.CrashLogs"));
+            notificationService.SendSuccessNotification(Localizer.Get("Notification.CrashLogs.Cleared"),
+                Localizer.Get("Notification.CrashLogs.Badge"));
         }
         catch (Exception ex)
         {

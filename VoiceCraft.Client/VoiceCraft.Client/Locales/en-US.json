@@ -1,11 +1,29 @@
 {
+  "BackgroundService": {
+    "BackgroundError": "Background Error: {0}"
+  },
   "Notification": {
-    "Badges": {
-      "Servers": "Servers",
-      "Error": "Error",
-      "GC": "GC",
-      "VoiceCraft": "VoiceCraft",
-      "CrashLogs": "CrashLogs"
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "Servers",
+      "Added": "{0} has been added.",
+      "Edited": "{0} has been edited.",
+      "Removed": "{0} has been removed."
+    },
+    "GC": {
+      "Badge": "GC",
+      "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
+    },
+    "CrashLogs": {
+      "Badge": "CrashLogs",
+      "Cleared": "Successfully cleared all logs."
+    },
+    "Error": {
+      "Badge": "Error",
+      "VoipFailedToStart": "Background worker failed to start VOIP process!",
+      "VoipBackgroundError": "Voip Background Error: {0}"
     }
   },
   "Home": {

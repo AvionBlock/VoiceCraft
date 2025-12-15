@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux;
 
@@ -19,7 +20,6 @@ public class NativeBackgroundService(NotificationService notificationService) : 
     {
         var processType = typeof(T);
         if (_processes.ContainsKey(processType))
-            //TODO Locale This!
             throw new InvalidOperationException("A background process of this type has already been queued/started!");
 
         var backgroundProcess = new BackgroundProcess(process);
@@ -27,7 +27,6 @@ public class NativeBackgroundService(NotificationService notificationService) : 
         if (!StartBackgroundWorker())
         {
             _processes.Clear();
-            //TODO Locale This!
             throw new Exception("Failed to start background process! Background worker failed to start!");
         }
 
@@ -38,7 +37,6 @@ public class NativeBackgroundService(NotificationService notificationService) : 
             {
                 _processes.TryRemove(processType, out _);
                 backgroundProcess.Dispose();
-                //TODO Locale This!
                 throw new Exception("Failed to start background process!");
             }
 
@@ -101,8 +99,7 @@ public class NativeBackgroundService(NotificationService notificationService) : 
         }
         catch (Exception ex)
         {
-            //TODO Locale This!
-            notificationService.SendErrorNotification($"Background Error: {ex}");
+            notificationService.SendErrorNotification(Localizer.Get($"BackgroundService.BackgroundError:{ex.Message}"));
         }
     }
 }

@@ -102,9 +102,7 @@ public partial class SelectedServerViewModel(
         }
         catch (Exception ex)
         {
-            //TODO Locale This!
-            notificationService.SendErrorNotification(
-                "Background worker failed to start VOIP process!");
+            notificationService.SendErrorNotification(Localizer.Get("Notification.Error.VoipFailedToStart"));
             _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
             LogService.Log(ex);
         }
@@ -124,9 +122,9 @@ public partial class SelectedServerViewModel(
     {
         if (SelectedServer == null) return;
         ServersSettings.ServersSettings.RemoveServer(SelectedServer.Server);
-        //TODO Locale This!
-        notificationService.SendSuccessNotification($"{SelectedServer.Name} has been removed.",
-            Localizer.Get("Notification.Badges.Servers"));
+        notificationService.SendSuccessNotification(
+            Localizer.Get($"Notification.Servers.Removed:{SelectedServer.Name}"),
+            Localizer.Get("Notification.Servers.Badge"));
         _ = settingsService.SaveAsync();
         navigationService.Back();
     }

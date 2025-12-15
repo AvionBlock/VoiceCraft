@@ -129,7 +129,8 @@ public class VoipBackgroundProcess(
                 Thread.Sleep(1); //Don't burn the CPU.
             }
 
-            _ = _voiceCraftClient.ConnectAsync(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port, locale);
+            _ = _voiceCraftClient.ConnectAsync(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port,
+                locale);
             Title = "VoiceCraft.Status.Connecting";
 
             var startTime = DateTime.UtcNow;
@@ -151,8 +152,8 @@ public class VoipBackgroundProcess(
         }
         catch (Exception ex)
         {
-            //TODO Locale This!
-            notificationService.SendErrorNotification($"Voip Background Error: {ex.Message}");
+            notificationService.SendErrorNotification(
+                Localizer.Get($"Notification.Error.VoipBackgroundError:{ex.Message}"));
             _disconnectReason = "VoiceCraft.DisconnectReason.Error";
             throw;
         }
@@ -163,7 +164,7 @@ public class VoipBackgroundProcess(
             var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{_disconnectReason}");
             Title = localeReason;
             Description = localeReason;
-            notificationService.SendNotification(localeReason, Localizer.Get("Notification.Badges.VoiceCraft"));
+            notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
 
             if (_audioRecorder != null)
             {

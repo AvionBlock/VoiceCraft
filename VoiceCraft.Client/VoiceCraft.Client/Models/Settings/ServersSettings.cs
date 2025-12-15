@@ -82,7 +82,7 @@ public class Server : Setting<Server>
         set
         {
             if (value.Length > NameLimit)
-                throw new ArgumentException("Name cannot be longer than {NameLimit} characters!");
+                throw new ArgumentException($"Name cannot be longer than {NameLimit} characters!");
             _name = value;
             OnUpdated?.Invoke(this);
         }
@@ -94,7 +94,7 @@ public class Server : Setting<Server>
         set
         {
             if (value.Length > IpLimit)
-                throw new ArgumentException("IP address cannot be longer than {IPLimit} characters!");
+                throw new ArgumentException($"IP address cannot be longer than {IpLimit} characters!");
             _ip = value;
             OnUpdated?.Invoke(this);
         }

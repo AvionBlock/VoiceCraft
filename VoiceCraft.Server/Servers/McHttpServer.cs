@@ -34,8 +34,8 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     public McHttpConfig Config { get; private set; } = new();
 
     //Events
-    public event Action<McApiNetPeer>? OnPeerConnected;
-    public event Action<McApiNetPeer>? OnPeerDisconnected;
+    public event Action<McApiNetPeer, string>? OnPeerConnected;
+    public event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
     public void Start(McHttpConfig? config = null)
     {
@@ -323,14 +323,14 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
-    private void McApiNetPeerOnConnected(McApiNetPeer peer)
+    private void McApiNetPeerOnConnected(McApiNetPeer peer, string token)
     {
-        OnPeerConnected?.Invoke(peer);
+        OnPeerConnected?.Invoke(peer, token);
     }
 
-    private void McApiNetPeerOnDisconnected(McApiNetPeer peer)
+    private void McApiNetPeerOnDisconnected(McApiNetPeer peer, string token)
     {
-        OnPeerDisconnected?.Invoke(peer);
+        OnPeerDisconnected?.Invoke(peer, token);
     }
 
     private void HandleLoginRequestPacket(McApiLoginRequestPacket packet, McApiNetPeer netPeer)
@@ -341,7 +341,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             {
                 SendPacket(netPeer,
                     PacketPool<McApiAcceptResponsePacket>.GetPacket().Set(packet.RequestId, netPeer.Token));
-                OnPeerConnected?.Invoke(netPeer);
+                OnPeerConnected?.Invoke(netPeer, netPeer.Token);
                 return;
             }
 

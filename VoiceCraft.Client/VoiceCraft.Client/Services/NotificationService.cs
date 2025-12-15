@@ -33,7 +33,7 @@ public class NotificationService(
         if (settingsService.NotificationSettings.DisableNotifications) return;
         MessageManager.Default.ShowErrorMessage(message, new MessageOptions()
         {
-            Title = Localizer.Get("Notification.Badges.Error"),
+            Title = Localizer.Get("Notification.Error.Badge"),
             Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
         });
     }

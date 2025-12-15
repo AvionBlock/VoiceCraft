@@ -28,10 +28,8 @@ public partial class AddServerViewModel(
         try
         {
             Servers.AddServer(Server);
-
-            //TODO Locale This!
-            notificationService.SendSuccessNotification($"{Server.Name} has been added.",
-                Localizer.Get("Notification.Badges.Servers"));
+            notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Added:{Server.Name}"),
+                Localizer.Get("Notification.Servers.Badge"));
             Server = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();
