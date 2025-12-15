@@ -41,7 +41,7 @@ public partial class ServersViewModel(
     private void DeleteServer(ServerViewModel server)
     {
         ServersSettings.ServersSettings.RemoveServer(server.Server);
-        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Badge:{server.Name}"),
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Removed:{server.Name}"),
             Localizer.Get("Notification.Servers.Badge"));
         _ = settings.SaveAsync();
     }
