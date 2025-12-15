@@ -1,10 +1,9 @@
 ﻿using Avalonia.Media.Imaging;
-using Avalonia.Notification;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Jeek.Avalonia.Localization;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -13,13 +12,14 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private Bitmap? _backgroundImage;
     [ObservableProperty] private object? _content;
 
-    [ObservableProperty] private INotificationMessageManager _manager;
-
-    public MainViewModel(NavigationService navigationService, INotificationMessageManager manager, ThemesService themesService,
-        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService)
+    public MainViewModel(NavigationService navigationService,
+        ThemesService themesService,
+        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService, HotKeyService hotKeyService)
     {
-        _manager = manager;
-        themesService.OnBackgroundImageChanged += backgroundImage => { BackgroundImage = backgroundImage?.BackgroundImageBitmap; };
+        themesService.OnBackgroundImageChanged += backgroundImage =>
+        {
+            BackgroundImage = backgroundImage?.BackgroundImageBitmap;
+        };
         // register route changed event to set content to viewModel, whenever 
         // a route changes
         navigationService.OnViewModelChanged += viewModel =>
@@ -27,18 +27,14 @@ public partial class MainViewModel : ObservableObject
             Content = viewModel;
             discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
         };
+        //Initialize Themes
         var themeSettings = settingsService.ThemeSettings;
         themesService.SwitchTheme(themeSettings.SelectedTheme);
         themesService.SwitchBackgroundImage(themeSettings.SelectedBackgroundImage);
+        //Initialize Locale Settings
         var localeSettings = settingsService.LocaleSettings;
-        try
-        {
-            Localizer.Language = localeSettings.Culture;
-        }
-        catch
-        {
-            Localizer.LanguageIndex = 0;
-        }
+        Localizer.Instance.Language = localeSettings.Culture;
+        hotKeyService.Initialize(); //Initialize the hotkey service.
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();

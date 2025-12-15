@@ -5,13 +5,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Avalonia.Notification;
 using Avalonia.Styling;
-using Jeek.Avalonia.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
 using VoiceCraft.Client.ViewModels.Settings;
@@ -20,13 +19,15 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Locales;
+using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
 namespace VoiceCraft.Client;
 
 public class App : Application
 {
     public static readonly IServiceCollection ServiceCollection = new ServiceCollection();
-    public static IServiceProvider? ServiceProvider { get; private set; }
+    public static ServiceProvider? ServiceProvider { get; private set; }
 
     public override void Initialize()
     {
@@ -52,7 +53,10 @@ public class App : Application
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
 
-                    desktop.MainWindow.Closing += (__, ___) => { _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate(); };
+                    desktop.MainWindow.Closing += (__, ___) =>
+                    {
+                        _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
+                    };
                     break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
                     singleViewPlatform.MainView = new MainView
@@ -82,6 +86,8 @@ public class App : Application
                     };
                     break;
             }
+
+            LogService.Log(ex);
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -91,7 +97,8 @@ public class App : Application
     {
 #pragma warning disable IL2026
         // Get an array of plugins to remove
-        var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+        var dataValidationPluginsToRemove =
+            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
         foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
@@ -105,9 +112,9 @@ public class App : Application
         ServiceCollection.AddSingleton<ViewLocatorService>(x => new ViewLocatorService(x.GetKeyedService<Control>));
         ServiceCollection.AddSingleton<NavigationService>(x =>
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
-        ServiceCollection.AddSingleton<INotificationMessageManager, NotificationMessageManager>();
         ServiceCollection.AddSingleton<NotificationService>();
-        ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(x.GetRequiredService<NotificationService>(),
+        ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
+            x.GetRequiredService<NotificationService>(),
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
@@ -124,6 +131,7 @@ public class App : Application
         ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
         ServiceCollection.AddTransient<AudioSettingsViewModel>();
         ServiceCollection.AddTransient<NetworkSettingsViewModel>();
+        ServiceCollection.AddTransient<HotKeySettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
 
         //Home Pages
@@ -148,6 +156,7 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, AppearanceSettingsView>(typeof(AppearanceSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AudioSettingsView>(typeof(AudioSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, NetworkSettingsView>(typeof(NetworkSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HotKeySettingsView>(typeof(HotKeySettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
 
         //Themes Registry
@@ -155,8 +164,8 @@ public class App : Application
             Constants.DarkThemeGuid,
             "Dark",
             ThemeVariant.Dark,
-            [new Themes.Dark.Styles()],
-            [new Themes.Dark.Colors(), new Themes.Dark.Resources()]));
+            [new Styles()],
+            [new Colors(), new Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkPurpleThemeGuid,
@@ -201,12 +210,16 @@ public class App : Application
             "SineSMP Base",
             "avares://VoiceCraft.Client/Assets/sinesmpbase.png"));
 
+        //HotKey Registry
+        ServiceCollection.AddSingleton<HotKeyAction, MuteAction>();
+        ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
+
         return ServiceCollection.BuildServiceProvider();
     }
 
     private void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.SetLocalizer(new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales"));
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
     }
 }

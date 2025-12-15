@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.Numerics;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
@@ -7,21 +8,21 @@ namespace VoiceCraft.Server.Commands;
 public class SetPositionCommand : Command
 {
     public SetPositionCommand(VoiceCraftServer server) : base(
-        Locales.Locales.Commands_SetPosition_Name,
-        Locales.Locales.Commands_SetPosition_Description)
+        Localizer.Get("Commands.SetPosition.Name"),
+        Localizer.Get("Commands.SetPosition.Description"))
     {
         var idArgument = new Argument<int>(
-            Locales.Locales.Commands_SetPosition_Arguments_Id_Name,
-            Locales.Locales.Commands_SetPosition_Arguments_Id_Description);
+            Localizer.Get("Commands.SetPosition.Arguments.Id.Name"),
+            Localizer.Get("Commands.SetPosition.Arguments.Id.Description"));
         var xPosArgument = new Argument<float>(
-            Locales.Locales.Commands_SetPosition_Arguments_X_Name,
-            Locales.Locales.Commands_SetPosition_Arguments_X_Description);
+            Localizer.Get("Commands.SetPosition.Arguments.X.Name"),
+            Localizer.Get("Commands.SetPosition.Arguments.X.Description"));
         var yPosArgument = new Argument<float>(
-            Locales.Locales.Commands_SetPosition_Arguments_Y_Name,
-            Locales.Locales.Commands_SetPosition_Arguments_Y_Description);
+            Localizer.Get("Commands.SetPosition.Arguments.Y.Name"),
+            Localizer.Get("Commands.SetPosition.Arguments.Y.Description"));
         var zPosArgument = new Argument<float>(
-            Locales.Locales.Commands_SetPosition_Arguments_Z_Name,
-            Locales.Locales.Commands_SetPosition_Arguments_Z_Description);
+            Localizer.Get("Commands.SetPosition.Arguments.Z.Name"),
+            Localizer.Get("Commands.SetPosition.Arguments.Z.Description"));
         AddArgument(idArgument);
         AddArgument(xPosArgument);
         AddArgument(yPosArgument);
@@ -31,7 +32,7 @@ public class SetPositionCommand : Command
             {
                 var entity = server.World.GetEntity(id);
                 if (entity is null)
-                    throw new Exception(Locales.Locales.Commands_Exceptions_EntityNotFound.Replace("{id}", id.ToString()));
+                    throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
 
                 entity.Position = new Vector3(xPos, yPos, zPos);
             },

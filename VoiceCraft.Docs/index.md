@@ -17,19 +17,19 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 # [Desktop](#tab/desktop)
 
-![MainPage](images/MainPage.png){width=800}
-![ServerPage](images/ServerPage.png){width=800}
+![MainPage](./images/MainPage.png){width=800}
+![ServerPage](./images/ServerPage.png){width=800}
 
 # [Mobile](#tab/mobile)
 
-![MainPageAndroid](/images/MainPageAndroid.png){width=400}
+![MainPageAndroid](./images/MainPageAndroid.png){width=400}
 
 ---
 
 ## Features
 - Cross platform support for Android, Windows, Linux, MacOS and iOS devices!
-- Proximity voice chat with filters.
-- Multilinual support.
+- Proximity voice chat with filters and effects!
+- Multilingual support.
 - Multiple themes.
 - Addon API for customization.
 - In-app local server hosting.
@@ -37,6 +37,13 @@ VoiceCraft ALSO **DOES NOT** REQUIRE YOU TO SIGN IN WITH YOUR MINECRAFT ACCOUNT,
 
 ## Quick Start
 
-- [Client Installation](/guides/introduction?tabs=clientInstallation)
-- [Server Installation](/guides/introduction?tabs=serverInstallation)
+- [Client Installation](./guides/introduction.md?tabs=clientInstallation)
+- [Server Installation](./guides/introduction.md?tabs=serverInstallation)
 - Addon API Reference
+
+## Dedicated Hosting
+
+- Atrioxhosting €0.44/m (free trial): https://atrioxhost.com/voicecraft
+
+## Support
+[![Discord Shield](https://discordapp.com/api/guilds/847396393068265472/widget.png?style=shield)](https://discord.gg/fJGsRY5hh9)

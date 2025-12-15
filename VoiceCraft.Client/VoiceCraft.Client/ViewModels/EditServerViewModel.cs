@@ -4,10 +4,14 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
-public partial class EditServerViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
+public partial class EditServerViewModel(
+    NavigationService navigationService,
+    NotificationService notificationService,
+    SettingsService settings)
     : ViewModelBase
 {
     [ObservableProperty] private Server _editableServer = new();
@@ -34,8 +38,9 @@ public partial class EditServerViewModel(NavigationService navigationService, No
             Server.Name = EditableServer.Name;
             Server.Ip = EditableServer.Ip;
             Server.Port = EditableServer.Port;
-
-            notificationService.SendNotification(Locales.Locales.Notification_Badges_Servers, $"{Server.Name} has been edited.");
+            
+            notificationService.SendNotification(Localizer.Get($"Notification.Servers.Edited:{Server.Name}"),
+                Localizer.Get("Notification.Servers.Badge"));
             EditableServer = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();

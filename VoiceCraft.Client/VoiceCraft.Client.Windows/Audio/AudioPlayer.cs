@@ -3,6 +3,7 @@ using System.Threading;
 using NAudio.Wave;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using PlaybackState = VoiceCraft.Core.PlaybackState;
 
 namespace VoiceCraft.Client.Windows.Audio;
@@ -31,7 +32,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Sample rate must be greater than or equal to zero!");
 
             _sampleRate = value;
         }
@@ -43,7 +45,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 1)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Channels must be greater than or equal to one!");
 
             _channels = value;
         }
@@ -71,7 +74,8 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Buffer milliseconds must be greater than or equal to zero!");
 
             _bufferMilliseconds = value;
         }
@@ -93,7 +97,7 @@ public class AudioPlayer : IAudioPlayer
             ThrowIfDisposed();
 
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous player.
             CleanupPlayer();
@@ -244,7 +248,7 @@ public class AudioPlayer : IAudioPlayer
     private void ThrowIfNotInitialized()
     {
         if (_nativePlayer == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void InvokePlaybackStopped(object? sender, StoppedEventArgs e)

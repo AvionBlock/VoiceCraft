@@ -4,74 +4,105 @@ namespace VoiceCraft.Core
 
     public enum PositioningType : byte
     {
-        Unknown,
         Server,
         Client
     }
 
-    public enum LoginType : byte
+    public enum VcPacketType : byte
     {
-        Unknown,
-        Login,
-        Discovery
+        //Requests
+        InfoRequest,
+        LoginRequest,
+        LogoutRequest,
+        SetNameRequest,
+        AudioRequest,
+        SetMuteRequest,
+        SetDeafenRequest,
+        SetTalkBitmaskRequest,
+        SetListenBitmaskRequest,
+        SetEffectBitmaskRequest,
+        SetPositionRequest,
+        SetRotationRequest,
+        SetCaveFactorRequest,
+        SetMuffleFactorRequest,
+        SetTitleRequest,
+        SetDescriptionRequest,
+        SetEntityVisibilityRequest,
+
+        //Responses
+        InfoResponse,
+        AcceptResponse,
+        DenyResponse,
+
+        //Events
+        OnEffectUpdated,
+        OnEntityCreated,
+        OnNetworkEntityCreated,
+        OnEntityDestroyed,
+        OnEntityNameUpdated,
+        OnEntityMuteUpdated,
+        OnEntityDeafenUpdated,
+        OnEntityTalkBitmaskUpdated,
+        OnEntityListenBitmaskUpdated,
+        OnEntityEffectBitmaskUpdated,
+        OnEntityPositionUpdated,
+        OnEntityRotationUpdated,
+        OnEntityCaveFactorUpdated,
+        OnEntityMuffleFactorUpdated,
+        OnEntityAudioReceived,
     }
 
-    public enum EntityType : byte
+    public enum McApiPacketType : byte
     {
-        Unknown,
-        Server,
-        Network
+        //Requests
+        LoginRequest,
+        LogoutRequest,
+        PingRequest,
+        SetEffectRequest,
+        ClearEffectsRequest,
+        SetEntityTitleRequest,
+        SetEntityDescriptionRequest,
+        SetEntityWorldIdRequest,
+        SetEntityNameRequest,
+        SetEntityTalkBitmaskRequest,
+        SetEntityListenBitmaskRequest,
+        SetEntityEffectBitmaskRequest,
+        SetEntityPositionRequest,
+        SetEntityRotationRequest,
+        SetEntityCaveFactorRequest,
+        SetEntityMuffleFactorRequest,
+
+        //Responses
+        AcceptResponse,
+        DenyResponse,
+        PingResponse,
+
+        //Events
+        OnEffectUpdated,
+        OnEntityCreated,
+        OnNetworkEntityCreated,
+        OnEntityDestroyed,
+        OnEntityVisibilityUpdated,
+        OnEntityWorldIdUpdated,
+        OnEntityNameUpdated,
+        OnEntityMuteUpdated,
+        OnEntityDeafenUpdated,
+        OnEntityTalkBitmaskUpdated,
+        OnEntityListenBitmaskUpdated,
+        OnEntityEffectBitmaskUpdated,
+        OnEntityPositionUpdated,
+        OnEntityRotationUpdated,
+        OnEntityCaveFactorUpdated,
+        OnEntityMuffleFactorUpdated,
+        OnEntityAudioReceived
     }
 
-    public enum PacketType : byte
+    public enum VcConnectionState : byte
     {
-        Unknown,
-        Info,
-        Login,
-        Audio,
-        SetTitle,
-        SetDescription,
-        SetEffect,
-
-        //Entity stuff
-        EntityCreated,
-        EntityDestroyed,
-        SetVisibility,
-        SetName,
-        SetMute,
-        SetDeafen,
-        SetTalkBitmask,
-        SetListenBitmask,
-        SetPosition,
-        SetRotation
-    }
-
-    public enum McLinkPacketType : byte
-    {
-        Unknown,
-        Login,
-        Logout,
-        Ping
-    }
-
-    #endregion
-
-    #region Properties
-
-    public enum PropertyKey : ushort
-    {
-        Unknown,
-        ProximityEffectMinRange,
-        ProximityEffectMaxRange
-    }
-
-    public enum PropertyType : byte
-    {
-        Null,
-        Byte,
-        Int,
-        UInt,
-        Float
+        Disconnected,
+        Connecting,
+        Connected,
+        Disconnecting,
     }
 
     #endregion
@@ -80,8 +111,12 @@ namespace VoiceCraft.Core
 
     public enum EffectType : byte
     {
-        Unknown,
-        Proximity
+        None,
+        Visibility,
+        Proximity,
+        Directional,
+        ProximityEcho,
+        Echo
     }
 
     public enum AudioFormat

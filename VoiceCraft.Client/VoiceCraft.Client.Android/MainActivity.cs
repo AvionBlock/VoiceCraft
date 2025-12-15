@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Android.Background;
-using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using Debug = System.Diagnostics.Debug;
@@ -27,7 +26,7 @@ namespace VoiceCraft.Client.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity<App>
 {
-    private static readonly Guid EchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
+    private static readonly Guid NativeEchoCancelerGuid = Guid.Parse("e6fdcab1-2a39-4b3c-a447-538648b9073b");
     private static readonly Guid NativeDenoiserGuid = Guid.Parse("2023A876-2824-4DC4-8700-5A98DA3EC5C7");
     private static readonly Guid NativeAutomaticGainControllerGuid = Guid.Parse("2EDE45FF-8D72-4A88-8657-1DEAD6EF9C50");
 
@@ -48,8 +47,8 @@ public class MainActivity : AvaloniaMainActivity<App>
     protected override void OnCreate(Bundle? app)
     {
         var nativeStorage = new NativeStorageService();
-        CrashLogService.NativeStorageService = nativeStorage;
-        CrashLogService.Load();
+        LogService.NativeStorageService = nativeStorage;
+        LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
 
@@ -71,7 +70,7 @@ public class MainActivity : AvaloniaMainActivity<App>
                 typeof(NativeAutomaticGainController)));
         if (AcousticEchoCanceler.IsAvailable)
             App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
-                EchoCancelerGuid,
+                NativeEchoCancelerGuid,
                 "Native Echo Canceler",
                 typeof(NativeEchoCanceler)));
         if (NoiseSuppressor.IsAvailable)
@@ -95,6 +94,7 @@ public class MainActivity : AvaloniaMainActivity<App>
             typeof(SpeexDspDenoiser)));
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+        App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
         App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Permissions.Microphone>();
@@ -103,12 +103,26 @@ public class MainActivity : AvaloniaMainActivity<App>
         base.OnCreate(app);
     }
 
+    protected override void OnDestroy()
+    {
+        try
+        {
+            if (App.ServiceProvider == null) return;
+            var serviceProvider = App.ServiceProvider;
+            serviceProvider.Dispose();
+        }
+        finally
+        {
+            base.OnDestroy();
+        }
+    }
+
     private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         try
         {
             if (e.ExceptionObject is Exception ex)
-                CrashLogService.Log(ex); //Log it
+                LogService.LogCrash(ex); //Log it
         }
         catch (Exception writeEx)
         {

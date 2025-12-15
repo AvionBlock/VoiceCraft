@@ -1,6 +1,7 @@
 using System;
 using Android.Media.Audiofx;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Android.Audio;
 
@@ -17,13 +18,13 @@ public class NativeEchoCanceler : IEchoCanceler
         ThrowIfDisposed();
 
         if (recorder is not AudioRecorder audioRecorder)
-            throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.AEC.InitFailed"));
 
         CleanupEchoCanceler();
         _echoCanceler = AcousticEchoCanceler.Create(audioRecorder.SessionId);
 
         if (_echoCanceler == null || _echoCanceler.SetEnabled(true) != AudioEffectStatus.Success)
-            throw new InvalidOperationException(Locales.Locales.Audio_AEC_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.AEC.InitFailed"));
     }
 
     public void EchoPlayback(Span<byte> buffer, int count)
@@ -75,7 +76,7 @@ public class NativeEchoCanceler : IEchoCanceler
     private void ThrowIfNotInitialized()
     {
         if (_echoCanceler == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_AEC_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.AEC.Init"));
     }
 
     private void Dispose(bool disposing)

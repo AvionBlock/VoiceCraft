@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Spectre.Console;
-using VoiceCraft.Server.Data;
+using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
@@ -8,37 +9,38 @@ namespace VoiceCraft.Server.Commands;
 public class ListCommand : Command
 {
     public ListCommand(VoiceCraftServer server) : base(
-        Locales.Locales.Commands_List_Name,
-        Locales.Locales.Commands_List_Description)
+        Localizer.Get("Commands.List.Name"),
+        Localizer.Get("Commands.List.Description"))
     {
         var clientsOnlyOption = new Option<bool>(
-            $"--{Locales.Locales.Commands_List_Options_ClientsOnly_Name}",
+            $"--{Localizer.Get("Commands.List.Options.ClientsOnly.Name")}",
             () => false,
-            Locales.Locales.Commands_List_Options_ClientsOnly_Description);
+            Localizer.Get("Commands.List.Options.ClientsOnly.Description"));
         var limitOption = new Option<int>(
-            $"--{Locales.Locales.Commands_List_Options_Limit_Name}",
+            $"--{Localizer.Get("Commands.List.Options.Limit.Name")}",
             () => 10,
-            Locales.Locales.Commands_List_Options_Limit_Description);
+            Localizer.Get("Commands.List.Options.Limit.Description"));
         AddOption(clientsOnlyOption);
         AddOption(limitOption);
 
         this.SetHandler((clientsOnly, limit) =>
             {
                 if (limit < 0)
-                    throw new ArgumentOutOfRangeException(nameof(limit), Locales.Locales.Commands_List_Exceptions_LimitArgument);
+                    throw new ArgumentOutOfRangeException(nameof(limit),
+                        Localizer.Get("Commands.List.Exceptions.Limit"));
 
                 var table = new Table()
-                    .AddColumn(Locales.Locales.Tables_ListCommandEntities_Id)
-                    .AddColumn(Locales.Locales.Tables_ListCommandEntities_Name)
-                    .AddColumn(Locales.Locales.Tables_ListCommandEntities_Position)
-                    .AddColumn(Locales.Locales.Tables_ListCommandEntities_Rotation)
-                    .AddColumn(Locales.Locales.Tables_ListCommandEntities_WorldId);
+                    .AddColumn(Localizer.Get("Tables.ListCommandEntities.Id"))
+                    .AddColumn(Localizer.Get("Tables.ListCommandEntities.Name"))
+                    .AddColumn(Localizer.Get("Tables.ListCommandEntities.Position"))
+                    .AddColumn(Localizer.Get("Tables.ListCommandEntities.Rotation"))
+                    .AddColumn(Localizer.Get("Tables.ListCommandEntities.WorldId"));
 
                 var list = server.World.Entities;
                 if (clientsOnly)
                     list = list.OfType<VoiceCraftNetworkEntity>();
 
-                AnsiConsole.WriteLine(Locales.Locales.Commands_List_Showing.Replace("{limit}", limit.ToString()));
+                AnsiConsole.WriteLine(Localizer.Get($"Commands.List.Showing:{limit}"));
                 foreach (var entity in list)
                 {
                     if (limit <= 0)
@@ -48,7 +50,7 @@ public class ListCommand : Command
                         entity.Id.ToString(),
                         entity.Name,
                         $"[red]{entity.Position.X}[/], [green]{entity.Position.Y}[/], [blue]{entity.Position.Z}[/]",
-                        $"[red]{entity.Rotation.X}[/], [green]{entity.Rotation.Y}[/], [blue]{entity.Rotation.Z}[/], [yellow]{entity.Rotation.W}[/]",
+                        $"[red]{entity.Rotation.X}[/], [green]{entity.Rotation.Y}[/]",
                         entity.WorldId);
                 }
 

@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
-             xmlns:locale="using:Jeek.Avalonia.Localization"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:SettingsViewModel"
@@ -22,7 +22,7 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.General.General'}" />
             </Button>
-            
+
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToAppearanceSettingsCommand}"
                     Background="Transparent"
@@ -46,7 +46,7 @@
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.Audio.Audio'}" />
             </Button>
-            
+
             <Button HorizontalAlignment="Stretch"
                     Command="{Binding GoToNetworkSettingsCommand}"
                     Background="Transparent"
@@ -57,6 +57,18 @@
                            VerticalAlignment="Center"
                            FontWeight="Bold"
                            Text="{locale:Localize 'Settings.Network.Network'}" />
+            </Button>
+
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding GoToHotKeySettingsCommand}"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    Margin="0"
+                    Height="50">
+                <TextBlock FontSize="16"
+                           VerticalAlignment="Center"
+                           FontWeight="Bold"
+                           Text="{locale:Localize 'Settings.HotKey.HotKey'}" />
             </Button>
 
             <Button HorizontalAlignment="Stretch"

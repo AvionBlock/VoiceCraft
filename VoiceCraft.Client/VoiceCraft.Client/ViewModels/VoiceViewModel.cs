@@ -3,25 +3,26 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LiteNetLib;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels;
 
 public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private EntityViewModel? _selectedEntity;
     [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
-    [ObservableProperty] private bool _showModal;
+    [ObservableProperty] private bool _isSpeaking;
     private VoipBackgroundProcess? _process;
+    [ObservableProperty] private EntityViewModel? _selectedEntity;
+    [ObservableProperty] private bool _showModal;
+    [ObservableProperty] private string _statusDescriptionText = string.Empty;
 
     [ObservableProperty] private string _statusTitleText = string.Empty;
-    [ObservableProperty] private string _statusDescriptionText = string.Empty;
     public override bool DisableBackButton { get; protected set; } = true;
 
     public void Dispose()
@@ -32,6 +33,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
             _process.OnUpdateTitle -= OnUpdateTitle;
             _process.OnUpdateMute -= OnUpdateMute;
             _process.OnUpdateDeafen -= OnUpdateDeafen;
+            _process.OnUpdateSpeaking -= OnUpdateSpeaking;
             _process.OnEntityAdded -= OnEntityAdded;
             _process.OnEntityRemoved -= OnEntityRemoved;
         }
@@ -63,7 +65,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     [RelayCommand]
     private void Disconnect()
     {
-        if (_process == null || _process.ConnectionState == ConnectionState.Disconnected)
+        if (_process == null || _process.ConnectionState == VcConnectionState.Disconnected)
         {
             navigationService.Back(); //If disconnected. Return to previous page.
             return;
@@ -76,7 +78,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     {
         if (data is VoiceNavigationData navigationData)
             _process = navigationData.Process;
-        
+
         if (_process == null || _process.HasEnded)
         {
             navigationService.Back();
@@ -89,6 +91,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         _process.OnUpdateDescription += OnUpdateDescription;
         _process.OnUpdateMute += OnUpdateMute;
         _process.OnUpdateDeafen += OnUpdateDeafen;
+        _process.OnUpdateSpeaking += OnUpdateSpeaking;
         _process.OnEntityAdded += OnEntityAdded;
         _process.OnEntityRemoved += OnEntityRemoved;
 
@@ -119,6 +122,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
                 _process.OnUpdateDescription -= OnUpdateDescription;
                 _process.OnUpdateMute -= OnUpdateMute;
                 _process.OnUpdateDeafen -= OnUpdateDeafen;
+                _process.OnUpdateSpeaking -= OnUpdateSpeaking;
                 _process.OnEntityAdded -= OnEntityAdded;
                 _process.OnEntityRemoved -= OnEntityRemoved;
             }
@@ -135,6 +139,11 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     private void OnUpdateDeafen(bool deafened)
     {
         Dispatcher.UIThread.Invoke(() => { IsDeafened = deafened; });
+    }
+
+    private void OnUpdateSpeaking(bool speaking)
+    {
+        Dispatcher.UIThread.Invoke(() => { IsSpeaking = speaking; });
     }
 
     private void OnEntityAdded(EntityViewModel entity)

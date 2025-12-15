@@ -18,7 +18,9 @@ namespace VoiceCraft.Core
             _backgroundTask = new Task(() => process.Start(_cts.Token));
         }
 
-        public bool IsCompleted => Status == BackgroundProcessStatus.Completed || Status == BackgroundProcessStatus.Error;
+        public bool IsCompleted =>
+            Status == BackgroundProcessStatus.Completed || Status == BackgroundProcessStatus.Error;
+
         public BackgroundProcessStatus Status => GetStatus();
         public IBackgroundProcess Process { get; }
 
@@ -43,7 +45,8 @@ namespace VoiceCraft.Core
             if (_cts.IsCancellationRequested) return;
             _cts.Cancel();
 
-            while (!IsCompleted) Thread.Sleep(10);
+            var sw = new SpinWait();
+            while (!IsCompleted) sw.SpinOnce();
         }
 
         private void ThrowIfDisposed()

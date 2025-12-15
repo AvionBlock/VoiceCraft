@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
-using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Windows.Audio;
 using VoiceCraft.Client.Windows.Permissions;
@@ -19,31 +18,40 @@ internal sealed class Program
     public static void Main(string[] args)
     {
         var nativeStorage = new NativeStorageService();
-        CrashLogService.NativeStorageService = nativeStorage;
-        CrashLogService.Load();
+        LogService.NativeStorageService = nativeStorage;
+        LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-        
-        App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+        try
+        {
+            //Register Speex Preprocessors
+            App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
+                Constants.SpeexDspEchoCancelerGuid,
+                "SpeexDsp Echo Canceler",
+                typeof(SpeexDspEchoCanceler)));
+            App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
+                Constants.SpeexDspAutomaticGainControllerGuid,
+                "SpeexDsp Automatic Gain Controller",
+                typeof(SpeexDspAutomaticGainController)));
+            App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
+                Constants.SpeexDspDenoiserGuid,
+                "SpeexDsp Denoiser",
+                typeof(SpeexDspDenoiser)));
 
-        //Register Speex Preprocessors
-        App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
-            Constants.SpeexDspEchoCancelerGuid,
-            "SpeexDsp Echo Canceler",
-            typeof(SpeexDspEchoCanceler)));
-        App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
-            Constants.SpeexDspAutomaticGainControllerGuid,
-            "SpeexDsp Automatic Gain Controller",
-            typeof(SpeexDspAutomaticGainController)));
-        App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
-            Constants.SpeexDspDenoiserGuid,
-            "SpeexDsp Denoiser",
-            typeof(SpeexDspDenoiser)));
-
-        App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
-        App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
-        App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
-
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+            App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
+            App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+            App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        finally
+        {
+            if (App.ServiceProvider != null)
+            {
+                var serviceProvider = App.ServiceProvider;
+                serviceProvider.Dispose();
+            }
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
@@ -60,7 +68,7 @@ internal sealed class Program
         try
         {
             if (e.ExceptionObject is Exception ex)
-                CrashLogService.Log(ex); //Log it
+                LogService.LogCrash(ex); //Log it
         }
         catch (Exception writeEx)
         {

@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
-             xmlns:locale="using:Jeek.Avalonia.Localization"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:CreditsViewModel"
@@ -14,13 +14,13 @@
                 VerticalAlignment="Top"
                 Classes="card">
             <StackPanel Spacing="10">
-                <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding AppVersion}" />
-                
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding AppVersion }" />
+
                 <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Version}" />
-                
+
                 <TextBlock FontSize="16" FontWeight="Bold" Text="{Binding Codec}" />
 
-                <TextBlock FontSize="16" FontWeight="Bold" Text="{locale:Localize 'Credits.Contributors'}" />
+                <TextBlock FontSize="16" FontWeight="Bold" Text="{locale:Localize Credits.Contributors}" />
 
                 <ListBox Background="Transparent"
                          ItemsSource="{Binding Contributors}"
@@ -43,7 +43,7 @@
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Classes="tag" Padding="5">
-                                                <TextBlock Text="{Binding}" />
+                                                <TextBlock Text="{locale:Localize {Binding}}" />
                                             </Border>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>

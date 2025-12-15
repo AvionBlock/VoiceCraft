@@ -4,10 +4,14 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
-public partial class ServersViewModel(NavigationService navigationService, NotificationService notificationService, SettingsService settings)
+public partial class ServersViewModel(
+    NavigationService navigationService,
+    NotificationService notificationService,
+    SettingsService settings)
     : ViewModelBase, IDisposable
 {
     [ObservableProperty] private ServerViewModel? _selectedServer;
@@ -37,7 +41,8 @@ public partial class ServersViewModel(NavigationService navigationService, Notif
     private void DeleteServer(ServerViewModel server)
     {
         ServersSettings.ServersSettings.RemoveServer(server.Server);
-        notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_Servers, $"{server.Name} has been removed.");
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Removed:{server.Name}"),
+            Localizer.Get("Notification.Servers.Badge"));
         _ = settings.SaveAsync();
     }
 

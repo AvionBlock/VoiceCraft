@@ -1,32 +1,55 @@
 # VoiceCraft Proximity Chat
 
-Proximity voice chat for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
+Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS (soon), Linux and MacOS
+(soon).
 
 <p align="center">
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
 > [!WARNING]
-> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE ADDON/WORLD!
+> VOICECRAFT IS UNDERGOING A MASSIVE CHANGE! This version of VoiceCraft is still in beta! This is only on the master
+> branch as it is currently the most stable
+> build available and nearing the completion for a full release! If you wish to use the latest stable/legacy v1.0.7
+> version, You can go to the [Latest Stable Release](https://github.com/AvionBlock/VoiceCraft/releases/latest).
+
+> [!WARNING]
+> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
+> ADDON/WORLD! It is a collection of both addons, servers and client software working together in order to simulate
+> proximity chat.
 
 > [!NOTE]
-> VoiceCraft is also not a standard voice chat that comes with groups or channels. It is designed to be customized through the api allowing recreation of channels, proximity, effects and more through the session based Addon API. This is essentially up to the server owner to install or add-on developer to implement.
+> VoiceCraft is also not a standard voice chat that comes with groups or channels. It is designed to be customized
+> through the api allowing recreation of channels, proximity, effects and more through the session based Addon API. This
+> is essentially up to the server owner to install or add-on developer to implement.
 
 ## Project Description
 
-VoiceCraft is a cross platform proximity voice chat solution for minecraft bedrock edition. VoiceCraft supports a wide
-range of devices to increase it's availability to players and can indirectly support any other devices such as consoles
-through the binding system.
+VoiceCraft is a cross-platform proximity voice chat solution for minecraft bedrock edition. VoiceCraft supports a wide
+range of devices to increase its availability to players and can indirectly support any other devices such as consoles
+through the standard binding system.
 
-VoiceCraft is coded in C# for both the server and applications using the Avalonia framework. VoiceCraft also uses the
-Opus codec for voice data compression and SpeexDSP for voice enhancements with optional support for hardware related preprocessors on android devices.
+VoiceCraft is developed in C# for both the server and client application which uses the avalonia framework and uses an
+addon developed in JavaScript to establish a connection to the vanilla minecraft server.
+VoiceCraft also uses the opus codec for audio data compression and SpeexDSP for voice enhancements with optional support
+for hardware related preprocessors on android devices.
 
 There is also a comprehensive API system in place that addon developer's can use to customize VoiceCraft's behavior,
-audio effects, audio simulations and more!
+audio effects, audio simulations, authentication, and more!
 
 <p align="center">
   <img width="800" src="./Images/MainPage.png">
 </p>
+
+## Packages, Guides And Resources
+
+- ### [Wiki](https://avionblock.github.io/VoiceCraft/)
+- ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
+- ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
+- ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
+- ### [PocketMine Plugin](https://github.com/AvionBlock/VoiceCraft-PocketMine)
+- ### [Docker Package](https://github.com/AvionBlock/VoiceCraft-Docker/pkgs/container/voicecraft)
+- ### [Docker Page](https://hub.docker.com/r/sinevector241/voicecraft/tags)
 
 ## Supported Devices
 
@@ -37,15 +60,15 @@ audio effects, audio simulations and more!
 
 | Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
 |-------------|-----|-----|-------|-------|---------------|
-| Linux       | ✅   | ❌   | ✅     | ✅     |OpenAL|
-| Android     | ❎   | ❎   | ✅     | ✅     |Android API|
-| Windows     | ✅   | ✅   | ❌     | ✅     |WinMM|
-| iOS         | ❌   | ❌   | ✅     | ✅     | N.A.|
-| MacOS       | ✅   | ❌   | ❌     | ✅     |N.A.|
-| Web         | ❗   | ❗   | ❗     | ❗     |Web API|
-| XBOX        | ❌   | ❌   | ❌     | ❌     |N.A.|
-| PlayStation | ❌   | ❌   | ❌     | ❌     |N.A.|
-| Switch      | ❌   | ❌   | ❌     | ❌     |N.A.|
+| Linux       | ✅   | ❌   | ✅     | ✅     | OpenAL        |
+| Android     | ❎   | ❎   | ✅     | ✅     | Android API   |
+| Windows     | ✅   | ✅   | ❌     | ✅     | WinMM         |
+| iOS         | ❌   | ❌   | ✅     | ✅     | N.A.          |
+| MacOS       | ✅   | ❌   | ❌     | ✅     | N.A.          |
+| Web         | ❗   | ❗   | ❗     | ❗     | Web API       |
+| XBOX        | ❌   | ❌   | ❌     | ❌     | N.A.          |
+| PlayStation | ❌   | ❌   | ❌     | ❌     | N.A.          |
+| Switch      | ❌   | ❌   | ❌     | ❌     | N.A.          |
 
 ## Hosts
 
@@ -54,19 +77,26 @@ audio effects, audio simulations and more!
 ## Project Dependencies
 
 > [!NOTE]
-> Some dependencies are not used in full for example VoiceCraft only depends on NAudio.Core for all platforms but also
-> depends on NAudio.WinForms and NAudio.WinMM for windows.
+> All dotnet and microsoft extension packages aren't listed. If you wish to view all dependencies, You can look at
+> the [Directory.Packages.props](./Directory.Packages.props) file.
+
+### All Projects
 
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
+- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
+
+### Client
+
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
-- [Notification.Avalonia](https://github.com/AvaloniaCommunity/Notification.Avalonia)
-- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
-- [Jeek.Avalonia.Localization](https://github.com/tifish/Jeek.Avalonia.Localization)
+- [Message.Avalonia](https://github.com/xiyaowong/Message.Avalonia)
+- [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
 - [NAudio](https://github.com/naudio/NAudio)
-- [NWaves](https://github.com/ar1st0crat/NWaves)
 - [OpenTK (OpenAL)](https://github.com/opentk/opentk)
-- [CommunityToolkit.MVVM](https://github.com/CommunityToolkit/dotnet)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
-- [Microsoft.Maui.Essentials](https://github.com/dotnet/maui)
-- [Microsoft.Extensions.DependencyInjection](https://github.com/dotnet/runtime)
+
+### Server
+
+- [WatsonWebsocket](https://github.com/jchristn/WatsonWebsocket)
+- [Watson.Lite](https://github.com/dotnet/WatsonWebserver)
+- [Spectre.Console](https://github.com/spectreconsole/spectre.console)

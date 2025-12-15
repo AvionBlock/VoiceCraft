@@ -1,10 +1,13 @@
 using System;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
-public partial class AdvancedSettingsViewModel(NavigationService navigationService, NotificationService notificationService) : ViewModelBase
+public partial class AdvancedSettingsViewModel(
+    NavigationService navigationService,
+    NotificationService notificationService) : ViewModelBase
 {
     [RelayCommand]
     private void TriggerGc()
@@ -14,8 +17,9 @@ public partial class AdvancedSettingsViewModel(NavigationService navigationServi
             var previousSnapshot = GC.GetTotalMemory(false);
             GC.Collect();
             notificationService.SendNotification(
-                Locales.Locales.Notification_Badges_GC,
-                $"Garbage Collection Triggered. Memory Cleared: {Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}mb");
+                Localizer.Get(
+                    $"Notification.GC.Triggered:{Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}"),
+                Localizer.Get("Notification.GC.Badge"));
         }
         catch (Exception ex)
         {

@@ -12,17 +12,18 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Jeek.Avalonia.Localization"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-        <PackageReference Include="Spectre.Console" />
+        <PackageReference Include="Fleck" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+        <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
+        <PackageReference Include="Watson.Lite"/>
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Locales\nl-nl.json"/>
-        <EmbeddedResource Include="Locales\en-us.json"/>
-        <EmbeddedResource Include="Locales\zh-cn.json"/>
-        <EmbeddedResource Include="Locales\zh-tw.json"/>
+        <EmbeddedResource Include="Locales\nl-NL.json"/>
+        <EmbeddedResource Include="Locales\en-US.json"/>
+        <EmbeddedResource Include="Locales\zh-CN.json"/>
+        <EmbeddedResource Include="Locales\zh-TW.json"/>
     </ItemGroup>
 
 </Project>

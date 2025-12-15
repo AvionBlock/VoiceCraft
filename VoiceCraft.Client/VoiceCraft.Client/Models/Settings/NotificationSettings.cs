@@ -17,7 +17,7 @@ public class NotificationSettings : Setting<NotificationSettings>
             OnUpdated?.Invoke(this);
         }
     }
-    
+
     public ushort DismissDelayMs
     {
         get => _dismissDelayMs;

@@ -3,10 +3,14 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
-public partial class AddServerViewModel(NotificationService notificationService, SettingsService settings, NavigationService navigationService) : ViewModelBase
+public partial class AddServerViewModel(
+    NotificationService notificationService,
+    SettingsService settings,
+    NavigationService navigationService) : ViewModelBase
 {
     [ObservableProperty] private Server _server = new();
 
@@ -24,8 +28,8 @@ public partial class AddServerViewModel(NotificationService notificationService,
         try
         {
             Servers.AddServer(Server);
-
-            notificationService.SendSuccessNotification(Locales.Locales.Notification_Badges_Servers, $"{Server.Name} has been added.");
+            notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Added:{Server.Name}"),
+                Localizer.Get("Notification.Servers.Badge"));
             Server = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();

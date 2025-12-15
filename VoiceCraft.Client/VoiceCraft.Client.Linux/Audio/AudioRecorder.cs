@@ -3,6 +3,7 @@ using System.Threading;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux.Audio;
 
@@ -35,7 +36,8 @@ public class AudioRecorder : IAudioRecorder
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Sample rate must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Sample rate must be greater than or equal to zero!");
 
             _sampleRate = value;
         }
@@ -47,7 +49,8 @@ public class AudioRecorder : IAudioRecorder
         set
         {
             if (value < 1)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Channels must be greater than or equal to one!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Channels must be greater than or equal to one!");
 
             _channels = value;
         }
@@ -75,7 +78,8 @@ public class AudioRecorder : IAudioRecorder
         set
         {
             if (value < 0)
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Buffer milliseconds must be greater than or equal to zero!");
+                throw new ArgumentOutOfRangeException(nameof(value), value,
+                    "Buffer milliseconds must be greater than or equal to zero!");
 
             _bufferMilliseconds = value;
         }
@@ -98,7 +102,7 @@ public class AudioRecorder : IAudioRecorder
             ThrowIfDisposed();
 
             if (CaptureState != CaptureState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous recorder.
             CleanupRecorder();
@@ -125,7 +129,8 @@ public class AudioRecorder : IAudioRecorder
 
             //Triple sample size so we don't skip any recorder audio.
             _nativeRecorder = ALC.CaptureOpenDevice(SelectedDevice, SampleRate, format, _bufferSamples * 3);
-            if (_nativeRecorder == ALCaptureDevice.Null) throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+            if (_nativeRecorder == ALCaptureDevice.Null)
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
         }
         catch
         {
@@ -222,7 +227,7 @@ public class AudioRecorder : IAudioRecorder
     private void ThrowIfNotInitialized()
     {
         if (_nativeRecorder == ALCaptureDevice.Null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)

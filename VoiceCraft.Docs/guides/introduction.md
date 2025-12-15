@@ -4,17 +4,17 @@ Welcome to VoiceCraft Guide Home Page. To get started, click on one of the guide
 
 # Guides
 # [Client Installation](#tab/clientInstallation)
-- [Windows](/guides/client_installation/windows)
-- [Linux](/guides/client_installation/linux)
-- [Android](/guides/client_installation/android)
-- [iOS](/guides/client_installation/ios)
-- [MacOS](/guides/client_installation/macos)
+- [Windows](./client_installation/windows.md)
+- [Linux](./client_installation/linux.md)
+- [Android](./client_installation/android.md)
+- [iOS](./client_installation/ios.md)
+- [MacOS](./client_installation/macos.md)
 
 # [Server Installation](#tab/serverInstallation)
-- [Windows](/guides/server_installation/windows)
-- [Linux](/guides/server_installation/linux)
-- [Android](/guides/server_installation/android)
-- [iOS](/guides/server_installation/ios)
-- [MacOS](/guides/server_installation/macos)
+- [Windows](./server_installation/windows.md)
+- [Linux](./server_installation/linux.md)
+- [Android](./server_installation/android.md)
+- [iOS](./server_installation/ios.md)
+- [MacOS](./server_installation/macos.md)
 
 ---

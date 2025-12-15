@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux;
 
@@ -98,7 +99,7 @@ public class NativeBackgroundService(NotificationService notificationService) : 
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification($"Background Error: {ex}");
+            notificationService.SendErrorNotification(Localizer.Get($"BackgroundService.BackgroundError:{ex.Message}"));
         }
     }
 }

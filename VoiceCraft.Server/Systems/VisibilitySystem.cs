@@ -1,6 +1,5 @@
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Server.Data;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Server.Systems;
 
@@ -14,7 +13,7 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private void UpdateVisibleNetworkEntities(VoiceCraftEntity entity)
     {
         //Remove dead network entities.
-        entity.TrimVisibleDeadEntities();
+        entity.TrimDeadEntities();
 
         //Add any new possible entities.
         var visibleNetworkEntities = world.Entities.OfType<VoiceCraftNetworkEntity>();
@@ -33,11 +32,11 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     private bool EntityVisibility(VoiceCraftEntity from, VoiceCraftNetworkEntity to)
     {
-        if (!from.VisibleTo(to)) return false;
+        if ((from.TalkBitmask & to.ListenBitmask) == 0) return false;
         foreach (var effect in audioEffectSystem.Effects)
         {
             if (effect.Value is not IVisible visibleEffect) continue;
-            if (!visibleEffect.Visibility(from, to)) return false;
+            if (!visibleEffect.Visibility(from, to, effect.Key)) return false;
         }
 
         return true;

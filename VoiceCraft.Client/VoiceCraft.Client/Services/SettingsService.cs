@@ -11,9 +11,15 @@ namespace VoiceCraft.Client.Services;
 public class SettingsService
 {
     private readonly StorageService _storageService;
-    private SettingsStructure _settings = new();
     private bool _queueWrite;
+    private SettingsStructure _settings = new();
     private bool _writing;
+
+    public SettingsService(StorageService storageService)
+    {
+        _storageService = storageService;
+        Load();
+    }
 
     // ReSharper disable once InconsistentNaming
     public Guid UserGuid => _settings.UserGuid;
@@ -25,12 +31,6 @@ public class SettingsService
     public ThemeSettings ThemeSettings => _settings.ThemeSettings;
     public NetworkSettings NetworkSettings => _settings.NetworkSettings;
     public UserSettings UserSettings => _settings.UserSettings;
-
-    public SettingsService(StorageService storageService)
-    {
-        _storageService = storageService;
-        Load();
-    }
 
     public async Task SaveImmediate()
     {
@@ -60,7 +60,9 @@ public class SettingsService
         if (!_storageService.Exists(Constants.SettingsFile)) return;
 
         var result = _storageService.Load(Constants.SettingsFile);
-        var loadedSettings = JsonSerializer.Deserialize<SettingsStructure>(result, SettingsStructureGenerationContext.Default.SettingsStructure);
+        var loadedSettings =
+            JsonSerializer.Deserialize<SettingsStructure>(result,
+                SettingsStructureGenerationContext.Default.SettingsStructure);
         if (loadedSettings == null) return;
 
         loadedSettings.AudioSettings.OnLoading();
@@ -85,7 +87,8 @@ public class SettingsService
         UserSettings.OnSaving();
 
         await _storageService.SaveAsync(Constants.SettingsFile,
-            JsonSerializer.SerializeToUtf8Bytes(_settings, SettingsStructureGenerationContext.Default.SettingsStructure));
+            JsonSerializer.SerializeToUtf8Bytes(_settings,
+                SettingsStructureGenerationContext.Default.SettingsStructure));
     }
 }
 

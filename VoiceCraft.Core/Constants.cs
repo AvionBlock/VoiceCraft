@@ -4,14 +4,19 @@ namespace VoiceCraft.Core
 {
     public static class Constants
     {
+        public const int Major = 1; //These need to be the same on both client and server!
+        public const int Minor = 1; //These need to be the same on both client and server!
+        
         //Tick
         public const int TickRate = 50;
 
         //Limits
         public const int FileWritingDelay = 2000;
         public const int MaxStringLength = 100; //100 characters.
+        public const int MaxDescriptionStringLength = 500; //500 characters.
         public const float FloatingPointTolerance = 0.001f;
         public const int MaximumEncodedBytes = 1000; //1000 bytes of allocation for encoding.
+        public const int MaxPacketPoolSize = 100; //100 Packets Per type.
 
         //Audio
         public const AudioFormat Format = AudioFormat.Pcm16;
@@ -20,28 +25,49 @@ namespace VoiceCraft.Core
         public const int Channels = 1;
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
-        public const int OutputBufferSizeMs = FrameSizeMs * 50; //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
+
+        //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
+        public const int OutputBufferSizeMs = FrameSizeMs * 50;
+        // Prefill buffer before we start releasing into the audio driver to prevent hitches.
+        public const int PrefillBufferSizeMs = FrameSizeMs * 2;
 
         //Audio Calculations
         public const int BlockAlign = Channels * (BitDepth / 8);
         public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
-        public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame; //16-bit byte audio. this works out to 1920
+
+        //16-bit byte audio. this works out to 1920
+        public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame;
+        public const int ShortsPerFrame = BytesPerFrame / sizeof(short);
 
         public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
         public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
         
+        public const int PrefillBufferSamples = SampleRate / 1000 * PrefillBufferSizeMs;
+        public const int PrefillBufferBytes = BitDepth / 8 * Channels * PrefillBufferSamples;
+        public const int PrefillBufferShorts = BitDepth / 16 * Channels * PrefillBufferSamples;
+
         //Default Country Code & Fallback
         public const string DefaultLanguage = "en-US";
 
         //Storage
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
-        public const string CrashLogsFile = "CrashLogs.json";
+        public const string ExceptionLogsFile = "ExceptionLogs.json";
+
+        //RPC
+        public const string ApplicationId = "1364434932968984669";
+        public const string GithubButton = "VoiceCraft";
+        public const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
+        public const string LargeImageKey = "vc";
+        public const string LargeImageText = "VoiceCraft";
 
         //Settings GUIDS.
         //Speex DSP
         public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
-        public static readonly Guid SpeexDspAutomaticGainControllerGuid = Guid.Parse("AE3F02FF-41A7-41FD-87A0-8EB0DA82B21C");
+
+        public static readonly Guid SpeexDspAutomaticGainControllerGuid =
+            Guid.Parse("AE3F02FF-41A7-41FD-87A0-8EB0DA82B21C");
+
         public static readonly Guid SpeexDspDenoiserGuid = Guid.Parse("6E911874-5D10-4C8C-8E0A-6B30DF16EF78");
 
         //Background Images

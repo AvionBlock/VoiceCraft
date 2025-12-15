@@ -1,5 +1,6 @@
 using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Core.Interfaces
 {
@@ -7,8 +8,8 @@ namespace VoiceCraft.Core.Interfaces
     {
         EffectType EffectType { get; }
 
-        public ulong Bitmask { get; }
+        void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count);
 
-        void Process(VoiceCraftEntity from, VoiceCraftEntity to, Span<float> data, int count);
+        void Reset();
     }
 }

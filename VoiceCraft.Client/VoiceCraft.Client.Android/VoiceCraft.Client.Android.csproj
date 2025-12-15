@@ -24,10 +24,12 @@
 
     <PropertyGroup Condition="'$([MSBuild]::IsOSUnixLike())' == 'true'">
         <AndroidSDKDirectory>$(HOME)/Android/Sdk</AndroidSDKDirectory>
+        <JavaSdkDirectory>$(HOME)/.jdk-21.0.9+10/</JavaSdkDirectory>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Android"/>
+        <PackageReference Include="SpeexDSPSharp"/>
         <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen"/>
     </ItemGroup>
 

@@ -5,7 +5,9 @@ using Microsoft.Maui.Devices;
 
 namespace VoiceCraft.Client.Services;
 
-public class PermissionsService(NotificationService notificationService, Func<Type, Permissions.BasePermission> getPermission)
+public class PermissionsService(
+    NotificationService notificationService,
+    Func<Type, Permissions.BasePermission> getPermission)
 {
     public async Task<PermissionStatus> CheckAndRequestPermission<TPermission>(string? rationalDescription = null)
         where TPermission : Permissions.BasePermission, new()
@@ -18,8 +20,8 @@ public class PermissionsService(NotificationService notificationService, Func<Ty
             case PermissionStatus.Granted:
                 return status;
             case PermissionStatus.Denied when DeviceInfo.Platform == DevicePlatform.iOS:
-                // Prompt the user to turn on in settings
-                // On iOS once a permission has been denied it may not be requested again from the application
+                if(!string.IsNullOrWhiteSpace(rationalDescription))
+                    notificationService.SendErrorNotification(rationalDescription);
                 return status;
             case PermissionStatus.Unknown:
             case PermissionStatus.Disabled:
@@ -31,7 +33,8 @@ public class PermissionsService(NotificationService notificationService, Func<Ty
 
         status = await permission.RequestAsync();
 
-        if (permission.ShouldShowRationale() && !string.IsNullOrWhiteSpace(rationalDescription)) notificationService.SendErrorNotification(rationalDescription);
+        if (permission.ShouldShowRationale() && !string.IsNullOrWhiteSpace(rationalDescription))
+            notificationService.SendErrorNotification(rationalDescription);
         return status;
     }
 }

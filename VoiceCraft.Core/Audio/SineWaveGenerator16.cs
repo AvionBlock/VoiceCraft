@@ -21,17 +21,20 @@ namespace VoiceCraft.Core.Audio
         public float Amplitude { get; set; } = 1.0f;
 
         public float Phase { get; set; } = 0f;
-        
+
         public int Read(Span<short> buffer, int count)
         {
             // Calculate the phase increment per sample based on the frequency
             _phaseIncrement = (float)(2.0 * Math.PI * Frequency / SampleRate);
-            
+
             for (var i = 0; i < count; i++) buffer[i] = FloatToShort(GenerateSample());
             return count;
         }
-        
-        public int Read(short[] buffer, int count) => Read(buffer.AsSpan(), count);
+
+        public int Read(short[] buffer, int count)
+        {
+            return Read(buffer.AsSpan(), count);
+        }
 
         private static short FloatToShort(float value)
         {

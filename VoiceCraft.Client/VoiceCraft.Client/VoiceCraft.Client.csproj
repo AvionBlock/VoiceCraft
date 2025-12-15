@@ -27,12 +27,10 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="DiscordRichPresence"/>
-        <PackageReference Include="Jeek.Avalonia.Localization"/>
+        <PackageReference Include="Message.Avalonia" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
-        <PackageReference Include="Notification.Avalonia"/>
         <PackageReference Include="OpusSharp"/>
-        <PackageReference Include="SpeexDSPSharp"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -107,10 +105,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="Locales\nl-NL.json" />
-        <EmbeddedResource Include="Locales\en-US.json" />
-        <EmbeddedResource Include="Locales\zh-CHS.json" />
-        <EmbeddedResource Include="Locales\zh-CHT.json" />
+        <EmbeddedResource Include="Locales\nl-NL.json"/>
+        <EmbeddedResource Include="Locales\en-US.json"/>
+        <EmbeddedResource Include="Locales\zh-CHS.json"/>
+        <EmbeddedResource Include="Locales\zh-CHT.json"/>
     </ItemGroup>
 
     <ItemGroup>
