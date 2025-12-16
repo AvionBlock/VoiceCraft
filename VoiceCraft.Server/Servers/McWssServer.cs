@@ -102,6 +102,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 packet.Serialize(_writer);
+                Console.WriteLine($"Sending Packet: {packet.PacketType}");
                 netPeer.SendPacket(_writer);
             }
         }
@@ -122,6 +123,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 packet.Serialize(_writer);
+                Console.WriteLine($"Sending Packet: {packet.PacketType}");
                 foreach (var netPeer in netPeers)
                 {
                     if (excludes.Contains(netPeer.Value)) continue;
@@ -181,12 +183,10 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         var stringBuilder = new StringBuilder();
         if (!netPeer.RetrieveOutboundPacket(out var outboundPacket)) return false;
         stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
-        while (stringBuilder.Length < Config.MaxStringLengthPerCommand &&
-               netPeer.RetrieveOutboundPacket(out outboundPacket))
+        while (netPeer.RetrieveOutboundPacket(out outboundPacket) && stringBuilder.Length < Config.MaxStringLengthPerCommand)
         {
             stringBuilder.Append($"|{Z85.GetStringWithPadding(outboundPacket)}");
         }
-
         SendPacketCommand(socket, stringBuilder.ToString());
         return true;
     }

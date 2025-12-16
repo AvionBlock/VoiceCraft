@@ -68,7 +68,6 @@ namespace VoiceCraft.Core.Network
         {
             if (writer.Length > short.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(writer));
-
             _outboundPacketQueue.Enqueue(writer.CopyData());
         }
 
