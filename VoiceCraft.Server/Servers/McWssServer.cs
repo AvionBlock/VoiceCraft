@@ -102,7 +102,6 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 packet.Serialize(_writer);
-                Console.WriteLine($"Sending Packet: {packet.PacketType}");
                 netPeer.SendPacket(_writer);
             }
         }
@@ -123,7 +122,6 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 packet.Serialize(_writer);
-                Console.WriteLine($"Sending Packet: {packet.PacketType}");
                 foreach (var netPeer in netPeers)
                 {
                     if (excludes.Contains(netPeer.Value)) continue;
