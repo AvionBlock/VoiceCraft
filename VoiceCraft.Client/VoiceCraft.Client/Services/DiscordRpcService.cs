@@ -28,7 +28,7 @@ public class DiscordRpcService : IDisposable
 
     public DiscordRpcService()
     {
-        if (OperatingSystem.IsBrowser()) return;
+        if (OperatingSystem.IsBrowser() || OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) return;
 
         _rpcClient = new DiscordRpcClient(Constants.ApplicationId);
 

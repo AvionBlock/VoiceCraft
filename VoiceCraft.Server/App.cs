@@ -67,7 +67,7 @@ public static class App
             var commandCount = 0;
             foreach (var command in Program.ServiceProvider.GetServices<Command>())
             {
-                rootCommand.AddCommand(command);
+                rootCommand.Add(command);
                 commandCount++;
             }
 
@@ -135,7 +135,7 @@ public static class App
         try
         {
             if (_bufferedCommand != null)
-                await rootCommand.InvokeAsync(_bufferedCommand);
+                await rootCommand.Parse(_bufferedCommand).InvokeAsync();
         }
         catch (Exception ex)
         {

@@ -9,6 +9,6 @@ public class StopCommand : Command
         Localizer.Get("Commands.Stop.Name"),
         Localizer.Get("Commands.Stop.Description"))
     {
-        this.SetHandler(() => { App.Shutdown(); });
+        SetAction(_ => { App.Shutdown(); });
     }
 }
