@@ -135,13 +135,13 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             {
                 _dataWriter.Reset();
                 loginPacket.Serialize(_dataWriter);
+                ConnectionState = VcConnectionState.Connecting;
                 _serverPeer = _netManager.Connect(ip, port, _dataWriter) ??
                               throw new InvalidOperationException("A connection request is awaiting!");
-                ConnectionState = VcConnectionState.Connecting;
             }
-
+            
             _ = await GetResponseAsync<VcAcceptResponsePacket>(loginPacket.RequestId,
-                TimeSpan.FromMilliseconds(_netManager.DisconnectTimeout * 2));
+                TimeSpan.FromSeconds(8));
             ConnectionState = VcConnectionState.Connected;
             OnConnected?.Invoke();
         }

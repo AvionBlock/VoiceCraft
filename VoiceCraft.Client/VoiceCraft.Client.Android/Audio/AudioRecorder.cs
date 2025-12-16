@@ -145,7 +145,7 @@ public class AudioRecorder : IAudioRecorder
                 throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             var device = _audioManager.GetDevices(GetDevicesTargets.Inputs)
-                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
+                ?.FirstOrDefault(x => $"{x.ProductName?.Truncate(8)} - {x.Type}" == SelectedDevice);
             _nativeRecorder.SetPreferredDevice(device);
         }
         catch
