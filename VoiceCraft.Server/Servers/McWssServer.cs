@@ -421,12 +421,6 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
     {
         try
         {
-            if (_audioEffectSystem.TryGetEffect(packet.Bitmask, out var effect) &&
-                effect.EffectType == packet.EffectType)
-            {
-                return;
-            }
-
             switch (packet.EffectType)
             {
                 case EffectType.Visibility:

@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Audio.Effects
             if ((bitmask & effectBitmask) == 0) return; //Not enabled.
 
             var rot = (float)(Math.Atan2(to.Position.Z - from.Position.Z, to.Position.X - from.Position.X) -
-                              to.Rotation.X * Math.PI / 180);
+                              to.Rotation.Y * Math.PI / 180);
             var right = (float)Math.Max(0.5 + Math.Cos(rot) * 0.5, 0.2);
             var left = (float)Math.Max(0.5 - Math.Cos(rot) * 0.5, 0.2);
 
