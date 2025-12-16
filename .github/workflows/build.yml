@@ -168,13 +168,13 @@ jobs:
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
       - name: Publish VoiceCraft.Client.Android.arm
-        run: dotnet publish -c Debug -r android-arm --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+        run: dotnet publish -c Release -r android-arm --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Upload Artifact VoiceCraft.Client.Android.arm
         uses: actions/upload-artifact@v4
         with:
           name: VoiceCraft.Client.Android.arm
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Debug/net9.0-android/android-arm/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-arm/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
   
   Build_Android_Arm64:
     runs-on: ubuntu-latest
@@ -195,13 +195,13 @@ jobs:
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
       - name: Publish VoiceCraft.Client.Android.arm64
-        run: dotnet publish -c Debug -r android-arm64 --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+        run: dotnet publish -c Release -r android-arm64 --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Upload Artifact VoiceCraft.Client.Android.arm64
         uses: actions/upload-artifact@v4
         with:
           name: VoiceCraft.Client.Android.arm64
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Debug/net9.0-android/android-arm64/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-arm64/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
   
   Build_Server_Windows_x64:
     runs-on: ubuntu-latest
