@@ -25,6 +25,7 @@ public class AudioEffectSystem : IResettable, IDisposable
 
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
+        if (bitmask == ushort.MinValue) return; //Setting a bitmask of 0 does literally nothing.
         switch (effect)
         {
             case null when _audioEffects.Remove(bitmask, out var audioEffect):
