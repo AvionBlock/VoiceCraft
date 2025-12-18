@@ -1,11 +1,29 @@
 {
+  "BackgroundService": {
+    "BackgroundError": "背景服务错误: {0}"
+  },
   "Notification": {
-    "Badges": {
-      "Servers": "服务器",
-      "Error": "错误",
-      "GC": "垃圾回收",
-      "VoiceCraft": "VoiceCraft",
-      "CrashLogs": "崩溃日志"
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "服务器",
+      "Added": "{0} 已添加。",
+      "Edited": "{0} 已编辑。",
+      "Removed": "{0} 已删除。"
+    },
+    "GC": {
+      "Badge": "垃圾回收",
+      "Triggered": "垃圾回收触发。内存清除: {0}mb。"
+    },
+    "CrashLogs": {
+      "Badge": "崩溃日志",
+      "Cleared": "成功清除所有日志。"
+    },
+    "Error": {
+      "Badge": "错误",
+      "VoipFailedToStart": "背景服务无法启动VOIP进程！",
+      "VoipBackgroundError": "VOIP背景服务错误: {0}"
     }
   },
   "Home": {
@@ -27,9 +45,9 @@
     "Port": "端口"
   },
   "Credits": {
-    "AppVersion": "应用版本: {version}",
-    "Version": "版本: {version}",
-    "Codec": "编解码器: {version}",
+    "AppVersion": "应用版本: {0}",
+    "Version": "版本: {0}",
+    "Codec": "编解码器: {0}",
     "Contributors": "贡献者",
     "Roles": {
       "Author": "作者",
@@ -69,10 +87,10 @@
       "McWssHostPort": "MCWSS主机端口"
     },
     "HotKey": {
-      "HotKey": null,
+      "HotKey": "快捷键",
       "Actions": {
-        "Mute": null,
-        "Deafen": null
+        "Mute": "静音",
+        "Deafen": "拒听"
       }
     },
     "Advanced": {
@@ -128,10 +146,11 @@
       "Disconnected": "已断开连接！原因: {reason}"
     },
     "DisconnectReason": {
-      "Shutdown": null,
-      "Forced": null,
-      "IncompatibleVersion": "客户端/服务器版本不兼容！",
+      "Manual": "手动断开连接。",
       "ServerFull": "服务器已满！",
+      "IncompatibleVersion": "客户端/服务器版本不兼容！",
+      "Kicked": "被踢出服务器！",
+      "Shutdown": "服务器关闭！",
       "Error": "尝试登录时发生错误！"
     }
   }
