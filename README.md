@@ -8,12 +8,6 @@ Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, 
 </p>
 
 > [!WARNING]
-> VOICECRAFT IS UNDERGOING A MASSIVE CHANGE! This version of VoiceCraft is still in beta! This is only on the master
-> branch as it is currently the most stable
-> build available and nearing the completion for a full release! If you wish to use the latest stable/legacy v1.0.7
-> version, You can go to the [Latest Stable Release](https://github.com/AvionBlock/VoiceCraft/releases/latest).
-
-> [!WARNING]
 > VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
 > ADDON/WORLD! It is a collection of both addons, servers and client software working together in order to simulate
 > proximity chat.
