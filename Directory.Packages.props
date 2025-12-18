@@ -32,7 +32,6 @@
     <PackageVersion Include="NAudio.WinMM" Version="2.2.1" />
     <PackageVersion Include="OpusSharp" Version="1.5.7" />
     <PackageVersion Include="System.Text.Json" Version="10.0.1" />
-    <PackageVersion Include="Watson.Lite" Version="6.4.0" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0" />
     <PackageVersion Include="OpenTK.Audio.OpenAL" Version="4.9.4" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />

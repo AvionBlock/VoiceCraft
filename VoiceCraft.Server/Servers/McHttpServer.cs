@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Net;
+using System.Text;
 using System.Text.Json;
 using LiteNetLib.Utils;
 using Spectre.Console;
@@ -13,9 +15,6 @@ using VoiceCraft.Core.Network.McHttpPackets;
 using VoiceCraft.Core.World;
 using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
-using WatsonWebserver.Core;
-using WatsonWebserver.Lite;
-using HttpMethod = WatsonWebserver.Core.HttpMethod;
 
 namespace VoiceCraft.Server.Servers;
 
@@ -28,7 +27,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     private readonly NetDataWriter _writer = new();
     private readonly VoiceCraftWorld _world = world;
     private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
-    private WebserverLite? _httpServer;
+    private HttpListener? _httpServer;
 
     //Config
     public McHttpConfig Config { get; private set; } = new();
@@ -45,13 +44,15 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Starting"));
-            var settings = new WebserverSettings();
-            _httpServer = new WebserverLite(settings, HandleRequest);
+            _httpServer = new HttpListener();
+            _httpServer.Prefixes.Add(Config.Hostname);
             _httpServer.Start();
+            _ = ListenerLoop(_httpServer);
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Success")}[/]");
         }
-        catch
+        catch(Exception ex)
         {
+            AnsiConsole.WriteException(ex);
             throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
     }
@@ -67,7 +68,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         if (_httpServer == null) return;
         AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Stopping"));
         _httpServer.Stop();
-        _httpServer.Dispose();
+        _httpServer.Close();
         _httpServer = null;
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Stopped")}[/]");
     }
@@ -114,50 +115,63 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             PacketPool<T>.Return(packet);
         }
     }
+    
+    private async Task ListenerLoop(HttpListener listener)
+    {
+        while(listener.IsListening)
+        {
+            var context = await listener.GetContextAsync();
+            await HandleRequest(context);
+        }
+    }
 
-    private async Task HandleRequest(HttpContextBase context)
+    private async Task HandleRequest(HttpListenerContext context)
     {
         try
         {
-            if (context.Request.Method != HttpMethod.POST)
+            if (context.Request.HttpMethod != "POST")
             {
                 context.Response.StatusCode = 403;
-                await context.Response.Send();
+                context.Response.Close();
                 return;
             }
 
-            if (context.Request.ContentLength >= 1e+6) //Do not accept anything higher than a mb.
+            if (context.Request.ContentLength64 >= 1e+6) //Do not accept anything higher than a mb.
             {
                 context.Response.StatusCode = 413;
-                await context.Response.Send();
+                context.Response.Close();
                 return;
             }
 
-            var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.Data);
+            var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.InputStream);
             if (packet == null)
             {
                 context.Response.StatusCode = 400;
-                await context.Response.Send();
+                context.Response.Close();
                 return;
             }
 
-            var netPeer = GetOrCreatePeer(context.Request.Source.IpAddress);
-            var token = context.Request.Authorization.BearerToken;
-            ReceivePacketsLogic(netPeer, packet.Packets, token);
+            var netPeer = GetOrCreatePeer(context.Request.UserHostAddress);
+            var token = context.Request.Headers.Get("Authorization");
+            ReceivePacketsLogic(netPeer, packet.Packets, token?.Remove(0, 7));
             packet.Packets = SendPacketsLogic(netPeer);
             var responseData = JsonSerializer.Serialize(packet);
             context.Response.StatusCode = 200;
-            await context.Response.Send(responseData);
+            var buffer = Encoding.UTF8.GetBytes(responseData);
+            context.Response.ContentLength64 = buffer.Length;
+            var output = context.Response.OutputStream;
+            await output.WriteAsync(buffer);
+            output.Close();
         }
         catch (JsonException)
         {
             context.Response.StatusCode = 400;
-            await context.Response.Send();
+            context.Response.Close();
         }
         catch
         {
             context.Response.StatusCode = 500;
-            await context.Response.Send();
+            context.Response.Close();
         }
     }
 

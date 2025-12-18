@@ -59,8 +59,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             });
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
+            AnsiConsole.WriteException(ex);
             throw new Exception(Localizer.Get("McWssServer.Exceptions.Failed"), ex);
         }
     }

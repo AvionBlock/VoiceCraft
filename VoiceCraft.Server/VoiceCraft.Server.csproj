@@ -16,7 +16,6 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
-        <PackageReference Include="Watson.Lite"/>
     </ItemGroup>
 
     <ItemGroup>
