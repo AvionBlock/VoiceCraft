@@ -52,9 +52,10 @@ public partial class CreditsViewModel : ViewModelBase
 
     private void UpdateLocalizations(string language = "")
     {
-        AppVersion = Locales.Locales.Credits_AppVersion.Replace("{version}",
-            Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A.");
-        Version = Locales.Locales.Credits_Version.Replace("{version}", VoiceCraftClient.Version.ToString());
-        Codec = Locales.Locales.Credits_Codec.Replace("{version}", OpusInfo.Version());
+        AppVersion =
+            Localizer.Get(
+                $"Credits.AppVersion:{Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A."}");
+        Version = Localizer.Get($"Credits.Version:{VoiceCraftClient.Version.ToString()}");
+        Codec = Localizer.Get($"Credits.Codec:{OpusInfo.Version()}");
     }
 }

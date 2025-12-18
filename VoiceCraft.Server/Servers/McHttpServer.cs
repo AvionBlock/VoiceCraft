@@ -1,101 +1,83 @@
 using System.Collections.Concurrent;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network;
-using VoiceCraft.Core.Network.McApiPackets;
-using VoiceCraft.Core.Network.McWssPackets;
-using VoiceCraft.Server.Config;
-using Fleck;
 using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.McApiPackets.Response;
+using VoiceCraft.Core.Network.McHttpPackets;
 using VoiceCraft.Core.World;
+using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
 
-public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
+public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
-    private static readonly Version McWssVersion = new(Constants.Minor, Constants.Major, 0);
+    private static readonly Version McHttpVersion = new(Constants.Minor, Constants.Major, 0);
 
-    private readonly ConcurrentDictionary<IWebSocketConnection, McApiNetPeer> _mcApiPeers = [];
+    private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private readonly VoiceCraftWorld _world = world;
     private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
-    private WebSocketServer? _wsServer;
+    private HttpListener? _httpServer;
 
-    //Public Properties
-    public McWssConfig Config { get; private set; } = new();
+    //Config
+    public McHttpConfig Config { get; private set; } = new();
 
     //Events
     public event Action<McApiNetPeer, string>? OnPeerConnected;
     public event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
-    public void Start(McWssConfig? config = null)
+    public void Start(McHttpConfig? config = null)
     {
         Stop();
-
+        
         if (config != null)
             Config = config;
 
-        //Will turn into errors later.
-        Config.CommandsPerTick = Math.Clamp(Config.CommandsPerTick, 1, 100);
-        Config.MaxStringLengthPerCommand = Math.Clamp(Config.MaxStringLengthPerCommand, 1, 10000);
         try
         {
-            AnsiConsole.WriteLine(Localizer.Get("McWssServer.Starting"));
-            _wsServer = new WebSocketServer(Config.Hostname);
-
-            _wsServer.Start(socket =>
-            {
-                socket.OnOpen = () => OnClientConnected(socket);
-                socket.OnClose = () => OnClientDisconnected(socket);
-                socket.OnMessage = message => OnMessageReceived(socket, message);
-            });
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
+            AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Starting"));
+            _httpServer = new HttpListener();
+            _httpServer.Prefixes.Add(Config.Hostname);
+            _httpServer.Start();
+            _ = ListenerLoop(_httpServer);
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Success")}[/]");
         }
         catch(Exception ex)
         {
             AnsiConsole.WriteException(ex);
-            throw new Exception(Localizer.Get("McWssServer.Exceptions.Failed"), ex);
+            throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
     }
 
     public void Update()
     {
-        if (_wsServer == null) return;
+        if (_httpServer == null) return;
         foreach (var peer in _mcApiPeers) UpdatePeer(peer);
     }
 
     public void Stop()
     {
-        if (_wsServer == null) return;
-        AnsiConsole.WriteLine(Localizer.Get("McWssServer.Stopping"));
-        foreach (var client in _mcApiPeers)
-        {
-            try
-            {
-                client.Key.Close();
-            }
-            catch (Exception ex)
-            {
-                AnsiConsole.WriteException(ex);
-            }
-        }
-
-        _wsServer.Dispose();
-        _wsServer = null;
-        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Stopped")}[/]");
+        if (_httpServer == null) return;
+        AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Stopping"));
+        _httpServer.Stop();
+        _httpServer.Close();
+        _httpServer = null;
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Stopped")}[/]");
     }
 
     public void SendPacket<T>(McApiNetPeer netPeer, T packet) where T : IMcApiPacket
     {
-        if (_wsServer == null) return;
+        if (_httpServer == null) return;
         try
         {
             lock (_writer)
@@ -114,7 +96,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
 
     public void Broadcast<T>(T packet, params McApiNetPeer?[] excludes) where T : IMcApiPacket
     {
-        if (_wsServer == null) return;
+        if (_httpServer == null) return;
         try
         {
             lock (_writer)
@@ -135,14 +117,103 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             PacketPool<T>.Return(packet);
         }
     }
-
-    private void SendPacketCommand(IWebSocketConnection socket, string packetData)
+    
+    private async Task ListenerLoop(HttpListener listener)
     {
-        var packet = new McWssCommandRequest($"{Config.DataTunnelCommand} \"{packetData}\"");
-        socket.Send(JsonSerializer.Serialize(packet));
+        while(listener.IsListening)
+        {
+            var context = await listener.GetContextAsync();
+            await HandleRequest(context);
+        }
     }
 
-    private void UpdatePeer(KeyValuePair<IWebSocketConnection, McApiNetPeer> peer)
+    private async Task HandleRequest(HttpListenerContext context)
+    {
+        try
+        {
+            if (context.Request.HttpMethod != "POST")
+            {
+                context.Response.StatusCode = 403;
+                context.Response.Close();
+                return;
+            }
+
+            if (context.Request.ContentLength64 >= 1e+6) //Do not accept anything higher than a mb.
+            {
+                context.Response.StatusCode = 413;
+                context.Response.Close();
+                return;
+            }
+
+            var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.InputStream);
+            if (packet == null)
+            {
+                context.Response.StatusCode = 400;
+                context.Response.Close();
+                return;
+            }
+
+            var netPeer = GetOrCreatePeer(context.Request.UserHostAddress);
+            var token = context.Request.Headers.Get("Authorization");
+            ReceivePacketsLogic(netPeer, packet.Packets, token?.Remove(0, 7));
+            packet.Packets = SendPacketsLogic(netPeer);
+            var responseData = JsonSerializer.Serialize(packet);
+            context.Response.StatusCode = 200;
+            var buffer = Encoding.UTF8.GetBytes(responseData);
+            context.Response.ContentLength64 = buffer.Length;
+            var output = context.Response.OutputStream;
+            await output.WriteAsync(buffer);
+            output.Close();
+        }
+        catch (JsonException)
+        {
+            context.Response.StatusCode = 400;
+            context.Response.Close();
+        }
+        catch
+        {
+            context.Response.StatusCode = 500;
+            context.Response.Close();
+        }
+    }
+
+    private static string[] SendPacketsLogic(McApiNetPeer netPeer)
+    {
+        var sendData = new List<string>();
+        while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
+        {
+            sendData.Add(Z85.GetStringWithPadding(outboundPacket));
+        }
+
+        return sendData.ToArray();
+    }
+
+    private static void ReceivePacketsLogic(McApiNetPeer netPeer, string[] packets, string? token)
+    {
+        foreach (var data in packets)
+        {
+            if (data.Length <= 0) continue;
+            netPeer.ReceiveInboundPacket(Z85.GetBytesWithPadding(data), token);
+        }
+    }
+
+    private McApiNetPeer GetOrCreatePeer(string ipAddress)
+    {
+        return _mcApiPeers.GetOrAdd(ipAddress, _ =>
+        {
+            var netPeer = new McApiNetPeer();
+            netPeer.OnConnected += McApiNetPeerOnConnected;
+            netPeer.OnDisconnected += McApiNetPeerOnDisconnected;
+            return netPeer;
+        });
+    }
+
+    private void RemovePeer(string ipAddress)
+    {
+        _mcApiPeers.TryRemove(ipAddress, out _);
+    }
+
+    private void UpdatePeer(KeyValuePair<string, McApiNetPeer> peer)
     {
         lock (_reader)
         {
@@ -161,90 +232,12 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 }
         }
 
-        for (var i = 0; i < Config.CommandsPerTick; i++)
-        {
-            if (!SendPacketsLogic(peer.Key, peer.Value))
-            {
-                SendPacketCommand(peer.Key, string.Empty);
-            }
-        }
-
-        switch (peer.Value.Connected)
-        {
-            case true when DateTime.UtcNow - peer.Value.LastPing >= TimeSpan.FromMilliseconds(Config.MaxTimeoutMs):
-                peer.Value.Disconnect();
-                break;
-        }
+        if (DateTime.UtcNow - peer.Value.LastPing < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
+        peer.Value.Disconnect();
+        RemovePeer(peer.Key);
     }
 
-    private bool SendPacketsLogic(IWebSocketConnection socket, McApiNetPeer netPeer)
-    {
-        var stringBuilder = new StringBuilder();
-        if (!netPeer.RetrieveOutboundPacket(out var outboundPacket)) return false;
-        stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
-        while (netPeer.RetrieveOutboundPacket(out outboundPacket) && stringBuilder.Length < Config.MaxStringLengthPerCommand)
-        {
-            stringBuilder.Append($"|{Z85.GetStringWithPadding(outboundPacket)}");
-        }
-        SendPacketCommand(socket, stringBuilder.ToString());
-        return true;
-    }
-
-    private void OnClientConnected(IWebSocketConnection socket)
-    {
-        if (_mcApiPeers.Count >= Config.MaxClients)
-            socket.Close(); //Full.
-
-        var netPeer = new McApiNetPeer();
-        _mcApiPeers.TryAdd(socket, netPeer);
-        netPeer.OnConnected += McApiNetPeerOnConnected;
-        netPeer.OnDisconnected += McApiNetPeerOnDisconnected;
-    }
-
-    private void OnClientDisconnected(IWebSocketConnection socket)
-    {
-        if (!_mcApiPeers.TryRemove(socket, out var netPeer)) return;
-        netPeer.Disconnect();
-        netPeer.OnConnected -= McApiNetPeerOnConnected;
-        netPeer.OnDisconnected -= McApiNetPeerOnDisconnected;
-    }
-
-    private void OnMessageReceived(IWebSocketConnection socket, string message)
-    {
-        try
-        {
-            var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message);
-            if (genericPacket == null || genericPacket.header.messagePurpose != "commandResponse") return;
-
-            var commandResponsePacket = JsonSerializer.Deserialize<McWssCommandResponse>(message);
-            if (commandResponsePacket is not { StatusCode: 0 }) return;
-            HandleDataTunnelCommandResponse(socket, commandResponsePacket.body.statusMessage);
-        }
-        catch
-        {
-            //Do Nothing
-        }
-    }
-
-    private void HandleDataTunnelCommandResponse(IWebSocketConnection socket, string data)
-    {
-        try
-        {
-            if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
-            var packets = data.Split("|");
-
-            foreach (var packet in packets)
-            {
-                peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
-            }
-        }
-        catch
-        {
-            //Do Nothing
-        }
-    }
-
-    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? _)
+    private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token)
     {
         switch (packetType)
         {
@@ -265,7 +258,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         }
 
         if (!peer.Connected) return;
-        //Don't need to check the token as MCWss is session based.
+        if (peer.Token != token) return;
 
         switch (packetType)
         {
@@ -376,7 +369,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 return;
             }
 
-            if (packet.Version.Major != McWssVersion.Major || packet.Version.Minor != McWssVersion.Minor)
+            if (packet.Version.Major != McHttpVersion.Major || packet.Version.Minor != McHttpVersion.Minor)
             {
                 SendPacket(netPeer,
                     PacketPool<McApiDenyResponsePacket>.GetPacket().Set(packet.RequestId,
@@ -422,6 +415,12 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
     {
         try
         {
+            if (_audioEffectSystem.TryGetEffect(packet.Bitmask, out var effect) &&
+                effect.EffectType == packet.EffectType)
+            {
+                return;
+            }
+
             switch (packet.EffectType)
             {
                 case EffectType.Visibility:
@@ -630,17 +629,4 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             PacketPool<McApiSetEntityMuffleFactorRequestPacket>.Return(packet);
         }
     }
-
-//Resharper disable All
-    private class Rawtext
-    {
-        public RawtextMessage[] rawtext { get; set; } = [];
-    }
-
-    private class RawtextMessage
-    {
-        public string text { get; set; } = string.Empty;
-    }
-
-//Resharper enable All
 }

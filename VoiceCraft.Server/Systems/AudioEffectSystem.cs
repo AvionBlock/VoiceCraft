@@ -25,14 +25,19 @@ public class AudioEffectSystem : IResettable, IDisposable
 
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
-        if (effect == null && _audioEffects.Remove(bitmask, out var audioEffect))
+        if (bitmask == ushort.MinValue) return; //Setting a bitmask of 0 does literally nothing.
+        switch (effect)
         {
-            audioEffect.Dispose();
-            OnEffectSet?.Invoke(bitmask, null);
-            return;
+            case null when _audioEffects.Remove(bitmask, out var audioEffect):
+                audioEffect.Dispose();
+                OnEffectSet?.Invoke(bitmask, null);
+                return;
+            case null:
+                return;
         }
 
-        if (effect == null || !_audioEffects.TryAdd(bitmask, effect)) return;
+        if(!_audioEffects.TryAdd(bitmask, effect))
+            _audioEffects[bitmask] = effect;
         OnEffectSet?.Invoke(bitmask, effect);
     }
     

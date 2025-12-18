@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Browser.Audio;
 
@@ -99,7 +100,7 @@ public class AudioPlayer : IAudioPlayer
 
             //Check if already playing.
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous player.
             CleanupPlayer();
@@ -235,7 +236,7 @@ public class AudioPlayer : IAudioPlayer
     private void ThrowIfNotInitialized()
     {
         if (_playerCallback == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void Resume()

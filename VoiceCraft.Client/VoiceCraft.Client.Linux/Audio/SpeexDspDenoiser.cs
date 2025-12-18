@@ -1,6 +1,7 @@
 using System;
 using SpeexDSPSharp.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux.Audio;
 
@@ -15,7 +16,7 @@ public class SpeexDspDenoiser : IDenoiser
         ThrowIfDisposed();
 
         if (recorder.Channels != 1)
-            throw new InvalidOperationException(Locales.Locales.Audio_DN_InitFailed);
+            throw new InvalidOperationException(Localizer.Get("Audio.DN.InitFailed"));
 
         CleanupDenoiser();
 
@@ -69,7 +70,7 @@ public class SpeexDspDenoiser : IDenoiser
     private void ThrowIfNotInitialized()
     {
         if (_denoiser == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_DN_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.AGC.Init"));
     }
 
     private void Dispose(bool disposing)

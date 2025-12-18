@@ -4,40 +4,35 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
     public class McApiSetEntityMuffleFactorRequestPacket : IMcApiPacket
     {
-        public McApiSetEntityMuffleFactorRequestPacket() : this(string.Empty, 0, 0.0f)
+        public McApiSetEntityMuffleFactorRequestPacket() : this(0, 0.0f)
         {
         }
         
-        public McApiSetEntityMuffleFactorRequestPacket(string token, int id, float value)
+        public McApiSetEntityMuffleFactorRequestPacket(int id, float value)
         {
-            Token = token;
             Id = id;
             Value = value;
         }
 
         public McApiPacketType PacketType => McApiPacketType.SetEntityMuffleFactorRequest;
-
-        public string Token { get; private set; }
+        
         public int Id { get; private set; }
         public float Value { get; private set; }
 
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(Token, Constants.MaxStringLength);
             writer.Put(Id);
             writer.Put(Value);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            Token = reader.GetString(Constants.MaxStringLength);
             Id = reader.GetInt();
             Value = reader.GetFloat();
         }
         
-        public McApiSetEntityMuffleFactorRequestPacket Set(string token = "", int id = 0, float value = 0.0f)
+        public McApiSetEntityMuffleFactorRequestPacket Set(int id = 0, float value = 0.0f)
         {
-            Token = token;
             Id = id;
             Value = value;
             return this;

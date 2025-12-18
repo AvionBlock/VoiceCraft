@@ -4,6 +4,7 @@ using System.Threading;
 using OpenTK.Audio.OpenAL;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux.Audio;
 
@@ -106,7 +107,7 @@ public class AudioPlayer : IAudioPlayer
 
             //Check if already playing.
             if (PlaybackState != PlaybackState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous player.
             CleanupPlayer();
@@ -133,11 +134,11 @@ public class AudioPlayer : IAudioPlayer
             //Open and setup device.
             _nativePlayer = ALC.OpenDevice(SelectedDevice);
             if (_nativePlayer == ALDevice.Null)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             _nativePlayerContext = ALC.CreateContext(_nativePlayer, (int[]?)null);
             if (_nativePlayerContext == ALContext.Null)
-                throw new InvalidOperationException(Locales.Locales.Audio_Player_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             ALC.MakeContextCurrent(_nativePlayerContext);
             ALC.ProcessContext(_nativePlayerContext);
@@ -311,7 +312,7 @@ public class AudioPlayer : IAudioPlayer
     private void ThrowIfNotInitialized()
     {
         if (_nativePlayer == ALDevice.Null || _nativePlayerContext == ALContext.Null || _playerCallback == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Player_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void Resume()

@@ -5,6 +5,7 @@ using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.VcPackets;
 using VoiceCraft.Core.Network.VcPackets.Request;
 using VoiceCraft.Core.Network.VcPackets.Response;
@@ -38,7 +39,8 @@ public class VoiceCraftServer : IResettable, IDisposable
         _audioEffectSystem = audioEffectSystem;
         World = world;
         
-        _audioEffectSystem.SetEffect(ushort.MaxValue, new ProximityEffect() { MaxRange = 30 });
+        _audioEffectSystem.SetEffect(1, new VisibilityEffect());
+        _audioEffectSystem.SetEffect(2, new ProximityEffect() { MaxRange = 30 });
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
@@ -70,14 +72,14 @@ public class VoiceCraftServer : IResettable, IDisposable
     {
         Stop();
 
-        AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Starting);
+        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Starting"));
         if (config != null)
             Config = config;
 
         if (_netManager.IsRunning || _netManager.Start((int)Config.Port))
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.VoiceCraftServer_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
         else
-            throw new Exception(Locales.Locales.VoiceCraftServer_Exceptions_Failed);
+            throw new Exception(Localizer.Get("VoiceCraftServer.Exceptions.Failed"));
     }
 
     public void Update()
@@ -88,10 +90,10 @@ public class VoiceCraftServer : IResettable, IDisposable
     public void Stop()
     {
         if (!_netManager.IsRunning) return;
-        AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopping);
+        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
         DisconnectAll("VoiceCraft.DisconnectReason.Shutdown");
         _netManager.Stop();
-        AnsiConsole.WriteLine(Locales.Locales.VoiceCraftServer_Stopped);
+        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopped"));
     }
 
     public void RejectRequest(ConnectionRequest request, string? reason = null)
@@ -183,38 +185,6 @@ public class VoiceCraftServer : IResettable, IDisposable
                 packet.Serialize(_dataWriter);
                 peer.Send(_dataWriter, deliveryMethod);
                 return true;
-            }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
-        }
-    }
-
-    public bool SendPacket<T>(NetPeer[] peers, T packet, DeliveryMethod deliveryMethod = DeliveryMethod.ReliableOrdered)
-        where T : IVoiceCraftPacket
-    {
-        try
-        {
-            lock (_dataWriter)
-            {
-                _dataWriter.Reset();
-                _dataWriter.Put((byte)packet.PacketType);
-                packet.Serialize(_dataWriter);
-
-                var status = true;
-                foreach (var peer in peers)
-                {
-                    if (peer.ConnectionState != ConnectionState.Connected)
-                    {
-                        status = false;
-                        continue;
-                    }
-
-                    peer.Send(_dataWriter, deliveryMethod);
-                }
-
-                return status;
             }
         }
         finally

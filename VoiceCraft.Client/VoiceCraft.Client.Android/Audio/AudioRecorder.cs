@@ -4,6 +4,7 @@ using System.Threading;
 using Android.Media;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 using AudioFormat = VoiceCraft.Core.AudioFormat;
 
 namespace VoiceCraft.Client.Android.Audio;
@@ -34,7 +35,7 @@ public class AudioRecorder : IAudioRecorder
 
     public AudioSource AudioSource { get; set; } = AudioSource.VoiceCommunication;
 
-    public int SessionId => _nativeRecorder?.AudioSessionId ?? throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
+    public int SessionId => _nativeRecorder?.AudioSessionId ?? throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
 
     //Public Properties
     public int SampleRate
@@ -106,7 +107,7 @@ public class AudioRecorder : IAudioRecorder
             ThrowIfDisposed();
 
             if (CaptureState != CaptureState.Stopped)
-                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             //Cleanup previous recorder.
             CleanupRecorder();
@@ -141,10 +142,10 @@ public class AudioRecorder : IAudioRecorder
             //Create the AudioRecord Object.
             _nativeRecorder = new AudioRecord(AudioSource, SampleRate, channelMask, encoding, _bufferBytes);
             if (_nativeRecorder.State != State.Initialized)
-                throw new InvalidOperationException(Locales.Locales.Audio_Recorder_InitFailed);
+                throw new InvalidOperationException(Localizer.Get("Audio.Player.InitFailed"));
 
             var device = _audioManager.GetDevices(GetDevicesTargets.Inputs)
-                ?.FirstOrDefault(x => $"{x.ProductName.Truncate(8)} - {x.Type}" == SelectedDevice);
+                ?.FirstOrDefault(x => $"{x.ProductName?.Truncate(8)} - {x.Type}" == SelectedDevice);
             _nativeRecorder.SetPreferredDevice(device);
         }
         catch
@@ -240,7 +241,7 @@ public class AudioRecorder : IAudioRecorder
     private void ThrowIfNotInitialized()
     {
         if (_nativeRecorder == null)
-            throw new InvalidOperationException(Locales.Locales.Audio_Recorder_Init);
+            throw new InvalidOperationException(Localizer.Get("Audio.Player.Init"));
     }
 
     private void InvokeDataAvailable(byte[] buffer, int bytesRecorded)

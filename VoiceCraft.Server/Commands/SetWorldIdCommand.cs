@@ -1,4 +1,5 @@
 using System.CommandLine;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
@@ -6,27 +7,31 @@ namespace VoiceCraft.Server.Commands;
 public class SetWorldIdCommand : Command
 {
     public SetWorldIdCommand(VoiceCraftServer server) : base(
-        Locales.Locales.Commands_SetWorldId_Name,
-        Locales.Locales.Commands_SetWorldId_Description)
+        Localizer.Get("Commands.SetWorldId.Name"),
+        Localizer.Get("Commands.SetWorldId.Description"))
     {
-        var idArgument = new Argument<int>(
-            Locales.Locales.Commands_SetWorldId_Arguments_Id_Name,
-            Locales.Locales.Commands_SetWorldId_Arguments_Id_Description);
-        var valueArgument = new Argument<string?>(
-            Locales.Locales.Commands_SetWorldId_Arguments_Value_Name,
-            Locales.Locales.Commands_SetWorldId_Arguments_Value_Description);
-        AddArgument(idArgument);
-        AddArgument(valueArgument);
+        var idArgument = new Argument<int>(Localizer.Get("Commands.SetWorldId.Arguments.Id.Name"))
+        {
+            Description = Localizer.Get("Commands.SetWorldId.Arguments.Id.Description")
+        };
+        var valueArgument = new Argument<string?>(Localizer.Get("Commands.SetWorldId.Arguments.Value.Name"))
+        {
+            Description = Localizer.Get("Commands.SetWorldId.Arguments.Value.Description"),
+            DefaultValueFactory = _ => null
+        };
+        Add(idArgument);
+        Add(valueArgument);
 
-        this.SetHandler((id, value) =>
-            {
-                var entity = server.World.GetEntity(id);
-                if (entity is null)
-                    throw new Exception(
-                        Locales.Locales.Commands_Exceptions_EntityNotFound.Replace("{id}", id.ToString()));
+        SetAction(result =>
+        {
+            var id = result.GetRequiredValue(idArgument);
+            var value = result.GetRequiredValue(valueArgument);
+            
+            var entity = server.World.GetEntity(id);
+            if (entity is null)
+                throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
 
-                entity.WorldId = value ?? string.Empty;
-            },
-            idArgument, valueArgument);
+            entity.WorldId = value ?? string.Empty;
+        });
     }
 }

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -40,9 +41,8 @@ public partial class ServersViewModel(
     private void DeleteServer(ServerViewModel server)
     {
         ServersSettings.ServersSettings.RemoveServer(server.Server);
-        //TODO Locale This!
-        notificationService.SendSuccessNotification($"{server.Name} has been removed.",
-            Locales.Locales.Notification_Badges_Servers);
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Removed:{server.Name}"),
+            Localizer.Get("Notification.Servers.Badge"));
         _ = settings.SaveAsync();
     }
 

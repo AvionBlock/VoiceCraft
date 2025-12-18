@@ -78,7 +78,7 @@ namespace VoiceCraft.Core
                                          (data[i + 1] << 16) |
                                          (data[i + 2] << 8) |
                                          data[i + 3]);
-                
+
                 var divisor = (uint)(Base85 * Base85 * Base85 * Base85);
                 for (var j = 0; j < 5; j++)
                 {

@@ -51,6 +51,24 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
 
     public string Get(string key)
     {
+        var splitString = key.Split(':', 2);
+        if (splitString.Length <= 0) return key;
+        var translation = GetTranslation(splitString[0]);
+        try
+        {
+            if (splitString.Length != 2) return translation;
+            var variables = splitString[1].Split(',').Select(GetTranslation).ToArray<object?>();
+            translation = string.Format(translation, variables);
+            return translation;
+        }
+        catch
+        {
+            return translation;
+        }
+    }
+
+    public string GetTranslation(string key)
+    {
         if (_languageStrings is null)
             return key;
 

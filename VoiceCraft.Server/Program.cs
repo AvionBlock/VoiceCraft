@@ -29,7 +29,7 @@ public static class Program
         //Servers
         serviceCollection.AddSingleton<VoiceCraftServer>();
         serviceCollection.AddSingleton<McWssServer>();
-        //serviceCollection.AddSingleton<McHttpServer>();
+        serviceCollection.AddSingleton<McHttpServer>();
         
         //Systems
         serviceCollection.AddSingleton<EventHandlerSystem>();

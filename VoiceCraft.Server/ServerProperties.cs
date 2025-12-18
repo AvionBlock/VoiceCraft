@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Config;
 
 namespace VoiceCraft.Server;
@@ -21,34 +22,32 @@ public class ServerProperties
         var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName, SearchOption.AllDirectories);
         if (files.Length == 0)
         {
-            AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_NotFound}[/]");
+            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
             return;
         }
 
         var file = files[0];
         _properties = LoadFile(file);
-        AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Success}[/]");
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
     }
 
     private static ServerPropertiesStructure LoadFile(string path)
     {
         try
         {
-            AnsiConsole.MarkupLine($"[yellow]{Locales.Locales.ServerProperties_Loading.Replace("{path}", path)}[/]");
+            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get($"ServerProperties.Loading:{path}")}[/]");
             var text = File.ReadAllText(path);
             var properties =
                 JsonSerializer.Deserialize<ServerPropertiesStructure>(text,
                     ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
-            if (properties == null)
-                throw new Exception(Locales.Locales.ServerProperties_Exceptions_ParseJson);
-            return properties;
+            return properties ?? throw new Exception(Localizer.Get("ServerProperties.Exceptions.ParseJson"));
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine(
-                $"[yellow]{Locales.Locales.ServerProperties_Failed.Replace("{errorMessage}", ex.Message)}[/]");
+                $"[yellow]{Localizer.Get($"ServerProperties.Failed:{ex.Message}")}[/]");
         }
 
         return new ServerPropertiesStructure();
@@ -59,8 +58,7 @@ public class ServerProperties
         var properties = new ServerPropertiesStructure();
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath);
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfigPath, FileName);
-        AnsiConsole.MarkupLine(
-            $"[yellow]{Locales.Locales.ServerProperties_Generating_Generating.Replace("{path}", path)}[/]");
+        AnsiConsole.MarkupLine($"[yellow]{Localizer.Get($"ServerProperties.Generating.Generating:{path}")}[/]");
         try
         {
             if (!Directory.Exists(path))
@@ -69,12 +67,12 @@ public class ServerProperties
             File.WriteAllText(filePath,
                 JsonSerializer.Serialize(properties,
                     ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
-            AnsiConsole.MarkupLine($"[green]{Locales.Locales.ServerProperties_Generating_Success}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Generating.Success")}[/]");
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine(
-                $"[red]{Locales.Locales.ServerProperties_Generating_Failed.Replace("{path}", path).Replace("{errorMessage}", ex.Message)}[/]");
+                $"[red]{Localizer.Get($"ServerProperties.Generating.Failed:{path},{ex.Message}")}[/]");
         }
 
         return properties;

@@ -1,11 +1,29 @@
 {
+  "BackgroundService": {
+    "BackgroundError": "Background Error: {0}"
+  },
   "Notification": {
-    "Badges": {
-      "Servers": "Servers",
-      "Error": "Error",
-      "GC": "GC",
-      "VoiceCraft": "VoiceCraft",
-      "CrashLogs": "CrashLogs"
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "Servers",
+      "Added": "{0} has been added.",
+      "Edited": "{0} has been edited.",
+      "Removed": "{0} has been removed."
+    },
+    "GC": {
+      "Badge": "GC",
+      "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
+    },
+    "CrashLogs": {
+      "Badge": "CrashLogs",
+      "Cleared": "Successfully cleared all logs."
+    },
+    "Error": {
+      "Badge": "Error",
+      "VoipFailedToStart": "Background worker failed to start VOIP process!",
+      "VoipBackgroundError": "Voip Background Error: {0}"
     }
   },
   "Home": {
@@ -27,9 +45,9 @@
     "Port": "Port"
   },
   "Credits": {
-    "AppVersion": "App Version: {version}",
-    "Version": "Version: {version}",
-    "Codec": "Codec: {version}",
+    "AppVersion": "App Version: {0}",
+    "Version": "Version: {0}",
+    "Codec": "Codec: {0}",
     "Contributors": "Contributors",
     "Roles": {
       "Author": "Author",
@@ -90,10 +108,10 @@
     "ServerInfo": {
       "ServerInfo": "Server Info",
       "Status": {
-        "Latency": "Latency: {latency}",
-        "Motd": "Motd: {motd}",
-        "PositioningType": "Positioning Type: {positioningType}",
-        "ConnectedClients": "Connected Clients: {connectedClients}",
+        "Latency": "Latency: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "Positioning Type: {0}",
+        "ConnectedClients": "Connected Clients: {0}",
         "Pinging": "Pinging..."
       }
     }
@@ -125,7 +143,7 @@
       "Initializing": "Initializing...",
       "Connecting": "Connecting...",
       "Connected": "Connected!",
-      "Disconnected": "Disconnected! Reason: {reason}"
+      "Disconnected": "Disconnected! Reason: {0}"
     },
     "DisconnectReason": {
       "Manual": "Manual Disconnection.",

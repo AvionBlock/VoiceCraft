@@ -79,7 +79,7 @@ public class NativeAudioService : AudioService
 
         foreach (var audioDevice in audioDevices)
         {
-            var deviceName = $"{audioDevice.ProductName.Truncate(8)} - {audioDevice.Type}";
+            var deviceName = $"{audioDevice.ProductName?.Truncate(8)} - {audioDevice.Type}";
             if (!devices.Contains(deviceName))
                 devices.Add(deviceName);
         }
@@ -99,7 +99,7 @@ public class NativeAudioService : AudioService
 
         foreach (var audioDevice in audioDevices)
         {
-            var deviceName = $"{audioDevice.ProductName.Truncate(8)} - {audioDevice.Type}";
+            var deviceName = $"{audioDevice.ProductName?.Truncate(8)} - {audioDevice.Type}";
             if (!devices.Contains(deviceName))
                 devices.Add(deviceName);
         }

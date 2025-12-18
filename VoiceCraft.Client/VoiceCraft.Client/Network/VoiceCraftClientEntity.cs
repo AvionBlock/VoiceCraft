@@ -29,6 +29,8 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
             if (_isVisible == value) return;
             _isVisible = value;
             OnIsVisibleUpdated?.Invoke(_isVisible, this);
+            if (!_isVisible)
+                Speaking = false;
         }
     }
 

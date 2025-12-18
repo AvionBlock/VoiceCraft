@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -37,9 +38,9 @@ public partial class EditServerViewModel(
             Server.Name = EditableServer.Name;
             Server.Ip = EditableServer.Ip;
             Server.Port = EditableServer.Port;
-
-            //TODO Locale This!
-            notificationService.SendNotification($"{Server.Name} has been edited.", Locales.Locales.Notification_Badges_Servers);
+            
+            notificationService.SendNotification(Localizer.Get($"Notification.Servers.Edited:{Server.Name}"),
+                Localizer.Get("Notification.Servers.Badge"));
             EditableServer = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();

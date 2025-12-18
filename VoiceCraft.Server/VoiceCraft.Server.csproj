@@ -16,14 +16,13 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
-        <PackageReference Include="Watson.Lite"/>
     </ItemGroup>
 
     <ItemGroup>
         <EmbeddedResource Include="Locales\nl-NL.json"/>
         <EmbeddedResource Include="Locales\en-US.json"/>
-        <EmbeddedResource Include="Locales\zh-CN.json"/>
-        <EmbeddedResource Include="Locales\zh-TW.json"/>
+        <None Include="Locales\zh-CN.json" />
+        <None Include="Locales\zh-TW.json" />
     </ItemGroup>
 
 </Project>

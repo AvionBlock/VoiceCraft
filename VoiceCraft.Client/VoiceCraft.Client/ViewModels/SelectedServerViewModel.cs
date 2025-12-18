@@ -49,7 +49,7 @@ public partial class SelectedServerViewModel(
         while (_pinger is { IsCompleted: false }) Task.Delay(10).Wait(); //Don't burn the CPU!.
 
         _stopPinger = false;
-        Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Pinging;
+        Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
         Motd = string.Empty;
         PositioningType = string.Empty;
         ConnectedClients = string.Empty;
@@ -102,9 +102,7 @@ public partial class SelectedServerViewModel(
         }
         catch (Exception ex)
         {
-            //TODO Locale This!
-            notificationService.SendErrorNotification(
-                "Background worker failed to start VOIP process!");
+            notificationService.SendErrorNotification(Localizer.Get("Notification.Error.VoipFailedToStart"));
             _ = backgroundService.StopBackgroundProcess<VoipBackgroundProcess>(); //Don't care if it fails.
             LogService.Log(ex);
         }
@@ -124,23 +122,19 @@ public partial class SelectedServerViewModel(
     {
         if (SelectedServer == null) return;
         ServersSettings.ServersSettings.RemoveServer(SelectedServer.Server);
-        //TODO Locale This!
-        notificationService.SendSuccessNotification($"{SelectedServer.Name} has been removed.",
-            Locales.Locales.Notification_Badges_Servers);
+        notificationService.SendSuccessNotification(
+            Localizer.Get($"Notification.Servers.Removed:{SelectedServer.Name}"),
+            Localizer.Get("Notification.Servers.Badge"));
         _ = settingsService.SaveAsync();
         navigationService.Back();
     }
 
     private void OnServerInfo(ServerInfo info)
     {
-        Latency = Locales.Locales.SelectedServer_ServerInfo_Status_Latency.Replace("{latency}",
-            Math.Max(Environment.TickCount - info.Tick - Constants.TickRate, 0).ToString());
-        Motd = Locales.Locales.SelectedServer_ServerInfo_Status_Motd.Replace("{motd}", info.Motd);
-        PositioningType =
-            Locales.Locales.SelectedServer_ServerInfo_Status_PositioningType.Replace("{positioningType}",
-                info.PositioningType.ToString());
-        ConnectedClients =
-            Locales.Locales.SelectedServer_ServerInfo_Status_ConnectedClients.Replace("{connectedClients}",
-                info.Clients.ToString());
+        Latency = Localizer.Get(
+            $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - info.Tick - Constants.TickRate, 0)}");
+        Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{info.Motd}");
+        PositioningType = Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{info.PositioningType}");
+        ConnectedClients = Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{info.Clients}");
     }
 }

@@ -10,6 +10,7 @@ using Android.OS;
 using AndroidX.Core.App;
 using CommunityToolkit.Mvvm.Messaging;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Android.Background;
 
@@ -70,14 +71,14 @@ public class AndroidBackgroundService : Service
             catch (Exception ex)
             {
                 var notificationManager = GetSystemService(NotificationService) as NotificationManager;
-                notificationManager?.Notify(ErrorNotificationId,
-                    CreateNotification()
-                        .SetPriority((int)NotificationPriority.High)
-                        .SetSmallIcon(ResourceConstant.Drawable.Icon)
-                        .SetContentTitle("Background process error")
-                        .SetStyle(new NotificationCompat.BigTextStyle().BigText(ex.ToString()
-                            .Truncate(5000))) //5000 characters so we don't annihilate the phone. Usually for debugging we only need the first 2000 characters
-                        .SetContentText(ex.GetType().ToString()).Build());
+                var errorNotification = CreateNotification();
+                errorNotification.SetPriority((int)NotificationPriority.High);
+                errorNotification.SetSmallIcon(ResourceConstant.Drawable.Icon);
+                errorNotification.SetContentTitle("Background process error");
+                //5000 characters so we don't annihilate the phone. Usually for debugging we only need the first 2000 characters
+                errorNotification.SetStyle(new NotificationCompat.BigTextStyle().BigText(ex.ToString().Truncate(5000)));
+                errorNotification.SetContentText(ex.GetType().ToString());
+                notificationManager?.Notify(ErrorNotificationId, errorNotification.Build());
             }
 
             StopSelf();
@@ -108,15 +109,16 @@ public class AndroidBackgroundService : Service
     {
         var context = Application.Context;
 
-        var notificationBuilder = new NotificationCompat.Builder(context, ChannelId)
-            .SetContentTitle("VoiceCraft")
-            .SetOngoing(true);
+        var notificationBuilder = new NotificationCompat.Builder(context, ChannelId);
+        notificationBuilder.SetContentTitle("VoiceCraft");
+        notificationBuilder.SetOngoing(true);
 
         if (Build.VERSION.SdkInt < BuildVersionCodes.O) return notificationBuilder;
 #pragma warning disable CA1416
         var notificationChannel = new NotificationChannel(ChannelId, "Background", NotificationImportance.Low);
 
-        if (context.GetSystemService(NotificationService) is not NotificationManager notificationManager) return notificationBuilder;
+        if (context.GetSystemService(NotificationService) is not NotificationManager notificationManager)
+            return notificationBuilder;
         notificationBuilder.SetChannelId(ChannelId);
         notificationManager.CreateNotificationChannel(notificationChannel);
 #pragma warning restore CA1416
@@ -126,13 +128,14 @@ public class AndroidBackgroundService : Service
     private void UpdateNotification()
     {
         var notificationManager = GetSystemService(NotificationService) as NotificationManager;
-        notificationManager?.Notify(NotificationId,
-            CreateNotification()
-                .SetSmallIcon(ResourceConstant.Drawable.Icon)
-                .SetContentTitle(string.IsNullOrWhiteSpace(_notificationTitle) ? "Running background processes" : _notificationTitle)
-                .SetContentText(string.IsNullOrWhiteSpace(_notificationDescription)
-                    ? $"Background Processes: {Processes.Count}"
-                    : _notificationDescription)
-                .Build());
+        var notification = CreateNotification();
+        notification.SetSmallIcon(ResourceConstant.Drawable.Icon);
+        notification.SetContentTitle(string.IsNullOrWhiteSpace(_notificationTitle)
+            ? "Running background processes"
+            : Localizer.Get(_notificationTitle));
+        notification.SetContentText(string.IsNullOrWhiteSpace(_notificationDescription)
+            ? $"Background Processes: {Processes.Count}"
+            : Localizer.Get(_notificationDescription));
+        notificationManager?.Notify(NotificationId, notification.Build());
     }
 }
