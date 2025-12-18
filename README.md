@@ -91,6 +91,4 @@ audio effects, audio simulations, authentication, and more!
 
 ### Server
 
-- [WatsonWebsocket](https://github.com/jchristn/WatsonWebsocket)
-- [Watson.Lite](https://github.com/dotnet/WatsonWebserver)
 - [Spectre.Console](https://github.com/spectreconsole/spectre.console)
