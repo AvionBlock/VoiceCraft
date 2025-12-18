@@ -38,6 +38,8 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
     public void Start(McHttpConfig? config = null)
     {
+        Stop();
+        
         if (config != null)
             Config = config;
 
