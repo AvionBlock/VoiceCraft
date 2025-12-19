@@ -1,63 +1,197 @@
 {
-  "Startup.Title.Starting": "啟動中...",
-  "Startup.ServerSetupTable.Server": "伺服器",
-  "Startup.ServerSetupTable.Port": "端口",
-  "Startup.ServerSetupTable.Protocol": "協議",
-  "Startup.ServerProperties.Loading": "加載伺服器屬性...",
-  "Startup.ServerProperties.Success": "成功加載伺服器屬性!",
-  "Startup.VoiceCraftServer.Starting": "啟動 VoiceCraft 伺服器...",
-  "Startup.VoiceCraftServer.Failed": "啟動 VoiceCraft 伺服器失敗! 請檢查是否有其他進程正在使用相同的端口!",
-  "Startup.VoiceCraftServer.Success": "VoiceCraft 伺服器啟動成功!",
-  "Startup.Finished": "伺服器啟動成功!",
-  "Startup.Exception": "啟動伺服器時發生錯誤!",
-  "Command.Exception": "執行命令 {0} 時發生錯誤!",
-  "Shutdown.StartingIn": "在 {0} 毫秒後關閉伺服器...",
-  "Shutdown.Starting": "正在關閉伺服器...",
-  "Shutdown.Success": "伺服器已成功關閉!",
-  "ServerProperties.LoadFile.NotFound": "未在當前和/或子目錄中找到 ServerProperties.json! 改為使用預設伺服器屬性!",
-  "ServerProperties.LoadFile.Loading": "正在加載位于 {0} 的 ServerProperties.json 文件...",
-  "ServerProperties.LoadFile.JSONFailed": "JSON 解析失敗.",
-  "ServerProperties.LoadFile.Failed": "加載伺服器屬性失敗! 改為使用預設屬性! 錯誤: {0}",
-  "ServerProperties.CreateFile.Generating": "正在生成位于 {0} 的 ServerProperties.json 文件...",
-  "ServerProperties.CreateFile.Success": "成功生成位于 {0} 的 ServerProperties.json 文件",
-  "ServerProperties.CreateFile.Failed": "無法在 {0} 生成 ServerProperties.json 文件！錯誤： {1}",
-  "Commands.Exceptions.CannotFindEntity": "無法找到 ID 為 {0} 的實體!",
-  "Commands.Root.Description": "VoiceCraft 命令.",
-  "Commands.Options.id.Name": "ID",
-  "Commands.Options.id.Description": "實體的ID。",
-  "Commands.SetProperty.Name": "設置屬性",
-  "Commands.SetProperty.Description": "設置一個實體的屬性。",
-  "Commands.SetProperty.Options.key.Name": "key",
-  "Commands.SetProperty.Options.key.Description": "屬性的key。",
-  "Commands.SetProperty.Options.value.Name": "value",
-  "Commands.SetProperty.Options.value.Description": "屬性的value。",
-  "Commands.SetPosition.Name": "設置位置",
-  "Commands.SetPosition.Description": "設置一個實體的位置。",
-  "Commands.SetPosition.Options.x.Description": "X位置。",
-  "Commands.SetPosition.Options.y.Description": "Y位置。",
-  "Commands.SetPosition.Options.z.Description": "Z位置。",
-  "Commands.SetWorldId.Name": "設置世界ID",
-  "Commands.SetWorldId.Description": "設置一個實體的世界ID。",
-  "Commands.SetWorldId.Options.world.Name": "世界",
-  "Commands.SetWorldId.Options.world.Description": "世界ID。",
-  "Commands.List.Name": "列表",
-  "Commands.List.Description": "列出所有實體。",
-  "Commands.List.Options.clientsOnly.Name": "只顯示客戶端",
-  "Commands.List.Options.clientsOnly.Description": "只顯示客戶端。",
-  "Commands.List.Options.limit.Name": "限制",
-  "Commands.List.Options.limit.Description": "限制显示的實體數量。",
-  "Commands.List.Exceptions.Limit": "限制不能小于零！ :(",
-  "Commands.List.EntityTable.Id": "ID",
-  "Commands.List.EntityTable.Name": "名稱",
-  "Commands.List.EntityTable.Position": "位置",
-  "Commands.List.EntityTable.Rotation": "旋轉",
-  "Commands.List.Showing": "顯示 {0} 個實體。",
-  "Commands.SetTitle.Name": "設置標題",
-  "Commands.SetTitle.Description": "設置一個客戶端的標題。",
-  "Commands.SetTitle.Options.title.Name": "標題",
-  "Commands.SetTitle.Options.title.Description": "要設置的標題。",
-  "Commands.SetTitle.Exceptions.NotAClientEntity": "ID 為 {0} 的實體不是一個客戶端實體！",
-  "AudioEffectSystem.FailedToAddEffect": "添加效果失敗！",
-  "AudioEffectSystem.FailedToRemoveEffect": "移除效果失敗！",
-  "AudioEffectSystem.NoAvailableIdFound": "無法找到可用的ID！"
+  "Startup": {
+    "Starting": "伺服器啟動中...",
+    "Success": "伺服器成功啟動!",
+    "Failed": "嘗試啟動伺服器時發生錯誤!",
+    "Commands": {
+      "Registering": "註冊命令中...",
+      "Success": "成功註冊 {0} 個命令!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "關閉伺服器中...",
+    "StartingIn": "在 {0} 毫秒後關閉伺服器...",
+    "Success": "伺服器成功關閉!"
+  },
+  "ServerProperties": {
+    "Loading": "正在加載 ServerProperties.json 文件於 {0}",
+    "Success": "成功加載伺服器屬性!",
+    "Failed": "加載伺服器屬性失敗! 回退到默認屬性! 錯誤: {0}",
+    "NotFound": "未在當前和/或子目錄中找到 ServerProperties.json 文件! 正在生成文件...",
+    "Generating": {
+      "Generating": "正在生成 ServerProperties.json 文件於 {0}",
+      "Success": "成功生成 ServerProperties.json 文件於 {0}",
+      "Failed": "無法生成 ServerProperties.json 文件於 {0}! 錯誤: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "無法從加載的文件中解析 JSON 數據!"
+    }
+  },
+  "Title": {
+    "Starting": "啟動中...",
+    "Running": "運行中!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "客戶端連接! UserGuid: {0}",
+      "Disconnected": "客戶端斷開連接! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi 客戶端連接! Token: {0}",
+        "Disconnected": "McApi 客戶端斷開連接! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "正在啟動 VoiceCraft 伺服器...",
+    "Success": "成功啟動 VoiceCraft 伺服器!",
+    "Stopping": "正在停止 VoiceCraft 伺服器...",
+    "Stopped": "成功停止 VoiceCraft 伺服器!",
+    "Exceptions": {
+      "Failed": "無法啟動 VoiceCraft 伺服器! 請檢查是否有其他進程正在使用相同的端口!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "正在啟動 McWss 伺服器...",
+    "Success": "成功啟動 McWss 伺服器!",
+    "Stopping": "正在停止 McWss 伺服器...",
+    "Stopped": "成功停止 McWss 伺服器!",
+    "Exceptions": {
+      "Failed": "無法啟動 McWss 伺服器! 請檢查是否有其他進程正在使用相同的端口!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "正在啟動 McHttp 伺服器...",
+    "Success": "成功啟動 McHttp 伺服器!",
+    "Stopping": "正在停止 McHttp 伺服器...",
+    "Stopped": "成功停止 McHttp 伺服器!",
+    "Exceptions": {
+      "Failed": "無法啟動 McHttp 伺服器! 請檢查是否有其他進程正在使用相同的端口!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "伺服器",
+      "Port": "端口",
+      "Protocol": "協議"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "名稱",
+      "Position": "位置",
+      "Rotation": "方向",
+      "WorldId": "世界ID"
+    }
+  },
+  "Commands": {
+    "Exception": "嘗試執行命令 {0} 時發生錯誤!",
+    "Exceptions": {
+      "EntityNotFound": "無法找到 ID 為 {0} 的實體!",
+      "EntityNotAClient": "ID 為 {0} 的實體不是一個客戶端實體!"
+    },
+    "RootCommand": {
+      "Description": "執行 VoiceCraft 命令."
+    },
+    "List": {
+      "Name": "list",
+      "Description": "列出實體.",
+      "Showing": "顯示 {0} 個實體.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "只顯示網絡連接的客戶端實體."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "限制顯示的實體數量."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "限制不能小於零!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "設置一個客戶端實體的標題.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "客戶端實體的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要設置的標題的內容."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setdescription",
+      "Description": "設置一個客戶端實體的描述.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "客戶端實體的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要設置的描述的內容."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "設置一個實體的位置.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "要設置的 X 位置."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "要設置的 Y 位置."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "要設置的 Z 位置."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "設置一個實體的世界 ID.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要設置的實體的世界 ID."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "設置一個實體的名稱.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要設置的實體的名稱."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "停止伺服器."
+    }
+  }
 }

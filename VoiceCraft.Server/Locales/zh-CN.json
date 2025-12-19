@@ -1,63 +1,197 @@
 {
-  "Startup.Title.Starting": "启动中...",
-  "Startup.ServerSetupTable.Server": "服务器",
-  "Startup.ServerSetupTable.Port": "端口",
-  "Startup.ServerSetupTable.Protocol": "协议",
-  "Startup.ServerProperties.Loading": "加载服务器属性...",
-  "Startup.ServerProperties.Success": "成功加载服务器属性!",
-  "Startup.VoiceCraftServer.Starting": "启动 VoiceCraft 服务器...",
-  "Startup.VoiceCraftServer.Failed": "启动 VoiceCraft 服务器失败! 请检查是否有其他进程正在使用相同的端口!",
-  "Startup.VoiceCraftServer.Success": "VoiceCraft 服务器启动成功!",
-  "Startup.Finished": "服务器启动成功!",
-  "Startup.Exception": "启动服务器时发生错误!",
-  "Command.Exception": "执行命令 {0} 时发生错误!",
-  "Shutdown.StartingIn": "在 {0} 毫秒后关闭服务器...",
-  "Shutdown.Starting": "正在关闭服务器...",
-  "Shutdown.Success": "服务器已成功关闭!",
-  "ServerProperties.LoadFile.NotFound": "未在当前和/或子目录中找到 ServerProperties.json! 改为使用默认服务器属性!",
-  "ServerProperties.LoadFile.Loading": "正在加载位于 {0} 的 ServerProperties.json 文件...",
-  "ServerProperties.LoadFile.JSONFailed": "JSON 解析失败.",
-  "ServerProperties.LoadFile.Failed": "加载服务器属性失败! 改为使用默认属性! 错误: {0}",
-  "ServerProperties.CreateFile.Generating": "正在生成位于 {0} 的 ServerProperties.json 文件...",
-  "ServerProperties.CreateFile.Success": "成功生成位于 {0} 的 ServerProperties.json 文件",
-  "ServerProperties.CreateFile.Failed": "无法在 {0} 生成 ServerProperties.json 文件！错误： {1}",
-  "Commands.Exceptions.CannotFindEntity": "无法找到 ID 为 {0} 的实体!",
-  "Commands.Root.Description": "VoiceCraft 命令.",
-  "Commands.Options.id.Name": "ID",
-  "Commands.Options.id.Description": "实体的ID。",
-  "Commands.SetProperty.Name": "设置属性",
-  "Commands.SetProperty.Description": "设置一个实体的属性。",
-  "Commands.SetProperty.Options.key.Name": "key",
-  "Commands.SetProperty.Options.key.Description": "属性的key。",
-  "Commands.SetProperty.Options.value.Name": "value",
-  "Commands.SetProperty.Options.value.Description": "属性的value。",
-  "Commands.SetPosition.Name": "设置位置",
-  "Commands.SetPosition.Description": "设置一个实体的位置。",
-  "Commands.SetPosition.Options.x.Description": "X位置。",
-  "Commands.SetPosition.Options.y.Description": "Y位置。",
-  "Commands.SetPosition.Options.z.Description": "Z位置。",
-  "Commands.SetWorldId.Name": "设置世界ID",
-  "Commands.SetWorldId.Description": "设置一个实体的世界ID。",
-  "Commands.SetWorldId.Options.world.Name": "世界",
-  "Commands.SetWorldId.Options.world.Description": "世界ID。",
-  "Commands.List.Name": "列表",
-  "Commands.List.Description": "列出所有实体。",
-  "Commands.List.Options.clientsOnly.Name": "只显示客户端",
-  "Commands.List.Options.clientsOnly.Description": "只显示客户端。",
-  "Commands.List.Options.limit.Name": "限制",
-  "Commands.List.Options.limit.Description": "限制显示的实体数量。",
-  "Commands.List.Exceptions.Limit": "限制不能小于零！",
-  "Commands.List.EntityTable.Id": "ID",
-  "Commands.List.EntityTable.Name": "名称",
-  "Commands.List.EntityTable.Position": "位置",
-  "Commands.List.EntityTable.Rotation": "旋转",
-  "Commands.List.Showing": "显示 {0} 个实体。",
-  "Commands.SetTitle.Name": "设置标题",
-  "Commands.SetTitle.Description": "设置一个客户端的标题。",
-  "Commands.SetTitle.Options.title.Name": "标题",
-  "Commands.SetTitle.Options.title.Description": "要设置的标题。",
-  "Commands.SetTitle.Exceptions.NotAClientEntity": "ID 为 {0} 的实体不是一个客户端实体！:(",
-  "AudioEffectSystem.FailedToAddEffect": "添加效果失败！",
-  "AudioEffectSystem.FailedToRemoveEffect": "移除效果失败！",
-  "AudioEffectSystem.NoAvailableIdFound": "无法找到可用的ID！"
+  "Startup": {
+    "Starting": "服务器启动中...",
+    "Success": "服务器成功启动!",
+    "Failed": "尝试启动服务器时发生错误!",
+    "Commands": {
+      "Registering": "注册命令中...",
+      "Success": "成功注册 {0} 个命令!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "关闭服务器中...",
+    "StartingIn": "在 {0} 毫秒后关闭服务器...",
+    "Success": "服务器成功关闭!"
+  },
+  "ServerProperties": {
+    "Loading": "正在加载 ServerProperties.json 文件于 {0}",
+    "Success": "成功加载服务器属性!",
+    "Failed": "加载服务器属性失败! 回退到默认属性! 错误: {0}",
+    "NotFound": "未在当前和/或子目录中找到 ServerProperties.json 文件! 正在生成文件...",
+    "Generating": {
+      "Generating": "正在生成 ServerProperties.json 文件于 {0}",
+      "Success": "成功生成 ServerProperties.json 文件于 {0}",
+      "Failed": "无法生成 ServerProperties.json 文件于 {0}! 错误: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "无法从加载的文件中解析 JSON 数据!"
+    }
+  },
+  "Title": {
+    "Starting": "启动中...",
+    "Running": "运行中!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "客户端连接! UserGuid: {0}",
+      "Disconnected": "客户端断开连接! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi 客户端连接! Token: {0}",
+        "Disconnected": "McApi 客户端断开连接! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "正在启动 VoiceCraft 服务器...",
+    "Success": "成功启动 VoiceCraft 服务器!",
+    "Stopping": "正在停止 VoiceCraft 服务器...",
+    "Stopped": "成功停止 VoiceCraft 服务器!",
+    "Exceptions": {
+      "Failed": "无法启动 VoiceCraft 服务器! 请检查是否有其他进程正在使用相同的端口!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "正在启动 McWss 服务器...",
+    "Success": "成功启动 McWss 服务器!",
+    "Stopping": "正在停止 McWss 服务器...",
+    "Stopped": "成功停止 McWss 服务器!",
+    "Exceptions": {
+      "Failed": "无法启动 McWss 服务器! 请检查是否有其他进程正在使用相同的端口!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "正在启动 McHttp 服务器...",
+    "Success": "成功启动 McHttp 服务器!",
+    "Stopping": "正在停止 McHttp 服务器...",
+    "Stopped": "成功停止 McHttp 服务器!",
+    "Exceptions": {
+      "Failed": "无法启动 McHttp 服务器! 请检查是否有其他进程正在使用相同的端口!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "服务器",
+      "Port": "端口",
+      "Protocol": "协议"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "名称",
+      "Position": "位置",
+      "Rotation": "方向",
+      "WorldId": "世界ID"
+    }
+  },
+  "Commands": {
+    "Exception": "尝试执行命令 {0} 时发生错误!",
+    "Exceptions": {
+      "EntityNotFound": "无法找到 ID 为 {0} 的实体!",
+      "EntityNotAClient": "ID 为 {0} 的实体不是一个客户端实体!"
+    },
+    "RootCommand": {
+      "Description": "执行 VoiceCraft 命令."
+    },
+    "List": {
+      "Name": "list",
+      "Description": "列出实体.",
+      "Showing": "显示 {0} 个实体.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "只显示网络连接的客户端实体."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "限制显示的实体数量."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "限制不能小于零!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "设置一个客户端实体的标题.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "客户端实体的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要设置的标题的内容."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setdescription",
+      "Description": "设置一个客户端实体的描述.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "客户端实体的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要设置的描述的内容."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "设置一个实体的位置.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "要设置的 X 位置."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "要设置的 Y 位置."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "要设置的 Z 位置."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "设置一个实体的世界 ID.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要设置的实体的世界 ID."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "设置一个实体的名称.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "要设置的实体的名称."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "停止服务器."
+    }
+  }
 }
