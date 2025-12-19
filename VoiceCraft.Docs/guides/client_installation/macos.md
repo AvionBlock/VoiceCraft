@@ -1,3 +1,3 @@
 # Downloading
 
-No fucking clue yet.
+Not yet figured out.

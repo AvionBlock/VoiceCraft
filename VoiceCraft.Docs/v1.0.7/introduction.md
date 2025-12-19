@@ -6,7 +6,7 @@ Welcome to VoiceCraft v1.0.7 Guide Home Page. To get started, click on one of th
 > THIS DOCUMENTATION IS FOR V1.0.7 VERSION OF VOICECRAFT!
 
 <p align="center">
-    <img style="margin: 10; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.34)" width="800" height="800" src="../images/VC.png"/>
+    <img style="margin: 10; box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.34)" width="800" src="../images/VC.png"/>
 </p>
 
 # Guides
