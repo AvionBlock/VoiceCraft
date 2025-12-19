@@ -111,14 +111,11 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 > The MCWSS version is unstable and may break more than often or crash your world! Do not use this for more than 2 or 3
 > players!
 
-> [!NOTE]
-> This installation guide assumes you are using WineGDK or ProtonGE with GDK components.
-
 ## Installing the addon
 
 1. Once you have downloaded the addon above, rename the file from `VoiceCraft.Addon.Core.McWss.zip` to
    `VoiceCraft.Addon.Core.McWss.mcaddon` then open it, Minecraft should auto-import the addon.
-2. Start the Minecraft instance, create or edit a world and add both the `VoiceCraft.Addon.Core.McWss.BP` and
+2. Start Minecraft, create or edit a world and add both the `VoiceCraft.Addon.Core.McWss.BP` and
    `VoiceCraft.Addon.Core.McWss.RP` to your world.
 
 ## Connecting
