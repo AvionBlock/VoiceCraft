@@ -12,7 +12,7 @@ being able to run the application if you have not done so already.
 
 1. Go to where you have downloaded the `VoiceCraft.Server.Windows.<Architecture>.zip` file in your file manager and
    extract the file.
-2. Open a terminal inside the extracted folder and run the command `./VoiceCraft.Server`.
+2. Open a terminal inside the extracted folder and run the command `./VoiceCraft.Server.exe`.
 
 # HTTP Server Sided Setup (BDS Only)
 
@@ -24,10 +24,10 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 
 ## Installing the addon
 
-1. Once you have downloaded the addon above, extract the addon and place the `RP` folder in `<Server>/resource_packs/`
-   and the `BP` folder in `<Server>/behavior_packs/`. You can rename the `RP` and `BP` folders to prevent any future
+1. Once you have downloaded the addon above, extract the addon and place the `RP` folder in `<MCServer>/resource_packs/`
+   and the `BP` folder in `<MCServer>/behavior_packs/`. You can rename the `RP` and `BP` folders to prevent any future
    conflicts.
-2. Navigate into `<Server>/config/default/` and open the `permissions.json` file in the file editor of your choice.
+2. Navigate into `<MCServer>/config/default/` and open the `permissions.json` file in the file editor of your choice.
 3. Edit the contents of the file to match what is shown below and then save and close the file.
 
 ```json
@@ -43,7 +43,7 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 }
 ```
 
-4. Navigate into `<Server>/worlds/<YourWorld>/` and open or create the `world_behavior_packs.json` file in the file
+4. Navigate into `<MCServer>/worlds/<YourWorld>/` and open or create the `world_behavior_packs.json` file in the file
    editor of your choice.
 5. Edit the contents of the file by adding the following **inside the []**:
 
@@ -99,8 +99,8 @@ If there are multiple addon's then you will need to edit the file like this:
 1. Connect to your server in Minecraft.
 2. Enter the command `/vcconnect <hostname> <loginkey>`. The hostname is the IP and port of the VoiceCraft's
    McHttp server protocol, the login key is generated in the `ServerProperties.json` file located in
-   `<VoiceCraftServer>/config/`. An example command of the command would be
-   `/vcconect "http://127.0.0.1:9050" e4ad1f7e-4f90-4b21-bc15-6febe580bf1c`.
+   `<VCServer>/config/`. An example command of the command would be
+   `/vcconnect "http://127.0.0.1:9050" e4ad1f7e-4f90-4b21-bc15-6febe580bf1c`.
 
 # MCWSS Server Sided Setup (Singleplayer worlds only)
 
@@ -126,4 +126,4 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
    computer/device and enter that instead of `127.0.0.1`.
 3. Enter the command `/vcconnect <loginkey>`. The login key is generated in the `ServerProperties.json` file located in
    `<VoiceCraftServer>/config/`. An example command of the command would be
-   `/vcconect e4ad1f7e-4f90-4b21-bc15-6febe580bf1c`.
+   `/vcconnect e4ad1f7e-4f90-4b21-bc15-6febe580bf1c`.
