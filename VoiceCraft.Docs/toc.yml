@@ -2,5 +2,7 @@
   href: v1.0.7/
 - name: Guides
   href: guides/
+- name: Docs
+  href: docs/
 - name: Faq
   href: faq.md
