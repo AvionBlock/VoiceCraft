@@ -2,6 +2,7 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
@@ -11,6 +12,8 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     private readonly SettingsService _settingsService;
     private bool _disposed;
 
+    [ObservableProperty] private PositioningType _positioningType;
+    [ObservableProperty] private string _mcWssListenIp;
     [ObservableProperty] private ushort _mcWssHostPort;
     private bool _updating;
 
@@ -19,6 +22,8 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
         _networkSettings = settingsService.NetworkSettings;
         _settingsService = settingsService;
         _networkSettings.OnUpdated += Update;
+        _positioningType = _networkSettings.PositioningType;
+        _mcWssListenIp = _networkSettings.McWssListenIp;
         _mcWssHostPort = _networkSettings.McWssHostPort;
     }
 
@@ -29,6 +34,28 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
 
         _disposed = true;
         GC.SuppressFinalize(this);
+    }
+
+    partial void OnPositioningTypeChanged(PositioningType value)
+    {
+        ThrowIfDisposed();
+        
+        if (_updating) return;
+        _updating = true;
+        _networkSettings.PositioningType = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
+    partial void OnMcWssListenIpChanged(string value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _networkSettings.McWssListenIp = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
     }
 
     partial void OnMcWssHostPortChanging(ushort value)
@@ -47,6 +74,8 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
         if (_updating) return;
         _updating = true;
 
+        PositioningType = networkSettings.PositioningType;
+        McWssListenIp = networkSettings.McWssListenIp;
         McWssHostPort = networkSettings.McWssHostPort;
 
         _updating = false;

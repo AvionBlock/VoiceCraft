@@ -6,7 +6,7 @@ using VoiceCraft.Core.Network.McWssPackets;
 
 namespace VoiceCraft.Client.Network;
 
-public class McWssServer(VoiceCraftClient client)
+public class McWssServer(VoiceCraftClient client) : IDisposable
 {
     public bool IsStarted { get; private set; }
     private WebSocketServer? _wsServer;
@@ -14,6 +14,9 @@ public class McWssServer(VoiceCraftClient client)
     private string _localPlayerRequestId = string.Empty;
     private string _localPlayerName = string.Empty;
     private VoiceCraftClient _client = client;
+
+    public event Action<string>? OnConnected;
+    public event Action? OnDisconnected;
 
     public void Start(string ip, int port)
     {
@@ -52,6 +55,14 @@ public class McWssServer(VoiceCraftClient client)
         }
     }
 
+    public void Dispose()
+    {
+        Stop();
+        OnConnected = null;
+        OnDisconnected = null;
+        GC.SuppressFinalize(this);
+    }
+
     private static string SendCommand(IWebSocketConnection socket, string command)
     {
         var packet = new McWssCommandRequest(command);
@@ -77,10 +88,9 @@ public class McWssServer(VoiceCraftClient client)
 
     private void OnClientDisconnected(IWebSocketConnection socket)
     {
-        if (_peerConnection?.ConnectionInfo.Id == socket.ConnectionInfo.Id)
-        {
-            _peerConnection = null;
-        }
+        if (_peerConnection?.ConnectionInfo.Id != socket.ConnectionInfo.Id) return;
+        _peerConnection = null;
+        OnDisconnected?.Invoke();
     }
 
     private void OnMessageReceived(IWebSocketConnection _, string message)
@@ -113,6 +123,7 @@ public class McWssServer(VoiceCraftClient client)
         if(localPlayerNameCommandResponse == null) return;
         _localPlayerName = localPlayerNameCommandResponse.LocalPlayerName;
         _client.Name = _localPlayerName;
+        OnConnected?.Invoke(_localPlayerName);
     }
 
     private void HandleEvent(McWssGenericPacket genericPacket, string data)

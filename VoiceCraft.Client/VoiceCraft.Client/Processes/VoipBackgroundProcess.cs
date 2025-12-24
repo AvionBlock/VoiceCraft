@@ -25,7 +25,7 @@ public class VoipBackgroundProcess(
     //Client
     private readonly VoiceCraftClient _voiceCraftClient = new();
     private IAudioPlayer? _audioPlayer;
-    
+
     //McWss
     private McWssServer? _mcWssServer;
 
@@ -115,10 +115,16 @@ public class VoipBackgroundProcess(
             _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
                 ?.Instantiate();
             _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
-            
+
             //Setup McWss Server
             if (networkSettings.PositioningType == PositioningType.Client)
+            {
                 _mcWssServer = new McWssServer(_voiceCraftClient);
+                _mcWssServer.OnConnected += OnMcWssConnected;
+                _mcWssServer.OnDisconnected += OnMcWssDisconnected;
+                Description =
+                    $"VoiceCraft.DescriptionStatus.McWss:{networkSettings.McWssListenIp},{networkSettings.McWssHostPort}";
+            }
 
             //Initialize and start.
             _audioRecorder.Initialize();
@@ -198,7 +204,13 @@ public class VoipBackgroundProcess(
                     _audioPlayer.Stop();
             }
 
-            if (_mcWssServer is { IsStarted: true }) _mcWssServer.Stop();
+            if (_mcWssServer is { IsStarted: true })
+            {
+                _mcWssServer.Stop();
+                _mcWssServer.OnConnected -= OnMcWssConnected;
+                _mcWssServer.OnDisconnected -= OnMcWssDisconnected;
+            }
+
             _voiceCraftClient.OnConnected -= ClientOnConnected;
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
             _voiceCraftClient.OnSetTitle -= ClientOnSetTitle;
@@ -338,5 +350,17 @@ public class VoipBackgroundProcess(
         }
 
         _audioPlayer?.Play(); //Restart player.
+    }
+
+    private void OnMcWssConnected(string playerName)
+    {
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.McWss.Connected:{playerName}"),
+            Localizer.Get("Notification.McWss.Badge"));
+    }
+    
+    private void OnMcWssDisconnected()
+    {
+        notificationService.SendNotification(Localizer.Get("Notification.McWss.Disconnected"),
+            Localizer.Get("Notification.McWss.Badge"));
     }
 }
