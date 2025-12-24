@@ -41,6 +41,7 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         _audioEffectSystem.SetEffect(1, new VisibilityEffect());
         _audioEffectSystem.SetEffect(2, new ProximityEffect() { MaxRange = 30 });
+        _audioEffectSystem.SetEffect(4, new ProximityMuffleEffect());
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;

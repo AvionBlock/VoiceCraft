@@ -8,9 +8,16 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class ProximityEffect : IAudioEffect, IVisible
     {
+        private float _wetDry = 1.0f;
+        
+        public EffectType EffectType => EffectType.Proximity;
+        public float WetDry
+        {
+            get => _wetDry;
+            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
+        }
         public int MinRange { get; set; }
         public int MaxRange { get; set; }
-        public EffectType EffectType => EffectType.Proximity;
 
         public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
             int count)
@@ -23,19 +30,25 @@ namespace VoiceCraft.Core.Audio.Effects
             var distance = Vector3.Distance(from.Position, to.Position);
             var factor = 1f - Math.Clamp((distance - MinRange) / range, 0f, 1f);
 
-            for (var i = 0; i < count; i++) data[i] = Math.Clamp(data[i] * factor, -1f, 1f);
+            for (var i = 0; i < count; i++)
+            {
+                var output = Math.Clamp(data[i] * factor, -1f, 1f);
+                data[i] = output * WetDry + data[i] * (1.0f - WetDry);
+            }
         }
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(MinRange);
             writer.Put(MaxRange);
+            writer.Put(WetDry);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             MinRange = reader.GetInt();
             MaxRange = reader.GetInt();
+            WetDry = reader.GetFloat();
         }
 
         public void Reset()

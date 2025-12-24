@@ -127,7 +127,9 @@ namespace VoiceCraft.Core
         Proximity,
         Directional,
         ProximityEcho,
-        Echo
+        Echo,
+        ProximityMuffle,
+        Muffle,
     }
 
     public enum AudioFormat

@@ -12,13 +12,20 @@ namespace VoiceCraft.Core.Audio.Effects
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
         private float _delay;
+        private float _wetDry;
 
         public ProximityEchoEffect(float delay = 0.5f, float range = 0f)
         {
             Delay = delay;
             Range = range;
         }
-
+        
+        public EffectType EffectType => EffectType.ProximityEcho;
+        public float WetDry
+        {
+            get => _wetDry;
+            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
+        }
         public static int SampleRate => Constants.SampleRate;
         public float Delay
         {
@@ -26,24 +33,19 @@ namespace VoiceCraft.Core.Audio.Effects
             set => _delay = SampleRate * value;
         }
         public float Range { get; set; }
-        public float Wet { get; set; } = 1f;
-        public float Dry { get; set; }
-        public EffectType EffectType => EffectType.ProximityEcho;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(Delay);
             writer.Put(Range);
-            writer.Put(Wet);
-            writer.Put(Dry);
+            writer.Put(WetDry);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             Delay = reader.GetFloat();
             Range = reader.GetFloat();
-            Wet = reader.GetFloat();
-            Dry = reader.GetFloat();
+            WetDry = reader.GetFloat();
         }
 
         public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
@@ -68,7 +70,7 @@ namespace VoiceCraft.Core.Audio.Effects
                 var delayed = delayLine.Read(_delay);
                 var output = data[i] + delayed * factor;
                 delayLine.Write(output);
-                data[i] = output * Wet + data[i] * Dry;
+                data[i] = output * WetDry + data[i] * (1.0f - WetDry);
             }
         }
 

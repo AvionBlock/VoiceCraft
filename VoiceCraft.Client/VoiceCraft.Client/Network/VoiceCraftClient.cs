@@ -949,6 +949,16 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
                     echoEffect.Deserialize(reader);
                     _audioSystem.SetEffect(packet.Bitmask, echoEffect);
                     break;
+                case EffectType.ProximityMuffle:
+                    var proximityMuffleEffect = new ProximityMuffleEffect();
+                    proximityMuffleEffect.Deserialize(reader);
+                    _audioSystem.SetEffect(packet.Bitmask, proximityMuffleEffect);
+                    break;
+                case EffectType.Muffle:
+                    var muffleEffect = new MuffleEffect();
+                    muffleEffect.Deserialize(reader);
+                    _audioSystem.SetEffect(packet.Bitmask, muffleEffect);
+                    break;
                 case EffectType.None:
                     _audioSystem.SetEffect(packet.Bitmask, null);
                     break;
