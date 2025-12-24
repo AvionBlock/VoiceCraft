@@ -25,6 +25,9 @@ public class VoipBackgroundProcess(
     //Client
     private readonly VoiceCraftClient _voiceCraftClient = new();
     private IAudioPlayer? _audioPlayer;
+    
+    //McWss
+    private McWssServer? _mcWssServer;
 
     //Audio
     private IAudioRecorder? _audioRecorder;
@@ -80,6 +83,7 @@ public class VoipBackgroundProcess(
         {
             Title = "VoiceCraft.Status.Initializing";
             var audioSettings = settingsService.AudioSettings;
+            var networkSettings = settingsService.NetworkSettings;
 
             _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
             _voiceCraftClient.OnConnected += ClientOnConnected;
@@ -111,6 +115,10 @@ public class VoipBackgroundProcess(
             _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
                 ?.Instantiate();
             _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
+            
+            //Setup McWss Server
+            if (networkSettings.PositioningType == PositioningType.Client)
+                _mcWssServer = new McWssServer(_voiceCraftClient);
 
             //Initialize and start.
             _audioRecorder.Initialize();
@@ -120,17 +128,26 @@ public class VoipBackgroundProcess(
             _denoiser?.Initialize(_audioRecorder);
             _audioRecorder.Start();
             _audioPlayer.Play();
+            _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
 
+            var sw = new SpinWait();
             while (_audioRecorder.CaptureState == CaptureState.Starting ||
                    _audioPlayer.PlaybackState == PlaybackState.Starting)
             {
                 if (_stopRequested)
                     return;
-                Thread.Sleep(1); //Don't burn the CPU.
+                sw.SpinOnce();
+            }
+
+            while (_mcWssServer is { IsStarted: false })
+            {
+                if (_stopRequested)
+                    return;
+                sw.SpinOnce();
             }
 
             _ = _voiceCraftClient.ConnectAsync(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port,
-                locale);
+                locale, networkSettings.PositioningType);
             Title = "VoiceCraft.Status.Connecting";
 
             var startTime = DateTime.UtcNow;
@@ -181,6 +198,7 @@ public class VoipBackgroundProcess(
                     _audioPlayer.Stop();
             }
 
+            if (_mcWssServer is { IsStarted: true }) _mcWssServer.Stop();
             _voiceCraftClient.OnConnected -= ClientOnConnected;
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
             _voiceCraftClient.OnSetTitle -= ClientOnSetTitle;

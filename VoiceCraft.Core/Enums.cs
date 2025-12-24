@@ -10,14 +10,23 @@ namespace VoiceCraft.Core
 
     public enum VcPacketType : byte
     {
-        //Requests
+        //Core
+        //Requests DO NOT CHANGE!
         InfoRequest,
         LoginRequest,
         LogoutRequest,
+        //Responses DO NOT CHANGE!
+        InfoResponse,
+        AcceptResponse,
+        DenyResponse,
+        
+        //Other/Changeable
+        //Requests
         SetNameRequest,
         AudioRequest,
         SetMuteRequest,
         SetDeafenRequest,
+        SetWorldIdRequest,
         SetTalkBitmaskRequest,
         SetListenBitmaskRequest,
         SetEffectBitmaskRequest,
@@ -30,9 +39,6 @@ namespace VoiceCraft.Core
         SetEntityVisibilityRequest,
 
         //Responses
-        InfoResponse,
-        AcceptResponse,
-        DenyResponse,
 
         //Events
         OnEffectUpdated,
@@ -54,10 +60,18 @@ namespace VoiceCraft.Core
 
     public enum McApiPacketType : byte
     {
-        //Requests
+        //Core
+        //Requests DO NOT CHANGE!
         LoginRequest,
         LogoutRequest,
         PingRequest,
+        //Responses DO NOT CHANGE!
+        AcceptResponse,
+        DenyResponse,
+        PingResponse,
+        
+        //Other/Changeable
+        //Requests
         SetEffectRequest,
         ClearEffectsRequest,
         SetEntityTitleRequest,
@@ -71,11 +85,8 @@ namespace VoiceCraft.Core
         SetEntityRotationRequest,
         SetEntityCaveFactorRequest,
         SetEntityMuffleFactorRequest,
-
+        
         //Responses
-        AcceptResponse,
-        DenyResponse,
-        PingResponse,
 
         //Events
         OnEffectUpdated,
