@@ -13,10 +13,9 @@ namespace VoiceCraft.Core.Audio.Effects
         private float _delay;
         private float _wetDry = 1.0f;
 
-        public EchoEffect(float delay = 0.5f, float feedback = 0.5f)
+        public EchoEffect()
         {
-            Delay = delay;
-            Feedback = feedback;
+            Delay = 0.5f;
         }
         
         public EffectType EffectType => EffectType.Echo;
@@ -31,7 +30,8 @@ namespace VoiceCraft.Core.Audio.Effects
             get => _delay / SampleRate;
             set => _delay = SampleRate * value;
         }
-        public float Feedback { get; set; }
+
+        public float Feedback { get; set; } = 0.5f;
 
         public void Serialize(NetDataWriter writer)
         {

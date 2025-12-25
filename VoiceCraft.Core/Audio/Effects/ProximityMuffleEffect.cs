@@ -10,7 +10,7 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         private readonly Dictionary<VoiceCraftEntity, BiQuadFilter> _biquadFilters =
             new Dictionary<VoiceCraftEntity, BiQuadFilter>();
-
+        
         private float _wetDry = 1.0f;
         public static int SampleRate => Constants.SampleRate;
         public float WetDry

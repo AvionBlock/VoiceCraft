@@ -12,11 +12,11 @@ namespace VoiceCraft.Core.Audio.Effects
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
         private float _delay;
-        private float _wetDry;
+        private float _wetDry = 1.0f;
 
-        public ProximityEchoEffect(float delay = 0.5f)
+        public ProximityEchoEffect()
         {
-            Delay = delay;
+            Delay = 0.5f;
         }
         
         public EffectType EffectType => EffectType.ProximityEcho;
