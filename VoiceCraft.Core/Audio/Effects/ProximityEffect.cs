@@ -19,7 +19,7 @@ namespace VoiceCraft.Core.Audio.Effects
         public int MinRange { get; set; }
         public int MaxRange { get; set; }
 
-        public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
             int count)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;

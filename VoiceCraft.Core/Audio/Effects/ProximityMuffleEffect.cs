@@ -12,7 +12,7 @@ namespace VoiceCraft.Core.Audio.Effects
             new Dictionary<VoiceCraftEntity, BiQuadFilter>();
 
         private float _wetDry = 1.0f;
-        public int SampleRate => Constants.SampleRate;
+        public static int SampleRate => Constants.SampleRate;
         public float WetDry
         {
             get => _wetDry;

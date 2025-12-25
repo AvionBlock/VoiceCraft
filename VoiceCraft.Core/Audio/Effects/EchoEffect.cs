@@ -25,7 +25,7 @@ namespace VoiceCraft.Core.Audio.Effects
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
-        public int SampleRate => Constants.SampleRate;
+        public static int SampleRate => Constants.SampleRate;
         public float Delay
         {
             get => _delay / SampleRate;
