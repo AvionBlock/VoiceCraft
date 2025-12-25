@@ -24,6 +24,11 @@
       "Badge": "錯誤",
       "VoipFailedToStart": "背景服務無法啟動VOIP進程！",
       "VoipBackgroundError": "VOIP背景服務錯誤: {0}"
+    },
+    "McWss": {
+      "Badge": null,
+      "Connected": null,
+      "Disconnected": null
     }
   },
   "Home": {
@@ -84,6 +89,8 @@
     },
     "Network": {
       "Network": "網路設置",
+      "PositioningType": null,
+      "McWssListenIp": null,
       "McWssHostPort": "MCWSS主機端口"
     },
     "HotKey": {
@@ -149,6 +156,8 @@
       "Manual": "手動斷開連接。",
       "ServerFull": "伺服器已滿！",
       "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
+      "ServerSidedOnly": null,
+      "ClientSidedOnly": null,
       "Kicked": "被踢出伺服器！",
       "Shutdown": "伺服器關閉！",
       "Error": "嘗試登錄時發生錯誤！"
