@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Diagnostics;
 using Fleck;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core.Locales;
@@ -16,8 +17,10 @@ public static class Program
 
     public static void Main()
     {
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales");
         FleckLog.LogAction = (_, _, _) => { }; //Remove all websocket logs.
+        LogService.Load(); //Load Logs.
         App.Start().GetAwaiter().GetResult();
         ServiceProvider.Dispose(); //Dispose
     }
@@ -51,5 +54,18 @@ public static class Program
         serviceCollection.AddSingleton<ServerProperties>();
         serviceCollection.AddSingleton<VoiceCraftWorld>();
         return serviceCollection.BuildServiceProvider();
+    }
+    
+    private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            if (e.ExceptionObject is Exception ex)
+                LogService.LogCrash(ex); //Log it
+        }
+        catch (Exception writeEx)
+        {
+            Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
+        }
     }
 }

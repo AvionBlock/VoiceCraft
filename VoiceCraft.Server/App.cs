@@ -111,6 +111,7 @@ public static class App
             AnsiConsole.MarkupLine($"[red]{Localizer.Get("Startup.Failed")}[/]");
             AnsiConsole.WriteException(ex);
             Shutdown(10000);
+            LogService.Log(ex);
         }
         finally
         {
@@ -142,6 +143,7 @@ public static class App
             AnsiConsole.MarkupLine(
                 $"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
             AnsiConsole.WriteException(ex);
+            LogService.Log(ex);
         }
 
         _bufferedCommand = null;

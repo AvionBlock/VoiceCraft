@@ -279,9 +279,10 @@ public class VoiceCraftServer : IResettable, IDisposable
             loginPacket.Deserialize(request.Data);
             HandleLoginRequestPacket(loginPacket, request);
         }
-        catch
+        catch(Exception ex)
         {
             RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
+            LogService.Log(ex);
         }
     }
 
@@ -294,9 +295,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             var pt = (VcPacketType)packetType;
             ProcessPacket(pt, reader, peer);
         }
-        catch
+        catch(Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -309,9 +310,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             var pt = (VcPacketType)packetType;
             ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
         }
-        catch
+        catch(Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -412,9 +413,10 @@ public class VoiceCraftServer : IResettable, IDisposable
                 World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
-            catch
+            catch(Exception ex)
             {
                 DisconnectPeer(peer, "VoiceCraft.DisconnectReason.Error");
+                LogService.Log(ex);
             }
         }
         finally

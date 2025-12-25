@@ -48,6 +48,7 @@ public class ServerProperties
         {
             AnsiConsole.MarkupLine(
                 $"[yellow]{Localizer.Get($"ServerProperties.Failed:{ex.Message}")}[/]");
+            LogService.Log(ex);
         }
 
         return new ServerPropertiesStructure();

@@ -55,6 +55,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         catch(Exception ex)
         {
             AnsiConsole.WriteException(ex);
+            LogService.Log(ex);
             throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
     }
@@ -170,10 +171,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             context.Response.StatusCode = 400;
             context.Response.Close();
         }
-        catch
+        catch(Exception ex)
         {
             context.Response.StatusCode = 500;
             context.Response.Close();
+            LogService.Log(ex);
         }
     }
 
@@ -226,9 +228,9 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                     var pt = (McApiPacketType)packetType;
                     HandlePacket(pt, _reader, peer.Value, token);
                 }
-                catch
+                catch(Exception ex)
                 {
-                    //Do Nothing
+                    LogService.Log(ex);
                 }
         }
 

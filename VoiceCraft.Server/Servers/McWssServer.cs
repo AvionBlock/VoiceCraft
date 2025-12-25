@@ -62,6 +62,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         catch(Exception ex)
         {
             AnsiConsole.WriteException(ex);
+            LogService.Log(ex);
             throw new Exception(Localizer.Get("McWssServer.Exceptions.Failed"), ex);
         }
     }
@@ -85,6 +86,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             catch (Exception ex)
             {
                 AnsiConsole.WriteException(ex);
+                LogService.Log(ex);
             }
         }
 
@@ -155,9 +157,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                     var pt = (McApiPacketType)packetType;
                     HandlePacket(pt, _reader, peer.Value, token);
                 }
-                catch
+                catch(Exception ex)
                 {
-                    //Do Nothing
+                    LogService.Log(ex);
                 }
         }
 
@@ -220,9 +222,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             if (commandResponsePacket is not { StatusCode: 0 }) return;
             HandleDataTunnelCommandResponse(socket, commandResponsePacket.body.statusMessage);
         }
-        catch
+        catch(Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -238,9 +240,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
             }
         }
-        catch
+        catch(Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 

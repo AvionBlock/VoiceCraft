@@ -60,7 +60,14 @@ public class EventHandlerSystem : IDisposable
     public void Update()
     {
         while (_tasks.TryDequeue(out var result))
-            result.Invoke();
+            try
+            {
+                result.Invoke();
+            }
+            catch (Exception ex)
+            {
+                LogService.Log(ex);
+            }
     }
 
     #region Audio Effect Events
