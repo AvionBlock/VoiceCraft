@@ -14,10 +14,9 @@ namespace VoiceCraft.Core.Audio.Effects
         private float _delay;
         private float _wetDry;
 
-        public ProximityEchoEffect(float delay = 0.5f, float range = 0f)
+        public ProximityEchoEffect(float delay = 0.5f)
         {
             Delay = delay;
-            Range = range;
         }
         
         public EffectType EffectType => EffectType.ProximityEcho;
