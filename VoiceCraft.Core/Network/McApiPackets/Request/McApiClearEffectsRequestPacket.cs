@@ -4,10 +4,6 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
     public class McApiClearEffectsRequestPacket : IMcApiPacket
     {
-        public McApiClearEffectsRequestPacket()
-        {
-        }
-
         public McApiPacketType PacketType => McApiPacketType.ClearEffectsRequest;
 
         public void Serialize(NetDataWriter writer)
