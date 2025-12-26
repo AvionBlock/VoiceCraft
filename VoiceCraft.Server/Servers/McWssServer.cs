@@ -451,6 +451,16 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                     echoEffect.Deserialize(reader);
                     _audioEffectSystem.SetEffect(packet.Bitmask, echoEffect);
                     break;
+                case EffectType.ProximityMuffle:
+                    var proximityMuffleEffect = new ProximityMuffleEffect();
+                    proximityMuffleEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityMuffleEffect);
+                    break;
+                case EffectType.Muffle:
+                    var muffleEffect = new MuffleEffect();
+                    muffleEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, muffleEffect);
+                    break;
                 case EffectType.None:
                     _audioEffectSystem.SetEffect(packet.Bitmask, null);
                     break;

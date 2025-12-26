@@ -417,12 +417,6 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
-            if (_audioEffectSystem.TryGetEffect(packet.Bitmask, out var effect) &&
-                effect.EffectType == packet.EffectType)
-            {
-                return;
-            }
-
             switch (packet.EffectType)
             {
                 case EffectType.Visibility:
