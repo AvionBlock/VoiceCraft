@@ -20,7 +20,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
-    private static readonly Version McHttpVersion = new(Constants.Minor, Constants.Major, 0);
+    private static readonly Version McHttpVersion = new(Constants.Major, Constants.Minor, 0);
 
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();

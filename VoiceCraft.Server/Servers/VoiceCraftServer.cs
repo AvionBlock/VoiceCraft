@@ -279,7 +279,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             loginPacket.Deserialize(request.Data);
             HandleLoginRequestPacket(loginPacket, request);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
             LogService.Log(ex);
@@ -295,7 +295,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             var pt = (VcPacketType)packetType;
             ProcessPacket(pt, reader, peer);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LogService.Log(ex);
         }
@@ -310,7 +310,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             var pt = (VcPacketType)packetType;
             ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LogService.Log(ex);
         }
@@ -413,7 +413,7 @@ public class VoiceCraftServer : IResettable, IDisposable
                 World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 DisconnectPeer(peer, "VoiceCraft.DisconnectReason.Error");
                 LogService.Log(ex);
@@ -441,7 +441,7 @@ public class VoiceCraftServer : IResettable, IDisposable
     }
 
     private static void HandleSetNameRequestPacket(VcSetNameRequestPacket packet, NetPeer peer)
-    {        
+    {
         try
         {
             if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
@@ -507,7 +507,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             PacketPool<VcSetWorldIdRequestPacket>.Return(packet);
         }
     }
-    
+
     private static void HandleSetPositionRequestPacket(VcSetPositionRequestPacket packet, NetPeer peer)
     {
         try
@@ -523,7 +523,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             PacketPool<VcSetPositionRequestPacket>.Return(packet);
         }
     }
-    
+
     private static void HandleSetRotationRequestPacket(VcSetRotationRequestPacket packet, NetPeer peer)
     {
         try
@@ -555,7 +555,7 @@ public class VoiceCraftServer : IResettable, IDisposable
             PacketPool<VcSetCaveFactorRequest>.Return(packet);
         }
     }
-    
+
     private static void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet, NetPeer peer)
     {
         try
