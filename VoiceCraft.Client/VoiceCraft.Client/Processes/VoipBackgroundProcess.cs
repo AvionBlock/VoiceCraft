@@ -26,6 +26,9 @@ public class VoipBackgroundProcess(
     private readonly VoiceCraftClient _voiceCraftClient = new();
     private IAudioPlayer? _audioPlayer;
 
+    //McWss
+    private McWssServer? _mcWssServer;
+
     //Audio
     private IAudioRecorder? _audioRecorder;
     private IDenoiser? _denoiser;
@@ -73,6 +76,13 @@ public class VoipBackgroundProcess(
     //Events
     public event Action<string>? OnUpdateTitle;
     public event Action<string>? OnUpdateDescription;
+    public event Action? OnConnected;
+    public event Action? OnDisconnected;
+    public event Action<bool>? OnUpdateMute;
+    public event Action<bool>? OnUpdateDeafen;
+    public event Action<bool>? OnUpdateSpeaking;
+    public event Action<EntityViewModel>? OnEntityAdded;
+    public event Action<EntityViewModel>? OnEntityRemoved;
 
     public void Start(CancellationToken token)
     {
@@ -80,6 +90,7 @@ public class VoipBackgroundProcess(
         {
             Title = "VoiceCraft.Status.Initializing";
             var audioSettings = settingsService.AudioSettings;
+            var networkSettings = settingsService.NetworkSettings;
 
             _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
             _voiceCraftClient.OnConnected += ClientOnConnected;
@@ -92,19 +103,9 @@ public class VoipBackgroundProcess(
             _voiceCraftClient.World.OnEntityCreated += ClientWorldOnEntityCreated;
             _voiceCraftClient.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
 
-            //Setup audio recorder.
-            _audioRecorder =
-                audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
-            _audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
-            _audioRecorder.SelectedDevice = audioSettings.InputDevice == "Default" ? null : audioSettings.InputDevice;
-            _audioRecorder.OnDataAvailable += Write;
-            _audioRecorder.OnRecordingStopped += OnRecordingStopped;
-
-            //Setup audio player.
-            _audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, 2, Constants.Format);
-            _audioPlayer.BufferMilliseconds = 100;
-            _audioPlayer.SelectedDevice = audioSettings.OutputDevice == "Default" ? null : audioSettings.OutputDevice;
-            _audioPlayer.OnPlaybackStopped += OnPlaybackStopped;
+            //Setup audio devices.
+            _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
+            _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
 
             //Setup Preprocessors
             _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
@@ -112,25 +113,34 @@ public class VoipBackgroundProcess(
                 ?.Instantiate();
             _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
 
+            //Setup McWss Server
+            if (networkSettings.PositioningType == PositioningType.Client)
+            {
+                _mcWssServer = InitializeMcWssServer();
+                Description =
+                    $"VoiceCraft.DescriptionStatus.McWss:{networkSettings.McWssListenIp},{networkSettings.McWssHostPort}";
+            }
+
             //Initialize and start.
-            _audioRecorder.Initialize();
-            _audioPlayer.Initialize(Read);
             _echoCanceler?.Initialize(_audioRecorder, _audioPlayer);
             _gainController?.Initialize(_audioRecorder);
             _denoiser?.Initialize(_audioRecorder);
             _audioRecorder.Start();
             _audioPlayer.Play();
+            _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
 
+            var sw = new SpinWait();
             while (_audioRecorder.CaptureState == CaptureState.Starting ||
-                   _audioPlayer.PlaybackState == PlaybackState.Starting)
+                   _audioPlayer.PlaybackState == PlaybackState.Starting ||
+                   _mcWssServer is { IsStarted: false })
             {
                 if (_stopRequested)
                     return;
-                Thread.Sleep(1); //Don't burn the CPU.
+                sw.SpinOnce();
             }
 
             _ = _voiceCraftClient.ConnectAsync(settingsService.UserGuid, settingsService.ServerUserGuid, ip, port,
-                locale);
+                locale, networkSettings.PositioningType);
             Title = "VoiceCraft.Status.Connecting";
 
             var startTime = DateTime.UtcNow;
@@ -167,19 +177,11 @@ public class VoipBackgroundProcess(
             notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
 
             if (_audioRecorder != null)
-            {
-                _audioRecorder.OnDataAvailable -= Write;
-                _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
-                if (_audioRecorder.CaptureState == CaptureState.Capturing)
-                    _audioRecorder.Stop();
-            }
-
+                StopAudioRecorder(_audioRecorder);
             if (_audioPlayer != null)
-            {
-                _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
-                if (_audioPlayer.PlaybackState == PlaybackState.Playing)
-                    _audioPlayer.Stop();
-            }
+                StopAudioPlayer(_audioPlayer);
+            if (_mcWssServer is { IsStarted: true })
+                StopMcWssServer(_mcWssServer);
 
             _voiceCraftClient.OnConnected -= ClientOnConnected;
             _voiceCraftClient.OnDisconnected -= ClientOnDisconnected;
@@ -209,14 +211,6 @@ public class VoipBackgroundProcess(
         GC.SuppressFinalize(this);
     }
 
-    public event Action? OnConnected;
-    public event Action? OnDisconnected;
-    public event Action<bool>? OnUpdateMute;
-    public event Action<bool>? OnUpdateDeafen;
-    public event Action<bool>? OnUpdateSpeaking;
-    public event Action<EntityViewModel>? OnEntityAdded;
-    public event Action<EntityViewModel>? OnEntityRemoved;
-
     public void ToggleMute(bool value)
     {
         _voiceCraftClient.Muted = value;
@@ -230,6 +224,79 @@ public class VoipBackgroundProcess(
     public void Disconnect()
     {
         _stopRequested = true;
+    }
+
+    private IAudioRecorder InitializeAudioRecorder(string inputDevice)
+    {
+        var audioRecorder =
+            audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
+        audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
+        audioRecorder.SelectedDevice = inputDevice == "Default" ? null : inputDevice;
+        audioRecorder.OnDataAvailable += Write;
+        audioRecorder.OnRecordingStopped += OnRecordingStopped;
+        audioRecorder.Initialize();
+        return audioRecorder;
+    }
+
+    private IAudioPlayer InitializeAudioPlayer(string outputDevice)
+    {
+        var audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, 2, Constants.Format);
+        audioPlayer.BufferMilliseconds = 100;
+        audioPlayer.SelectedDevice = outputDevice == "Default" ? null : outputDevice;
+        audioPlayer.OnPlaybackStopped += OnPlaybackStopped;
+        audioPlayer.Initialize(Read);
+        return audioPlayer;
+    }
+
+    private McWssServer InitializeMcWssServer()
+    {
+        var mcWssServer = new McWssServer(_voiceCraftClient);
+        mcWssServer.OnConnected += OnMcWssConnected;
+        mcWssServer.OnDisconnected += OnMcWssDisconnected;
+        return mcWssServer;
+    }
+
+    private void StopAudioRecorder(IAudioRecorder recorder)
+    {
+        try
+        {
+            recorder.OnDataAvailable -= Write;
+            recorder.OnRecordingStopped -= OnRecordingStopped;
+            if (recorder.CaptureState == CaptureState.Capturing)
+                recorder.Stop();
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    private void StopAudioPlayer(IAudioPlayer player)
+    {
+        try
+        {
+            player.OnPlaybackStopped -= OnPlaybackStopped;
+            if (player.PlaybackState == PlaybackState.Playing)
+                player.Stop();
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    private void StopMcWssServer(McWssServer server)
+    {
+        try
+        {
+            server.OnDisconnected -= OnMcWssDisconnected;
+            server.OnConnected -= OnMcWssConnected;
+            server.Stop();
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
     }
 
     private void ClientOnConnected()
@@ -320,5 +387,17 @@ public class VoipBackgroundProcess(
         }
 
         _audioPlayer?.Play(); //Restart player.
+    }
+
+    private void OnMcWssConnected(string playerName)
+    {
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.McWss.Connected:{playerName}"),
+            Localizer.Get("Notification.McWss.Badge"));
+    }
+
+    private void OnMcWssDisconnected()
+    {
+        notificationService.SendNotification(Localizer.Get("Notification.McWss.Disconnected"),
+            Localizer.Get("Notification.McWss.Badge"));
     }
 }

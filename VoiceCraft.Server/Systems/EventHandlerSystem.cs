@@ -60,7 +60,14 @@ public class EventHandlerSystem : IDisposable
     public void Update()
     {
         while (_tasks.TryDequeue(out var result))
-            result.Invoke();
+            try
+            {
+                result.Invoke();
+            }
+            catch (Exception ex)
+            {
+                LogService.Log(ex);
+            }
     }
 
     #region Audio Effect Events
@@ -248,7 +255,7 @@ public class EventHandlerSystem : IDisposable
             AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{token}")}[/]");
         });
     }
-    
+
     private void OnMcHttpMcApiPeerDisconnected(McApiNetPeer peer, string token)
     {
         _tasks.Enqueue(() =>
@@ -291,7 +298,8 @@ public class EventHandlerSystem : IDisposable
             var packet = PacketPool<VcOnEntityNameUpdatedPacket>.GetPacket().Set(entity.Id, name);
             if (entity is VoiceCraftNetworkEntity networkEntity)
             {
-                _server.SendPacket(networkEntity.NetPeer, PacketPool<VcSetNameRequestPacket>.GetPacket().Set(name));
+                if (networkEntity.PositioningType == PositioningType.Server)
+                    _server.SendPacket(networkEntity.NetPeer, PacketPool<VcSetNameRequestPacket>.GetPacket().Set(name));
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
@@ -309,7 +317,6 @@ public class EventHandlerSystem : IDisposable
             var packet = PacketPool<VcOnEntityMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute);
             if (entity is VoiceCraftNetworkEntity networkEntity)
             {
-                _server.SendPacket(networkEntity.NetPeer, PacketPool<VcSetMuteRequestPacket>.GetPacket().Set(mute));
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
@@ -327,7 +334,6 @@ public class EventHandlerSystem : IDisposable
             var packet = PacketPool<VcOnEntityDeafenUpdatedPacket>.GetPacket().Set(entity.Id, deafen);
             if (entity is VoiceCraftNetworkEntity networkEntity)
             {
-                _server.SendPacket(networkEntity.NetPeer, PacketPool<VcSetDeafenRequestPacket>.GetPacket().Set(deafen));
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
@@ -400,11 +406,9 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            if (entity is VoiceCraftNetworkEntity networkEntity)
-            {
+            if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
                 _server.SendPacket(networkEntity.NetPeer,
                     PacketPool<VcSetPositionRequestPacket>.GetPacket().Set(position));
-            }
 
             foreach (var ve in entity.VisibleEntities)
             {
@@ -422,11 +426,9 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            if (entity is VoiceCraftNetworkEntity networkEntity)
-            {
+            if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
                 _server.SendPacket(networkEntity.NetPeer,
                     PacketPool<VcSetRotationRequestPacket>.GetPacket().Set(rotation));
-            }
 
             foreach (var ve in entity.VisibleEntities)
             {
@@ -444,11 +446,9 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            if (entity is VoiceCraftNetworkEntity networkEntity)
-            {
+            if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
                 _server.SendPacket(networkEntity.NetPeer,
                     PacketPool<VcSetCaveFactorRequest>.GetPacket().Set(caveFactor));
-            }
 
             foreach (var ve in entity.VisibleEntities)
             {
@@ -468,11 +468,9 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            if (entity is VoiceCraftNetworkEntity networkEntity)
-            {
+            if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
                 _server.SendPacket(networkEntity.NetPeer,
                     PacketPool<VcSetMuffleFactorRequest>.GetPacket().Set(muffleFactor));
-            }
 
             foreach (var ve in entity.VisibleEntities)
             {

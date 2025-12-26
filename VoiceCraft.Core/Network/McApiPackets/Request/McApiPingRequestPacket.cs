@@ -4,10 +4,6 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
     public class McApiPingRequestPacket : IMcApiPacket
     {
-        public McApiPingRequestPacket()
-        {
-        }
-
         public McApiPacketType PacketType => McApiPacketType.PingRequest;
 
         public void Serialize(NetDataWriter writer)

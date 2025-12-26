@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using LiteNetLib;
 using VoiceCraft.Core.Interfaces;
 
@@ -10,8 +10,11 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftWorld : IResettable, IDisposable
     {
         private int _nextEntityId;
-        private readonly ConcurrentQueue<int> _entityIds = new ConcurrentQueue<int>();
-        private readonly Dictionary<int, VoiceCraftEntity> _entities = new Dictionary<int, VoiceCraftEntity>();
+        private readonly Mutex _mutex = new Mutex();
+
+        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities =
+            new ConcurrentDictionary<int, VoiceCraftEntity>();
+
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
 
         public void Dispose()
@@ -79,7 +82,6 @@ namespace VoiceCraft.Core.World
                 throw new InvalidOperationException("Failed to destroy entity! Entity not found!");
             entity.OnDestroyed -= RemoveEntity; //No need to listen anymore.
             entity.Destroy();
-            _entityIds.Enqueue(id);
             OnEntityDestroyed?.Invoke(entity);
         }
 
@@ -88,9 +90,8 @@ namespace VoiceCraft.Core.World
             //Copy Array.
             var entities = _entities.ToArray();
             _entities.Clear();
-            _entityIds.Clear();
             _nextEntityId = 0;
-            
+
             foreach (var entity in entities)
             {
                 entity.Value.OnDestroyed -= RemoveEntity; //Don't trigger the events!
@@ -101,13 +102,26 @@ namespace VoiceCraft.Core.World
         private void RemoveEntity(VoiceCraftEntity entity)
         {
             entity.OnDestroyed -= RemoveEntity;
-            if (_entities.Remove(entity.Id))
+            if (_entities.TryRemove(entity.Id, out _))
                 OnEntityDestroyed?.Invoke(entity);
         }
 
         private int GetNextId()
         {
-            return _entityIds.TryDequeue(out var id) ? id : _nextEntityId++;
+            _mutex.WaitOne();
+            try
+            {
+                while (_entities.ContainsKey(_nextEntityId))
+                {
+                    ++_nextEntityId;
+                }
+
+                return _nextEntityId++;
+            }
+            finally
+            {
+                _mutex.ReleaseMutex();
+            }
         }
     }
 }

@@ -1,11 +1,34 @@
 {
+  "BackgroundService": {
+    "BackgroundError": "背景服務錯誤: {0}"
+  },
   "Notification": {
-    "Badges": {
-      "Servers": "伺服器",
-      "Error": "錯誤",
-      "GC": "垃圾回收",
-      "VoiceCraft": "VoiceCraft",
-      "CrashLogs": "崩潰日志"
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "伺服器",
+      "Added": "{0} 已添加。",
+      "Edited": "{0} 已編輯。",
+      "Removed": "{0} 已刪除。"
+    },
+    "GC": {
+      "Badge": "垃圾回收",
+      "Triggered": "垃圾回收觸發。內存清除: {0}mb。"
+    },
+    "CrashLogs": {
+      "Badge": "崩潰日志",
+      "Cleared": "成功清除所有日志。"
+    },
+    "Error": {
+      "Badge": "錯誤",
+      "VoipFailedToStart": "背景服務無法啟動VOIP進程！",
+      "VoipBackgroundError": "VOIP背景服務錯誤: {0}"
+    },
+    "McWss": {
+      "Badge": null,
+      "Connected": null,
+      "Disconnected": null
     }
   },
   "Home": {
@@ -27,9 +50,9 @@
     "Port": "端口"
   },
   "Credits": {
-    "AppVersion": "應用版本: {version}",
-    "Version": "版本: {version}",
-    "Codec": "編解碼器: {version}",
+    "AppVersion": "應用版本: {0}",
+    "Version": "版本: {0}",
+    "Codec": "編解碼器: {0}",
     "Contributors": "貢獻者",
     "Roles": {
       "Author": "作者",
@@ -66,13 +89,15 @@
     },
     "Network": {
       "Network": "網路設置",
+      "PositioningType": null,
+      "McWssListenIp": null,
       "McWssHostPort": "MCWSS主機端口"
     },
     "HotKey": {
-      "HotKey": null,
+      "HotKey": "快捷鍵",
       "Actions": {
-        "Mute": null,
-        "Deafen": null
+        "Mute": "靜音",
+        "Deafen": "拒聽"
       }
     },
     "Advanced": {
@@ -128,10 +153,13 @@
       "Disconnected": "已斷開連接！原因: {reason}"
     },
     "DisconnectReason": {
-      "Shutdown": null,
-      "Forced": null,
-      "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
+      "Manual": "手動斷開連接。",
       "ServerFull": "伺服器已滿！",
+      "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
+      "ServerSidedOnly": null,
+      "ClientSidedOnly": null,
+      "Kicked": "被踢出伺服器！",
+      "Shutdown": "伺服器關閉！",
       "Error": "嘗試登錄時發生錯誤！"
     }
   }

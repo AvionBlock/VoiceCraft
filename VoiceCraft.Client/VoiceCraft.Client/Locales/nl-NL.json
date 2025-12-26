@@ -24,6 +24,11 @@
       "Badge": "Fout",
       "VoipFailedToStart": "De achtergrondworker is er niet in geslaagd het VOIP-proces te starten!",
       "VoipBackgroundError": "Voip achtergrondwerker fout: {0}"
+    },
+    "McWss": {
+      "Badge": null,
+      "Connected": null,
+      "Disconnected": null
     }
   },
   "Home": {
@@ -84,6 +89,8 @@
     },
     "Network": {
       "Network": "Netwerk Instellingen",
+      "PositioningType": null,
+      "McWssListenIp": null,
       "McWssHostPort": "MCWSS host poort"
     },
     "HotKey": {
@@ -149,6 +156,8 @@
       "Manual": "Handmatig verbinding verbroken.",
       "ServerFull": "Server is vol!",
       "IncompatibleVersion": "Incompatibele client/server versie!",
+      "ServerSidedOnly": null,
+      "ClientSidedOnly": null,
       "Kicked": "Verwijderd!",
       "Shutdown": "Server afgesloten!",
       "Error": "Er is een fout opgetreden tijdens het verbinden!"

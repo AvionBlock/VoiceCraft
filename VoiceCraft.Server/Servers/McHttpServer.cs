@@ -20,7 +20,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
-    private static readonly Version McHttpVersion = new(Constants.Minor, Constants.Major, 0);
+    private static readonly Version McHttpVersion = new(Constants.Major, Constants.Minor, 0);
 
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
@@ -55,6 +55,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         catch(Exception ex)
         {
             AnsiConsole.WriteException(ex);
+            LogService.Log(ex);
             throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
     }
@@ -170,10 +171,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             context.Response.StatusCode = 400;
             context.Response.Close();
         }
-        catch
+        catch(Exception ex)
         {
             context.Response.StatusCode = 500;
             context.Response.Close();
+            LogService.Log(ex);
         }
     }
 
@@ -226,9 +228,9 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                     var pt = (McApiPacketType)packetType;
                     HandlePacket(pt, _reader, peer.Value, token);
                 }
-                catch
+                catch(Exception ex)
                 {
-                    //Do Nothing
+                    LogService.Log(ex);
                 }
         }
 
@@ -415,12 +417,6 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
-            if (_audioEffectSystem.TryGetEffect(packet.Bitmask, out var effect) &&
-                effect.EffectType == packet.EffectType)
-            {
-                return;
-            }
-
             switch (packet.EffectType)
             {
                 case EffectType.Visibility:
@@ -447,6 +443,16 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                     var echoEffect = new EchoEffect();
                     echoEffect.Deserialize(reader);
                     _audioEffectSystem.SetEffect(packet.Bitmask, echoEffect);
+                    break;
+                case EffectType.ProximityMuffle:
+                    var proximityMuffleEffect = new ProximityMuffleEffect();
+                    proximityMuffleEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityMuffleEffect);
+                    break;
+                case EffectType.Muffle:
+                    var muffleEffect = new MuffleEffect();
+                    muffleEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, muffleEffect);
                     break;
                 case EffectType.None:
                     _audioEffectSystem.SetEffect(packet.Bitmask, null);

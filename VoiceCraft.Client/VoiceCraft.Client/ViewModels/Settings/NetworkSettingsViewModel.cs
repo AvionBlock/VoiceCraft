@@ -2,6 +2,7 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -12,6 +13,7 @@ public partial class NetworkSettingsViewModel(
 {
     //Network Settings
     [ObservableProperty] private Data.NetworkSettingsViewModel _networkSettings = new(settingsService);
+    [ObservableProperty] private PositioningType[] _positioningTypes = Enum.GetValues<PositioningType>();
 
     public void Dispose()
     {

@@ -24,6 +24,11 @@
       "Badge": "Error",
       "VoipFailedToStart": "Background worker failed to start VOIP process!",
       "VoipBackgroundError": "Voip Background Error: {0}"
+    },
+    "McWss": {
+      "Badge": "McWss",
+      "Connected": "McWss Connection Established: {0}",
+      "Disconnected": "McWss Connection Disconnected!"
     }
   },
   "Home": {
@@ -84,6 +89,8 @@
     },
     "Network": {
       "Network": "Network Settings",
+      "PositioningType": "Positioning Type",
+      "McWssListenIp": "MCWSS Listening IP Address",
       "McWssHostPort": "MCWSS Host Port"
     },
     "HotKey": {
@@ -138,6 +145,11 @@
       "Init": "Denoiser is not initialized!"
     }
   },
+  "McWssServer": {
+    "Exceptions": {
+      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+    }
+  },
   "VoiceCraft": {
     "Status": {
       "Initializing": "Initializing...",
@@ -145,10 +157,15 @@
       "Connected": "Connected!",
       "Disconnected": "Disconnected! Reason: {0}"
     },
+    "DescriptionStatus": {
+      "McWss": "McWss Listening: {0}:{1}"
+    },
     "DisconnectReason": {
       "Manual": "Manual Disconnection.",
       "ServerFull": "Server is full!",
       "IncompatibleVersion": "Incompatible client/server version!",
+      "ServerSidedOnly": "Server only accepts server sided positioning!",
+      "ClientSidedOnly": "Server only accepts client sided positioning!",
       "Kicked": "Kicked!",
       "Shutdown": "Server shutdown!",
       "Error": "An error occurred while trying to connect!"

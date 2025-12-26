@@ -20,7 +20,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
-    private static readonly Version McWssVersion = new(Constants.Minor, Constants.Major, 0);
+    private static readonly Version McWssVersion = new(Constants.Major, Constants.Minor, 0);
 
     private readonly ConcurrentDictionary<IWebSocketConnection, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
@@ -62,6 +62,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         catch(Exception ex)
         {
             AnsiConsole.WriteException(ex);
+            LogService.Log(ex);
             throw new Exception(Localizer.Get("McWssServer.Exceptions.Failed"), ex);
         }
     }
@@ -85,6 +86,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             catch (Exception ex)
             {
                 AnsiConsole.WriteException(ex);
+                LogService.Log(ex);
             }
         }
 
@@ -155,9 +157,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                     var pt = (McApiPacketType)packetType;
                     HandlePacket(pt, _reader, peer.Value, token);
                 }
-                catch
+                catch(Exception ex)
                 {
-                    //Do Nothing
+                    LogService.Log(ex);
                 }
         }
 
@@ -220,9 +222,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             if (commandResponsePacket is not { StatusCode: 0 }) return;
             HandleDataTunnelCommandResponse(socket, commandResponsePacket.body.statusMessage);
         }
-        catch
+        catch(Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -238,9 +240,9 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
             }
         }
-        catch
+        catch(Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -448,6 +450,16 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                     var echoEffect = new EchoEffect();
                     echoEffect.Deserialize(reader);
                     _audioEffectSystem.SetEffect(packet.Bitmask, echoEffect);
+                    break;
+                case EffectType.ProximityMuffle:
+                    var proximityMuffleEffect = new ProximityMuffleEffect();
+                    proximityMuffleEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityMuffleEffect);
+                    break;
+                case EffectType.Muffle:
+                    var muffleEffect = new MuffleEffect();
+                    muffleEffect.Deserialize(reader);
+                    _audioEffectSystem.SetEffect(packet.Bitmask, muffleEffect);
                     break;
                 case EffectType.None:
                     _audioEffectSystem.SetEffect(packet.Bitmask, null);

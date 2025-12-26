@@ -11,38 +11,40 @@ namespace VoiceCraft.Core.Audio.Effects
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
         private float _delay;
+        private float _wetDry = 1.0f;
 
-        public EchoEffect(float delay = 0.5f, float feedback = 0.5f)
+        public EchoEffect()
         {
-            Delay = delay;
-            Feedback = feedback;
+            Delay = 0.5f;
         }
-
-        public int SampleRate => Constants.SampleRate;
+        
+        public EffectType EffectType => EffectType.Echo;
+        public float WetDry
+        {
+            get => _wetDry;
+            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
+        }
+        public static int SampleRate => Constants.SampleRate;
         public float Delay
         {
             get => _delay / SampleRate;
             set => _delay = SampleRate * value;
         }
-        public float Feedback { get; set; }
-        public float Wet { get; set; } = 1f;
-        public float Dry { get; set; }
-        public EffectType EffectType => EffectType.Echo;
+
+        public float Feedback { get; set; } = 0.5f;
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(Delay);
             writer.Put(Feedback);
-            writer.Put(Wet);
-            writer.Put(Dry);
+            writer.Put(WetDry);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             Delay = reader.GetFloat();
             Feedback = reader.GetFloat();
-            Wet = reader.GetFloat();
-            Dry = reader.GetFloat();
+            WetDry = reader.GetFloat();
         }
 
         public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
@@ -59,7 +61,7 @@ namespace VoiceCraft.Core.Audio.Effects
                 var delayed = delayLine.Read(_delay);
                 var output = data[i] + delayed * Feedback;
                 delayLine.Write(output);
-                data[i] = output * Wet + data[i] * Dry;
+                data[i] = output * WetDry + data[i] * (1.0f - WetDry);
             }
         }
 

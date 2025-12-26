@@ -2,9 +2,5 @@
   href: windows.md
 - name: Linux
   href: linux.md
-- name: Android
-  href: android.md
-- name: iOS
-  href: ios.md
 - name: MacOS
   href: macos.md

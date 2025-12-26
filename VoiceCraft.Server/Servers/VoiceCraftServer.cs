@@ -38,9 +38,11 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         _audioEffectSystem = audioEffectSystem;
         World = world;
-        
+
         _audioEffectSystem.SetEffect(1, new VisibilityEffect());
         _audioEffectSystem.SetEffect(2, new ProximityEffect() { MaxRange = 30 });
+        _audioEffectSystem.SetEffect(4, new ProximityEchoEffect() { Range = 30 });
+        _audioEffectSystem.SetEffect(8, new ProximityMuffleEffect());
         _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
         _listener.ConnectionRequestEvent += OnConnectionRequest;
         _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
@@ -277,9 +279,10 @@ public class VoiceCraftServer : IResettable, IDisposable
             loginPacket.Deserialize(request.Data);
             HandleLoginRequestPacket(loginPacket, request);
         }
-        catch
+        catch (Exception ex)
         {
             RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
+            LogService.Log(ex);
         }
     }
 
@@ -292,9 +295,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             var pt = (VcPacketType)packetType;
             ProcessPacket(pt, reader, peer);
         }
-        catch
+        catch (Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -307,9 +310,9 @@ public class VoiceCraftServer : IResettable, IDisposable
             var pt = (VcPacketType)packetType;
             ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
         }
-        catch
+        catch (Exception ex)
         {
-            //Do Nothing
+            LogService.Log(ex);
         }
     }
 
@@ -318,6 +321,11 @@ public class VoiceCraftServer : IResettable, IDisposable
     {
         switch (packetType)
         {
+            case VcPacketType.SetNameRequest:
+                var setNameRequestPacket = PacketPool<VcSetNameRequestPacket>.GetPacket();
+                setNameRequestPacket.Deserialize(reader);
+                HandleSetNameRequestPacket(setNameRequestPacket, peer);
+                break;
             case VcPacketType.AudioRequest:
                 var audioRequestPacket = PacketPool<VcAudioRequestPacket>.GetPacket();
                 audioRequestPacket.Deserialize(reader);
@@ -332,6 +340,31 @@ public class VoiceCraftServer : IResettable, IDisposable
                 var setDeafenRequestPacket = PacketPool<VcSetDeafenRequestPacket>.GetPacket();
                 setDeafenRequestPacket.Deserialize(reader);
                 HandleSetDeafenRequestPacket(setDeafenRequestPacket, peer);
+                break;
+            case VcPacketType.SetWorldIdRequest:
+                var setWorldIdRequestPacket = PacketPool<VcSetWorldIdRequestPacket>.GetPacket();
+                setWorldIdRequestPacket.Deserialize(reader);
+                HandleSetWorldIdRequestPacket(setWorldIdRequestPacket, peer);
+                break;
+            case VcPacketType.SetPositionRequest:
+                var setPositionRequestPacket = PacketPool<VcSetPositionRequestPacket>.GetPacket();
+                setPositionRequestPacket.Deserialize(reader);
+                HandleSetPositionRequestPacket(setPositionRequestPacket, peer);
+                break;
+            case VcPacketType.SetRotationRequest:
+                var setRotationRequestPacket = PacketPool<VcSetRotationRequestPacket>.GetPacket();
+                setRotationRequestPacket.Deserialize(reader);
+                HandleSetRotationRequestPacket(setRotationRequestPacket, peer);
+                break;
+            case VcPacketType.SetCaveFactorRequest:
+                var setCaveFactorRequestPacket = PacketPool<VcSetCaveFactorRequest>.GetPacket();
+                setCaveFactorRequestPacket.Deserialize(reader);
+                HandleSetCaveFactorRequestPacket(setCaveFactorRequestPacket, peer);
+                break;
+            case VcPacketType.SetMuffleFactorRequest:
+                var setMuffleFactorRequestPacket = PacketPool<VcSetMuffleFactorRequest>.GetPacket();
+                setMuffleFactorRequestPacket.Deserialize(reader);
+                HandleSetMuffleFactorRequestPacket(setMuffleFactorRequestPacket, peer);
                 break;
         }
     }
@@ -358,15 +391,32 @@ public class VoiceCraftServer : IResettable, IDisposable
                 return;
             }
 
+            if (packet.PositioningType != Config.PositioningType)
+            {
+                switch (Config.PositioningType)
+                {
+                    case PositioningType.Server:
+                        RejectRequest(request, "VoiceCraft.DisconnectReason.ServerSidedOnly");
+                        return;
+                    case PositioningType.Client:
+                        RejectRequest(request, "VoiceCraft.DisconnectReason.ClientSidedOnly");
+                        return;
+                    default:
+                        RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
+                        return;
+                }
+            }
+
             var peer = request.Accept();
             try
             {
                 World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
-            catch
+            catch (Exception ex)
             {
                 DisconnectPeer(peer, "VoiceCraft.DisconnectReason.Error");
+                LogService.Log(ex);
             }
         }
         finally
@@ -387,6 +437,19 @@ public class VoiceCraftServer : IResettable, IDisposable
         finally
         {
             PacketPool<VcInfoRequestPacket>.Return(packet);
+        }
+    }
+
+    private static void HandleSetNameRequestPacket(VcSetNameRequestPacket packet, NetPeer peer)
+    {
+        try
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+            networkEntity.Name = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetNameRequestPacket>.Return(packet);
         }
     }
 
@@ -426,6 +489,86 @@ public class VoiceCraftServer : IResettable, IDisposable
         finally
         {
             PacketPool<VcSetDeafenRequestPacket>.Return(packet);
+        }
+    }
+
+    private static void HandleSetWorldIdRequestPacket(VcSetWorldIdRequestPacket packet, NetPeer peer)
+    {
+        try
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity
+                {
+                    PositioningType: PositioningType.Client
+                } networkEntity) return;
+            networkEntity.WorldId = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetWorldIdRequestPacket>.Return(packet);
+        }
+    }
+
+    private static void HandleSetPositionRequestPacket(VcSetPositionRequestPacket packet, NetPeer peer)
+    {
+        try
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity
+                {
+                    PositioningType: PositioningType.Client
+                } networkEntity) return;
+            networkEntity.Position = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetPositionRequestPacket>.Return(packet);
+        }
+    }
+
+    private static void HandleSetRotationRequestPacket(VcSetRotationRequestPacket packet, NetPeer peer)
+    {
+        try
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity
+                {
+                    PositioningType: PositioningType.Client
+                } networkEntity) return;
+            networkEntity.Rotation = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetRotationRequestPacket>.Return(packet);
+        }
+    }
+
+    private static void HandleSetCaveFactorRequestPacket(VcSetCaveFactorRequest packet, NetPeer peer)
+    {
+        try
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity
+                {
+                    PositioningType: PositioningType.Client
+                } networkEntity) return;
+            networkEntity.CaveFactor = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetCaveFactorRequest>.Return(packet);
+        }
+    }
+
+    private static void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet, NetPeer peer)
+    {
+        try
+        {
+            if (peer.Tag is not VoiceCraftNetworkEntity
+                {
+                    PositioningType: PositioningType.Client
+                } networkEntity) return;
+            networkEntity.MuffleFactor = packet.Value;
+        }
+        finally
+        {
+            PacketPool<VcSetMuffleFactorRequest>.Return(packet);
         }
     }
 }

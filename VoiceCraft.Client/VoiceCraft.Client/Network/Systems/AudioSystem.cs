@@ -1,7 +1,11 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 
@@ -10,21 +14,7 @@ namespace VoiceCraft.Client.Network.Systems;
 public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
-    private float[] _effectBuffer = [];
-    private short[] _entityBuffer = [];
-    private float[] _mixingBuffer = [];
-    private float[] _monoBuffer = [];
-
-    public IEnumerable<KeyValuePair<ushort, IAudioEffect>> Effects
-    {
-        get
-        {
-            lock (_audioEffects)
-            {
-                return _audioEffects;
-            }
-        }
-    }
+    private readonly Mutex _mutex = new();
 
     public void Dispose()
     {
@@ -38,46 +28,75 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
     public int Read(Span<short> buffer, int count)
     {
         //Mono Buffers
-        var monoCount = count / 2;
-        if (_entityBuffer.Length < monoCount)
-            _entityBuffer = new short[monoCount];
-        if (_monoBuffer.Length < monoCount)
-            _monoBuffer = new float[monoCount];
+        var mixingBuffer = ArrayPool<float>.Shared.Rent(count);
+        mixingBuffer.AsSpan().Clear();
 
-        //Stereo Buffers
-        if (_effectBuffer.Length < count)
-            _effectBuffer = new float[count];
-        if (_mixingBuffer.Length < count)
-            _mixingBuffer = new float[count];
-
-        _entityBuffer.AsSpan().Clear();
-        _monoBuffer.AsSpan().Clear();
-        _mixingBuffer.AsSpan().Clear();
-        _effectBuffer.AsSpan().Clear();
-
-        var read = 0;
-        foreach (var entity in world.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible))
-            try
+        try
+        {
+            var read = 0;
+            Parallel.ForEach(world.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible), x =>
             {
-                var entityRead = entity.Read(_entityBuffer, monoCount);
-                if (entityRead <= 0) entityRead = monoCount; //Do a full read.
-                entityRead = Pcm16ToFloat(_entityBuffer, entityRead, _monoBuffer); //To IEEEFloat
-                entityRead = PcmFloatMonoToStereo(_monoBuffer, entityRead, _effectBuffer); //To Stereo
-                entityRead = ProcessEffects(_effectBuffer, entityRead, entity); //Process Effects
-                entityRead = AdjustVolume(_effectBuffer, entityRead, entity.Volume); //Adjust the volume of the entity.
-                entityRead = PcmFloatMix(_effectBuffer, entityRead, _mixingBuffer); //Mix IEEFloat audio.
-                entityRead = PcmFloatTo16(_mixingBuffer, entityRead, buffer); //To PCM16
+                var entityRead = ProcessEntityAudio(x, count, mixingBuffer);
+                _mutex.WaitOne();
+                // ReSharper disable once AccessToModifiedClosure
                 read = Math.Max(read, entityRead);
-            }
-            catch (Exception ex)
+                _mutex.ReleaseMutex();
+            });
+            read = PcmFloatTo16(mixingBuffer, read, buffer); //To PCM16
+            //Full read
+            if (read >= count) return read;
+            buffer.Slice(read, count - read).Clear();
+            return count;
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(mixingBuffer);
+        }
+
+        return 0;
+    }
+
+    private int ProcessEntityAudio(VoiceCraftClientEntity entity, int count, float[] mixingBuffer)
+    {
+        var monoCount = count / 2;
+        var entityBuffer = ArrayPool<short>.Shared.Rent(monoCount);
+        var monoBuffer = ArrayPool<float>.Shared.Rent(monoCount);
+        var effectBuffer = ArrayPool<float>.Shared.Rent(count);
+
+        entityBuffer.AsSpan().Clear();
+        monoBuffer.AsSpan().Clear();
+        effectBuffer.AsSpan().Clear();
+        try
+        {
+            var entityRead = entity.Read(entityBuffer, monoCount);
+            if (entityRead <= 0) entityRead = monoCount; //Do a full read.
+            entityRead = Pcm16ToFloat(entityBuffer, entityRead, monoBuffer); //To IEEEFloat
+            entityRead = PcmFloatMonoToStereo(monoBuffer, entityRead, effectBuffer); //To Stereo
+            entityRead = ProcessEffects(effectBuffer, entityRead, entity); //Process Effects
+            entityRead = AdjustVolume(effectBuffer, entityRead, entity.Volume); //Adjust the volume of the entity.
+            lock (mixingBuffer)
             {
-                Console.WriteLine(ex);
+                entityRead = PcmFloatMix(effectBuffer, entityRead, mixingBuffer); //Mix IEEFloat audio.
             }
 
-        //Full read
-        if (read >= count) return read;
-        buffer.Slice(read, count - read).Clear();
-        return count;
+            return entityRead;
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+        finally
+        {
+            ArrayPool<short>.Shared.Return(entityBuffer);
+            ArrayPool<float>.Shared.Return(monoBuffer);
+            ArrayPool<float>.Shared.Return(effectBuffer);
+        }
+
+        return 0;
     }
 
     public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
