@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Spectre.Console;
@@ -15,13 +16,12 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
 
-public class VoiceCraftServer : IResettable, IDisposable
+public class VoiceCraftServer : IResettable, IDisposable, INetEventListener
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
 
     //Networking
     private readonly NetDataWriter _dataWriter = new();
-    private readonly EventBasedNetListener _listener = new();
     private readonly NetManager _netManager;
 
     //Systems
@@ -30,7 +30,7 @@ public class VoiceCraftServer : IResettable, IDisposable
 
     public VoiceCraftServer(AudioEffectSystem audioEffectSystem, VoiceCraftWorld world)
     {
-        _netManager = new NetManager(_listener)
+        _netManager = new NetManager(this)
         {
             AutoRecycle = true,
             UnconnectedMessagesEnabled = true
@@ -43,10 +43,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         _audioEffectSystem.SetEffect(2, new ProximityEffect() { MaxRange = 30 });
         _audioEffectSystem.SetEffect(4, new ProximityEchoEffect() { Range = 30 });
         _audioEffectSystem.SetEffect(8, new ProximityMuffleEffect());
-        _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
-        _listener.ConnectionRequestEvent += OnConnectionRequest;
-        _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
-        _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
     }
 
     //Public Properties
@@ -243,23 +239,64 @@ public class VoiceCraftServer : IResettable, IDisposable
         if (disposing)
         {
             _netManager.Stop();
-            _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
-            _listener.ConnectionRequestEvent -= OnConnectionRequest;
-            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
-            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
         }
 
         _isDisposed = true;
     }
 
-    //Network Events
-    private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
+    //Network Handling
+    public void OnPeerConnected(NetPeer peer)
+    {
+        //Do nothing.
+    }
+
+    public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
     {
         if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
         World.DestroyEntity(networkEntity.Id);
     }
 
-    private void OnConnectionRequest(ConnectionRequest request)
+    public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
+    {
+        //Do nothing.
+    }
+
+    public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber,
+        DeliveryMethod deliveryMethod)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessPacket(pt, reader, peer);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader,
+        UnconnectedMessageType messageType)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    public void OnNetworkLatencyUpdate(NetPeer peer, int latency)
+    {
+        //Do nothing
+    }
+
+    public void OnConnectionRequest(ConnectionRequest request)
     {
         if (_netManager.ConnectedPeersCount >= Config.MaxClients)
         {
@@ -282,36 +319,6 @@ public class VoiceCraftServer : IResettable, IDisposable
         catch (Exception ex)
         {
             RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
-            LogService.Log(ex);
-        }
-    }
-
-    private static void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
-        DeliveryMethod deliveryMethod)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessPacket(pt, reader, peer);
-        }
-        catch (Exception ex)
-        {
-            LogService.Log(ex);
-        }
-    }
-
-    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
-        UnconnectedMessageType messageType)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
-        }
-        catch (Exception ex)
-        {
             LogService.Log(ex);
         }
     }

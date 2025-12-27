@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -21,7 +22,7 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Network;
 
-public class VoiceCraftClient : VoiceCraftEntity, IDisposable
+public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
 
@@ -34,7 +35,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     //Encoder
     private readonly OpusEncoder _encoder;
-    private readonly EventBasedNetListener _listener;
     private readonly NetManager _netManager;
     private readonly HashSet<Guid> _requestIds = [];
 
@@ -50,8 +50,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public VoiceCraftClient() : base(0, new VoiceCraftWorld())
     {
-        _listener = new EventBasedNetListener();
-        _netManager = new NetManager(_listener)
+        _netManager = new NetManager(this)
         {
             AutoRecycle = true,
             IPv6Enabled = false,
@@ -65,12 +64,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         //Setup Systems.
         _audioSystem = new AudioSystem(this, World);
-
-        //Setup Listeners
-        _listener.PeerDisconnectedEvent += OnDisconnectedEvent;
-        _listener.ConnectionRequestEvent += OnConnectionRequestEvent;
-        _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
-        _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
 
         //Internal Listeners
         OnWorldIdUpdated += OnClientWorldIdUpdated;
@@ -293,11 +286,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _netManager.Stop();
             _encoder.Dispose();
             World.Dispose();
-
-            _listener.PeerDisconnectedEvent -= OnDisconnectedEvent;
-            _listener.ConnectionRequestEvent -= OnConnectionRequestEvent;
-            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
-            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
+            
             OnWorldIdUpdated -= OnClientWorldIdUpdated;
             OnNameUpdated -= OnClientNameUpdated;
             OnMuteUpdated -= OnClientMuteUpdated;
@@ -323,9 +312,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (!_isDisposed) return;
         throw new ObjectDisposedException(typeof(VoiceCraftClient).ToString());
     }
+    
+    //Network Events
+    public void OnPeerConnected(NetPeer peer)
+    {
+        //Do nothing.
+    }
 
-    //Network Handling
-    private void OnDisconnectedEvent(NetPeer peer, DisconnectInfo info)
+    public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
     {
         if (!Equals(peer, _serverPeer)) return;
         try
@@ -365,13 +359,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    private static void OnConnectionRequestEvent(ConnectionRequest request)
+    public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
     {
-        request.Reject(); //No fuck you.
+        //Do nothing.
     }
 
-    private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
-        DeliveryMethod deliveryMethod)
+    public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber, DeliveryMethod deliveryMethod)
     {
         try
         {
@@ -387,8 +380,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         reader.Recycle();
     }
 
-    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
-        UnconnectedMessageType messageType)
+    public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
     {
         try
         {
@@ -402,6 +394,16 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
 
         reader.Recycle();
+    }
+
+    public void OnNetworkLatencyUpdate(NetPeer peer, int latency)
+    {
+        //Do nothing
+    }
+
+    public void OnConnectionRequest(ConnectionRequest request)
+    {
+        request.Reject(); //No fuck you.
     }
 
     //Internal Event Handling
