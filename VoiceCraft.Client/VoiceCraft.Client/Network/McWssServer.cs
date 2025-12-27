@@ -83,6 +83,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
 
         _peerConnection = socket;
         SendEventSubscribe(_peerConnection, "PlayerTravelled");
+        SendEventSubscribe(_peerConnection, "PlayerTransform");
         SendEventSubscribe(_peerConnection, "PlayerTeleported");
         _localPlayerRequestId = SendCommand(_peerConnection, "/getlocalplayername");
     }
@@ -136,6 +137,11 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
                 if(playerTravelledEventPacket == null) return;
                 HandlePlayerTravelledEvent(playerTravelledEventPacket);
                 break;
+            case "PlayerTransform":
+                var playerTransformEventPacket = JsonSerializer.Deserialize<McWssPlayerTransformEvent>(data);
+                if(playerTransformEventPacket == null) return;
+                HandlePlayerTransformEvent(playerTransformEventPacket);
+                break;
             case "PlayerTeleported":
                 var playerTeleportedEvent = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data);
                 if(playerTeleportedEvent == null) return;
@@ -150,6 +156,23 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         var position = playerTravelledEvent.body.player.position;
         var rotation = playerTravelledEvent.body.player.yRot;
         var dimensionId = playerTravelledEvent.body.player.dimension;
+        _client.Position = new Vector3(position.x, position.y, position.z);
+        _client.Rotation = new Vector2(0, rotation);
+        _client.WorldId = dimensionId switch
+        {
+            0 => "minecraft:overworld",
+            1 => "minecraft:nether",
+            2 => "minecraft:end",
+            _ => $"{dimensionId}"
+        };
+    }
+    
+    private void HandlePlayerTransformEvent(McWssPlayerTransformEvent playerTransformEvent)
+    {
+        if (playerTransformEvent.body.player.name != _localPlayerName) return;
+        var position = playerTransformEvent.body.player.position;
+        var rotation = playerTransformEvent.body.player.yRot;
+        var dimensionId = playerTransformEvent.body.player.dimension;
         _client.Position = new Vector3(position.x, position.y, position.z);
         _client.Rotation = new Vector2(0, rotation);
         _client.WorldId = dimensionId switch
