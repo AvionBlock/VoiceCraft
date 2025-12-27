@@ -13,7 +13,8 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
     private IWebSocketConnection? _peerConnection;
     private string _localPlayerRequestId = string.Empty;
     private string _localPlayerName = string.Empty;
-    private VoiceCraftClient _client = client;
+    private bool _customEventTriggered;
+    private readonly VoiceCraftClient _client = client;
 
     public event Action<string>? OnConnected;
     public event Action? OnDisconnected;
@@ -24,6 +25,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
 
         try
         {
+            _customEventTriggered = false;
             _wsServer = new WebSocketServer($"ws://{ip}:{port}");
 
             _wsServer.Start(socket =>
@@ -70,7 +72,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         return packet.header.requestId;
     }
 
-    private void SendEventSubscribe(IWebSocketConnection socket, string eventName)
+    private static void SendEventSubscribe(IWebSocketConnection socket, string eventName)
     {
         var packet = new McWssEventSubscribeRequest(eventName);
         socket.Send(JsonSerializer.Serialize(packet));
@@ -81,6 +83,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         if (_peerConnection != null)
             socket.Close(); //Full.
 
+        _customEventTriggered = false;
         _peerConnection = socket;
         SendEventSubscribe(_peerConnection, "PlayerTravelled");
         SendEventSubscribe(_peerConnection, "PlayerTransform");
@@ -143,16 +146,21 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
                 HandlePlayerTransformEvent(playerTransformEventPacket);
                 break;
             case "PlayerTeleported":
-                var playerTeleportedEvent = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data);
-                if(playerTeleportedEvent == null) return;
-                HandlePlayerTeleportedEvent(playerTeleportedEvent);
+                var playerTeleportedEventPacket = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data);
+                if(playerTeleportedEventPacket == null) return;
+                HandlePlayerTeleportedEvent(playerTeleportedEventPacket);
+                break;
+            case "PlayerUpdate":
+                var playerUpdateEventPacket = JsonSerializer.Deserialize<McWssPlayerUpdateEvent>(data);
+                if (playerUpdateEventPacket == null) return;
+                HandlePlayerUpdateEvent(playerUpdateEventPacket);
                 break;
         }
     }
 
     private void HandlePlayerTravelledEvent(McWssPlayerTravelledEvent playerTravelledEvent)
     {
-        if (playerTravelledEvent.body.player.name != _localPlayerName) return;
+        if (_customEventTriggered || playerTravelledEvent.body.player.name != _localPlayerName) return;
         var position = playerTravelledEvent.body.player.position;
         var rotation = playerTravelledEvent.body.player.yRot;
         var dimensionId = playerTravelledEvent.body.player.dimension;
@@ -169,7 +177,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
     
     private void HandlePlayerTransformEvent(McWssPlayerTransformEvent playerTransformEvent)
     {
-        if (playerTransformEvent.body.player.name != _localPlayerName) return;
+        if (_customEventTriggered || playerTransformEvent.body.player.name != _localPlayerName) return;
         var position = playerTransformEvent.body.player.position;
         var rotation = playerTransformEvent.body.player.yRot;
         var dimensionId = playerTransformEvent.body.player.dimension;
@@ -186,7 +194,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
 
     private void HandlePlayerTeleportedEvent(McWssPlayerTeleportedEvent playerTeleportedEvent)
     {
-        if (playerTeleportedEvent.body.player.name != _localPlayerName) return;
+        if (_customEventTriggered || playerTeleportedEvent.body.player.name != _localPlayerName) return;
         var position = playerTeleportedEvent.body.player.position;
         var rotation = playerTeleportedEvent.body.player.yRot;
         var dimensionId = playerTeleportedEvent.body.player.dimension;
@@ -199,5 +207,21 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
             2 => "minecraft:end",
             _ => $"{dimensionId}"
         };
+    }
+
+    private void HandlePlayerUpdateEvent(McWssPlayerUpdateEvent playerUpdateEvent)
+    {
+        if (playerUpdateEvent.body.playerName != _localPlayerName) return;
+        _customEventTriggered = true;
+        var position = playerUpdateEvent.body.position;
+        var rotation = playerUpdateEvent.body.rotation;
+        var worldId = playerUpdateEvent.body.worldId;
+        var caveFactor = playerUpdateEvent.body.caveFactor;
+        var muffleFactor = playerUpdateEvent.body.mufflefactor;
+        _client.Position = new Vector3(position.x, position.y, position.z);
+        _client.Rotation = new Vector2(rotation.x, rotation.y);
+        _client.WorldId = worldId;
+        _client.CaveFactor = caveFactor;
+        _client.MuffleFactor = muffleFactor;
     }
 }
