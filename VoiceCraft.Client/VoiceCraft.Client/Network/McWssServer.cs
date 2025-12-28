@@ -211,7 +211,6 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
 
     private void HandlePlayerUpdateEvent(McWssPlayerUpdateEvent playerUpdateEvent)
     {
-        if (playerUpdateEvent.body.playerName != _localPlayerName) return;
         _customEventTriggered = true;
         var position = playerUpdateEvent.body.position;
         var rotation = playerUpdateEvent.body.rotation;
