@@ -212,11 +212,13 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
     private void HandlePlayerUpdateEvent(McWssPlayerUpdateEvent playerUpdateEvent)
     {
         _customEventTriggered = true;
+        var name = playerUpdateEvent.body.playerName;
         var position = playerUpdateEvent.body.position;
         var rotation = playerUpdateEvent.body.rotation;
         var worldId = playerUpdateEvent.body.worldId;
         var caveFactor = playerUpdateEvent.body.caveFactor;
         var muffleFactor = playerUpdateEvent.body.mufflefactor;
+        _client.Name = name;
         _client.Position = new Vector3(position.x, position.y, position.z);
         _client.Rotation = new Vector2(rotation.x, rotation.y);
         _client.WorldId = worldId;
