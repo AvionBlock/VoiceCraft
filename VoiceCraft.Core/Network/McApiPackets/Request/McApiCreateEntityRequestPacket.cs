@@ -1,16 +1,13 @@
-using System;
 using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.World;
 
-namespace VoiceCraft.Core.Network.McApiPackets.Event
+namespace VoiceCraft.Core.Network.McApiPackets.Request
 {
-    public class McApiOnEntityCreatedPacket : IMcApiPacket
+    public class McApiCreateEntityRequestPacket : IMcApiPacket, IMcApiRIdPacket
     {
-        public McApiOnEntityCreatedPacket() : this(
-            0,
-            0.0f,
-            DateTime.MinValue,
+        public McApiCreateEntityRequestPacket() : this(
+            string.Empty,
             string.Empty,
             string.Empty,
             false,
@@ -25,10 +22,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         {
         }
 
-        public McApiOnEntityCreatedPacket(
-            int id,
-            float loudness,
-            DateTime lastSpoke,
+        public McApiCreateEntityRequestPacket(
+            string requestId,
             string worldId,
             string name,
             bool muted,
@@ -41,9 +36,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             float caveFactor,
             float muffleFactor)
         {
-            Id = id;
-            Loudness = loudness;
-            LastSpoke = lastSpoke;
+            RequestId = requestId;
             WorldId = worldId;
             Name = name;
             Muted = muted;
@@ -57,11 +50,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             MuffleFactor = muffleFactor;
         }
 
-        public McApiOnEntityCreatedPacket(VoiceCraftEntity entity)
+        public McApiCreateEntityRequestPacket(string requestId, VoiceCraftEntity entity)
         {
-            Id = entity.Id;
-            Loudness = entity.Loudness;
-            LastSpoke = entity.LastSpoke;
+            RequestId = requestId;
             WorldId = entity.WorldId;
             Name = entity.Name;
             Muted = entity.Muted;
@@ -75,11 +66,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             MuffleFactor = entity.MuffleFactor;
         }
 
-        public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
+        public McApiPacketType PacketType => McApiPacketType.CreateEntityRequest;
 
-        public int Id { get; private set; }
-        public float Loudness { get; private set; }
-        public DateTime LastSpoke { get; private set; }
+        public string RequestId { get; private set; }
         public string WorldId { get; private set; }
         public string Name { get; private set; }
         public bool Muted { get; private set; }
@@ -92,11 +81,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         public float CaveFactor { get; private set; }
         public float MuffleFactor { get; private set; }
 
-        public virtual void Serialize(NetDataWriter writer)
+        public void Serialize(NetDataWriter writer)
         {
-            writer.Put(Id);
-            writer.Put(Loudness);
-            writer.Put(LastSpoke.Ticks);
+            writer.Put(RequestId, Constants.MaxStringLength);
             writer.Put(WorldId, Constants.MaxStringLength);
             writer.Put(Name, Constants.MaxStringLength);
             writer.Put(Muted);
@@ -113,11 +100,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             writer.Put(MuffleFactor);
         }
 
-        public virtual void Deserialize(NetDataReader reader)
+        public void Deserialize(NetDataReader reader)
         {
-            Id = reader.GetInt();
-            Loudness = reader.GetFloat();
-            LastSpoke = new DateTime(reader.GetLong());
+            RequestId = reader.GetString(Constants.MaxStringLength);
             WorldId = reader.GetString(Constants.MaxStringLength);
             Name = reader.GetString(Constants.MaxStringLength);
             Muted = reader.GetBool();
@@ -131,10 +116,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             MuffleFactor = reader.GetFloat();
         }
 
-        public McApiOnEntityCreatedPacket Set(
-            int id = 0,
-            float loudness = 0.0f,
-            DateTime lastSpoke = new DateTime(),
+        public McApiCreateEntityRequestPacket Set(
+            string requestId = "",
             string worldId = "",
             string name = "",
             bool muted = false,
@@ -147,9 +130,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             float caveFactor = 0,
             float muffleFactor = 0)
         {
-            Id = id;
-            Loudness = loudness;
-            LastSpoke = lastSpoke;
+            RequestId = requestId;
             WorldId = worldId;
             Name = name;
             Muted = muted;
@@ -164,11 +145,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             return this;
         }
 
-        public McApiOnEntityCreatedPacket Set(VoiceCraftEntity entity)
+        public McApiCreateEntityRequestPacket Set(string requestId, VoiceCraftEntity entity)
         {
-            Id = entity.Id;
-            Loudness = entity.Loudness;
-            LastSpoke = entity.LastSpoke;
+            RequestId = requestId;
             WorldId = entity.WorldId;
             Name = entity.Name;
             Muted = entity.Muted;

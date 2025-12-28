@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.World
 {
-    public class VoiceCraftEntity : IResettable
+    public class VoiceCraftEntity
     {
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
         private float _caveFactor;

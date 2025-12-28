@@ -3,7 +3,7 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems;
 
-public class AudioEffectSystem : IResettable, IDisposable
+public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
 

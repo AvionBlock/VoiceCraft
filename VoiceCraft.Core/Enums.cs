@@ -72,8 +72,11 @@ namespace VoiceCraft.Core
         
         //Other/Changeable
         //Requests
+        ResetRequest,
         SetEffectRequest,
         ClearEffectsRequest,
+        CreateEntityRequest,
+        DestroyEntityRequest,
         SetEntityTitleRequest,
         SetEntityDescriptionRequest,
         SetEntityWorldIdRequest,
@@ -87,6 +90,9 @@ namespace VoiceCraft.Core
         SetEntityMuffleFactorRequest,
         
         //Responses
+        ResetResponse,
+        CreateEntityResponse,
+        DestroyEntityResponse,
 
         //Events
         OnEffectUpdated,

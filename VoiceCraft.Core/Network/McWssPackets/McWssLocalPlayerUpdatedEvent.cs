@@ -1,12 +1,12 @@
 namespace VoiceCraft.Core.Network.McWssPackets
 {
     //This is packet is for custom MCBE injected clients.
-    public class McWssPlayerUpdateEvent: McWssPacket<McWssPlayerUpdateEvent.McWssPlayerUpdateEventBody>
+    public class McWssLocalPlayerUpdatedEvent: McWssPacket<McWssLocalPlayerUpdatedEvent.McWssLocalPlayerUpdateEventBody>
     {
-        public override McWssPlayerUpdateEventBody body { get; set; } = new McWssPlayerUpdateEventBody();
+        public override McWssLocalPlayerUpdateEventBody body { get; set; } = new McWssLocalPlayerUpdateEventBody();
 
         //Resharper disable all
-        public class McWssPlayerUpdateEventBody
+        public class McWssLocalPlayerUpdateEventBody
         {
           public string playerName { get; set; } = string.Empty;
           public string worldId  { get; set; } = string.Empty;

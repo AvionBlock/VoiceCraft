@@ -39,7 +39,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     public void Start(McHttpConfig? config = null)
     {
         Stop();
-        
+
         if (config != null)
             Config = config;
 
@@ -52,7 +52,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             _ = ListenerLoop(_httpServer);
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Success")}[/]");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             AnsiConsole.WriteException(ex);
             LogService.Log(ex);
@@ -118,10 +118,10 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             PacketPool<T>.Return(packet);
         }
     }
-    
+
     private async Task ListenerLoop(HttpListener listener)
     {
-        while(listener.IsListening)
+        while (listener.IsListening)
         {
             var context = await listener.GetContextAsync();
             await HandleRequest(context);
@@ -171,7 +171,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             context.Response.StatusCode = 400;
             context.Response.Close();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             context.Response.StatusCode = 500;
             context.Response.Close();
@@ -228,7 +228,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                     var pt = (McApiPacketType)packetType;
                     HandlePacket(pt, _reader, peer.Value, token);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     LogService.Log(ex);
                 }
@@ -269,6 +269,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 pingRequestPacket.Deserialize(reader);
                 HandlePingRequestPacket(pingRequestPacket, peer);
                 break;
+            case McApiPacketType.ResetRequest:
+                var resetRequestPacket = PacketPool<McApiResetRequestPacket>.GetPacket();
+                resetRequestPacket.Deserialize(reader);
+                HandleResetRequestPacket(resetRequestPacket, peer);
+                break;
             case McApiPacketType.SetEffectRequest:
                 var setEffectRequestPacket = PacketPool<McApiSetEffectRequestPacket>.GetPacket();
                 setEffectRequestPacket.Deserialize(reader);
@@ -278,6 +283,16 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 var clearEffectsRequestPacket = PacketPool<McApiClearEffectsRequestPacket>.GetPacket();
                 clearEffectsRequestPacket.Deserialize(reader);
                 HandleClearEffectsRequestPacket(clearEffectsRequestPacket, peer);
+                break;
+            case McApiPacketType.CreateEntityRequest:
+                var createEntityRequestPacket = PacketPool<McApiCreateEntityRequestPacket>.GetPacket();
+                createEntityRequestPacket.Deserialize(reader);
+                HandleCreateEntityRequestPacket(createEntityRequestPacket, peer);
+                break;
+            case McApiPacketType.DestroyEntityRequest:
+                var destroyEntityRequestPacket = PacketPool<McApiDestroyEntityRequestPacket>.GetPacket();
+                destroyEntityRequestPacket.Deserialize(reader);
+                HandleDestroyEntityRequestPacket(destroyEntityRequestPacket, peer);
                 break;
             case McApiPacketType.SetEntityTitleRequest:
                 var setEntityTitleRequestPacket = PacketPool<McApiSetEntityTitleRequestPacket>.GetPacket();
@@ -413,6 +428,26 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         }
     }
 
+    private void HandleResetRequestPacket(McApiResetRequestPacket packet, McApiNetPeer netPeer)
+    {
+        try
+        {
+            _world.Reset();
+            _audioEffectSystem.Reset();
+            SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket().Set(packet.RequestId));
+        }
+        catch(Exception ex)
+        {
+            SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket()
+                .Set(packet.RequestId, McApiResetResponsePacket.ResponseCodes.Failure));
+            LogService.Log(ex);
+        }
+        finally
+        {
+            PacketPool<McApiResetRequestPacket>.Return(packet);
+        }
+    }
+
     private void HandleSetEffectRequestPacket(McApiSetEffectRequestPacket packet, McApiNetPeer _, NetDataReader reader)
     {
         try
@@ -476,6 +511,58 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         finally
         {
             PacketPool<McApiClearEffectsRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleCreateEntityRequestPacket(McApiCreateEntityRequestPacket packet, McApiNetPeer netPeer)
+    {
+        try
+        {
+            var entity = _world.CreateEntity(
+                packet.WorldId,
+                packet.Name,
+                packet.Muted,
+                packet.Deafened,
+                packet.TalkBitmask,
+                packet.ListenBitmask,
+                packet.EffectBitmask,
+                packet.Position,
+                packet.Rotation,
+                packet.CaveFactor,
+                packet.MuffleFactor);
+            SendPacket(netPeer, PacketPool<McApiCreateEntityResponsePacket>.GetPacket()
+                .Set(packet.RequestId, McApiCreateEntityResponsePacket.ResponseCodes.Ok, entity.Id));
+        }
+        catch
+        {
+            SendPacket(netPeer,
+                PacketPool<McApiCreateEntityResponsePacket>.GetPacket().Set(packet.RequestId,
+                    McApiCreateEntityResponsePacket.ResponseCodes.Failure));
+            throw;
+        }
+        finally
+        {
+            PacketPool<McApiCreateEntityRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleDestroyEntityRequestPacket(McApiDestroyEntityRequestPacket packet, McApiNetPeer netPeer)
+    {
+        try
+        {
+            _world.DestroyEntity(packet.Id);
+            SendPacket(netPeer, PacketPool<McApiDestroyEntityResponsePacket>.GetPacket()
+                .Set(packet.RequestId));
+        }
+        catch
+        {
+            SendPacket(netPeer, PacketPool<McApiDestroyEntityResponsePacket>.GetPacket()
+                .Set(packet.RequestId, McApiDestroyEntityResponsePacket.ResponseCodes.NotFound));
+            throw;
+        }
+        finally
+        {
+            PacketPool<McApiDestroyEntityRequestPacket>.Return(packet);
         }
     }
 

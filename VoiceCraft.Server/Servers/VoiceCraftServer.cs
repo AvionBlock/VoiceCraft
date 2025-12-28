@@ -5,7 +5,6 @@ using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio.Effects;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.VcPackets;
 using VoiceCraft.Core.Network.VcPackets.Request;
@@ -16,7 +15,7 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
 
-public class VoiceCraftServer : IResettable, IDisposable, INetEventListener
+public class VoiceCraftServer : IDisposable, INetEventListener
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
 
@@ -53,12 +52,6 @@ public class VoiceCraftServer : IResettable, IDisposable, INetEventListener
     {
         Dispose(true);
         GC.SuppressFinalize(this);
-    }
-
-    public void Reset()
-    {
-        World.Reset();
-        _audioEffectSystem.Reset();
     }
 
     ~VoiceCraftServer()
