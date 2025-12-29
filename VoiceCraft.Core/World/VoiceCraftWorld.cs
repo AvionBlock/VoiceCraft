@@ -85,10 +85,11 @@ namespace VoiceCraft.Core.World
         }
 
         public VoiceCraftNetworkEntity CreateEntity(NetPeer peer, Guid userGuid, Guid serverUserGuid, string locale,
-            PositioningType positioningType)
+            PositioningType positioningType, bool serverMute, bool serverDeafen)
         {
             var id = GetNextId();
-            var entity = new VoiceCraftNetworkEntity(peer, id, userGuid, serverUserGuid, locale, positioningType, this);
+            var entity = new VoiceCraftNetworkEntity(peer, id, userGuid, serverUserGuid, locale, positioningType,
+                serverMute, serverDeafen, this);
             if (!_entities.TryAdd(id, entity))
                 throw new InvalidOperationException("Failed to create entity!");
 

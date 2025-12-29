@@ -4,7 +4,6 @@ using LiteNetLib;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.VcPackets;
 using VoiceCraft.Core.Network.VcPackets.Request;
@@ -405,7 +404,8 @@ public class VoiceCraftServer : IDisposable, INetEventListener
             var peer = request.Accept();
             try
             {
-                World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
+                World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType,
+                    false, false);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
             catch (Exception ex)

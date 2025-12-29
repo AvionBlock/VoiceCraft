@@ -6,9 +6,14 @@ namespace VoiceCraft.Core.World
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
+        private bool _serverMuted;
+        private bool _serverDeafened;
+        
         //Events
         public event Action<string, VoiceCraftNetworkEntity>? OnSetTitle;
         public event Action<string, VoiceCraftNetworkEntity>? OnSetDescription;
+        public event Action<bool, VoiceCraftNetworkEntity>? OnServerMuteUpdated;
+        public event Action<bool, VoiceCraftNetworkEntity>? OnServerDeafenUpdated;
         
         public VoiceCraftNetworkEntity(
             NetPeer netPeer,
@@ -17,6 +22,8 @@ namespace VoiceCraft.Core.World
             Guid serverUserGuid,
             string locale,
             PositioningType positioningType,
+            bool serverMuted,
+            bool serverDeafened,
             VoiceCraftWorld world) : base(id, world)
         {
             Name = "New Client";
@@ -25,6 +32,8 @@ namespace VoiceCraft.Core.World
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
+            ServerMuted = serverMuted;
+            ServerDeafened = serverDeafened;
         }
 
         public NetPeer NetPeer { get; }
@@ -55,6 +64,8 @@ namespace VoiceCraft.Core.World
             EffectBitmask = ushort.MaxValue;
             TalkBitmask = ushort.MaxValue;
             ListenBitmask = ushort.MaxValue;
+            ServerMuted = false;
+            ServerDeafened = false;
         }
 
         public override void Destroy()
@@ -62,6 +73,30 @@ namespace VoiceCraft.Core.World
             base.Destroy();
             OnSetTitle = null;
             OnSetDescription = null;
+            OnServerMuteUpdated = null;
+            OnServerDeafenUpdated = null;
+        }
+        
+        public bool ServerMuted
+        {
+            get => _serverMuted;
+            set
+            {
+                if (_serverMuted == value) return;
+                _serverMuted = value;
+                OnServerMuteUpdated?.Invoke(_serverMuted, this);
+            }
+        }
+
+        public bool ServerDeafened
+        {
+            get => _serverDeafened;
+            set
+            {
+                if (_serverDeafened == value) return;
+                _serverDeafened = value;
+                OnServerDeafenUpdated?.Invoke(_serverDeafened, this);
+            }
         }
     }
 }

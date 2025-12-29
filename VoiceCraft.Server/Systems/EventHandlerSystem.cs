@@ -93,6 +93,8 @@ public class EventHandlerSystem : IDisposable
         {
             netEntity.OnSetTitle += OnNetworkEntitySetTitle;
             netEntity.OnSetDescription += OnNetworkEntitySetDescription;
+            netEntity.OnServerMuteUpdated += OnNetworkEntityServerMuteUpdated;
+            netEntity.OnServerDeafenUpdated += OnNetworkEntityServerDeafenUpdated;
         }
 
         newEntity.OnWorldIdUpdated += OnEntityWorldIdUpdated;
@@ -116,6 +118,10 @@ public class EventHandlerSystem : IDisposable
             {
                 _server.SendPacket(networkEntity.NetPeer,
                     PacketPool<VcSetNameRequestPacket>.GetPacket().Set(networkEntity.Name));
+                _server.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcSetServerMuteRequestPacket>.GetPacket().Set(networkEntity.ServerMuted));
+                _server.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(networkEntity.ServerDeafened));
                 _server.Broadcast(PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity),
                     DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
                 _mcWssServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
@@ -155,6 +161,8 @@ public class EventHandlerSystem : IDisposable
         {
             netEntity.OnSetTitle -= OnNetworkEntitySetTitle;
             netEntity.OnSetDescription -= OnNetworkEntitySetDescription;
+            netEntity.OnServerMuteUpdated -= OnNetworkEntityServerMuteUpdated;
+            netEntity.OnServerDeafenUpdated -= OnNetworkEntityServerDeafenUpdated;
         }
 
         entity.OnWorldIdUpdated -= OnEntityWorldIdUpdated;
@@ -279,6 +287,28 @@ public class EventHandlerSystem : IDisposable
         {
             _server.SendPacket(entity.NetPeer,
                 PacketPool<VcSetDescriptionRequestPacket>.GetPacket().Set(description));
+        });
+    }
+
+    private void OnNetworkEntityServerMuteUpdated(bool muted, VoiceCraftNetworkEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(entity.NetPeer, PacketPool<VcSetServerMuteRequestPacket>.GetPacket().Set(muted));
+            _server.Broadcast(PacketPool<VcSetServerMuteRequestPacket>.GetPacket().Set(muted),
+                DeliveryMethod.ReliableOrdered, entity.NetPeer);
+            //TODO Add MCAPI packets.
+        });
+    }
+
+    private void OnNetworkEntityServerDeafenUpdated(bool deafened, VoiceCraftNetworkEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(entity.NetPeer, PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(deafened));
+            _server.Broadcast(PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(deafened),
+                DeliveryMethod.ReliableOrdered, entity.NetPeer);
+            //TODO Add MCAPI packets.
         });
     }
 
