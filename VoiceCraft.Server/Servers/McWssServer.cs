@@ -625,7 +625,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.WorldId = packet.Value;
         }
         finally
@@ -639,7 +639,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.Name = packet.Value;
         }
         finally
@@ -697,7 +697,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.Position = packet.Value;
         }
         finally
@@ -711,7 +711,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.Rotation = packet.Value;
         }
         finally
@@ -725,7 +725,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.CaveFactor = packet.Value;
         }
         finally
@@ -740,7 +740,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.MuffleFactor = packet.Value;
         }
         finally

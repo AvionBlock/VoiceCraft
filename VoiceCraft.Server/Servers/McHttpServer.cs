@@ -441,7 +441,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             _audioEffectSystem.Reset();
             SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket().Set(packet.RequestId));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket()
                 .Set(packet.RequestId, McApiResetResponsePacket.ResponseCodes.Failure));
@@ -618,7 +618,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.WorldId = packet.Value;
         }
         finally
@@ -632,7 +632,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.Name = packet.Value;
         }
         finally
@@ -690,7 +690,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.Position = packet.Value;
         }
         finally
@@ -704,7 +704,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.Rotation = packet.Value;
         }
         finally
@@ -718,7 +718,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.CaveFactor = packet.Value;
         }
         finally
@@ -733,7 +733,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         try
         {
             var entity = _world.GetEntity(packet.Id);
-            if (entity == null) return;
+            if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
             entity.MuffleFactor = packet.Value;
         }
         finally
