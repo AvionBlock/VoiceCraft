@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
@@ -184,8 +185,30 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
 
     private static int PcmFloatMix(Span<float> srcBuffer, int count, Span<float> dstBuffer)
     {
-        for (var i = 0; i < count; i++) dstBuffer[i] = Math.Clamp(srcBuffer[i] + dstBuffer[i], -1f, 1f);
+        //Usage of SIMD accelerated operation.
+        var simdCount = 0;
+        var simdLength = count - (count % Vector<float>.Count);
 
-        return count;
+        // Ensure there's enough data for SIMD operations
+        if (simdLength > 0 && Vector<float>.Count <= count && Vector<float>.Count <= dstBuffer.Length)
+        {
+            while (simdCount < simdLength)
+            {
+                var vectorS = new Vector<float>(srcBuffer.Slice(simdCount, Vector<float>.Count));
+                var vectorD = new Vector<float>(dstBuffer.Slice(simdCount, Vector<float>.Count));
+                Vector.Clamp(vectorD + vectorS, -Vector<float>.One, Vector<float>.One)
+                    .CopyTo(dstBuffer.Slice(simdCount, Vector<float>.Count));
+                simdCount += Vector<float>.Count;
+            }
+        }
+
+        // Scalar remainder
+        while (simdCount < count)
+        {
+            dstBuffer[count] += srcBuffer[count];
+            simdCount++;
+        }
+
+        return simdCount;
     }
 }
