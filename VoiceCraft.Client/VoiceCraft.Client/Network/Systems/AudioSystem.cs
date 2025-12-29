@@ -43,6 +43,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
                 read = Math.Max(read, entityRead);
                 _mutex.ReleaseMutex();
             });
+            read = AdjustVolume(mixingBuffer, read, client.OutputVolume);
             read = PcmFloatTo16(mixingBuffer, read, buffer); //To PCM16
             //Full read
             if (read >= count) return read;
@@ -151,7 +152,10 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
 
     private static int AdjustVolume(Span<float> buffer, int count, float volume)
     {
-        for (var i = 0; i < count; i++) buffer[i] *= volume;
+        for (var i = 0; i < count; i++)
+        {
+            buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
+        }
         return count;
     }
 

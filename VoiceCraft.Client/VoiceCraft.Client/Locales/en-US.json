@@ -80,6 +80,7 @@
       "EchoCancelers": "Echo Cancelers",
       "InputDevices": "Input Devices",
       "MicrophoneSensitivity": "Microphone Sensitivity",
+      "OutputVolume": "Output Volume",
       "OutputDevices": "Output Devices",
       "TestOutput": "Test Output",
       "MicrophoneTest": {

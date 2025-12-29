@@ -80,6 +80,7 @@
       "EchoCancelers": "回声消除器",
       "InputDevices": "输入设备",
       "MicrophoneSensitivity": "麦克风灵敏度",
+      "OutputVolume": null,
       "OutputDevices": "输出设备",
       "TestOutput": "测试输出",
       "MicrophoneTest": {

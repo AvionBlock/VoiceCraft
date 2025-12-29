@@ -83,6 +83,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
     public VcConnectionState ConnectionState { get; private set; } = VcConnectionState.Disconnected;
 
     public float MicrophoneSensitivity { get; set; }
+    public float OutputVolume { get; set; }
 
     public void Dispose()
     {

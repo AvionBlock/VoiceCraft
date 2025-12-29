@@ -80,6 +80,7 @@
       "EchoCancelers": "Echo-onderdrukkers",
       "InputDevices": "Invoerapparaten",
       "MicrophoneSensitivity": "Microfoon gevoeligheid",
+      "OutputVolume": null,
       "OutputDevices": "Uitvoerapparaten",
       "TestOutput": "Uitvoer testen",
       "MicrophoneTest": {

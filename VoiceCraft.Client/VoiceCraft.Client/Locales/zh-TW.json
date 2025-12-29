@@ -80,6 +80,7 @@
       "EchoCancelers": "回聲消除器",
       "InputDevices": "輸入設備",
       "MicrophoneSensitivity": "麥克風靈敏度",
+      "OutputVolume": null,
       "OutputDevices": "輸出設備",
       "TestOutput": "測試輸出",
       "MicrophoneTest": {

@@ -93,6 +93,7 @@ public class VoipBackgroundProcess(
             var networkSettings = settingsService.NetworkSettings;
 
             _voiceCraftClient.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
+            _voiceCraftClient.OutputVolume = audioSettings.OutputVolume;
             _voiceCraftClient.OnConnected += ClientOnConnected;
             _voiceCraftClient.OnDisconnected += ClientOnDisconnected;
             _voiceCraftClient.OnSetTitle += ClientOnSetTitle;

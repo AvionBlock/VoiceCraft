@@ -17,17 +17,18 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private ObservableCollection<RegisteredAutomaticGainController> _automaticGainControllers = [];
     [ObservableProperty] private Guid _denoiser;
     [ObservableProperty] private ObservableCollection<RegisteredDenoiser> _denoisers = [];
-    private bool _disposed;
     [ObservableProperty] private Guid _echoCanceler;
     [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
 
     [ObservableProperty] private string _inputDevice;
+    [ObservableProperty] private string _outputDevice;
 
     [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
-    [ObservableProperty] private float _microphoneSensitivity;
-    [ObservableProperty] private string _outputDevice;
     [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
+    [ObservableProperty] private float _microphoneSensitivity;
+    [ObservableProperty] private float _outputVolume;
     private bool _updating;
+    private bool _disposed;
 
     public AudioSettingsViewModel(SettingsService settingsService, AudioService audioService)
     {
@@ -42,6 +43,7 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         _automaticGainController = _audioSettings.AutomaticGainController;
         _echoCanceler = _audioSettings.EchoCanceler;
         _microphoneSensitivity = _audioSettings.MicrophoneSensitivity;
+        _outputVolume = _audioSettings.OutputVolume;
 
         _ = ReloadAvailableDevices();
     }
@@ -142,6 +144,17 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
+    
+    partial void OnOutputVolumeChanging(float value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _audioSettings.OutputVolume = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
 
     private void Update(AudioSettings audioSettings)
     {
@@ -154,6 +167,7 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         AutomaticGainController = audioSettings.AutomaticGainController;
         EchoCanceler = audioSettings.EchoCanceler;
         MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
+        OutputVolume = audioSettings.OutputVolume;
 
         _updating = false;
     }
