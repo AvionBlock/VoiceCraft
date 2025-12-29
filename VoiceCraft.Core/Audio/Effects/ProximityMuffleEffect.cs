@@ -12,13 +12,13 @@ namespace VoiceCraft.Core.Audio.Effects
             new Dictionary<VoiceCraftEntity, BiQuadFilter>();
         
         private float _wetDry = 1.0f;
+        public EffectType EffectType => EffectType.ProximityMuffle;
         public static int SampleRate => Constants.SampleRate;
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
-        public EffectType EffectType => EffectType.ProximityMuffle;
 
         public void Serialize(NetDataWriter writer)
         {

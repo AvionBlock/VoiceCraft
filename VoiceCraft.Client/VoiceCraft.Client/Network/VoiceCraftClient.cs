@@ -13,7 +13,7 @@ using OpusSharp.Core.Extensions;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio.Effects;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Network.VcPackets;
 using VoiceCraft.Core.Network.VcPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Request;
@@ -924,50 +924,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
                 effect.Deserialize(reader); //Do not recreate the effect instance! Could hold audio instance data!
                 return;
             }
-
-            switch (packet.EffectType)
+            if(packet.EffectType == EffectType.None)
             {
-                case EffectType.Visibility:
-                    var visibilityEffect = new VisibilityEffect();
-                    visibilityEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, visibilityEffect);
-                    break;
-                case EffectType.Proximity:
-                    var proximityEffect = new ProximityEffect();
-                    proximityEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, proximityEffect);
-                    break;
-                case EffectType.Directional:
-                    var directionalEffect = new DirectionalEffect();
-                    directionalEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, directionalEffect);
-                    break;
-                case EffectType.ProximityEcho:
-                    var proximityEchoEffect = new ProximityEchoEffect();
-                    proximityEchoEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, proximityEchoEffect);
-                    break;
-                case EffectType.Echo:
-                    var echoEffect = new EchoEffect();
-                    echoEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, echoEffect);
-                    break;
-                case EffectType.ProximityMuffle:
-                    var proximityMuffleEffect = new ProximityMuffleEffect();
-                    proximityMuffleEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, proximityMuffleEffect);
-                    break;
-                case EffectType.Muffle:
-                    var muffleEffect = new MuffleEffect();
-                    muffleEffect.Deserialize(reader);
-                    _audioSystem.SetEffect(packet.Bitmask, muffleEffect);
-                    break;
-                case EffectType.None:
-                    _audioSystem.SetEffect(packet.Bitmask, null);
-                    break;
-                default: //Unknown, We don't do anything.
-                    return;
+                _audioSystem.SetEffect(packet.Bitmask, null);
+                return;
             }
+            var audioEffect = IAudioEffect.FromReader(packet.EffectType, reader);
+            if(audioEffect == null) return;
+            _audioSystem.SetEffect(packet.Bitmask, audioEffect);
         }
         finally
         {

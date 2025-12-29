@@ -10,6 +10,7 @@ using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Server.Config;
 using Fleck;
 using VoiceCraft.Core.Audio.Effects;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.McApiPackets.Response;
@@ -464,49 +465,13 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
     {
         try
         {
-            switch (packet.EffectType)
+            if(packet.EffectType == EffectType.None)
             {
-                case EffectType.Visibility:
-                    var visibilityEffect = new VisibilityEffect();
-                    visibilityEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, visibilityEffect);
-                    break;
-                case EffectType.Proximity:
-                    var proximityEffect = new ProximityEffect();
-                    proximityEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityEffect);
-                    break;
-                case EffectType.Directional:
-                    var directionalEffect = new DirectionalEffect();
-                    directionalEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, directionalEffect);
-                    break;
-                case EffectType.ProximityEcho:
-                    var proximityEchoEffect = new ProximityEchoEffect();
-                    proximityEchoEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityEchoEffect);
-                    break;
-                case EffectType.Echo:
-                    var echoEffect = new EchoEffect();
-                    echoEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, echoEffect);
-                    break;
-                case EffectType.ProximityMuffle:
-                    var proximityMuffleEffect = new ProximityMuffleEffect();
-                    proximityMuffleEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, proximityMuffleEffect);
-                    break;
-                case EffectType.Muffle:
-                    var muffleEffect = new MuffleEffect();
-                    muffleEffect.Deserialize(reader);
-                    _audioEffectSystem.SetEffect(packet.Bitmask, muffleEffect);
-                    break;
-                case EffectType.None:
-                    _audioEffectSystem.SetEffect(packet.Bitmask, null);
-                    break;
-                default: //Unknown, We don't do anything.
-                    return;
+                _audioEffectSystem.SetEffect(packet.Bitmask, null);
+                return;
             }
+            var audioEffect = IAudioEffect.FromReader(packet.EffectType, reader);
+            _audioEffectSystem.SetEffect(packet.Bitmask, audioEffect);
         }
         finally
         {

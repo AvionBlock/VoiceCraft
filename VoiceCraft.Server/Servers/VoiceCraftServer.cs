@@ -37,11 +37,6 @@ public class VoiceCraftServer : IDisposable, INetEventListener
 
         _audioEffectSystem = audioEffectSystem;
         World = world;
-
-        //_audioEffectSystem.SetEffect(1, new VisibilityEffect());
-        _audioEffectSystem.SetEffect(2, new ProximityEffect() { MaxRange = 30 });
-        _audioEffectSystem.SetEffect(4, new ProximityEchoEffect() { Range = 30 });
-        _audioEffectSystem.SetEffect(8, new ProximityMuffleEffect());
     }
 
     //Public Properties
