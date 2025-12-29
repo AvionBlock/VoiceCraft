@@ -150,7 +150,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
                 if(playerTeleportedEventPacket == null) return;
                 HandlePlayerTeleportedEvent(playerTeleportedEventPacket);
                 break;
-            case "LocalPlayerUpdated":
+            case "LocalPlayerUpdated": //Custom event for injected MC clients.
                 var localPlayerUpdatedEventPacket = JsonSerializer.Deserialize<McWssLocalPlayerUpdatedEvent>(data);
                 if (localPlayerUpdatedEventPacket == null) return;
                 HandleLocalPlayerUpdatedEvent(localPlayerUpdatedEventPacket);

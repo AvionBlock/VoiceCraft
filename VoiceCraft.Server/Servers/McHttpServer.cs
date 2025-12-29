@@ -294,6 +294,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 destroyEntityRequestPacket.Deserialize(reader);
                 HandleDestroyEntityRequestPacket(destroyEntityRequestPacket, peer);
                 break;
+            case McApiPacketType.EntityAudioRequest:
+                var entityAudioRequestPacket = PacketPool<McApiEntityAudioRequestPacket>.GetPacket();
+                entityAudioRequestPacket.Deserialize(reader);
+                HandleEntityAudioRequestPacket(entityAudioRequestPacket, peer);
+                break;
             case McApiPacketType.SetEntityTitleRequest:
                 var setEntityTitleRequestPacket = PacketPool<McApiSetEntityTitleRequestPacket>.GetPacket();
                 setEntityTitleRequestPacket.Deserialize(reader);
@@ -563,6 +568,20 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         finally
         {
             PacketPool<McApiDestroyEntityRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleEntityAudioRequestPacket(McApiEntityAudioRequestPacket packet, McApiNetPeer _)
+    {
+        try
+        {
+            var entity = _world.GetEntity(packet.Id);
+            if (entity is null or VoiceCraftNetworkEntity) return;
+            entity.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
+        }
+        finally
+        {
+            PacketPool<McApiEntityAudioRequestPacket>.Return(packet);
         }
     }
 

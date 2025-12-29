@@ -77,6 +77,7 @@ namespace VoiceCraft.Core
         ClearEffectsRequest,
         CreateEntityRequest,
         DestroyEntityRequest,
+        EntityAudioRequest,
         SetEntityTitleRequest,
         SetEntityDescriptionRequest,
         SetEntityWorldIdRequest,
