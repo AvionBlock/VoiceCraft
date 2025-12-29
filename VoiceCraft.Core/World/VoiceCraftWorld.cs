@@ -116,11 +116,6 @@ namespace VoiceCraft.Core.World
             return entity;
         }
 
-        public bool HasEntity(int id)
-        {
-            return _entities.ContainsKey(id);
-        }
-
         public void DestroyEntity(int id)
         {
             if (!_entities.Remove(id, out var entity))

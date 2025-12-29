@@ -245,7 +245,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
 
     public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
     {
-        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || !World.HasEntity(networkEntity.Id)) return;
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Destroyed) return;
         World.DestroyEntity(networkEntity.Id);
     }
 
