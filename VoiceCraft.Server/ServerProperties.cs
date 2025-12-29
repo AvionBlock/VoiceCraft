@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
@@ -15,12 +14,12 @@ public class ServerProperties
     private const string ConfigPath = "config";
 
     private ServerPropertiesStructure _properties = new();
+    private Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig => _properties.DefaultAudioEffectsConfig;
 
     public VoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
     public McWssConfig McWssConfig => _properties.McWssConfig;
     public McHttpConfig McHttpConfig => _properties.McHttpConfig;
-    public Dictionary<ushort, JsonElement> AudioEffectsConfig => _properties.AudioEffectsConfig;
-    public SortedDictionary<ushort, IAudioEffect> AudioEffects = [];
+    public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
     public void Load()
     {
@@ -88,12 +87,12 @@ public class ServerProperties
 
     private void ParseAudioEffects()
     {
-        foreach (var effect in AudioEffectsConfig)
+        foreach (var effect in DefaultAudioEffectsConfig)
         {
             if(effect.Key == 0) continue;
             var audioEffect = IAudioEffect.FromJsonElement(effect.Value);
             if(audioEffect == null) continue;
-            AudioEffects.TryAdd(effect.Key, audioEffect);
+            DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
         }
     }
 }
@@ -103,14 +102,14 @@ public class ServerPropertiesStructure
     public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssConfig McWssConfig { get; set; } = new();
     public McHttpConfig McHttpConfig { get; set; } = new();
-    public Dictionary<ushort, JsonElement> AudioEffectsConfig { get; set; } = [];
+    public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
     
     public ServerPropertiesStructure()
     {
-        AudioEffectsConfig.Add(1, JsonSerializer.SerializeToElement(new VisibilityEffect()));
-        AudioEffectsConfig.Add(2, JsonSerializer.SerializeToElement(new ProximityEffect() { MaxRange = 30 }));
-        AudioEffectsConfig.Add(4, JsonSerializer.SerializeToElement(new ProximityEchoEffect() { Range = 30 }));
-        AudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
+        DefaultAudioEffectsConfig.Add(1, JsonSerializer.SerializeToElement(new VisibilityEffect()));
+        DefaultAudioEffectsConfig.Add(2, JsonSerializer.SerializeToElement(new ProximityEffect() { MaxRange = 30 }));
+        DefaultAudioEffectsConfig.Add(4, JsonSerializer.SerializeToElement(new ProximityEchoEffect() { Range = 30 }));
+        DefaultAudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
     }
 }
 

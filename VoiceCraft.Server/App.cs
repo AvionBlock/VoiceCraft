@@ -23,6 +23,7 @@ public static class App
         //Systems
         var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
         var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
+        var audioEffectSystem = Program.ServiceProvider.GetRequiredService<AudioEffectSystem>();
         //Commands
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         //Other
@@ -41,6 +42,9 @@ public static class App
             //Loaded, Set the title.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Starting")}";
 
+            //Setup Audio Effects
+            audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
+            
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
             if (properties.McHttpConfig.Enabled)

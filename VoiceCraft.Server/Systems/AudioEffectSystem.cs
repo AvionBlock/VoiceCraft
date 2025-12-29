@@ -6,22 +6,26 @@ namespace VoiceCraft.Server.Systems;
 public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
-
-    public IEnumerable<KeyValuePair<ushort, IAudioEffect>> Effects => _audioEffects;
-
-    public void Dispose()
-    {
-        ClearEffects();
-        OnEffectSet = null;
-        GC.SuppressFinalize(this);
+    private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
+    public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects {
+        get => _defaultAudioEffects;
+        set
+        {
+            _defaultAudioEffects = value;
+            Reset();
+        }
     }
-
+    public IEnumerable<KeyValuePair<ushort, IAudioEffect>> Effects => _audioEffects;
+    public event Action<ushort, IAudioEffect?>? OnEffectSet;
+    
     public void Reset()
     {
         ClearEffects();
+        foreach (var effect in _defaultAudioEffects)
+        {
+            SetEffect(effect.Key, effect.Value);
+        }
     }
-
-    public event Action<ushort, IAudioEffect?>? OnEffectSet;
 
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
@@ -58,5 +62,12 @@ public class AudioEffectSystem : IDisposable
             effect.Value.Dispose();
             OnEffectSet?.Invoke(effect.Key, null);
         }
+    }
+    
+    public void Dispose()
+    {
+        ClearEffects();
+        OnEffectSet = null;
+        GC.SuppressFinalize(this);
     }
 }

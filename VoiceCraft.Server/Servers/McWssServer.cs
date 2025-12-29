@@ -9,7 +9,6 @@ using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Server.Config;
 using Fleck;
-using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.McApiPackets.Request;
@@ -449,11 +448,11 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             _audioEffectSystem.Reset();
             SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket().Set(packet.RequestId));
         }
-        catch(Exception ex)
+        catch
         {
             SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket()
                 .Set(packet.RequestId, McApiResetResponsePacket.ResponseCodes.Failure));
-            LogService.Log(ex);
+            throw;
         }
         finally
         {

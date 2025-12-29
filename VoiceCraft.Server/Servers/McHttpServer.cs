@@ -5,7 +5,6 @@ using System.Text.Json;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio.Effects;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network;
@@ -442,11 +441,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             _audioEffectSystem.Reset();
             SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket().Set(packet.RequestId));
         }
-        catch (Exception ex)
+        catch
         {
             SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket()
                 .Set(packet.RequestId, McApiResetResponsePacket.ResponseCodes.Failure));
-            LogService.Log(ex);
+            throw;
         }
         finally
         {
