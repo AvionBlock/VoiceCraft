@@ -569,7 +569,8 @@ public class EventHandlerSystem : IDisposable
         {
             foreach (var ve in entity.VisibleEntities)
             {
-                if (ve is not VoiceCraftNetworkEntity visibleEntity || ve == entity || visibleEntity.Deafened) continue;
+                if (ve is not VoiceCraftNetworkEntity visibleEntity || ve == entity || visibleEntity.Deafened ||
+                    visibleEntity.ServerDeafened) continue;
                 var packet = PacketPool<VcOnEntityAudioReceivedPacket>.GetPacket()
                     .Set(entity.Id, timestamp, frameLoudness, data.Length, data);
                 _server.SendPacket(visibleEntity.NetPeer, packet, DeliveryMethod.Unreliable);

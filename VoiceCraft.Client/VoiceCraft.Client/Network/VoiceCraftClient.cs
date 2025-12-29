@@ -216,6 +216,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
 
     public int Read(byte[] buffer, int count)
     {
+        if (Deafened || ServerDeafened)
+        {
+            buffer.AsSpan().Clear();
+            return count;
+        }
+        
         var bufferShort = MemoryMarshal.Cast<byte, short>(buffer);
         var read = _audioSystem.Read(bufferShort, count / sizeof(short)) * sizeof(short);
         return read;
@@ -230,7 +236,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
         if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
             _serverPeer == null ||
-            ConnectionState != VcConnectionState.Connected || Muted) return;
+            ConnectionState != VcConnectionState.Connected || Muted || ServerMuted) return;
 
         Array.Clear(_encodeBuffer);
         var bytesEncoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);

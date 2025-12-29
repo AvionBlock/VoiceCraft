@@ -452,7 +452,8 @@ public class VoiceCraftServer : IDisposable, INetEventListener
     {
         try
         {
-            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Muted ||
+                networkEntity.ServerMuted) return;
             networkEntity.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
         }
         finally
