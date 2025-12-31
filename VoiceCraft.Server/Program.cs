@@ -49,6 +49,10 @@ public static class Program
         serviceCollection.AddSingleton<Command, SetDescriptionCommand>();
         serviceCollection.AddSingleton<Command, SetNameCommand>();
         serviceCollection.AddSingleton<Command, StopCommand>();
+        serviceCollection.AddSingleton<Command, MuteCommand>();
+        serviceCollection.AddSingleton<Command, UnmuteCommand>();
+        serviceCollection.AddSingleton<Command, DeafenCommand>();
+        serviceCollection.AddSingleton<Command, UndeafenCommand>();
         
         //Other
         serviceCollection.AddSingleton<ServerProperties>();

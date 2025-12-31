@@ -2,13 +2,13 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnListenBitmaskUpdatedPacket : IMcApiPacket
+    public class McApiOnEntityListenBitmaskUpdatedPacket : IMcApiPacket
     {
-        public McApiOnListenBitmaskUpdatedPacket() : this(0, 0)
+        public McApiOnEntityListenBitmaskUpdatedPacket() : this(0, 0)
         {
         }
 
-        public McApiOnListenBitmaskUpdatedPacket(int id, ushort value)
+        public McApiOnEntityListenBitmaskUpdatedPacket(int id, ushort value)
         {
             Id = id;
             Value = value;
@@ -31,7 +31,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = reader.GetUShort();
         }
 
-        public McApiOnListenBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
+        public McApiOnEntityListenBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;

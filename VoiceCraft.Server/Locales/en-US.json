@@ -192,6 +192,22 @@
     "Stop": {
       "Name": "stop",
       "Description": "Stops the server."
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "Mutes an entity/client."
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "Unmutes an entity/client."
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "Deafens an entity/client."
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "Undeafens an entity/client."
     }
   }
 }

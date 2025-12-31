@@ -405,7 +405,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
             try
             {
                 World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType,
-                    true, true);
+                    false, false);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
             catch (Exception ex)

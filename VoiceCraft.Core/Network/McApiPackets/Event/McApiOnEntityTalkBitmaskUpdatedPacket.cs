@@ -2,22 +2,22 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnMuteUpdatedPacket : IMcApiPacket
+    public class McApiOnEntityTalkBitmaskUpdatedPacket : IMcApiPacket
     {
-        public McApiOnMuteUpdatedPacket() : this(0, false)
+        public McApiOnEntityTalkBitmaskUpdatedPacket() : this(0, 0)
         {
         }
 
-        public McApiOnMuteUpdatedPacket(int id, bool value)
+        public McApiOnEntityTalkBitmaskUpdatedPacket(int id, ushort value)
         {
             Id = id;
             Value = value;
         }
 
-        public McApiPacketType PacketType => McApiPacketType.OnEntityMuteUpdated;
+        public McApiPacketType PacketType => McApiPacketType.OnEntityTalkBitmaskUpdated;
 
         public int Id { get; private set; }
-        public bool Value { get; private set; }
+        public ushort Value { get; private set; }
 
         public void Serialize(NetDataWriter writer)
         {
@@ -28,10 +28,10 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         public void Deserialize(NetDataReader reader)
         {
             Id = reader.GetInt();
-            Value = reader.GetBool();
+            Value = reader.GetUShort();
         }
 
-        public McApiOnMuteUpdatedPacket Set(int id = 0, bool value = false)
+        public McApiOnEntityTalkBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
         {
             Id = id;
             Value = value;

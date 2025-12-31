@@ -1001,7 +1001,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
         {
             OnPacket?.Invoke(packet);
             var entity = World.GetEntity(packet.Id);
-            if (entity is not VoiceCraftNetworkEntity networkEntity) return;
+            if (entity is not VoiceCraftClientNetworkEntity networkEntity) return;
             networkEntity.ServerMuted = packet.Value;
         }
         finally
@@ -1016,7 +1016,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
         {
             OnPacket?.Invoke(packet);
             var entity = World.GetEntity(packet.Id);
-            if (entity is not VoiceCraftNetworkEntity networkEntity) return;
+            if (entity is not VoiceCraftClientNetworkEntity networkEntity) return;
             networkEntity.ServerDeafened = packet.Value;
         }
         finally
