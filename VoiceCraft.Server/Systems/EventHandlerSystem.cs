@@ -7,6 +7,7 @@ using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets.Event;
+using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.VcPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Request;
 using VoiceCraft.Core.World;
@@ -297,7 +298,8 @@ public class EventHandlerSystem : IDisposable
             _server.SendPacket(entity.NetPeer, PacketPool<VcSetServerMuteRequestPacket>.GetPacket().Set(muted));
             _server.Broadcast(PacketPool<VcOnEntityServerMuteUpdatedPacket>.GetPacket().Set(entity.Id, muted),
                 DeliveryMethod.ReliableOrdered, entity.NetPeer);
-            //TODO Add MCAPI packets.
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityServerMuteUpdatedPacket>.GetPacket().Set(entity.Id, muted));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityServerMuteUpdatedPacket>.GetPacket().Set(entity.Id, muted));
         });
     }
 
@@ -308,7 +310,10 @@ public class EventHandlerSystem : IDisposable
             _server.SendPacket(entity.NetPeer, PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(deafened));
             _server.Broadcast(PacketPool<VcOnEntityServerDeafenUpdatedPacket>.GetPacket().Set(entity.Id, deafened),
                 DeliveryMethod.ReliableOrdered, entity.NetPeer);
-            //TODO Add MCAPI packets.
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.GetPacket()
+                .Set(entity.Id, deafened));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.GetPacket()
+                .Set(entity.Id, deafened));
         });
     }
 
@@ -388,8 +393,10 @@ public class EventHandlerSystem : IDisposable
             else
                 _server.Broadcast(packet);
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
+            _mcWssServer.Broadcast(
+                PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, bitmask));
         });
     }
 
@@ -407,8 +414,10 @@ public class EventHandlerSystem : IDisposable
             else
                 _server.Broadcast(packet);
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, bitmask));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, bitmask));
         });
     }
 
@@ -448,7 +457,8 @@ public class EventHandlerSystem : IDisposable
             }
 
             _mcWssServer.Broadcast(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket().Set(entity.Id, position));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket().Set(entity.Id, position));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket()
+                .Set(entity.Id, position));
         });
     }
 
@@ -468,7 +478,8 @@ public class EventHandlerSystem : IDisposable
             }
 
             _mcWssServer.Broadcast(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket()
+                .Set(entity.Id, rotation));
         });
     }
 

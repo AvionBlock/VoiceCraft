@@ -320,6 +320,16 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 setEntityNameRequestPacket.Deserialize(reader);
                 HandleSetEntityNameRequestPacket(setEntityNameRequestPacket, peer);
                 break;
+            case McApiPacketType.SetEntityMuteRequest:
+                var setEntityMuteRequestPacket = PacketPool<McApiSetEntityMuteRequestPacket>.GetPacket();
+                setEntityMuteRequestPacket.Deserialize(reader);
+                HandleSetEntityMuteRequestPacket(setEntityMuteRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityDeafenRequest:
+                var setEntityDeafenRequestPacket = PacketPool<McApiSetEntityDeafenRequestPacket>.GetPacket();
+                setEntityDeafenRequestPacket.Deserialize(reader);
+                HandleSetEntityDeafenRequestPacket(setEntityDeafenRequestPacket, peer);
+                break;
             case McApiPacketType.SetEntityTalkBitmaskRequest:
                 var setEntityTalkBitmaskRequestPacket = PacketPool<McApiSetEntityTalkBitmaskRequestPacket>.GetPacket();
                 setEntityTalkBitmaskRequestPacket.Deserialize(reader);
@@ -602,6 +612,50 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         finally
         {
             PacketPool<McApiSetEntityNameRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityMuteRequestPacket(McApiSetEntityMuteRequestPacket packet, McApiNetPeer _)
+    {
+        try
+        {
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            switch (entity)
+            {
+                case VoiceCraftNetworkEntity networkEntity:
+                    networkEntity.ServerMuted = packet.Value;
+                    break;
+                default:
+                    entity.Muted = packet.Value;
+                    break;
+            }
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityMuteRequestPacket>.Return(packet);
+        }
+    }
+    
+    private void HandleSetEntityDeafenRequestPacket(McApiSetEntityDeafenRequestPacket packet, McApiNetPeer _)
+    {
+        try
+        {
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            switch (entity)
+            {
+                case VoiceCraftNetworkEntity networkEntity:
+                    networkEntity.ServerDeafened = packet.Value;
+                    break;
+                default:
+                    entity.Deafened = packet.Value;
+                    break;
+            }
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityDeafenRequestPacket>.Return(packet);
         }
     }
 

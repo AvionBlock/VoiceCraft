@@ -59,7 +59,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             });
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             AnsiConsole.WriteException(ex);
             LogService.Log(ex);
@@ -157,7 +157,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                     var pt = (McApiPacketType)packetType;
                     HandlePacket(pt, _reader, peer.Value, token);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     LogService.Log(ex);
                 }
@@ -184,10 +184,12 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         var stringBuilder = new StringBuilder();
         if (!netPeer.RetrieveOutboundPacket(out var outboundPacket)) return false;
         stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
-        while (netPeer.RetrieveOutboundPacket(out outboundPacket) && stringBuilder.Length < Config.MaxStringLengthPerCommand)
+        while (netPeer.RetrieveOutboundPacket(out outboundPacket) &&
+               stringBuilder.Length < Config.MaxStringLengthPerCommand)
         {
             stringBuilder.Append($"|{Z85.GetStringWithPadding(outboundPacket)}");
         }
+
         SendPacketCommand(socket, stringBuilder.ToString());
         return true;
     }
@@ -222,7 +224,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             if (commandResponsePacket is not { StatusCode: 0 }) return;
             HandleDataTunnelCommandResponse(socket, commandResponsePacket.body.statusMessage);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LogService.Log(ex);
         }
@@ -240,7 +242,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LogService.Log(ex);
         }
@@ -326,6 +328,16 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 var setEntityNameRequestPacket = PacketPool<McApiSetEntityNameRequestPacket>.GetPacket();
                 setEntityNameRequestPacket.Deserialize(reader);
                 HandleSetEntityNameRequestPacket(setEntityNameRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityMuteRequest:
+                var setEntityMuteRequestPacket = PacketPool<McApiSetEntityMuteRequestPacket>.GetPacket();
+                setEntityMuteRequestPacket.Deserialize(reader);
+                HandleSetEntityMuteRequestPacket(setEntityMuteRequestPacket, peer);
+                break;
+            case McApiPacketType.SetEntityDeafenRequest:
+                var setEntityDeafenRequestPacket = PacketPool<McApiSetEntityDeafenRequestPacket>.GetPacket();
+                setEntityDeafenRequestPacket.Deserialize(reader);
+                HandleSetEntityDeafenRequestPacket(setEntityDeafenRequestPacket, peer);
                 break;
             case McApiPacketType.SetEntityTalkBitmaskRequest:
                 var setEntityTalkBitmaskRequestPacket = PacketPool<McApiSetEntityTalkBitmaskRequestPacket>.GetPacket();
@@ -439,7 +451,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             PacketPool<McApiPingRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleResetRequestPacket(McApiResetRequestPacket packet, McApiNetPeer netPeer)
     {
         try
@@ -464,11 +476,12 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
     {
         try
         {
-            if(packet.EffectType == EffectType.None)
+            if (packet.EffectType == EffectType.None)
             {
                 _audioEffectSystem.SetEffect(packet.Bitmask, null);
                 return;
             }
+
             var audioEffect = IAudioEffect.FromReader(packet.EffectType, reader);
             _audioEffectSystem.SetEffect(packet.Bitmask, audioEffect);
         }
@@ -489,7 +502,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             PacketPool<McApiClearEffectsRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleCreateEntityRequestPacket(McApiCreateEntityRequestPacket packet, McApiNetPeer netPeer)
     {
         try
@@ -541,7 +554,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             PacketPool<McApiDestroyEntityRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleEntityAudioRequestPacket(McApiEntityAudioRequestPacket packet, McApiNetPeer _)
     {
         try
@@ -609,6 +622,50 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         finally
         {
             PacketPool<McApiSetEntityNameRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleSetEntityMuteRequestPacket(McApiSetEntityMuteRequestPacket packet, McApiNetPeer _)
+    {
+        try
+        {
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            switch (entity)
+            {
+                case VoiceCraftNetworkEntity networkEntity:
+                    networkEntity.ServerMuted = packet.Value;
+                    break;
+                default:
+                    entity.Muted = packet.Value;
+                    break;
+            }
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityMuteRequestPacket>.Return(packet);
+        }
+    }
+
+    private void HandleSetEntityDeafenRequestPacket(McApiSetEntityDeafenRequestPacket packet, McApiNetPeer _)
+    {
+        try
+        {
+            var entity = _world.GetEntity(packet.Id);
+            if (entity == null) return;
+            switch (entity)
+            {
+                case VoiceCraftNetworkEntity networkEntity:
+                    networkEntity.ServerDeafened = packet.Value;
+                    break;
+                default:
+                    entity.Deafened = packet.Value;
+                    break;
+            }
+        }
+        finally
+        {
+            PacketPool<McApiSetEntityDeafenRequestPacket>.Return(packet);
         }
     }
 
