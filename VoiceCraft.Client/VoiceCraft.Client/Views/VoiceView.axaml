@@ -60,8 +60,34 @@
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal"
                                     Spacing="10">
-                            <PathIcon IsVisible="{Binding IsMuted}" Data="{StaticResource MicOffRegular}" />
-                            <PathIcon IsVisible="{Binding IsDeafened}" Data="{StaticResource SpeakerOffRegular}" />
+                            <PathIcon Data="{StaticResource MicOffRegular}"
+                                      Classes.IsServerMuted="{Binding IsServerMuted}">
+                                <PathIcon.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                        <Binding Path="IsMuted" />
+                                        <Binding Path="IsServerMuted" />
+                                    </MultiBinding>
+                                </PathIcon.IsVisible>
+                                <PathIcon.Styles>
+                                    <Style Selector="PathIcon.IsServerMuted">
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                                    </Style>
+                                </PathIcon.Styles>
+                            </PathIcon>
+                            <PathIcon Data="{StaticResource SpeakerOffRegular}"
+                                      Classes.IsServerDeafened="{Binding IsServerDeafened}">
+                                <PathIcon.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                        <Binding Path="IsDeafened" />
+                                        <Binding Path="IsServerDeafened" />
+                                    </MultiBinding>
+                                </PathIcon.IsVisible>
+                                <PathIcon.Styles>
+                                    <Style Selector="PathIcon.IsServerDeafened">
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                                    </Style>
+                                </PathIcon.Styles>
+                            </PathIcon>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -79,56 +105,64 @@
                           Height="50"
                           IsChecked="{Binding IsMuted}">
                 <Panel>
-                    <PathIcon Classes="micOn"
-                              Data="{StaticResource MicOnRegular}"
+                    <PathIcon Data="{StaticResource MicOnRegular}"
                               Classes.IsSpeaking="{Binding IsSpeaking}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="!IsMuted" />
+                                <Binding Path="!IsServerMuted" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
                         <PathIcon.Styles>
                             <Style Selector="PathIcon.IsSpeaking">
                                 <Setter Property="Foreground" Value="{DynamicResource SuccessAccentBrush}" />
                             </Style>
                         </PathIcon.Styles>
                     </PathIcon>
-                    <PathIcon Classes="micOff" Data="{StaticResource MicOffRegular}" />
+                    <PathIcon Data="{StaticResource MicOffRegular}"
+                              Classes.IsServerMuted="{Binding IsServerMuted}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                <Binding Path="IsMuted" />
+                                <Binding Path="IsServerMuted" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                        <PathIcon.Styles>
+                            <Style Selector="PathIcon.IsServerMuted">
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                            </Style>
+                        </PathIcon.Styles>
+                    </PathIcon>
                 </Panel>
-                <ToggleButton.Styles>
-                    <!-- Turns out, there is an order to styles... -->
-                    <Style Selector="ToggleButton PathIcon.micOn">
-                        <Setter Property="IsVisible" Value="True" />
-                    </Style>
-                    <Style Selector="ToggleButton:checked PathIcon.micOn">
-                        <Setter Property="IsVisible" Value="False" />
-                    </Style>
-                    <Style Selector="ToggleButton PathIcon.micOff">
-                        <Setter Property="IsVisible" Value="False" />
-                    </Style>
-                    <Style Selector="ToggleButton:checked PathIcon.micOff">
-                        <Setter Property="IsVisible" Value="True" />
-                    </Style>
-                </ToggleButton.Styles>
             </ToggleButton>
             <ToggleButton CornerRadius="50"
                           Width="50"
                           Height="50"
                           IsChecked="{Binding IsDeafened}">
                 <Panel>
-                    <PathIcon Classes="speakerOn" Data="{StaticResource SpeakerRegular}" />
-                    <PathIcon Classes="speakerOff" Data="{StaticResource SpeakerOffRegular}" />
+                    <PathIcon Data="{StaticResource SpeakerRegular}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="!IsDeafened" />
+                                <Binding Path="!IsServerDeafened" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                    </PathIcon>
+                    <PathIcon Data="{StaticResource SpeakerOffRegular}"
+                              Classes.IsServerDeafened="{Binding IsServerDeafened}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                <Binding Path="IsDeafened" />
+                                <Binding Path="IsServerDeafened" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                        <PathIcon.Styles>
+                            <Style Selector="PathIcon.IsServerDeafened">
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                            </Style>
+                        </PathIcon.Styles>
+                    </PathIcon>
                 </Panel>
-                <ToggleButton.Styles>
-                    <!-- Turns out, there is an order to styles... -->
-                    <Style Selector="ToggleButton PathIcon.speakerOn">
-                        <Setter Property="IsVisible" Value="True" />
-                    </Style>
-                    <Style Selector="ToggleButton:checked PathIcon.speakerOn">
-                        <Setter Property="IsVisible" Value="False" />
-                    </Style>
-                    <Style Selector="ToggleButton PathIcon.speakerOff">
-                        <Setter Property="IsVisible" Value="False" />
-                    </Style>
-                    <Style Selector="ToggleButton:checked PathIcon.speakerOff">
-                        <Setter Property="IsVisible" Value="True" />
-                    </Style>
-                </ToggleButton.Styles>
             </ToggleButton>
             <Button Background="{DynamicResource ErrorBackgroundBrush}"
                     CornerRadius="50"

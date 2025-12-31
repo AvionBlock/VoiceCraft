@@ -216,12 +216,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
 
     public int Read(byte[] buffer, int count)
     {
-        if (Deafened || ServerDeafened)
-        {
-            buffer.AsSpan().Clear();
-            return count;
-        }
-        
         var bufferShort = MemoryMarshal.Cast<byte, short>(buffer);
         var read = _audioSystem.Read(bufferShort, count / sizeof(short)) * sizeof(short);
         return read;
@@ -931,7 +925,9 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
             {
                 Name = packet.Name,
                 Muted = packet.Muted,
-                Deafened = packet.Deafened
+                Deafened = packet.Deafened,
+                ServerMuted = packet.ServerMuted,
+                ServerDeafened = packet.ServerDeafened,
             };
             World.AddEntity(entity);
         }
@@ -1139,7 +1135,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
         try
         {
             OnPacket?.Invoke(packet);
-            if (Deafened) return;
+            if (Deafened || ServerDeafened) return;
             var entity = World.GetEntity(packet.Id);
             entity?.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
         }

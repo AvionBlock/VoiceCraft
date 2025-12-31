@@ -17,8 +17,10 @@ public partial class EntityViewModel : ObservableObject
 
     //Entity Display.
     [ObservableProperty] private string _displayName;
-    [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
+    [ObservableProperty] private bool _isDeafened;
+    [ObservableProperty] private bool _isServerMuted;
+    [ObservableProperty] private bool _isServerDeafened;
     [ObservableProperty] private bool _isSpeaking;
     [ObservableProperty] private bool _isVisible;
     [ObservableProperty] private bool _userMuted;
@@ -37,11 +39,16 @@ public partial class EntityViewModel : ObservableObject
         if (entity is VoiceCraftClientNetworkEntity networkEntity)
         {
             _entityUserId = networkEntity.UserGuid;
+            _isServerMuted = networkEntity.ServerMuted;
+            _isServerDeafened = networkEntity.ServerDeafened;
             if (_userSettings.Users.TryGetValue((Guid)_entityUserId, out var entitySetting))
             {
                 entity.Volume = entitySetting.Volume;
                 entity.UserMuted = entitySetting.UserMuted;
             }
+            
+            networkEntity.OnServerMuteUpdated += (value, _) => IsServerMuted = value;
+            networkEntity.OnServerDeafenUpdated += (value, _) => IsServerDeafened = value;
         }
 
         _displayName = entity.Name;
