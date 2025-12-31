@@ -21,15 +21,15 @@ public partial class SelectedServerViewModel(
     : ViewModelBase, IDisposable
 {
     [ObservableProperty] private string _connectedClients = string.Empty;
-
     [ObservableProperty] private string _latency = string.Empty;
     [ObservableProperty] private string _motd = string.Empty;
-    private Task? _pinger;
     [ObservableProperty] private string _positioningType = string.Empty;
+    [ObservableProperty] private string _version = string.Empty;
 
     [ObservableProperty] private ServerViewModel? _selectedServer;
 
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
+    private Task? _pinger;
     private bool _stopPinger;
 
     public void Dispose()
@@ -136,5 +136,6 @@ public partial class SelectedServerViewModel(
         Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{info.Motd}");
         PositioningType = Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{info.PositioningType}");
         ConnectedClients = Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{info.Clients}");
+        Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{info.Version}");
     }
 }

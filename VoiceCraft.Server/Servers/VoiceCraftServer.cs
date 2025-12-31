@@ -426,8 +426,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
         {
             SendUnconnectedPacket(remoteEndPoint,
                 PacketPool<VcInfoResponsePacket>.GetPacket().Set(Config.Motd, _netManager.ConnectedPeersCount,
-                    Config.PositioningType,
-                    packet.Tick));
+                    Config.PositioningType, packet.Tick, Version));
         }
         finally
         {

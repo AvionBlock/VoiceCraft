@@ -192,6 +192,22 @@
     "Stop": {
       "Name": "stop",
       "Description": "Stopt de server."
+    },
+    "Mute": {
+      "Name": null,
+      "Description": null
+    },
+    "Unmute": {
+      "Name": null,
+      "Description": null
+    },
+    "Deafen": {
+      "Name": null,
+      "Description": null
+    },
+    "Undeafen": {
+      "Name": null,
+      "Description": null
     }
   }
 }

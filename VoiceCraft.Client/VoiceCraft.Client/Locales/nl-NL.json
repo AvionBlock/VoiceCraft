@@ -120,6 +120,7 @@
         "Motd": "Motd: {0}",
         "PositioningType": "Positioneringstype: {0}",
         "ConnectedClients": "Verbonden clients: {0}",
+        "Version": null,
         "Pinging": "Pingen..."
       }
     }

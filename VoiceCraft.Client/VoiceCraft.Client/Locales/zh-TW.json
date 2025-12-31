@@ -120,6 +120,7 @@
         "Motd": "Motd: {motd}",
         "PositioningType": "定位類型: {positioningType}",
         "ConnectedClients": "已連接客戶端: {connectedClients}",
+        "Version": null,
         "Pinging": "正在Ping..."
       }
     }
