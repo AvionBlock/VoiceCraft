@@ -15,7 +15,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         }
 
         public McApiPacketType PacketType => McApiPacketType.OnEntityServerDeafenUpdated;
-        
+
         public int Id { get; private set; }
         public bool Value { get; private set; }
 
@@ -31,7 +31,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = reader.GetBool();
         }
 
-        public McApiOnEntityServerDeafenUpdatedPacket Set(int id = 0, bool value = true)
+        public McApiOnEntityServerDeafenUpdatedPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;

@@ -31,7 +31,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Request
             Value = reader.GetBool();
         }
 
-        public McApiSetEntityDeafenRequestPacket Set(int id = 0, bool value = true)
+        public McApiSetEntityDeafenRequestPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;

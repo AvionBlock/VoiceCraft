@@ -31,7 +31,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = reader.GetBool();
         }
 
-        public McApiOnEntityServerMuteUpdatedPacket Set(int id = 0, bool value = true)
+        public McApiOnEntityServerMuteUpdatedPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;

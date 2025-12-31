@@ -27,7 +27,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
             Value = reader.GetBool();
         }
 
-        public VcSetServerDeafenRequestPacket Set(bool value = true)
+        public VcSetServerDeafenRequestPacket Set(bool value = false)
         {
             Value = value;
             return this;

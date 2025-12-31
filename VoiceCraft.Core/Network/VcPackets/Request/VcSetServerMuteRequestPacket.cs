@@ -27,7 +27,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
             Value = reader.GetBool();
         }
 
-        public VcSetServerMuteRequestPacket Set(bool value = true)
+        public VcSetServerMuteRequestPacket Set(bool value = false)
         {
             Value = value;
             return this;
