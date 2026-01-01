@@ -9,15 +9,17 @@ namespace VoiceCraft.Core.Audio.Effects
     public class ProximityEffect : IAudioEffect, IVisible
     {
         private float _wetDry = 1.0f;
-        
-        public EffectType EffectType => EffectType.Proximity;
+
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
+
         public int MinRange { get; set; }
         public int MaxRange { get; set; }
+
+        public EffectType EffectType => EffectType.Proximity;
 
         public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
             int count)

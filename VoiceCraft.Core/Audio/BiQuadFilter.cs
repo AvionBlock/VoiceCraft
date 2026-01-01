@@ -16,7 +16,7 @@ namespace VoiceCraft.Core.Audio
         private float _x2;
         private float _y1;
         private float _y2;
-        
+
         public float Transform(float inSample)
         {
             //Compute the result

@@ -11,10 +11,10 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     private readonly NetworkSettings _networkSettings;
     private readonly SettingsService _settingsService;
     private bool _disposed;
+    [ObservableProperty] private ushort _mcWssHostPort;
+    [ObservableProperty] private string _mcWssListenIp;
 
     [ObservableProperty] private PositioningType _positioningType;
-    [ObservableProperty] private string _mcWssListenIp;
-    [ObservableProperty] private ushort _mcWssHostPort;
     private bool _updating;
 
     public NetworkSettingsViewModel(SettingsService settingsService)
@@ -39,7 +39,7 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     partial void OnPositioningTypeChanged(PositioningType value)
     {
         ThrowIfDisposed();
-        
+
         if (_updating) return;
         _updating = true;
         _networkSettings.PositioningType = value;

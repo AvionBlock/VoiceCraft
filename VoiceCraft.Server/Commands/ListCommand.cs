@@ -24,7 +24,7 @@ public class ListCommand : Command
         };
         Add(clientsOnlyOption);
         Add(limitOption);
-        
+
         SetAction(result =>
         {
             var clientsOnly = result.GetValue(clientsOnlyOption);

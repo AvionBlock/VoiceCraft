@@ -1,19 +1,19 @@
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
+using Fleck;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network;
-using VoiceCraft.Core.Network.McApiPackets;
-using VoiceCraft.Core.Network.McWssPackets;
-using VoiceCraft.Server.Config;
-using Fleck;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.Network;
+using VoiceCraft.Core.Network.McApiPackets;
 using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.McApiPackets.Response;
+using VoiceCraft.Core.Network.McWssPackets;
 using VoiceCraft.Core.World;
+using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
@@ -21,12 +21,12 @@ namespace VoiceCraft.Server.Servers;
 public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
     private static readonly Version McWssVersion = new(Constants.Major, Constants.Minor, 0);
+    private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
 
     private readonly ConcurrentDictionary<IWebSocketConnection, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
-    private readonly NetDataWriter _writer = new();
     private readonly VoiceCraftWorld _world = world;
-    private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
+    private readonly NetDataWriter _writer = new();
     private WebSocketServer? _wsServer;
 
     //Public Properties
@@ -78,7 +78,6 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         if (_wsServer == null) return;
         AnsiConsole.WriteLine(Localizer.Get("McWssServer.Stopping"));
         foreach (var client in _mcApiPeers)
-        {
             try
             {
                 client.Key.Close();
@@ -88,7 +87,6 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
                 AnsiConsole.WriteException(ex);
                 LogService.Log(ex);
             }
-        }
 
         _wsServer.Dispose();
         _wsServer = null;
@@ -164,12 +162,8 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         }
 
         for (var i = 0; i < Config.CommandsPerTick; i++)
-        {
             if (!SendPacketsLogic(peer.Key, peer.Value))
-            {
                 SendPacketCommand(peer.Key, string.Empty);
-            }
-        }
 
         switch (peer.Value.Connected)
         {
@@ -186,9 +180,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         stringBuilder.Append(Z85.GetStringWithPadding(outboundPacket));
         while (netPeer.RetrieveOutboundPacket(out outboundPacket) &&
                stringBuilder.Length < Config.MaxStringLengthPerCommand)
-        {
             stringBuilder.Append($"|{Z85.GetStringWithPadding(outboundPacket)}");
-        }
 
         SendPacketCommand(socket, stringBuilder.ToString());
         return true;
@@ -237,10 +229,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
             if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
             var packets = data.Split("|");
 
-            foreach (var packet in packets)
-            {
-                peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
-            }
+            foreach (var packet in packets) peer.ReceiveInboundPacket(Z85.GetBytesWithPadding(packet), null);
         }
         catch (Exception ex)
         {

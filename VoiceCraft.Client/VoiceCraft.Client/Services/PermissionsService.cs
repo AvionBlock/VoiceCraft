@@ -20,7 +20,7 @@ public class PermissionsService(
             case PermissionStatus.Granted:
                 return status;
             case PermissionStatus.Denied when DeviceInfo.Platform == DevicePlatform.iOS:
-                if(!string.IsNullOrWhiteSpace(rationalDescription))
+                if (!string.IsNullOrWhiteSpace(rationalDescription))
                     notificationService.SendErrorNotification(rationalDescription);
                 return status;
             case PermissionStatus.Unknown:

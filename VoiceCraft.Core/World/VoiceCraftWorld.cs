@@ -9,11 +9,11 @@ namespace VoiceCraft.Core.World
 {
     public class VoiceCraftWorld : IDisposable
     {
-        private int _nextEntityId;
-        private readonly Mutex _mutex = new Mutex();
-
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities =
             new ConcurrentDictionary<int, VoiceCraftEntity>();
+
+        private readonly Mutex _mutex = new Mutex();
+        private int _nextEntityId;
 
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
 
@@ -27,10 +27,7 @@ namespace VoiceCraft.Core.World
         public void Reset()
         {
             var entities = _entities.ToArray();
-            foreach (var entity in entities)
-            {
-                entity.Value.Reset();
-            }
+            foreach (var entity in entities) entity.Value.Reset();
         }
 
         public event Action<VoiceCraftEntity>? OnEntityCreated;
@@ -152,10 +149,7 @@ namespace VoiceCraft.Core.World
             _mutex.WaitOne();
             try
             {
-                while (_entities.ContainsKey(_nextEntityId))
-                {
-                    ++_nextEntityId;
-                }
+                while (_entities.ContainsKey(_nextEntityId)) ++_nextEntityId;
 
                 return _nextEntityId++;
             }

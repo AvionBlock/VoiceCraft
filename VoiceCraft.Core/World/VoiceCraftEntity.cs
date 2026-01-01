@@ -8,18 +8,18 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftEntity
     {
         private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
-        private float _loudness;
-        private string _name = "New Entity";
-        private bool _muted;
+        private float _caveFactor;
         private bool _deafened;
         private ushort _effectBitmask = ushort.MaxValue;
-        private ushort _talkBitmask = ushort.MaxValue;
         private ushort _listenBitmask = ushort.MaxValue;
+        private float _loudness;
+        private float _muffleFactor;
+        private bool _muted;
+        private string _name = "New Entity";
         private Vector3 _position;
         private Vector2 _rotation;
+        private ushort _talkBitmask = ushort.MaxValue;
         private string _worldId = string.Empty;
-        private float _muffleFactor;
-        private float _caveFactor;
 
         //Modifiers for modifying data for later?
 
@@ -80,9 +80,7 @@ namespace VoiceCraft.Core.World
         {
             List<int>? keysToRemove = null;
             foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed))
-            {
                 (keysToRemove ??= new List<int>()).Add(entity.Key);
-            }
 
             if (keysToRemove == null) return;
             foreach (var key in keysToRemove)

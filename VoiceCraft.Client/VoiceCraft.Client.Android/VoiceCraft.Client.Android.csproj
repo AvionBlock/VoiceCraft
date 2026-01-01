@@ -27,7 +27,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <AndroidLinkMode>None</AndroidLinkMode>
+        <AndroidLinkMode>None</AndroidLinkMode>
     </PropertyGroup>
 
     <ItemGroup>

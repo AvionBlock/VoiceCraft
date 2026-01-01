@@ -44,7 +44,7 @@ public static class App
 
             //Setup Audio Effects
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
-            
+
             //Server Startup
             server.Start(properties.VoiceCraftConfig);
             if (properties.McHttpConfig.Enabled)
@@ -123,7 +123,7 @@ public static class App
             Cts.Dispose();
         }
     }
-    
+
     public static void Shutdown(uint delayMs = 0)
     {
         if (Cts.IsCancellationRequested || _shuttingDown) return;

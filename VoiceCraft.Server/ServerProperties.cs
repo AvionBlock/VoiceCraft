@@ -89,9 +89,9 @@ public class ServerProperties
     {
         foreach (var effect in DefaultAudioEffectsConfig)
         {
-            if(effect.Key == 0) continue;
+            if (effect.Key == 0) continue;
             var audioEffect = IAudioEffect.FromJsonElement(effect.Value);
-            if(audioEffect == null) continue;
+            if (audioEffect == null) continue;
             DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
         }
     }
@@ -99,18 +99,18 @@ public class ServerProperties
 
 public class ServerPropertiesStructure
 {
+    public ServerPropertiesStructure()
+    {
+        DefaultAudioEffectsConfig.Add(1, JsonSerializer.SerializeToElement(new VisibilityEffect()));
+        DefaultAudioEffectsConfig.Add(2, JsonSerializer.SerializeToElement(new ProximityEffect { MaxRange = 30 }));
+        DefaultAudioEffectsConfig.Add(4, JsonSerializer.SerializeToElement(new ProximityEchoEffect { Range = 30 }));
+        DefaultAudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
+    }
+
     public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssConfig McWssConfig { get; set; } = new();
     public McHttpConfig McHttpConfig { get; set; } = new();
     public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
-    
-    public ServerPropertiesStructure()
-    {
-        DefaultAudioEffectsConfig.Add(1, JsonSerializer.SerializeToElement(new VisibilityEffect()));
-        DefaultAudioEffectsConfig.Add(2, JsonSerializer.SerializeToElement(new ProximityEffect() { MaxRange = 30 }));
-        DefaultAudioEffectsConfig.Add(4, JsonSerializer.SerializeToElement(new ProximityEchoEffect() { Range = 30 }));
-        DefaultAudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
-    }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

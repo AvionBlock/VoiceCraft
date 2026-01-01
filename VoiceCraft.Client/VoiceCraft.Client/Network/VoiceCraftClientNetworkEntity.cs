@@ -6,20 +6,10 @@ namespace VoiceCraft.Client.Network;
 public class VoiceCraftClientNetworkEntity(int id, VoiceCraftWorld world, Guid userGuid)
     : VoiceCraftClientEntity(id, world)
 {
-    private bool _serverMuted;
     private bool _serverDeafened;
-
-    public event Action<bool, VoiceCraftClientNetworkEntity>? OnServerMuteUpdated;
-    public event Action<bool, VoiceCraftClientNetworkEntity>? OnServerDeafenUpdated;
+    private bool _serverMuted;
 
     public Guid UserGuid { get; private set; } = userGuid;
-
-    public override void Destroy()
-    {
-        base.Destroy();
-        OnServerMuteUpdated = null;
-        OnServerDeafenUpdated = null;
-    }
 
     public bool ServerMuted
     {
@@ -41,5 +31,15 @@ public class VoiceCraftClientNetworkEntity(int id, VoiceCraftWorld world, Guid u
             _serverDeafened = value;
             OnServerDeafenUpdated?.Invoke(_serverDeafened, this);
         }
+    }
+
+    public event Action<bool, VoiceCraftClientNetworkEntity>? OnServerMuteUpdated;
+    public event Action<bool, VoiceCraftClientNetworkEntity>? OnServerDeafenUpdated;
+
+    public override void Destroy()
+    {
+        base.Destroy();
+        OnServerMuteUpdated = null;
+        OnServerDeafenUpdated = null;
     }
 }

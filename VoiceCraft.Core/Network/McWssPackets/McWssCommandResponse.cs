@@ -12,7 +12,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
             get => body.statusCode;
             set => body.statusCode = value;
         }
-        
+
         [JsonIgnore]
         public string StatusMessage
         {

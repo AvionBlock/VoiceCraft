@@ -9,7 +9,7 @@ public class NativeHotKeyService : HotKeyService
     public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions) : base(registeredHotKeyActions)
     {
     }
-    
+
     public override void Initialize()
     {
     }

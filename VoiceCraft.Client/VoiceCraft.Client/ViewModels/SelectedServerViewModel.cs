@@ -23,14 +23,14 @@ public partial class SelectedServerViewModel(
     [ObservableProperty] private string _connectedClients = string.Empty;
     [ObservableProperty] private string _latency = string.Empty;
     [ObservableProperty] private string _motd = string.Empty;
+    private Task? _pinger;
     [ObservableProperty] private string _positioningType = string.Empty;
-    [ObservableProperty] private string _version = string.Empty;
 
     [ObservableProperty] private ServerViewModel? _selectedServer;
 
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
-    private Task? _pinger;
     private bool _stopPinger;
+    [ObservableProperty] private string _version = string.Empty;
 
     public void Dispose()
     {

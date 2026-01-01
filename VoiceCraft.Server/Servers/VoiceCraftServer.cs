@@ -18,12 +18,12 @@ public class VoiceCraftServer : IDisposable, INetEventListener
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
 
+    //Systems
+    private readonly AudioEffectSystem _audioEffectSystem;
+
     //Networking
     private readonly NetDataWriter _dataWriter = new();
     private readonly NetManager _netManager;
-
-    //Systems
-    private readonly AudioEffectSystem _audioEffectSystem;
     private bool _isDisposed;
 
     public VoiceCraftServer(AudioEffectSystem audioEffectSystem, VoiceCraftWorld world)
@@ -46,6 +46,85 @@ public class VoiceCraftServer : IDisposable, INetEventListener
     {
         Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    //Network Handling
+    public void OnPeerConnected(NetPeer peer)
+    {
+        //Do nothing.
+    }
+
+    public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
+    {
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Destroyed) return;
+        World.DestroyEntity(networkEntity.Id);
+    }
+
+    public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
+    {
+        //Do nothing.
+    }
+
+    public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber,
+        DeliveryMethod deliveryMethod)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessPacket(pt, reader, peer);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader,
+        UnconnectedMessageType messageType)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    public void OnNetworkLatencyUpdate(NetPeer peer, int latency)
+    {
+        //Do nothing
+    }
+
+    public void OnConnectionRequest(ConnectionRequest request)
+    {
+        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.ServerFull");
+            return;
+        }
+
+        if (request.Data.IsNull)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Kicked");
+            return;
+        }
+
+        try
+        {
+            var loginPacket = PacketPool<VcLoginRequestPacket>.GetPacket();
+            loginPacket.Deserialize(request.Data);
+            HandleLoginRequestPacket(loginPacket, request);
+        }
+        catch (Exception ex)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
+            LogService.Log(ex);
+        }
     }
 
     ~VoiceCraftServer()
@@ -223,91 +302,9 @@ public class VoiceCraftServer : IDisposable, INetEventListener
     private void Dispose(bool disposing)
     {
         if (_isDisposed) return;
-        if (disposing)
-        {
-            _netManager.Stop();
-        }
+        if (disposing) _netManager.Stop();
 
         _isDisposed = true;
-    }
-
-    //Network Handling
-    public void OnPeerConnected(NetPeer peer)
-    {
-        //Do nothing.
-    }
-
-    public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
-    {
-        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Destroyed) return;
-        World.DestroyEntity(networkEntity.Id);
-    }
-
-    public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
-    {
-        //Do nothing.
-    }
-
-    public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber,
-        DeliveryMethod deliveryMethod)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessPacket(pt, reader, peer);
-        }
-        catch (Exception ex)
-        {
-            LogService.Log(ex);
-        }
-    }
-
-    public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader,
-        UnconnectedMessageType messageType)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
-        }
-        catch (Exception ex)
-        {
-            LogService.Log(ex);
-        }
-    }
-
-    public void OnNetworkLatencyUpdate(NetPeer peer, int latency)
-    {
-        //Do nothing
-    }
-
-    public void OnConnectionRequest(ConnectionRequest request)
-    {
-        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
-        {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.ServerFull");
-            return;
-        }
-
-        if (request.Data.IsNull)
-        {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.Kicked");
-            return;
-        }
-
-        try
-        {
-            var loginPacket = PacketPool<VcLoginRequestPacket>.GetPacket();
-            loginPacket.Deserialize(request.Data);
-            HandleLoginRequestPacket(loginPacket, request);
-        }
-        catch (Exception ex)
-        {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
-            LogService.Log(ex);
-        }
     }
 
     //Packet Handling
@@ -386,7 +383,6 @@ public class VoiceCraftServer : IDisposable, INetEventListener
             }
 
             if (packet.PositioningType != Config.PositioningType)
-            {
                 switch (Config.PositioningType)
                 {
                     case PositioningType.Server:
@@ -399,7 +395,6 @@ public class VoiceCraftServer : IDisposable, INetEventListener
                         RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
                         return;
                 }
-            }
 
             var peer = request.Accept();
             try

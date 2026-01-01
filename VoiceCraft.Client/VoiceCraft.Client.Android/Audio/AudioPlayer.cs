@@ -21,11 +21,11 @@ public class AudioPlayer : IAudioPlayer
     private byte[] _byteBuffer = [];
     private int _channels;
     private bool _disposed;
-    private short[] _shortBuffer = [];
     private float[] _floatBuffer = [];
     private AudioTrack? _nativePlayer;
     private Func<byte[], int, int>? _playerCallback;
     private int _sampleRate;
+    private short[] _shortBuffer = [];
 
     public AudioPlayer(AudioManager audioManager, int sampleRate, int channels, Core.AudioFormat format)
     {

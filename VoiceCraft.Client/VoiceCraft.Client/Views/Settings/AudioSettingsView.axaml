@@ -95,7 +95,7 @@
                                 Minimum="0.0"
                                 Value="{Binding AudioSettings.MicrophoneSensitivity}" />
                     </StackPanel>
-                    
+
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">
                             <TextBlock Grid.Column="0" VerticalAlignment="Center"

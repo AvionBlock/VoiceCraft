@@ -21,12 +21,12 @@ namespace VoiceCraft.Server.Servers;
 public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
     private static readonly Version McHttpVersion = new(Constants.Major, Constants.Minor, 0);
+    private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
 
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
     private readonly NetDataReader _reader = new();
-    private readonly NetDataWriter _writer = new();
     private readonly VoiceCraftWorld _world = world;
-    private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
+    private readonly NetDataWriter _writer = new();
     private HttpListener? _httpServer;
 
     //Config
@@ -183,9 +183,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         var sendData = new List<string>();
         while (netPeer.RetrieveOutboundPacket(out var outboundPacket))
-        {
             sendData.Add(Z85.GetStringWithPadding(outboundPacket));
-        }
 
         return sendData.ToArray();
     }
@@ -467,11 +465,12 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
-            if(packet.EffectType == EffectType.None)
+            if (packet.EffectType == EffectType.None)
             {
                 _audioEffectSystem.SetEffect(packet.Bitmask, null);
                 return;
             }
+
             var audioEffect = IAudioEffect.FromReader(packet.EffectType, reader);
             _audioEffectSystem.SetEffect(packet.Bitmask, audioEffect);
         }
@@ -614,7 +613,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             PacketPool<McApiSetEntityNameRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityMuteRequestPacket(McApiSetEntityMuteRequestPacket packet, McApiNetPeer _)
     {
         try
@@ -636,7 +635,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
             PacketPool<McApiSetEntityMuteRequestPacket>.Return(packet);
         }
     }
-    
+
     private void HandleSetEntityDeafenRequestPacket(McApiSetEntityDeafenRequestPacket packet, McApiNetPeer _)
     {
         try

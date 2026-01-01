@@ -152,10 +152,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
 
     private static int AdjustVolume(Span<float> buffer, int count, float volume)
     {
-        for (var i = 0; i < count; i++)
-        {
-            buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
-        }
+        for (var i = 0; i < count; i++) buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
         return count;
     }
 
@@ -191,11 +188,10 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
     {
         //Usage of SIMD accelerated operation.
         var simdCount = 0;
-        var simdLength = count - (count % Vector<float>.Count);
+        var simdLength = count - count % Vector<float>.Count;
 
         // Ensure there's enough data for SIMD operations
         if (simdLength > 0 && Vector<float>.Count <= count && Vector<float>.Count <= dstBuffer.Length)
-        {
             while (simdCount < simdLength)
             {
                 var vectorS = new Vector<float>(srcBuffer.Slice(simdCount, Vector<float>.Count));
@@ -204,7 +200,6 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
                     .CopyTo(dstBuffer.Slice(simdCount, Vector<float>.Count));
                 simdCount += Vector<float>.Count;
             }
-        }
 
         // Scalar remainder
         while (simdCount < count)

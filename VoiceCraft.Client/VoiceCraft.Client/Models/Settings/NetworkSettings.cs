@@ -6,9 +6,9 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class NetworkSettings : Setting<NetworkSettings>
 {
-    private PositioningType _positioningType = PositioningType.Server;
-    private string _mcWssListenIp = "127.0.0.1";
     private ushort _mcWssHostPort = 8080;
+    private string _mcWssListenIp = "127.0.0.1";
+    private PositioningType _positioningType = PositioningType.Server;
 
     public PositioningType PositioningType
     {

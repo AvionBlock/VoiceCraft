@@ -15,11 +15,12 @@ namespace VoiceCraft.Core
         InfoRequest,
         LoginRequest,
         LogoutRequest,
+
         //Responses DO NOT CHANGE!
         InfoResponse,
         AcceptResponse,
         DenyResponse,
-        
+
         //Other/Changeable
         //Requests
         SetNameRequest,
@@ -59,7 +60,7 @@ namespace VoiceCraft.Core
         OnEntityRotationUpdated,
         OnEntityCaveFactorUpdated,
         OnEntityMuffleFactorUpdated,
-        OnEntityAudioReceived,
+        OnEntityAudioReceived
     }
 
     public enum McApiPacketType : byte
@@ -69,11 +70,12 @@ namespace VoiceCraft.Core
         LoginRequest,
         LogoutRequest,
         PingRequest,
+
         //Responses DO NOT CHANGE!
         AcceptResponse,
         DenyResponse,
         PingResponse,
-        
+
         //Other/Changeable
         //Requests
         ResetRequest,
@@ -95,7 +97,7 @@ namespace VoiceCraft.Core
         SetEntityRotationRequest,
         SetEntityCaveFactorRequest,
         SetEntityMuffleFactorRequest,
-        
+
         //Responses
         ResetResponse,
         CreateEntityResponse,
@@ -128,7 +130,7 @@ namespace VoiceCraft.Core
         Disconnected,
         Connecting,
         Connected,
-        Disconnecting,
+        Disconnecting
     }
 
     #endregion
@@ -144,7 +146,7 @@ namespace VoiceCraft.Core
         ProximityEcho,
         Echo,
         ProximityMuffle,
-        Muffle,
+        Muffle
     }
 
     public enum AudioFormat

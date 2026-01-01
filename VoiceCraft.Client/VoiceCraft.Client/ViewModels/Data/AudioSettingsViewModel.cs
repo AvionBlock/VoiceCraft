@@ -17,18 +17,18 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private ObservableCollection<RegisteredAutomaticGainController> _automaticGainControllers = [];
     [ObservableProperty] private Guid _denoiser;
     [ObservableProperty] private ObservableCollection<RegisteredDenoiser> _denoisers = [];
+    private bool _disposed;
     [ObservableProperty] private Guid _echoCanceler;
     [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
 
     [ObservableProperty] private string _inputDevice;
-    [ObservableProperty] private string _outputDevice;
 
     [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
-    [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
     [ObservableProperty] private float _microphoneSensitivity;
+    [ObservableProperty] private string _outputDevice;
+    [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
     [ObservableProperty] private float _outputVolume;
     private bool _updating;
-    private bool _disposed;
 
     public AudioSettingsViewModel(SettingsService settingsService, AudioService audioService)
     {
@@ -144,7 +144,7 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
-    
+
     partial void OnOutputVolumeChanging(float value)
     {
         ThrowIfDisposed();

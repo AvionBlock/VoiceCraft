@@ -14,10 +14,10 @@ namespace VoiceCraft.Client.ViewModels;
 public partial class VoiceViewModel(NavigationService navigationService) : ViewModelBase, IDisposable
 {
     [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
-    [ObservableProperty] private bool _isMuted;
     [ObservableProperty] private bool _isDeafened;
-    [ObservableProperty] private bool _isServerMuted;
+    [ObservableProperty] private bool _isMuted;
     [ObservableProperty] private bool _isServerDeafened;
+    [ObservableProperty] private bool _isServerMuted;
     [ObservableProperty] private bool _isSpeaking;
     private VoipBackgroundProcess? _process;
     [ObservableProperty] private EntityViewModel? _selectedEntity;
@@ -148,7 +148,7 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     {
         Dispatcher.UIThread.Invoke(() => { IsDeafened = deafened; });
     }
-    
+
     private void OnUpdateServerMute(bool muted)
     {
         Dispatcher.UIThread.Invoke(() => { IsServerMuted = muted; });

@@ -8,13 +8,21 @@ namespace VoiceCraft.Client.Network;
 
 public class McWssServer(VoiceCraftClient client) : IDisposable
 {
-    public bool IsStarted { get; private set; }
-    private WebSocketServer? _wsServer;
-    private IWebSocketConnection? _peerConnection;
-    private string _localPlayerRequestId = string.Empty;
-    private string _localPlayerName = string.Empty;
-    private bool _customEventTriggered;
     private readonly VoiceCraftClient _client = client;
+    private bool _customEventTriggered;
+    private string _localPlayerName = string.Empty;
+    private string _localPlayerRequestId = string.Empty;
+    private IWebSocketConnection? _peerConnection;
+    private WebSocketServer? _wsServer;
+    public bool IsStarted { get; private set; }
+
+    public void Dispose()
+    {
+        Stop();
+        OnConnected = null;
+        OnDisconnected = null;
+        GC.SuppressFinalize(this);
+    }
 
     public event Action<string>? OnConnected;
     public event Action? OnDisconnected;
@@ -55,14 +63,6 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         {
             IsStarted = false;
         }
-    }
-
-    public void Dispose()
-    {
-        Stop();
-        OnConnected = null;
-        OnDisconnected = null;
-        GC.SuppressFinalize(this);
     }
 
     private static string SendCommand(IWebSocketConnection socket, string command)
@@ -125,7 +125,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
     {
         if (genericPacket.header.requestId != _localPlayerRequestId) return;
         var localPlayerNameCommandResponse = JsonSerializer.Deserialize<McWssLocalPlayerNameCommandResponse>(data);
-        if(localPlayerNameCommandResponse == null) return;
+        if (localPlayerNameCommandResponse == null) return;
         _localPlayerName = localPlayerNameCommandResponse.LocalPlayerName;
         _client.Name = _localPlayerName;
         OnConnected?.Invoke(_localPlayerName);
@@ -137,17 +137,17 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         {
             case "PlayerTravelled":
                 var playerTravelledEventPacket = JsonSerializer.Deserialize<McWssPlayerTravelledEvent>(data);
-                if(playerTravelledEventPacket == null) return;
+                if (playerTravelledEventPacket == null) return;
                 HandlePlayerTravelledEvent(playerTravelledEventPacket);
                 break;
             case "PlayerTransform":
                 var playerTransformEventPacket = JsonSerializer.Deserialize<McWssPlayerTransformEvent>(data);
-                if(playerTransformEventPacket == null) return;
+                if (playerTransformEventPacket == null) return;
                 HandlePlayerTransformEvent(playerTransformEventPacket);
                 break;
             case "PlayerTeleported":
                 var playerTeleportedEventPacket = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data);
-                if(playerTeleportedEventPacket == null) return;
+                if (playerTeleportedEventPacket == null) return;
                 HandlePlayerTeleportedEvent(playerTeleportedEventPacket);
                 break;
             case "LocalPlayerUpdated": //Custom event for injected MC clients.
@@ -174,7 +174,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
             _ => $"{dimensionId}"
         };
     }
-    
+
     private void HandlePlayerTransformEvent(McWssPlayerTransformEvent playerTransformEvent)
     {
         if (_customEventTriggered || playerTransformEvent.body.player.name != _localPlayerName) return;

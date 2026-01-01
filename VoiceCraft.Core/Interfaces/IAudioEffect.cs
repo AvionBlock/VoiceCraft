@@ -16,8 +16,8 @@ namespace VoiceCraft.Core.Interfaces
 
         public static IAudioEffect? FromJsonElement(JsonElement element)
         {
-            if(!element.TryGetProperty(nameof(EffectType), out var effectType)) return null;
-            if(!effectType.TryGetByte(out var effectTypeByte)) return null;
+            if (!element.TryGetProperty(nameof(EffectType), out var effectType)) return null;
+            if (!effectType.TryGetByte(out var effectTypeByte)) return null;
             var effectTypeValue = (EffectType)effectTypeByte;
             IAudioEffect? audioEffect = null;
             switch (effectTypeValue)
@@ -47,6 +47,7 @@ namespace VoiceCraft.Core.Interfaces
                 default:
                     break;
             }
+
             return audioEffect;
         }
 

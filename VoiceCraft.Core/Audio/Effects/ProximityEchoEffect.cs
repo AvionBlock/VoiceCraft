@@ -20,8 +20,6 @@ namespace VoiceCraft.Core.Audio.Effects
             Delay = 0.5f;
         }
 
-        public EffectType EffectType => EffectType.ProximityEcho;
-
         public float WetDry
         {
             get => _wetDry;
@@ -37,6 +35,8 @@ namespace VoiceCraft.Core.Audio.Effects
         }
 
         public float Range { get; set; }
+
+        public EffectType EffectType => EffectType.ProximityEcho;
 
         public void Serialize(NetDataWriter writer)
         {

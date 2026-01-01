@@ -7,7 +7,9 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects {
+
+    public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
+    {
         get => _defaultAudioEffects;
         set
         {
@@ -15,16 +17,22 @@ public class AudioEffectSystem : IDisposable
             Reset();
         }
     }
+
     public IEnumerable<KeyValuePair<ushort, IAudioEffect>> Effects => _audioEffects;
+
+    public void Dispose()
+    {
+        ClearEffects();
+        OnEffectSet = null;
+        GC.SuppressFinalize(this);
+    }
+
     public event Action<ushort, IAudioEffect?>? OnEffectSet;
-    
+
     public void Reset()
     {
         ClearEffects();
-        foreach (var effect in _defaultAudioEffects)
-        {
-            SetEffect(effect.Key, effect.Value);
-        }
+        foreach (var effect in _defaultAudioEffects) SetEffect(effect.Key, effect.Value);
     }
 
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
@@ -40,11 +48,11 @@ public class AudioEffectSystem : IDisposable
                 return;
         }
 
-        if(!_audioEffects.TryAdd(bitmask, effect))
+        if (!_audioEffects.TryAdd(bitmask, effect))
             _audioEffects[bitmask] = effect;
         OnEffectSet?.Invoke(bitmask, effect);
     }
-    
+
     public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
     {
         lock (_audioEffects)
@@ -62,12 +70,5 @@ public class AudioEffectSystem : IDisposable
             effect.Value.Dispose();
             OnEffectSet?.Invoke(effect.Key, null);
         }
-    }
-    
-    public void Dispose()
-    {
-        ClearEffects();
-        OnEffectSet = null;
-        GC.SuppressFinalize(this);
     }
 }

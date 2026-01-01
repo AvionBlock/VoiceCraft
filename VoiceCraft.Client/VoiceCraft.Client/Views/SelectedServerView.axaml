@@ -82,7 +82,7 @@
                     <TextBlock VerticalAlignment="Center"
                                FontSize="15"
                                Text="{Binding ConnectedClients}" />
-                    
+
                     <TextBlock VerticalAlignment="Center"
                                FontSize="15"
                                Text="{Binding Version}" />

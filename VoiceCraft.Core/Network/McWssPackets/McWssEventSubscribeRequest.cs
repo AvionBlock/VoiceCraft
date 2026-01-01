@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace VoiceCraft.Core.Network.McWssPackets
 {
-    public class McWssEventSubscribeRequest: McWssPacket<McWssEventSubscribeRequest.McWssEventSubscribeRequestBody>
+    public class McWssEventSubscribeRequest : McWssPacket<McWssEventSubscribeRequest.McWssEventSubscribeRequestBody>
     {
         public McWssEventSubscribeRequest(string eventName = "")
         {
@@ -11,7 +11,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
             header.requestId = Guid.NewGuid().ToString();
             header.messagePurpose = "subscribe";
         }
-            
+
         public override McWssEventSubscribeRequestBody body { get; set; } = new McWssEventSubscribeRequestBody();
 
         [JsonIgnore]
@@ -20,7 +20,7 @@ namespace VoiceCraft.Core.Network.McWssPackets
             get => body.eventName;
             set => body.eventName = value;
         }
-        
+
         //Resharper disable All
         public class McWssEventSubscribeRequestBody
         {

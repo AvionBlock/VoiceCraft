@@ -6,7 +6,7 @@ namespace VoiceCraft.Core
     {
         public const int Major = 1; //These need to be the same on both client and server!
         public const int Minor = 3; //These need to be the same on both client and server!
-        
+
         //Tick
         public const int TickRate = 50;
 
@@ -28,6 +28,7 @@ namespace VoiceCraft.Core
 
         //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
         public const int OutputBufferSizeMs = FrameSizeMs * 50;
+
         // Prefill buffer before we start releasing into the audio driver to prevent hitches.
         public const int PrefillBufferSizeMs = FrameSizeMs * 2;
 
@@ -41,7 +42,7 @@ namespace VoiceCraft.Core
 
         public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
         public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
-        
+
         public const int PrefillBufferSamples = SampleRate / 1000 * PrefillBufferSizeMs;
         public const int PrefillBufferBytes = BitDepth / 8 * Channels * PrefillBufferSamples;
         public const int PrefillBufferShorts = BitDepth / 16 * Channels * PrefillBufferSamples;

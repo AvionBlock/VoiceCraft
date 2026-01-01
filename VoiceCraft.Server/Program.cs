@@ -33,7 +33,7 @@ public static class Program
         serviceCollection.AddSingleton<VoiceCraftServer>();
         serviceCollection.AddSingleton<McWssServer>();
         serviceCollection.AddSingleton<McHttpServer>();
-        
+
         //Systems
         serviceCollection.AddSingleton<EventHandlerSystem>();
         serviceCollection.AddSingleton<AudioEffectSystem>();
@@ -53,13 +53,13 @@ public static class Program
         serviceCollection.AddSingleton<Command, UnmuteCommand>();
         serviceCollection.AddSingleton<Command, DeafenCommand>();
         serviceCollection.AddSingleton<Command, UndeafenCommand>();
-        
+
         //Other
         serviceCollection.AddSingleton<ServerProperties>();
         serviceCollection.AddSingleton<VoiceCraftWorld>();
         return serviceCollection.BuildServiceProvider();
     }
-    
+
     private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         try

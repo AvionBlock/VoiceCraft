@@ -10,15 +10,18 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         private readonly Dictionary<VoiceCraftEntity, BiQuadFilter> _biquadFilters =
             new Dictionary<VoiceCraftEntity, BiQuadFilter>();
+
         private float _wetDry = 1.0f;
-        
-        public EffectType EffectType => EffectType.Muffle;        
+
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
+
         public static int SampleRate => Constants.SampleRate;
+
+        public EffectType EffectType => EffectType.Muffle;
 
         public void Serialize(NetDataWriter writer)
         {

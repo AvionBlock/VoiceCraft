@@ -8,18 +8,25 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Client.Network;
 
-public class VoiceCraftClientEntity: VoiceCraftEntity
+public class VoiceCraftClientEntity : VoiceCraftEntity
 {
     private readonly OpusDecoder _decoder = new(Constants.SampleRate, Constants.Channels);
     private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(100));
+
     private readonly BufferedAudioProvider16 _outputBuffer = new(Constants.OutputBufferShorts)
         { DiscardOnOverflow = true };
 
-    private DateTime _lastPacket = DateTime.MinValue;
-    private bool _userMuted;
     private bool _isVisible;
+
+    private DateTime _lastPacket = DateTime.MinValue;
     private bool _speaking;
+    private bool _userMuted;
     private float _volume = 1f;
+
+    public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
+    {
+        Task.Run(TaskLogicAsync);
+    }
 
     public bool IsVisible
     {
@@ -63,7 +70,7 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
         {
             if (_speaking == value) return;
             _speaking = value;
-            if(value) OnStartedSpeaking?.Invoke(this);
+            if (value) OnStartedSpeaking?.Invoke(this);
             else OnStoppedSpeaking?.Invoke(this);
         }
     }
@@ -74,14 +81,9 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
     public event Action<VoiceCraftClientEntity>? OnStartedSpeaking;
     public event Action<VoiceCraftClientEntity>? OnStoppedSpeaking;
 
-    public VoiceCraftClientEntity(int id, VoiceCraftWorld world) : base(id, world)
-    {
-        Task.Run(TaskLogicAsync);
-    }
-
     public void ClearBuffer()
     {
-        lock(_outputBuffer)
+        lock (_outputBuffer)
         lock (_jitterBuffer)
         {
             _outputBuffer.Clear();
@@ -106,7 +108,7 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
                 Speaking = false;
                 return 0;
             }
-            
+
             Speaking = true;
             return read;
         }
@@ -167,10 +169,9 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
 
     private async Task TaskLogicAsync()
     {
-        var startTick = Environment.TickCount; 
+        var startTick = Environment.TickCount;
         var readBuffer = new short[Constants.ShortsPerFrame];
         while (!Destroyed)
-        {
             try
             {
                 var dist = (long)(startTick - Environment.TickCount); //Wraparound
@@ -179,16 +180,16 @@ public class VoiceCraftClientEntity: VoiceCraftEntity
                     await Task.Delay((int)dist).ConfigureAwait(false);
                     continue;
                 }
+
                 startTick += Constants.FrameSizeMs; //Step Forwards.
                 Array.Clear(readBuffer); //Clear Read Buffer.
                 var read = GetNextPacket(readBuffer);
                 if (read <= 0 || _userMuted) continue;
                 _outputBuffer.Write(readBuffer, Constants.BitDepth / 16 * Constants.Channels * read);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogService.Log(ex);
             }
-        }
     }
 }

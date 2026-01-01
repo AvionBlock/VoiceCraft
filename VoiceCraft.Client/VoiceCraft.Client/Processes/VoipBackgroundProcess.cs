@@ -26,9 +26,6 @@ public class VoipBackgroundProcess(
     private readonly VoiceCraftClient _voiceCraftClient = new();
     private IAudioPlayer? _audioPlayer;
 
-    //McWss
-    private McWssServer? _mcWssServer;
-
     //Audio
     private IAudioRecorder? _audioRecorder;
     private IDenoiser? _denoiser;
@@ -38,12 +35,15 @@ public class VoipBackgroundProcess(
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
 
+    //McWss
+    private McWssServer? _mcWssServer;
+
     private bool _stopping;
     private bool _stopRequested;
 
     //Displays
     private string _title = string.Empty;
- 
+
     //Public Variables
     public bool HasEnded { get; private set; }
 
@@ -76,15 +76,6 @@ public class VoipBackgroundProcess(
     //Events
     public event Action<string>? OnUpdateTitle;
     public event Action<string>? OnUpdateDescription;
-    public event Action? OnConnected;
-    public event Action? OnDisconnected;
-    public event Action<bool>? OnUpdateMute;
-    public event Action<bool>? OnUpdateDeafen;
-    public event Action<bool>? OnUpdateServerMute;
-    public event Action<bool>? OnUpdateServerDeafen;
-    public event Action<bool>? OnUpdateSpeaking;
-    public event Action<EntityViewModel>? OnEntityAdded;
-    public event Action<EntityViewModel>? OnEntityRemoved;
 
     public void Start(CancellationToken token)
     {
@@ -218,6 +209,16 @@ public class VoipBackgroundProcess(
         GC.SuppressFinalize(this);
     }
 
+    public event Action? OnConnected;
+    public event Action? OnDisconnected;
+    public event Action<bool>? OnUpdateMute;
+    public event Action<bool>? OnUpdateDeafen;
+    public event Action<bool>? OnUpdateServerMute;
+    public event Action<bool>? OnUpdateServerDeafen;
+    public event Action<bool>? OnUpdateSpeaking;
+    public event Action<EntityViewModel>? OnEntityAdded;
+    public event Action<EntityViewModel>? OnEntityRemoved;
+
     public void ToggleMute(bool value)
     {
         _voiceCraftClient.Muted = value;
@@ -332,12 +333,12 @@ public class VoipBackgroundProcess(
     {
         OnUpdateSpeaking?.Invoke(speaking);
     }
-    
+
     private void ClientOnServerMuteUpdated(bool mute)
     {
         OnUpdateServerMute?.Invoke(mute);
     }
-    
+
     private void ClientOnServerDeafenUpdated(bool deafen)
     {
         OnUpdateServerDeafen?.Invoke(deafen);

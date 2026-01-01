@@ -8,13 +8,14 @@ namespace VoiceCraft.Core.Audio.Effects
     public class DirectionalEffect : IAudioEffect
     {
         private float _wetDry = 1.0f;
-        
-        public EffectType EffectType => EffectType.Directional;
+
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
+
+        public EffectType EffectType => EffectType.Directional;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -41,7 +42,7 @@ namespace VoiceCraft.Core.Audio.Effects
             {
                 var outputLeft = data[i] * left;
                 var outputRight = data[i + 1] * right;
-                
+
                 data[i] = outputLeft * WetDry + data[i] * (1.0f - WetDry);
                 data[i + 1] = outputRight * WetDry + data[i + 1] * (1.0f - WetDry);
             }

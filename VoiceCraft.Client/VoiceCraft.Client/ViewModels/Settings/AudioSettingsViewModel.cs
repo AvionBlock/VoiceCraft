@@ -211,23 +211,20 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
         CleanupRecorder();
         CleanupPlayer();
     }
-    
+
     private static int AdjustVolume(Span<float> buffer, int count, float volume)
     {
-        for (var i = 0; i < count; i++)
-        {
-            buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
-        }
+        for (var i = 0; i < count; i++) buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
         return count;
     }
-    
+
     private static int Pcm16ToFloat(Span<short> buffer, int count, Span<float> destBuffer)
     {
         for (var i = 0; i < count; i++)
             destBuffer[i] = Math.Clamp(buffer[i] / (short.MaxValue + 1f), -1f, 1f);
         return count;
     }
-    
+
     private static int PcmFloatTo16(Span<float> floatBuffer, int count, Span<short> destBuffer)
     {
         for (var i = 0; i < count; i++)

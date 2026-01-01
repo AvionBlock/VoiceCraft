@@ -10,8 +10,8 @@ public class AudioSettings : Setting<AudioSettings>
     private Guid _echoCanceler = Guid.Empty;
 
     private string _inputDevice = "Default";
-    private string _outputDevice = "Default";
     private float _microphoneSensitivity = 0.04f;
+    private string _outputDevice = "Default";
     private float _outputVolume = 1.0f;
 
     public Guid AutomaticGainController

@@ -37,18 +37,18 @@
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Network.PositioningType}" />
-                    
+
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding PositioningTypes}"
-                              SelectedValue="{Binding NetworkSettings.PositioningType}"/>
-                    
+                              SelectedValue="{Binding NetworkSettings.PositioningType}" />
+
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Network.McWssListenIp}" />
-                    
+
                     <TextBox MaxLength="100" Text="{Binding NetworkSettings.McWssListenIp}" />
-                    
+
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
