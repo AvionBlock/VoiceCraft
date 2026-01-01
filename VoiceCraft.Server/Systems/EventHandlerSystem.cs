@@ -7,7 +7,6 @@ using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network;
 using VoiceCraft.Core.Network.McApiPackets.Event;
-using VoiceCraft.Core.Network.McApiPackets.Request;
 using VoiceCraft.Core.Network.VcPackets.Event;
 using VoiceCraft.Core.Network.VcPackets.Request;
 using VoiceCraft.Core.World;
