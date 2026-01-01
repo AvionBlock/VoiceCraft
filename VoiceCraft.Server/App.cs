@@ -139,18 +139,30 @@ public static class App
     {
         try
         {
-            if (_bufferedCommand != null)
-                await rootCommand.Parse(_bufferedCommand).InvokeAsync();
+            if (_bufferedCommand == null) return;
+            var parseResult = rootCommand.Parse(_bufferedCommand);
+            if (parseResult.Errors.Count == 0)
+            {
+                await parseResult.InvokeAsync();
+                return;
+            }
+
+            AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
+            foreach (var parseError in parseResult.Errors)
+            {
+                AnsiConsole.MarkupLine($"[red]{parseError}[/]");
+            }
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine(
-                $"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
+            AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
             AnsiConsole.WriteException(ex);
             LogService.Log(ex);
         }
-
-        _bufferedCommand = null;
+        finally
+        {
+            _bufferedCommand = null;
+        }
     }
 
     private static void StartCommandTask()
