@@ -193,21 +193,55 @@
       "Name": "stop",
       "Description": "Stopt de server."
     },
+    "Kick": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
+    },
     "Mute": {
       "Name": null,
-      "Description": null
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
     },
     "Unmute": {
       "Name": null,
-      "Description": null
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
     },
     "Deafen": {
       "Name": null,
-      "Description": null
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
     },
     "Undeafen": {
       "Name": null,
-      "Description": null
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
     }
   }
 }

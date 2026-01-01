@@ -193,21 +193,55 @@
       "Name": "stop",
       "Description": "停止伺服器."
     },
+    "Kick": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        }
+      }
+    },
     "Mute": {
-      "Name": "mute",
-      "Description": null
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        }
+      }
     },
     "Unmute": {
-      "Name": "unmute",
-      "Description": null
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        }
+      }
     },
     "Deafen": {
-      "Name": "deafen",
-      "Description": null
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        }
+      }
     },
     "Undeafen": {
-      "Name": "undeafen",
-      "Description": null
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "實體的 ID."
+        }
+      }
     }
   }
 }

@@ -53,6 +53,7 @@ public static class Program
         serviceCollection.AddSingleton<Command, UnmuteCommand>();
         serviceCollection.AddSingleton<Command, DeafenCommand>();
         serviceCollection.AddSingleton<Command, UndeafenCommand>();
+        serviceCollection.AddSingleton<Command, KickCommand>();
 
         //Other
         serviceCollection.AddSingleton<ServerProperties>();
