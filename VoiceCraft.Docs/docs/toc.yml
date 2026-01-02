@@ -2,3 +2,5 @@
   href: introduction.md
 - name: Server Properties
   href: server_properties.md
+- name: Bitmasking
+  href: bitmasking.md
