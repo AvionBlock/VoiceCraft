@@ -35,7 +35,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         try
         {
             var read = 0;
-            Parallel.ForEach(world.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible), x =>
+            Parallel.ForEach(world.Entities.OfType<VoiceCraftClientEntity>(), x =>
             {
                 var entityRead = ProcessEntityAudio(x, count, mixingBuffer);
                 _mutex.WaitOne();
