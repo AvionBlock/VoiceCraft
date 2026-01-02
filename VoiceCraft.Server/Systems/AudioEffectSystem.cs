@@ -3,9 +3,20 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Server.Systems;
 
-public class AudioEffectSystem : IResettable, IDisposable
+public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
+    private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
+
+    public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
+    {
+        get => _defaultAudioEffects;
+        set
+        {
+            _defaultAudioEffects = value;
+            Reset();
+        }
+    }
 
     public IEnumerable<KeyValuePair<ushort, IAudioEffect>> Effects => _audioEffects;
 
@@ -16,12 +27,13 @@ public class AudioEffectSystem : IResettable, IDisposable
         GC.SuppressFinalize(this);
     }
 
+    public event Action<ushort, IAudioEffect?>? OnEffectSet;
+
     public void Reset()
     {
         ClearEffects();
+        foreach (var effect in _defaultAudioEffects) SetEffect(effect.Key, effect.Value);
     }
-
-    public event Action<ushort, IAudioEffect?>? OnEffectSet;
 
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
@@ -36,11 +48,11 @@ public class AudioEffectSystem : IResettable, IDisposable
                 return;
         }
 
-        if(!_audioEffects.TryAdd(bitmask, effect))
+        if (!_audioEffects.TryAdd(bitmask, effect))
             _audioEffects[bitmask] = effect;
         OnEffectSet?.Invoke(bitmask, effect);
     }
-    
+
     public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
     {
         lock (_audioEffects)

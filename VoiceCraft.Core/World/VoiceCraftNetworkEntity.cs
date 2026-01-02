@@ -6,10 +6,9 @@ namespace VoiceCraft.Core.World
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
-        //Events
-        public event Action<string, VoiceCraftNetworkEntity>? OnSetTitle;
-        public event Action<string, VoiceCraftNetworkEntity>? OnSetDescription;
-        
+        private bool _serverDeafened;
+        private bool _serverMuted;
+
         public VoiceCraftNetworkEntity(
             NetPeer netPeer,
             int id,
@@ -17,6 +16,8 @@ namespace VoiceCraft.Core.World
             Guid serverUserGuid,
             string locale,
             PositioningType positioningType,
+            bool serverMuted,
+            bool serverDeafened,
             VoiceCraftWorld world) : base(id, world)
         {
             Name = "New Client";
@@ -25,6 +26,8 @@ namespace VoiceCraft.Core.World
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
+            ServerMuted = serverMuted;
+            ServerDeafened = serverDeafened;
         }
 
         public NetPeer NetPeer { get; }
@@ -32,6 +35,34 @@ namespace VoiceCraft.Core.World
         public Guid ServerUserGuid { get; private set; }
         public string Locale { get; private set; }
         public PositioningType PositioningType { get; }
+
+        public bool ServerMuted
+        {
+            get => _serverMuted;
+            set
+            {
+                if (_serverMuted == value) return;
+                _serverMuted = value;
+                OnServerMuteUpdated?.Invoke(_serverMuted, this);
+            }
+        }
+
+        public bool ServerDeafened
+        {
+            get => _serverDeafened;
+            set
+            {
+                if (_serverDeafened == value) return;
+                _serverDeafened = value;
+                OnServerDeafenUpdated?.Invoke(_serverDeafened, this);
+            }
+        }
+
+        //Events
+        public event Action<string, VoiceCraftNetworkEntity>? OnSetTitle;
+        public event Action<string, VoiceCraftNetworkEntity>? OnSetDescription;
+        public event Action<bool, VoiceCraftNetworkEntity>? OnServerMuteUpdated;
+        public event Action<bool, VoiceCraftNetworkEntity>? OnServerDeafenUpdated;
 
         public void SetTitle(string title)
         {
@@ -55,6 +86,8 @@ namespace VoiceCraft.Core.World
             EffectBitmask = ushort.MaxValue;
             TalkBitmask = ushort.MaxValue;
             ListenBitmask = ushort.MaxValue;
+            ServerMuted = false;
+            ServerDeafened = false;
         }
 
         public override void Destroy()
@@ -62,6 +95,8 @@ namespace VoiceCraft.Core.World
             base.Destroy();
             OnSetTitle = null;
             OnSetDescription = null;
+            OnServerMuteUpdated = null;
+            OnServerDeafenUpdated = null;
         }
     }
 }

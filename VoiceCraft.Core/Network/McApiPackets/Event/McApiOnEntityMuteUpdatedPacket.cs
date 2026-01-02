@@ -2,13 +2,13 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnMuteUpdatedPacket : IMcApiPacket
+    public class McApiOnEntityMuteUpdatedPacket : IMcApiPacket
     {
-        public McApiOnMuteUpdatedPacket() : this(0, false)
+        public McApiOnEntityMuteUpdatedPacket() : this(0, false)
         {
         }
 
-        public McApiOnMuteUpdatedPacket(int id, bool value)
+        public McApiOnEntityMuteUpdatedPacket(int id, bool value)
         {
             Id = id;
             Value = value;
@@ -31,7 +31,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = reader.GetBool();
         }
 
-        public McApiOnMuteUpdatedPacket Set(int id = 0, bool value = false)
+        public McApiOnEntityMuteUpdatedPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;

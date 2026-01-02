@@ -1,10 +1,9 @@
 using System.Net;
+using System.Net.Sockets;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio.Effects;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.Network.VcPackets;
 using VoiceCraft.Core.Network.VcPackets.Request;
@@ -15,22 +14,21 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server.Servers;
 
-public class VoiceCraftServer : IResettable, IDisposable
+public class VoiceCraftServer : IDisposable, INetEventListener
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
 
-    //Networking
-    private readonly NetDataWriter _dataWriter = new();
-    private readonly EventBasedNetListener _listener = new();
-    private readonly NetManager _netManager;
-
     //Systems
     private readonly AudioEffectSystem _audioEffectSystem;
+
+    //Networking
+    private readonly NetDataWriter _dataWriter = new();
+    private readonly NetManager _netManager;
     private bool _isDisposed;
 
     public VoiceCraftServer(AudioEffectSystem audioEffectSystem, VoiceCraftWorld world)
     {
-        _netManager = new NetManager(_listener)
+        _netManager = new NetManager(this)
         {
             AutoRecycle = true,
             UnconnectedMessagesEnabled = true
@@ -38,15 +36,6 @@ public class VoiceCraftServer : IResettable, IDisposable
 
         _audioEffectSystem = audioEffectSystem;
         World = world;
-
-        _audioEffectSystem.SetEffect(1, new VisibilityEffect());
-        _audioEffectSystem.SetEffect(2, new ProximityEffect() { MaxRange = 30 });
-        _audioEffectSystem.SetEffect(4, new ProximityEchoEffect() { Range = 30 });
-        _audioEffectSystem.SetEffect(8, new ProximityMuffleEffect());
-        _listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
-        _listener.ConnectionRequestEvent += OnConnectionRequest;
-        _listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
-        _listener.NetworkReceiveUnconnectedEvent += OnNetworkReceiveUnconnectedEvent;
     }
 
     //Public Properties
@@ -59,10 +48,83 @@ public class VoiceCraftServer : IResettable, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void Reset()
+    //Network Handling
+    public void OnPeerConnected(NetPeer peer)
     {
-        World.Reset();
-        _audioEffectSystem.Reset();
+        //Do nothing.
+    }
+
+    public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
+    {
+        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Destroyed) return;
+        World.DestroyEntity(networkEntity.Id);
+    }
+
+    public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
+    {
+        //Do nothing.
+    }
+
+    public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber,
+        DeliveryMethod deliveryMethod)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessPacket(pt, reader, peer);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader,
+        UnconnectedMessageType messageType)
+    {
+        try
+        {
+            var packetType = reader.GetByte();
+            var pt = (VcPacketType)packetType;
+            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
+    }
+
+    public void OnNetworkLatencyUpdate(NetPeer peer, int latency)
+    {
+        //Do nothing
+    }
+
+    public void OnConnectionRequest(ConnectionRequest request)
+    {
+        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.ServerFull");
+            return;
+        }
+
+        if (request.Data.IsNull)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Kicked");
+            return;
+        }
+
+        try
+        {
+            var loginPacket = PacketPool<VcLoginRequestPacket>.GetPacket();
+            loginPacket.Deserialize(request.Data);
+            HandleLoginRequestPacket(loginPacket, request);
+        }
+        catch (Exception ex)
+        {
+            RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
+            LogService.Log(ex);
+        }
     }
 
     ~VoiceCraftServer()
@@ -240,80 +302,9 @@ public class VoiceCraftServer : IResettable, IDisposable
     private void Dispose(bool disposing)
     {
         if (_isDisposed) return;
-        if (disposing)
-        {
-            _netManager.Stop();
-            _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
-            _listener.ConnectionRequestEvent -= OnConnectionRequest;
-            _listener.NetworkReceiveEvent -= OnNetworkReceiveEvent;
-            _listener.NetworkReceiveUnconnectedEvent -= OnNetworkReceiveUnconnectedEvent;
-        }
+        if (disposing) _netManager.Stop();
 
         _isDisposed = true;
-    }
-
-    //Network Events
-    private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
-    {
-        if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
-        World.DestroyEntity(networkEntity.Id);
-    }
-
-    private void OnConnectionRequest(ConnectionRequest request)
-    {
-        if (_netManager.ConnectedPeersCount >= Config.MaxClients)
-        {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.ServerFull");
-            return;
-        }
-
-        if (request.Data.IsNull)
-        {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.Kicked");
-            return;
-        }
-
-        try
-        {
-            var loginPacket = PacketPool<VcLoginRequestPacket>.GetPacket();
-            loginPacket.Deserialize(request.Data);
-            HandleLoginRequestPacket(loginPacket, request);
-        }
-        catch (Exception ex)
-        {
-            RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
-            LogService.Log(ex);
-        }
-    }
-
-    private static void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
-        DeliveryMethod deliveryMethod)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessPacket(pt, reader, peer);
-        }
-        catch (Exception ex)
-        {
-            LogService.Log(ex);
-        }
-    }
-
-    private void OnNetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
-        UnconnectedMessageType messageType)
-    {
-        try
-        {
-            var packetType = reader.GetByte();
-            var pt = (VcPacketType)packetType;
-            ProcessUnconnectedPacket(pt, reader, remoteEndPoint);
-        }
-        catch (Exception ex)
-        {
-            LogService.Log(ex);
-        }
     }
 
     //Packet Handling
@@ -392,7 +383,6 @@ public class VoiceCraftServer : IResettable, IDisposable
             }
 
             if (packet.PositioningType != Config.PositioningType)
-            {
                 switch (Config.PositioningType)
                 {
                     case PositioningType.Server:
@@ -405,12 +395,12 @@ public class VoiceCraftServer : IResettable, IDisposable
                         RejectRequest(request, "VoiceCraft.DisconnectReason.Error");
                         return;
                 }
-            }
 
             var peer = request.Accept();
             try
             {
-                World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType);
+                World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType,
+                    false, false);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
             catch (Exception ex)
@@ -431,8 +421,7 @@ public class VoiceCraftServer : IResettable, IDisposable
         {
             SendUnconnectedPacket(remoteEndPoint,
                 PacketPool<VcInfoResponsePacket>.GetPacket().Set(Config.Motd, _netManager.ConnectedPeersCount,
-                    Config.PositioningType,
-                    packet.Tick));
+                    Config.PositioningType, packet.Tick, Version));
         }
         finally
         {
@@ -457,7 +446,8 @@ public class VoiceCraftServer : IResettable, IDisposable
     {
         try
         {
-            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity) return;
+            if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Muted ||
+                networkEntity.ServerMuted) return;
             networkEntity.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
         }
         finally

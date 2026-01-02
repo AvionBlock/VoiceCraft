@@ -38,7 +38,7 @@ public partial class EditServerViewModel(
             Server.Name = EditableServer.Name;
             Server.Ip = EditableServer.Ip;
             Server.Port = EditableServer.Port;
-            
+
             notificationService.SendNotification(Localizer.Get($"Notification.Servers.Edited:{Server.Name}"),
                 Localizer.Get("Notification.Servers.Badge"));
             EditableServer = new Server();

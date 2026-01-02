@@ -3,13 +3,13 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
-    public class McApiOnRotationUpdatedPacket : IMcApiPacket
+    public class McApiOnEntityRotationUpdatedPacket : IMcApiPacket
     {
-        public McApiOnRotationUpdatedPacket() : this(0, Vector2.Zero)
+        public McApiOnEntityRotationUpdatedPacket() : this(0, Vector2.Zero)
         {
         }
 
-        public McApiOnRotationUpdatedPacket(int id, Vector2 value)
+        public McApiOnEntityRotationUpdatedPacket(int id, Vector2 value)
         {
             Id = id;
             Value = value;
@@ -33,7 +33,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Value = new Vector2(reader.GetFloat(), reader.GetFloat());
         }
 
-        public McApiOnRotationUpdatedPacket Set(int id = 0, Vector2 value = new Vector2())
+        public McApiOnEntityRotationUpdatedPacket Set(int id = 0, Vector2 value = new Vector2())
         {
             Id = id;
             Value = value;

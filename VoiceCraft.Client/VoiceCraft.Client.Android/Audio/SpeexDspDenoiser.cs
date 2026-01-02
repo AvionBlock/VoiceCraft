@@ -20,7 +20,8 @@ public class SpeexDspDenoiser : IDenoiser
 
         CleanupDenoiser();
 
-        _denoiser = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * recorder.SampleRate / 1000, recorder.SampleRate);
+        _denoiser = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * recorder.SampleRate / 1000,
+            recorder.SampleRate);
 
         var @false = 0;
         var @true = 1;

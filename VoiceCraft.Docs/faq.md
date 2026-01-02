@@ -8,7 +8,8 @@ To find the IP address and port for your server.
 
 # [Local Network](#tab/localNetwork)
 
-You can type `ipconfig` in terminal and locate the IPV4 address (Windows). Your port is given to you in VoiceCraft console.
+You can type `ipconfig`(windows) or `ifconfig`(linux) in terminal and locate the IPV4 address. Your port is given to you 
+in VoiceCraft console.
 
 # [Internet Network](#tab/internetNetwork)
 
@@ -18,7 +19,7 @@ You can find your IP address at https://whatismyipaddress.com/. You must visit t
 
 ## Does VoiceCraft work on mobile?
 
-**YES** it does, iOS and Android 6+ are supported.
+**YES** it does, iOS (soon) and Android 6+ are supported.
 
 ## Do all players have to download the app for it to work?
 

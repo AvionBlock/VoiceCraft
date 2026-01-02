@@ -88,7 +88,8 @@ public class NativeBackgroundService : BackgroundService
             "Notifications are required to show running background processes and errors.");
 
         if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
-                "Microphone access is required to properly run the background worker.") != PermissionStatus.Granted) return false;
+                "Microphone access is required to properly run the background worker.") !=
+            PermissionStatus.Granted) return false;
 
         var context = Application.Context;
         var intent = new Intent(context, typeof(AndroidBackgroundService));

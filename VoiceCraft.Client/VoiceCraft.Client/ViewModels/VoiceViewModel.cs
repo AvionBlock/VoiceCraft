@@ -16,6 +16,8 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
+    [ObservableProperty] private bool _isServerDeafened;
+    [ObservableProperty] private bool _isServerMuted;
     [ObservableProperty] private bool _isSpeaking;
     private VoipBackgroundProcess? _process;
     [ObservableProperty] private EntityViewModel? _selectedEntity;
@@ -33,6 +35,8 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
             _process.OnUpdateTitle -= OnUpdateTitle;
             _process.OnUpdateMute -= OnUpdateMute;
             _process.OnUpdateDeafen -= OnUpdateDeafen;
+            _process.OnUpdateServerMute -= OnUpdateServerMute;
+            _process.OnUpdateServerDeafen -= OnUpdateServerDeafen;
             _process.OnUpdateSpeaking -= OnUpdateSpeaking;
             _process.OnEntityAdded -= OnEntityAdded;
             _process.OnEntityRemoved -= OnEntityRemoved;
@@ -91,6 +95,8 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
         _process.OnUpdateDescription += OnUpdateDescription;
         _process.OnUpdateMute += OnUpdateMute;
         _process.OnUpdateDeafen += OnUpdateDeafen;
+        _process.OnUpdateServerMute += OnUpdateServerMute;
+        _process.OnUpdateServerDeafen += OnUpdateServerDeafen;
         _process.OnUpdateSpeaking += OnUpdateSpeaking;
         _process.OnEntityAdded += OnEntityAdded;
         _process.OnEntityRemoved += OnEntityRemoved;
@@ -122,6 +128,8 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
                 _process.OnUpdateDescription -= OnUpdateDescription;
                 _process.OnUpdateMute -= OnUpdateMute;
                 _process.OnUpdateDeafen -= OnUpdateDeafen;
+                _process.OnUpdateServerMute -= OnUpdateServerMute;
+                _process.OnUpdateServerDeafen -= OnUpdateServerDeafen;
                 _process.OnUpdateSpeaking -= OnUpdateSpeaking;
                 _process.OnEntityAdded -= OnEntityAdded;
                 _process.OnEntityRemoved -= OnEntityRemoved;
@@ -139,6 +147,16 @@ public partial class VoiceViewModel(NavigationService navigationService) : ViewM
     private void OnUpdateDeafen(bool deafened)
     {
         Dispatcher.UIThread.Invoke(() => { IsDeafened = deafened; });
+    }
+
+    private void OnUpdateServerMute(bool muted)
+    {
+        Dispatcher.UIThread.Invoke(() => { IsServerMuted = muted; });
+    }
+
+    private void OnUpdateServerDeafen(bool deafened)
+    {
+        Dispatcher.UIThread.Invoke(() => { IsServerDeafened = deafened; });
     }
 
     private void OnUpdateSpeaking(bool speaking)

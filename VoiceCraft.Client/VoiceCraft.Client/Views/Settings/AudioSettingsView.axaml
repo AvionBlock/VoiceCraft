@@ -97,6 +97,19 @@
                     </StackPanel>
 
                     <StackPanel>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                       Text="{locale:Localize Settings.Audio.OutputVolume}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       Text="{Binding AudioSettings.OutputVolume, StringFormat='{} {0:P0}'}" />
+                        </Grid>
+
+                        <Slider Maximum="2.0"
+                                Minimum="0.0"
+                                Value="{Binding AudioSettings.OutputVolume}" />
+                    </StackPanel>
+
+                    <StackPanel>
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="15"

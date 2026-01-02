@@ -20,7 +20,8 @@ public class SpeexDspAutomaticGainController : IAutomaticGainController
 
         CleanupGainController();
 
-        _gainController = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * recorder.SampleRate / 1000, recorder.SampleRate);
+        _gainController = new SpeexDSPPreprocessor(recorder.BufferMilliseconds * recorder.SampleRate / 1000,
+            recorder.SampleRate);
 
         var @false = 0;
         var @true = 1;

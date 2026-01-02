@@ -80,6 +80,7 @@
       "EchoCancelers": "Echo-onderdrukkers",
       "InputDevices": "Invoerapparaten",
       "MicrophoneSensitivity": "Microfoon gevoeligheid",
+      "OutputVolume": null,
       "OutputDevices": "Uitvoerapparaten",
       "TestOutput": "Uitvoer testen",
       "MicrophoneTest": {
@@ -119,6 +120,7 @@
         "Motd": "Motd: {0}",
         "PositioningType": "Positioneringstype: {0}",
         "ConnectedClients": "Verbonden clients: {0}",
+        "Version": null,
         "Pinging": "Pingen..."
       }
     }

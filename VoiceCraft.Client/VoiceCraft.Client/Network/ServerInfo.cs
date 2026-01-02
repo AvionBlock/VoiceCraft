@@ -1,3 +1,4 @@
+using System;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Network.VcPackets.Response;
 
@@ -9,6 +10,7 @@ public struct ServerInfo
     public int Clients { get; set; }
     public PositioningType PositioningType { get; set; }
     public int Tick { get; set; }
+    public Version Version { get; set; }
 
     public ServerInfo(VcInfoResponsePacket infoPacket)
     {
@@ -16,5 +18,6 @@ public struct ServerInfo
         Clients = infoPacket.Clients;
         PositioningType = infoPacket.PositioningType;
         Tick = infoPacket.Tick;
+        Version = infoPacket.Version;
     }
 }

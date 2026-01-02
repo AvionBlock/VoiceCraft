@@ -192,6 +192,56 @@
     "Stop": {
       "Name": "stop",
       "Description": "Stops the server."
+    },
+    "Kick": {
+      "Name": "kick",
+      "Description": "Kicks a client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "Mutes an entity/client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "Unmutes an entity/client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "Deafens an entity/client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "Undeafens an entity/client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "The entity's id."
+        }
+      }
     }
   }
 }

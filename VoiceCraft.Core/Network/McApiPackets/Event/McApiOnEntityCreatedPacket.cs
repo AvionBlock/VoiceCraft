@@ -7,8 +7,21 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
 {
     public class McApiOnEntityCreatedPacket : IMcApiPacket
     {
-        public McApiOnEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, string.Empty, string.Empty, false, false,
-            0, 0, 0, Vector3.Zero, Vector2.Zero, 0.0f, 0.0f)
+        public McApiOnEntityCreatedPacket() : this(
+            0,
+            0.0f,
+            DateTime.MinValue,
+            string.Empty,
+            string.Empty,
+            false,
+            false,
+            0,
+            0,
+            0,
+            Vector3.Zero,
+            Vector2.Zero,
+            0.0f,
+            0.0f)
         {
         }
 

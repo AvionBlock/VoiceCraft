@@ -189,9 +189,55 @@
         }
       }
     },
-    "Stop": {
-      "Name": "stop",
-      "Description": "停止服务器."
+    "Kick": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        }
+      }
+    },
+    "Mute": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": null,
+      "Description": null,
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "实体的 ID."
+        }
+      }
     }
   }
 }

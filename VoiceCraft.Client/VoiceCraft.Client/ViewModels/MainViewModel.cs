@@ -14,7 +14,8 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
-        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService, HotKeyService hotKeyService)
+        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService,
+        HotKeyService hotKeyService)
     {
         themesService.OnBackgroundImageChanged += backgroundImage =>
         {

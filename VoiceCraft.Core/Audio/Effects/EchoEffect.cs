@@ -10,28 +10,37 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
+
         private float _delay;
         private float _wetDry = 1.0f;
+        private float _feedback = 0.5f;
 
         public EchoEffect()
         {
             Delay = 0.5f;
         }
-        
-        public EffectType EffectType => EffectType.Echo;
+
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
+
         public static int SampleRate => Constants.SampleRate;
+
         public float Delay
         {
             get => _delay / SampleRate;
-            set => _delay = SampleRate * value;
+            set => _delay = SampleRate * Math.Clamp(value, 0.0f, 10.0f);
         }
 
-        public float Feedback { get; set; } = 0.5f;
+        public float Feedback
+        {
+            get => _feedback;
+            set => _feedback = Math.Clamp(value, 0.0f, 1.0f);
+        }
+
+    public EffectType EffectType => EffectType.Echo;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -47,7 +56,8 @@ namespace VoiceCraft.Core.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
+            int count)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)

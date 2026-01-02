@@ -6,21 +6,21 @@ namespace VoiceCraft.Client.Services;
 
 public abstract class HotKeyService : IDisposable
 {
-    public Dictionary<string, HotKeyAction> HotKeyActions { get; } = new();
-
     public HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions)
     {
         foreach (var registeredHotKeyAction in registeredHotKeyActions)
             HotKeyActions.Add(registeredHotKeyAction.DefaultKeyCombo, registeredHotKeyAction);
     }
 
-    public abstract void Initialize();
+    public Dictionary<string, HotKeyAction> HotKeyActions { get; } = new();
 
     public virtual void Dispose()
     {
         //We do nothing by default
         GC.SuppressFinalize(this);
     }
+
+    public abstract void Initialize();
 }
 
 public abstract class HotKeyAction

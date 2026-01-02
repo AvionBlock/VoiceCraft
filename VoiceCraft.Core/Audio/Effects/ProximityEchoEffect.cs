@@ -11,27 +11,37 @@ namespace VoiceCraft.Core.Audio.Effects
     {
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines =
             new Dictionary<VoiceCraftEntity, FractionalDelayLine>();
+
         private float _delay;
         private float _wetDry = 1.0f;
+        private float _range;
 
         public ProximityEchoEffect()
         {
             Delay = 0.5f;
         }
+
+        public static int SampleRate => Constants.SampleRate;
         
-        public EffectType EffectType => EffectType.ProximityEcho;
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
-        public static int SampleRate => Constants.SampleRate;
+
         public float Delay
         {
             get => _delay / SampleRate;
-            set => _delay = SampleRate * value;
+            set => _delay = SampleRate * Math.Clamp(value, 0.0f, 10.0f);
         }
-        public float Range { get; set; }
+
+        public float Range
+        {
+            get => _range;
+            set => _range = Math.Max(value, 0.0f);
+        }
+
+        public EffectType EffectType => EffectType.ProximityEcho;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -47,27 +57,28 @@ namespace VoiceCraft.Core.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
+            int count)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
                 return; //There may still be echo from the entity itself but that will phase out over time.
-            
+
             var factor = 0f;
             if (Range != 0)
             {
                 var range = Math.Clamp(Vector3.Distance(from.Position, to.Position) / Range, 0.0f,
-                    1.0f); //The range at which the echo will take effect.
+                    0.9f); //The range at which the echo will take effect. Never set to 1.0 as it may cause infinite echo.
                 factor = Math.Max(from.CaveFactor, to.CaveFactor) * range;
             }
-            
+
             var delayLine = GetOrCreateDelayLine(from);
             delayLine.Ensure(SampleRate, Delay);
 
             for (var i = 0; i < count; i++)
             {
-                var delayed = delayLine.Read(_delay);
-                var output = data[i] + delayed * factor;
+                var delayed = delayLine.Read(_delay) * factor;
+                var output = data[i] + delayed;
                 delayLine.Write(output);
                 data[i] = output * WetDry + data[i] * (1.0f - WetDry);
             }

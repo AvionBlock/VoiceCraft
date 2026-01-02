@@ -24,7 +24,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Request
 
         public void Deserialize(NetDataReader reader)
         {
-            Value = reader.GetUShort();
+            Value = reader.GetFloat();
         }
 
         public VcSetMuffleFactorRequest Set(float value = 0.0f)

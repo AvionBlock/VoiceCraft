@@ -17,11 +17,11 @@ namespace VoiceCraft.Server.Systems;
 public class EventHandlerSystem : IDisposable
 {
     private readonly AudioEffectSystem _audioEffectSystem;
-    private readonly VoiceCraftServer _server;
-    private readonly McWssServer _mcWssServer;
     private readonly McHttpServer _mcHttpServer;
-    private readonly VoiceCraftWorld _world;
+    private readonly McWssServer _mcWssServer;
+    private readonly VoiceCraftServer _server;
     private readonly ConcurrentQueue<Action> _tasks = [];
+    private readonly VoiceCraftWorld _world;
 
     public EventHandlerSystem(
         VoiceCraftServer server,
@@ -93,6 +93,8 @@ public class EventHandlerSystem : IDisposable
         {
             netEntity.OnSetTitle += OnNetworkEntitySetTitle;
             netEntity.OnSetDescription += OnNetworkEntitySetDescription;
+            netEntity.OnServerMuteUpdated += OnNetworkEntityServerMuteUpdated;
+            netEntity.OnServerDeafenUpdated += OnNetworkEntityServerDeafenUpdated;
         }
 
         newEntity.OnWorldIdUpdated += OnEntityWorldIdUpdated;
@@ -116,6 +118,10 @@ public class EventHandlerSystem : IDisposable
             {
                 _server.SendPacket(networkEntity.NetPeer,
                     PacketPool<VcSetNameRequestPacket>.GetPacket().Set(networkEntity.Name));
+                _server.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcSetServerMuteRequestPacket>.GetPacket().Set(networkEntity.ServerMuted));
+                _server.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(networkEntity.ServerDeafened));
                 _server.Broadcast(PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity),
                     DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
                 _mcWssServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
@@ -128,14 +134,12 @@ public class EventHandlerSystem : IDisposable
 
                 //Send other entities.
                 foreach (var entity in _world.Entities.Where(x => x != networkEntity))
-                {
                     if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
                         _server.SendPacket(networkEntity.NetPeer,
                             PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
                     else
                         _server.SendPacket(networkEntity.NetPeer,
                             PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(entity));
-                }
 
                 AnsiConsole.MarkupLine(
                     $"[green]{Localizer.Get($"Events.Client.Connected:{networkEntity.UserGuid}")}[/]");
@@ -155,6 +159,8 @@ public class EventHandlerSystem : IDisposable
         {
             netEntity.OnSetTitle -= OnNetworkEntitySetTitle;
             netEntity.OnSetDescription -= OnNetworkEntitySetDescription;
+            netEntity.OnServerMuteUpdated -= OnNetworkEntityServerMuteUpdated;
+            netEntity.OnServerDeafenUpdated -= OnNetworkEntityServerDeafenUpdated;
         }
 
         entity.OnWorldIdUpdated -= OnEntityWorldIdUpdated;
@@ -194,25 +200,17 @@ public class EventHandlerSystem : IDisposable
         {
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
-            {
                 _mcWssServer.SendPacket(peer,
                     PacketPool<McApiOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
-            }
 
             //Send other entities.
             foreach (var entity in _world.Entities)
-            {
                 if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                {
                     _mcWssServer.SendPacket(peer,
                         PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
-                }
                 else
-                {
                     _mcWssServer.SendPacket(peer,
                         PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
-                }
-            }
 
             AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{token}")}[/]");
         });
@@ -232,25 +230,17 @@ public class EventHandlerSystem : IDisposable
         {
             //Send Effects
             foreach (var effect in _audioEffectSystem.Effects)
-            {
                 _mcHttpServer.SendPacket(peer,
                     PacketPool<McApiOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
-            }
 
             //Send other entities.
             foreach (var entity in _world.Entities)
-            {
                 if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                {
                     _mcHttpServer.SendPacket(peer,
                         PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
-                }
                 else
-                {
                     _mcHttpServer.SendPacket(peer,
                         PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
-                }
-            }
 
             AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{token}")}[/]");
         });
@@ -282,12 +272,38 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
+    private void OnNetworkEntityServerMuteUpdated(bool muted, VoiceCraftNetworkEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(entity.NetPeer, PacketPool<VcSetServerMuteRequestPacket>.GetPacket().Set(muted));
+            _server.Broadcast(PacketPool<VcOnEntityServerMuteUpdatedPacket>.GetPacket().Set(entity.Id, muted),
+                DeliveryMethod.ReliableOrdered, entity.NetPeer);
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityServerMuteUpdatedPacket>.GetPacket().Set(entity.Id, muted));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityServerMuteUpdatedPacket>.GetPacket().Set(entity.Id, muted));
+        });
+    }
+
+    private void OnNetworkEntityServerDeafenUpdated(bool deafened, VoiceCraftNetworkEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
+            _server.SendPacket(entity.NetPeer, PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(deafened));
+            _server.Broadcast(PacketPool<VcOnEntityServerDeafenUpdatedPacket>.GetPacket().Set(entity.Id, deafened),
+                DeliveryMethod.ReliableOrdered, entity.NetPeer);
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.GetPacket()
+                .Set(entity.Id, deafened));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.GetPacket()
+                .Set(entity.Id, deafened));
+        });
+    }
+
     private void OnEntityWorldIdUpdated(string worldId, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
-            _mcWssServer.Broadcast(PacketPool<McApiOnWorldIdUpdatedPacket>.GetPacket().Set(entity.Id, worldId));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnWorldIdUpdatedPacket>.GetPacket().Set(entity.Id, worldId));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityWorldIdUpdatedPacket>.GetPacket().Set(entity.Id, worldId));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityWorldIdUpdatedPacket>.GetPacket().Set(entity.Id, worldId));
         });
     }
 
@@ -303,10 +319,12 @@ public class EventHandlerSystem : IDisposable
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
+            {
                 _server.Broadcast(packet);
+            }
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnNameUpdatedPacket>.GetPacket().Set(entity.Id, name));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnNameUpdatedPacket>.GetPacket().Set(entity.Id, name));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityNameUpdatedPacket>.GetPacket().Set(entity.Id, name));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityNameUpdatedPacket>.GetPacket().Set(entity.Id, name));
         });
     }
 
@@ -316,14 +334,12 @@ public class EventHandlerSystem : IDisposable
         {
             var packet = PacketPool<VcOnEntityMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute);
             if (entity is VoiceCraftNetworkEntity networkEntity)
-            {
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
-            }
             else
                 _server.Broadcast(packet);
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityMuteUpdatedPacket>.GetPacket().Set(entity.Id, mute));
         });
     }
 
@@ -333,9 +349,7 @@ public class EventHandlerSystem : IDisposable
         {
             var packet = PacketPool<VcOnEntityDeafenUpdatedPacket>.GetPacket().Set(entity.Id, deafen);
             if (entity is VoiceCraftNetworkEntity networkEntity)
-            {
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
-            }
             else
                 _server.Broadcast(packet);
 
@@ -356,10 +370,14 @@ public class EventHandlerSystem : IDisposable
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
+            {
                 _server.Broadcast(packet);
+            }
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
+            _mcWssServer.Broadcast(
+                PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, bitmask));
         });
     }
 
@@ -375,10 +393,14 @@ public class EventHandlerSystem : IDisposable
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
+            {
                 _server.Broadcast(packet);
+            }
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnListenBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnListenBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, bitmask));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket()
+                .Set(entity.Id, bitmask));
         });
     }
 
@@ -394,7 +416,9 @@ public class EventHandlerSystem : IDisposable
                 _server.Broadcast(packet, DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
             }
             else
+            {
                 _server.Broadcast(packet);
+            }
 
             _mcWssServer.Broadcast(PacketPool<McApiOnEffectBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
             _mcHttpServer.Broadcast(PacketPool<McApiOnEffectBitmaskUpdatedPacket>.GetPacket().Set(entity.Id, bitmask));
@@ -417,8 +441,9 @@ public class EventHandlerSystem : IDisposable
                 _server.SendPacket(visibleEntity.NetPeer, packet);
             }
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnPositionUpdatedPacket>.GetPacket().Set(entity.Id, position));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnPositionUpdatedPacket>.GetPacket().Set(entity.Id, position));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket().Set(entity.Id, position));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket()
+                .Set(entity.Id, position));
         });
     }
 
@@ -437,8 +462,9 @@ public class EventHandlerSystem : IDisposable
                 _server.SendPacket(visibleEntity.NetPeer, packet);
             }
 
-            _mcWssServer.Broadcast(PacketPool<McApiOnRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation));
-            _mcHttpServer.Broadcast(PacketPool<McApiOnRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation));
+            _mcWssServer.Broadcast(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket().Set(entity.Id, rotation));
+            _mcHttpServer.Broadcast(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket()
+                .Set(entity.Id, rotation));
         });
     }
 
@@ -539,7 +565,8 @@ public class EventHandlerSystem : IDisposable
         {
             foreach (var ve in entity.VisibleEntities)
             {
-                if (ve is not VoiceCraftNetworkEntity visibleEntity || ve == entity || visibleEntity.Deafened) continue;
+                if (ve is not VoiceCraftNetworkEntity visibleEntity || ve == entity || visibleEntity.Deafened ||
+                    visibleEntity.ServerDeafened) continue;
                 var packet = PacketPool<VcOnEntityAudioReceivedPacket>.GetPacket()
                     .Set(entity.Id, timestamp, frameLoudness, data.Length, data);
                 _server.SendPacket(visibleEntity.NetPeer, packet, DeliveryMethod.Unreliable);

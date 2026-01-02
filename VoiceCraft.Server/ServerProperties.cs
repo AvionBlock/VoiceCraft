@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
+using VoiceCraft.Core.Audio.Effects;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Server.Config;
 
@@ -12,10 +14,12 @@ public class ServerProperties
     private const string ConfigPath = "config";
 
     private ServerPropertiesStructure _properties = new();
+    private Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig => _properties.DefaultAudioEffectsConfig;
 
     public VoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
     public McWssConfig McWssConfig => _properties.McWssConfig;
     public McHttpConfig McHttpConfig => _properties.McHttpConfig;
+    public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
     public void Load()
     {
@@ -24,12 +28,14 @@ public class ServerProperties
         {
             AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
+            ParseAudioEffects();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
             return;
         }
 
         var file = files[0];
         _properties = LoadFile(file);
+        ParseAudioEffects();
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
     }
 
@@ -78,13 +84,33 @@ public class ServerProperties
 
         return properties;
     }
+
+    private void ParseAudioEffects()
+    {
+        foreach (var effect in DefaultAudioEffectsConfig)
+        {
+            if (effect.Key == 0) continue;
+            var audioEffect = IAudioEffect.FromJsonElement(effect.Value);
+            if (audioEffect == null) continue;
+            DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
+        }
+    }
 }
 
 public class ServerPropertiesStructure
 {
+    public ServerPropertiesStructure()
+    {
+        DefaultAudioEffectsConfig.Add(1, JsonSerializer.SerializeToElement(new VisibilityEffect()));
+        DefaultAudioEffectsConfig.Add(2, JsonSerializer.SerializeToElement(new ProximityEffect { MaxRange = 30 }));
+        DefaultAudioEffectsConfig.Add(4, JsonSerializer.SerializeToElement(new ProximityEchoEffect { Range = 30 }));
+        DefaultAudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
+    }
+
     public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssConfig McWssConfig { get; set; } = new();
     public McHttpConfig McHttpConfig { get; set; } = new();
+    public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

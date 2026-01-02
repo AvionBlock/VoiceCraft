@@ -13,7 +13,7 @@ namespace VoiceCraft.Core.Network
         public DateTime LastPing { get; set; } = DateTime.UtcNow;
         public bool Connected { get; private set; }
         public string Token { get; private set; } = string.Empty;
-        
+
         public event Action<McApiNetPeer, string>? OnConnected;
         public event Action<McApiNetPeer, string>? OnDisconnected;
 
@@ -47,7 +47,7 @@ namespace VoiceCraft.Core.Network
                 throw new ArgumentOutOfRangeException(nameof(packet));
 
             LastPing = DateTime.UtcNow;
-            _inboundPacketQueue.Enqueue(new QueuedPacket() { Data = packet, Token =  token });
+            _inboundPacketQueue.Enqueue(new QueuedPacket { Data = packet, Token = token });
         }
 
         public bool RetrieveInboundPacket([NotNullWhen(true)] out byte[]? packet, out string? token)

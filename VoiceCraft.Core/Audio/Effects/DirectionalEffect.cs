@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
@@ -7,14 +8,20 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class DirectionalEffect : IAudioEffect
     {
+        private readonly Dictionary<VoiceCraftEntity, LerpSampleDirectionalVolume> _lerpSampleDirectionalVolumes =
+            new Dictionary<VoiceCraftEntity, LerpSampleDirectionalVolume>();
+
         private float _wetDry = 1.0f;
-        
-        public EffectType EffectType => EffectType.Directional;
+
+        public static int SampleRate => Constants.SampleRate;
+
         public float WetDry
         {
             get => _wetDry;
             set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
         }
+
+        public EffectType EffectType => EffectType.Directional;
 
         public void Serialize(NetDataWriter writer)
         {
@@ -26,7 +33,7 @@ namespace VoiceCraft.Core.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public virtual void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
             int count)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
@@ -37,13 +44,16 @@ namespace VoiceCraft.Core.Audio.Effects
             var left = (float)Math.Max(0.5 - Math.Cos(rot) * 0.5, 0.2);
             var right = (float)Math.Max(0.5 + Math.Cos(rot) * 0.5, 0.2);
 
+            var lerpSampleDirectionalVolume = GetOrCreateLerpSampleDirectionalVolume(from);
+            lerpSampleDirectionalVolume.SetVolumes(left, right);
+
             for (var i = 0; i < count; i += 2)
             {
-                var outputLeft = data[i] * left;
-                var outputRight = data[i + 1] * right;
-                
-                data[i] = outputLeft * WetDry + data[i] * (1.0f - WetDry);
-                data[i + 1] = outputRight * WetDry + data[i + 1] * (1.0f - WetDry);
+                var output = lerpSampleDirectionalVolume.Transform(data[i], data[i + 1]);
+
+                data[i] = output.Item1 * WetDry + data[i] * (1.0f - WetDry);
+                data[i + 1] = output.Item2 * WetDry + data[i + 1] * (1.0f - WetDry);
+                lerpSampleDirectionalVolume.Step();
             }
         }
 
@@ -55,6 +65,59 @@ namespace VoiceCraft.Core.Audio.Effects
         public void Dispose()
         {
             //Nothing to dispose.
+        }
+
+        private LerpSampleDirectionalVolume GetOrCreateLerpSampleDirectionalVolume(VoiceCraftEntity entity)
+        {
+            lock (_lerpSampleDirectionalVolumes)
+            {
+                if (_lerpSampleDirectionalVolumes.TryGetValue(entity, out var lerpSampleDirectionalVolume))
+                    return lerpSampleDirectionalVolume;
+                lerpSampleDirectionalVolume =
+                    new LerpSampleDirectionalVolume(SampleRate, TimeSpan.FromMilliseconds(20));
+                _lerpSampleDirectionalVolumes.TryAdd(entity, lerpSampleDirectionalVolume);
+                entity.OnDestroyed += RemoveLerpSampleDirectionalVolume;
+                return lerpSampleDirectionalVolume;
+            }
+        }
+
+        private void RemoveLerpSampleDirectionalVolume(VoiceCraftEntity entity)
+        {
+            lock (_lerpSampleDirectionalVolumes)
+            {
+                _lerpSampleDirectionalVolumes.Remove(entity);
+                entity.OnDestroyed -= RemoveLerpSampleDirectionalVolume;
+            }
+        }
+
+        private class LerpSampleDirectionalVolume
+        {
+            private readonly LerpSampleVolume _channel1;
+            private readonly LerpSampleVolume _channel2;
+
+            public LerpSampleDirectionalVolume(int sampleRate, TimeSpan duration)
+            {
+                _channel1 = new LerpSampleVolume(sampleRate, duration);
+                _channel2 = new LerpSampleVolume(sampleRate, duration);
+            }
+
+            public void SetVolumes(float channel1, float channel2)
+            {
+                _channel1.TargetVolume = channel1;
+                _channel2.TargetVolume = channel2;
+            }
+
+            public (float, float) Transform(float sample1, float sample2)
+            {
+                return (_channel1.Transform(sample1), _channel2.Transform(sample2));
+            }
+
+            //Step forward 1 sample.
+            public void Step()
+            {
+                _channel1.Step();
+                _channel2.Step();
+            }
         }
     }
 }

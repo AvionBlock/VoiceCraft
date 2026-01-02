@@ -27,8 +27,8 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="DiscordRichPresence"/>
-        <PackageReference Include="Fleck" />
-        <PackageReference Include="Message.Avalonia" />
+        <PackageReference Include="Fleck"/>
+        <PackageReference Include="Message.Avalonia"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
         <PackageReference Include="OpusSharp"/>
@@ -108,8 +108,8 @@
     <ItemGroup>
         <EmbeddedResource Include="Locales\nl-NL.json"/>
         <EmbeddedResource Include="Locales\en-US.json"/>
-        <EmbeddedResource Include="Locales\zh-CN.json" />
-        <EmbeddedResource Include="Locales\zh-TW.json" />
+        <EmbeddedResource Include="Locales\zh-CN.json"/>
+        <EmbeddedResource Include="Locales\zh-TW.json"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -72,9 +72,9 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
     {
         if (_languageStrings is null)
             return key;
-        
+
         var dict = _languageStrings;
-        
+
         int start = 0, end;
         while ((end = key.IndexOf('.', start)) != -1)
         {

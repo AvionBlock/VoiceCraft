@@ -8,7 +8,7 @@
         <Nullable>enable</Nullable>
         <ApplicationId>com.AvionBlock.VoiceCraft.Client</ApplicationId>
         <ApplicationVersion>1</ApplicationVersion>
-        <ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
+        <ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>
@@ -27,7 +27,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <AndroidLinkMode>None</AndroidLinkMode>
+        <AndroidLinkMode>None</AndroidLinkMode>
     </PropertyGroup>
 
     <ItemGroup>

@@ -61,7 +61,7 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
             translation = string.Format(translation, variables);
             return translation;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LogService.Log(ex);
             return translation;

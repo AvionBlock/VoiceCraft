@@ -9,7 +9,7 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
     {
         public McApiOnNetworkEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, string.Empty, string.Empty, false,
             false, 0, 0, 0, Vector3.Zero, Vector2.Zero, 0.0f, 0.0f, Guid.Empty, Guid.Empty, string.Empty,
-            PositioningType.Server)
+            PositioningType.Server, false, false)
         {
         }
 
@@ -31,7 +31,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Guid userGuid,
             Guid serverUserGuid,
             string locale,
-            PositioningType positioningType) :
+            PositioningType positioningType,
+            bool serverMuted,
+            bool serverDeafened) :
             base(id,
                 loudness,
                 lastSpoke,
@@ -51,6 +53,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
+            ServerMuted = serverMuted;
+            ServerDeafened = serverDeafened;
         }
 
         public McApiOnNetworkEntityCreatedPacket(VoiceCraftNetworkEntity entity) : base(entity)
@@ -59,6 +63,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             ServerUserGuid = entity.ServerUserGuid;
             Locale = entity.Locale;
             PositioningType = entity.PositioningType;
+            ServerMuted = entity.ServerMuted;
+            ServerDeafened = entity.ServerDeafened;
         }
 
         public override McApiPacketType PacketType => McApiPacketType.OnNetworkEntityCreated;
@@ -67,6 +73,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
         public Guid ServerUserGuid { get; private set; }
         public string Locale { get; private set; }
         public PositioningType PositioningType { get; private set; }
+        public bool ServerMuted { get; private set; }
+        public bool ServerDeafened { get; private set; }
 
         public override void Serialize(NetDataWriter writer)
         {
@@ -75,6 +83,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             writer.Put(ServerUserGuid.ToString(), Constants.MaxStringLength);
             writer.Put(Locale, Constants.MaxStringLength);
             writer.Put((byte)PositioningType);
+            writer.Put(ServerMuted);
+            writer.Put(ServerDeafened);
         }
 
         public override void Deserialize(NetDataReader reader)
@@ -84,6 +94,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             ServerUserGuid = Guid.Parse(reader.GetString(Constants.MaxStringLength));
             Locale = reader.GetString(Constants.MaxStringLength);
             PositioningType = (PositioningType)reader.GetByte();
+            ServerMuted = reader.GetBool();
+            ServerDeafened = reader.GetBool();
         }
 
         public McApiOnNetworkEntityCreatedPacket Set(
@@ -104,7 +116,9 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             Guid userGuid = new Guid(),
             Guid serverUserGuid = new Guid(),
             string locale = "",
-            PositioningType positioningType = PositioningType.Server)
+            PositioningType positioningType = PositioningType.Server,
+            bool serverMuted = false,
+            bool serverDeafened = false)
         {
             base.Set(id, loudness, lastSpoke, worldId, name, muted, deafened, talkBitmask, listenBitmask, effectBitmask,
                 position, rotation, caveFactor, muffleFactor);
@@ -112,6 +126,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             ServerUserGuid = serverUserGuid;
             Locale = locale;
             PositioningType = positioningType;
+            ServerMuted = serverMuted;
+            ServerDeafened = serverDeafened;
             return this;
         }
 
@@ -122,6 +138,8 @@ namespace VoiceCraft.Core.Network.McApiPackets.Event
             ServerUserGuid = entity.ServerUserGuid;
             Locale = entity.Locale;
             PositioningType = entity.PositioningType;
+            ServerMuted = entity.ServerMuted;
+            ServerDeafened = entity.ServerDeafened;
             return this;
         }
     }

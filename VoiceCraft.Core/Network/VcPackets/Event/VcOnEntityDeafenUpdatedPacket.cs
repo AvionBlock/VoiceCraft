@@ -31,7 +31,7 @@ namespace VoiceCraft.Core.Network.VcPackets.Event
             Value = reader.GetBool();
         }
 
-        public VcOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = true)
+        public VcOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = false)
         {
             Id = id;
             Value = value;

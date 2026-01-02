@@ -11,7 +11,7 @@ public class NotificationService(
     public void SendNotification(string message, string? title = null)
     {
         if (settingsService.NotificationSettings.DisableNotifications) return;
-        MessageManager.Default.ShowInformationMessage(message, new MessageOptions()
+        MessageManager.Default.ShowInformationMessage(message, new MessageOptions
         {
             Title = title,
             Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
@@ -21,7 +21,7 @@ public class NotificationService(
     public void SendSuccessNotification(string message, string? title = null)
     {
         if (settingsService.NotificationSettings.DisableNotifications) return;
-        MessageManager.Default.ShowSuccessMessage(message, new MessageOptions()
+        MessageManager.Default.ShowSuccessMessage(message, new MessageOptions
         {
             Title = title,
             Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
@@ -31,7 +31,7 @@ public class NotificationService(
     public void SendErrorNotification(string message)
     {
         if (settingsService.NotificationSettings.DisableNotifications) return;
-        MessageManager.Default.ShowErrorMessage(message, new MessageOptions()
+        MessageManager.Default.ShowErrorMessage(message, new MessageOptions
         {
             Title = Localizer.Get("Notification.Error.Badge"),
             Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)

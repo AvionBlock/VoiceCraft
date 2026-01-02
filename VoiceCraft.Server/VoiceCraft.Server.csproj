@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fleck" />
+        <PackageReference Include="Fleck"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
@@ -21,8 +21,8 @@
     <ItemGroup>
         <EmbeddedResource Include="Locales\nl-NL.json"/>
         <EmbeddedResource Include="Locales\en-US.json"/>
-        <None Include="Locales\zh-CN.json" />
-        <None Include="Locales\zh-TW.json" />
+        <None Include="Locales\zh-CN.json"/>
+        <None Include="Locales\zh-TW.json"/>
     </ItemGroup>
 
 </Project>

@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 using LiteNetLib;
-using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.World
 {
-    public class VoiceCraftWorld : IResettable, IDisposable
+    public class VoiceCraftWorld : IDisposable
     {
-        private int _nextEntityId;
-        private readonly Mutex _mutex = new Mutex();
-
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities =
             new ConcurrentDictionary<int, VoiceCraftEntity>();
+
+        private readonly Mutex _mutex = new Mutex();
+        private int _nextEntityId;
 
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
 
@@ -26,7 +26,8 @@ namespace VoiceCraft.Core.World
 
         public void Reset()
         {
-            ClearEntities();
+            var entities = _entities.ToArray();
+            foreach (var entity in entities) entity.Value.Reset();
         }
 
         public event Action<VoiceCraftEntity>? OnEntityCreated;
@@ -44,11 +45,48 @@ namespace VoiceCraft.Core.World
             return entity;
         }
 
-        public VoiceCraftNetworkEntity CreateEntity(NetPeer peer, Guid userGuid, Guid serverUserGuid, string locale,
-            PositioningType positioningType)
+        public VoiceCraftEntity CreateEntity(
+            string worldId,
+            string name,
+            bool muted,
+            bool deafened,
+            ushort talkBitmask,
+            ushort listenBitmask,
+            ushort effectBitmask,
+            Vector3 position,
+            Vector2 rotation,
+            float caveFactor,
+            float muffleFactor)
         {
             var id = GetNextId();
-            var entity = new VoiceCraftNetworkEntity(peer, id, userGuid, serverUserGuid, locale, positioningType, this);
+            var entity = new VoiceCraftEntity(id, this)
+            {
+                WorldId = worldId,
+                Name = name,
+                Muted = muted,
+                Deafened = deafened,
+                TalkBitmask = talkBitmask,
+                ListenBitmask = listenBitmask,
+                EffectBitmask = effectBitmask,
+                Position = position,
+                Rotation = rotation,
+                CaveFactor = caveFactor,
+                MuffleFactor = muffleFactor
+            };
+            if (!_entities.TryAdd(id, entity))
+                throw new InvalidOperationException("Failed to create entity!");
+
+            entity.OnDestroyed += RemoveEntity;
+            OnEntityCreated?.Invoke(entity);
+            return entity;
+        }
+
+        public VoiceCraftNetworkEntity CreateEntity(NetPeer peer, Guid userGuid, Guid serverUserGuid, string locale,
+            PositioningType positioningType, bool serverMute, bool serverDeafen)
+        {
+            var id = GetNextId();
+            var entity = new VoiceCraftNetworkEntity(peer, id, userGuid, serverUserGuid, locale, positioningType,
+                serverMute, serverDeafen, this);
             if (!_entities.TryAdd(id, entity))
                 throw new InvalidOperationException("Failed to create entity!");
 
@@ -111,10 +149,7 @@ namespace VoiceCraft.Core.World
             _mutex.WaitOne();
             try
             {
-                while (_entities.ContainsKey(_nextEntityId))
-                {
-                    ++_nextEntityId;
-                }
+                while (_entities.ContainsKey(_nextEntityId)) ++_nextEntityId;
 
                 return _nextEntityId++;
             }

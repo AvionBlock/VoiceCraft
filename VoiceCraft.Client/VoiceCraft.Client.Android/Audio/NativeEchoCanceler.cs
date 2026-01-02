@@ -13,7 +13,8 @@ public class NativeEchoCanceler : IEchoCanceler
     public bool IsNative => true;
 
     public void
-        Initialize(IAudioRecorder recorder, IAudioPlayer player) //We don't need to have the audio player, but it's there for other compatibility reasons.
+        Initialize(IAudioRecorder recorder,
+            IAudioPlayer player) //We don't need to have the audio player, but it's there for other compatibility reasons.
     {
         ThrowIfDisposed();
 

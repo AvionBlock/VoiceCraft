@@ -19,7 +19,7 @@ public class NativeHotKeyService : HotKeyService
         _hook.KeyPressed += OnKeyPressed;
         _hook.KeyReleased += OnKeyReleased;
     }
-    
+
     public override void Initialize()
     {
         _ = _hook.RunAsync();

@@ -27,6 +27,7 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private float _microphoneSensitivity;
     [ObservableProperty] private string _outputDevice;
     [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
+    [ObservableProperty] private float _outputVolume;
     private bool _updating;
 
     public AudioSettingsViewModel(SettingsService settingsService, AudioService audioService)
@@ -42,6 +43,7 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         _automaticGainController = _audioSettings.AutomaticGainController;
         _echoCanceler = _audioSettings.EchoCanceler;
         _microphoneSensitivity = _audioSettings.MicrophoneSensitivity;
+        _outputVolume = _audioSettings.OutputVolume;
 
         _ = ReloadAvailableDevices();
     }
@@ -143,6 +145,17 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         _updating = false;
     }
 
+    partial void OnOutputVolumeChanging(float value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _audioSettings.OutputVolume = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
     private void Update(AudioSettings audioSettings)
     {
         if (_updating) return;
@@ -154,6 +167,7 @@ public partial class AudioSettingsViewModel : ObservableObject, IDisposable
         AutomaticGainController = audioSettings.AutomaticGainController;
         EchoCanceler = audioSettings.EchoCanceler;
         MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
+        OutputVolume = audioSettings.OutputVolume;
 
         _updating = false;
     }

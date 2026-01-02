@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
@@ -8,9 +9,12 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class ProximityEffect : IAudioEffect, IVisible
     {
+        private readonly Dictionary<VoiceCraftEntity, LerpSampleVolume> _lerpSampleVolumes =
+            new Dictionary<VoiceCraftEntity, LerpSampleVolume>();
         private float _wetDry = 1.0f;
+
+        public static int SampleRate => Constants.SampleRate;
         
-        public EffectType EffectType => EffectType.Proximity;
         public float WetDry
         {
             get => _wetDry;
@@ -18,6 +22,8 @@ namespace VoiceCraft.Core.Audio.Effects
         }
         public int MinRange { get; set; }
         public int MaxRange { get; set; }
+
+        public EffectType EffectType => EffectType.Proximity;
 
         public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
             int count)
@@ -29,11 +35,19 @@ namespace VoiceCraft.Core.Audio.Effects
             if (range == 0) return; //Range is 0. Do not calculate division.
             var distance = Vector3.Distance(from.Position, to.Position);
             var factor = 1f - Math.Clamp((distance - MinRange) / range, 0f, 1f);
+            
+            var lerpVolumeSample = GetOrCreateLerpSampleVolume(from);
+            lerpVolumeSample.TargetVolume = factor;
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; i += 2)
             {
-                var output = Math.Clamp(data[i] * factor, -1f, 1f);
+                //Channel 1
+                var output = lerpVolumeSample.Transform(data[i]);
                 data[i] = output * WetDry + data[i] * (1.0f - WetDry);
+                //Channel 2
+                output = lerpVolumeSample.Transform(data[i + 1]);
+                data[i + 1] = output * WetDry + data[i + 1] * (1.0f - WetDry);
+                lerpVolumeSample.Step();
             }
         }
 
@@ -67,6 +81,28 @@ namespace VoiceCraft.Core.Audio.Effects
             if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.
             var distance = Vector3.Distance(from.Position, to.Position);
             return distance <= MaxRange;
+        }
+        
+        private LerpSampleVolume GetOrCreateLerpSampleVolume(VoiceCraftEntity entity)
+        {
+            lock (_lerpSampleVolumes)
+            {
+                if (_lerpSampleVolumes.TryGetValue(entity, out var lerpSampleVolume))
+                    return lerpSampleVolume;
+                lerpSampleVolume = new LerpSampleVolume(SampleRate, TimeSpan.FromMilliseconds(20));
+                _lerpSampleVolumes.TryAdd(entity, lerpSampleVolume);
+                entity.OnDestroyed += RemoveLerpSampleVolume;
+                return lerpSampleVolume;
+            }
+        }
+        
+        private void RemoveLerpSampleVolume(VoiceCraftEntity entity)
+        {
+            lock (_lerpSampleVolumes)
+            {
+                _lerpSampleVolumes.Remove(entity);
+                entity.OnDestroyed -= RemoveLerpSampleVolume;
+            }
         }
     }
 }
