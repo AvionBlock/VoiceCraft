@@ -14,6 +14,7 @@ namespace VoiceCraft.Core.Audio.Effects
 
         private float _delay;
         private float _wetDry = 1.0f;
+        private float _range;
 
         public ProximityEchoEffect()
         {
@@ -31,10 +32,14 @@ namespace VoiceCraft.Core.Audio.Effects
         public float Delay
         {
             get => _delay / SampleRate;
-            set => _delay = SampleRate * value;
+            set => _delay = SampleRate * Math.Clamp(value, 0.0f, 10.0f);
         }
 
-        public float Range { get; set; }
+        public float Range
+        {
+            get => _range;
+            set => _range = Math.Max(value, 0.0f);
+        }
 
         public EffectType EffectType => EffectType.ProximityEcho;
 
