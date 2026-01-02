@@ -30,7 +30,7 @@ a custom linking method provided by a custom addon or by the `VoiceCraft.Addon.B
 
 ## Features
 
-- Cross platform support for Android, Windows, Linux, MacOS (soon) and iOS (soon) devices!
+- Cross-platform support for Android, Windows, Linux, macOS (soon) and iOS (soon) devices!
 - Proximity voice chat with filters and effects!
 - Multilingual support.
 - Multiple themes.
