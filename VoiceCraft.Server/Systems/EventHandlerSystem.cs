@@ -22,6 +22,7 @@ public class EventHandlerSystem : IDisposable
     private readonly VoiceCraftServer _server;
     private readonly ConcurrentQueue<Action> _tasks = [];
     private readonly VoiceCraftWorld _world;
+    public bool EnableVisibilityDisplay { get; set; }
 
     public EventHandlerSystem(
         VoiceCraftServer server,
@@ -124,6 +125,13 @@ public class EventHandlerSystem : IDisposable
                     PacketPool<VcSetServerDeafenRequestPacket>.GetPacket().Set(networkEntity.ServerDeafened));
                 _server.Broadcast(PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity),
                     DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+                if (!EnableVisibilityDisplay)
+                {
+                    _server.Broadcast(
+                        PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket().Set(networkEntity.Id, true),
+                        DeliveryMethod.ReliableOrdered, networkEntity.NetPeer);
+                }
+
                 _mcWssServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
                 _mcHttpServer.Broadcast(PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(networkEntity));
 
@@ -134,12 +142,18 @@ public class EventHandlerSystem : IDisposable
 
                 //Send other entities.
                 foreach (var entity in _world.Entities.Where(x => x != networkEntity))
+                {
                     if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
                         _server.SendPacket(networkEntity.NetPeer,
                             PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
                     else
                         _server.SendPacket(networkEntity.NetPeer,
                             PacketPool<VcOnEntityCreatedPacket>.GetPacket().Set(entity));
+
+                    if (EnableVisibilityDisplay) continue;
+                    _server.SendPacket(networkEntity.NetPeer, PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket()
+                        .Set(entity.Id, true));
+                }
 
                 AnsiConsole.MarkupLine(
                     $"[green]{Localizer.Get($"Events.Client.Connected:{networkEntity.UserGuid}")}[/]");
@@ -519,8 +533,13 @@ public class EventHandlerSystem : IDisposable
         {
             if (addedEntity is VoiceCraftNetworkEntity networkEntity)
             {
-                var visibilityPacket = PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket()
-                    .Set(entity.Id, true);
+                if (EnableVisibilityDisplay)
+                {
+                    var visibilityPacket = PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket()
+                        .Set(entity.Id, true);
+                    _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
+                }
+
                 var positionPacket = PacketPool<VcOnEntityPositionUpdatedPacket>.GetPacket()
                     .Set(entity.Id, entity.Position);
                 var rotationPacket = PacketPool<VcOnEntityRotationUpdatedPacket>.GetPacket()
@@ -530,7 +549,6 @@ public class EventHandlerSystem : IDisposable
                 var muffleFactorPacket = PacketPool<VcOnEntityMuffleFactorUpdatedPacket>.GetPacket()
                     .Set(entity.Id, entity.MuffleFactor);
 
-                _server.SendPacket(networkEntity.NetPeer, visibilityPacket);
                 _server.SendPacket(networkEntity.NetPeer, positionPacket);
                 _server.SendPacket(networkEntity.NetPeer, rotationPacket);
                 _server.SendPacket(networkEntity.NetPeer, caveFactorPacket);
@@ -549,8 +567,13 @@ public class EventHandlerSystem : IDisposable
         _tasks.Enqueue(() =>
         {
             if (removedEntity is VoiceCraftNetworkEntity networkEntity)
-                _server.SendPacket(networkEntity.NetPeer,
-                    PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket().Set(entity.Id));
+            {
+                if (EnableVisibilityDisplay)
+                {
+                    _server.SendPacket(networkEntity.NetPeer,
+                        PacketPool<VcSetEntityVisibilityRequestPacket>.GetPacket().Set(entity.Id));
+                }
+            }
 
             _mcWssServer.Broadcast(PacketPool<McApiOnEntityVisibilityUpdatedPacket>.GetPacket()
                 .Set(entity.Id, removedEntity.Id));

@@ -9,4 +9,5 @@ public class VoiceCraftConfig
     public uint MaxClients { get; set; } = 100;
     public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
     public PositioningType PositioningType { get; set; } = PositioningType.Server;
+    public bool EnableVisibilityDisplay { get; set; } = true;
 }

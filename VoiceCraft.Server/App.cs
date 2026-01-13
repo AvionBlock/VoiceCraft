@@ -43,6 +43,7 @@ public static class App
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Starting")}";
 
             //Setup Audio Effects
+            eventHandlerSystem.EnableVisibilityDisplay = properties.VoiceCraftConfig.EnableVisibilityDisplay;
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
 
             //Server Startup
