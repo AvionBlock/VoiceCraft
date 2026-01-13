@@ -26,9 +26,9 @@
       "VoipBackgroundError": "Voip achtergrondwerker fout: {0}"
     },
     "McWss": {
-      "Badge": null,
-      "Connected": null,
-      "Disconnected": null
+      "Badge": "McWss",
+      "Connected": "McWss-verbinding tot stand gebracht: {0}",
+      "Disconnected": "McWss-verbinding verbroken!"
     }
   },
   "Home": {
@@ -80,7 +80,7 @@
       "EchoCancelers": "Echo-onderdrukkers",
       "InputDevices": "Invoerapparaten",
       "MicrophoneSensitivity": "Microfoon gevoeligheid",
-      "OutputVolume": null,
+      "OutputVolume": "Uitgangsvolume",
       "OutputDevices": "Uitvoerapparaten",
       "TestOutput": "Uitvoer testen",
       "MicrophoneTest": {
@@ -90,15 +90,15 @@
     },
     "Network": {
       "Network": "Netwerk Instellingen",
-      "PositioningType": null,
-      "McWssListenIp": null,
-      "McWssHostPort": "MCWSS host poort"
+      "PositioningType": "Positioneringstype",
+      "McWssListenIp": "MCWSS Luister IP-adres",
+      "McWssHostPort": "MCWSS Host Poort"
     },
     "HotKey": {
-      "HotKey": "Sneltoetsen",
+      "HotKey": "Sneltoets",
       "Actions": {
         "Mute": "Dempen",
-        "Deafen": "Doof maken"
+        "Deafen": "Onhoorbaar maken"
       }
     },
     "Advanced": {
@@ -120,7 +120,7 @@
         "Motd": "Motd: {0}",
         "PositioningType": "Positioneringstype: {0}",
         "ConnectedClients": "Verbonden clients: {0}",
-        "Version": null,
+        "Version": "Versie: {0}",
         "Pinging": "Pingen..."
       }
     }
@@ -147,6 +147,11 @@
       "Init": "Denoiser is niet geïnitialiseerd!"
     }
   },
+  "McWssServer": {
+    "Exceptions": {
+      "Failed": "Kan McWss Server niet starten! Controleer of een ander proces dezelfde poort gebruikt!,"
+    }
+  },
   "VoiceCraft": {
     "Status": {
       "Initializing": "Initialiseren...",
@@ -154,12 +159,15 @@
       "Connected": "Verbonden!",
       "Disconnected": "Verbinding verbroken! Reden: {0}"
     },
+    "DescriptionStatus": {
+      "McWss": "McWss luistert op: {0}:{1}"
+    },
     "DisconnectReason": {
       "Manual": "Handmatig verbinding verbroken.",
       "ServerFull": "Server is vol!",
       "IncompatibleVersion": "Incompatibele client/server versie!",
-      "ServerSidedOnly": null,
-      "ClientSidedOnly": null,
+      "ServerSidedOnly": "Server accepteert alleen positionering aan de serverzijde!",
+      "ClientSidedOnly": "Server accepteert alleen positionering aan de clientzijde!",
       "Kicked": "Verwijderd!",
       "Shutdown": "Server afgesloten!",
       "Error": "Er is een fout opgetreden tijdens het verbinden!"
