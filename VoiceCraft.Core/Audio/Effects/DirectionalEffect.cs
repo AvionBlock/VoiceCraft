@@ -92,13 +92,13 @@ namespace VoiceCraft.Core.Audio.Effects
 
         private class LerpSampleDirectionalVolume
         {
-            private readonly LerpSampleVolume _channel1;
-            private readonly LerpSampleVolume _channel2;
+            private readonly SampleLerpVolume _channel1;
+            private readonly SampleLerpVolume _channel2;
 
             public LerpSampleDirectionalVolume(int sampleRate, TimeSpan duration)
             {
-                _channel1 = new LerpSampleVolume(sampleRate, duration);
-                _channel2 = new LerpSampleVolume(sampleRate, duration);
+                _channel1 = new SampleLerpVolume(sampleRate, duration);
+                _channel2 = new SampleLerpVolume(sampleRate, duration);
             }
 
             public void SetVolumes(float channel1, float channel2)

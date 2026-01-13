@@ -2,7 +2,7 @@ using System;
 
 namespace VoiceCraft.Core.Audio
 {
-    public class LerpSampleVolume
+    public class SampleLerpVolume
     {
         public float TargetVolume
         {
@@ -40,7 +40,7 @@ namespace VoiceCraft.Core.Audio
         private float _fadeSamplesDuration;
         private float _fadeSamplesPosition;
 
-        public LerpSampleVolume(int sampleRate, TimeSpan fadeDuration)
+        public SampleLerpVolume(int sampleRate, TimeSpan fadeDuration)
         {
             _sampleRate = sampleRate;
             FadeDuration = fadeDuration;

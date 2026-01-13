@@ -9,8 +9,8 @@ namespace VoiceCraft.Core.Audio.Effects
 {
     public class ProximityEffect : IAudioEffect, IVisible
     {
-        private readonly Dictionary<VoiceCraftEntity, LerpSampleVolume> _lerpSampleVolumes =
-            new Dictionary<VoiceCraftEntity, LerpSampleVolume>();
+        private readonly Dictionary<VoiceCraftEntity, SampleLerpVolume> _lerpSampleVolumes =
+            new Dictionary<VoiceCraftEntity, SampleLerpVolume>();
         private float _wetDry = 1.0f;
 
         public static int SampleRate => Constants.SampleRate;
@@ -83,13 +83,13 @@ namespace VoiceCraft.Core.Audio.Effects
             return distance <= MaxRange;
         }
         
-        private LerpSampleVolume GetOrCreateLerpSampleVolume(VoiceCraftEntity entity)
+        private SampleLerpVolume GetOrCreateLerpSampleVolume(VoiceCraftEntity entity)
         {
             lock (_lerpSampleVolumes)
             {
                 if (_lerpSampleVolumes.TryGetValue(entity, out var lerpSampleVolume))
                     return lerpSampleVolume;
-                lerpSampleVolume = new LerpSampleVolume(SampleRate, TimeSpan.FromMilliseconds(20));
+                lerpSampleVolume = new SampleLerpVolume(SampleRate, TimeSpan.FromMilliseconds(20));
                 _lerpSampleVolumes.TryAdd(entity, lerpSampleVolume);
                 entity.OnDestroyed += RemoveLerpSampleVolume;
                 return lerpSampleVolume;
