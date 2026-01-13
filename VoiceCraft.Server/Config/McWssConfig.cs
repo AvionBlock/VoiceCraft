@@ -1,3 +1,5 @@
+using VoiceCraft.Core;
+
 namespace VoiceCraft.Server.Config;
 
 public class McWssConfig
@@ -10,4 +12,5 @@ public class McWssConfig
     public string DataTunnelCommand { get; set; } = "voicecraft:data_tunnel";
     public uint CommandsPerTick { get; set; } = 5;
     public uint MaxStringLengthPerCommand { get; set; } = 1000;
+    public HashSet<McApiPacketType> DisabledPacketTypes { get; set; } = [];
 }
