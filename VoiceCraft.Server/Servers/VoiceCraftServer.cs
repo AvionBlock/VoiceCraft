@@ -16,7 +16,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class VoiceCraftServer : IDisposable, INetEventListener
 {
-    public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
+    public static readonly Version Version = new(Constants.Major, Constants.Minor, Constants.Patch);
 
     //Systems
     private readonly AudioEffectSystem _audioEffectSystem;
