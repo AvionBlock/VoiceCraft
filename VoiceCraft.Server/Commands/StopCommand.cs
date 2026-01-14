@@ -9,6 +9,7 @@ public class StopCommand : Command
         Localizer.Get("Commands.Stop.Name"),
         Localizer.Get("Commands.Stop.Description"))
     {
+        Aliases.Add("shutdown");
         SetAction(_ => { App.Shutdown(); });
     }
 }
