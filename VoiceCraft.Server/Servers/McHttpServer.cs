@@ -20,7 +20,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
-    private static readonly Version McHttpVersion = new(Constants.Major, Constants.Minor, 0);
+    private static readonly Version McHttpVersion = new(Constants.Major, Constants.Minor, Constants.Patch);
     private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
 
     private readonly ConcurrentDictionary<string, McApiNetPeer> _mcApiPeers = [];
@@ -78,7 +78,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
     public void SendPacket<T>(McApiNetPeer netPeer, T packet) where T : IMcApiPacket
     {
-        if (_httpServer == null) return;
+        if (_httpServer == null || IsPacketDisabled(packet.PacketType)) return;
         try
         {
             lock (_writer)
@@ -97,7 +97,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
     public void Broadcast<T>(T packet, params McApiNetPeer?[] excludes) where T : IMcApiPacket
     {
-        if (_httpServer == null) return;
+        if (_httpServer == null || IsPacketDisabled(packet.PacketType)) return;
         try
         {
             lock (_writer)
@@ -117,6 +117,11 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         {
             PacketPool<T>.Return(packet);
         }
+    }
+
+    private bool IsPacketDisabled(McApiPacketType packetType)
+    {
+        return Config.DisabledPacketTypes.Contains(packetType);
     }
 
     private async Task ListenerLoop(HttpListener listener)
@@ -239,6 +244,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
 
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? token)
     {
+        if (IsPacketDisabled(packetType)) return;
         switch (packetType)
         {
             case McApiPacketType.LoginRequest:
@@ -256,10 +262,8 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
                 return;
             }
         }
-
-        if (!peer.Connected) return;
-        if (peer.Token != token) return;
-
+        
+        if (!peer.Connected || peer.Token != token) return;
         switch (packetType)
         {
             case McApiPacketType.PingRequest:

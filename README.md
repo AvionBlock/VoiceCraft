@@ -66,7 +66,7 @@ audio effects, audio simulations, authentication, and more!
 
 ## Hosts
 
-- Atrioxhosting €0.44/m: https://atrioxhost.com/voicecraft
+- Atrioxhosting €0.63/m: https://atrioxhost.com/voicecraft
 
 ## Project Dependencies
 

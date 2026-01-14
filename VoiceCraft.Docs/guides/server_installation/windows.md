@@ -22,6 +22,12 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 > [!IMPORTANT]
 > This setup requires that you have a world with beta-api's enabled and targeted by the BDS software.
 
+> [!NOTE]
+> If you get an error like this... `System.Net.HttpListenerException: The network location cannot be reached...`. You 
+> may need to run the command `netsh http add iplisten 127.0.0.1` to allow the HTTP server to listen on the localhost IP
+> address. This is because the HttpListener implementation uses the windows IIS system, we are actively looking at other
+> implementation such as ASP.NET's Kestrel implementation to avoid this.
+
 ## Installing the addon
 
 1. Once you have downloaded the addon above, extract the addon and place the `RP` folder in `<MCServer>/resource_packs/`
@@ -53,7 +59,7 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
   "version": [
     1,
     3,
-    0
+    1
   ]
 }
 ```
@@ -67,7 +73,7 @@ If there are multiple addon's then you will need to edit the file like this:
     "version": [
       1,
       3,
-      0
+      1
     ]
   },
   ...
@@ -82,7 +88,7 @@ If there are multiple addon's then you will need to edit the file like this:
   "version": [
     1,
     3,
-    0
+    1
   ]
 }
 ```
@@ -109,7 +115,8 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 
 > [!WARNING]
 > The MCWSS version is unstable and may break more than often or crash your world! Do not use this for more than 2 or 3
-> players!
+> players! If things are still crashing, disabling the packet `OnEntityAudioReceived` in the `DisabledPacketTypes`
+> property may resolve the issue. e.g. `"DisabledPacketTypes": [46]`.
 
 ## Installing the addon
 

@@ -8,6 +8,7 @@ Welcome to VoiceCraft Docs Home Page. To get started, click on one of the docs t
 
 # Docs
 - [Server Properties](./server_properties.md)
+- [McApi Packets](./mcapi_packets.md)
 - [Bitmasking](./bitmasking.md)
 
 ---

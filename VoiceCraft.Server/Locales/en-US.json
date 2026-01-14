@@ -18,6 +18,7 @@
     "Success": "Successfully loaded server properties!",
     "Failed": "Failed to load server properties! Falling back to default properties! Error: {0}",
     "NotFound": "ServerProperties.json was not found in the current and/or sub directories! Generating file...",
+    "FailNotFound": "ServerProperties.json was not found in the current and/or sub directories!",
     "Generating": {
       "Generating": "Generating ServerProperties.json file at {0}",
       "Success": "Successfully generated ServerProperties.json file at {0}",

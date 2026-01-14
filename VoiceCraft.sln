@@ -19,6 +19,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{D85570AD-9558-48D2-A505-DD4E4BDAB405}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Packages.props = Directory.Packages.props
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{D789BEEE-6F40-4971-99FB-6058587BDCC1}"

@@ -24,7 +24,7 @@ namespace VoiceCraft.Client.Network;
 
 public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
 {
-    public static readonly Version Version = new(Constants.Major, Constants.Minor, 0);
+    public static readonly Version Version = new(Constants.Major, Constants.Minor, Constants.Patch);
 
     //Systems
     private readonly AudioSystem _audioSystem;

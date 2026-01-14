@@ -14,8 +14,13 @@ public static class App
     private static readonly CancellationTokenSource Cts = new();
     private static string? _bufferedCommand;
 
-    public static async Task Start()
+    public static async Task Start(bool exitOnInvalidProperties, string? language = null)
     {
+        var languageOverriden = !string.IsNullOrWhiteSpace(language);
+        //Set language if overriden.
+        if (languageOverriden)
+            Localizer.Instance.Language = language ?? "en-US";
+        
         //Servers
         var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
         var mcWssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
@@ -36,13 +41,15 @@ public static class App
             AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
-            properties.Load();
-            //Set locale. May not set the first 2 messages, but it works.
-            Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
+            properties.Load(exitOnInvalidProperties);
+            //Set locale if not overriden.
+            if (!languageOverriden)
+                Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
             //Loaded, Set the title.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Starting")}";
 
             //Setup Audio Effects
+            eventHandlerSystem.EnableVisibilityDisplay = properties.VoiceCraftConfig.EnableVisibilityDisplay;
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
 
             //Server Startup
@@ -59,11 +66,18 @@ public static class App
                 .AddColumn(Localizer.Get("Tables.ServerSetup.Port"))
                 .AddColumn(Localizer.Get("Tables.ServerSetup.Protocol"));
 
-            serverSetupTable.AddRow("[green]VoiceCraft[/]", server.Config.Port.ToString(), "[aqua]UDP[/]");
-            serverSetupTable.AddRow($"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
-                httpServer.Config.Hostname, $"[{(properties.McHttpConfig.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
-            serverSetupTable.AddRow($"[{(properties.McWssConfig.Enabled ? "green" : "red")}]McWss[/]",
-                mcWssServer.Config.Hostname, $"[{(properties.McWssConfig.Enabled ? "aqua" : "red")}]TCP/WS[/]");
+            serverSetupTable.AddRow(
+                "[green]VoiceCraft[/]",
+                server.Config.Port.ToString(),
+                "[aqua]UDP[/]");
+            serverSetupTable.AddRow(
+                $"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
+                properties.McHttpConfig.Enabled ? httpServer.Config.Hostname : "[red]-[/]",
+                $"[{(properties.McHttpConfig.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
+            serverSetupTable.AddRow(
+                $"[{(properties.McWssConfig.Enabled ? "green" : "red")}]McWss[/]",
+                properties.McWssConfig.Enabled ? mcWssServer.Config.Hostname : "[red]-[/]",
+                $"[{(properties.McWssConfig.Enabled ? "aqua" : "red")}]TCP/WS[/]");
 
             //Register Commands
             AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
@@ -80,6 +94,7 @@ public static class App
             //Server finished.
             AnsiConsole.Write(serverSetupTable);
             AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
+            AnsiConsole.MarkupLine("\0\0\0"); //This is here for docker images to detect server is running.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
 
             StartCommandTask();

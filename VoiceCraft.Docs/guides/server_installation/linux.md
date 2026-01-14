@@ -53,7 +53,7 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
   "version": [
     1,
     3,
-    0
+    1
   ]
 }
 ```
@@ -67,7 +67,7 @@ If there are multiple addon's then you will need to edit the file like this:
     "version": [
       1,
       3,
-      0
+      1
     ]
   },
   ...
@@ -82,7 +82,7 @@ If there are multiple addon's then you will need to edit the file like this:
   "version": [
     1,
     3,
-    0
+    1
   ]
 }
 ```
@@ -109,7 +109,8 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 
 > [!WARNING]
 > The MCWSS version is unstable and may break more than often or crash your world! Do not use this for more than 2 or 3
-> players!
+> players! If things are still crashing, disabling the packet `OnEntityAudioReceived` in the `DisabledPacketTypes`
+> property may resolve the issue. e.g. `"DisabledPacketTypes": [46]`.
 
 > [!NOTE]
 > This installation guide assumes you are using WineGDK or ProtonGE with GDK components.

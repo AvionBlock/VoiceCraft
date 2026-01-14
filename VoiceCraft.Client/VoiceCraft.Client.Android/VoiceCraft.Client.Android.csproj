@@ -7,8 +7,8 @@
         <TargetPlatformVersion>35</TargetPlatformVersion>
         <Nullable>enable</Nullable>
         <ApplicationId>com.AvionBlock.VoiceCraft.Client</ApplicationId>
-        <ApplicationVersion>1</ApplicationVersion>
-        <ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
+        <ApplicationVersion>$(AndroidVersion)</ApplicationVersion>
+        <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>

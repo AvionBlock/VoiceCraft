@@ -18,6 +18,7 @@
     "Success": "Servereigenschappen succesvol geladen!",
     "Failed": "Laden van de servereigenschappen is mislukt! Terugvallen op standaardeigenschappen! Fout: {0}",
     "NotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen! Bestand genereren...",
+    "FailNotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen!",
     "Generating": {
       "Generating": "Genereren van het ServerProperties.json-bestand op {0}",
       "Success": "Succesvol het ServerProperties.json-bestand gegenereerd op {0}",
@@ -194,8 +195,8 @@
       "Description": "Stopt de server."
     },
     "Kick": {
-      "Name": null,
-      "Description": null,
+      "Name": "kick",
+      "Description": "Schop een client uit de server.",
       "Arguments": {
         "Id": {
           "Name": "id",
@@ -204,8 +205,8 @@
       }
     },
     "Mute": {
-      "Name": null,
-      "Description": null,
+      "Name": "mute",
+      "Description": "Demp een entiteit/client.",
       "Arguments": {
         "Id": {
           "Name": "id",
@@ -214,8 +215,8 @@
       }
     },
     "Unmute": {
-      "Name": null,
-      "Description": null,
+      "Name": "unmute",
+      "Description": "Hef het dempen op van een entiteit/client.",
       "Arguments": {
         "Id": {
           "Name": "id",
@@ -224,8 +225,8 @@
       }
     },
     "Deafen": {
-      "Name": null,
-      "Description": null,
+      "Name": "deafen",
+      "Description": "Maak een entiteit/client onhoorbaar.",
       "Arguments": {
         "Id": {
           "Name": "id",
@@ -234,8 +235,8 @@
       }
     },
     "Undeafen": {
-      "Name": null,
-      "Description": null,
+      "Name": "undeafen",
+      "Description": "Maak een entiteit/client hoorbaar.",
       "Arguments": {
         "Id": {
           "Name": "id",

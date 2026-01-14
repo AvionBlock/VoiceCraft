@@ -21,11 +21,13 @@ public class ServerProperties
     public McHttpConfig McHttpConfig => _properties.McHttpConfig;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
-    public void Load()
+    public void Load(bool throwOnInvalidProperties)
     {
         var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName, SearchOption.AllDirectories);
         if (files.Length == 0)
         {
+            if (throwOnInvalidProperties)
+                throw new Exception(Localizer.Get("ServerProperties.FailNotFound"));
             AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
             ParseAudioEffects();
@@ -34,12 +36,12 @@ public class ServerProperties
         }
 
         var file = files[0];
-        _properties = LoadFile(file);
+        _properties = LoadFile(file, throwOnInvalidProperties);
         ParseAudioEffects();
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
     }
 
-    private static ServerPropertiesStructure LoadFile(string path)
+    private static ServerPropertiesStructure LoadFile(string path, bool throwOnInvalidConfig)
     {
         try
         {
@@ -52,6 +54,8 @@ public class ServerProperties
         }
         catch (Exception ex)
         {
+            if (throwOnInvalidConfig)
+                throw;
             AnsiConsole.MarkupLine(
                 $"[yellow]{Localizer.Get($"ServerProperties.Failed:{ex.Message}")}[/]");
             LogService.Log(ex);

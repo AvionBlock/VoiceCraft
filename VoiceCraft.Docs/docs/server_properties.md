@@ -9,48 +9,50 @@ Server properties configuration.
     "Port": 9050,
     "MaxClients": 100,
     "Motd": "VoiceCraft Proximity Chat!",
-    "PositioningType": 0
+    "PositioningType": 0,
+    "EnableVisibilityDisplay": true
   },
   "McWssConfig": {
     "Enabled": false,
-    "LoginToken": "b8cbf79f-3cc5-4baf-a382-081afc886117",
+    "LoginToken": "e9409f08-429d-4c5d-a995-6f7138d2ac8d",
     "Hostname": "ws://127.0.0.1:9051/",
     "MaxClients": 1,
     "MaxTimeoutMs": 10000,
     "DataTunnelCommand": "voicecraft:data_tunnel",
     "CommandsPerTick": 5,
-    "MaxStringLengthPerCommand": 1000
+    "MaxStringLengthPerCommand": 1000,
+    "DisabledPacketTypes": []
   },
   "McHttpConfig": {
     "Enabled": true,
-    "LoginToken": "151a4070-364d-4c26-af27-f2043430a47b",
+    "LoginToken": "f6e88ebe-9562-447a-a386-aa18715ee272",
     "Hostname": "http://127.0.0.1:9050/",
     "MaxClients": 1,
-    "MaxTimeoutMs": 10000
+    "MaxTimeoutMs": 10000,
+    "DisabledPacketTypes": []
   },
   "DefaultAudioEffectsConfig": {
     "1": {
       "EffectType": 1
     },
     "2": {
-      "EffectType": 2,
       "WetDry": 1,
       "MinRange": 0,
-      "MaxRange": 30
+      "MaxRange": 30,
+      "EffectType": 2
     },
     "4": {
-      "EffectType": 4,
       "WetDry": 1,
       "Delay": 0.5,
-      "Range": 30
+      "Range": 30,
+      "EffectType": 4
     },
     "8": {
-      "EffectType": 6,
-      "WetDry": 1
+      "WetDry": 1,
+      "EffectType": 6
     }
   }
 }
-
 ```
 
 # VoiceCraftConfig
@@ -104,6 +106,14 @@ Defines the allowed positioning type that VoiceCraft will verify when a client c
 | 0     | Server Sided     |
 | 1     | Client Sided     |
 
+## EnableVisibilityDisplay
+
+Defines whether the server sends visibility notifiers to the client. This affects the highlighting of player names
+within the client but does not affect any other behavioral conditions.
+
+- Type: `boolean`, `string`
+- Values: `true`, `false`, `"true"`, `"false"`
+
 # McWssConfig
 
 McWss server configuration.
@@ -112,8 +122,8 @@ McWss server configuration.
 
 Defines whether the server is enabled or not. If disabled, the McWss server will not be available.
 
-- Type: `boolean`
-- Values: `true`, `false`
+- Type: `boolean`, `string`
+- Values: `true`, `false`, `"true"`, `"false"`
 
 ## LoginToken
 
@@ -164,6 +174,18 @@ Defines how many characters per command the server will send through each comman
 - Type: `uint`
 - Values: `0` - `4294967295`
 
+## DisabledPacketTypes
+
+> [!WARNING]
+> This property is most likely to break every major or minor update!
+
+Disables the server from sending or receiving any packets defined here (including core packets `0` - `5`). Only use this 
+if you know what you are doing. Check [McApi Packets](./mcapi_packets.md) for the list of packet ID's.
+
+- Type: `byte[]`
+- Values: `0` - `255` per value.
+- Example: `[ 6, 8 ]`
+
 # McHttpConfig
 
 McHttp server configuration.
@@ -172,8 +194,8 @@ McHttp server configuration.
 
 Defines whether the server is enabled or not. If disabled, the McHttp server will not be available.
 
-- Type: `boolean`
-- Values: `true`, `false`
+- Type: `boolean`, `string`
+- Values: `true`, `false`, `"true"`, `"false"`
 
 ## LoginToken
 
@@ -202,6 +224,18 @@ Defines how long the server will wait for each ping packet before disconnecting 
 
 - Type: `uint`
 - Values: `0` - `4294967295`
+
+## DisabledPacketTypes
+
+> [!WARNING]
+> This property is most likely to break every major or minor update!
+
+Disables the server from sending or receiving any packets defined here (including core packets `0` - `5`). Only use this
+if you know what you are doing. Check [McApi Packets](./mcapi_packets.md) for the list of packet ID's.
+
+- Type: `byte[]`
+- Values: `0` - `255` per value.
+- Example: `[ 6, 8 ]`
 
 # DefaultAudioEffectsConfig
 

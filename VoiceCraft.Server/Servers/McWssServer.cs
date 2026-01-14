@@ -20,7 +20,7 @@ namespace VoiceCraft.Server.Servers;
 
 public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {
-    private static readonly Version McWssVersion = new(Constants.Major, Constants.Minor, 0);
+    private static readonly Version McWssVersion = new(Constants.Major, Constants.Minor, Constants.Patch);
     private readonly AudioEffectSystem _audioEffectSystem = audioEffectSystem;
 
     private readonly ConcurrentDictionary<IWebSocketConnection, McApiNetPeer> _mcApiPeers = [];
@@ -95,7 +95,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
 
     public void SendPacket<T>(McApiNetPeer netPeer, T packet) where T : IMcApiPacket
     {
-        if (_wsServer == null) return;
+        if (_wsServer == null || IsPacketDisabled(packet.PacketType)) return;
         try
         {
             lock (_writer)
@@ -114,7 +114,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
 
     public void Broadcast<T>(T packet, params McApiNetPeer?[] excludes) where T : IMcApiPacket
     {
-        if (_wsServer == null) return;
+        if (_wsServer == null || IsPacketDisabled(packet.PacketType)) return;
         try
         {
             lock (_writer)
@@ -134,6 +134,11 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
         {
             PacketPool<T>.Return(packet);
         }
+    }
+    
+    private bool IsPacketDisabled(McApiPacketType packetType)
+    {
+        return Config.DisabledPacketTypes.Contains(packetType);
     }
 
     private void SendPacketCommand(IWebSocketConnection socket, string packetData)
@@ -239,6 +244,7 @@ public class McWssServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSys
 
     private void HandlePacket(McApiPacketType packetType, NetDataReader reader, McApiNetPeer peer, string? _)
     {
+        if (IsPacketDisabled(packetType)) return;
         switch (packetType)
         {
             case McApiPacketType.LoginRequest:

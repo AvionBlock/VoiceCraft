@@ -3,10 +3,10 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 
@@ -43,8 +43,9 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
                 read = Math.Max(read, entityRead);
                 _mutex.ReleaseMutex();
             });
-            read = AdjustVolume(mixingBuffer, read, client.OutputVolume);
-            read = PcmFloatTo16(mixingBuffer, read, buffer); //To PCM16
+            read = SampleHardClip.Read(mixingBuffer, read);
+            read = SampleVolume.Read(mixingBuffer, read, client.OutputVolume);
+            read = SampleFloatTo16.Read(mixingBuffer, read, buffer); //To PCM16
             //Full read
             if (read >= count) return read;
             buffer.Slice(read, count - read).Clear();
@@ -76,13 +77,13 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         {
             var entityRead = entity.Read(entityBuffer, monoCount);
             if (entityRead <= 0) entityRead = monoCount; //Do a full read.
-            entityRead = Pcm16ToFloat(entityBuffer, entityRead, monoBuffer); //To IEEEFloat
-            entityRead = PcmFloatMonoToStereo(monoBuffer, entityRead, effectBuffer); //To Stereo
+            entityRead = Sample16ToFloat.Read(entityBuffer, entityRead, monoBuffer); //To IEEEFloat
+            entityRead = SampleMonoToStereo.Read(monoBuffer, entityRead, effectBuffer); //To Stereo
             entityRead = ProcessEffects(effectBuffer, entityRead, entity); //Process Effects
-            entityRead = AdjustVolume(effectBuffer, entityRead, entity.Volume); //Adjust the volume of the entity.
+            entityRead = SampleVolume.Read(effectBuffer, entityRead, entity.Volume); //Adjust the volume of the entity.
             lock (mixingBuffer)
             {
-                entityRead = PcmFloatMix(effectBuffer, entityRead, mixingBuffer); //Mix IEEFloat audio.
+                entityRead = SampleMixer.Read(effectBuffer, entityRead, mixingBuffer); //Mix IEEFloat audio.
             }
 
             return entityRead;
@@ -148,66 +149,5 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         }
 
         return count;
-    }
-
-    private static int AdjustVolume(Span<float> buffer, int count, float volume)
-    {
-        for (var i = 0; i < count; i++) buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
-        return count;
-    }
-
-    private static int Pcm16ToFloat(Span<short> buffer, int count, Span<float> destBuffer)
-    {
-        for (var i = 0; i < count; i++)
-            destBuffer[i] = Math.Clamp(buffer[i] / (short.MaxValue + 1f), -1f, 1f);
-        return count;
-    }
-
-    private static int PcmFloatMonoToStereo(Span<float> buffer, int count, Span<float> destBuffer)
-    {
-        var destOffset = 0;
-        for (var i = 0; i < count; i++)
-        {
-            var sampleVal = buffer[i];
-            destBuffer[destOffset++] = sampleVal;
-            destBuffer[destOffset++] = sampleVal;
-        }
-
-        return count * 2;
-    }
-
-    private static int PcmFloatTo16(Span<float> floatBuffer, int count, Span<short> destBuffer)
-    {
-        for (var i = 0; i < count; i++)
-            destBuffer[i] = Math.Clamp((short)(floatBuffer[i] * short.MaxValue), short.MinValue, short.MaxValue);
-
-        return count;
-    }
-
-    private static int PcmFloatMix(Span<float> srcBuffer, int count, Span<float> dstBuffer)
-    {
-        //Usage of SIMD accelerated operation.
-        var simdCount = 0;
-        var simdLength = count - count % Vector<float>.Count;
-
-        // Ensure there's enough data for SIMD operations
-        if (simdLength > 0 && Vector<float>.Count <= count && Vector<float>.Count <= dstBuffer.Length)
-            while (simdCount < simdLength)
-            {
-                var vectorS = new Vector<float>(srcBuffer.Slice(simdCount, Vector<float>.Count));
-                var vectorD = new Vector<float>(dstBuffer.Slice(simdCount, Vector<float>.Count));
-                Vector.Clamp(vectorD + vectorS, -Vector<float>.One, Vector<float>.One)
-                    .CopyTo(dstBuffer.Slice(simdCount, Vector<float>.Count));
-                simdCount += Vector<float>.Count;
-            }
-
-        // Scalar remainder
-        while (simdCount < count)
-        {
-            dstBuffer[count] += srcBuffer[count];
-            simdCount++;
-        }
-
-        return simdCount;
     }
 }

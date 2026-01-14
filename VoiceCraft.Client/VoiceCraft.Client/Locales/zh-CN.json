@@ -26,9 +26,9 @@
       "VoipBackgroundError": "VOIP背景服务错误: {0}"
     },
     "McWss": {
-      "Badge": null,
-      "Connected": null,
-      "Disconnected": null
+      "Badge": "McWss",
+      "Connected": "McWss 连接已建立: {0}",
+      "Disconnected": "McWss 连接已断开！"
     }
   },
   "Home": {
@@ -80,7 +80,7 @@
       "EchoCancelers": "回声消除器",
       "InputDevices": "输入设备",
       "MicrophoneSensitivity": "麦克风灵敏度",
-      "OutputVolume": null,
+      "OutputVolume": "输出音量",
       "OutputDevices": "输出设备",
       "TestOutput": "测试输出",
       "MicrophoneTest": {
@@ -90,8 +90,8 @@
     },
     "Network": {
       "Network": "网络设置",
-      "PositioningType": null,
-      "McWssListenIp": null,
+      "PositioningType": "定位类型",
+      "McWssListenIp": "MCWSS 监听IP地址",
       "McWssHostPort": "MCWSS主机端口"
     },
     "HotKey": {
@@ -116,11 +116,11 @@
     "ServerInfo": {
       "ServerInfo": "服务器信息",
       "Status": {
-        "Latency": "延迟: {latency}",
-        "Motd": "Motd: {motd}",
-        "PositioningType": "定位类型: {positioningType}",
-        "ConnectedClients": "已连接客户端: {connectedClients}",
-        "Version": null,
+        "Latency": "延迟: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "定位类型: {0}",
+        "ConnectedClients": "已连接客户端: {0}",
+        "Version": "版本: {0}",
         "Pinging": "正在Ping..."
       }
     }
@@ -147,19 +147,27 @@
       "Init": "降噪器未初始化！"
     }
   },
+  "McWssServer": {
+    "Exceptions": {
+      "Failed": "无法启动 McWss 服务器! 请检查是否有其他进程正在使用相同的端口!"
+    }
+  },
   "VoiceCraft": {
     "Status": {
       "Initializing": "正在初始化...",
       "Connecting": "正在连接...",
       "Connected": "已连接！",
-      "Disconnected": "已断开连接！原因: {reason}"
+      "Disconnected": "已断开连接！原因: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "McWss 监听: {0}:{1}"
     },
     "DisconnectReason": {
       "Manual": "手动断开连接。",
       "ServerFull": "服务器已满！",
       "IncompatibleVersion": "客户端/服务器版本不兼容！",
-      "ServerSidedOnly": null,
-      "ClientSidedOnly": null,
+      "ServerSidedOnly": "服务器只接受服务器端定位！",
+      "ClientSidedOnly": "服务器只接受客户端定位！",
       "Kicked": "被踢出服务器！",
       "Shutdown": "服务器关闭！",
       "Error": "尝试登录时发生错误！"
