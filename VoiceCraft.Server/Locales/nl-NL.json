@@ -18,6 +18,7 @@
     "Success": "Servereigenschappen succesvol geladen!",
     "Failed": "Laden van de servereigenschappen is mislukt! Terugvallen op standaardeigenschappen! Fout: {0}",
     "NotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen! Bestand genereren...",
+    "FailNotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen!",
     "Generating": {
       "Generating": "Genereren van het ServerProperties.json-bestand op {0}",
       "Success": "Succesvol het ServerProperties.json-bestand gegenereerd op {0}",

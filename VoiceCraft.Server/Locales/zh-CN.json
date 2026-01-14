@@ -18,6 +18,7 @@
     "Success": "成功加载服务器属性!",
     "Failed": "加载服务器属性失败! 回退到默认属性! 错误: {0}",
     "NotFound": "未在当前和/或子目录中找到 ServerProperties.json 文件! 正在生成文件...",
+    "FailNotFound": "未在当前和/或子目录中找到 ServerProperties.json 文件!",
     "Generating": {
       "Generating": "正在生成 ServerProperties.json 文件于 {0}",
       "Success": "成功生成 ServerProperties.json 文件于 {0}",

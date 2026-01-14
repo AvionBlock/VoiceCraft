@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
 using VoiceCraft.Core;
+using VoiceCraft.Core.JsonConverters;
 
 namespace VoiceCraft.Server.Config;
 
 public class McWssConfig
 {
+    [JsonConverter(typeof(JsonBooleanConverter))]
     public bool Enabled { get; set; }
     public string LoginToken { get; set; } = Guid.NewGuid().ToString();
     public string Hostname { get; set; } = "ws://127.0.0.1:9051/";

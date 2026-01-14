@@ -18,6 +18,7 @@
     "Success": "成功加載伺服器屬性!",
     "Failed": "加載伺服器屬性失敗! 回退到默認屬性! 錯誤: {0}",
     "NotFound": "未在當前和/或子目錄中找到 ServerProperties.json 文件! 正在生成文件...",
+    "FailNotFound": "未在當前和/或子目錄中找到 ServerProperties.json 文件!",
     "Generating": {
       "Generating": "正在生成 ServerProperties.json 文件於 {0}",
       "Success": "成功生成 ServerProperties.json 文件於 {0}",

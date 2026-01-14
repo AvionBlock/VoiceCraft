@@ -15,13 +15,13 @@ public static class Program
 {
     public static readonly ServiceProvider ServiceProvider = BuildServiceProvider();
 
-    public static void Main()
+    public static void Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales");
         FleckLog.LogAction = (_, _, _) => { }; //Remove all websocket logs.
         LogService.Load(); //Load Logs.
-        App.Start().GetAwaiter().GetResult();
+        new VoiceCraftRootCommand().Parse(args).InvokeAsync().GetAwaiter().GetResult();
         ServiceProvider.Dispose(); //Dispose
     }
 
