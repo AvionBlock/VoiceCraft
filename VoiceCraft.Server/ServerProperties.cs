@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Spectre.Console;
-using VoiceCraft.Core.Audio.Effects;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Network.Audio.Effects;
+using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Server.Config;
 
 namespace VoiceCraft.Server;

@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Server.Systems;
 

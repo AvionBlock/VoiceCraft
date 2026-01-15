@@ -13,12 +13,12 @@ using OpusSharp.Core.Extensions;
 using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Network.VcPackets;
-using VoiceCraft.Core.Network.VcPackets.Event;
-using VoiceCraft.Core.Network.VcPackets.Request;
-using VoiceCraft.Core.Network.VcPackets.Response;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Packets.VcPackets;
+using VoiceCraft.Network.Packets.VcPackets.Event;
+using VoiceCraft.Network.Packets.VcPackets.Request;
+using VoiceCraft.Network.Packets.VcPackets.Response;
 
 namespace VoiceCraft.Client.Network;
 

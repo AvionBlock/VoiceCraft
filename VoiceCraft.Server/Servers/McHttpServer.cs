@@ -5,14 +5,15 @@ using System.Text.Json;
 using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.Network;
-using VoiceCraft.Core.Network.McApiPackets;
-using VoiceCraft.Core.Network.McApiPackets.Request;
-using VoiceCraft.Core.Network.McApiPackets.Response;
-using VoiceCraft.Core.Network.McHttpPackets;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
+using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Packets.McApiPackets;
+using VoiceCraft.Network.Packets.McApiPackets.Request;
+using VoiceCraft.Network.Packets.McApiPackets.Response;
+using VoiceCraft.Network.Packets.McHttpPackets;
+using VoiceCraft.Network.World;
 using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 
@@ -500,18 +501,22 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
     {
         try
         {
-            var entity = _world.CreateEntity(
-                packet.WorldId,
-                packet.Name,
-                packet.Muted,
-                packet.Deafened,
-                packet.TalkBitmask,
-                packet.ListenBitmask,
-                packet.EffectBitmask,
-                packet.Position,
-                packet.Rotation,
-                packet.CaveFactor,
-                packet.MuffleFactor);
+            var id = _world.GetNextId();
+            var entity = new VoiceCraftEntity(id, _world)
+            {
+                WorldId = packet.WorldId,
+                Name = packet.Name,
+                Muted = packet.Muted,
+                Deafened = packet.Deafened,
+                TalkBitmask = packet.TalkBitmask,
+                ListenBitmask = packet.ListenBitmask,
+                EffectBitmask = packet.EffectBitmask,
+                Position = packet.Position,
+                Rotation = packet.Rotation,
+                CaveFactor = packet.CaveFactor,
+                MuffleFactor = packet.MuffleFactor
+            };
+            _world.AddEntity(entity);
             SendPacket(netPeer, PacketPool<McApiCreateEntityResponsePacket>.GetPacket()
                 .Set(packet.RequestId, McApiCreateEntityResponsePacket.ResponseCodes.Ok, entity.Id));
         }

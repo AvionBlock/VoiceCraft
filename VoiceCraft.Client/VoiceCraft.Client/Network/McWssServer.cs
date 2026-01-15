@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using System.Text.Json;
 using Fleck;
-using VoiceCraft.Core.Network.McWssPackets;
+using VoiceCraft.Network.Packets.McWssPackets;
 
 namespace VoiceCraft.Client.Network;
 

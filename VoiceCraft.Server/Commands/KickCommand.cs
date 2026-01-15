@@ -1,13 +1,13 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class KickCommand : Command
 {
-    public KickCommand(VoiceCraftServer server) : base(
+    public KickCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.Kick.Name"),
         Localizer.Get("Commands.Kick.Description"))
     {
@@ -21,7 +21,7 @@ public class KickCommand : Command
         {
             var id = result.GetRequiredValue(idArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             if (entity is null)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
             if (entity is not VoiceCraftNetworkEntity networkEntity)

@@ -1,0 +1,41 @@
+using LiteNetLib.Utils;
+using VoiceCraft.Core;
+
+namespace VoiceCraft.Network.Packets.McApiPackets.Request;
+
+public class McApiSetEntityWorldIdRequestPacket : IMcApiPacket
+{
+    public McApiSetEntityWorldIdRequestPacket() : this(0, string.Empty)
+    {
+    }
+
+    public McApiSetEntityWorldIdRequestPacket(int id, string value)
+    {
+        Id = id;
+        Value = value;
+    }
+
+    public int Id { get; private set; }
+    public string Value { get; private set; }
+
+    public McApiPacketType PacketType => McApiPacketType.SetEntityWorldIdRequest;
+
+    public void Serialize(NetDataWriter writer)
+    {
+        writer.Put(Id);
+        writer.Put(Value, Constants.MaxStringLength);
+    }
+
+    public void Deserialize(NetDataReader reader)
+    {
+        Id = reader.GetInt();
+        Value = reader.GetString(Constants.MaxStringLength);
+    }
+
+    public McApiSetEntityWorldIdRequestPacket Set(int id = 0, string value = "")
+    {
+        Id = id;
+        Value = value;
+        return this;
+    }
+}

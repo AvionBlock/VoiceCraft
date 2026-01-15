@@ -1,12 +1,12 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetWorldIdCommand : Command
 {
-    public SetWorldIdCommand(VoiceCraftServer server) : base(
+    public SetWorldIdCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.SetWorldId.Name"),
         Localizer.Get("Commands.SetWorldId.Description"))
     {
@@ -27,7 +27,7 @@ public class SetWorldIdCommand : Command
             var id = result.GetRequiredValue(idArgument);
             var value = result.GetRequiredValue(valueArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             if (entity is null)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
 

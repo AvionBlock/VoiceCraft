@@ -1,13 +1,14 @@
 using System.CommandLine;
 using System.Numerics;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.World;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetPositionCommand : Command
 {
-    public SetPositionCommand(VoiceCraftServer server) : base(
+    public SetPositionCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.SetPosition.Name"),
         Localizer.Get("Commands.SetPosition.Description"))
     {
@@ -39,7 +40,7 @@ public class SetPositionCommand : Command
             var yPos = result.GetRequiredValue(yPosArgument);
             var zPos = result.GetRequiredValue(zPosArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             if (entity is null)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
 

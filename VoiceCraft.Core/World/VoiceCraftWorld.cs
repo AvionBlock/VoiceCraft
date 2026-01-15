@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Threading;
-using LiteNetLib;
 
 namespace VoiceCraft.Core.World
 {
@@ -33,69 +31,6 @@ namespace VoiceCraft.Core.World
         public event Action<VoiceCraftEntity>? OnEntityCreated;
         public event Action<VoiceCraftEntity>? OnEntityDestroyed;
 
-        public VoiceCraftEntity CreateEntity()
-        {
-            var id = GetNextId();
-            var entity = new VoiceCraftEntity(id, this);
-            if (!_entities.TryAdd(id, entity))
-                throw new InvalidOperationException("Failed to create entity!");
-
-            entity.OnDestroyed += RemoveEntity;
-            OnEntityCreated?.Invoke(entity);
-            return entity;
-        }
-
-        public VoiceCraftEntity CreateEntity(
-            string worldId,
-            string name,
-            bool muted,
-            bool deafened,
-            ushort talkBitmask,
-            ushort listenBitmask,
-            ushort effectBitmask,
-            Vector3 position,
-            Vector2 rotation,
-            float caveFactor,
-            float muffleFactor)
-        {
-            var id = GetNextId();
-            var entity = new VoiceCraftEntity(id, this)
-            {
-                WorldId = worldId,
-                Name = name,
-                Muted = muted,
-                Deafened = deafened,
-                TalkBitmask = talkBitmask,
-                ListenBitmask = listenBitmask,
-                EffectBitmask = effectBitmask,
-                Position = position,
-                Rotation = rotation,
-                CaveFactor = caveFactor,
-                MuffleFactor = muffleFactor
-            };
-            if (!_entities.TryAdd(id, entity))
-                throw new InvalidOperationException("Failed to create entity!");
-
-            entity.OnDestroyed += RemoveEntity;
-            OnEntityCreated?.Invoke(entity);
-            return entity;
-        }
-
-        public VoiceCraftNetworkEntity CreateEntity(NetPeer peer, Guid userGuid, Guid serverUserGuid, string locale,
-            PositioningType positioningType, bool serverMute, bool serverDeafen)
-        {
-            var id = GetNextId();
-            var entity = new VoiceCraftNetworkEntity(peer, id, userGuid, serverUserGuid, locale, positioningType,
-                serverMute, serverDeafen, this);
-            if (!_entities.TryAdd(id, entity))
-                throw new InvalidOperationException("Failed to create entity!");
-
-            peer.Tag = entity;
-            entity.OnDestroyed += RemoveEntity;
-            OnEntityCreated?.Invoke(entity);
-            return entity;
-        }
-
         public void AddEntity(VoiceCraftEntity entity)
         {
             if (!_entities.TryAdd(entity.Id, entity))
@@ -112,6 +47,21 @@ namespace VoiceCraft.Core.World
         {
             _entities.TryGetValue(id, out var entity);
             return entity;
+        }
+        
+        public int GetNextId()
+        {
+            _mutex.WaitOne();
+            try
+            {
+                while (_entities.ContainsKey(_nextEntityId)) ++_nextEntityId;
+
+                return _nextEntityId++;
+            }
+            finally
+            {
+                _mutex.ReleaseMutex();
+            }
         }
 
         public void DestroyEntity(int id)
@@ -142,21 +92,6 @@ namespace VoiceCraft.Core.World
             entity.OnDestroyed -= RemoveEntity;
             if (_entities.TryRemove(entity.Id, out _))
                 OnEntityDestroyed?.Invoke(entity);
-        }
-
-        private int GetNextId()
-        {
-            _mutex.WaitOne();
-            try
-            {
-                while (_entities.ContainsKey(_nextEntityId)) ++_nextEntityId;
-
-                return _nextEntityId++;
-            }
-            finally
-            {
-                _mutex.ReleaseMutex();
-            }
         }
     }
 }

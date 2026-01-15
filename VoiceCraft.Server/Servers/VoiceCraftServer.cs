@@ -5,10 +5,11 @@ using LiteNetLib.Utils;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.Network.VcPackets;
-using VoiceCraft.Core.Network.VcPackets.Request;
-using VoiceCraft.Core.Network.VcPackets.Response;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.Packets.VcPackets;
+using VoiceCraft.Network.Packets.VcPackets.Request;
+using VoiceCraft.Network.Packets.VcPackets.Response;
+using VoiceCraft.Network.World;
 using VoiceCraft.Server.Config;
 using VoiceCraft.Server.Systems;
 
@@ -20,6 +21,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
 
     //Systems
     private readonly AudioEffectSystem _audioEffectSystem;
+    private readonly VoiceCraftWorld _world;
 
     //Networking
     private readonly NetDataWriter _dataWriter = new();
@@ -35,12 +37,11 @@ public class VoiceCraftServer : IDisposable, INetEventListener
         };
 
         _audioEffectSystem = audioEffectSystem;
-        World = world;
+        _world = world;
     }
 
     //Public Properties
     public VoiceCraftConfig Config { get; private set; } = new();
-    public VoiceCraftWorld World { get; }
 
     public void Dispose()
     {
@@ -57,7 +58,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
     public void OnPeerDisconnected(NetPeer peer, DisconnectInfo info)
     {
         if (peer.Tag is not VoiceCraftNetworkEntity networkEntity || networkEntity.Destroyed) return;
-        World.DestroyEntity(networkEntity.Id);
+        _world.DestroyEntity(networkEntity.Id);
     }
 
     public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
@@ -282,7 +283,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
         {
             lock (_dataWriter)
             {
-                var networkEntities = World.Entities.OfType<VoiceCraftNetworkEntity>();
+                var networkEntities = _world.Entities.OfType<VoiceCraftNetworkEntity>();
                 _dataWriter.Reset();
                 _dataWriter.Put((byte)packet.PacketType);
                 packet.Serialize(_dataWriter);
@@ -399,8 +400,11 @@ public class VoiceCraftServer : IDisposable, INetEventListener
             var peer = request.Accept();
             try
             {
-                World.CreateEntity(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale, packet.PositioningType,
-                    false, false);
+                var id = _world.GetNextId();
+                var entity = new VoiceCraftNetworkEntity(peer, id, packet.UserGuid, packet.ServerUserGuid,
+                    packet.Locale, packet.PositioningType, false, false, _world);
+                peer.Tag = entity;
+                _world.AddEntity(entity);
                 SendPacket(peer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
             }
             catch (Exception ex)

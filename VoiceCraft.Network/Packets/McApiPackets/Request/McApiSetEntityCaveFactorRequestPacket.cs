@@ -1,0 +1,41 @@
+using LiteNetLib.Utils;
+using VoiceCraft.Core;
+
+namespace VoiceCraft.Network.Packets.McApiPackets.Request;
+
+public class McApiSetEntityCaveFactorRequestPacket : IMcApiPacket
+{
+    public McApiSetEntityCaveFactorRequestPacket() : this(0, 0.0f)
+    {
+    }
+
+    public McApiSetEntityCaveFactorRequestPacket(int id, float value)
+    {
+        Id = id;
+        Value = value;
+    }
+
+    public int Id { get; private set; }
+    public float Value { get; private set; }
+
+    public McApiPacketType PacketType => McApiPacketType.SetEntityCaveFactorRequest;
+
+    public void Serialize(NetDataWriter writer)
+    {
+        writer.Put(Id);
+        writer.Put(Value);
+    }
+
+    public void Deserialize(NetDataReader reader)
+    {
+        Id = reader.GetInt();
+        Value = reader.GetFloat();
+    }
+
+    public McApiSetEntityCaveFactorRequestPacket Set(int id = 0, float value = 0.0f)
+    {
+        Id = id;
+        Value = value;
+        return this;
+    }
+}

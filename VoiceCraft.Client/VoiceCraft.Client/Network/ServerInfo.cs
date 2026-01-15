@@ -1,6 +1,6 @@
 using System;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Network.VcPackets.Response;
+using VoiceCraft.Network.Packets.VcPackets.Response;
 
 namespace VoiceCraft.Client.Network;
 

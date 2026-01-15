@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Audio;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Client.Network.Systems;
 

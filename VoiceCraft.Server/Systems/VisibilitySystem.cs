@@ -1,5 +1,6 @@
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Systems;
 

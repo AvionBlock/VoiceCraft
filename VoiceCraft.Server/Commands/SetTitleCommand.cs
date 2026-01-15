@@ -1,15 +1,16 @@
 using System.CommandLine;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.Network.VcPackets.Request;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.Packets.VcPackets.Request;
+using VoiceCraft.Network.World;
 using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetTitleCommand : Command
 {
-    public SetTitleCommand(VoiceCraftServer server) : base(
+    public SetTitleCommand(VoiceCraftServer server, VoiceCraftWorld world) : base(
         Localizer.Get("Commands.SetTitle.Name"),
         Localizer.Get("Commands.SetTitle.Description"))
     {
@@ -30,7 +31,7 @@ public class SetTitleCommand : Command
             var id = result.GetRequiredValue(idArgument);
             var value = result.GetRequiredValue(valueArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             if (entity is null)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
             if (entity is not VoiceCraftNetworkEntity networkEntity)

@@ -1,13 +1,13 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class MuteCommand : Command
 {
-    public MuteCommand(VoiceCraftServer server) : base(
+    public MuteCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.Mute.Name"),
         Localizer.Get("Commands.Mute.Description"))
     {
@@ -21,7 +21,7 @@ public class MuteCommand : Command
         {
             var id = result.GetRequiredValue(idArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             switch (entity)
             {
                 case null:
