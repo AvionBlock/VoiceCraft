@@ -9,8 +9,4 @@
         <PackageReference Include="System.ComponentModel.Annotations"/>
         <PackageReference Include="System.Text.Json"/>
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Network\" />
-    </ItemGroup>
 </Project>
