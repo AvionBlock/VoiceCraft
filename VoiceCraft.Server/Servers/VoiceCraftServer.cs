@@ -20,7 +20,6 @@ public class VoiceCraftServer : IDisposable, INetEventListener
     public static readonly Version Version = new(Constants.Major, Constants.Minor, Constants.Patch);
 
     //Systems
-    private readonly AudioEffectSystem _audioEffectSystem;
     private readonly VoiceCraftWorld _world;
 
     //Networking
@@ -35,8 +34,7 @@ public class VoiceCraftServer : IDisposable, INetEventListener
             AutoRecycle = true,
             UnconnectedMessagesEnabled = true
         };
-
-        _audioEffectSystem = audioEffectSystem;
+        
         _world = world;
     }
 

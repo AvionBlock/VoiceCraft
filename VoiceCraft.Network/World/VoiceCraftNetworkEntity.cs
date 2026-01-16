@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using LiteNetLib;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
 
@@ -12,27 +11,23 @@ namespace VoiceCraft.Network.World
         private bool _serverMuted;
 
         public VoiceCraftNetworkEntity(
-            NetPeer netPeer,
+            VoiceCraftNetPeer netPeer,
             int id,
-            Guid userGuid,
-            Guid serverUserGuid,
-            string locale,
-            PositioningType positioningType,
             bool serverMuted,
             bool serverDeafened,
             VoiceCraftWorld world) : base(id, world)
         {
             Name = "New Client";
             NetPeer = netPeer;
-            UserGuid = userGuid;
-            ServerUserGuid = serverUserGuid;
-            Locale = locale;
-            PositioningType = positioningType;
+            UserGuid = netPeer.UserGuid;
+            ServerUserGuid = netPeer.ServerUserGuid;
+            Locale = netPeer.Locale;
+            PositioningType = netPeer.PositioningType;
             ServerMuted = serverMuted;
             ServerDeafened = serverDeafened;
         }
 
-        public NetPeer NetPeer { get; }
+        public VoiceCraftNetPeer NetPeer { get; }
         public Guid UserGuid { get; private set; }
         public Guid ServerUserGuid { get; private set; }
         public string Locale { get; private set; }

@@ -125,14 +125,6 @@ namespace VoiceCraft.Core
         OnEntityAudioReceived
     }
 
-    public enum VcConnectionState : byte
-    {
-        Disconnected,
-        Connecting,
-        Connected,
-        Disconnecting
-    }
-
     #endregion
 
     #region Audio
