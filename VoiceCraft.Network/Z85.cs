@@ -1,14 +1,14 @@
 using System;
 using System.Text;
 
-namespace VoiceCraft.Core
+namespace VoiceCraft.Network
 {
     public static class Z85
     {
         private const int Base85 = 85;
 
         private static readonly char[] EncodingTable =
-        {
+        [
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
             'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
@@ -18,10 +18,10 @@ namespace VoiceCraft.Core
             'Y', 'Z', '.', '-', ':', '+', '=', '^', '!', '/',
             '*', '?', '&', '<', '>', '(', ')', '[', ']', '{',
             '}', '@', '%', '$', '#'
-        };
+        ];
 
         private static readonly uint[] DecodingTable =
-        {
+        [
             0, 68, 0, 84, 83, 82, 72, 0,
             75, 76, 70, 65, 0, 63, 62, 69,
             0, 1, 2, 3, 4, 5, 6, 7,
@@ -34,7 +34,7 @@ namespace VoiceCraft.Core
             17, 18, 19, 20, 21, 22, 23, 24,
             25, 26, 27, 28, 29, 30, 31, 32,
             33, 34, 35, 79, 0, 80, 0, 0
-        };
+        ];
 
         /// <summary>
         ///     Encodes a byte array into a Z85 string with padding.
