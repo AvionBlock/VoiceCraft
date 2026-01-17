@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Backends;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
@@ -19,7 +19,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public static readonly Version Version = new(Constants.Major, Constants.Minor, Constants.Patch);
     private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
     private readonly AudioEffectSystem _audioEffectSystem = new();
-    private readonly VcNetworkBackend _networkBackend;
+    private readonly VoiceCraftNetworkBackend _networkBackend;
     private VoiceCraftNetPeer? _serverPeer;
     private bool _disposed;
 
@@ -30,6 +30,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private ushort _sendTimestamp;
     private bool _serverDeafened;
     private bool _serverMuted;
+    private bool _speakingState;
 
     //Properties
     public VcConnectionState ConnectionState => _serverPeer?.ConnectionState ?? VcConnectionState.Disconnected;
@@ -45,6 +46,17 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         get => _outputVolume;
         set => _outputVolume = Math.Clamp(value, 0, 2);
+    }
+
+    public bool SpeakingState
+    {
+        get => _speakingState;
+        private set
+        {
+            if (_speakingState == value) return;
+            _speakingState = value;
+            OnSpeakingUpdated?.Invoke(value);
+        }
     }
 
     public bool ServerMuted
@@ -78,9 +90,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public event Action<bool>? OnServerMuteUpdated;
     public event Action<bool>? OnServerDeafenUpdated;
 
-    public VoiceCraftClient(VcNetworkBackend networkBackend) : base(0, new VoiceCraftWorld())
+    public VoiceCraftClient(VoiceCraftNetworkBackend networkBackend) : base(0, new VoiceCraftWorld())
     {
         _networkBackend = networkBackend;
+        _networkBackend.OnPeerDisconnected += NetworkBackendOnPeerDisconnected;
         _networkBackend.OnNetworkReceive += NetworkBackendOnNetworkReceive;
 
         //Internal Listeners
@@ -120,8 +133,14 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public void Update()
     {
-        if (ConnectionState == VcConnectionState.Disconnected || !_networkBackend.IsStarted) return;
+        if (!_networkBackend.IsStarted) return;
         _networkBackend.Update();
+        SpeakingState = _speakingState switch
+        {
+            false when (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds <= Constants.SilenceThresholdMs => true,
+            true when (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs => true,
+            _ => SpeakingState
+        };
     }
 
     public async Task<bool> DisconnectAsync(string? reason = null)
@@ -133,8 +152,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _networkBackend.Disconnect(_serverPeer, reason);
             _networkBackend.Stop();
         });
-
-        OnDisconnected?.Invoke(reason ?? "");
         return true;
     }
 
@@ -185,6 +202,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             World.Dispose();
             _networkBackend.Dispose();
 
+            _networkBackend.OnPeerDisconnected -= NetworkBackendOnPeerDisconnected;
             _networkBackend.OnNetworkReceive -= NetworkBackendOnNetworkReceive;
             OnWorldIdUpdated -= OnClientWorldIdUpdated;
             OnNameUpdated -= OnClientNameUpdated;
@@ -254,6 +272,12 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         SendPacket(PacketPool<VcSetMuffleFactorRequest>.GetPacket().Set(muffleFactor));
     }
 
+    private void NetworkBackendOnPeerDisconnected(VoiceCraftNetPeer peer, string? reason)
+    {
+        if (peer != _serverPeer) return;
+        OnDisconnected?.Invoke(reason ?? string.Empty);
+    }
+    
     //Packet Handling
     private void NetworkBackendOnNetworkReceive(VoiceCraftNetPeer netPeer, IVoiceCraftPacket packet)
     {

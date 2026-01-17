@@ -8,7 +8,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network;
-using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Backends;
 using VoiceCraft.Network.Packets.McApiPackets;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;

@@ -5,7 +5,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio.Effects;
 
-namespace VoiceCraft.Network.Interfaces
+namespace VoiceCraft.Network.Backends
 {
     public interface IAudioEffect : INetSerializable, IDisposable
     {

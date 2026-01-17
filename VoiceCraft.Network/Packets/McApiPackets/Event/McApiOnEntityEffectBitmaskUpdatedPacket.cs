@@ -3,13 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEffectBitmaskUpdatedPacket : IMcApiPacket
+public class McApiOnEntityEffectBitmaskUpdatedPacket : IMcApiPacket
 {
-    public McApiOnEffectBitmaskUpdatedPacket() : this(0, 0)
+    public McApiOnEntityEffectBitmaskUpdatedPacket() : this(0, 0)
     {
     }
 
-    public McApiOnEffectBitmaskUpdatedPacket(int id, ushort value)
+    public McApiOnEntityEffectBitmaskUpdatedPacket(int id, ushort value)
     {
         Id = id;
         Value = value;
@@ -32,7 +32,7 @@ public class McApiOnEffectBitmaskUpdatedPacket : IMcApiPacket
         Value = reader.GetUShort();
     }
 
-    public McApiOnEffectBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
+    public McApiOnEntityEffectBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
     {
         Id = id;
         Value = value;

@@ -14,7 +14,7 @@ using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Backends;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
 using VoiceCraft.Network.Packets.VcPackets.Request;

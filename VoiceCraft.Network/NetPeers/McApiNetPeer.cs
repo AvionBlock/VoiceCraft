@@ -2,11 +2,12 @@ using System;
 
 namespace VoiceCraft.Network.NetPeers;
 
-public abstract class McApiNetPeer(Version version, string token)
+public abstract class McApiNetPeer(Version version, string loginToken)
 {
     public abstract McApiConnectionState ConnectionState { get; }
     public Version Version { get; } = version;
-    public string Token { get; } = token;
+    public string LoginToken { get; } = loginToken;
+    public string SessionToken { get; } = Guid.NewGuid().ToString();
     public object? Tag { get; set; }
 
     public abstract void Accept();

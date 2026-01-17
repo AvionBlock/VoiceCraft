@@ -10,9 +10,9 @@ using VoiceCraft.Network.Packets.VcPackets.Event;
 using VoiceCraft.Network.Packets.VcPackets.Request;
 using VoiceCraft.Network.Packets.VcPackets.Response;
 
-namespace VoiceCraft.Network.Interfaces;
+namespace VoiceCraft.Network.Backends;
 
-public abstract class VcNetworkBackend : IDisposable
+public abstract class VoiceCraftNetworkBackend : IDisposable
 {
     public abstract bool IsStarted { get; }
     public abstract int ConnectedPeersCount { get; }
@@ -25,7 +25,7 @@ public abstract class VcNetworkBackend : IDisposable
     public event Action<VoiceCraftNetPeer, IVoiceCraftPacket>? OnNetworkReceive;
     public event Action<IPEndPoint, IVoiceCraftPacket>? OnNetworkReceiveUnconnected;
 
-    ~VcNetworkBackend()
+    ~VoiceCraftNetworkBackend()
     {
         Dispose(false);
     }
@@ -52,12 +52,6 @@ public abstract class VcNetworkBackend : IDisposable
 
     public abstract void Disconnect(VoiceCraftNetPeer netPeer, string? reason = null);
     public abstract void DisconnectAll(string? reason = null);
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
 
     public async Task<T> GetUnconnectedResponseAsync<T>(Guid requestId, TimeSpan timeout)
         where T : IVoiceCraftPacket, IVoiceCraftRIdPacket
@@ -173,6 +167,12 @@ public abstract class VcNetworkBackend : IDisposable
         }
     }
 
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    
     protected virtual void ProcessPacket(VoiceCraftNetPeer netPeer, VcPacketType packetType, NetDataReader reader)
     {
         switch (packetType)

@@ -3,13 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnDeafenUpdatedPacket : IMcApiPacket
+public class McApiOnEntityDeafenUpdatedPacket : IMcApiPacket
 {
-    public McApiOnDeafenUpdatedPacket() : this(0, false)
+    public McApiOnEntityDeafenUpdatedPacket() : this(0, false)
     {
     }
 
-    public McApiOnDeafenUpdatedPacket(int id, bool value)
+    public McApiOnEntityDeafenUpdatedPacket(int id, bool value)
     {
         Id = id;
         Value = value;
@@ -32,7 +32,7 @@ public class McApiOnDeafenUpdatedPacket : IMcApiPacket
         Value = reader.GetBool();
     }
 
-    public McApiOnDeafenUpdatedPacket Set(int id = 0, bool value = false)
+    public McApiOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;

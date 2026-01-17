@@ -3,7 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Backends;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Request;
@@ -15,7 +15,7 @@ namespace VoiceCraft.Network;
 public class VoiceCraftServer : IDisposable
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, Constants.Patch);
-    private readonly VcNetworkBackend _networkBackend;
+    private readonly VoiceCraftNetworkBackend _networkBackend;
     private readonly VoiceCraftWorld _world;
     private bool _disposed;
 
@@ -23,7 +23,7 @@ public class VoiceCraftServer : IDisposable
     public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
     public PositioningType PositioningType { get; private set; } = PositioningType.Server;
 
-    public VoiceCraftServer(VcNetworkBackend networkBackend, VoiceCraftWorld world)
+    public VoiceCraftServer(VoiceCraftNetworkBackend networkBackend, VoiceCraftWorld world)
     {
         _networkBackend = networkBackend;
         _world = world;

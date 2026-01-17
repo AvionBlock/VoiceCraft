@@ -1,6 +1,6 @@
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
-using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Backends;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Spectre.Console;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Audio.Effects;
-using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Backends;
 using VoiceCraft.Server.Config;
 
 namespace VoiceCraft.Server;
