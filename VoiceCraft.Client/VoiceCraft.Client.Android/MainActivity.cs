@@ -10,7 +10,6 @@ using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
-using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using Debug = System.Diagnostics.Debug;
@@ -95,7 +94,6 @@ public class MainActivity : AvaloniaMainActivity<App>
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
-        App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
         App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Permissions.Microphone>();
 

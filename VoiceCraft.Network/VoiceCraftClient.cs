@@ -81,6 +81,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
+
     //Events
     public event Action? OnConnected;
     public event Action<string>? OnDisconnected;
@@ -170,7 +171,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     }
 
     //Write Encoded Bytes
-    public void SendAudio(Span<byte> buffer, int frameLoudness)
+    public void SendAudio(Span<byte> buffer, float frameLoudness)
     {
         if (frameLoudness >= MicrophoneSensitivity)
             _lastAudioPeakTime = DateTime.UtcNow;

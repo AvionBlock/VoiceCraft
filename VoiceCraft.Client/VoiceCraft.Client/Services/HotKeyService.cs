@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using VoiceCraft.Client.Processes;
 
 namespace VoiceCraft.Client.Services;
 
@@ -37,28 +36,24 @@ public abstract class HotKeyAction
     }
 }
 
-public class MuteAction(BackgroundService backgroundService) : HotKeyAction
+public class MuteAction(VoiceCraftService voiceCraftService) : HotKeyAction
 {
-    private readonly BackgroundService _backgroundService = backgroundService;
     public override string Title => "Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
 
     public override void Press()
     {
-        _backgroundService.TryGetBackgroundProcess<VoipBackgroundProcess>(out var process);
-        process?.ToggleMute(!process.Muted);
+        voiceCraftService.Muted = !voiceCraftService.Muted;
     }
 }
 
-public class DeafenAction(BackgroundService backgroundService) : HotKeyAction
+public class DeafenAction(VoiceCraftService voiceCraftService) : HotKeyAction
 {
-    private readonly BackgroundService _backgroundService = backgroundService;
     public override string Title => "Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
 
     public override void Press()
     {
-        _backgroundService.TryGetBackgroundProcess<VoipBackgroundProcess>(out var process);
-        process?.ToggleDeafen(!process.Deafened);
+        voiceCraftService.Deafened = !voiceCraftService.Deafened;
     }
 }

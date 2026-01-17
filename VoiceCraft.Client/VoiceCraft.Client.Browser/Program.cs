@@ -25,7 +25,6 @@ internal sealed class Program
         App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
-        App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 
         await BuildAvaloniaApp()
