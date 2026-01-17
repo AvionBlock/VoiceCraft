@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Request;
 using VoiceCraft.Network.Packets.VcPackets.Response;
@@ -137,7 +138,7 @@ public class VoiceCraftServer : IDisposable
                 }
 
             var id = _world.GetNextId();
-            var entity = new VoiceCraftNetworkEntity(netPeer, id, false, false, _world);
+            var entity = new VoiceCraftNetworkEntity(netPeer, id, _world);
             _world.AddEntity(entity);
             netPeer.Accept();
         }

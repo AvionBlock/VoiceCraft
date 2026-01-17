@@ -146,7 +146,8 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
         _gainController?.Process(data);
         _denoiser?.Denoise(data);
 
-        var loudness = data.GetFramePeak16(count);
+        var shortBuffer = MemoryMarshal.Cast<byte, short>(data);
+        var loudness = SampleLoudness16.Read(shortBuffer, count / sizeof(short));
         MicrophoneValue = loudness;
         DetectingVoiceActivity = loudness >= AudioSettings.MicrophoneSensitivity;
     }

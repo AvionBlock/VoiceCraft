@@ -8,6 +8,7 @@ using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
+using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.ViewModels;
 

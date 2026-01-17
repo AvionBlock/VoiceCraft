@@ -13,12 +13,11 @@ public class VcOnEffectUpdatedPacket : IVoiceCraftPacket
     public VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect)
     {
         Bitmask = bitmask;
-        EffectType = effect?.EffectType ?? EffectType.None;
         Effect = effect;
     }
 
     public ushort Bitmask { get; private set; }
-    public EffectType EffectType { get; private set; }
+    public EffectType EffectType => Effect?.EffectType ?? EffectType.None;
     public IAudioEffect? Effect { get; private set; }
 
     public VcPacketType PacketType => VcPacketType.OnEffectUpdated;
@@ -34,13 +33,13 @@ public class VcOnEffectUpdatedPacket : IVoiceCraftPacket
     public void Deserialize(NetDataReader reader)
     {
         Bitmask = reader.GetUShort();
-        EffectType = (EffectType)reader.GetByte();
+        var effectType = (EffectType)reader.GetByte();
+        Effect = IAudioEffect.FromReader(effectType, reader);
     }
 
     public VcOnEffectUpdatedPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
     {
         Bitmask = bitmask;
-        EffectType = effect?.EffectType ?? EffectType.None;
         Effect = effect;
         return this;
     }

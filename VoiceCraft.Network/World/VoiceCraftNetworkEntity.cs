@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.NetPeers;
 
 namespace VoiceCraft.Network.World
 {
@@ -13,8 +14,6 @@ namespace VoiceCraft.Network.World
         public VoiceCraftNetworkEntity(
             VoiceCraftNetPeer netPeer,
             int id,
-            bool serverMuted,
-            bool serverDeafened,
             VoiceCraftWorld world) : base(id, world)
         {
             Name = "New Client";
@@ -23,8 +22,8 @@ namespace VoiceCraft.Network.World
             ServerUserGuid = netPeer.ServerUserGuid;
             Locale = netPeer.Locale;
             PositioningType = netPeer.PositioningType;
-            ServerMuted = serverMuted;
-            ServerDeafened = serverDeafened;
+            ServerMuted = false;
+            ServerDeafened = false;
         }
 
         public VoiceCraftNetPeer NetPeer { get; }

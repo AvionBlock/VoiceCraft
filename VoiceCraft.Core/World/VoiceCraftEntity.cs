@@ -20,9 +20,7 @@ namespace VoiceCraft.Core.World
         private Vector2 _rotation;
         private ushort _talkBitmask = ushort.MaxValue;
         private string _worldId = string.Empty;
-
-        //Modifiers for modifying data for later?
-
+        
         public VoiceCraftEntity(int id, VoiceCraftWorld world)
         {
             Id = id;

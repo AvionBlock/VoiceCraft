@@ -1,7 +1,10 @@
 using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
+using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
 using VoiceCraft.Network.Packets.VcPackets.Request;
@@ -18,13 +21,18 @@ public abstract class VcNetworkBackend : IDisposable
     public abstract event Action<string?>? OnStopped;
     public abstract event Action<VoiceCraftNetPeer>? OnLoginRequest;
     public abstract event Action<VoiceCraftNetPeer>? OnPeerConnected;
-    public abstract event Action<VoiceCraftNetPeer>? OnPeerDisconnected;
+    public abstract event Action<VoiceCraftNetPeer, string?>? OnPeerDisconnected;
     public event Action<VoiceCraftNetPeer, IVoiceCraftPacket>? OnNetworkReceive;
     public event Action<IPEndPoint, IVoiceCraftPacket>? OnNetworkReceiveUnconnected;
 
+    ~VcNetworkBackend()
+    {
+        Dispose(false);
+    }
+
     public abstract void Start(int? port = null);
 
-    public abstract void Connect(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
+    public abstract VoiceCraftNetPeer Connect(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
         PositioningType positioningType);
 
     public abstract void Update();
@@ -32,8 +40,10 @@ public abstract class VcNetworkBackend : IDisposable
 
     public abstract void Reject(VoiceCraftNetPeer netPeer, string? reason = null);
 
+    public abstract void SendUnconnectedPacket<T>(string ip, int port, T packet) where T : IVoiceCraftPacket;
+
     public abstract void SendUnconnectedPacket<T>(IPEndPoint endPoint, T packet) where T : IVoiceCraftPacket;
-    
+
     public abstract void SendPacket<T>(VoiceCraftNetPeer netPeer, T packet,
         VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable) where T : IVoiceCraftPacket;
 
@@ -42,7 +52,126 @@ public abstract class VcNetworkBackend : IDisposable
 
     public abstract void Disconnect(VoiceCraftNetPeer netPeer, string? reason = null);
     public abstract void DisconnectAll(string? reason = null);
-    public abstract void Dispose();
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public async Task<T> GetUnconnectedResponseAsync<T>(Guid requestId, TimeSpan timeout)
+        where T : IVoiceCraftPacket, IVoiceCraftRIdPacket
+    {
+        var tcs = new TaskCompletionSource<T>();
+        using var cts = new CancellationTokenSource(timeout);
+        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+
+        OnNetworkReceiveUnconnected += EventCallback;
+        try
+        {
+            var result = await tcs.Task.ConfigureAwait(false);
+            return result;
+        }
+        finally
+        {
+            OnNetworkReceiveUnconnected -= EventCallback;
+        }
+
+        void EventCallback(EndPoint _, IVoiceCraftPacket packet)
+        {
+            if (packet is not T rIdPacket || rIdPacket.RequestId != requestId) return;
+            tcs.TrySetResult(rIdPacket);
+        }
+    }
+
+    public async Task<T> GetUnconnectedResponseAsync<T>(TimeSpan timeout) where T : IVoiceCraftPacket
+    {
+        var tcs = new TaskCompletionSource<T>();
+        using var cts = new CancellationTokenSource(timeout);
+        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+
+        OnNetworkReceiveUnconnected += EventCallback;
+        try
+        {
+            var result = await tcs.Task.ConfigureAwait(false);
+            return result;
+        }
+        finally
+        {
+            OnNetworkReceiveUnconnected -= EventCallback;
+        }
+
+        void EventCallback(EndPoint _, IVoiceCraftPacket packet)
+        {
+            if (packet is not T typedPacket) return;
+            tcs.TrySetResult(typedPacket);
+        }
+    }
+
+    public async Task<T> GetResponseAsync<T>(VoiceCraftNetPeer fromPeer, Guid requestId, TimeSpan timeout)
+        where T : IVoiceCraftPacket, IVoiceCraftRIdPacket
+    {
+        var tcs = new TaskCompletionSource<T>();
+        var dTcs = new TaskCompletionSource<string?>();
+        using var cts = new CancellationTokenSource(timeout);
+        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+
+        OnNetworkReceive += EventCallback;
+        OnPeerDisconnected += PeerDisconnectedCallback;
+        try
+        {
+            var result = await Task.WhenAny(tcs.Task, dTcs.Task).ConfigureAwait(false);
+            return result == tcs.Task ? tcs.Task.Result : throw new Exception(dTcs.Task.Result);
+        }
+        finally
+        {
+            OnNetworkReceive -= EventCallback;
+        }
+
+        void EventCallback(VoiceCraftNetPeer _, IVoiceCraftPacket packet)
+        {
+            if (packet is not T typedPacket || typedPacket.RequestId != requestId) return;
+            tcs.TrySetResult(typedPacket);
+        }
+
+        void PeerDisconnectedCallback(VoiceCraftNetPeer peer, string? reason)
+        {
+            if (peer != fromPeer) return;
+            dTcs.TrySetResult(reason);
+        }
+    }
+    
+    public async Task<T> GetResponseAsync<T>(VoiceCraftNetPeer fromPeer, TimeSpan timeout) where T : IVoiceCraftPacket
+    {
+        var tcs = new TaskCompletionSource<T>();
+        var dTcs = new TaskCompletionSource<string?>();
+        using var cts = new CancellationTokenSource(timeout);
+        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+
+        OnNetworkReceive += EventCallback;
+        OnPeerDisconnected += PeerDisconnectedCallback;
+        try
+        {
+            var result = await Task.WhenAny(tcs.Task, dTcs.Task).ConfigureAwait(false);
+            return result == tcs.Task ? tcs.Task.Result : throw new Exception(dTcs.Task.Result);
+        }
+        finally
+        {
+            OnNetworkReceive -= EventCallback;
+        }
+
+        void EventCallback(VoiceCraftNetPeer _, IVoiceCraftPacket packet)
+        {
+            if (packet is not T typedPacket) return;
+            tcs.TrySetResult(typedPacket);
+        }
+
+        void PeerDisconnectedCallback(VoiceCraftNetPeer peer, string? reason)
+        {
+            if (peer != fromPeer) return;
+            dTcs.TrySetResult(reason);
+        }
+    }
 
     protected virtual void ProcessPacket(VoiceCraftNetPeer netPeer, VcPacketType packetType, NetDataReader reader)
     {
@@ -225,6 +354,13 @@ public abstract class VcNetworkBackend : IDisposable
             default:
                 return;
         }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposing) return;
+        OnNetworkReceive = null;
+        OnNetworkReceiveUnconnected = null;
     }
 
     private void ExecuteNetworkReceive<T>(VoiceCraftNetPeer netPeer, NetDataReader reader) where T : IVoiceCraftPacket

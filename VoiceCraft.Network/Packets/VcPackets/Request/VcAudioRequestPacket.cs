@@ -15,7 +15,7 @@ public class VcAudioRequestPacket : IVoiceCraftPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? Array.Empty<byte>();
+        Data = data ?? [];
     }
 
     public ushort Timestamp { get; private set; }
@@ -50,7 +50,7 @@ public class VcAudioRequestPacket : IVoiceCraftPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? Array.Empty<byte>();
+        Data = data ?? [];
         return this;
     }
 }

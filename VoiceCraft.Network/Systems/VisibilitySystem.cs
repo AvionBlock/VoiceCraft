@@ -1,8 +1,10 @@
+using System.Linq;
+using System.Threading.Tasks;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.World;
 
-namespace VoiceCraft.Server.Systems;
+namespace VoiceCraft.Network.Systems;
 
 public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
 {

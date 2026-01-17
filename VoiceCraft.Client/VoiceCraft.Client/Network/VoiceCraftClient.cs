@@ -400,7 +400,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable, INetEventListener
         }
     }
 
-    private void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
     {
         if (_isDisposed) return;
         if (disposing)

@@ -9,6 +9,15 @@ public enum VcConnectionState : byte
     LoginRequested
 }
 
+public enum McApiConnectionState : byte
+{
+    Disconnected,
+    Connecting,
+    Connected,
+    Disconnecting,
+    LoginRequested
+}
+
 public enum VcDeliveryMethod : byte
 {
     Unreliable,
