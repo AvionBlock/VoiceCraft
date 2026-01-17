@@ -9,6 +9,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -57,7 +58,6 @@ public partial class SelectedServerViewModel(
         _pinger = Task.Run(async () =>
         {
             var client = new VoiceCraftClient();
-            client.OnServerInfo += OnServerInfo;
             var startTime = DateTime.MinValue;
             while (!_stopPinger)
             {
@@ -69,8 +69,7 @@ public partial class SelectedServerViewModel(
                 client.Ping(SelectedServer.Ip, SelectedServer.Port);
                 startTime = DateTime.UtcNow;
             }
-
-            client.OnServerInfo -= OnServerInfo;
+            
             client.Dispose();
         });
     }

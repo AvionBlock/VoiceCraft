@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace VoiceCraft.Client.Network;
+namespace VoiceCraft.Network.Audio;
 
 public class JitterBuffer(TimeSpan maxDropOutTime)
 {

@@ -4,11 +4,10 @@ using System.Text.Json;
 using Fleck;
 using VoiceCraft.Network.Packets.McWssPackets;
 
-namespace VoiceCraft.Client.Network;
+namespace VoiceCraft.Network;
 
 public class McWssServer(VoiceCraftClient client) : IDisposable
 {
-    private readonly VoiceCraftClient _client = client;
     private bool _customEventTriggered;
     private string _localPlayerName = string.Empty;
     private string _localPlayerRequestId = string.Empty;
@@ -127,7 +126,7 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         var localPlayerNameCommandResponse = JsonSerializer.Deserialize<McWssLocalPlayerNameCommandResponse>(data);
         if (localPlayerNameCommandResponse == null) return;
         _localPlayerName = localPlayerNameCommandResponse.LocalPlayerName;
-        _client.Name = _localPlayerName;
+        client.Name = _localPlayerName;
         OnConnected?.Invoke(_localPlayerName);
     }
 
@@ -164,9 +163,9 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         var position = playerTravelledEvent.body.player.position;
         var rotation = playerTravelledEvent.body.player.yRot;
         var dimensionId = playerTravelledEvent.body.player.dimension;
-        _client.Position = new Vector3(position.x, position.y, position.z);
-        _client.Rotation = new Vector2(0, rotation);
-        _client.WorldId = dimensionId switch
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(0, rotation);
+        client.WorldId = dimensionId switch
         {
             0 => "minecraft:overworld",
             1 => "minecraft:nether",
@@ -181,9 +180,9 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         var position = playerTransformEvent.body.player.position;
         var rotation = playerTransformEvent.body.player.yRot;
         var dimensionId = playerTransformEvent.body.player.dimension;
-        _client.Position = new Vector3(position.x, position.y, position.z);
-        _client.Rotation = new Vector2(0, rotation);
-        _client.WorldId = dimensionId switch
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(0, rotation);
+        client.WorldId = dimensionId switch
         {
             0 => "minecraft:overworld",
             1 => "minecraft:nether",
@@ -198,9 +197,9 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         var position = playerTeleportedEvent.body.player.position;
         var rotation = playerTeleportedEvent.body.player.yRot;
         var dimensionId = playerTeleportedEvent.body.player.dimension;
-        _client.Position = new Vector3(position.x, position.y, position.z);
-        _client.Rotation = new Vector2(0, rotation);
-        _client.WorldId = dimensionId switch
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(0, rotation);
+        client.WorldId = dimensionId switch
         {
             0 => "minecraft:overworld",
             1 => "minecraft:nether",
@@ -218,11 +217,11 @@ public class McWssServer(VoiceCraftClient client) : IDisposable
         var worldId = localPlayerUpdatedEvent.body.worldId;
         var caveFactor = localPlayerUpdatedEvent.body.caveFactor;
         var muffleFactor = localPlayerUpdatedEvent.body.mufflefactor;
-        _client.Name = name;
-        _client.Position = new Vector3(position.x, position.y, position.z);
-        _client.Rotation = new Vector2(rotation.x, rotation.y);
-        _client.WorldId = worldId;
-        _client.CaveFactor = caveFactor;
-        _client.MuffleFactor = muffleFactor;
+        client.Name = name;
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(rotation.x, rotation.y);
+        client.WorldId = worldId;
+        client.CaveFactor = caveFactor;
+        client.MuffleFactor = muffleFactor;
     }
 }
