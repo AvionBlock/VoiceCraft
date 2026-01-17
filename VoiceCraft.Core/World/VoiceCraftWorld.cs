@@ -84,6 +84,7 @@ namespace VoiceCraft.Core.World
             {
                 entity.Value.OnDestroyed -= RemoveEntity; //Don't trigger the events!
                 entity.Value.Destroy();
+                OnEntityDestroyed?.Invoke(entity.Value);
             }
         }
 

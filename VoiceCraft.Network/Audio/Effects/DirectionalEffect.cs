@@ -4,7 +4,7 @@ using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Backends;
+using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects
 {
@@ -34,8 +34,7 @@ namespace VoiceCraft.Network.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
-            int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0) return; //Not enabled.

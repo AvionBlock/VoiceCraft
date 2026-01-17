@@ -1,11 +1,10 @@
 using System;
 using System.Text.Json;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio.Effects;
 
-namespace VoiceCraft.Network.Backends
+namespace VoiceCraft.Network.Interfaces
 {
     public interface IAudioEffect : INetSerializable, IDisposable
     {

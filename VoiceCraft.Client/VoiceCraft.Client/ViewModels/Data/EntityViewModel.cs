@@ -1,14 +1,15 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
-using VoiceCraft.Client.Network;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.World;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class EntityViewModel : ObservableObject
 {
-    private readonly VoiceCraftClientEntity _entity;
+    private readonly VoiceCraftEntity _entity;
 
     private readonly Guid? _entityUserId;
     private readonly SettingsService _settingsService;
@@ -30,13 +31,13 @@ public partial class EntityViewModel : ObservableObject
     //User Settings
     [ObservableProperty] private float _volume;
 
-    public EntityViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
+    public EntityViewModel(VoiceCraftEntity entity, SettingsService settingsService)
     {
         _entity = entity;
         _userSettings = settingsService.UserSettings;
         _settingsService = settingsService;
 
-        if (entity is VoiceCraftClientNetworkEntity networkEntity)
+        if (entity is VoiceCraftNetworkEntity networkEntity)
         {
             _entityUserId = networkEntity.UserGuid;
             _isServerMuted = networkEntity.ServerMuted;
@@ -62,7 +63,6 @@ public partial class EntityViewModel : ObservableObject
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;
         entity.OnDeafenUpdated += (value, _) => IsDeafened = value;
-        entity.OnIsVisibleUpdated += (value, _) => IsVisible = value;
         entity.OnStartedSpeaking += _ => IsSpeaking = true;
         entity.OnStoppedSpeaking += _ => IsSpeaking = false;
         entity.OnVolumeUpdated += UpdateVolume;

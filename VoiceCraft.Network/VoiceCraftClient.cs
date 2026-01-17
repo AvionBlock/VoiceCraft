@@ -18,7 +18,6 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 {
     public static readonly Version Version = new(Constants.Major, Constants.Minor, Constants.Patch);
     private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
-    private readonly AudioEffectSystem _audioEffectSystem = new();
     private readonly VoiceCraftNetworkBackend _networkBackend;
     private VoiceCraftNetPeer? _serverPeer;
     private bool _disposed;
@@ -33,6 +32,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private bool _speakingState;
 
     //Properties
+    public AudioEffectSystem AudioEffectSystem { get; } = new();
     public VcConnectionState ConnectionState => _serverPeer?.ConnectionState ?? VcConnectionState.Disconnected;
     public PositioningType PositioningType => _serverPeer?.PositioningType ?? PositioningType.Server;
 
@@ -146,7 +146,9 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public async Task<bool> DisconnectAsync(string? reason = null)
     {
-        if (ConnectionState == VcConnectionState.Disconnected || !_networkBackend.IsStarted ||
+        if (ConnectionState == VcConnectionState.Disconnected || 
+            ConnectionState == VcConnectionState.Disconnecting ||
+            !_networkBackend.IsStarted ||
             _serverPeer == null) return false;
         await Task.Run(() =>
         {
@@ -277,8 +279,10 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         if (peer != _serverPeer) return;
         OnDisconnected?.Invoke(reason ?? string.Empty);
+        World.ClearEntities();
+        AudioEffectSystem.ClearEffects();
     }
-    
+
     //Packet Handling
     private void NetworkBackendOnNetworkReceive(VoiceCraftNetPeer netPeer, IVoiceCraftPacket packet)
     {
@@ -459,6 +463,7 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
             AddVisibleEntity(entity);
             return;
         }
+
         RemoveVisibleEntity(entity);
     }
 
@@ -466,11 +471,11 @@ public class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         if (packet.EffectType == EffectType.None)
         {
-            _audioEffectSystem.SetEffect(packet.Bitmask, null);
+            AudioEffectSystem.SetEffect(packet.Bitmask, null);
             return;
         }
 
-        _audioEffectSystem.SetEffect(packet.Bitmask, packet.Effect);
+        AudioEffectSystem.SetEffect(packet.Bitmask, packet.Effect);
     }
 
     private void HandleOnEntityCreatedPacket(VcOnEntityCreatedPacket packet)

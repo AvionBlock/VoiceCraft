@@ -1,30 +1,31 @@
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Backends;
+using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.Network.Systems;
 
-public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisposable
+public class AudioSystem(VoiceCraftClient client) : IDisposable
 {
-    private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
+    private readonly ConcurrentDictionary<VoiceCraftEntity, AudioSource> _audioSources = new();
     private readonly Mutex _mutex = new();
 
-    public void Dispose()
+    public AudioSource GetOrAddAudioSource(VoiceCraftEntity entity)
     {
-        ClearEffects();
-        OnEffectSet = null;
-        GC.SuppressFinalize(this);
+        return _audioSources.GetOrAdd(entity, (x) => new AudioSource());
     }
 
-    public event Action<ushort, IAudioEffect?>? OnEffectSet;
+    public AudioSource? RemoveAudioSource(VoiceCraftEntity entity)
+    {
+        _audioSources.TryRemove(entity, out var audioSource);
+        return audioSource;
+    }
 
     public int Read(Span<short> buffer, int count)
     {
@@ -35,7 +36,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         try
         {
             var read = 0;
-            Parallel.ForEach(world.Entities.OfType<VoiceCraftClientEntity>(), x =>
+            Parallel.ForEach(_audioSources, x =>
             {
                 var entityRead = ProcessEntityAudio(x, count, mixingBuffer);
                 _mutex.WaitOne();
@@ -63,7 +64,7 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         return 0;
     }
 
-    private int ProcessEntityAudio(VoiceCraftClientEntity entity, int count, float[] mixingBuffer)
+    private int ProcessEntityAudio(KeyValuePair<VoiceCraftEntity, AudioSource> entity, int count, float[] mixingBuffer)
     {
         var monoCount = count / 2;
         var entityBuffer = ArrayPool<short>.Shared.Rent(monoCount);
@@ -75,12 +76,13 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         effectBuffer.AsSpan().Clear();
         try
         {
-            var entityRead = entity.Read(entityBuffer, monoCount);
+            var entityRead = entity.Value.Read(entityBuffer, monoCount);
             if (entityRead <= 0) entityRead = monoCount; //Do a full read.
             entityRead = Sample16ToFloat.Read(entityBuffer, entityRead, monoBuffer); //To IEEEFloat
             entityRead = SampleMonoToStereo.Read(monoBuffer, entityRead, effectBuffer); //To Stereo
-            entityRead = ProcessEffects(effectBuffer, entityRead, entity); //Process Effects
-            entityRead = SampleVolume.Read(effectBuffer, entityRead, entity.Volume); //Adjust the volume of the entity.
+            entityRead = ProcessEffects(entity, effectBuffer, entityRead); //Process Effects
+            //Adjust the volume of the entity.
+            entityRead = SampleVolume.Read(effectBuffer, entityRead, entity.Value.Volume);
             lock (mixingBuffer)
             {
                 entityRead = SampleMixer.Read(effectBuffer, entityRead, mixingBuffer); //Mix IEEFloat audio.
@@ -102,52 +104,22 @@ public class AudioSystem(VoiceCraftClient client, VoiceCraftWorld world) : IDisp
         return 0;
     }
 
-    public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
+    private int ProcessEffects(KeyValuePair<VoiceCraftEntity, AudioSource> entity, Span<float> buffer, int count)
     {
-        lock (_audioEffects)
-        {
-            return _audioEffects.TryGetValue(bitmask, out effect);
-        }
-    }
-
-    public void SetEffect(ushort bitmask, IAudioEffect? effect)
-    {
-        lock (_audioEffects)
-        {
-            if (effect == null && _audioEffects.Remove(bitmask, out var audioEffect))
-            {
-                audioEffect.Dispose();
-                OnEffectSet?.Invoke(bitmask, null);
-                return;
-            }
-
-            if (effect == null || !_audioEffects.TryAdd(bitmask, effect)) return;
-            OnEffectSet?.Invoke(bitmask, effect);
-        }
-    }
-
-    public void ClearEffects()
-    {
-        lock (_audioEffects)
-        {
-            var effects = _audioEffects.ToArray(); //Copy the effects.
-            _audioEffects.Clear();
-            foreach (var effect in effects)
-            {
-                effect.Value.Dispose();
-                OnEffectSet?.Invoke(effect.Key, null);
-            }
-        }
-    }
-
-    private int ProcessEffects(Span<float> buffer, int count, VoiceCraftClientEntity entity)
-    {
-        lock (_audioEffects)
-        {
-            foreach (var effect in _audioEffects)
-                effect.Value.Process(entity, client, effect.Key, buffer, count);
-        }
+        foreach (var effect in client.AudioEffectSystem)
+            effect.Value.Process(entity.Key, client, effect.Key, buffer, count);
 
         return count;
+    }
+
+    public void Dispose()
+    {
+        _mutex.Dispose();
+        foreach (var source in _audioSources)
+        {
+            source.Value.Dispose();
+        }
+        _audioSources.Clear();
+        GC.SuppressFinalize(this);
     }
 }

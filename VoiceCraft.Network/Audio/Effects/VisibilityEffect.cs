@@ -4,6 +4,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Backends;
+using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects
 {
