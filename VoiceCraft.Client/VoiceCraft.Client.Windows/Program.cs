@@ -6,6 +6,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Windows.Audio;
 using VoiceCraft.Client.Windows.Permissions;
 using VoiceCraft.Core;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.Windows;
 
@@ -40,6 +41,7 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+            App.ServiceCollection.AddTransient<VoiceCraftClient, LiteNetVoiceCraftClient>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
