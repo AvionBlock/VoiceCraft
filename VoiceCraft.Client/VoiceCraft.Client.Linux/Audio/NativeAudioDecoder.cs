@@ -7,7 +7,7 @@ namespace VoiceCraft.Client.Linux.Audio;
 
 public class NativeAudioDecoder : IAudioDecoder
 {
-    private readonly OpusDecoder _opusDecoder = new OpusDecoder(Constants.SampleRate, Constants.Channels);
+    private readonly OpusDecoder _opusDecoder = new(Constants.SampleRate, Constants.Channels);
     
     public int Decode(Span<byte> buffer, Span<float> output, int samples)
     {
