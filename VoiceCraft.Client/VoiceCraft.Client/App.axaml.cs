@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
+using OpusSharp.Core;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
@@ -19,6 +20,7 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 

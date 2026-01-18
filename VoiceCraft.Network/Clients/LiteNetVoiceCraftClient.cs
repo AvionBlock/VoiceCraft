@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Request;
@@ -17,10 +18,13 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
     private readonly EventBasedNetListener _listener;
     private readonly NetDataWriter _writer;
     private LiteNetVoiceCraftNetPeer? _netPeer;
-
+    
+    public override PositioningType PositioningType => _netPeer?.PositioningType ?? PositioningType.Server;
+    public override event Action? OnConnected;
     public override event Action<string?>? OnDisconnected;
 
-    public LiteNetVoiceCraftClient()
+    public LiteNetVoiceCraftClient(Func<IAudioEncoder> encoderFactory, Func<IAudioDecoder> decoderFactory) : base(
+        encoderFactory, decoderFactory)
     {
         _listener = new EventBasedNetListener();
         _netManager = new NetManager(_listener)
@@ -65,6 +69,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
             _ = await GetResponseAsync<VcAcceptResponsePacket>(requestId, TimeSpan.FromSeconds(8));
             ConnectionState = VcConnectionState.Connected;
+            OnConnected?.Invoke();
         }
         catch (Exception ex)
         {
@@ -88,14 +93,19 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         {
             ConnectionState = VcConnectionState.Disconnecting;
             _netManager.DisconnectAll();
+            while (_netPeer?.ConnectionState == VcConnectionState.Disconnecting)
+            {
+                await Task.Delay(1);
+            }
+
+            OnDisconnected?.Invoke(reason);
+            return;
         }
 
         while (_netPeer?.ConnectionState == VcConnectionState.Disconnecting)
         {
             await Task.Delay(1);
         }
-
-        OnDisconnected?.Invoke(reason);
     }
 
     public override void SendUnconnectedPacket<T>(string ip, int port, T packet)
@@ -139,6 +149,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         _netManager.Stop();
         _listener.PeerDisconnectedEvent -= OnPeerDisconnectedEvent;
 
+        OnConnected = null;
         OnDisconnected = null;
     }
 

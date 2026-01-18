@@ -12,6 +12,7 @@ using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.Clients;
 using Debug = System.Diagnostics.Debug;
 using Exception = System.Exception;
@@ -95,7 +96,8 @@ public class MainActivity : AvaloniaMainActivity<App>
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
-        App.ServiceCollection.AddTransient<VoiceCraftClient, LiteNetVoiceCraftClient>();
+        App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
+            new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>, x.GetRequiredService<IAudioDecoder>));
         App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Permissions.Microphone>();
 
