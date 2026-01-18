@@ -5,7 +5,7 @@ using Fleck;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Packets.McWssPackets;
 
-namespace VoiceCraft.Network;
+namespace VoiceCraft.Network.Servers;
 
 public class McWssServer(VoiceCraftEntity client) : IDisposable
 {

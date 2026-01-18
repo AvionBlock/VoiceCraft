@@ -6,7 +6,7 @@ using VoiceCraft.Client.Linux.Audio;
 using VoiceCraft.Client.Linux.Permissions;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
-using VoiceCraft.Network;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.Linux;
 
@@ -37,10 +37,11 @@ internal sealed class Program
                 Constants.SpeexDspDenoiserGuid,
                 "SpeexDsp Denoiser",
                 typeof(SpeexDspDenoiser)));
-            
+
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+            App.ServiceCollection.AddTransient<VoiceCraftClient, LiteNetVoiceCraftClient>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

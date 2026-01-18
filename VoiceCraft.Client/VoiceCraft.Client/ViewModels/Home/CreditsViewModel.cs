@@ -8,6 +8,7 @@ using OpusSharp.Core;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 

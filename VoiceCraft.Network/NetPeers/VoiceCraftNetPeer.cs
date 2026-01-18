@@ -16,10 +16,6 @@ public abstract class VoiceCraftNetPeer(
     public string Locale { get; } = locale;
     public PositioningType PositioningType { get; } = positioningType;
     public object? Tag { get; set; }
-
-    public abstract void Accept();
-    public abstract void Reject(string? reason = null);
+    
     public abstract void Send(ReadOnlySpan<byte> data, VcDeliveryMethod deliveryMethod);
-    public abstract void Disconnect(string reason);
-    public abstract void Disconnect();
 }

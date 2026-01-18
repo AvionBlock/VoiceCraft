@@ -8,12 +8,14 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.ViewModels;
 
 public partial class SelectedServerViewModel(
     NavigationService navigationService,
     SettingsService settingsService,
+    VoiceCraftClient client,
     NotificationService notificationService)
     : ViewModelBase, IDisposable
 {
@@ -30,6 +32,7 @@ public partial class SelectedServerViewModel(
     {
         SelectedServer?.Dispose();
         ServersSettings.Dispose();
+        client.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -95,21 +98,42 @@ public partial class SelectedServerViewModel(
 
     private async Task PingerLogic(CancellationToken token)
     {
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                client.Update();
+                await Task.Delay(Constants.TickRate, token);
+            }
+        }, token);
+        
         while (!token.IsCancellationRequested)
         {
-            if (SelectedServer != null)
+            try
             {
-                var result = await VoiceCraftClient.PingAsync(SelectedServer.Ip, SelectedServer.Port, networkBackend);
-                Latency = Localizer.Get(
-                    $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - result.Tick - Constants.TickRate, 0)}");
-                Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{result.Motd}");
-                PositioningType =
-                    Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{result.PositioningType}");
-                ConnectedClients = Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{result.Clients}");
-                Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
+                if (SelectedServer != null)
+                {
+                    var result = await client.PingAsync(SelectedServer.Ip, SelectedServer.Port, token);
+                    Latency = Localizer.Get(
+                        $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - result.Tick - Constants.TickRate, 0)}");
+                    Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{result.Motd}");
+                    PositioningType =
+                        Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{result.PositioningType}");
+                    ConnectedClients =
+                        Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{result.Clients}");
+                    Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
+                }
             }
-
+            catch
+            {
+                Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
+                Motd = "";
+                PositioningType = "";
+                ConnectedClients = "";
+                Version = "";
+            }
             await Task.Delay(Constants.TickRate, token);
+
         }
     }
 }

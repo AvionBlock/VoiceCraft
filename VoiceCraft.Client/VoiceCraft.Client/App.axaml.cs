@@ -19,7 +19,6 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
@@ -119,12 +118,6 @@ public class App : Application
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
-        ServiceCollection.AddSingleton<VoiceCraftService>(x => new VoiceCraftService(
-            x.GetRequiredService<AudioService>(),
-            x.GetRequiredService<SettingsService>(),
-            x.GetRequiredService<NotificationService>(),
-            x.GetRequiredService<IAudioEncoder>,
-            x.GetRequiredService<IAudioDecoder>));
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();

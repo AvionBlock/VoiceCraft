@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -9,6 +10,8 @@ using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network;
+using VoiceCraft.Network.Clients;
+using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.Services;
@@ -114,7 +117,7 @@ public class VoiceCraftService
         var audioSettings = _settingsService.AudioSettings;
         var networkSettings = _settingsService.NetworkSettings;
 
-        _client = InitializeClient(_networkBackend, _encoderFactory, _decoderFactory);
+        _client = InitializeClient(_encoderFactory, _decoderFactory);
         _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
         _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
         _echoCanceler = _audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
@@ -330,10 +333,9 @@ public class VoiceCraftService
     }
 
     //Initializers
-    private VoiceCraftClient InitializeClient(VoiceCraftNetworkBackend networkBackend, Func<IAudioEncoder> encoderFactory,
-        Func<IAudioDecoder> decoderFactory)
+    private VoiceCraftClient InitializeClient(Func<IAudioEncoder> encoderFactory, Func<IAudioDecoder> decoderFactory)
     {
-        var client = new VoiceCraftClient(networkBackend, encoderFactory, decoderFactory);
+        var client = new VoiceCraftClient(encoderFactory, decoderFactory);
         client.OnConnected += ClientOnConnected;
         client.OnDisconnected += ClientOnDisconnected;
         client.OnSetTitle += ClientOnSetTitle;
@@ -453,3 +455,4 @@ public class VoiceCraftService
         }
     }
 }
+*/
