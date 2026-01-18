@@ -4,17 +4,16 @@ namespace VoiceCraft.Core.Audio
 {
     public static class SampleMonoToStereo
     {
-        public static int Read(Span<float> data, int count, Span<float> dstBuffer)
+        public static int Read(Span<float> data, Span<float> dstBuffer)
         {
             var destOffset = 0;
-            for (var i = 0; i < count; i++)
+            foreach (var sampleVal in data)
             {
-                var sampleVal = data[i];
                 dstBuffer[destOffset++] = sampleVal;
                 dstBuffer[destOffset++] = sampleVal;
             }
 
-            return count * 2;
+            return data.Length * 2;
         }
     }
 }

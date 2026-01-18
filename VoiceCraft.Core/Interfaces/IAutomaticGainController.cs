@@ -8,8 +8,6 @@ namespace VoiceCraft.Core.Interfaces
 
         void Initialize(IAudioRecorder recorder);
 
-        void Process(byte[] buffer);
-
         void Process(Span<byte> buffer);
     }
 }

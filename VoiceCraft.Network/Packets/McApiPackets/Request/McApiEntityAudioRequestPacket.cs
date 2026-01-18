@@ -17,14 +17,14 @@ public class McApiEntityAudioRequestPacket : IMcApiPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? Array.Empty<byte>();
+        Buffer = data ?? Array.Empty<byte>();
     }
 
     public int Id { get; private set; }
     public ushort Timestamp { get; private set; }
     public float FrameLoudness { get; private set; }
     public int Length { get; private set; }
-    public byte[] Data { get; private set; }
+    public byte[] Buffer { get; private set; }
 
     public McApiPacketType PacketType => McApiPacketType.EntityAudioRequest;
 
@@ -33,7 +33,7 @@ public class McApiEntityAudioRequestPacket : IMcApiPacket
         writer.Put(Id);
         writer.Put(Timestamp);
         writer.Put(FrameLoudness);
-        writer.Put(Data, 0, Length);
+        writer.Put(Buffer, 0, Length);
     }
 
     public void Deserialize(NetDataReader reader)
@@ -46,8 +46,8 @@ public class McApiEntityAudioRequestPacket : IMcApiPacket
         if (Length > Constants.MaximumEncodedBytes)
             throw new InvalidOperationException(
                 $"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
-        Data = new byte[Length];
-        reader.GetBytes(Data, Length);
+        Buffer = new byte[Length];
+        reader.GetBytes(Buffer, Length);
     }
 
     public McApiEntityAudioRequestPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
@@ -57,7 +57,7 @@ public class McApiEntityAudioRequestPacket : IMcApiPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? Array.Empty<byte>();
+        Buffer = data ?? Array.Empty<byte>();
         return this;
     }
 }

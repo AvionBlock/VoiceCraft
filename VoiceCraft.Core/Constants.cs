@@ -26,27 +26,14 @@ namespace VoiceCraft.Core
         public const int Channels = 1;
         public const int FrameSizeMs = 20;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
-
         //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
         public const int OutputBufferSizeMs = FrameSizeMs * 50;
-
         // Prefill buffer before we start releasing into the audio driver to prevent hitches.
         public const int PrefillBufferSizeMs = FrameSizeMs * 2;
-
         //Audio Calculations
-        public const int BlockAlign = Channels * (BitDepth / 8);
         public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
-
-        //16-bit byte audio. this works out to 1920
-        public const int BytesPerFrame = BitDepth / 8 * Channels * SamplesPerFrame;
-        public const int ShortsPerFrame = BytesPerFrame / sizeof(short);
-
         public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
-        public const int OutputBufferShorts = BitDepth / 16 * Channels * OutputBufferSamples;
-
         public const int PrefillBufferSamples = SampleRate / 1000 * PrefillBufferSizeMs;
-        public const int PrefillBufferBytes = BitDepth / 8 * Channels * PrefillBufferSamples;
-        public const int PrefillBufferShorts = BitDepth / 16 * Channels * PrefillBufferSamples;
 
         //Default Country Code & Fallback
         public const string DefaultLanguage = "en-US";

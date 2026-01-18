@@ -2,11 +2,12 @@ using System;
 using System.Numerics;
 using System.Text.Json;
 using Fleck;
+using VoiceCraft.Core.World;
 using VoiceCraft.Network.Packets.McWssPackets;
 
 namespace VoiceCraft.Network;
 
-public class McWssServer(VoiceCraftClient client) : IDisposable
+public class McWssServer(VoiceCraftEntity client) : IDisposable
 {
     private bool _customEventTriggered;
     private string _localPlayerName = string.Empty;

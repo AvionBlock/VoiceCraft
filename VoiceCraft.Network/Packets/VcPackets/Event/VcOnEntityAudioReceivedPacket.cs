@@ -6,24 +6,24 @@ namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
 public class VcOnEntityAudioReceivedPacket : IVoiceCraftPacket
 {
-    public VcOnEntityAudioReceivedPacket() : this(0, 0, 0.0f, 0, Array.Empty<byte>())
+    public VcOnEntityAudioReceivedPacket() : this(0, 0, 0.0f, 0, [])
     {
     }
 
-    public VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] data)
+    public VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] buffer)
     {
         Id = id;
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data;
+        Buffer = buffer;
     }
 
     public int Id { get; private set; }
     public ushort Timestamp { get; private set; }
     public float FrameLoudness { get; private set; }
     public int Length { get; private set; }
-    public byte[] Data { get; private set; }
+    public byte[] Buffer { get; private set; }
 
     public VcPacketType PacketType => VcPacketType.OnEntityAudioReceived;
 
@@ -32,7 +32,7 @@ public class VcOnEntityAudioReceivedPacket : IVoiceCraftPacket
         writer.Put(Id);
         writer.Put(Timestamp);
         writer.Put(FrameLoudness);
-        writer.Put(Data, 0, Length);
+        writer.Put(Buffer, 0, Length);
     }
 
     public void Deserialize(NetDataReader reader)
@@ -45,8 +45,8 @@ public class VcOnEntityAudioReceivedPacket : IVoiceCraftPacket
         if (Length > Constants.MaximumEncodedBytes)
             throw new InvalidOperationException(
                 $"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
-        Data = new byte[Length];
-        reader.GetBytes(Data, Length);
+        Buffer = new byte[Length];
+        reader.GetBytes(Buffer, Length);
     }
 
     public VcOnEntityAudioReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
@@ -56,7 +56,7 @@ public class VcOnEntityAudioReceivedPacket : IVoiceCraftPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? Array.Empty<byte>();
+        Buffer = data ?? [];
         return this;
     }
 }

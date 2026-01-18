@@ -15,13 +15,13 @@ public class VcAudioRequestPacket : IVoiceCraftPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? [];
+        Buffer = data ?? [];
     }
 
     public ushort Timestamp { get; private set; }
     public float FrameLoudness { get; private set; }
     public int Length { get; private set; }
-    public byte[] Data { get; private set; }
+    public byte[] Buffer { get; private set; }
 
     public VcPacketType PacketType => VcPacketType.AudioRequest;
 
@@ -29,7 +29,7 @@ public class VcAudioRequestPacket : IVoiceCraftPacket
     {
         writer.Put(Timestamp);
         writer.Put(FrameLoudness);
-        writer.Put(Data, 0, Length);
+        writer.Put(Buffer, 0, Length);
     }
 
     public void Deserialize(NetDataReader reader)
@@ -41,8 +41,8 @@ public class VcAudioRequestPacket : IVoiceCraftPacket
         if (Length > Constants.MaximumEncodedBytes)
             throw new InvalidOperationException(
                 $"Array length exceeds maximum number of bytes per packet! Got {Length} bytes.");
-        Data = new byte[Length];
-        reader.GetBytes(Data, Length);
+        Buffer = new byte[Length];
+        reader.GetBytes(Buffer, Length);
     }
 
     public VcAudioRequestPacket Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
@@ -50,7 +50,7 @@ public class VcAudioRequestPacket : IVoiceCraftPacket
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Data = data ?? [];
+        Buffer = data ?? [];
         return this;
     }
 }

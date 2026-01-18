@@ -14,7 +14,8 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
-        SettingsService settingsService, VoiceCraftService voiceCraftService, DiscordRpcService discordRpcService,
+        SettingsService settingsService,
+        DiscordRpcService discordRpcService,
         HotKeyService hotKeyService)
     {
         themesService.OnBackgroundImageChanged += backgroundImage =>
@@ -39,8 +40,5 @@ public partial class MainViewModel : ObservableObject
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();
-
-        if (voiceCraftService.ConnectionState != VcConnectionState.Disconnected) return;
-        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData());
     }
 }

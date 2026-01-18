@@ -5,7 +5,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpusSharp.Core;
-using VoiceCraft.Client.Network;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network;

@@ -104,7 +104,7 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
             _player.SelectedDevice = AudioSettings.OutputDevice == "Default" ? null : AudioSettings.OutputDevice;
             _player.BufferMilliseconds = 100;
             _player.OnPlaybackStopped += OnPlaybackStopped;
-            _player.Initialize(ReadSineWave);
+            _player.Initialize((data, count) => ReadSineWave(data.AsSpan(0, count)));
             _player.Play();
             IsPlaying = true;
         }
@@ -122,18 +122,20 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
         _navigationService.Back();
     }
 
-    private int ReadSineWave(byte[] buffer, int length)
+    private int ReadSineWave(Span<byte> buffer)
     {
-        var count = length / sizeof(short);
-        var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
-        var floatBuffer = ArrayPool<float>.Shared.Rent(count);
-        floatBuffer.AsSpan().Clear();
+        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer);
+        var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
+        var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
+        floatBufferSpan.Clear();
+
         try
         {
-            var floatCount = Pcm16ToFloat(shortBuffer, count, floatBuffer);
-            floatCount = _sineWaveGenerator.Read(floatBuffer, floatCount);
-            floatCount = AdjustVolume(floatBuffer, floatCount, AudioSettings.OutputVolume);
-            return PcmFloatTo16(floatBuffer, floatCount, shortBuffer) * sizeof(short);
+            var count = Sample16ToFloat.Read(shortBufferSpan, floatBufferSpan);
+            count = _sineWaveGenerator.Read(floatBufferSpan[..count]);
+            count = SampleVolume.Read(floatBufferSpan[..count], AudioSettings.OutputVolume);
+            count = SampleFloatTo16.Read(floatBufferSpan[..count], shortBufferSpan);
+            return count * sizeof(short);
         }
         finally
         {
@@ -141,13 +143,17 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private void OnDataAvailable(byte[] data, int count)
+    private void OnDataAvailable(byte[] data, int bytesRead)
     {
         _gainController?.Process(data);
         _denoiser?.Denoise(data);
 
-        var shortBuffer = MemoryMarshal.Cast<byte, short>(data);
-        var loudness = SampleLoudness16.Read(shortBuffer, count / sizeof(short));
+        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(data)[..(bytesRead / sizeof(short))];
+        var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
+        var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
+        floatBufferSpan.Clear();
+        var count = Sample16ToFloat.Read(shortBufferSpan, floatBufferSpan);
+        var loudness = SampleLoudness.Read(floatBufferSpan[..count]);
         MicrophoneValue = loudness;
         DetectingVoiceActivity = loudness >= AudioSettings.MicrophoneSensitivity;
     }
@@ -211,26 +217,5 @@ public partial class AudioSettingsViewModel : ViewModelBase, IDisposable
         base.OnDisappearing();
         CleanupRecorder();
         CleanupPlayer();
-    }
-
-    private static int AdjustVolume(Span<float> buffer, int count, float volume)
-    {
-        for (var i = 0; i < count; i++) buffer[i] = Math.Clamp(buffer[i] * volume, -1, 1);
-        return count;
-    }
-
-    private static int Pcm16ToFloat(Span<short> buffer, int count, Span<float> destBuffer)
-    {
-        for (var i = 0; i < count; i++)
-            destBuffer[i] = Math.Clamp(buffer[i] / (short.MaxValue + 1f), -1f, 1f);
-        return count;
-    }
-
-    private static int PcmFloatTo16(Span<float> floatBuffer, int count, Span<short> destBuffer)
-    {
-        for (var i = 0; i < count; i++)
-            destBuffer[i] = Math.Clamp((short)(floatBuffer[i] * short.MaxValue), short.MinValue, short.MaxValue);
-
-        return count;
     }
 }

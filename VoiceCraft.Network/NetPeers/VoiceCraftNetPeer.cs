@@ -1,5 +1,4 @@
 using System;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.NetPeers;
 
@@ -19,9 +18,8 @@ public abstract class VoiceCraftNetPeer(
     public object? Tag { get; set; }
 
     public abstract void Accept();
-    public abstract void Reject();
-    public abstract void Reject(Span<byte> data);
-    public abstract void Send<T>(Span<byte> data, VcDeliveryMethod deliveryMethod);
-    public abstract void Disconnect(Span<byte> data);
+    public abstract void Reject(string? reason = null);
+    public abstract void Send(ReadOnlySpan<byte> data, VcDeliveryMethod deliveryMethod);
+    public abstract void Disconnect(string reason);
     public abstract void Disconnect();
 }

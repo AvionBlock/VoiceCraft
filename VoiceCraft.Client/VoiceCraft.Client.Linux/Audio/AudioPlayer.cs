@@ -371,7 +371,7 @@ public class AudioPlayer : IAudioPlayer
         //Fill Buffers.
         foreach (var buffer in _buffers)
         {
-            var read = _playerCallback(buffer.Data, _bufferBytes);
+            var read = _playerCallback(buffer.Buffer, _bufferBytes);
             if (read > 0)
                 buffer.FillBuffer(read);
 
@@ -408,7 +408,7 @@ public class AudioPlayer : IAudioPlayer
                 var audioBuffer = _buffers.First(x => x.Id == buffer);
                 audioBuffer.Clear();
                 //Fill buffers with more data
-                var read = _playerCallback(audioBuffer.Data, _bufferBytes);
+                var read = _playerCallback(audioBuffer.Buffer, _bufferBytes);
                 if (read > 0)
                     audioBuffer.FillBuffer(read);
 
@@ -428,7 +428,7 @@ public class AudioPlayer : IAudioPlayer
     {
         private bool _isDisposed;
         public int Id { get; } = id;
-        public byte[] Data { get; } = GC.AllocateArray<byte>(size, true);
+        public byte[] Buffer { get; } = GC.AllocateArray<byte>(size, true);
 
         public void Dispose()
         {
@@ -443,14 +443,14 @@ public class AudioPlayer : IAudioPlayer
 
         public void Clear()
         {
-            Array.Clear(Data, 0, Data.Length);
+            Array.Clear(Buffer, 0, Buffer.Length);
         }
 
         public unsafe void FillBuffer(int read)
         {
             ObjectDisposedException.ThrowIf(_isDisposed, typeof(AudioBuffer).ToString());
 
-            fixed (byte* byteBufferPtr = Data)
+            fixed (byte* byteBufferPtr = Buffer)
             {
                 AL.BufferData(Id, format, byteBufferPtr, read, sampleRate);
             }

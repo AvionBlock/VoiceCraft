@@ -28,26 +28,16 @@ public class NativeEchoCanceler : IEchoCanceler
             throw new InvalidOperationException(Localizer.Get("Audio.AEC.InitFailed"));
     }
 
-    public void EchoPlayback(Span<byte> buffer, int count)
+    public void EchoPlayback(Span<byte> buffer)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
     }
 
-    public void EchoPlayback(byte[] buffer, int count)
-    {
-        EchoPlayback(buffer.AsSpan(), count);
-    }
-
-    public void EchoCancel(Span<byte> buffer, int count)
+    public void EchoCancel(Span<byte> buffer)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
-    }
-
-    public void EchoCancel(byte[] buffer, int count)
-    {
-        EchoCancel(buffer.AsSpan(), count);
     }
 
     public void Dispose()

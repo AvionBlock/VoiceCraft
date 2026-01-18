@@ -27,8 +27,7 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public EffectType EffectType => EffectType.Proximity;
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
-            int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0) return; //Not enabled.
@@ -41,14 +40,14 @@ namespace VoiceCraft.Network.Audio.Effects
             var lerpVolumeSample = GetOrCreateLerpSampleVolume(from);
             lerpVolumeSample.TargetVolume = factor;
 
-            for (var i = 0; i < count; i += 2)
+            for (var i = 0; i < buffer.Length; i += 2)
             {
                 //Channel 1
-                var output = lerpVolumeSample.Transform(data[i]);
-                data[i] = output * WetDry + data[i] * (1.0f - WetDry);
+                var output = lerpVolumeSample.Transform(buffer[i]);
+                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
                 //Channel 2
-                output = lerpVolumeSample.Transform(data[i + 1]);
-                data[i + 1] = output * WetDry + data[i + 1] * (1.0f - WetDry);
+                output = lerpVolumeSample.Transform(buffer[i + 1]);
+                buffer[i + 1] = output * WetDry + buffer[i + 1] * (1.0f - WetDry);
                 lerpVolumeSample.Step();
             }
         }

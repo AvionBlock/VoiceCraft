@@ -34,7 +34,7 @@ namespace VoiceCraft.Network.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0) return; //Not enabled.
@@ -47,12 +47,12 @@ namespace VoiceCraft.Network.Audio.Effects
             var lerpSampleDirectionalVolume = GetOrCreateLerpSampleDirectionalVolume(from);
             lerpSampleDirectionalVolume.SetVolumes(left, right);
 
-            for (var i = 0; i < count; i += 2)
+            for (var i = 0; i < buffer.Length; i += 2)
             {
-                var output = lerpSampleDirectionalVolume.Transform(data[i], data[i + 1]);
+                var output = lerpSampleDirectionalVolume.Transform(buffer[i], buffer[i + 1]);
 
-                data[i] = output.Item1 * WetDry + data[i] * (1.0f - WetDry);
-                data[i + 1] = output.Item2 * WetDry + data[i + 1] * (1.0f - WetDry);
+                buffer[i] = output.Item1 * WetDry + buffer[i] * (1.0f - WetDry);
+                buffer[i + 1] = output.Item2 * WetDry + buffer[i + 1] * (1.0f - WetDry);
                 lerpSampleDirectionalVolume.Step();
             }
         }

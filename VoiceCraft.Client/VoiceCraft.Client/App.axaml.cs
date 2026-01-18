@@ -19,6 +19,7 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
@@ -118,6 +119,12 @@ public class App : Application
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
+        ServiceCollection.AddSingleton<VoiceCraftService>(x => new VoiceCraftService(
+            x.GetRequiredService<AudioService>(),
+            x.GetRequiredService<SettingsService>(),
+            x.GetRequiredService<NotificationService>(),
+            x.GetRequiredService<IAudioEncoder>,
+            x.GetRequiredService<IAudioDecoder>));
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -125,14 +132,13 @@ public class App : Application
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
         ServiceCollection.AddTransient<EditServerViewModel>();
-        ServiceCollection.AddTransient<SelectedServerViewModel>();
-        ServiceCollection.AddTransient<VoiceViewModel>();
         ServiceCollection.AddTransient<GeneralSettingsViewModel>();
         ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
         ServiceCollection.AddTransient<AudioSettingsViewModel>();
         ServiceCollection.AddTransient<NetworkSettingsViewModel>();
         ServiceCollection.AddTransient<HotKeySettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
+        ServiceCollection.AddTransient<SelectedServerViewModel>();
 
         //Home Pages
         ServiceCollection.AddSingleton<AddServerViewModel>();
@@ -145,10 +151,9 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
-        ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
-        ServiceCollection.AddKeyedTransient<Control, VoiceView>(typeof(VoiceView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CrashLogView>(typeof(CrashLogView).FullName);

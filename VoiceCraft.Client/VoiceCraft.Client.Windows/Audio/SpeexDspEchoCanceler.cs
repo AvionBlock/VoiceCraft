@@ -8,7 +8,7 @@ namespace VoiceCraft.Client.Windows.Audio;
 
 public class SpeexDspEchoCanceler : IEchoCanceler
 {
-    private CircularBuffer<byte>? _captureBuffer;
+    private SampleBufferProvider<byte>? _captureBuffer;
     private byte[] _captureBufferFrame = [];
     private bool _disposed;
     private SpeexDSPEchoCanceler? _echoCanceler;
@@ -36,7 +36,7 @@ public class SpeexDspEchoCanceler : IEchoCanceler
             filterLengthSamples,
             recorder.Channels,
             player.Channels);
-        _captureBuffer = new CircularBuffer<byte>(filterLengthBytes);
+        _captureBuffer = new SampleBufferProvider<byte>(filterLengthBytes);
         _captureBufferFrame = new byte[filterLengthBytes];
         _outputBuffer = new byte[bufferBytes];
 
@@ -44,32 +44,21 @@ public class SpeexDspEchoCanceler : IEchoCanceler
         _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);
     }
 
-    public void EchoCancel(Span<byte> buffer, int count)
+    public void EchoCancel(Span<byte> buffer)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
-        ArgumentOutOfRangeException.ThrowIfLessThan(count, _outputBuffer.Length);
         Array.Clear(_outputBuffer, 0, _outputBuffer.Length);
 
         _echoCanceler?.EchoCancel(buffer, GetCaptureBufferFrame(), _outputBuffer);
         _outputBuffer.CopyTo(buffer);
     }
 
-    public void EchoCancel(byte[] buffer, int count)
-    {
-        EchoCancel(buffer.AsSpan(), count);
-    }
-
-    public void EchoPlayback(Span<byte> buffer, int count)
+    public void EchoPlayback(Span<byte> buffer)
     {
         ThrowIfDisposed();
         ThrowIfNotInitialized();
-        _captureBuffer?.Write(buffer, 0, count);
-    }
-
-    public void EchoPlayback(byte[] buffer, int count)
-    {
-        EchoPlayback(buffer.AsSpan(), count);
+        _captureBuffer?.Write(buffer);
     }
 
     public void Dispose()
@@ -94,7 +83,7 @@ public class SpeexDspEchoCanceler : IEchoCanceler
             if (_captureBuffer.Count < _captureBufferFrame.Length)
                 return _captureBufferFrame;
 
-            _captureBuffer.Read(_captureBufferFrame, 0, _captureBufferFrame.Length);
+            _captureBuffer.Read(_captureBufferFrame);
             return _captureBufferFrame;
         }
     }

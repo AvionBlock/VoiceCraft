@@ -583,7 +583,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityAudioReceived(byte[] data, ushort timestamp, float frameLoudness, VoiceCraftEntity entity)
+    private void OnEntityAudioReceived(byte[] buffer, ushort timestamp, float frameLoudness, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
@@ -592,7 +592,7 @@ public class EventHandlerSystem : IDisposable
                 if (ve is not VoiceCraftNetworkEntity visibleEntity || ve == entity || visibleEntity.Deafened ||
                     visibleEntity.ServerDeafened) continue;
                 var packet = PacketPool<VcOnEntityAudioReceivedPacket>.GetPacket()
-                    .Set(entity.Id, timestamp, frameLoudness, data.Length, data);
+                    .Set(entity.Id, timestamp, frameLoudness, buffer.Length, buffer);
                 _server.SendPacket(visibleEntity.NetPeer, packet, DeliveryMethod.Unreliable);
             }
 

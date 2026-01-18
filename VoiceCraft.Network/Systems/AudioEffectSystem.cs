@@ -1,18 +1,25 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using VoiceCraft.Core;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Systems;
 
-public class AudioEffectSystem : IDisposable, IEnumerable<KeyValuePair<ushort, IAudioEffect>>
+public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private readonly object _mLock = new();
+
+    public IImmutableDictionary<ushort, IAudioEffect> AudioEffects
+    {
+        get
+        {
+            lock (_audioEffects)
+                return _audioEffects.ToImmutableSortedDictionary();
+        }
+    }
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
     {
@@ -26,12 +33,6 @@ public class AudioEffectSystem : IDisposable, IEnumerable<KeyValuePair<ushort, I
 
     public event Action<ushort, IAudioEffect?>? OnEffectSet;
 
-    public IEnumerator<KeyValuePair<ushort, IAudioEffect>> GetEnumerator()
-    {
-        // ReSharper disable once InconsistentlySynchronizedField
-        return new SafeEnumerator<KeyValuePair<ushort, IAudioEffect>>(_audioEffects.GetEnumerator(), _mLock);
-    }
-
     public void Reset()
     {
         ClearEffects();
@@ -41,7 +42,7 @@ public class AudioEffectSystem : IDisposable, IEnumerable<KeyValuePair<ushort, I
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
         if (bitmask == ushort.MinValue) return; //Setting a bitmask of 0 does literally nothing.
-        lock (_mLock)
+        lock (_audioEffects)
         {
             switch (effect)
             {
@@ -55,13 +56,13 @@ public class AudioEffectSystem : IDisposable, IEnumerable<KeyValuePair<ushort, I
 
             if (!_audioEffects.TryAdd(bitmask, effect))
                 _audioEffects[bitmask] = effect;
+            OnEffectSet?.Invoke(bitmask, effect);
         }
-        OnEffectSet?.Invoke(bitmask, effect);
     }
 
     public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
     {
-        lock (_mLock)
+        lock (_audioEffects)
         {
             return _audioEffects.TryGetValue(bitmask, out effect);
         }
@@ -69,7 +70,7 @@ public class AudioEffectSystem : IDisposable, IEnumerable<KeyValuePair<ushort, I
 
     public void ClearEffects()
     {
-        lock (_mLock)
+        lock (_audioEffects)
         {
             var effects = _audioEffects.ToArray(); //Copy the effects.
             _audioEffects.Clear();
@@ -80,16 +81,11 @@ public class AudioEffectSystem : IDisposable, IEnumerable<KeyValuePair<ushort, I
             }
         }
     }
-    
+
     public void Dispose()
     {
         ClearEffects();
         OnEffectSet = null;
         GC.SuppressFinalize(this);
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
     }
 }

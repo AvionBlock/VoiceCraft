@@ -9,7 +9,7 @@ namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class EntityViewModel : ObservableObject
 {
-    private readonly VoiceCraftEntity _entity;
+    private readonly VoiceCraftClientEntity _entity;
 
     private readonly Guid? _entityUserId;
     private readonly SettingsService _settingsService;
@@ -31,13 +31,13 @@ public partial class EntityViewModel : ObservableObject
     //User Settings
     [ObservableProperty] private float _volume;
 
-    public EntityViewModel(VoiceCraftEntity entity, SettingsService settingsService)
+    public EntityViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
     {
         _entity = entity;
         _userSettings = settingsService.UserSettings;
         _settingsService = settingsService;
 
-        if (entity is VoiceCraftNetworkEntity networkEntity)
+        if (entity is VoiceCraftClientNetworkEntity networkEntity)
         {
             _entityUserId = networkEntity.UserGuid;
             _isServerMuted = networkEntity.ServerMuted;

@@ -559,7 +559,7 @@ public class McHttpServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSy
         {
             var entity = _world.GetEntity(packet.Id);
             if (entity is null or VoiceCraftNetworkEntity) return;
-            entity.ReceiveAudio(packet.Data, packet.Timestamp, packet.FrameLoudness);
+            entity.ReceiveAudio(packet.Buffer, packet.Timestamp, packet.FrameLoudness);
         }
         finally
         {

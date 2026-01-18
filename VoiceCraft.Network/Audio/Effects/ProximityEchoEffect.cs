@@ -58,8 +58,7 @@ namespace VoiceCraft.Network.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
-            int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
@@ -76,12 +75,12 @@ namespace VoiceCraft.Network.Audio.Effects
             var delayLine = GetOrCreateDelayLine(from);
             delayLine.Ensure(SampleRate, Delay);
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < buffer.Length; i++)
             {
                 var delayed = delayLine.Read(_delay) * factor;
-                var output = data[i] + delayed;
+                var output = buffer[i] + delayed;
                 delayLine.Write(output);
-                data[i] = output * WetDry + data[i] * (1.0f - WetDry);
+                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
             }
         }
 

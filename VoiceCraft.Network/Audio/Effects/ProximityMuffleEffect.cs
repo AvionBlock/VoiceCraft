@@ -33,8 +33,7 @@ namespace VoiceCraft.Network.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
-            int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0)
@@ -44,10 +43,10 @@ namespace VoiceCraft.Network.Audio.Effects
             var biQuadFilter = GetOrCreateBiQuadFilter(from);
             biQuadFilter.SetLowPassFilter(SampleRate, 200, 1);
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < buffer.Length; i++)
             {
-                var output = biQuadFilter.Transform(data[i]) * factor + data[i] * (1.0f - factor);
-                data[i] = output * WetDry + data[i] * (1.0f - WetDry);
+                var output = biQuadFilter.Transform(buffer[i]) * factor + buffer[i] * (1.0f - factor);
+                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
             }
         }
 

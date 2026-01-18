@@ -8,12 +8,8 @@ namespace VoiceCraft.Core.Interfaces
 
         void Initialize(IAudioRecorder recorder, IAudioPlayer player);
 
-        void EchoPlayback(byte[] buffer, int count);
+        void EchoPlayback(Span<byte> buffer);
 
-        void EchoPlayback(Span<byte> buffer, int count);
-
-        void EchoCancel(byte[] buffer, int count);
-
-        void EchoCancel(Span<byte> buffer, int count);
+        void EchoCancel(Span<byte> buffer);
     }
 }

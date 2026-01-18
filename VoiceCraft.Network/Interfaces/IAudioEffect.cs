@@ -10,7 +10,7 @@ namespace VoiceCraft.Network.Interfaces
     {
         EffectType EffectType { get; }
 
-        void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data, int count);
+        void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer);
 
         void Reset();
 

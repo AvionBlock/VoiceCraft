@@ -36,24 +36,24 @@ public abstract class HotKeyAction
     }
 }
 
-public class MuteAction(VoiceCraftService voiceCraftService) : HotKeyAction
+public class MuteAction() : HotKeyAction
 {
     public override string Title => "Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
 
     public override void Press()
     {
-        voiceCraftService.Muted = !voiceCraftService.Muted;
+        //voiceCraftService.Muted = !voiceCraftService.Muted;
     }
 }
 
-public class DeafenAction(VoiceCraftService voiceCraftService) : HotKeyAction
+public class DeafenAction() : HotKeyAction
 {
     public override string Title => "Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
 
     public override void Press()
     {
-        voiceCraftService.Deafened = !voiceCraftService.Deafened;
+        //voiceCraftService.Deafened = !voiceCraftService.Deafened;
     }
 }

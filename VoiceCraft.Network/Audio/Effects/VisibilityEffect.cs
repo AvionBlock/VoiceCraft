@@ -1,9 +1,7 @@
 using System;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Backends;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects
@@ -12,8 +10,7 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         public EffectType EffectType => EffectType.Visibility;
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> data,
-            int count)
+        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
         {
         }
 

@@ -1,22 +1,19 @@
 using System;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using OpusSharp.Core;
-using OpusSharp.Core.Extensions;
-using VoiceCraft.Client.Network;
-using VoiceCraft.Client.Network.Systems;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network;
-using VoiceCraft.Network.Backends;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.Services;
 
-public abstract class VoiceCraftService
+public class VoiceCraftService
 {
     private VoiceCraftClient? _client;
     private McWssServer? _mcWssServer;
@@ -24,21 +21,19 @@ public abstract class VoiceCraftService
     private string _description = string.Empty;
 
     //Services
-    private readonly VoiceCraftNetworkBackend _networkBackend;
+    private readonly Func<IAudioDecoder> _decoderFactory;
+    private readonly Func<IAudioEncoder> _encoderFactory;
     private readonly NotificationService _notificationService;
     private readonly SettingsService _settingsService;
     private readonly AudioService _audioService;
 
     //Audio
-    private readonly OpusEncoder _encoder;
-    private readonly byte[] _encodeBuffer = new byte[Constants.MaximumEncodedBytes];
-    private AudioSystem? _audioSystem;
     private IAudioRecorder? _audioRecorder;
     private IAudioPlayer? _audioPlayer;
     private IDenoiser? _denoiser;
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
-    
+
     public VcConnectionState ConnectionState => _client?.ConnectionState ?? VcConnectionState.Disconnected;
 
     public bool Muted
@@ -91,21 +86,22 @@ public abstract class VoiceCraftService
     public event Action<bool>? OnUpdateServerMute;
     public event Action<bool>? OnUpdateServerDeafen;
     public event Action<bool>? OnUpdateSpeaking;
-    public event Action<VoiceCraftEntity, AudioSource>? OnEntityAdded;
-    public event Action<VoiceCraftEntity, AudioSource>? OnEntityRemoved;
+    public event Action<VoiceCraftClientEntity>? OnEntityAdded;
+    public event Action<VoiceCraftClientEntity>? OnEntityRemoved;
 
-    public VoiceCraftService(VoiceCraftNetworkBackend networkBackend, AudioService audioService,
-        SettingsService settingsService, NotificationService notificationService)
+    public VoiceCraftService(
+        AudioService audioService,
+        SettingsService settingsService, 
+        NotificationService notificationService,
+        Func<IAudioEncoder> encoderFactory,
+        Func<IAudioDecoder> decoderFactory)
     {
+        _encoderFactory = encoderFactory;
+        _decoderFactory = decoderFactory;
         _networkBackend = networkBackend;
         _settingsService = settingsService;
         _audioService = audioService;
         _notificationService = notificationService;
-
-        _encoder = new OpusEncoder(Constants.SampleRate, Constants.Channels,
-            OpusPredefinedValues.OPUS_APPLICATION_VOIP);
-        _encoder.SetPacketLostPercent(20); //Expected packet loss, might make this change over time later.
-        _encoder.SetBitRate(32000);
     }
 
     public async Task ConnectAsync(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
@@ -117,9 +113,8 @@ public abstract class VoiceCraftService
         Title = "VoiceCraft.Status.Initializing";
         var audioSettings = _settingsService.AudioSettings;
         var networkSettings = _settingsService.NetworkSettings;
-        
-        _client = InitializeClient(_networkBackend);
-        _audioSystem = InitializeAudioSystem(_client);
+
+        _client = InitializeClient(_networkBackend, _encoderFactory, _decoderFactory);
         _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
         _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
         _echoCanceler = _audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
@@ -162,12 +157,6 @@ public abstract class VoiceCraftService
             _client.Dispose();
             _client = null;
         }
-        
-        if (_audioSystem != null)
-        {
-            _audioSystem.Dispose();
-            _audioSystem = null;
-        }
 
         if (_audioRecorder != null)
         {
@@ -194,17 +183,38 @@ public abstract class VoiceCraftService
     //Audio
     private int Read(byte[] buffer, int count)
     {
-        var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
-        var read = _audioSystem?.Read(shortBuffer, count / sizeof(short)) * sizeof(short);
-        return read ?? 0;
+        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer)[..(count / sizeof(short))];
+        var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
+        try
+        {
+            var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
+            floatBufferSpan.Clear();
+
+            var read = _client?.Read(floatBufferSpan) ?? 0;
+            return SampleFloatTo16.Read(floatBufferSpan[..read], shortBufferSpan) * sizeof(short);
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(floatBuffer);
+        }
     }
 
     private void Write(byte[] buffer, int bytesRead)
     {
-        var shortBuffer = MemoryMarshal.Cast<byte, short>(buffer);
-        var frameLoudness = SampleLoudness16.Read(shortBuffer, bytesRead / sizeof(short));
-        var encoded = _encoder.Encode(buffer, Constants.SamplesPerFrame, _encodeBuffer, _encodeBuffer.Length);
-        _client?.SendAudio(buffer.AsSpan(0, encoded), frameLoudness);
+        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer)[..(bytesRead / sizeof(short))];
+        var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
+        try
+        {
+            var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
+            floatBufferSpan.Clear();
+
+            var read = Sample16ToFloat.Read(shortBufferSpan, floatBuffer);
+            _client?.Write(floatBufferSpan[..read]);
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(floatBuffer);
+        }
     }
 
     private static void UpdateLogic(VoiceCraftClient client)
@@ -272,19 +282,17 @@ public abstract class VoiceCraftService
     {
         OnUpdateServerDeafen?.Invoke(deafen);
     }
-    
+
     private void ClientWorldOnEntityCreated(VoiceCraftEntity entity)
     {
-        var audioSource = _audioSystem?.GetOrAddAudioSource(entity);
-        if (audioSource == null) return;
-        OnEntityAdded?.Invoke(entity, audioSource);
+        if (entity is not VoiceCraftClientEntity clientEntity) return;
+        OnEntityAdded?.Invoke(clientEntity);
     }
 
     private void ClientWorldOnEntityDestroyed(VoiceCraftEntity entity)
     {
-        var audioSource = _audioSystem?.RemoveAudioSource(entity);
-        if (audioSource == null) return;
-        OnEntityRemoved?.Invoke(entity, audioSource);
+        if (entity is not VoiceCraftClientEntity clientEntity) return;
+        OnEntityRemoved?.Invoke(clientEntity);
     }
 
     private void OnRecordingStopped(Exception? ex)
@@ -322,9 +330,10 @@ public abstract class VoiceCraftService
     }
 
     //Initializers
-    private VoiceCraftClient InitializeClient(VoiceCraftNetworkBackend networkBackend)
+    private VoiceCraftClient InitializeClient(VoiceCraftNetworkBackend networkBackend, Func<IAudioEncoder> encoderFactory,
+        Func<IAudioDecoder> decoderFactory)
     {
-        var client = new VoiceCraftClient(networkBackend);
+        var client = new VoiceCraftClient(networkBackend, encoderFactory, decoderFactory);
         client.OnConnected += ClientOnConnected;
         client.OnDisconnected += ClientOnDisconnected;
         client.OnSetTitle += ClientOnSetTitle;
@@ -337,11 +346,6 @@ public abstract class VoiceCraftService
         client.World.OnEntityCreated += ClientWorldOnEntityCreated;
         client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
         return client;
-    }
-
-    private AudioSystem InitializeAudioSystem(VoiceCraftClient client)
-    {
-        return new AudioSystem(client);
     }
 
     private IAudioRecorder InitializeAudioRecorder(string inputDevice)

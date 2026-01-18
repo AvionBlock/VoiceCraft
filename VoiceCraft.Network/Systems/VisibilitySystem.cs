@@ -36,7 +36,7 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private bool EntityVisibility(VoiceCraftEntity from, VoiceCraftNetworkEntity to)
     {
         if ((from.TalkBitmask & to.ListenBitmask) == 0) return false;
-        foreach (var effect in audioEffectSystem)
+        foreach (var effect in audioEffectSystem.AudioEffects)
         {
             if (effect.Value is not IVisible visibleEffect) continue;
             if (!visibleEffect.Visibility(from, to, effect.Key)) return false;
