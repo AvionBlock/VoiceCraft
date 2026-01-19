@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -7,7 +8,8 @@ namespace VoiceCraft.Core.World
 {
     public class VoiceCraftEntity
     {
-        private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
+        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities =
+            new ConcurrentDictionary<int, VoiceCraftEntity>();
         private float _caveFactor;
         private bool _deafened;
         private ushort _effectBitmask = ushort.MaxValue;
@@ -20,7 +22,7 @@ namespace VoiceCraft.Core.World
         private Vector2 _rotation;
         private ushort _talkBitmask = ushort.MaxValue;
         private string _worldId = string.Empty;
-        
+
         public VoiceCraftEntity(int id, VoiceCraftWorld world)
         {
             Id = id;
@@ -70,7 +72,7 @@ namespace VoiceCraft.Core.World
         public void RemoveVisibleEntity(VoiceCraftEntity entity)
         {
             if (entity == this) return;
-            if (!_visibleEntities.Remove(entity.Id)) return;
+            if (!_visibleEntities.Remove(entity.Id, out _)) return;
             OnVisibleEntityRemoved?.Invoke(entity, this);
         }
 
@@ -82,7 +84,7 @@ namespace VoiceCraft.Core.World
 
             if (keysToRemove == null) return;
             foreach (var key in keysToRemove)
-                _visibleEntities.Remove(key);
+                _visibleEntities.Remove(key, out _);
         }
 
         public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)

@@ -2,6 +2,7 @@ using System.CommandLine;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Packets.VcPackets.Request;
 using VoiceCraft.Network.World;
 using VoiceCraft.Server.Servers;

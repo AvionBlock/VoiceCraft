@@ -1,9 +1,16 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.World;
+using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.Systems;
 
@@ -11,6 +18,7 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
+    private readonly Mutex _mutex = new();
 
     public IImmutableDictionary<ushort, IAudioEffect> AudioEffects
     {
@@ -29,6 +37,11 @@ public class AudioEffectSystem : IDisposable
             _defaultAudioEffects = value;
             Reset();
         }
+    }
+
+    ~AudioEffectSystem()
+    {
+        Dispose(false);
     }
 
     public event Action<ushort, IAudioEffect?>? OnEffectSet;
@@ -82,10 +95,80 @@ public class AudioEffectSystem : IDisposable
         }
     }
 
+    public int Read(Span<float> buffer, VoiceCraftClient client)
+    {
+        var bufferLength = buffer.Length;
+        var pinRef = buffer.GetPinnableReference();
+
+        var read = 0;
+        Parallel.ForEach(client.VisibleEntities.OfType<VoiceCraftClientEntity>(), x =>
+        {
+            var bufferRef = new Span<float>(ref pinRef);
+            var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
+            var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
+            entitySpanBuffer.Clear();
+            try
+            {
+                var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
+                _mutex.WaitOne();
+                SampleMixer.Read(entitySpanBuffer[..entityRead], bufferRef);
+                // ReSharper disable once AccessToModifiedClosure
+                read = Math.Max(read, entityRead);
+                _mutex.ReleaseMutex();
+            }
+            finally
+            {
+                ArrayPool<float>.Shared.Return(entityBuffer);
+            }
+        });
+        
+        read = SampleHardClip.Read(buffer[..read]);
+        read = SampleVolume.Read(buffer[..read], client.OutputVolume);
+        return read;
+    }
+
+    private int ProcessEntityAudio(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
+    {
+        var monoCount = buffer.Length / 2;
+        var monoBuffer = ArrayPool<float>.Shared.Rent(monoCount);
+        var monoSpanBuffer = monoBuffer.AsSpan(0, monoCount);
+        monoSpanBuffer.Clear();
+
+        try
+        {
+            var read = from.Read(monoSpanBuffer);
+            if (read <= 0) read = monoCount; //Do a full read.
+            read = SampleMonoToStereo.Read(monoSpanBuffer[..read], buffer); //To Stereo
+            ProcessEntityEffects(buffer[..read], from, to); //Process Effects
+            read = SampleVolume.Read(buffer[..read], from.Volume); //Adjust the volume of the entity.
+            return read;
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(monoBuffer);
+        }
+    }
+    
+    private void ProcessEntityEffects(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
+    {
+        lock (_audioEffects)
+        {
+            foreach (var effect in _audioEffects)
+                effect.Value.Process(from, to, effect.Key, buffer);
+        }
+    }
+
     public void Dispose()
     {
-        ClearEffects();
-        OnEffectSet = null;
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!disposing) return;
+        ClearEffects();
+        _mutex.Dispose();
+        OnEffectSet = null;
     }
 }

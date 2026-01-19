@@ -1,4 +1,3 @@
-/*
 using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -18,14 +17,12 @@ namespace VoiceCraft.Client.Services;
 
 public class VoiceCraftService
 {
-    private VoiceCraftClient? _client;
+    private readonly VoiceCraftClient _client;
     private McWssServer? _mcWssServer;
     private string _title = string.Empty;
     private string _description = string.Empty;
 
     //Services
-    private readonly Func<IAudioDecoder> _decoderFactory;
-    private readonly Func<IAudioEncoder> _encoderFactory;
     private readonly NotificationService _notificationService;
     private readonly SettingsService _settingsService;
     private readonly AudioService _audioService;
@@ -37,26 +34,18 @@ public class VoiceCraftService
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
 
-    public VcConnectionState ConnectionState => _client?.ConnectionState ?? VcConnectionState.Disconnected;
+    public VcConnectionState ConnectionState => _client.ConnectionState;
 
     public bool Muted
     {
-        get => _client?.Muted ?? false;
-        set
-        {
-            if (_client == null) return;
-            _client.Muted = value;
-        }
+        get => _client.Muted;
+        set => _client.Muted = value;
     }
 
     public bool Deafened
     {
-        get => _client?.Deafened ?? false;
-        set
-        {
-            if (_client == null) return;
-            _client.Deafened = value;
-        }
+        get => _client.Deafened;
+        set => _client.Deafened = value;
     }
 
     public string Title
@@ -93,31 +82,36 @@ public class VoiceCraftService
     public event Action<VoiceCraftClientEntity>? OnEntityRemoved;
 
     public VoiceCraftService(
+        VoiceCraftClient client,
         AudioService audioService,
-        SettingsService settingsService, 
-        NotificationService notificationService,
-        Func<IAudioEncoder> encoderFactory,
-        Func<IAudioDecoder> decoderFactory)
+        SettingsService settingsService,
+        NotificationService notificationService)
     {
-        _encoderFactory = encoderFactory;
-        _decoderFactory = decoderFactory;
-        _networkBackend = networkBackend;
+        _client = client;
         _settingsService = settingsService;
         _audioService = audioService;
         _notificationService = notificationService;
+
+        client.OnConnected += ClientOnConnected;
+        client.OnDisconnected += ClientOnDisconnected;
+        client.OnSetTitle += ClientOnSetTitle;
+        client.OnSetDescription += ClientOnSetDescription;
+        client.OnMuteUpdated += ClientOnMuteUpdated;
+        client.OnDeafenUpdated += ClientOnDeafenUpdated;
+        client.OnServerMuteUpdated += ClientOnServerMuteUpdated;
+        client.OnServerDeafenUpdated += ClientOnServerDeafenUpdated;
+        client.OnSpeakingUpdated += ClientOnSpeakingUpdated;
+        client.World.OnEntityCreated += ClientWorldOnEntityCreated;
+        client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
     }
 
     public async Task ConnectAsync(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
         PositioningType positioningType)
     {
-        if (_client != null)
-            throw new InvalidOperationException();
-
         Title = "VoiceCraft.Status.Initializing";
         var audioSettings = _settingsService.AudioSettings;
         var networkSettings = _settingsService.NetworkSettings;
 
-        _client = InitializeClient(_encoderFactory, _decoderFactory);
         _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
         _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
         _echoCanceler = _audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
@@ -154,12 +148,7 @@ public class VoiceCraftService
 
     public async Task DisconnectAsync(string? reason = null)
     {
-        if (_client != null)
-        {
-            await StopClientAsync(_client, reason);
-            _client.Dispose();
-            _client = null;
-        }
+        await StopClientAsync(_client, reason);
 
         if (_audioRecorder != null)
         {
@@ -193,7 +182,7 @@ public class VoiceCraftService
             var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
             floatBufferSpan.Clear();
 
-            var read = _client?.Read(floatBufferSpan) ?? 0;
+            var read = _client.Read(floatBufferSpan);
             return SampleFloatTo16.Read(floatBufferSpan[..read], shortBufferSpan) * sizeof(short);
         }
         finally
@@ -212,7 +201,7 @@ public class VoiceCraftService
             floatBufferSpan.Clear();
 
             var read = Sample16ToFloat.Read(shortBufferSpan, floatBuffer);
-            _client?.Write(floatBufferSpan[..read]);
+            _client.Write(floatBufferSpan[..read]);
         }
         finally
         {
@@ -244,11 +233,6 @@ public class VoiceCraftService
     private void ClientOnDisconnected(string? reason)
     {
         _ = DisconnectAsync(reason);
-        var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}");
-        Title = localeReason;
-        Description = localeReason;
-        _notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
-        OnDisconnected?.Invoke();
     }
 
     private void ClientOnSetTitle(string title)
@@ -302,7 +286,7 @@ public class VoiceCraftService
     {
         if (ex != null)
         {
-            _client?.DisconnectAsync(ex.Message);
+            _client.DisconnectAsync(ex.Message);
             return;
         }
 
@@ -313,7 +297,7 @@ public class VoiceCraftService
     {
         if (ex != null)
         {
-            _client?.DisconnectAsync(ex.Message);
+            _client.DisconnectAsync(ex.Message);
             return;
         }
 
@@ -330,24 +314,6 @@ public class VoiceCraftService
     {
         _notificationService.SendNotification(Localizer.Get("Notification.McWss.Disconnected"),
             Localizer.Get("Notification.McWss.Badge"));
-    }
-
-    //Initializers
-    private VoiceCraftClient InitializeClient(Func<IAudioEncoder> encoderFactory, Func<IAudioDecoder> decoderFactory)
-    {
-        var client = new VoiceCraftClient(encoderFactory, decoderFactory);
-        client.OnConnected += ClientOnConnected;
-        client.OnDisconnected += ClientOnDisconnected;
-        client.OnSetTitle += ClientOnSetTitle;
-        client.OnSetDescription += ClientOnSetDescription;
-        client.OnMuteUpdated += ClientOnMuteUpdated;
-        client.OnDeafenUpdated += ClientOnDeafenUpdated;
-        client.OnServerMuteUpdated += ClientOnServerMuteUpdated;
-        client.OnServerDeafenUpdated += ClientOnServerDeafenUpdated;
-        client.OnSpeakingUpdated += ClientOnSpeakingUpdated;
-        client.World.OnEntityCreated += ClientWorldOnEntityCreated;
-        client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
-        return client;
     }
 
     private IAudioRecorder InitializeAudioRecorder(string inputDevice)
@@ -396,18 +362,19 @@ public class VoiceCraftService
             client.OnSpeakingUpdated -= ClientOnSpeakingUpdated;
             client.World.OnEntityCreated -= ClientWorldOnEntityCreated;
             client.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
-            if (await client.DisconnectAsync(reason))
-            {
-                var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}");
-                Title = localeReason;
-                Description = localeReason;
-                _notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
-                OnDisconnected?.Invoke();
-            }
+            await client.DisconnectAsync(reason);
         }
         catch (Exception ex)
         {
             LogService.Log(ex);
+        }
+        finally
+        {
+            var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}");
+            Title = localeReason;
+            Description = localeReason;
+            _notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
+            OnDisconnected?.Invoke();
         }
     }
 
@@ -455,4 +422,3 @@ public class VoiceCraftService
         }
     }
 }
-*/
