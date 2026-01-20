@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using VoiceCraft.Core;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
 
@@ -13,8 +12,7 @@ namespace VoiceCraft.Network.World
 
         public VoiceCraftNetworkEntity(
             VoiceCraftNetPeer netPeer,
-            int id,
-            VoiceCraftWorld world) : base(id, world)
+            int id) : base(id)
         {
             Name = "New Client";
             NetPeer = netPeer;

@@ -124,7 +124,7 @@ public partial class SelectedServerViewModel(
                     Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
                 }
             }
-            catch(Exception ex)
+            catch
             {
                 Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
                 Motd = "";
@@ -132,7 +132,7 @@ public partial class SelectedServerViewModel(
                 ConnectedClients = "";
                 Version = "";
             }
-            await Task.Delay(Constants.TickRate, token);
+            await Task.Delay(TimeSpan.FromSeconds(1), token);
 
         }
     }

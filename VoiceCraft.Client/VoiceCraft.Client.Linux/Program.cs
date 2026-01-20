@@ -43,7 +43,8 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
-                new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>, x.GetRequiredService<IAudioDecoder>));
+                new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
+                    x.GetRequiredService<IAudioDecoder>));
             App.ServiceCollection.AddTransient<IAudioEncoder, NativeAudioEncoder>();
             App.ServiceCollection.AddTransient<IAudioDecoder, NativeAudioDecoder>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();

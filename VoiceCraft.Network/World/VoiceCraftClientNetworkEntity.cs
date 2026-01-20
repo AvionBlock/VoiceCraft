@@ -1,11 +1,10 @@
 using System;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Network.World;
 
-public class VoiceCraftClientNetworkEntity(int id, VoiceCraftWorld world, IAudioDecoder decoder, Guid userGuid)
-    : VoiceCraftClientEntity(id, world, decoder)
+public class VoiceCraftClientNetworkEntity(int id, IAudioDecoder decoder, Guid userGuid)
+    : VoiceCraftClientEntity(id, decoder)
 {
     private bool _serverDeafened;
     private bool _serverMuted;

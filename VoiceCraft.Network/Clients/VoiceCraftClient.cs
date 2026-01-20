@@ -22,11 +22,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     protected bool Disposed;
 
     //Audio
-    private readonly Func<IAudioEncoder> _audioEncoderFactory;
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
+    private readonly IAudioEncoder _audioEncoder;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
     private float _microphoneSensitivity;
-    private IAudioEncoder? _audioEncoder;
     private float _outputVolume;
     private ushort _sendTimestamp;
     private bool _serverDeafened;
@@ -34,6 +33,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private bool _speakingState;
 
     public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
+    public VoiceCraftWorld World { get; } = new();
     public AudioEffectSystem AudioEffectSystem { get; } = new();
     public abstract PositioningType PositioningType { get; }
     public VcConnectionState ConnectionState { get; protected set; }
@@ -91,10 +91,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public event Action<bool>? OnServerMuteUpdated;
     public event Action<bool>? OnServerDeafenUpdated;
 
-    protected VoiceCraftClient(Func<IAudioEncoder> encoderFactory, Func<IAudioDecoder> decoderFactory) : base(0,
-        new VoiceCraftWorld())
+    protected VoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecoder> decoderFactory) : base(0)
     {
-        _audioEncoderFactory = encoderFactory;
+        _audioEncoder = audioEncoder;
         _audioDecoderFactory = decoderFactory;
 
         //Internal Listeners
@@ -146,8 +145,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         encodeBuffer.AsSpan().Clear();
         try
         {
-            _audioEncoder ??= _audioEncoderFactory.Invoke();
-            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, buffer.Length);
+            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.SamplesPerFrame);
             SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket()
                 .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
         }
@@ -156,20 +154,29 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             ArrayPool<byte>.Shared.Return(encodeBuffer);
         }
     }
+    
+    public override void Reset()
+    {
+        //Doesn't remove the entity from the world.
+        Name = "New Client";
+        CaveFactor = 0;
+        MuffleFactor = 0;
+        WorldId = string.Empty;
+        Position = Vector3.Zero;
+        Rotation = Vector2.Zero;
+        EffectBitmask = ushort.MaxValue;
+        TalkBitmask = ushort.MaxValue;
+        ListenBitmask = ushort.MaxValue;
+        ServerMuted = false;
+        ServerDeafened = false;
+        World.Reset();
+        AudioEffectSystem.Reset();
+    }
 
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
-    }
-
-    public override void Reset()
-    {
-        AudioEffectSystem.Reset();
-        World.Reset();
-        if (_audioEncoder == null) return;
-        _audioEncoder.Dispose();
-        _audioEncoder = null;
     }
 
     protected static void ProcessPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
@@ -302,10 +309,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case VcPacketType.LoginRequest:
             case VcPacketType.LogoutRequest:
-                return;
             case VcPacketType.InfoResponse:
-                ProcessPacket<VcInfoResponsePacket>(reader, onParsed);
-                break;
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
             case VcPacketType.SetNameRequest:
@@ -461,13 +465,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (Disposed) return;
         if (disposing)
         {
+            _audioEncoder.Dispose();
             World.Dispose();
             AudioEffectSystem.Dispose();
-            if (_audioEncoder != null)
-            {
-                _audioEncoder.Dispose();
-                _audioEncoder = null;
-            }
 
             Destroy();
 
@@ -577,7 +577,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityCreatedPacket(VcOnEntityCreatedPacket packet)
     {
-        var entity = new VoiceCraftEntity(packet.Id, World)
+        var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke())
         {
             Name = packet.Name,
             Muted = packet.Muted,
@@ -589,7 +589,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void HandleOnNetworkEntityCreatedPacket(VcOnNetworkEntityCreatedPacket packet)
     {
         var entity =
-            new VoiceCraftClientNetworkEntity(packet.Id, World, _audioDecoderFactory.Invoke(), packet.UserGuid)
+            new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid)
             {
                 Name = packet.Name,
                 Muted = packet.Muted,

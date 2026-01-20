@@ -35,9 +35,6 @@ namespace VoiceCraft.Core.World
         {
             if (!_entities.TryAdd(entity.Id, entity))
                 throw new InvalidOperationException("Failed to add entity! An entity with the same id already exists!");
-            if (entity.World != this)
-                throw new InvalidOperationException(
-                    "Failed to add entity! The entity is not associated with this world!");
 
             entity.OnDestroyed += RemoveEntity;
             OnEntityCreated?.Invoke(entity);

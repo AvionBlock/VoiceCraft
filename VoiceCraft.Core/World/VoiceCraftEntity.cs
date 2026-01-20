@@ -23,15 +23,13 @@ namespace VoiceCraft.Core.World
         private ushort _talkBitmask = ushort.MaxValue;
         private string _worldId = string.Empty;
 
-        public VoiceCraftEntity(int id, VoiceCraftWorld world)
+        public VoiceCraftEntity(int id)
         {
             Id = id;
-            World = world;
         }
 
         //Properties
         public int Id { get; }
-        public VoiceCraftWorld World { get; }
         public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;

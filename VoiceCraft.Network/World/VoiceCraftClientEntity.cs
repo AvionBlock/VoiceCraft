@@ -22,7 +22,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     private bool _isVisible;
     private float _volume = 1f;
 
-    public VoiceCraftClientEntity(int id, VoiceCraftWorld world, IAudioDecoder decoder) : base(id, world)
+    public VoiceCraftClientEntity(int id, IAudioDecoder decoder) : base(id)
     {
         _decoder = decoder;
         Task.Run(TaskLogicAsync);

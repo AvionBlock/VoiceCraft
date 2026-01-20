@@ -1,6 +1,5 @@
 using System;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib;
@@ -16,7 +15,7 @@ namespace VoiceCraft.Network.Clients;
 public class LiteNetVoiceCraftClient : VoiceCraftClient
 {
     private readonly NetManager _netManager;
-    private readonly LiteNetListener _listener;
+    private readonly EventBasedNetListener _listener;
     private readonly NetDataWriter _writer;
     private LiteNetVoiceCraftNetPeer? _netPeer;
 
@@ -24,10 +23,10 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
     public override event Action? OnConnected;
     public override event Action<string?>? OnDisconnected;
 
-    public LiteNetVoiceCraftClient(Func<IAudioEncoder> encoderFactory, Func<IAudioDecoder> decoderFactory) : base(
-        encoderFactory, decoderFactory)
+    public LiteNetVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecoder> decoderFactory) : base(
+        audioEncoder, decoderFactory)
     {
-        _listener = new LiteNetListener();
+        _listener = new EventBasedNetListener();
         _netManager = new NetManager(_listener)
         {
             AutoRecycle = true,
@@ -36,8 +35,8 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         };
         _writer = new NetDataWriter();
 
-        _listener.PeerDisconnected += OnPeerDisconnected;
-        _listener.NetworkReceive += NetworkReceive;
+        _listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
+        _listener.NetworkReceiveEvent += NetworkReceiveEvent;
         _netManager.Start();
     }
 
@@ -66,8 +65,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
                 _writer.Put((byte)packet.PacketType);
                 _writer.Put(packet);
                 var peer = _netManager.Connect(ip, port, _writer);
-                _netPeer = new LiteNetVoiceCraftNetPeer(peer, Version, userGuid, serverUserGuid, locale,
-                    positioningType);
+                _netPeer = new LiteNetVoiceCraftNetPeer(peer, userGuid, serverUserGuid, locale, positioningType);
             }
 
             _ = await GetResponseAsync<VcAcceptResponsePacket>(requestId, TimeSpan.FromSeconds(8));
@@ -111,6 +109,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
             {
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
+                _writer.Put(packet);
                 _netManager.SendUnconnectedMessage(_writer, ip, port);
             }
         }
@@ -122,13 +121,20 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     public override void SendPacket<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
     {
+        if(_netPeer == null) return;
+        var method = deliveryMethod switch
+        {
+            VcDeliveryMethod.Unreliable => DeliveryMethod.Unreliable,
+            _ => DeliveryMethod.ReliableOrdered
+        };
         try
         {
             lock (_writer)
             {
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
-                _netPeer?.Send(_writer.AsReadOnlySpan(), deliveryMethod);
+                _writer.Put(packet);
+                _netPeer.NetPeer.Send(_writer, method);
             }
         }
         finally
@@ -143,8 +149,8 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         if (disposing)
         {
             _netManager.Stop();
-            _listener.PeerDisconnected -= OnPeerDisconnected;
-            _listener.NetworkReceive -= NetworkReceive;
+            _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
+            _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
 
             OnConnected = null;
             OnDisconnected = null;
@@ -161,7 +167,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
         token.Register(() => tcs.TrySetException(new OperationCanceledException()));
 
-        _listener.NetworkReceiveUnconnected += EventCallback;
+        _listener.NetworkReceiveUnconnectedEvent += EventCallback;
         try
         {
             var result = await tcs.Task.ConfigureAwait(false);
@@ -169,7 +175,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
         finally
         {
-            _listener.NetworkReceiveUnconnected -= EventCallback;
+            _listener.NetworkReceiveUnconnectedEvent -= EventCallback;
         }
 
         void EventCallback(IPEndPoint _, NetPacketReader reader, UnconnectedMessageType messageType)
@@ -192,7 +198,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         token.Register(() => tcs.TrySetException(new OperationCanceledException()));
 
         OnDisconnected += OnDisconnectedCallback;
-        _listener.NetworkReceive += EventCallback;
+        _listener.NetworkReceiveEvent += EventCallback;
         try
         {
             var result = await Task.WhenAny(tcs.Task, dTcs.Task).ConfigureAwait(false);
@@ -201,7 +207,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         finally
         {
             OnDisconnected -= OnDisconnectedCallback;
-            _listener.NetworkReceive -= EventCallback;
+            _listener.NetworkReceiveEvent -= EventCallback;
         }
 
         void EventCallback(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
@@ -221,7 +227,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     #region LiteNetLib Events
 
-    private void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
+    private void PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
     {
         if (peer.Equals(_netPeer?.NetPeer)) return;
 
@@ -261,58 +267,11 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         _ = DisconnectAsync(disconnectReason);
     }
 
-    private void NetworkReceive(NetPeer peer, NetPacketReader reader, byte channel,
+    private void NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
         DeliveryMethod deliveryMethod)
     {
         ProcessPacket(reader, ExecutePacket);
     }
 
     #endregion
-
-    private class LiteNetListener : INetEventListener
-    {
-        // ReSharper disable InconsistentNaming
-        public event Action<NetPeer>? PeerConnected;
-        public event Action<NetPeer, DisconnectInfo>? PeerDisconnected;
-        public event Action<IPEndPoint, SocketError>? NetworkError;
-        public event Action<NetPeer, NetPacketReader, byte, DeliveryMethod>? NetworkReceive;
-        public event Action<IPEndPoint, NetPacketReader, UnconnectedMessageType>? NetworkReceiveUnconnected;
-        public event Action<NetPeer, int>? NetworkLatencyUpdate;
-        public event Action<ConnectionRequest>? ConnectionRequest;
-        
-        public void OnPeerConnected(NetPeer peer)
-        {
-            PeerConnected?.Invoke(peer);
-        }
-
-        public void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo)
-        {
-            PeerDisconnected?.Invoke(peer, disconnectInfo);
-        }
-
-        public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
-        {
-            NetworkError?.Invoke(endPoint, socketError);
-        }
-
-        public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, byte channelNumber, DeliveryMethod deliveryMethod)
-        {
-            NetworkReceive?.Invoke(peer, reader, channelNumber, deliveryMethod);
-        }
-
-        public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
-        {
-            NetworkReceiveUnconnected?.Invoke(remoteEndPoint, reader, messageType);
-        }
-
-        public void OnNetworkLatencyUpdate(NetPeer peer, int latency)
-        {
-            NetworkLatencyUpdate?.Invoke(peer, latency);
-        }
-
-        public void OnConnectionRequest(ConnectionRequest request)
-        {
-            ConnectionRequest?.Invoke(request);
-        }
-    }
 }

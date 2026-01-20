@@ -9,8 +9,8 @@ using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network;
+using VoiceCraft.Client.Servers;
 using VoiceCraft.Network.Clients;
-using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.Services;
