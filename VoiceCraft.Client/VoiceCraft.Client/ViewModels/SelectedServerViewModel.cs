@@ -132,7 +132,7 @@ public partial class SelectedServerViewModel(
                 ConnectedClients = "";
                 Version = "";
             }
-            await Task.Delay(TimeSpan.FromSeconds(1), token);
+            await Task.Delay(TimeSpan.FromSeconds(4), token);
 
         }
     }

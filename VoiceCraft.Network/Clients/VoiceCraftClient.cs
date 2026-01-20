@@ -305,11 +305,11 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         switch (packetType)
         {
             case VcPacketType.InfoRequest:
-                ProcessPacket<VcInfoRequestPacket>(reader, onParsed);
-                break;
             case VcPacketType.LoginRequest:
             case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
+                ProcessPacket<VcInfoResponsePacket>(reader, onParsed);
+                break;
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
             case VcPacketType.SetNameRequest:
