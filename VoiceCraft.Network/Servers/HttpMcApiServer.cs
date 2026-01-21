@@ -14,16 +14,17 @@ using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;
 using VoiceCraft.Network.Packets.McHttpPackets;
+using VoiceCraft.Network.Systems;
 
 namespace VoiceCraft.Network.Servers;
 
-public class HttpMcApiServer(VoiceCraftWorld world) : McApiServer
+public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
+    : McApiServer(world, audioEffectSystem)
 {
     private HttpMcApiConfig _config = new();
     private readonly ConcurrentDictionary<IPEndPoint, HttpMcApiNetPeer> _mcApiPeers = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
-    private readonly VoiceCraftWorld _world = world;
     private HttpListener? _httpServer;
 
     public HttpMcApiConfig Config
@@ -39,6 +40,7 @@ public class HttpMcApiServer(VoiceCraftWorld world) : McApiServer
 
     public override uint MaxClients => Config.MaxClients;
     public override string LoginToken => Config.LoginToken;
+
     public override int ConnectedPeers =>
         _mcApiPeers.Count(x => x.Value.ConnectionState == McApiConnectionState.Connected);
 
@@ -107,20 +109,21 @@ public class HttpMcApiServer(VoiceCraftWorld world) : McApiServer
         }
     }
 
-    protected override void Disconnect(McApiNetPeer netPeer, string reason)
+    protected override void Disconnect(McApiNetPeer netPeer, string reason, bool force = false)
     {
         if (netPeer is not HttpMcApiNetPeer httpNetPeer) return;
-
         var logoutPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket().Set(reason);
         try
         {
+            httpNetPeer.SetConnectionState(McApiConnectionState.Disconnected);
+            httpNetPeer.SetSessionToken("");
+            if (force) return;
+
             lock (_writer)
             {
                 _writer.Reset();
                 _writer.Put((byte)logoutPacket.PacketType);
                 _writer.Put(logoutPacket);
-                httpNetPeer.SetConnectionState(McApiConnectionState.Disconnected);
-                httpNetPeer.SetSessionToken("");
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(reason));
 

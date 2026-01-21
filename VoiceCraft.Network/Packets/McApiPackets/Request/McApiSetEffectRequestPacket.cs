@@ -33,7 +33,8 @@ public class McApiSetEffectRequestPacket : IMcApiPacket
     public void Deserialize(NetDataReader reader)
     {
         Bitmask = reader.GetUShort();
-        EffectType = (EffectType)reader.GetByte();
+        var effectType = (EffectType)reader.GetByte();
+        Effect = IAudioEffect.FromReader(effectType, reader);
     }
 
     public McApiSetEffectRequestPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
