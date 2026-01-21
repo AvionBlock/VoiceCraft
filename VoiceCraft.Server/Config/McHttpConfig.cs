@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
-using VoiceCraft.Core;
 using VoiceCraft.Core.JsonConverters;
+using VoiceCraft.Network;
 
 namespace VoiceCraft.Server.Config;
 

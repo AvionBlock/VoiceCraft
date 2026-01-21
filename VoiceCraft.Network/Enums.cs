@@ -5,8 +5,7 @@ public enum VcConnectionState : byte
     Disconnected,
     Connecting,
     Connected,
-    Disconnecting,
-    LoginRequested
+    Disconnecting
 }
 
 public enum McApiConnectionState : byte
@@ -14,8 +13,7 @@ public enum McApiConnectionState : byte
     Disconnected,
     Connecting,
     Connected,
-    Disconnecting,
-    LoginRequested
+    Disconnecting
 }
 
 public enum VcDeliveryMethod : byte

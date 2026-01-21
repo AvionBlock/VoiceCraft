@@ -11,7 +11,7 @@ public class LiteNetVoiceCraftNetPeer(
     PositioningType positioningType) : VoiceCraftNetPeer(userGuid, serverUserGuid, locale, positioningType)
 {
     public NetPeer NetPeer => netPeer;
-    
+
     public override VcConnectionState ConnectionState
     {
         get

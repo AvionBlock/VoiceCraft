@@ -35,6 +35,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         };
         _writer = new NetDataWriter();
 
+        _listener.ConnectionRequestEvent += ConnectionRequestEvent;
         _listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
         _listener.NetworkReceiveEvent += NetworkReceiveEvent;
         _netManager.Start();
@@ -149,6 +150,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         if (disposing)
         {
             _netManager.Stop();
+            _listener.ConnectionRequestEvent -= ConnectionRequestEvent;
             _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
             _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
 
@@ -226,6 +228,12 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
     }
 
     #region LiteNetLib Events
+    
+    private static void ConnectionRequestEvent(ConnectionRequest request)
+    {
+        //No Fuck you.
+        request.Reject();
+    }
 
     private void PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
     {

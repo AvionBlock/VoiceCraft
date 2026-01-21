@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Net;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
@@ -15,13 +14,13 @@ namespace VoiceCraft.Network.Servers;
 public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 {
     protected bool Disposed;
-
+    
     public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
     protected VoiceCraftWorld World { get; } = world;
     protected string Motd { get; set; } = "VoiceCraft Proximity Chat!";
     protected PositioningType PositioningType { get; set; } = PositioningType.Server;
-    protected int ConnectedPeers => World.Entities.OfType<VoiceCraftNetworkEntity>().Count();
     protected uint MaxClients { get; set; }
+    public abstract int ConnectedPeers { get; }
 
     ~VoiceCraftServer()
     {
@@ -36,7 +35,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     public abstract void SendUnconnectedPacket<T>(IPEndPoint endPoint, T packet) where T : IVoiceCraftPacket;
 
-    public abstract void SendPacket<T>(VoiceCraftNetPeer netPeer, T packet,
+    public abstract void SendPacket<T>(VoiceCraftNetPeer vcNetPeer, T packet,
         VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable) where T : IVoiceCraftPacket;
 
     public abstract void Broadcast<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable,
@@ -44,7 +43,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     protected abstract void AcceptRequest(VcLoginRequestPacket packet, object? data);
     protected abstract void RejectRequest(VcLoginRequestPacket packet, string reason, object? data);
-    protected abstract void Disconnect(VoiceCraftNetPeer netPeer, string reason);
+    protected abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason);
 
     public void Dispose()
     {
@@ -241,7 +240,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             RejectRequest(packet, "VoiceCraft.DisconnectReason.IncompatibleVersion", data);
             return;
         }
-        
+
         if (ConnectedPeers >= MaxClients)
         {
             RejectRequest(packet, "VoiceCraft.DisconnectReason.ServerFull", data);
@@ -261,7 +260,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
                     RejectRequest(packet, "VoiceCraft.DisconnectReason.Error", data);
                     return;
             }
-        
+
         AcceptRequest(packet, data);
     }
 

@@ -42,7 +42,7 @@ namespace VoiceCraft.Network
         /// <param name="data">The input byte array to encode</param>
         /// <returns> The Z85 encoded string</returns>
         /// <exception cref="ArgumentException"> Thrown when the input length is not a multiple of 4</exception>
-        public static string GetStringWithPadding(Span<byte> data)
+        public static string GetStringWithPadding(ReadOnlySpan<byte> data)
         {
             var lengthMod4 = data.Length % 4;
             var paddingRequired = lengthMod4 != 0;
@@ -51,8 +51,9 @@ namespace VoiceCraft.Network
             if (paddingRequired)
             {
                 bytesToPad = 4 - lengthMod4;
-                bytesToEncode = new byte[data.Length + bytesToPad];
-                data.CopyTo(bytesToEncode);
+                var paddedBytes = new byte[data.Length + bytesToPad];
+                data.CopyTo(paddedBytes);
+                bytesToEncode = paddedBytes;
             }
 
             var z85String = GetString(bytesToEncode);
@@ -67,7 +68,7 @@ namespace VoiceCraft.Network
         /// <param name="data">The input byte array to encode</param>
         /// <returns> The Z85 encoded string</returns>
         /// <exception cref="ArgumentException"> Thrown when the input length is not a multiple of 4</exception>
-        public static string GetString(Span<byte> data)
+        public static string GetString(ReadOnlySpan<byte> data)
         {
             var stringBuilder = new StringBuilder();
             var encodedChars = new char[5];
