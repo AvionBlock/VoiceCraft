@@ -43,7 +43,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     protected abstract void AcceptRequest(VcLoginRequestPacket packet, object? data);
     protected abstract void RejectRequest(VcLoginRequestPacket packet, string reason, object? data);
-    protected abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason);
+    protected abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false);
 
     public void Dispose()
     {

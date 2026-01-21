@@ -194,7 +194,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         }
     }
 
-    protected override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason)
+    protected override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)
     {
         if (vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
         var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
@@ -205,6 +205,12 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
                 _writer.Reset();
                 _writer.Put((byte)logoutPacket.PacketType);
                 _writer.Put(logoutPacket);
+                if (force)
+                {
+                    _netManager.DisconnectPeerForce(liteNetPeer.NetPeer);
+                    return;
+                }
+
                 liteNetPeer.NetPeer.Disconnect(_writer);
             }
         }
