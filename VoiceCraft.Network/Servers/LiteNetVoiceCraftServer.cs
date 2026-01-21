@@ -1,9 +1,13 @@
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json.Serialization;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core;
+using VoiceCraft.Core.JsonConverters;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets.Request;
@@ -14,11 +18,26 @@ namespace VoiceCraft.Network.Servers;
 
 public class LiteNetVoiceCraftServer : VoiceCraftServer
 {
+    private LiteNetVoiceCraftConfig _config = new();
     private readonly ConcurrentDictionary<NetPeer, VoiceCraftNetPeer> _netPeers = new();
     private readonly EventBasedNetListener _listener;
     private readonly NetManager _netManager;
     private readonly NetDataWriter _writer;
+    
+    public LiteNetVoiceCraftConfig Config
+    {
+        get => _config;
+        set
+        {
+            if (_netManager.IsRunning)
+                throw new InvalidOperationException();
+            _config = value;
+        }
+    }
 
+    public override PositioningType PositioningType => _config.PositioningType;
+    public override string Motd => _config.Motd;
+    public override uint MaxClients => _config.MaxClients;
     public override int ConnectedPeers => _netPeers.Count;
 
     public LiteNetVoiceCraftServer(VoiceCraftWorld world) : base(world)
@@ -38,10 +57,10 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         _listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
     }
 
-    public override void Start(int port)
+    public override void Start()
     {
         Stop();
-        if (!_netManager.Start(port))
+        if (!_netManager.Start((int)_config.Port))
             throw new SocketException();
     }
 
@@ -241,4 +260,15 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     }
 
     #endregion
+    
+    public class LiteNetVoiceCraftConfig
+    {
+        public string Language { get; set; } = Constants.DefaultLanguage;
+        public uint Port { get; set; } = 9050;
+        public uint MaxClients { get; set; } = 100;
+        public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
+        public PositioningType PositioningType { get; set; } = PositioningType.Server;
+        [JsonConverter(typeof(JsonBooleanConverter))]
+        public bool EnableVisibilityDisplay { get; set; } = true;
+    }
 }

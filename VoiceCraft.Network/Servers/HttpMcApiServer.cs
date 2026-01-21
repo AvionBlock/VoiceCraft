@@ -39,7 +39,6 @@ public class HttpMcApiServer(VoiceCraftWorld world) : McApiServer
 
     public override uint MaxClients => Config.MaxClients;
     public override string LoginToken => Config.LoginToken;
-
     public override int ConnectedPeers =>
         _mcApiPeers.Count(x => x.Value.ConnectionState == McApiConnectionState.Connected);
 

@@ -17,9 +17,9 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
     
     public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
     protected VoiceCraftWorld World { get; } = world;
-    protected string Motd { get; set; } = "VoiceCraft Proximity Chat!";
-    protected PositioningType PositioningType { get; set; } = PositioningType.Server;
-    protected uint MaxClients { get; set; }
+    public abstract string Motd { get; }
+    public abstract PositioningType PositioningType { get; }
+    public abstract uint MaxClients { get; }
     public abstract int ConnectedPeers { get; }
 
     ~VoiceCraftServer()
@@ -27,7 +27,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         Dispose(false);
     }
 
-    public abstract void Start(int port);
+    public abstract void Start();
 
     public abstract void Update();
 
@@ -54,8 +54,6 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
     protected virtual void Dispose(bool disposing)
     {
         if (Disposed) return;
-        if (disposing) ;
-
         Disposed = true;
     }
 
