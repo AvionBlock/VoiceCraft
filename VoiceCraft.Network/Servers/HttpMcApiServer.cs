@@ -304,7 +304,11 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 {
                     _reader.Clear();
                     _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
-                    ProcessPacket(_reader, mcApiPacket => { ExecutePacket(mcApiPacket, httpNetPeer); });
+                    ProcessPacket(_reader, mcApiPacket =>
+                    {
+                        if (Config.DisabledPacketTypes.Contains(mcApiPacket.PacketType)) return;
+                        ExecutePacket(mcApiPacket, httpNetPeer);
+                    });
                 }
                 catch
                 {

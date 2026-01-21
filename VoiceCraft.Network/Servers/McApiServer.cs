@@ -238,7 +238,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
     {
         if (data is not McApiNetPeer netPeer) return;
         if (packet.Token != netPeer.SessionToken) return;
-        Disconnect(netPeer, "VcMcApi.DisconnectReason.LoggedOut", true);
+        Disconnect(netPeer, "", true);
     }
 
     private void HandlePingRequestPacket(McApiPingRequestPacket _, object? data)
