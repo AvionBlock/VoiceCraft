@@ -158,9 +158,10 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         var peer = request.Accept();
         var liteNetPeer = new LiteNetVoiceCraftNetPeer(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale,
             packet.PositioningType);
-        _netPeers.TryAdd(peer, liteNetPeer);
         try
         {
+            if (!_netPeers.TryAdd(peer, liteNetPeer))
+                throw new Exception();
             var id = World.GetNextId();
             var entity = new VoiceCraftNetworkEntity(liteNetPeer, id);
             liteNetPeer.Tag = entity;
