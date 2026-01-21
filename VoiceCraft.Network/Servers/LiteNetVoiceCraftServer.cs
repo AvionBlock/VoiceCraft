@@ -19,7 +19,7 @@ namespace VoiceCraft.Network.Servers;
 public class LiteNetVoiceCraftServer : VoiceCraftServer
 {
     private LiteNetVoiceCraftConfig _config = new();
-    private readonly ConcurrentDictionary<NetPeer, VoiceCraftNetPeer> _netPeers = new();
+    private readonly ConcurrentDictionary<NetPeer, LiteNetVoiceCraftNetPeer> _netPeers = new();
     private readonly EventBasedNetListener _listener;
     private readonly NetManager _netManager;
     private readonly NetDataWriter _writer;
@@ -133,16 +133,13 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         {
             lock (_writer)
             {
-                var networkEntities = World.Entities.OfType<VoiceCraftNetworkEntity>()
-                    .Where(x => x.NetPeer is LiteNetVoiceCraftNetPeer);
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 _writer.Put(packet);
-                foreach (var networkEntity in networkEntities)
+                foreach (var netPeer in _netPeers.Values)
                 {
-                    if (networkEntity.NetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) continue;
-                    if (excludes.Contains(networkEntity.NetPeer)) continue;
-                    liteNetPeer.NetPeer.Send(_writer, method);
+                    if (excludes.Contains(netPeer)) continue;
+                    netPeer.NetPeer.Send(_writer, method);
                 }
             }
         }

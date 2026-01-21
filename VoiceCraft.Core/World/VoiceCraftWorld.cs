@@ -8,8 +8,6 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftWorld : IDisposable
     {
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities = new();
-
-        private readonly Mutex _mutex = new();
         private int _nextEntityId;
 
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
@@ -19,6 +17,7 @@ namespace VoiceCraft.Core.World
             ClearEntities();
             OnEntityCreated = null;
             OnEntityDestroyed = null;
+            GC.SuppressFinalize(this);
         }
 
         public void Reset()
@@ -44,20 +43,13 @@ namespace VoiceCraft.Core.World
             _entities.TryGetValue(id, out var entity);
             return entity;
         }
-        
+
         public int GetNextId()
         {
-            _mutex.WaitOne();
-            try
-            {
-                while (_entities.ContainsKey(_nextEntityId)) ++_nextEntityId;
+            while (_entities.ContainsKey(_nextEntityId))
+                Interlocked.Increment(ref _nextEntityId);
 
-                return _nextEntityId++;
-            }
-            finally
-            {
-                _mutex.ReleaseMutex();
-            }
+            return _nextEntityId;
         }
 
         public void DestroyEntity(int id)
