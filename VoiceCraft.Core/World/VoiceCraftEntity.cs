@@ -6,10 +6,9 @@ using System.Numerics;
 
 namespace VoiceCraft.Core.World
 {
-    public class VoiceCraftEntity
+    public class VoiceCraftEntity(int id)
     {
-        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities =
-            new ConcurrentDictionary<int, VoiceCraftEntity>();
+        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities = new();
         private float _caveFactor;
         private bool _deafened;
         private ushort _effectBitmask = ushort.MaxValue;
@@ -23,13 +22,8 @@ namespace VoiceCraft.Core.World
         private ushort _talkBitmask = ushort.MaxValue;
         private string _worldId = string.Empty;
 
-        public VoiceCraftEntity(int id)
-        {
-            Id = id;
-        }
-
         //Properties
-        public int Id { get; }
+        public int Id { get; } = id;
         public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
@@ -78,7 +72,7 @@ namespace VoiceCraft.Core.World
         {
             List<int>? keysToRemove = null;
             foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed))
-                (keysToRemove ??= new List<int>()).Add(entity.Key);
+                (keysToRemove ??= []).Add(entity.Key);
 
             if (keysToRemove == null) return;
             foreach (var key in keysToRemove)

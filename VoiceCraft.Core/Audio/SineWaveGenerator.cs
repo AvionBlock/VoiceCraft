@@ -2,19 +2,14 @@ using System;
 
 namespace VoiceCraft.Core.Audio
 {
-    public class SineWaveGenerator
+    public class SineWaveGenerator(int sampleRate)
     {
         private float _currentPhase;
 
         // Internal state
         private float _phaseIncrement;
 
-        public SineWaveGenerator(int sampleRate)
-        {
-            SampleRate = sampleRate;
-        }
-
-        public int SampleRate { get; }
+        public int SampleRate { get; } = sampleRate;
 
         public float Frequency { get; set; } = 440f; // A4 note
 

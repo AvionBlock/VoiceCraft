@@ -111,7 +111,7 @@ public class AudioEffectSystem : IDisposable
             {
                 var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
                 _mutex.WaitOne();
-                SampleMixer.Read(entitySpanBuffer[..entityRead], bufferRef);
+                read = SampleMixer.Read(entitySpanBuffer[..entityRead], bufferRef);
                 // ReSharper disable once AccessToModifiedClosure
                 read = Math.Max(read, entityRead);
                 _mutex.ReleaseMutex();

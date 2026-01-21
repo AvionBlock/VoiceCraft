@@ -3,18 +3,12 @@ using System.Collections.Concurrent;
 
 namespace VoiceCraft.Core.Audio
 {
-    public class SampleBufferProvider<T>
+    public class SampleBufferProvider<T>(int size)
     {
-        private readonly ConcurrentQueue<T> _buffer;
-        public int MaxLength { get; }
+        private readonly ConcurrentQueue<T> _buffer = new();
+        public int MaxLength { get; } = size;
         public int PrefillSize { get; set; }
         public int Count => _buffer.Count; //Number of elements stored.
-        
-        public SampleBufferProvider(int size)
-        {
-            MaxLength = size;
-            _buffer = new ConcurrentQueue<T>();
-        }
 
         public int Write(Span<T> buffer)
         {

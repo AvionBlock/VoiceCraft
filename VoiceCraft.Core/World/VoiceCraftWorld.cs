@@ -7,10 +7,9 @@ namespace VoiceCraft.Core.World
 {
     public class VoiceCraftWorld : IDisposable
     {
-        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities =
-            new ConcurrentDictionary<int, VoiceCraftEntity>();
+        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities = new();
 
-        private readonly Mutex _mutex = new Mutex();
+        private readonly Mutex _mutex = new();
         private int _nextEntityId;
 
         public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
