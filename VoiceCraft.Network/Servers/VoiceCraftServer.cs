@@ -14,7 +14,7 @@ namespace VoiceCraft.Network.Servers;
 public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 {
     protected bool Disposed;
-    
+
     public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
     protected VoiceCraftWorld World { get; } = world;
     public abstract string Motd { get; }
@@ -264,71 +264,89 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     private static void HandleSetNameRequestPacket(VcSetNameRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity networkEntity) return;
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.Name = packet.Value;
     }
 
     private static void HandleAudioRequestPacket(VcAudioRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity networkEntity || networkEntity.Muted ||
-            networkEntity.ServerMuted) return;
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.Muted || networkEntity.ServerMuted) return;
         networkEntity.ReceiveAudio(packet.Buffer, packet.Timestamp, packet.FrameLoudness);
     }
 
     private static void HandleSetMuteRequestPacket(VcSetMuteRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity networkEntity) return;
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
         networkEntity.Muted = packet.Value;
     }
 
     private static void HandleSetDeafenRequestPacket(VcSetDeafenRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity networkEntity) return;
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
         networkEntity.Deafened = packet.Value;
     }
 
     private static void HandleSetWorldIdRequestPacket(VcSetWorldIdRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity
+        if (data is not VoiceCraftNetPeer
             {
-                PositioningType: PositioningType.Client
-            } networkEntity) return;
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.WorldId = packet.Value;
     }
 
     private static void HandleSetPositionRequestPacket(VcSetPositionRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity
+        if (data is not VoiceCraftNetPeer
             {
-                PositioningType: PositioningType.Client
-            } networkEntity) return;
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.Position = packet.Value;
     }
 
     private static void HandleSetRotationRequestPacket(VcSetRotationRequestPacket packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity
+        if (data is not VoiceCraftNetPeer
             {
-                PositioningType: PositioningType.Client
-            } networkEntity) return;
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.Rotation = packet.Value;
     }
 
     private static void HandleSetCaveFactorRequestPacket(VcSetCaveFactorRequest packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity
+        if (data is not VoiceCraftNetPeer
             {
-                PositioningType: PositioningType.Client
-            } networkEntity) return;
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.CaveFactor = packet.Value;
     }
 
     private static void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet, object? data)
     {
-        if (data is not VoiceCraftNetworkEntity
+        if (data is not VoiceCraftNetPeer
             {
-                PositioningType: PositioningType.Client
-            } networkEntity) return;
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.MuffleFactor = packet.Value;
     }
 

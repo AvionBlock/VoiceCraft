@@ -249,7 +249,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         ProcessPacket(reader, packet =>
         {
             if (!_netPeers.TryGetValue(peer, out var vcPeer)) return;
-            ExecutePacket(packet, vcPeer.Tag);
+            ExecutePacket(packet, vcPeer);
         });
     }
 
