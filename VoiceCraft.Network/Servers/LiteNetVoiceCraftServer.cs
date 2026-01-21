@@ -220,15 +220,13 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     protected override void Dispose(bool disposing)
     {
         if (Disposed) return;
-        if (disposing)
-        {
-            _listener.ConnectionRequestEvent -= ConnectionRequestEvent;
-            _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
-            _listener.NetworkReceiveUnconnectedEvent -= NetworkReceiveUnconnectedEvent;
-            _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
-        }
-
         base.Dispose(disposing);
+        if (!disposing) return;
+        _listener.ConnectionRequestEvent -= ConnectionRequestEvent;
+        _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
+        _listener.NetworkReceiveUnconnectedEvent -= NetworkReceiveUnconnectedEvent;
+        _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
+
     }
 
     #region LiteNetLib Events

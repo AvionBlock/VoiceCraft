@@ -198,12 +198,10 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     protected override void Dispose(bool disposing)
     {
         if (Disposed) return;
-        if (disposing)
-        {
-            OnPeerConnected = null;
-            OnPeerDisconnected = null;
-        }
         base.Dispose(disposing);
+        if (!disposing) return;
+        OnPeerConnected = null;
+        OnPeerDisconnected = null;
     }
 
     private async Task ListenerLoop(HttpListener listener)
