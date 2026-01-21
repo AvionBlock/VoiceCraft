@@ -85,7 +85,7 @@ public class EchoEffect : IAudioEffect
 
     public void Dispose()
     {
-        //Nothing to dispose.
+        GC.SuppressFinalize(this);
     }
 
     private FractionalDelayLine GetOrCreateDelayLine(VoiceCraftEntity entity)
