@@ -41,21 +41,17 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
     public abstract void Broadcast<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable,
         params VoiceCraftNetPeer?[] excludes) where T : IVoiceCraftPacket;
 
-    protected abstract void AcceptRequest(VcLoginRequestPacket packet, object? data);
-    protected abstract void RejectRequest(VcLoginRequestPacket packet, string reason, object? data);
-    protected abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false);
+    public abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false);
 
     public void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
+    
+    protected abstract void AcceptRequest(VcLoginRequestPacket packet, object? data);
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (Disposed) return;
-        Disposed = true;
-    }
+    protected abstract void RejectRequest(VcLoginRequestPacket packet, string reason, object? data);
 
     protected static void ProcessPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
     {
@@ -222,6 +218,18 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
                 return;
         }
     }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Disposed) return;
+        if (disposing)
+        {
+            Stop();
+        }
+        Disposed = true;
+    }
+
+    #region Packet Events
 
     private void HandleInfoRequestPacket(VcInfoRequestPacket packet, object? data)
     {
@@ -349,6 +357,8 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.MuffleFactor = packet.Value;
     }
+
+    #endregion
 
     private static void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
         where T : IVoiceCraftPacket

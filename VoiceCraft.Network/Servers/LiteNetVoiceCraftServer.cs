@@ -149,6 +149,32 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         }
     }
 
+    public override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)
+    {
+        if (vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
+        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
+        try
+        {
+            lock (_writer)
+            {
+                _writer.Reset();
+                _writer.Put((byte)logoutPacket.PacketType);
+                _writer.Put(logoutPacket);
+                if (force)
+                {
+                    _netManager.DisconnectPeerForce(liteNetPeer.NetPeer);
+                    return;
+                }
+
+                liteNetPeer.NetPeer.Disconnect(_writer);
+            }
+        }
+        finally
+        {
+            PacketPool<VcLogoutRequestPacket>.Return(logoutPacket);
+        }
+    }
+    
     protected override void AcceptRequest(VcLoginRequestPacket packet, object? data)
     {
         if (data is not ConnectionRequest request) return;
@@ -191,40 +217,11 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         }
     }
 
-    protected override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)
-    {
-        if (vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
-        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
-        try
-        {
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)logoutPacket.PacketType);
-                _writer.Put(logoutPacket);
-                if (force)
-                {
-                    _netManager.DisconnectPeerForce(liteNetPeer.NetPeer);
-                    return;
-                }
-
-                liteNetPeer.NetPeer.Disconnect(_writer);
-            }
-        }
-        finally
-        {
-            PacketPool<VcLogoutRequestPacket>.Return(logoutPacket);
-        }
-    }
-
     protected override void Dispose(bool disposing)
     {
         if (Disposed) return;
         if (disposing)
         {
-            _netManager.Stop();
-            _netPeers.Clear();
-
             _listener.ConnectionRequestEvent -= ConnectionRequestEvent;
             _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
             _listener.NetworkReceiveUnconnectedEvent -= NetworkReceiveUnconnectedEvent;

@@ -11,7 +11,7 @@ using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.Servers;
 
-public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
+public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem) : IDisposable
 {
     protected bool Disposed;
 
@@ -19,15 +19,31 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
     public abstract string LoginToken { get; }
     public abstract uint MaxClients { get; }
     public abstract int ConnectedPeers { get; }
+    
+    public abstract event Action<McApiNetPeer, string>? OnPeerConnected;
+    public abstract event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
     public abstract void Start();
+    
     public abstract void Update();
+    
     public abstract void Stop();
-    protected abstract void AcceptRequest(McApiLoginRequestPacket packet, object? data);
-    protected abstract void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data);
-    protected abstract void Disconnect(McApiNetPeer netPeer, string reason, bool force = false);
+    
     public abstract void SendPacket<T>(McApiNetPeer netPeer, T packet) where T : IMcApiPacket;
+    
     public abstract void Broadcast<T>(T packet, params McApiNetPeer?[] excludes) where T : IMcApiPacket;
+    
+    public abstract void Disconnect(McApiNetPeer netPeer, bool force = false);
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    
+    protected abstract void AcceptRequest(McApiLoginRequestPacket packet, object? data);
+    
+    protected abstract void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data);
 
     protected static void ProcessPacket(NetDataReader reader, Action<IMcApiPacket> onParsed)
     {
@@ -202,6 +218,16 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
                 break;
         }
     }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Disposed) return;
+        if (disposing)
+        {
+            Stop();
+        }
+        Disposed = true;
+    }
 
     private void HandleLoginRequestPacket(McApiLoginRequestPacket packet, object? data)
     {
@@ -238,7 +264,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
     {
         if (data is not McApiNetPeer netPeer) return;
         if (packet.Token != netPeer.SessionToken) return;
-        Disconnect(netPeer, "", true);
+        Disconnect(netPeer, true);
     }
 
     private void HandlePingRequestPacket(McApiPingRequestPacket _, object? data)
