@@ -1,16 +1,13 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network;
-using VoiceCraft.Network.Packets.VcPackets.Request;
-using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class SetTitleCommand : Command
 {
-    public SetTitleCommand(LiteNetVoiceCraftServer liteNetServer, VoiceCraftWorld world) : base(
+    public SetTitleCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.SetTitle.Name"),
         Localizer.Get("Commands.SetTitle.Description"))
     {
@@ -37,9 +34,7 @@ public class SetTitleCommand : Command
             if (entity is not VoiceCraftNetworkEntity networkEntity)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotAClient:{id}"));
 
-            liteNetServer.SendPacket(networkEntity.NetPeer,
-                PacketPool<VcSetTitleRequestPacket>.GetPacket()
-                    .Set(string.IsNullOrWhiteSpace(value) ? "" : value));
+            networkEntity.SetTitle(string.IsNullOrWhiteSpace(value) ? "" : value);
         });
     }
 }
