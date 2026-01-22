@@ -72,6 +72,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     public override void Stop()
     {
         if (!_netManager.IsRunning) return;
+        DisconnectAll("VoiceCraft.DisconnectReason.Shutdown");
         _netManager.Stop();
         _netPeers.Clear();
     }
@@ -172,6 +173,32 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         finally
         {
             PacketPool<VcLogoutRequestPacket>.Return(logoutPacket);
+        }
+    }
+
+    public override void DisconnectAll(string? reason = null)
+    {
+        if (!_netManager.IsRunning) return;
+        if (reason == null)
+        {
+            _netManager.DisconnectAll();
+            return;
+        }
+
+        var packet = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
+        try
+        {
+            lock (_writer)
+            {
+                _writer.Reset();
+                _writer.Put((byte)packet.PacketType);
+                _writer.Put(packet);
+                _netManager.DisconnectAll(_writer.Data, 0, _writer.Length);
+            }
+        }
+        finally
+        {
+            PacketPool<VcLogoutRequestPacket>.Return(packet);
         }
     }
     

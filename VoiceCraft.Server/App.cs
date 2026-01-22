@@ -21,7 +21,7 @@ public static class App
         //Set language if overriden.
         if (languageOverriden)
             Localizer.Instance.Language = language ?? "en-US";
-        
+
         //Servers
         var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
         var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
@@ -51,7 +51,7 @@ public static class App
             //Setup Audio Effects
             eventHandlerSystem.EnableVisibilityDisplay = properties.VoiceCraftConfig.EnableVisibilityDisplay;
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
-            
+
             //Setup Servers
             liteNetServer.Config = properties.VoiceCraftConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
@@ -115,9 +115,9 @@ public static class App
                 {
                     AnsiConsole.WriteException(ex);
                 }
-            
-            httpMcApiServer.Stop();
-            liteNetServer.Stop();
+
+            StopServer(liteNetServer);
+            StopServer(httpMcApiServer);
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("Shutdown.Success")}[/]");
         }
         catch (Exception ex)
@@ -174,6 +174,20 @@ public static class App
             LogService.Log(ex);
             throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
+    }
+
+    private static void StopServer(LiteNetVoiceCraftServer server)
+    {
+        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
+        server.Stop();
+        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopped"));
+    }
+
+    private static void StopServer(HttpMcApiServer server)
+    {
+        AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Stopping"));
+        server.Stop();
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Stopped")}[/]");
     }
 
     private static async Task FlushCommand(RootCommand rootCommand)

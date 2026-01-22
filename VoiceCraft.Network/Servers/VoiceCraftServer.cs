@@ -43,6 +43,8 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     public abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false);
 
+    public abstract void DisconnectAll(string? reason = null);
+
     public void Dispose()
     {
         Dispose(true);
