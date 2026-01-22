@@ -2,7 +2,6 @@ using System.CommandLine;
 using System.Numerics;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Server.Servers;
 
 namespace VoiceCraft.Server.Commands;
 

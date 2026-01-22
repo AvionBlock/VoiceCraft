@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 using Spectre.Console;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Audio.Effects;
-using VoiceCraft.Network.Backends;
-using VoiceCraft.Server.Config;
+using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.Servers;
 
 namespace VoiceCraft.Server;
 
@@ -16,9 +16,8 @@ public class ServerProperties
     private ServerPropertiesStructure _properties = new();
     private Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig => _properties.DefaultAudioEffectsConfig;
 
-    public VoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
-    public McWssConfig McWssConfig => _properties.McWssConfig;
-    public McHttpConfig McHttpConfig => _properties.McHttpConfig;
+    public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
+    public HttpMcApiServer.HttpMcApiConfig McHttpConfig => _properties.McHttpConfig;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
     public void Load(bool throwOnInvalidProperties)
@@ -111,9 +110,8 @@ public class ServerPropertiesStructure
         DefaultAudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
     }
 
-    public VoiceCraftConfig VoiceCraftConfig { get; set; } = new();
-    public McWssConfig McWssConfig { get; set; } = new();
-    public McHttpConfig McHttpConfig { get; set; } = new();
+    public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
+    public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
     public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
 }
 

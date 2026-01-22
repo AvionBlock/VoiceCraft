@@ -3,7 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Network.Servers;
+using VoiceCraft.Network.Systems;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
@@ -22,9 +23,8 @@ public static class App
             Localizer.Instance.Language = language ?? "en-US";
         
         //Servers
-        var server = Program.ServiceProvider.GetRequiredService<VoiceCraftServer>();
-        var mcWssServer = Program.ServiceProvider.GetRequiredService<McWssServer>();
-        var httpServer = Program.ServiceProvider.GetRequiredService<McHttpServer>();
+        var server = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
+        var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
         //Systems
         var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
         var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
@@ -51,13 +51,15 @@ public static class App
             //Setup Audio Effects
             eventHandlerSystem.EnableVisibilityDisplay = properties.VoiceCraftConfig.EnableVisibilityDisplay;
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
+            
+            //Setup Servers
+            server.Config = properties.VoiceCraftConfig;
+            httpMcApiServer.Config = properties.McHttpConfig;
 
             //Server Startup
-            server.Start(properties.VoiceCraftConfig);
-            if (properties.McHttpConfig.Enabled)
-                httpServer.Start(properties.McHttpConfig);
-            if (properties.McWssConfig.Enabled)
-                mcWssServer.Start(properties.McWssConfig);
+            server.Start();
+            if (httpMcApiServer.Config.Enabled)
+                httpMcApiServer.Start();
 
             //Server Started
             //Table for Server Setup Display
@@ -71,13 +73,9 @@ public static class App
                 server.Config.Port.ToString(),
                 "[aqua]UDP[/]");
             serverSetupTable.AddRow(
-                $"[{(properties.McHttpConfig.Enabled ? "green" : "red")}]McHttp[/]",
-                properties.McHttpConfig.Enabled ? httpServer.Config.Hostname : "[red]-[/]",
-                $"[{(properties.McHttpConfig.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
-            serverSetupTable.AddRow(
-                $"[{(properties.McWssConfig.Enabled ? "green" : "red")}]McWss[/]",
-                properties.McWssConfig.Enabled ? mcWssServer.Config.Hostname : "[red]-[/]",
-                $"[{(properties.McWssConfig.Enabled ? "aqua" : "red")}]TCP/WS[/]");
+                $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
+                httpMcApiServer.Config.Enabled ? httpMcApiServer.Config.Hostname : "[red]-[/]",
+                $"[{(httpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
 
             //Register Commands
             AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
@@ -103,8 +101,7 @@ public static class App
                 try
                 {
                     server.Update();
-                    httpServer.Update();
-                    mcWssServer.Update();
+                    httpMcApiServer.Update();
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
@@ -119,9 +116,8 @@ public static class App
                 {
                     AnsiConsole.WriteException(ex);
                 }
-
-            mcWssServer.Stop();
-            httpServer.Stop();
+            
+            httpMcApiServer.Stop();
             server.Stop();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("Shutdown.Success")}[/]");
         }
