@@ -17,6 +17,7 @@ public class ServerProperties
     private Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig => _properties.DefaultAudioEffectsConfig;
 
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
+    public McWssMcApiServer.McWssMcApiConfig McWssConfig => _properties.McWssConfig;
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig => _properties.McHttpConfig;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
@@ -111,6 +112,7 @@ public class ServerPropertiesStructure
     }
 
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
+    public McWssMcApiServer.McWssMcApiConfig McWssConfig { get; set; } = new();
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
     public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
 }

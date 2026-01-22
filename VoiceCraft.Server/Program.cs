@@ -33,6 +33,7 @@ public static class Program
         //Servers
         serviceCollection.AddSingleton<LiteNetVoiceCraftServer>();
         serviceCollection.AddSingleton<HttpMcApiServer>();
+        serviceCollection.AddSingleton<McWssMcApiServer>();
 
         //Systems
         serviceCollection.AddSingleton<EventHandlerSystem>();
