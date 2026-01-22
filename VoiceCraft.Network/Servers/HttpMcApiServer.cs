@@ -21,9 +21,6 @@ namespace VoiceCraft.Network.Servers;
 public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
     : McApiServer(world, audioEffectSystem)
 {
-    public override event Action<McApiNetPeer, string>? OnPeerConnected;
-    public override event Action<McApiNetPeer, string>? OnPeerDisconnected;
-
     private HttpMcApiConfig _config = new();
     private readonly ConcurrentDictionary<IPEndPoint, HttpMcApiNetPeer> _mcApiPeers = new();
     private readonly NetDataReader _reader = new();
@@ -46,6 +43,9 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
 
     public override int ConnectedPeers =>
         _mcApiPeers.Count(x => x.Value.ConnectionState == McApiConnectionState.Connected);
+
+    public override event Action<McApiNetPeer, string>? OnPeerConnected;
+    public override event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
     public override void Start()
     {
@@ -121,18 +121,22 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             PacketPool<T>.Return(packet);
         }
     }
-    
+
     public override void Disconnect(McApiNetPeer netPeer, bool force = false)
     {
-        if (netPeer is not HttpMcApiNetPeer httpNetPeer) return;
+        if (netPeer is not HttpMcApiNetPeer { ConnectionState: McApiConnectionState.Connected } httpNetPeer) return;
         var logoutPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket().Set(netPeer.SessionToken);
         try
         {
             var sessionToken = httpNetPeer.SessionToken;
             httpNetPeer.SetConnectionState(McApiConnectionState.Disconnected);
-            httpNetPeer.SetSessionToken("");
+            httpNetPeer.SetSessionToken(string.Empty);
             OnPeerDisconnected?.Invoke(httpNetPeer, sessionToken);
-            if (force) return;
+            if (force)
+            {
+                _mcApiPeers.TryRemove(httpNetPeer.EndPoint, out _); //Remove Immediately.
+                return;
+            }
 
             lock (_writer)
             {
@@ -151,14 +155,18 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             PacketPool<McApiLogoutRequestPacket>.Return(logoutPacket);
         }
     }
-    
+
     protected override void AcceptRequest(McApiLoginRequestPacket packet, object? data)
     {
         if (data is not HttpMcApiNetPeer httpNetPeer) return;
         try
         {
-            httpNetPeer.SetSessionToken(Guid.NewGuid().ToString());
-            httpNetPeer.SetConnectionState(McApiConnectionState.Connected);
+            if (httpNetPeer.ConnectionState != McApiConnectionState.Connected)
+            {
+                httpNetPeer.SetSessionToken(Guid.NewGuid().ToString());
+                httpNetPeer.SetConnectionState(McApiConnectionState.Connected);
+            }
+
             SendPacket(httpNetPeer,
                 PacketPool<McApiAcceptResponsePacket>.GetPacket().Set(packet.RequestId, httpNetPeer.SessionToken));
             OnPeerConnected?.Invoke(httpNetPeer, httpNetPeer.SessionToken);
@@ -194,7 +202,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             PacketPool<McApiDenyResponsePacket>.Return(responsePacket);
         }
     }
-    
+
     protected override void Dispose(bool disposing)
     {
         if (Disposed) return;
@@ -317,11 +325,14 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             while (httpNetPeer.IncomingQueue.TryDequeue(out var packet))
                 try
                 {
+                    var packetToken = packet.Token;
                     _reader.Clear();
                     _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
                     ProcessPacket(_reader, mcApiPacket =>
                     {
-                        if (Config.DisabledPacketTypes.Contains(mcApiPacket.PacketType)) return;
+                        httpNetPeer.LastUpdate = DateTime.UtcNow;
+                        if (!AuthorizePacket(mcApiPacket, httpNetPeer, packetToken) ||
+                            Config.DisabledPacketTypes.Contains(mcApiPacket.PacketType)) return;
                         ExecutePacket(mcApiPacket, httpNetPeer);
                     });
                 }

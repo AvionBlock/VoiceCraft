@@ -253,7 +253,6 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
         _listener.NetworkReceiveUnconnectedEvent -= NetworkReceiveUnconnectedEvent;
         _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
-
     }
 
     #region LiteNetLib Events

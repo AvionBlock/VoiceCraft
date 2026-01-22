@@ -219,6 +219,16 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
     
+    protected static bool AuthorizePacket(IMcApiPacket packet, McApiNetPeer netPeer, string token)
+    {
+        return packet switch
+        {
+            McApiLoginRequestPacket => true,
+            McApiLogoutRequestPacket => true,
+            _ => netPeer.ConnectionState == McApiConnectionState.Connected && token == netPeer.SessionToken
+        };
+    }
+    
     protected virtual void Dispose(bool disposing)
     {
         if (Disposed) return;
@@ -234,8 +244,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         if (data is not McApiNetPeer netPeer) return;
         if (netPeer.ConnectionState == McApiConnectionState.Connected)
         {
-            SendPacket(netPeer,
-                PacketPool<McApiAcceptResponsePacket>.GetPacket().Set(packet.RequestId, netPeer.SessionToken));
+            AcceptRequest(packet, data);
             return;
         }
 

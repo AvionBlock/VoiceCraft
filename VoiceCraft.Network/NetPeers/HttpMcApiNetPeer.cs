@@ -6,7 +6,7 @@ namespace VoiceCraft.Network.NetPeers;
 public class HttpMcApiNetPeer(IPEndPoint endPoint) : McApiNetPeer
 {
     private McApiConnectionState _connectionState;
-    private string _sessionToken;
+    private string _sessionToken = string.Empty;
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
     public IPEndPoint EndPoint { get; } = endPoint;
     public override McApiConnectionState ConnectionState => _connectionState;
