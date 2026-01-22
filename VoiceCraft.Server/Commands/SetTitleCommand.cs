@@ -10,7 +10,7 @@ namespace VoiceCraft.Server.Commands;
 
 public class SetTitleCommand : Command
 {
-    public SetTitleCommand(VoiceCraftServer server, VoiceCraftWorld world) : base(
+    public SetTitleCommand(LiteNetVoiceCraftServer liteNetServer, VoiceCraftWorld world) : base(
         Localizer.Get("Commands.SetTitle.Name"),
         Localizer.Get("Commands.SetTitle.Description"))
     {
@@ -37,7 +37,7 @@ public class SetTitleCommand : Command
             if (entity is not VoiceCraftNetworkEntity networkEntity)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotAClient:{id}"));
 
-            server.SendPacket(networkEntity.NetPeer,
+            liteNetServer.SendPacket(networkEntity.NetPeer,
                 PacketPool<VcSetTitleRequestPacket>.GetPacket()
                     .Set(string.IsNullOrWhiteSpace(value) ? "" : value));
         });

@@ -10,7 +10,7 @@ namespace VoiceCraft.Server.Commands;
 
 public class SetDescriptionCommand : Command
 {
-    public SetDescriptionCommand(VoiceCraftServer server, VoiceCraftWorld world) : base(
+    public SetDescriptionCommand(LiteNetVoiceCraftServer liteNetServer, VoiceCraftWorld world) : base(
         Localizer.Get("Commands.SetDescription.Name"),
         Localizer.Get("Commands.SetDescription.Description"))
     {
@@ -37,7 +37,7 @@ public class SetDescriptionCommand : Command
             if (entity is not VoiceCraftNetworkEntity networkEntity)
                 throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotAClient:{id}"));
 
-            server.SendPacket(networkEntity.NetPeer,
+            liteNetServer.SendPacket(networkEntity.NetPeer,
                 PacketPool<VcSetDescriptionRequestPacket>.GetPacket()
                     .Set(string.IsNullOrWhiteSpace(value) ? "" : value));
         });
