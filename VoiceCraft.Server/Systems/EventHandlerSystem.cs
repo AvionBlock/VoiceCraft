@@ -19,6 +19,7 @@ public class EventHandlerSystem : IDisposable
 {
     private readonly AudioEffectSystem _audioEffectSystem;
     private readonly HttpMcApiServer _httpMcApiServer;
+    private readonly McWssMcApiServer _mcWssMcApiServer;
     private readonly LiteNetVoiceCraftServer _liteNetServer;
     private readonly ConcurrentQueue<Action> _tasks = [];
     private readonly VoiceCraftWorld _world;
@@ -27,11 +28,13 @@ public class EventHandlerSystem : IDisposable
     public EventHandlerSystem(
         LiteNetVoiceCraftServer liteNetServer,
         HttpMcApiServer httpMcApiServer,
+        McWssMcApiServer mcWssMcApiServer,
         AudioEffectSystem audioEffectSystem,
         VoiceCraftWorld world)
     {
         _liteNetServer = liteNetServer;
         _httpMcApiServer = httpMcApiServer;
+        _mcWssMcApiServer = mcWssMcApiServer;
         _audioEffectSystem = audioEffectSystem;
         _world = world;
 
@@ -40,6 +43,8 @@ public class EventHandlerSystem : IDisposable
         _audioEffectSystem.OnEffectSet += OnAudioEffectSet;
         _httpMcApiServer.OnPeerConnected += OnMcHttpMcApiPeerConnected;
         _httpMcApiServer.OnPeerDisconnected += OnMcHttpMcApiPeerDisconnected;
+        _mcWssMcApiServer.OnPeerConnected += OnMcWssMcApiPeerConnected;
+        _mcWssMcApiServer.OnPeerDisconnected += OnMcWssMcApiPeerDisconnected;
     }
 
     public void Dispose()
@@ -49,6 +54,8 @@ public class EventHandlerSystem : IDisposable
         _audioEffectSystem.OnEffectSet -= OnAudioEffectSet;
         _httpMcApiServer.OnPeerConnected -= OnMcHttpMcApiPeerConnected;
         _httpMcApiServer.OnPeerDisconnected -= OnMcHttpMcApiPeerDisconnected;
+        _mcWssMcApiServer.OnPeerConnected -= OnMcWssMcApiPeerConnected;
+        _mcWssMcApiServer.OnPeerDisconnected -= OnMcWssMcApiPeerDisconnected;
         GC.SuppressFinalize(this);
     }
 
@@ -221,6 +228,36 @@ public class EventHandlerSystem : IDisposable
     }
 
     private void OnMcHttpMcApiPeerDisconnected(McApiNetPeer peer, string token)
+    {
+        _tasks.Enqueue(() =>
+        {
+            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get($"Events.McApi.Client.Disconnected:{token}")}[/]");
+        });
+    }
+    
+    private void OnMcWssMcApiPeerConnected(McApiNetPeer peer, string token)
+    {
+        _tasks.Enqueue(() =>
+        {
+            //Send Effects
+            foreach (var effect in _audioEffectSystem.AudioEffects)
+                _mcWssMcApiServer.SendPacket(peer,
+                    PacketPool<McApiOnEffectUpdatedPacket>.GetPacket().Set(effect.Key, effect.Value));
+
+            //Send other entities.
+            foreach (var entity in _world.Entities)
+                if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
+                    _mcWssMcApiServer.SendPacket(peer,
+                        PacketPool<McApiOnNetworkEntityCreatedPacket>.GetPacket().Set(otherNetworkEntity));
+                else
+                    _mcWssMcApiServer.SendPacket(peer,
+                        PacketPool<McApiOnEntityCreatedPacket>.GetPacket().Set(entity));
+
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{token}")}[/]");
+        });
+    }
+
+    private void OnMcWssMcApiPeerDisconnected(McApiNetPeer peer, string token)
     {
         _tasks.Enqueue(() =>
         {
