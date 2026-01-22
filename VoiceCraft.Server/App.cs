@@ -23,7 +23,7 @@ public static class App
             Localizer.Instance.Language = language ?? "en-US";
         
         //Servers
-        var server = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
+        var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
         var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
         //Systems
         var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
@@ -53,13 +53,12 @@ public static class App
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
             
             //Setup Servers
-            server.Config = properties.VoiceCraftConfig;
+            liteNetServer.Config = properties.VoiceCraftConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
 
             //Server Startup
-            server.Start();
-            if (httpMcApiServer.Config.Enabled)
-                httpMcApiServer.Start();
+            StartServer(liteNetServer);
+            StartServer(httpMcApiServer);
 
             //Server Started
             //Table for Server Setup Display
@@ -70,7 +69,7 @@ public static class App
 
             serverSetupTable.AddRow(
                 "[green]VoiceCraft[/]",
-                server.Config.Port.ToString(),
+                liteNetServer.Config.Port.ToString(),
                 "[aqua]UDP[/]");
             serverSetupTable.AddRow(
                 $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
@@ -100,7 +99,7 @@ public static class App
             while (!Cts.IsCancellationRequested)
                 try
                 {
-                    server.Update();
+                    liteNetServer.Update();
                     httpMcApiServer.Update();
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
@@ -118,7 +117,7 @@ public static class App
                 }
             
             httpMcApiServer.Stop();
-            server.Stop();
+            liteNetServer.Stop();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("Shutdown.Success")}[/]");
         }
         catch (Exception ex)
@@ -130,7 +129,7 @@ public static class App
         }
         finally
         {
-            server.Dispose();
+            liteNetServer.Dispose();
             Cts.Dispose();
         }
     }
@@ -144,6 +143,37 @@ public static class App
             : $"[bold yellow]{Localizer.Get("Shutdown.Starting")}[/]");
         Task.Delay((int)delayMs).Wait();
         Cts.Cancel();
+    }
+
+    private static void StartServer(LiteNetVoiceCraftServer server)
+    {
+        try
+        {
+            AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Starting"));
+            server.Start();
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
+        }
+        catch
+        {
+            throw new Exception(Localizer.Get("VoiceCraftServer.Exceptions.Failed"));
+        }
+    }
+
+    private static void StartServer(HttpMcApiServer server)
+    {
+        if (!server.Config.Enabled) return;
+        try
+        {
+            AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Starting"));
+            server.Start();
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Success")}[/]");
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.WriteException(ex);
+            LogService.Log(ex);
+            throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
+        }
     }
 
     private static async Task FlushCommand(RootCommand rootCommand)
