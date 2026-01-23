@@ -233,7 +233,8 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     private void PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
     {
-        if (peer.Equals(_netPeer?.NetPeer)) return;
+        if (!peer.Equals(_netPeer?.NetPeer)) return;
+        _netPeer = null;
 
         var disconnectReason = disconnectInfo.Reason.ToString();
         switch (disconnectInfo.Reason)
