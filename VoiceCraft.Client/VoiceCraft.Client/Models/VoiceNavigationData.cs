@@ -1,3 +1,5 @@
+using VoiceCraft.Client.Services;
+
 namespace VoiceCraft.Client.Models;
 
-public record VoiceNavigationData();
+public record VoiceNavigationData(VoiceCraftService voiceCraftService);

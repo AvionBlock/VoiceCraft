@@ -1,0 +1,228 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VoiceCraft.Client.Views.VoiceView"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:vmData="clr-namespace:VoiceCraft.Client.ViewModels.Data"
+             x:DataType="vm:VoiceViewModel"
+             xmlns:locale="using:VoiceCraft.Client.Locales">
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0"
+                Background="{DynamicResource BackgroundBrush}">
+            <Grid RowDefinitions="Auto, Auto">
+                <TextBlock Grid.Row="0"
+                           Margin="10"
+                           VerticalAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           Text="{locale:Localize {Binding $parent[UserControl].((vm:VoiceViewModel)DataContext).StatusTitleText }}"
+                           TextAlignment="Center" />
+                <TextBlock Grid.Row="1"
+                           Margin="10,0,10,10"
+                           Text="{locale:Localize {Binding $parent[UserControl].((vm:VoiceViewModel)DataContext).StatusDescriptionText }}"
+                           TextAlignment="Center"
+                           IsVisible="{Binding StatusDescriptionText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </Grid>
+        </Border>
+        <ListBox Grid.Row="1"
+                 Margin="0,10,0,0"
+                 Background="Transparent"
+                 ItemsSource="{Binding EntityViewModels}"
+                 SelectedItem="{Binding SelectedEntity}"
+                 SelectionMode="Single">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vmData:EntityViewModel">
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                        <TextBlock Grid.Column="0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Text="{Binding DisplayName}"
+                                   Classes.IsNotVisible="{Binding !IsVisible}">
+                            <TextBlock.Styles>
+                                <Style Selector="TextBlock.IsNotVisible">
+                                    <Setter Property="Foreground" Value="Gray" />
+                                </Style>
+                            </TextBlock.Styles>
+                        </TextBlock>
+
+                        <PathIcon Grid.Column="1"
+                                  Margin="5,0,0,0"
+                                  IsVisible="{Binding IsSpeaking}"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center"
+                                  Data="{StaticResource SpeakerRegular}" />
+
+                        <StackPanel Grid.Column="2"
+                                    HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="10">
+                            <PathIcon Data="{StaticResource MicOffRegular}"
+                                      Classes.IsServerMuted="{Binding IsServerMuted}">
+                                <PathIcon.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                        <Binding Path="IsMuted" />
+                                        <Binding Path="IsServerMuted" />
+                                    </MultiBinding>
+                                </PathIcon.IsVisible>
+                                <PathIcon.Styles>
+                                    <Style Selector="PathIcon.IsServerMuted">
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                                    </Style>
+                                </PathIcon.Styles>
+                            </PathIcon>
+                            <PathIcon Data="{StaticResource SpeakerOffRegular}"
+                                      Classes.IsServerDeafened="{Binding IsServerDeafened}">
+                                <PathIcon.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                        <Binding Path="IsDeafened" />
+                                        <Binding Path="IsServerDeafened" />
+                                    </MultiBinding>
+                                </PathIcon.IsVisible>
+                                <PathIcon.Styles>
+                                    <Style Selector="PathIcon.IsServerDeafened">
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                                    </Style>
+                                </PathIcon.Styles>
+                            </PathIcon>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10"
+                    Spacing="10">
+            <ToggleButton CornerRadius="50"
+                          Width="50"
+                          Height="50"
+                          IsChecked="{Binding IsMuted}">
+                <Panel>
+                    <PathIcon Data="{StaticResource MicOnRegular}"
+                              Classes.IsSpeaking="{Binding IsSpeaking}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="!IsMuted" />
+                                <Binding Path="!IsServerMuted" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                        <PathIcon.Styles>
+                            <Style Selector="PathIcon.IsSpeaking">
+                                <Setter Property="Foreground" Value="{DynamicResource SuccessAccentBrush}" />
+                            </Style>
+                        </PathIcon.Styles>
+                    </PathIcon>
+                    <PathIcon Data="{StaticResource MicOffRegular}"
+                              Classes.IsServerMuted="{Binding IsServerMuted}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                <Binding Path="IsMuted" />
+                                <Binding Path="IsServerMuted" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                        <PathIcon.Styles>
+                            <Style Selector="PathIcon.IsServerMuted">
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                            </Style>
+                        </PathIcon.Styles>
+                    </PathIcon>
+                </Panel>
+            </ToggleButton>
+            <ToggleButton CornerRadius="50"
+                          Width="50"
+                          Height="50"
+                          IsChecked="{Binding IsDeafened}">
+                <Panel>
+                    <PathIcon Data="{StaticResource SpeakerRegular}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                <Binding Path="!IsDeafened" />
+                                <Binding Path="!IsServerDeafened" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                    </PathIcon>
+                    <PathIcon Data="{StaticResource SpeakerOffRegular}"
+                              Classes.IsServerDeafened="{Binding IsServerDeafened}">
+                        <PathIcon.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                <Binding Path="IsDeafened" />
+                                <Binding Path="IsServerDeafened" />
+                            </MultiBinding>
+                        </PathIcon.IsVisible>
+                        <PathIcon.Styles>
+                            <Style Selector="PathIcon.IsServerDeafened">
+                                <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                            </Style>
+                        </PathIcon.Styles>
+                    </PathIcon>
+                </Panel>
+            </ToggleButton>
+            <Button Background="{DynamicResource ErrorBackgroundBrush}"
+                    CornerRadius="50"
+                    Width="50"
+                    Height="50"
+                    Command="{Binding DisconnectCommand}">
+                <PathIcon Data="{StaticResource CallEndRegular}" />
+            </Button>
+        </StackPanel>
+
+        <Border Grid.Row="1"
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Background="{DynamicResource BackgroundBrush}"
+                PointerPressed="ModalBackgroundOnPointerPressed"
+                Classes.ShowModal="{Binding ShowModal}"
+                Classes.HideModal="{Binding !ShowModal}">
+            <Border Classes="card"
+                    MaxWidth="500"
+                    VerticalAlignment="Center"
+                    Padding="15"
+                    Margin="10">
+                <StackPanel>
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Top"
+                               FontSize="15"
+                               Text="{Binding SelectedEntity.DisplayName, FallbackValue='N.A.'}" />
+                    <Grid ColumnDefinitions="Auto, Auto">
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                   Text="Volume" />
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                   Text="{Binding SelectedEntity.Volume, StringFormat='{} {0:P0}', FallbackValue='N.A.'}" />
+                    </Grid>
+                    <Slider Maximum="2.0"
+                            Minimum="0.0"
+                            Value="{Binding SelectedEntity.Volume, FallbackValue=0}" />
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding SelectedEntity.UserMuted, FallbackValue=False}">
+                        <TextBlock Text="Muted" />
+                    </ToggleButton>
+                </StackPanel>
+            </Border>
+
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+                </Transitions>
+            </Border.Transitions>
+            <Border.Styles>
+                <Style Selector="Border.ShowModal">
+                    <Setter Property="IsHitTestVisible" Value="True" />
+                    <Setter Property="Opacity" Value="1" />
+                </Style>
+            </Border.Styles>
+            <Border.Styles>
+                <Style Selector="Border.HideModal">
+                    <Setter Property="IsHitTestVisible" Value="False" />
+                    <Setter Property="Opacity" Value="0" />
+                </Style>
+            </Border.Styles>
+        </Border>
+    </Grid>
+</UserControl>

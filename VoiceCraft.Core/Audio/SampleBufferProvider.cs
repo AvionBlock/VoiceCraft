@@ -26,7 +26,7 @@ namespace VoiceCraft.Core.Audio
         {
             if (Count < PrefillSize) return 0;
             var read = 0;
-            while (_buffer.TryDequeue(out var element))
+            while (_buffer.TryDequeue(out var element) && read < buffer.Length)
             {
                 buffer[read] = element;
                 read++;

@@ -42,6 +42,8 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+            App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
+                new NativeBackgroundService(x.GetRequiredService));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
                 new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
                     x.GetRequiredService<IAudioDecoder>));

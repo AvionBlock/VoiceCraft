@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
@@ -37,6 +38,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         _listener.ConnectionRequestEvent += ConnectionRequestEvent;
         _listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
+        _listener.NetworkReceiveUnconnectedEvent += NetworkReceiveUnconnectedEvent;
         _listener.NetworkReceiveEvent += NetworkReceiveEvent;
         _netManager.Start();
     }
@@ -90,7 +92,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     public override async Task DisconnectAsync(string? reason = null)
     {
-        if (ConnectionState is not (VcConnectionState.Disconnected or VcConnectionState.Disconnecting)) return;
+        if (ConnectionState is VcConnectionState.Disconnected or VcConnectionState.Disconnecting) return;
         ConnectionState = VcConnectionState.Disconnecting;
         _netManager.DisconnectAll();
         while (_netPeer?.ConnectionState == VcConnectionState.Disconnecting)
@@ -122,7 +124,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     public override void SendPacket<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
     {
-        if(_netPeer == null) return;
+        if (_netPeer == null) return;
         var method = deliveryMethod switch
         {
             VcDeliveryMethod.Unreliable => DeliveryMethod.Unreliable,
@@ -152,6 +154,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
             _netManager.Stop();
             _listener.ConnectionRequestEvent -= ConnectionRequestEvent;
             _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
+            _listener.NetworkReceiveUnconnectedEvent -= NetworkReceiveUnconnectedEvent;
             _listener.NetworkReceiveEvent -= NetworkReceiveEvent;
 
             OnConnected = null;
@@ -169,7 +172,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
         token.Register(() => tcs.TrySetException(new OperationCanceledException()));
 
-        _listener.NetworkReceiveUnconnectedEvent += EventCallback;
+        OnUnconnectedPacketReceived += EventCallback;
         try
         {
             var result = await tcs.Task.ConfigureAwait(false);
@@ -177,16 +180,13 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
         finally
         {
-            _listener.NetworkReceiveUnconnectedEvent -= EventCallback;
+            OnUnconnectedPacketReceived -= EventCallback;
         }
 
-        void EventCallback(IPEndPoint _, NetPacketReader reader, UnconnectedMessageType messageType)
+        void EventCallback(IVoiceCraftPacket packet)
         {
-            ProcessUnconnectedPacket(reader, packet =>
-            {
-                if (packet is not T typedPacket) return;
-                tcs.TrySetResult(typedPacket);
-            });
+            if (packet is not T typedPacket) return;
+            tcs.TrySetResult(typedPacket);
         }
     }
 
@@ -200,7 +200,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         token.Register(() => tcs.TrySetException(new OperationCanceledException()));
 
         OnDisconnected += OnDisconnectedCallback;
-        _listener.NetworkReceiveEvent += EventCallback;
+        OnPacketReceived += EventCallback;
         try
         {
             var result = await Task.WhenAny(tcs.Task, dTcs.Task).ConfigureAwait(false);
@@ -209,16 +209,13 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         finally
         {
             OnDisconnected -= OnDisconnectedCallback;
-            _listener.NetworkReceiveEvent -= EventCallback;
+            OnPacketReceived -= EventCallback;
         }
 
-        void EventCallback(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
+        void EventCallback(IVoiceCraftPacket packet)
         {
-            ProcessPacket(reader, packet =>
-            {
-                if (packet is not T typedPacket || typedPacket.RequestId != requestId) return;
-                tcs.TrySetResult(typedPacket);
-            });
+            if (packet is not T typedPacket || typedPacket.RequestId != requestId) return;
+            tcs.TrySetResult(typedPacket);
         }
 
         void OnDisconnectedCallback(string? reason)
@@ -228,7 +225,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
     }
 
     #region LiteNetLib Events
-    
+
     private static void ConnectionRequestEvent(ConnectionRequest request)
     {
         //No Fuck you.
@@ -273,6 +270,11 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
 
         _ = DisconnectAsync(disconnectReason);
+    }
+    
+    private void NetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+    {
+        ProcessUnconnectedPacket(reader, _ => {}); //Do nothing with it.
     }
 
     private void NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,

@@ -118,6 +118,7 @@ public class App : Application
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
+        ServiceCollection.AddSingleton<VoiceCraftService>();
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -132,6 +133,7 @@ public class App : Application
         ServiceCollection.AddTransient<HotKeySettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
         ServiceCollection.AddTransient<SelectedServerViewModel>();
+        ServiceCollection.AddTransient<VoiceViewModel>();
 
         //Home Pages
         ServiceCollection.AddSingleton<AddServerViewModel>();
@@ -156,6 +158,7 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, NetworkSettingsView>(typeof(NetworkSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HotKeySettingsView>(typeof(HotKeySettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, VoiceView>(typeof(VoiceView).FullName);
 
         //Themes Registry
         ServiceCollection.AddSingleton(new RegisteredTheme(

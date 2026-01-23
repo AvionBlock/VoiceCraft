@@ -83,6 +83,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
+    public event Action<IVoiceCraftPacket>? OnUnconnectedPacketReceived;
+    public event Action<IVoiceCraftPacket>? OnPacketReceived;
     public abstract event Action? OnConnected;
     public abstract event Action<string?>? OnDisconnected;
     public event Action<string>? OnSetTitle;
@@ -139,8 +141,13 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
         if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
-            ConnectionState != VcConnectionState.Connected || Muted || ServerMuted) return;
+            ConnectionState != VcConnectionState.Connected || Muted || ServerMuted)
+        {
+            SpeakingState = false;
+            return;
+        }
 
+        SpeakingState = true;
         var encodeBuffer = ArrayPool<byte>.Shared.Rent(Constants.MaximumEncodedBytes);
         encodeBuffer.AsSpan().Clear();
         try
@@ -154,7 +161,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             ArrayPool<byte>.Shared.Return(encodeBuffer);
         }
     }
-    
+
     public override void Reset()
     {
         //Doesn't remove the entity from the world.
@@ -179,7 +186,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected static void ProcessPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    protected void ProcessPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
     {
         var packetType = (VcPacketType)reader.GetByte();
         switch (packetType)
@@ -299,7 +306,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    protected static void ProcessUnconnectedPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    protected void ProcessUnconnectedPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
     {
         var packetType = (VcPacketType)reader.GetByte();
         switch (packetType)
@@ -308,7 +315,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.LoginRequest:
             case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
-                ProcessPacket<VcInfoResponsePacket>(reader, onParsed);
+                ProcessUnconnectedPacket<VcInfoResponsePacket>(reader, onParsed);
                 break;
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
@@ -743,13 +750,30 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         SendPacket(PacketPool<VcSetMuffleFactorRequest>.GetPacket().Set(muffleFactor));
     }
 
-    private static void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    private void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
         where T : IVoiceCraftPacket
     {
         var packet = PacketPool<T>.GetPacket();
         try
         {
             packet.Deserialize(reader);
+            OnPacketReceived?.Invoke(packet);
+            onParsed.Invoke(packet);
+        }
+        finally
+        {
+            PacketPool<T>.Return(packet);
+        }
+    }
+
+    private void ProcessUnconnectedPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+        where T : IVoiceCraftPacket
+    {
+        var packet = PacketPool<T>.GetPacket();
+        try
+        {
+            packet.Deserialize(reader);
+            OnUnconnectedPacketReceived?.Invoke(packet);
             onParsed.Invoke(packet);
         }
         finally

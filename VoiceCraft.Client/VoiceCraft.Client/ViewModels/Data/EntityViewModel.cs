@@ -9,8 +9,6 @@ namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class EntityViewModel : ObservableObject
 {
-    private readonly VoiceCraftClientEntity _entity;
-
     private readonly Guid? _entityUserId;
     private readonly SettingsService _settingsService;
 
@@ -30,10 +28,12 @@ public partial class EntityViewModel : ObservableObject
 
     //User Settings
     [ObservableProperty] private float _volume;
+    
+    public VoiceCraftClientEntity Entity { get; }
 
     public EntityViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
     {
-        _entity = entity;
+        Entity = entity;
         _userSettings = settingsService.UserSettings;
         _settingsService = settingsService;
 
@@ -89,7 +89,7 @@ public partial class EntityViewModel : ObservableObject
     {
         if (_userVolumeUpdating) return;
         _userVolumeUpdating = true;
-        _entity.Volume = value;
+        Entity.Volume = value;
         SaveSettings();
         _userVolumeUpdating = false;
     }
@@ -98,7 +98,7 @@ public partial class EntityViewModel : ObservableObject
     {
         if (_userMutedUpdating) return;
         _userMutedUpdating = true;
-        _entity.UserMuted = value;
+        Entity.UserMuted = value;
         SaveSettings();
         _userMutedUpdating = false;
     }
@@ -112,8 +112,8 @@ public partial class EntityViewModel : ObservableObject
             _userSettings.Users.Add((Guid)_entityUserId, entity);
         }
 
-        entity.Volume = _entity.Volume;
-        entity.UserMuted = _entity.UserMuted;
+        entity.Volume = Entity.Volume;
+        entity.UserMuted = Entity.UserMuted;
 
         _ = _settingsService.SaveAsync();
     }

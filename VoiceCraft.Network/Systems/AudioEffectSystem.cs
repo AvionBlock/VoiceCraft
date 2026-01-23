@@ -98,33 +98,40 @@ public class AudioEffectSystem : IDisposable
     public int Read(Span<float> buffer, VoiceCraftClient client)
     {
         var bufferLength = buffer.Length;
-        var pinRef = buffer.GetPinnableReference();
-
-        var read = 0;
-        Parallel.ForEach(client.VisibleEntities.OfType<VoiceCraftClientEntity>(), x =>
+        var outputBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
+        outputBuffer.AsSpan(0, bufferLength).Clear();
+        try
         {
-            var bufferRef = new Span<float>(ref pinRef);
-            var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
-            var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
-            entitySpanBuffer.Clear();
-            try
+            var read = 0;
+            Parallel.ForEach(client.VisibleEntities.OfType<VoiceCraftClientEntity>(), x =>
             {
-                var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
-                _mutex.WaitOne();
-                read = SampleMixer.Read(entitySpanBuffer[..entityRead], bufferRef);
-                // ReSharper disable once AccessToModifiedClosure
-                read = Math.Max(read, entityRead);
-                _mutex.ReleaseMutex();
-            }
-            finally
-            {
-                ArrayPool<float>.Shared.Return(entityBuffer);
-            }
-        });
-        
-        read = SampleHardClip.Read(buffer[..read]);
-        read = SampleVolume.Read(buffer[..read], client.OutputVolume);
-        return read;
+                var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
+                var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
+                entitySpanBuffer.Clear();
+                try
+                {
+                    var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
+                    _mutex.WaitOne();
+                    read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
+                    // ReSharper disable once AccessToModifiedClosure
+                    read = Math.Max(read, entityRead);
+                    _mutex.ReleaseMutex();
+                }
+                finally
+                {
+                    ArrayPool<float>.Shared.Return(entityBuffer);
+                }
+            });
+
+            outputBuffer.CopyTo(buffer);
+            read = SampleHardClip.Read(buffer[..read]);
+            read = SampleVolume.Read(buffer[..read], client.OutputVolume);
+            return read;
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(outputBuffer);
+        }
     }
 
     private int ProcessEntityAudio(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
@@ -148,7 +155,7 @@ public class AudioEffectSystem : IDisposable
             ArrayPool<float>.Shared.Return(monoBuffer);
         }
     }
-    
+
     private void ProcessEntityEffects(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
     {
         lock (_audioEffects)

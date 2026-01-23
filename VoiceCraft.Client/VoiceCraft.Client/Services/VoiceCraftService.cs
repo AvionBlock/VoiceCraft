@@ -15,17 +15,17 @@ using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.Services;
 
-public class VoiceCraftService
+public class VoiceCraftService(
+    VoiceCraftClient client,
+    AudioService audioService,
+    SettingsService settingsService,
+    NotificationService notificationService)
 {
-    private readonly VoiceCraftClient _client;
     private McWssServer? _mcWssServer;
     private string _title = string.Empty;
     private string _description = string.Empty;
 
     //Services
-    private readonly NotificationService _notificationService;
-    private readonly SettingsService _settingsService;
-    private readonly AudioService _audioService;
 
     //Audio
     private IAudioRecorder? _audioRecorder;
@@ -34,18 +34,18 @@ public class VoiceCraftService
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
 
-    public VcConnectionState ConnectionState => _client.ConnectionState;
+    public VcConnectionState ConnectionState => client.ConnectionState;
 
     public bool Muted
     {
-        get => _client.Muted;
-        set => _client.Muted = value;
+        get => client.Muted;
+        set => client.Muted = value;
     }
 
     public bool Deafened
     {
-        get => _client.Deafened;
-        set => _client.Deafened = value;
+        get => client.Deafened;
+        set => client.Deafened = value;
     }
 
     public string Title
@@ -81,17 +81,8 @@ public class VoiceCraftService
     public event Action<VoiceCraftClientEntity>? OnEntityAdded;
     public event Action<VoiceCraftClientEntity>? OnEntityRemoved;
 
-    public VoiceCraftService(
-        VoiceCraftClient client,
-        AudioService audioService,
-        SettingsService settingsService,
-        NotificationService notificationService)
+    public async Task ConnectAsync(string ip, int port)
     {
-        _client = client;
-        _settingsService = settingsService;
-        _audioService = audioService;
-        _notificationService = notificationService;
-
         client.OnConnected += ClientOnConnected;
         client.OnDisconnected += ClientOnDisconnected;
         client.OnSetTitle += ClientOnSetTitle;
@@ -103,26 +94,28 @@ public class VoiceCraftService
         client.OnSpeakingUpdated += ClientOnSpeakingUpdated;
         client.World.OnEntityCreated += ClientWorldOnEntityCreated;
         client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
-    }
-
-    public async Task ConnectAsync(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
-        PositioningType positioningType)
-    {
+        
         Title = "VoiceCraft.Status.Initializing";
-        var audioSettings = _settingsService.AudioSettings;
-        var networkSettings = _settingsService.NetworkSettings;
+        Description = string.Empty;
+        var localeSettings = settingsService.LocaleSettings;
+        var audioSettings = settingsService.AudioSettings;
+        var networkSettings = settingsService.NetworkSettings;
+        
+        //Setup Client
+        client.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
+        client.OutputVolume = audioSettings.OutputVolume;
 
         _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
         _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
-        _echoCanceler = _audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
-        _gainController = _audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
+        _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
+        _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
             ?.Instantiate();
-        _denoiser = _audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
+        _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
 
         //Setup McWss Server
         if (networkSettings.PositioningType == PositioningType.Client)
         {
-            _mcWssServer = InitializeMcWssServer(_client);
+            _mcWssServer = InitializeMcWssServer(client);
             Description =
                 $"VoiceCraft.DescriptionStatus.McWss:{networkSettings.McWssListenIp},{networkSettings.McWssHostPort}";
         }
@@ -142,13 +135,18 @@ public class VoiceCraftService
         }
 
         Title = "VoiceCraft.Status.Connecting";
-        await _client.ConnectAsync(ip, port, userGuid, serverUserGuid, locale, positioningType);
-        _ = Task.Run(() => UpdateLogic(_client));
+        var result = client.ConnectAsync(ip, port, 
+            settingsService.UserGuid,
+            settingsService.ServerUserGuid,
+            localeSettings.Culture,
+            networkSettings.PositioningType);
+        _ = Task.Run(() => UpdateLogic(client));
+        await result;
     }
 
     public async Task DisconnectAsync(string? reason = null)
     {
-        await StopClientAsync(_client, reason);
+        await StopClientAsync(client, reason);
 
         if (_audioRecorder != null)
         {
@@ -182,7 +180,7 @@ public class VoiceCraftService
             var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
             floatBufferSpan.Clear();
 
-            var read = _client.Read(floatBufferSpan);
+            var read = client.Read(floatBufferSpan);
             return SampleFloatTo16.Read(floatBufferSpan[..read], shortBufferSpan) * sizeof(short);
         }
         finally
@@ -201,7 +199,7 @@ public class VoiceCraftService
             floatBufferSpan.Clear();
 
             var read = Sample16ToFloat.Read(shortBufferSpan, floatBuffer);
-            _client.Write(floatBufferSpan[..read]);
+            client.Write(floatBufferSpan[..read]);
         }
         finally
         {
@@ -286,7 +284,7 @@ public class VoiceCraftService
     {
         if (ex != null)
         {
-            _client.DisconnectAsync(ex.Message);
+            client.DisconnectAsync(ex.Message);
             return;
         }
 
@@ -297,7 +295,7 @@ public class VoiceCraftService
     {
         if (ex != null)
         {
-            _client.DisconnectAsync(ex.Message);
+            client.DisconnectAsync(ex.Message);
             return;
         }
 
@@ -306,20 +304,20 @@ public class VoiceCraftService
 
     private void OnMcWssConnected(string playerName)
     {
-        _notificationService.SendSuccessNotification(Localizer.Get($"Notification.McWss.Connected:{playerName}"),
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.McWss.Connected:{playerName}"),
             Localizer.Get("Notification.McWss.Badge"));
     }
 
     private void OnMcWssDisconnected()
     {
-        _notificationService.SendNotification(Localizer.Get("Notification.McWss.Disconnected"),
+        notificationService.SendNotification(Localizer.Get("Notification.McWss.Disconnected"),
             Localizer.Get("Notification.McWss.Badge"));
     }
 
     private IAudioRecorder InitializeAudioRecorder(string inputDevice)
     {
         var audioRecorder =
-            _audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
+            audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
         audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
         audioRecorder.SelectedDevice = inputDevice == "Default" ? null : inputDevice;
         audioRecorder.OnDataAvailable += Write;
@@ -330,7 +328,7 @@ public class VoiceCraftService
 
     private IAudioPlayer InitializeAudioPlayer(string outputDevice)
     {
-        var audioPlayer = _audioService.CreateAudioPlayer(Constants.SampleRate, 2, Constants.Format);
+        var audioPlayer = audioService.CreateAudioPlayer(Constants.SampleRate, 2, Constants.Format);
         audioPlayer.BufferMilliseconds = 100;
         audioPlayer.SelectedDevice = outputDevice == "Default" ? null : outputDevice;
         audioPlayer.OnPlaybackStopped += OnPlaybackStopped;
@@ -338,31 +336,31 @@ public class VoiceCraftService
         return audioPlayer;
     }
 
-    private McWssServer InitializeMcWssServer(VoiceCraftClient client)
+    private McWssServer InitializeMcWssServer(VoiceCraftClient vcClient)
     {
-        var mcWssServer = new McWssServer(client);
+        var mcWssServer = new McWssServer(vcClient);
         mcWssServer.OnConnected += OnMcWssConnected;
         mcWssServer.OnDisconnected += OnMcWssDisconnected;
         return mcWssServer;
     }
 
     //Stoppers
-    private async Task StopClientAsync(VoiceCraftClient client, string? reason)
+    private async Task StopClientAsync(VoiceCraftClient vcClient, string? reason)
     {
         try
         {
-            client.OnConnected -= ClientOnConnected;
-            client.OnDisconnected -= ClientOnDisconnected;
-            client.OnSetTitle -= ClientOnSetTitle;
-            client.OnSetDescription -= ClientOnSetDescription;
-            client.OnMuteUpdated -= ClientOnMuteUpdated;
-            client.OnDeafenUpdated -= ClientOnDeafenUpdated;
-            client.OnServerMuteUpdated -= ClientOnServerMuteUpdated;
-            client.OnServerDeafenUpdated -= ClientOnServerDeafenUpdated;
-            client.OnSpeakingUpdated -= ClientOnSpeakingUpdated;
-            client.World.OnEntityCreated -= ClientWorldOnEntityCreated;
-            client.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
-            await client.DisconnectAsync(reason);
+            vcClient.OnConnected -= ClientOnConnected;
+            vcClient.OnDisconnected -= ClientOnDisconnected;
+            vcClient.OnSetTitle -= ClientOnSetTitle;
+            vcClient.OnSetDescription -= ClientOnSetDescription;
+            vcClient.OnMuteUpdated -= ClientOnMuteUpdated;
+            vcClient.OnDeafenUpdated -= ClientOnDeafenUpdated;
+            vcClient.OnServerMuteUpdated -= ClientOnServerMuteUpdated;
+            vcClient.OnServerDeafenUpdated -= ClientOnServerDeafenUpdated;
+            vcClient.OnSpeakingUpdated -= ClientOnSpeakingUpdated;
+            vcClient.World.OnEntityCreated -= ClientWorldOnEntityCreated;
+            vcClient.World.OnEntityDestroyed -= ClientWorldOnEntityDestroyed;
+            await vcClient.DisconnectAsync(reason);
         }
         catch (Exception ex)
         {
@@ -373,7 +371,7 @@ public class VoiceCraftService
             var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}");
             Title = localeReason;
             Description = localeReason;
-            _notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
+            notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
             OnDisconnected?.Invoke();
         }
     }

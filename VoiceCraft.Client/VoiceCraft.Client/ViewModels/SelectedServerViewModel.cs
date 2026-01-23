@@ -16,7 +16,8 @@ public partial class SelectedServerViewModel(
     NavigationService navigationService,
     SettingsService settingsService,
     VoiceCraftClient client,
-    NotificationService notificationService)
+    NotificationService notificationService,
+    IBackgroundService backgroundService)
     : ViewModelBase, IDisposable
 {
     private CancellationTokenSource? _cts;
@@ -67,14 +68,17 @@ public partial class SelectedServerViewModel(
     [RelayCommand]
     private void Cancel()
     {
-        if (DisableBackButton) return;
         navigationService.Back();
     }
 
     [RelayCommand]
-    private async Task Connect()
+    private void Connect()
     {
-        DisableBackButton = false;
+        if (SelectedServer == null) return;
+        var selectedServer = SelectedServer;
+        var serviceInstance = backgroundService.StartService<VoiceCraftService>(x =>
+            x.ConnectAsync(selectedServer.Ip, selectedServer.Port).GetAwaiter().GetResult());
+        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(serviceInstance));
     }
 
     [RelayCommand]
@@ -106,7 +110,7 @@ public partial class SelectedServerViewModel(
                 await Task.Delay(Constants.TickRate, token);
             }
         }, token);
-        
+
         while (!token.IsCancellationRequested)
         {
             try
@@ -132,8 +136,8 @@ public partial class SelectedServerViewModel(
                 ConnectedClients = "";
                 Version = "";
             }
-            await Task.Delay(TimeSpan.FromSeconds(4), token);
 
+            await Task.Delay(TimeSpan.FromSeconds(4), token);
         }
     }
 }
