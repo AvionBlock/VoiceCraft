@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;

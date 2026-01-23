@@ -94,13 +94,13 @@ public class VoiceCraftService(
         client.OnSpeakingUpdated += ClientOnSpeakingUpdated;
         client.World.OnEntityCreated += ClientWorldOnEntityCreated;
         client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
-        
+
         Title = "VoiceCraft.Status.Initializing";
         Description = string.Empty;
         var localeSettings = settingsService.LocaleSettings;
         var audioSettings = settingsService.AudioSettings;
         var networkSettings = settingsService.NetworkSettings;
-        
+
         //Setup Client
         client.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
         client.OutputVolume = audioSettings.OutputVolume;
@@ -135,7 +135,7 @@ public class VoiceCraftService(
         }
 
         Title = "VoiceCraft.Status.Connecting";
-        var result = client.ConnectAsync(ip, port, 
+        var result = client.ConnectAsync(ip, port,
             settingsService.UserGuid,
             settingsService.ServerUserGuid,
             localeSettings.Culture,
@@ -173,15 +173,19 @@ public class VoiceCraftService(
     //Audio
     private int Read(byte[] buffer, int count)
     {
-        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer)[..(count / sizeof(short))];
+        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer);
         var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
+        var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
+        floatBufferSpan.Clear();
+
         try
         {
-            var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
-            floatBufferSpan.Clear();
-
-            var read = client.Read(floatBufferSpan);
-            return SampleFloatTo16.Read(floatBufferSpan[..read], shortBufferSpan) * sizeof(short);
+            var read = Sample16ToFloat.Read(shortBufferSpan, floatBufferSpan);
+            read = client.Read(floatBufferSpan[..read]);
+            read = SampleFloatTo16.Read(floatBufferSpan[..read], shortBufferSpan);
+            if (read >= shortBufferSpan.Length) return read * sizeof(short);
+            shortBufferSpan[read..].Clear();
+            return count;
         }
         finally
         {

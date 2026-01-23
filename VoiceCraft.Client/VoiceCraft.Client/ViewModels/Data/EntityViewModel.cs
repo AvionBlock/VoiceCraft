@@ -2,7 +2,6 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core.World;
 using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.ViewModels.Data;
@@ -63,6 +62,7 @@ public partial class EntityViewModel : ObservableObject
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;
         entity.OnDeafenUpdated += (value, _) => IsDeafened = value;
+        entity.OnIsVisibleUpdated += (value, _) => IsVisible = value;
         entity.OnStartedSpeaking += _ => IsSpeaking = true;
         entity.OnStoppedSpeaking += _ => IsSpeaking = false;
         entity.OnVolumeUpdated += UpdateVolume;

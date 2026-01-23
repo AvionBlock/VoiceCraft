@@ -129,8 +129,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public int Read(Span<float> buffer)
     {
-        var read = AudioEffectSystem.Read(buffer, this);
-        return read;
+        return AudioEffectSystem.Read(buffer, this);
     }
 
     public void Write(Span<float> buffer)
@@ -561,12 +560,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void HandleSetEntityVisibilityRequestPacket(VcSetEntityVisibilityRequestPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        if (packet.Value)
-            AddVisibleEntity(entity);
-        else
-            RemoveVisibleEntity(entity);
-
         if (entity is VoiceCraftClientEntity clientEntity)
             clientEntity.IsVisible = packet.Value;
     }

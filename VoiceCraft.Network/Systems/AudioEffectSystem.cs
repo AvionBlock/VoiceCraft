@@ -18,7 +18,7 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private readonly Mutex _mutex = new();
+    private readonly Lock _mixerLockObj = new();
 
     public IImmutableDictionary<ushort, IAudioEffect> AudioEffects
     {
@@ -103,7 +103,7 @@ public class AudioEffectSystem : IDisposable
         try
         {
             var read = 0;
-            Parallel.ForEach(client.VisibleEntities.OfType<VoiceCraftClientEntity>(), x =>
+            Parallel.ForEach(client.World.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible), x =>
             {
                 var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
                 var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
@@ -111,11 +111,12 @@ public class AudioEffectSystem : IDisposable
                 try
                 {
                     var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
-                    _mutex.WaitOne();
-                    read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
-                    // ReSharper disable once AccessToModifiedClosure
-                    read = Math.Max(read, entityRead);
-                    _mutex.ReleaseMutex();
+                    lock (_mixerLockObj)
+                    {
+                        read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
+                        // ReSharper disable once AccessToModifiedClosure
+                        read = Math.Max(read, entityRead);
+                    }
                 }
                 finally
                 {
@@ -123,7 +124,7 @@ public class AudioEffectSystem : IDisposable
                 }
             });
 
-            outputBuffer.CopyTo(buffer);
+            outputBuffer[..read].CopyTo(buffer);
             read = SampleHardClip.Read(buffer[..read]);
             read = SampleVolume.Read(buffer[..read], client.OutputVolume);
             return read;
@@ -175,7 +176,6 @@ public class AudioEffectSystem : IDisposable
     {
         if (!disposing) return;
         ClearEffects();
-        _mutex.Dispose();
         OnEffectSet = null;
     }
 }
