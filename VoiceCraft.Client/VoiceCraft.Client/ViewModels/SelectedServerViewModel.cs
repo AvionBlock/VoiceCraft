@@ -16,8 +16,7 @@ public partial class SelectedServerViewModel(
     NavigationService navigationService,
     SettingsService settingsService,
     VoiceCraftClient client,
-    NotificationService notificationService,
-    IBackgroundService backgroundService)
+    NotificationService notificationService)
     : ViewModelBase, IDisposable
 {
     private CancellationTokenSource? _cts;
@@ -74,11 +73,18 @@ public partial class SelectedServerViewModel(
     [RelayCommand]
     private void Connect()
     {
-        if (SelectedServer == null) return;
-        var selectedServer = SelectedServer;
-        var serviceInstance = backgroundService.StartService<VoiceCraftService>(x =>
-            x.ConnectAsync(selectedServer.Ip, selectedServer.Port).GetAwaiter().GetResult());
-        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(serviceInstance));
+        try
+        {
+            if (SelectedServer == null) return;
+            var selectedServer = SelectedServer;
+            navigationService.NavigateTo<VoiceViewModel>(
+                new VoiceStartNavigationData(selectedServer.Ip, selectedServer.Port));
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification(Localizer.Get("Notification.Error.VoipFailedToStart"));
+            LogService.Log(ex);
+        }
     }
 
     [RelayCommand]

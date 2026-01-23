@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.Linux;
+namespace VoiceCraft.Client.Windows;
 
 public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBackgroundService
 {

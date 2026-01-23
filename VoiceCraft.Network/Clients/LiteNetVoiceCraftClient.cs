@@ -14,9 +14,9 @@ namespace VoiceCraft.Network.Clients;
 
 public class LiteNetVoiceCraftClient : VoiceCraftClient
 {
-    private readonly NetManager _netManager;
     private readonly EventBasedNetListener _listener;
     private readonly NetDataWriter _writer;
+    private NetManager? _netManager;
     private LiteNetVoiceCraftNetPeer? _netPeer;
 
     public override PositioningType PositioningType => _netPeer?.PositioningType ?? PositioningType.Server;
@@ -27,23 +27,19 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         audioEncoder, decoderFactory)
     {
         _listener = new EventBasedNetListener();
-        _netManager = new NetManager(_listener)
-        {
-            AutoRecycle = true,
-            IPv6Enabled = false,
-            UnconnectedMessagesEnabled = true
-        };
         _writer = new NetDataWriter();
 
         _listener.ConnectionRequestEvent += ConnectionRequestEvent;
         _listener.PeerDisconnectedEvent += PeerDisconnectedEvent;
         _listener.NetworkReceiveUnconnectedEvent += NetworkReceiveUnconnectedEvent;
         _listener.NetworkReceiveEvent += NetworkReceiveEvent;
-        _netManager.Start();
     }
 
     public override async Task<ServerInfo> PingAsync(string ip, int port, CancellationToken token = default)
     {
+        if(_netManager == null)
+            StartNetManager();
+        
         var packet = PacketPool<VcInfoRequestPacket>.GetPacket().Set(Environment.TickCount);
         SendUnconnectedPacket(ip, port, packet);
         var response = await GetUnconnectedResponseAsync<VcInfoResponsePacket>(TimeSpan.FromSeconds(8), token);
@@ -55,6 +51,11 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
     {
         if (ConnectionState != VcConnectionState.Disconnected) return;
         ConnectionState = VcConnectionState.Connecting;
+        StopNetManager();
+        StartNetManager();
+        if (_netManager == null)
+            throw new Exception(); //Should never happen.
+        
         Reset();
         var requestId = Guid.NewGuid();
         var packet = PacketPool<VcLoginRequestPacket>.GetPacket()
@@ -86,14 +87,18 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     public override void Update()
     {
-        _netManager.PollEvents();
+        _netManager?.PollEvents();
     }
 
     public override async Task DisconnectAsync(string? reason = null)
     {
         if (ConnectionState is VcConnectionState.Disconnected or VcConnectionState.Disconnecting) return;
         ConnectionState = VcConnectionState.Disconnecting;
-        _netManager.DisconnectAll();
+        if (_netPeer != null)
+        {
+            _netManager?.DisconnectPeer(_netPeer.NetPeer);
+        }
+
         while (_netPeer?.ConnectionState == VcConnectionState.Disconnecting)
         {
             await Task.Delay(1);
@@ -112,7 +117,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 _writer.Put(packet);
-                _netManager.SendUnconnectedMessage(_writer, ip, port);
+                _netManager?.SendUnconnectedMessage(_writer, ip, port);
             }
         }
         finally
@@ -150,7 +155,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         if (Disposed) return;
         if (disposing)
         {
-            _netManager.Stop();
+            _netManager?.Stop();
             _listener.ConnectionRequestEvent -= ConnectionRequestEvent;
             _listener.PeerDisconnectedEvent -= PeerDisconnectedEvent;
             _listener.NetworkReceiveUnconnectedEvent -= NetworkReceiveUnconnectedEvent;
@@ -161,6 +166,23 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
 
         base.Dispose(disposing);
+    }
+
+    private void StartNetManager()
+    {
+        _netManager = new NetManager(_listener)
+        {
+            AutoRecycle = true,
+            IPv6Enabled = false,
+            UnconnectedMessagesEnabled = true
+        };
+        _netManager.Start();
+    }
+
+    private void StopNetManager()
+    {
+        _netManager?.Stop();
+        _netManager = null;
     }
 
     private async Task<T> GetUnconnectedResponseAsync<T>(TimeSpan timeout, CancellationToken token = default)

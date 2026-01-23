@@ -134,6 +134,8 @@ public class VoiceCraftService(
             await Task.Delay(1);
         }
 
+        //throw new Exception("test");
+
         Title = "VoiceCraft.Status.Connecting";
         var result = client.ConnectAsync(ip, port,
             settingsService.UserGuid,

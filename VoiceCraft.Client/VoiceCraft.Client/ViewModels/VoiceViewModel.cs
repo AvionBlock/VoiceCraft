@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,7 +14,10 @@ using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.ViewModels;
 
-public partial class VoiceViewModel(NavigationService navigationService, SettingsService settingsService)
+public partial class VoiceViewModel(
+    NavigationService navigationService,
+    SettingsService settingsService,
+    IBackgroundService backgroundService)
     : ViewModelBase, IDisposable
 {
     private VoiceCraftService? _service;
@@ -80,19 +84,34 @@ public partial class VoiceViewModel(NavigationService navigationService, Setting
             return;
         }
 
-        await _service.DisconnectAsync();
+        await _service.DisconnectAsync("VoiceCraft.DisconnectReason.Manual");
     }
 
     public override void OnAppearing(object? data = null)
     {
-        if (data is VoiceNavigationData navigationData)
-            _service = navigationData.voiceCraftService;
-
-        if (_service == null)
+        switch (data)
         {
-            navigationService.Back();
-            return;
+            case VoiceNavigationData navigationData:
+                SetService(navigationData.VoiceCraftService);
+                break;
+            case VoiceStartNavigationData startNavigationData:
+                backgroundService.StartService<VoiceCraftService>(x =>
+                {
+                    SetService(x);
+                    x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port).GetAwaiter().GetResult();
+                    var sw = new SpinWait();
+                    while (x.ConnectionState == VcConnectionState.Connected)
+                    {
+                        sw.SpinOnce();
+                    }
+                });
+                break;
         }
+    }
+
+    private void SetService(VoiceCraftService service)
+    {
+        _service = service;
 
         //Register events first.
         _service.OnDisconnected += OnDisconnected;
