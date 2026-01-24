@@ -68,14 +68,15 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
     private static string SendCommand(IWebSocketConnection socket, string command)
     {
         var packet = new McWssCommandRequest(command);
-        socket.Send(JsonSerializer.Serialize(packet));
+        socket.Send(JsonSerializer.Serialize(packet, McWssCommandRequestGenerationContext.Default.McWssCommandRequest));
         return packet.header.requestId;
     }
 
     private static void SendEventSubscribe(IWebSocketConnection socket, string eventName)
     {
         var packet = new McWssEventSubscribeRequest(eventName);
-        socket.Send(JsonSerializer.Serialize(packet));
+        socket.Send(JsonSerializer.Serialize(packet,
+            McWssEventSubscribeRequestGenerationContext.Default.McWssEventSubscribeRequest));
     }
 
     private void OnClientConnected(IWebSocketConnection socket)
@@ -102,7 +103,8 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
     {
         try
         {
-            var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message);
+            var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message,
+                McWssGenericPacketGenerationContext.Default.McWssGenericPacket);
             if (genericPacket == null) return;
 
             switch (genericPacket.header.messagePurpose)
@@ -124,7 +126,8 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
     private void HandleCommandResponse(McWssGenericPacket genericPacket, string data)
     {
         if (genericPacket.header.requestId != _localPlayerRequestId) return;
-        var localPlayerNameCommandResponse = JsonSerializer.Deserialize<McWssLocalPlayerNameCommandResponse>(data);
+        var localPlayerNameCommandResponse = JsonSerializer.Deserialize<McWssLocalPlayerNameCommandResponse>(data,
+            McWssLocalPlayerNameCommandResponseGenerationContext.Default.McWssLocalPlayerNameCommandResponse);
         if (localPlayerNameCommandResponse == null) return;
         _localPlayerName = localPlayerNameCommandResponse.LocalPlayerName;
         client.Name = _localPlayerName;
@@ -136,22 +139,26 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
         switch (genericPacket.header.eventName)
         {
             case "PlayerTravelled":
-                var playerTravelledEventPacket = JsonSerializer.Deserialize<McWssPlayerTravelledEvent>(data);
+                var playerTravelledEventPacket = JsonSerializer.Deserialize<McWssPlayerTravelledEvent>(data,
+                    McWssPlayerTravelledEventGenerationContext.Default.McWssPlayerTravelledEvent);
                 if (playerTravelledEventPacket == null) return;
                 HandlePlayerTravelledEvent(playerTravelledEventPacket);
                 break;
             case "PlayerTransform":
-                var playerTransformEventPacket = JsonSerializer.Deserialize<McWssPlayerTransformEvent>(data);
+                var playerTransformEventPacket = JsonSerializer.Deserialize<McWssPlayerTransformEvent>(data,
+                    McWssPlayerTransformEventGenerationContext.Default.McWssPlayerTransformEvent);
                 if (playerTransformEventPacket == null) return;
                 HandlePlayerTransformEvent(playerTransformEventPacket);
                 break;
             case "PlayerTeleported":
-                var playerTeleportedEventPacket = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data);
+                var playerTeleportedEventPacket = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data,
+                    McWssPlayerTeleportedEventGenerationContext.Default.McWssPlayerTeleportedEvent);
                 if (playerTeleportedEventPacket == null) return;
                 HandlePlayerTeleportedEvent(playerTeleportedEventPacket);
                 break;
             case "LocalPlayerUpdated": //Custom event for injected MC clients.
-                var localPlayerUpdatedEventPacket = JsonSerializer.Deserialize<McWssLocalPlayerUpdatedEvent>(data);
+                var localPlayerUpdatedEventPacket = JsonSerializer.Deserialize<McWssLocalPlayerUpdatedEvent>(data,
+                    McWssLocalPlayerUpdatedEventGenerationContext.Default.McWssLocalPlayerUpdatedEvent);
                 if (localPlayerUpdatedEventPacket == null) return;
                 HandleLocalPlayerUpdatedEvent(localPlayerUpdatedEventPacket);
                 break;

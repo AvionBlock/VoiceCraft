@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace VoiceCraft.Network.Packets.McWssPackets
 {
     //This is packet is for custom MCBE injected clients.
@@ -31,4 +33,8 @@ namespace VoiceCraft.Network.Packets.McWssPackets
         }
         //Resharper enable all
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(McWssLocalPlayerUpdatedEvent), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class McWssLocalPlayerUpdatedEventGenerationContext : JsonSerializerContext;
 }

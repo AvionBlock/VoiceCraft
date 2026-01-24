@@ -250,7 +250,8 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 return;
             }
 
-            var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.InputStream);
+            var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.InputStream,
+                McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
             if (packet == null)
             {
                 context.Response.StatusCode = 400;
@@ -263,7 +264,8 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             packet.Packets.Clear();
             SendPacketsLogic(netPeer, packet.Packets);
 
-            var responseData = JsonSerializer.Serialize(packet);
+            var responseData =
+                JsonSerializer.Serialize(packet, McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
             var buffer = Encoding.UTF8.GetBytes(responseData);
             context.Response.StatusCode = 200;
             context.Response.ContentLength64 = buffer.Length;

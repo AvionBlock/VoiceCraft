@@ -23,25 +23,34 @@ namespace VoiceCraft.Network.Interfaces
             switch (effectTypeValue)
             {
                 case EffectType.Visibility:
-                    audioEffect = element.Deserialize<VisibilityEffect>();
+                    audioEffect =
+                        element.Deserialize<VisibilityEffect>(
+                            VisibilityEffectGenerationContext.Default.VisibilityEffect);
                     break;
                 case EffectType.Proximity:
-                    audioEffect = element.Deserialize<ProximityEffect>();
+                    audioEffect =
+                        element.Deserialize<ProximityEffect>(ProximityEffectGenerationContext.Default.ProximityEffect);
                     break;
                 case EffectType.Directional:
-                    audioEffect = element.Deserialize<DirectionalEffect>();
+                    audioEffect =
+                        element.Deserialize<DirectionalEffect>(DirectionalEffectGenerationContext.Default
+                            .DirectionalEffect);
                     break;
                 case EffectType.ProximityEcho:
-                    audioEffect = element.Deserialize<ProximityEchoEffect>();
+                    audioEffect =
+                        element.Deserialize<ProximityEchoEffect>(ProximityEchoEffectGenerationContext.Default
+                            .ProximityEchoEffect);
                     break;
                 case EffectType.Echo:
-                    audioEffect = element.Deserialize<EchoEffect>();
+                    audioEffect = element.Deserialize<EchoEffect>(EchoEffectGenerationContext.Default.EchoEffect);
                     break;
                 case EffectType.ProximityMuffle:
-                    audioEffect = element.Deserialize<ProximityMuffleEffect>();
+                    audioEffect =
+                        element.Deserialize<ProximityMuffleEffect>(ProximityMuffleEffectGenerationContext.Default
+                            .ProximityMuffleEffect);
                     break;
                 case EffectType.Muffle:
-                    audioEffect = element.Deserialize<MuffleEffect>();
+                    audioEffect = element.Deserialize<MuffleEffect>(MuffleEffectGenerationContext.Default.MuffleEffect);
                     break;
                 case EffectType.None:
                 default:

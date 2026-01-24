@@ -29,4 +29,8 @@ namespace VoiceCraft.Network.Packets.McWssPackets
         }
         //Resharper enable All
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(McWssCommandRequest), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class McWssCommandRequestGenerationContext : JsonSerializerContext;
 }

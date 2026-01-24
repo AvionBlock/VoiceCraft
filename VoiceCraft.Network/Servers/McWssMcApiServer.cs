@@ -295,7 +295,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         var packet =
             new McWssCommandRequest($"{Config.DataTunnelCommand} {Config.MaxStringLengthPerCommand} \"{packetData}\"");
-        socket.Send(JsonSerializer.Serialize(packet));
+        socket.Send(JsonSerializer.Serialize(packet, McWssCommandRequestGenerationContext.Default.McWssCommandRequest));
     }
 
     #region Websocket Events
@@ -323,10 +323,12 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         try
         {
-            var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message);
+            var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message,
+                McWssGenericPacketGenerationContext.Default.McWssGenericPacket);
             if (genericPacket == null || genericPacket.header.messagePurpose != "commandResponse") return;
 
-            var commandResponsePacket = JsonSerializer.Deserialize<McWssCommandResponse>(message);
+            var commandResponsePacket = JsonSerializer.Deserialize<McWssCommandResponse>(message,
+                McWssCommandResponseGenerationContext.Default.McWssCommandResponse);
             if (commandResponsePacket is not { StatusCode: 0 }) return;
             HandleDataTunnelCommandResponse(socket, commandResponsePacket.body.statusMessage);
         }

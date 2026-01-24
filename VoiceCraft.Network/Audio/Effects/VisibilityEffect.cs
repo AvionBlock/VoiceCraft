@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
@@ -41,4 +42,8 @@ namespace VoiceCraft.Network.Audio.Effects
                    from.WorldId == to.WorldId;
         }
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(VisibilityEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class VisibilityEffectGenerationContext : JsonSerializerContext;
 }

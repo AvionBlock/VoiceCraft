@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
@@ -119,4 +120,8 @@ namespace VoiceCraft.Network.Audio.Effects
             }
         }
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(ProximityEchoEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class ProximityEchoEffectGenerationContext : JsonSerializerContext;
 }

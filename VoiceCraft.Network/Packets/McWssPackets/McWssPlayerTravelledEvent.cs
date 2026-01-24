@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace VoiceCraft.Network.Packets.McWssPackets
 {
     public class McWssPlayerTravelledEvent : McWssPacket<McWssPlayerTravelledEvent.McWssPlayerTravelledEventBody>
@@ -34,4 +36,8 @@ namespace VoiceCraft.Network.Packets.McWssPackets
         }
         //Resharper enable all
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(McWssPlayerTravelledEvent), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class McWssPlayerTravelledEventGenerationContext : JsonSerializerContext;
 }

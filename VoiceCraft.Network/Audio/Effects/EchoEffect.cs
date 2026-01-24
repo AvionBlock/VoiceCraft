@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
@@ -110,3 +111,7 @@ public class EchoEffect : IAudioEffect
         }
     }
 }
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(EchoEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
+public partial class EchoEffectGenerationContext : JsonSerializerContext;

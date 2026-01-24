@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace VoiceCraft.Network.Packets.McWssPackets
 {
     public class McWssPlayerTransformEvent : McWssPacket<McWssPlayerTransformEvent.McWssPlayerTransformEventBody>
@@ -30,4 +32,8 @@ namespace VoiceCraft.Network.Packets.McWssPackets
         }
         //Resharper enable all
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(McWssPlayerTransformEvent), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class McWssPlayerTransformEventGenerationContext : JsonSerializerContext;
 }

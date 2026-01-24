@@ -38,4 +38,8 @@ namespace VoiceCraft.Network.Packets.McWssPackets
         }
         //Resharper enable All
     }
+    
+    [JsonSourceGenerationOptions(WriteIndented = true)]
+    [JsonSerializable(typeof(McWssLocalPlayerNameCommandResponse), GenerationMode = JsonSourceGenerationMode.Metadata)]
+    public partial class McWssLocalPlayerNameCommandResponseGenerationContext : JsonSerializerContext;
 }
