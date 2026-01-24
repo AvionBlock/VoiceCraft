@@ -85,12 +85,6 @@ public class VoiceCraftService(
     {
         try
         {
-            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
-                PermissionStatus.Granted)
-            {
-                throw new PermissionException("Microphone access not granted!");
-            }
-            
             client.OnConnected += ClientOnConnected;
             client.OnDisconnected += ClientOnDisconnected;
             client.OnSetTitle += ClientOnSetTitle;

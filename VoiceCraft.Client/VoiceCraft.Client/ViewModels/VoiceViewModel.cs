@@ -95,10 +95,10 @@ public partial class VoiceViewModel(
                 SetService(navigationData.VoiceCraftService);
                 break;
             case VoiceStartNavigationData startNavigationData:
-                backgroundService.StartService<VoiceCraftService>((x, updateTitle, updateDescription) =>
+                backgroundService.StartServiceAsync<VoiceCraftService>(async void (x, updateTitle, updateDescription) =>
                 {
                     SetService(x);
-                    x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port).GetAwaiter().GetResult();
+                    await x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port);
                     var sw = new SpinWait();
                     while (x.ConnectionState == VcConnectionState.Connected)
                     {

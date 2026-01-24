@@ -40,7 +40,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         if(_netManager == null)
             StartNetManager();
         
-        var packet = PacketPool<VcInfoRequestPacket>.GetPacket().Set(Environment.TickCount);
+        var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket()).Set(Environment.TickCount);
         SendUnconnectedPacket(ip, port, packet);
         var response = await GetUnconnectedResponseAsync<VcInfoResponsePacket>(TimeSpan.FromSeconds(8), token);
         return new ServerInfo(response);
@@ -58,7 +58,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         
         Reset();
         var requestId = Guid.NewGuid();
-        var packet = PacketPool<VcLoginRequestPacket>.GetPacket()
+        var packet = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket())
             .Set(requestId, userGuid, serverUserGuid, locale, Version, positioningType);
         try
         {
@@ -296,13 +296,27 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
     
     private void NetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
     {
-        ProcessUnconnectedPacket(reader, _ => {}); //Do nothing with it.
+        try
+        {
+            ProcessUnconnectedPacket(reader, _ => { }); //Do nothing with it.
+        }
+        catch
+        {
+            //Do Nothing
+        }
     }
 
     private void NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel,
         DeliveryMethod deliveryMethod)
     {
-        ProcessPacket(reader, ExecutePacket);
+        try
+        {
+            ProcessPacket(reader, ExecutePacket);
+        }
+        catch
+        {
+            //Do Nothing
+        }
     }
 
     #endregion

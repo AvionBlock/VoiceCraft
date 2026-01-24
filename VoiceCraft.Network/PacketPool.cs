@@ -8,9 +8,9 @@ namespace VoiceCraft.Network
     {
         private static readonly ConcurrentBag<T> Packets = [];
 
-        public static T GetPacket()
+        public static T GetPacket(Func<T> packetFactory)
         {
-            return Packets.TryTake(out var packet) ? packet : Activator.CreateInstance<T>();
+            return Packets.TryTake(out var packet) ? packet : packetFactory.Invoke();
         }
 
         public static void Return(T packet)

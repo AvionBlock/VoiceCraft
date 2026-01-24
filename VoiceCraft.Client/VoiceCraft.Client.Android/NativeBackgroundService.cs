@@ -1,37 +1,22 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using _Microsoft.Android.Resource.Designer;
 using Android.App;
 using Android.Content;
-using Android.Content.PM;
 using Android.OS;
-using AndroidX.Core.App;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Android;
 
-[Service(ForegroundServiceType = ForegroundService.TypeMicrophone)]
-public class NativeBackgroundService(PermissionsService permissionsService, Func<Type, object> backgroundFactory)
-    : Service, IBackgroundService
+public class NativeBackgroundService(PermissionsService permissionsService, Func<Type, object> backgroundFactory) : IBackgroundService
 {
-    private const int NotificationId = 1000;
-    private const string ChannelId = "1001";
-    private string _title = "VoiceCraft";
-    private string _description = "Running...";
-    private static bool _isStarted;
-
-    private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
-    public T StartService<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
+    public async Task<T> StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
-        StartBackgroundService().GetAwaiter().GetResult();
         var backgroundType = typeof(T);
-        if (Services.ContainsKey(backgroundType))
+        if (AndroidBackgroundService.Services.ContainsKey(backgroundType))
             throw new InvalidOperationException();
 
         if (BackgroundFactory.Invoke(backgroundType) is not T instance)
@@ -39,54 +24,51 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
 
         var backgroundTask = new BackgroundTask(instance);
         backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
-        Services.TryAdd(backgroundType, backgroundTask);
+        AndroidBackgroundService.Services.TryAdd(backgroundType, backgroundTask);
+        await StartBackgroundService();
         backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
         return instance;
     }
 
     public T? GetService<T>() where T : notnull
     {
-        if (Services.TryGetValue(typeof(T), out var service) && service.TaskInstance is T taskInstance)
+        if (AndroidBackgroundService.Services.TryGetValue(typeof(T), out var service) && service.TaskInstance is T taskInstance)
             return taskInstance;
         return default;
     }
-
-    public override IBinder? OnBind(Intent? intent)
+    
+    public void Dispose()
     {
-        return null;
+        var context = Application.Context;
+        var intent = new Intent(context, typeof(NativeBackgroundService));
+        context.StopService(intent);
+        GC.SuppressFinalize(this);
+    }
+    
+    private static void UpdateTitle(string title)
+    {
+        AndroidBackgroundService.Title = title;
     }
 
-    public override StartCommandResult OnStartCommand(Intent? intent, StartCommandFlags flags, int startId)
+    private static void UpdateDescription(string description)
     {
-        if (_isStarted) return StartCommandResult.Sticky; //Already running, return.
-        _isStarted = true;
-
-        var notification = CreateNotification(_title, _description);
-        StartForeground(NotificationId, notification.Build());
-        Task.Run(BackgroundLogic);
-
-        return StartCommandResult.Sticky;
-    }
-
-    public override void OnDestroy()
-    {
-        _isStarted = false;
-        foreach (var service in Services.Values)
-        {
-            service.Dispose();
-        }
-        base.OnDestroy();
+        AndroidBackgroundService.Description = description;
     }
 
     private async Task StartBackgroundService()
     {
-        if (_isStarted) return;
+        if (AndroidBackgroundService.IsStarted) return;
         //Don't care if it's granted or not.
         await permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
             "Notifications are required to show running background processes and errors.");
+        
+        if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
+            PermissionStatus.Granted) { 
+            throw new PermissionException("Microphone access not granted!");
+        }
 
         var context = Application.Context;
-        var intent = new Intent(context, typeof(NativeBackgroundService));
+        var intent = new Intent(context, typeof(AndroidBackgroundService));
         if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             //Shut the fuck up.
 #pragma warning disable CA1416
@@ -95,76 +77,15 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         else
             context.StartService(intent);
     }
-
-    private async Task BackgroundLogic()
-    {
-        try
-        {
-            while (!Services.IsEmpty)
-            {
-                //Delay
-                await Task.Delay(500);
-                UpdateNotification();
-            }
-        }
-        catch
-        {
-            //Do Nothing
-        }
-        finally
-        {
-            StopSelf();
-        }
-    }
-
-    //Notification
-    private static NotificationCompat.Builder CreateNotification(string title, string description)
-    {
-        var context = Application.Context;
-
-        var notificationBuilder = new NotificationCompat.Builder(context, ChannelId);
-        notificationBuilder.SetContentTitle(Localizer.Get(title));
-        notificationBuilder.SetContentText(Localizer.Get(description));
-        notificationBuilder.SetOngoing(true);
-
-        if (Build.VERSION.SdkInt < BuildVersionCodes.O) return notificationBuilder;
-#pragma warning disable CA1416
-        var notificationChannel = new NotificationChannel(ChannelId, "Voice", NotificationImportance.Low);
-
-        if (context.GetSystemService(NotificationService) is not NotificationManager notificationManager)
-            return notificationBuilder;
-        notificationBuilder.SetChannelId(ChannelId);
-        notificationManager.CreateNotificationChannel(notificationChannel);
-#pragma warning restore CA1416
-        return notificationBuilder;
-    }
-    
-    private void UpdateTitle(string title)
-    {
-        _title = title;
-    }
-
-    private void UpdateDescription(string description)
-    {
-        _description = description;
-    }
-
-    private void UpdateNotification()
-    {
-        var notificationManager = GetSystemService(NotificationService) as NotificationManager;
-        var notification = CreateNotification(_title, _description);
-        notification.SetSmallIcon(ResourceConstant.Drawable.Icon);
-        notificationManager?.Notify(NotificationId, notification.Build());
-    }
     
     //Events
     private static void BackgroundTaskOnCompleted(BackgroundTask task)
     {
         task.OnCompleted -= BackgroundTaskOnCompleted;
-        Services.TryRemove(task.TaskInstance.GetType(), out _);
+        AndroidBackgroundService.Services.TryRemove(task.TaskInstance.GetType(), out _);
     }
 
-    private class BackgroundTask(object taskInstance) : IDisposable
+    public class BackgroundTask(object taskInstance) : IDisposable
     {
         public event Action<BackgroundTask>? OnCompleted;
         public Task? RunningTask { get; private set; }

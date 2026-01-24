@@ -23,7 +23,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     private readonly EventBasedNetListener _listener;
     private readonly NetManager _netManager;
     private readonly NetDataWriter _writer;
-    
+
     public LiteNetVoiceCraftConfig Config
     {
         get => _config;
@@ -153,7 +153,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     public override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)
     {
         if (vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
-        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
+        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket()).Set(reason);
         try
         {
             lock (_writer)
@@ -185,7 +185,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             return;
         }
 
-        var packet = PacketPool<VcLogoutRequestPacket>.GetPacket().Set(reason);
+        var packet = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket()).Set(reason);
         try
         {
             lock (_writer)
@@ -201,7 +201,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             PacketPool<VcLogoutRequestPacket>.Return(packet);
         }
     }
-    
+
     protected override void AcceptRequest(VcLoginRequestPacket packet, object? data)
     {
         if (data is not ConnectionRequest request) return;
@@ -216,7 +216,8 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             var entity = new VoiceCraftNetworkEntity(liteNetPeer, id);
             liteNetPeer.Tag = entity;
             World.AddEntity(entity);
-            SendPacket(liteNetPeer, PacketPool<VcAcceptResponsePacket>.GetPacket().Set(packet.RequestId));
+            SendPacket(liteNetPeer,
+                PacketPool<VcAcceptResponsePacket>.GetPacket(() => new VcAcceptResponsePacket()).Set(packet.RequestId));
         }
         catch
         {
@@ -227,7 +228,8 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     protected override void RejectRequest(VcLoginRequestPacket packet, string reason, object? data)
     {
         if (data is not ConnectionRequest request) return;
-        var responsePacket = PacketPool<VcDenyResponsePacket>.GetPacket().Set(packet.RequestId, reason);
+        var responsePacket = PacketPool<VcDenyResponsePacket>.GetPacket(() => new VcDenyResponsePacket())
+            .Set(packet.RequestId, reason);
         try
         {
             lock (_writer)
@@ -259,22 +261,43 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
 
     private void ConnectionRequestEvent(ConnectionRequest request)
     {
-        ProcessPacket(request.Data, packet => { ExecutePacket(packet, request); });
+        try
+        {
+            ProcessPacket(request.Data, packet => { ExecutePacket(packet, request); });
+        }
+        catch
+        {
+            request.Reject();
+        }
     }
 
     private void NetworkReceiveEvent(NetPeer peer, NetPacketReader reader, byte channel, DeliveryMethod deliveryMethod)
     {
-        ProcessPacket(reader, packet =>
+        try
         {
-            if (!_netPeers.TryGetValue(peer, out var vcPeer)) return;
-            ExecutePacket(packet, vcPeer);
-        });
+            ProcessPacket(reader, packet =>
+            {
+                if (!_netPeers.TryGetValue(peer, out var vcPeer)) return;
+                ExecutePacket(packet, vcPeer);
+            });
+        }
+        catch
+        {
+            //Do Nothing
+        }
     }
 
     private void NetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
         UnconnectedMessageType messageType)
     {
-        ProcessUnconnectedPacket(reader, packet => { ExecutePacket(packet, remoteEndPoint); });
+        try
+        {
+            ProcessUnconnectedPacket(reader, packet => { ExecutePacket(packet, remoteEndPoint); });
+        }
+        catch
+        {
+            //Do Nothing
+        }
     }
 
     private void PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
@@ -285,7 +308,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     }
 
     #endregion
-    
+
     public class LiteNetVoiceCraftConfig
     {
         public string Language { get; set; } = Constants.DefaultLanguage;
@@ -293,6 +316,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         public uint MaxClients { get; set; } = 100;
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public PositioningType PositioningType { get; set; } = PositioningType.Server;
+
         [JsonConverter(typeof(JsonBooleanConverter))]
         public bool EnableVisibilityDisplay { get; set; } = true;
     }

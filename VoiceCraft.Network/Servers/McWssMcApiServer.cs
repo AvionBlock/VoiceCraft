@@ -136,7 +136,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     public override void Disconnect(McApiNetPeer netPeer, bool force = false)
     {
         if (netPeer is not McWssMcApiNetPeer { ConnectionState: McApiConnectionState.Connected } mcWssNetPeer) return;
-        var logoutPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket().Set(netPeer.SessionToken);
+        var logoutPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket(() => new McApiLogoutRequestPacket())
+            .Set(netPeer.SessionToken);
         try
         {
             var sessionToken = mcWssNetPeer.SessionToken;
@@ -180,7 +181,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
             }
 
             SendPacket(mcWssNetPeer,
-                PacketPool<McApiAcceptResponsePacket>.GetPacket().Set(packet.RequestId, mcWssNetPeer.SessionToken));
+                PacketPool<McApiAcceptResponsePacket>.GetPacket(() => new McApiAcceptResponsePacket())
+                    .Set(packet.RequestId, mcWssNetPeer.SessionToken));
             OnPeerConnected?.Invoke(mcWssNetPeer, mcWssNetPeer.SessionToken);
         }
         catch
@@ -192,7 +194,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data)
     {
         if (data is not McWssMcApiNetPeer mcWssNetPeer) return;
-        var responsePacket = PacketPool<McApiDenyResponsePacket>.GetPacket().Set(packet.RequestId, reason);
+        var responsePacket = PacketPool<McApiDenyResponsePacket>.GetPacket(() => new McApiDenyResponsePacket())
+            .Set(packet.RequestId, reason);
         try
         {
             mcWssNetPeer.SetSessionToken("");

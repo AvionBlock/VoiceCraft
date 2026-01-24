@@ -61,34 +61,34 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         switch (packetType)
         {
             case VcPacketType.LoginRequest:
-                ProcessPacket<VcLoginRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcLoginRequestPacket());
                 break;
             case VcPacketType.SetNameRequest:
-                ProcessPacket<VcSetNameRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetNameRequestPacket());
                 break;
             case VcPacketType.AudioRequest:
-                ProcessPacket<VcAudioRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcAudioRequestPacket());
                 break;
             case VcPacketType.SetMuteRequest:
-                ProcessPacket<VcSetMuteRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetMuteRequestPacket());
                 break;
             case VcPacketType.SetDeafenRequest:
-                ProcessPacket<VcSetDeafenRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetDeafenRequestPacket());
                 break;
             case VcPacketType.SetWorldIdRequest:
-                ProcessPacket<VcSetWorldIdRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetWorldIdRequestPacket());
                 break;
             case VcPacketType.SetPositionRequest:
-                ProcessPacket<VcSetPositionRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetPositionRequestPacket());
                 break;
             case VcPacketType.SetRotationRequest:
-                ProcessPacket<VcSetRotationRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
                 break;
             case VcPacketType.SetCaveFactorRequest:
-                ProcessPacket<VcSetCaveFactorRequest>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetCaveFactorRequest());
                 break;
             case VcPacketType.SetMuffleFactorRequest:
-                ProcessPacket<VcSetMuffleFactorRequest>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetMuffleFactorRequest());
                 break;
             case VcPacketType.InfoRequest:
             case VcPacketType.LogoutRequest:
@@ -131,7 +131,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         switch (packetType)
         {
             case VcPacketType.InfoRequest:
-                ProcessPacket<VcInfoRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcInfoRequestPacket());
                 break;
             case VcPacketType.LoginRequest:
             case VcPacketType.LogoutRequest:
@@ -236,7 +236,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
     private void HandleInfoRequestPacket(VcInfoRequestPacket packet, object? data)
     {
         if (data is not IPEndPoint endPoint) return;
-        var responsePacket = PacketPool<VcInfoResponsePacket>.GetPacket()
+        var responsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket())
             .Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
         SendUnconnectedPacket(endPoint, responsePacket);
     }
@@ -362,10 +362,10 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     #endregion
 
-    private static void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    private static void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed, Func<T> packetFactory)
         where T : IVoiceCraftPacket
     {
-        var packet = PacketPool<T>.GetPacket();
+        var packet = PacketPool<T>.GetPacket(packetFactory);
         try
         {
             packet.Deserialize(reader);

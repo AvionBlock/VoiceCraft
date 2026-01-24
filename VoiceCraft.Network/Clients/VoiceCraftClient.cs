@@ -152,7 +152,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         try
         {
             var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.SamplesPerFrame);
-            SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket()
+            SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
                 .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
         }
         finally
@@ -191,109 +191,109 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         switch (packetType)
         {
             case VcPacketType.LogoutRequest:
-                ProcessPacket<VcLogoutRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcLogoutRequestPacket());
                 break;
             case VcPacketType.InfoResponse:
-                ProcessPacket<VcInfoResponsePacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcInfoResponsePacket());
                 break;
             case VcPacketType.AcceptResponse:
-                ProcessPacket<VcAcceptResponsePacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcAcceptResponsePacket());
                 break;
             case VcPacketType.DenyResponse:
-                ProcessPacket<VcDenyResponsePacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcDenyResponsePacket());
                 break;
             case VcPacketType.SetNameRequest:
-                ProcessPacket<VcSetNameRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetNameRequestPacket());
                 break;
             case VcPacketType.SetServerMuteRequest:
-                ProcessPacket<VcSetServerMuteRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetServerMuteRequestPacket());
                 break;
             case VcPacketType.SetServerDeafenRequest:
-                ProcessPacket<VcSetServerDeafenRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetServerDeafenRequestPacket());
                 break;
             case VcPacketType.SetWorldIdRequest:
-                ProcessPacket<VcSetWorldIdRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetWorldIdRequestPacket());
                 break;
             case VcPacketType.SetTalkBitmaskRequest:
-                ProcessPacket<VcSetTalkBitmaskRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetTalkBitmaskRequestPacket());
                 break;
             case VcPacketType.SetListenBitmaskRequest:
-                ProcessPacket<VcSetListenBitmaskRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetListenBitmaskRequestPacket());
                 break;
             case VcPacketType.SetEffectBitmaskRequest:
-                ProcessPacket<VcSetEffectBitmaskRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetEffectBitmaskRequestPacket());
                 break;
             case VcPacketType.SetPositionRequest:
-                ProcessPacket<VcSetPositionRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetPositionRequestPacket());
                 break;
             case VcPacketType.SetRotationRequest:
-                ProcessPacket<VcSetRotationRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
                 break;
             case VcPacketType.SetCaveFactorRequest:
-                ProcessPacket<VcSetCaveFactorRequest>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetCaveFactorRequest());
                 break;
             case VcPacketType.SetMuffleFactorRequest:
-                ProcessPacket<VcSetMuffleFactorRequest>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetMuffleFactorRequest());
                 break;
             case VcPacketType.SetTitleRequest:
-                ProcessPacket<VcSetTitleRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetTitleRequestPacket());
                 break;
             case VcPacketType.SetDescriptionRequest:
-                ProcessPacket<VcSetDescriptionRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetDescriptionRequestPacket());
                 break;
             case VcPacketType.SetEntityVisibilityRequest:
-                ProcessPacket<VcSetEntityVisibilityRequestPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcSetEntityVisibilityRequestPacket());
                 break;
             case VcPacketType.OnEffectUpdated:
-                ProcessPacket<VcOnEffectUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEffectUpdatedPacket());
                 break;
             case VcPacketType.OnEntityCreated:
-                ProcessPacket<VcOnEntityCreatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityCreatedPacket());
                 break;
             case VcPacketType.OnNetworkEntityCreated:
-                ProcessPacket<VcOnNetworkEntityCreatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnNetworkEntityCreatedPacket());
                 break;
             case VcPacketType.OnEntityDestroyed:
-                ProcessPacket<VcOnEntityDestroyedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityDestroyedPacket());
                 break;
             case VcPacketType.OnEntityNameUpdated:
-                ProcessPacket<VcOnEntityNameUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityNameUpdatedPacket());
                 break;
             case VcPacketType.OnEntityMuteUpdated:
-                ProcessPacket<VcOnEntityMuteUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityMuteUpdatedPacket());
                 break;
             case VcPacketType.OnEntityDeafenUpdated:
-                ProcessPacket<VcOnEntityDeafenUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityDeafenUpdatedPacket());
                 break;
             case VcPacketType.OnEntityServerMuteUpdated:
-                ProcessPacket<VcOnEntityServerMuteUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityServerMuteUpdatedPacket());
                 break;
             case VcPacketType.OnEntityServerDeafenUpdated:
-                ProcessPacket<VcOnEntityServerDeafenUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityServerDeafenUpdatedPacket());
                 break;
             case VcPacketType.OnEntityTalkBitmaskUpdated:
-                ProcessPacket<VcOnEntityTalkBitmaskUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityTalkBitmaskUpdatedPacket());
                 break;
             case VcPacketType.OnEntityListenBitmaskUpdated:
-                ProcessPacket<VcOnEntityListenBitmaskUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityListenBitmaskUpdatedPacket());
                 break;
             case VcPacketType.OnEntityEffectBitmaskUpdated:
-                ProcessPacket<VcOnEntityEffectBitmaskUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityEffectBitmaskUpdatedPacket());
                 break;
             case VcPacketType.OnEntityPositionUpdated:
-                ProcessPacket<VcOnEntityPositionUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityPositionUpdatedPacket());
                 break;
             case VcPacketType.OnEntityRotationUpdated:
-                ProcessPacket<VcOnEntityRotationUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityRotationUpdatedPacket());
                 break;
             case VcPacketType.OnEntityCaveFactorUpdated:
-                ProcessPacket<VcOnEntityCaveFactorUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityCaveFactorUpdatedPacket());
                 break;
             case VcPacketType.OnEntityMuffleFactorUpdated:
-                ProcessPacket<VcOnEntityMuffleFactorUpdatedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityMuffleFactorUpdatedPacket());
                 break;
             case VcPacketType.OnEntityAudioReceived:
-                ProcessPacket<VcOnEntityAudioReceivedPacket>(reader, onParsed);
+                ProcessPacket(reader, onParsed, () => new VcOnEntityAudioReceivedPacket());
                 break;
             case VcPacketType.InfoRequest:
             case VcPacketType.LoginRequest:
@@ -314,7 +314,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.LoginRequest:
             case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
-                ProcessUnconnectedPacket<VcInfoResponsePacket>(reader, onParsed);
+                ProcessUnconnectedPacket(reader, onParsed, () => new VcInfoResponsePacket());
                 break;
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
@@ -700,53 +700,56 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void OnClientWorldIdUpdated(string worldId, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetWorldIdRequestPacket>.GetPacket().Set(worldId));
+        SendPacket(PacketPool<VcSetWorldIdRequestPacket>.GetPacket(() => new VcSetWorldIdRequestPacket()).Set(worldId));
     }
 
     private void OnClientNameUpdated(string name, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetNameRequestPacket>.GetPacket().Set(name));
+        SendPacket(PacketPool<VcSetNameRequestPacket>.GetPacket(() => new VcSetNameRequestPacket()).Set(name));
     }
 
     private void OnClientMuteUpdated(bool value, VoiceCraftEntity _)
     {
-        SendPacket(PacketPool<VcSetMuteRequestPacket>.GetPacket().Set(value));
+        SendPacket(PacketPool<VcSetMuteRequestPacket>.GetPacket(() => new VcSetMuteRequestPacket()).Set(value));
     }
 
     private void OnClientDeafenUpdated(bool value, VoiceCraftEntity _)
     {
-        SendPacket(PacketPool<VcSetDeafenRequestPacket>.GetPacket().Set(value));
+        SendPacket(PacketPool<VcSetDeafenRequestPacket>.GetPacket(() => new VcSetDeafenRequestPacket()).Set(value));
     }
 
     private void OnClientPositionUpdated(Vector3 position, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetPositionRequestPacket>.GetPacket().Set(position));
+        SendPacket(PacketPool<VcSetPositionRequestPacket>.GetPacket(() => new VcSetPositionRequestPacket())
+            .Set(position));
     }
 
     private void OnClientRotationUpdated(Vector2 rotation, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetRotationRequestPacket>.GetPacket().Set(rotation));
+        SendPacket(PacketPool<VcSetRotationRequestPacket>.GetPacket(() => new VcSetRotationRequestPacket())
+            .Set(rotation));
     }
 
     private void OnClientCaveFactorUpdated(float caveFactor, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetCaveFactorRequest>.GetPacket().Set(caveFactor));
+        SendPacket(PacketPool<VcSetCaveFactorRequest>.GetPacket(() => new VcSetCaveFactorRequest()).Set(caveFactor));
     }
 
     private void OnClientMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetMuffleFactorRequest>.GetPacket().Set(muffleFactor));
+        SendPacket(PacketPool<VcSetMuffleFactorRequest>.GetPacket(() => new VcSetMuffleFactorRequest())
+            .Set(muffleFactor));
     }
 
-    private void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    private void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed, Func<T> packetFactory)
         where T : IVoiceCraftPacket
     {
-        var packet = PacketPool<T>.GetPacket();
+        var packet = PacketPool<T>.GetPacket(packetFactory);
         try
         {
             packet.Deserialize(reader);
@@ -759,10 +762,11 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
     }
 
-    private void ProcessUnconnectedPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    private void ProcessUnconnectedPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed,
+        Func<T> packetFactory)
         where T : IVoiceCraftPacket
     {
-        var packet = PacketPool<T>.GetPacket();
+        var packet = PacketPool<T>.GetPacket(packetFactory);
         try
         {
             packet.Deserialize(reader);

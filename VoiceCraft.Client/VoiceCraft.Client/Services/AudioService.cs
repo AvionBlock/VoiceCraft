@@ -68,49 +68,35 @@ public abstract class AudioService
     public abstract IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format);
 }
 
-public class RegisteredEchoCanceler(Guid id, string name, Type? type)
+public class RegisteredEchoCanceler(Guid id, string name, Func<IEchoCanceler>? factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
     public IEchoCanceler? Instantiate()
     {
-        //IL 2077 warning here.
-        if (type != null)
-#pragma warning disable IL2067
-            return Activator.CreateInstance(type) as IEchoCanceler;
-#pragma warning restore IL2067
-        return null;
+        return factory?.Invoke();
     }
 }
 
-public class RegisteredAutomaticGainController(Guid id, string name, Type? type)
+public class RegisteredAutomaticGainController(Guid id, string name, Func<IAutomaticGainController>? factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
     public IAutomaticGainController? Instantiate()
     {
-        if (type != null)
-#pragma warning disable IL2067
-            return Activator.CreateInstance(type) as IAutomaticGainController;
-#pragma warning restore IL2067
-        return null;
+        return factory?.Invoke();
     }
 }
 
-public class RegisteredDenoiser(Guid id, string name, Type? type)
+public class RegisteredDenoiser(Guid id, string name, Func<IDenoiser>? factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
     public IDenoiser? Instantiate()
     {
-        //IL 2077 warning here.
-        if (type != null)
-#pragma warning disable IL2067
-            return Activator.CreateInstance(type) as IDenoiser;
-#pragma warning restore IL2067
-        return null;
+        return factory?.Invoke();
     }
 }

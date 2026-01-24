@@ -29,15 +29,15 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
                 Constants.SpeexDspEchoCancelerGuid,
                 "SpeexDsp Echo Canceler",
-                typeof(SpeexDspEchoCanceler)));
+                () => new SpeexDspEchoCanceler()));
             App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
                 Constants.SpeexDspAutomaticGainControllerGuid,
                 "SpeexDsp Automatic Gain Controller",
-                typeof(SpeexDspAutomaticGainController)));
+                () => new SpeexDspAutomaticGainController()));
             App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
                 Constants.SpeexDspDenoiserGuid,
                 "SpeexDsp Denoiser",
-                typeof(SpeexDspDenoiser)));
+                () => new SpeexDspDenoiser()));
 
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
