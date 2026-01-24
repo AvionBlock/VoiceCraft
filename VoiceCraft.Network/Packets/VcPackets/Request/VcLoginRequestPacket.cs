@@ -4,34 +4,25 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcLoginRequestPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
+public class VcLoginRequestPacket(
+    Guid requestId,
+    Guid userGuid,
+    Guid serverUserGuid,
+    string locale,
+    Version version,
+    PositioningType positioningType)
+    : IVoiceCraftPacket, IVoiceCraftRIdPacket
 {
     public VcLoginRequestPacket() : this(Guid.Empty, Guid.Empty, Guid.Empty, string.Empty, new Version(0, 0, 0),
         PositioningType.Server)
     {
     }
 
-    public VcLoginRequestPacket(
-        Guid requestId,
-        Guid userGuid,
-        Guid serverUserGuid,
-        string locale,
-        Version version,
-        PositioningType positioningType)
-    {
-        RequestId = requestId;
-        UserGuid = userGuid;
-        ServerUserGuid = serverUserGuid;
-        Locale = locale;
-        Version = version;
-        PositioningType = positioningType;
-    }
-
-    public Guid UserGuid { get; private set; }
-    public Guid ServerUserGuid { get; private set; }
-    public string Locale { get; private set; }
-    public Version Version { get; private set; }
-    public PositioningType PositioningType { get; private set; }
+    public Guid UserGuid { get; private set; } = userGuid;
+    public Guid ServerUserGuid { get; private set; } = serverUserGuid;
+    public string Locale { get; private set; } = locale;
+    public Version Version { get; private set; } = version;
+    public PositioningType PositioningType { get; private set; } = positioningType;
 
     public VcPacketType PacketType => VcPacketType.LoginRequest;
 
@@ -57,7 +48,7 @@ public class VcLoginRequestPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
         PositioningType = (PositioningType)reader.GetByte();
     }
 
-    public Guid RequestId { get; private set; }
+    public Guid RequestId { get; private set; } = requestId;
 
     public VcLoginRequestPacket Set(
         Guid requestId = new(),

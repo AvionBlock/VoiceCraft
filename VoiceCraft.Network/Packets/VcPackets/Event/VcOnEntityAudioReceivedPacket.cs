@@ -4,26 +4,18 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityAudioReceivedPacket : IVoiceCraftPacket
+public class VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] buffer)
+    : IVoiceCraftPacket
 {
     public VcOnEntityAudioReceivedPacket() : this(0, 0, 0.0f, 0, [])
     {
     }
 
-    public VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] buffer)
-    {
-        Id = id;
-        Timestamp = timestamp;
-        FrameLoudness = loudness;
-        Length = length;
-        Buffer = buffer;
-    }
-
-    public int Id { get; private set; }
-    public ushort Timestamp { get; private set; }
-    public float FrameLoudness { get; private set; }
-    public int Length { get; private set; }
-    public byte[] Buffer { get; private set; }
+    public int Id { get; private set; } = id;
+    public ushort Timestamp { get; private set; } = timestamp;
+    public float FrameLoudness { get; private set; } = loudness;
+    public int Length { get; private set; } = length;
+    public byte[] Buffer { get; private set; } = buffer;
 
     public VcPacketType PacketType => VcPacketType.OnEntityAudioReceived;
 

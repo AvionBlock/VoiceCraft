@@ -4,21 +4,15 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Response;
 
-public class VcDenyResponsePacket : IVoiceCraftPacket
+public class VcDenyResponsePacket(Guid requestId, string reason) : IVoiceCraftPacket
 {
     public VcDenyResponsePacket() : this(Guid.Empty, string.Empty)
     {
     }
 
-    public VcDenyResponsePacket(Guid requestId, string reason)
-    {
-        RequestId = requestId;
-        Reason = reason;
-    }
+    public Guid RequestId { get; private set; } = requestId;
 
-    public Guid RequestId { get; private set; }
-
-    public string Reason { get; private set; }
+    public string Reason { get; private set; } = reason;
 
     public VcPacketType PacketType => VcPacketType.DenyResponse;
 

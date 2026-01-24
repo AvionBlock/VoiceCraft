@@ -4,24 +4,17 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcAudioRequestPacket : IVoiceCraftPacket
+public class VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+    : IVoiceCraftPacket
 {
     public VcAudioRequestPacket() : this(0)
     {
     }
 
-    public VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
-    {
-        Timestamp = timestamp;
-        FrameLoudness = loudness;
-        Length = length;
-        Buffer = data ?? [];
-    }
-
-    public ushort Timestamp { get; private set; }
-    public float FrameLoudness { get; private set; }
-    public int Length { get; private set; }
-    public byte[] Buffer { get; private set; }
+    public ushort Timestamp { get; private set; } = timestamp;
+    public float FrameLoudness { get; private set; } = loudness;
+    public int Length { get; private set; } = length;
+    public byte[] Buffer { get; private set; } = data ?? [];
 
     public VcPacketType PacketType => VcPacketType.AudioRequest;
 

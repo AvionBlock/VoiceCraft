@@ -6,7 +6,22 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityCreatedPacket : IMcApiPacket
+public class McApiOnEntityCreatedPacket(
+    int id,
+    float loudness,
+    DateTime lastSpoke,
+    string worldId,
+    string name,
+    bool muted,
+    bool deafened,
+    ushort talkBitmask,
+    ushort listenBitmask,
+    ushort effectBitmask,
+    Vector3 position,
+    Vector2 rotation,
+    float caveFactor,
+    float muffleFactor)
+    : IMcApiPacket
 {
     public McApiOnEntityCreatedPacket() : this(
         0,
@@ -26,70 +41,26 @@ public class McApiOnEntityCreatedPacket : IMcApiPacket
     {
     }
 
-    public McApiOnEntityCreatedPacket(
-        int id,
-        float loudness,
-        DateTime lastSpoke,
-        string worldId,
-        string name,
-        bool muted,
-        bool deafened,
-        ushort talkBitmask,
-        ushort listenBitmask,
-        ushort effectBitmask,
-        Vector3 position,
-        Vector2 rotation,
-        float caveFactor,
-        float muffleFactor)
+    public McApiOnEntityCreatedPacket(VoiceCraftEntity entity) : this(entity.Id, entity.Loudness, entity.LastSpoke,
+        entity.WorldId, entity.Name, entity.Muted, entity.Deafened, entity.TalkBitmask, entity.ListenBitmask,
+        entity.EffectBitmask, entity.Position, entity.Rotation, entity.CaveFactor, entity.MuffleFactor)
     {
-        Id = id;
-        Loudness = loudness;
-        LastSpoke = lastSpoke;
-        WorldId = worldId;
-        Name = name;
-        Muted = muted;
-        Deafened = deafened;
-        TalkBitmask = talkBitmask;
-        ListenBitmask = listenBitmask;
-        EffectBitmask = effectBitmask;
-        Position = position;
-        Rotation = rotation;
-        CaveFactor = caveFactor;
-        MuffleFactor = muffleFactor;
     }
 
-    public McApiOnEntityCreatedPacket(VoiceCraftEntity entity)
-    {
-        Id = entity.Id;
-        Loudness = entity.Loudness;
-        LastSpoke = entity.LastSpoke;
-        WorldId = entity.WorldId;
-        Name = entity.Name;
-        Muted = entity.Muted;
-        Deafened = entity.Deafened;
-        TalkBitmask = entity.TalkBitmask;
-        ListenBitmask = entity.ListenBitmask;
-        EffectBitmask = entity.EffectBitmask;
-        Position = entity.Position;
-        Rotation = entity.Rotation;
-        CaveFactor = entity.CaveFactor;
-        MuffleFactor = entity.MuffleFactor;
-    }
-
-    public int Id { get; private set; }
-    public float Loudness { get; private set; }
-    public DateTime LastSpoke { get; private set; }
-    public string WorldId { get; private set; }
-    public string Name { get; private set; }
-    public bool Muted { get; private set; }
-    public bool Deafened { get; private set; }
-    public ushort TalkBitmask { get; private set; }
-    public ushort ListenBitmask { get; private set; }
-    public ushort EffectBitmask { get; private set; }
-    public Vector3 Position { get; private set; }
-    public Vector2 Rotation { get; private set; }
-    public float CaveFactor { get; private set; }
-    public float MuffleFactor { get; private set; }
+    public int Id { get; private set; } = id;
+    public float Loudness { get; private set; } = loudness;
+    public DateTime LastSpoke { get; private set; } = lastSpoke;
+    public string WorldId { get; private set; } = worldId;
+    public string Name { get; private set; } = name;
+    public bool Muted { get; private set; } = muted;
+    public bool Deafened { get; private set; } = deafened;
+    public ushort TalkBitmask { get; private set; } = talkBitmask;
+    public ushort ListenBitmask { get; private set; } = listenBitmask;
+    public ushort EffectBitmask { get; private set; } = effectBitmask;
+    public Vector3 Position { get; private set; } = position;
+    public Vector2 Rotation { get; private set; } = rotation;
+    public float CaveFactor { get; private set; } = caveFactor;
+    public float MuffleFactor { get; private set; } = muffleFactor;
 
     public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
 

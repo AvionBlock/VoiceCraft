@@ -4,32 +4,21 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityCreatedPacket : IVoiceCraftPacket
+public class VcOnEntityCreatedPacket(int id, string name, bool muted, bool deafened)
+    : IVoiceCraftPacket
 {
     public VcOnEntityCreatedPacket() : this(0, string.Empty, false, false)
     {
     }
 
-    public VcOnEntityCreatedPacket(int id, string name, bool muted, bool deafened)
+    public VcOnEntityCreatedPacket(VoiceCraftEntity entity) : this(entity.Id, entity.Name, entity.Muted, entity.Deafened)
     {
-        Id = id;
-        Name = name;
-        Muted = muted;
-        Deafened = deafened;
     }
 
-    public VcOnEntityCreatedPacket(VoiceCraftEntity entity)
-    {
-        Id = entity.Id;
-        Name = entity.Name;
-        Muted = entity.Muted;
-        Deafened = entity.Deafened;
-    }
-
-    public int Id { get; private set; }
-    public string Name { get; private set; }
-    public bool Muted { get; private set; }
-    public bool Deafened { get; private set; }
+    public int Id { get; private set; } = id;
+    public string Name { get; private set; } = name;
+    public bool Muted { get; private set; } = muted;
+    public bool Deafened { get; private set; } = deafened;
 
     public virtual VcPacketType PacketType => VcPacketType.OnEntityCreated;
 

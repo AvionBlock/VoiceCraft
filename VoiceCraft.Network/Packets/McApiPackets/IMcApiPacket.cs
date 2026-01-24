@@ -1,5 +1,4 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets;
 

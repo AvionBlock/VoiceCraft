@@ -7,6 +7,10 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TrimMode>link</TrimMode>
+        <PublishAot>true</PublishAot>
+        <IsAotCompatible>true</IsAotCompatible>
+        <!-- Necessary before Avalonia 12.0, was used for accessiblity APIs -->
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     </PropertyGroup>
 
     <ItemGroup>

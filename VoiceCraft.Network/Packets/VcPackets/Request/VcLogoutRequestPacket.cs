@@ -3,18 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcLogoutRequestPacket : IVoiceCraftPacket
+public class VcLogoutRequestPacket(string reason) : IVoiceCraftPacket
 {
     public VcLogoutRequestPacket() : this(string.Empty)
     {
     }
 
-    public VcLogoutRequestPacket(string reason)
-    {
-        Reason = reason;
-    }
-
-    public string Reason { get; private set; }
+    public string Reason { get; private set; } = reason;
 
     public VcPacketType PacketType => VcPacketType.LogoutRequest;
 

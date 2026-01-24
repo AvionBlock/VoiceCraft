@@ -3,21 +3,15 @@ using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEffectUpdatedPacket : IVoiceCraftPacket
+public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVoiceCraftPacket
 {
     public VcOnEffectUpdatedPacket() : this(0, null)
     {
     }
 
-    public VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect)
-    {
-        Bitmask = bitmask;
-        Effect = effect;
-    }
-
-    public ushort Bitmask { get; private set; }
+    public ushort Bitmask { get; private set; } = bitmask;
     public EffectType EffectType => Effect?.EffectType ?? EffectType.None;
-    public IAudioEffect? Effect { get; private set; }
+    public IAudioEffect? Effect { get; private set; } = effect;
 
     public VcPacketType PacketType => VcPacketType.OnEffectUpdated;
 

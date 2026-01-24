@@ -1,25 +1,17 @@
 using System;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityAudioReceivedPacket : IMcApiPacket
+public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness) : IMcApiPacket
 {
     public McApiOnEntityAudioReceivedPacket() : this(0, 0, 0.0f)
     {
     }
 
-    public McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness)
-    {
-        Id = id;
-        Timestamp = timestamp;
-        FrameLoudness = loudness;
-    }
-
-    public int Id { get; private set; }
-    public ushort Timestamp { get; private set; }
-    public float FrameLoudness { get; private set; }
+    public int Id { get; private set; } = id;
+    public ushort Timestamp { get; private set; } = timestamp;
+    public float FrameLoudness { get; private set; } = loudness;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityAudioReceived;
 

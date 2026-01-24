@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetMuffleFactorRequest : IVoiceCraftPacket
+public class VcSetMuffleFactorRequest(float value) : IVoiceCraftPacket
 {
     public VcSetMuffleFactorRequest() : this(0.0f)
     {
     }
 
-    public VcSetMuffleFactorRequest(float value)
-    {
-        Value = value;
-    }
-
-    public float Value { get; private set; }
+    public float Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetMuffleFactorRequest;
 

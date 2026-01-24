@@ -3,19 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiDestroyEntityRequestPacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiDestroyEntityRequestPacket(string requestId, int id) : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiDestroyEntityRequestPacket() : this(string.Empty, 0)
     {
     }
 
-    public McApiDestroyEntityRequestPacket(string requestId, int id)
-    {
-        RequestId = requestId;
-        Id = id;
-    }
-
-    public int Id { get; private set; }
+    public int Id { get; private set; } = id;
 
     public McApiPacketType PacketType => McApiPacketType.DestroyEntityRequest;
 
@@ -31,7 +25,7 @@ public class McApiDestroyEntityRequestPacket : IMcApiPacket, IMcApiRIdPacket
         Id = reader.GetInt();
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiDestroyEntityRequestPacket Set(string requestId = "", int id = 0)
     {

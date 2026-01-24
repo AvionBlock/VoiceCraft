@@ -4,27 +4,23 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiEntityAudioRequestPacket : IMcApiPacket
+public class McApiEntityAudioRequestPacket(
+    int id = 0,
+    ushort timestamp = 0,
+    float loudness = 0f,
+    int length = 0,
+    byte[]? data = null)
+    : IMcApiPacket
 {
     public McApiEntityAudioRequestPacket() : this(0)
     {
     }
 
-    public McApiEntityAudioRequestPacket(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
-        byte[]? data = null)
-    {
-        Id = id;
-        Timestamp = timestamp;
-        FrameLoudness = loudness;
-        Length = length;
-        Buffer = data ?? Array.Empty<byte>();
-    }
-
-    public int Id { get; private set; }
-    public ushort Timestamp { get; private set; }
-    public float FrameLoudness { get; private set; }
-    public int Length { get; private set; }
-    public byte[] Buffer { get; private set; }
+    public int Id { get; private set; } = id;
+    public ushort Timestamp { get; private set; } = timestamp;
+    public float FrameLoudness { get; private set; } = loudness;
+    public int Length { get; private set; } = length;
+    public byte[] Buffer { get; private set; } = data ?? Array.Empty<byte>();
 
     public McApiPacketType PacketType => McApiPacketType.EntityAudioRequest;
 

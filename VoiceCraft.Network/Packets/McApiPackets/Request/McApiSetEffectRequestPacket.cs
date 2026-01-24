@@ -3,22 +3,15 @@ using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEffectRequestPacket : IMcApiPacket
+public class McApiSetEffectRequestPacket(ushort bitmask, IAudioEffect? effect) : IMcApiPacket
 {
     public McApiSetEffectRequestPacket() : this(0, null)
     {
     }
 
-    public McApiSetEffectRequestPacket(ushort bitmask, IAudioEffect? effect)
-    {
-        Bitmask = bitmask;
-        EffectType = effect?.EffectType ?? EffectType.None;
-        Effect = effect;
-    }
-
-    public ushort Bitmask { get; private set; }
-    public EffectType EffectType { get; private set; }
-    public IAudioEffect? Effect { get; private set; }
+    public ushort Bitmask { get; private set; } = bitmask;
+    public EffectType EffectType { get; private set; } = effect?.EffectType ?? EffectType.None;
+    public IAudioEffect? Effect { get; private set; } = effect;
 
     public McApiPacketType PacketType => McApiPacketType.SetEffectRequest;
 

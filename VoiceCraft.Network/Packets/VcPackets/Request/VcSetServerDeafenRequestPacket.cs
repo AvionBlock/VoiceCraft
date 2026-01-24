@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetServerDeafenRequestPacket : IVoiceCraftPacket
+public class VcSetServerDeafenRequestPacket(bool value) : IVoiceCraftPacket
 {
     public VcSetServerDeafenRequestPacket() : this(false)
     {
     }
 
-    public VcSetServerDeafenRequestPacket(bool value)
-    {
-        Value = value;
-    }
-
-    public bool Value { get; private set; }
+    public bool Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetServerDeafenRequest;
 

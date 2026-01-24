@@ -3,15 +3,10 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiResetRequestPacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiResetRequestPacket(string requestId) : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiResetRequestPacket() : this(string.Empty)
     {
-    }
-
-    public McApiResetRequestPacket(string requestId)
-    {
-        RequestId = requestId;
     }
 
     public McApiPacketType PacketType => McApiPacketType.ResetRequest;
@@ -26,7 +21,7 @@ public class McApiResetRequestPacket : IMcApiPacket, IMcApiRIdPacket
         RequestId = reader.GetString(Constants.MaxStringLength);
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public void Set(string requestId = "")
     {

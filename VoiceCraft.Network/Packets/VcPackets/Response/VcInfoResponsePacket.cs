@@ -4,27 +4,23 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Response;
 
-public class VcInfoResponsePacket : IVoiceCraftPacket
+public class VcInfoResponsePacket(
+    string motd,
+    int clients,
+    PositioningType positioningType,
+    int tick,
+    Version version)
+    : IVoiceCraftPacket
 {
     public VcInfoResponsePacket() : this(string.Empty, 0, PositioningType.Server, 0, new Version(0, 0, 0))
     {
     }
 
-    public VcInfoResponsePacket(string motd, int clients, PositioningType positioningType, int tick,
-        Version version)
-    {
-        Motd = motd;
-        Clients = clients;
-        PositioningType = positioningType;
-        Tick = tick;
-        Version = version;
-    }
-
-    public string Motd { get; private set; }
-    public int Clients { get; private set; }
-    public PositioningType PositioningType { get; private set; }
-    public int Tick { get; private set; }
-    public Version Version { get; private set; }
+    public string Motd { get; private set; } = motd;
+    public int Clients { get; private set; } = clients;
+    public PositioningType PositioningType { get; private set; } = positioningType;
+    public int Tick { get; private set; } = tick;
+    public Version Version { get; private set; } = version;
 
     public VcPacketType PacketType => VcPacketType.InfoResponse;
 

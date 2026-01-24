@@ -1,6 +1,5 @@
 using System;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;

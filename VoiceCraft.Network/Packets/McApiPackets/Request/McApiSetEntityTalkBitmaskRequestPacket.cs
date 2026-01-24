@@ -1,22 +1,15 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEntityTalkBitmaskRequestPacket : IMcApiPacket
+public class McApiSetEntityTalkBitmaskRequestPacket(int id, ushort value) : IMcApiPacket
 {
     public McApiSetEntityTalkBitmaskRequestPacket() : this(0, 0)
     {
     }
 
-    public McApiSetEntityTalkBitmaskRequestPacket(int id, ushort value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public ushort Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public ushort Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.SetEntityTalkBitmaskRequest;
 

@@ -3,19 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Response;
 
-public class McApiAcceptResponsePacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiAcceptResponsePacket(string requestId, string token) : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiAcceptResponsePacket() : this(string.Empty, string.Empty)
     {
     }
 
-    public McApiAcceptResponsePacket(string requestId, string token)
-    {
-        RequestId = requestId;
-        Token = token;
-    }
-
-    public string Token { get; private set; }
+    public string Token { get; private set; } = token;
 
     public McApiPacketType PacketType => McApiPacketType.AcceptResponse;
 
@@ -31,7 +25,7 @@ public class McApiAcceptResponsePacket : IMcApiPacket, IMcApiRIdPacket
         Token = reader.GetString(Constants.MaxStringLength);
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiAcceptResponsePacket Set(string requestId = "", string token = "")
     {

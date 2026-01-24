@@ -1,23 +1,16 @@
 using System.Numerics;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEntityRotationRequestPacket : IMcApiPacket
+public class McApiSetEntityRotationRequestPacket(int id, Vector2 value) : IMcApiPacket
 {
     public McApiSetEntityRotationRequestPacket() : this(0, Vector2.Zero)
     {
     }
 
-    public McApiSetEntityRotationRequestPacket(int id, Vector2 value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public Vector2 Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public Vector2 Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.SetEntityRotationRequest;
 

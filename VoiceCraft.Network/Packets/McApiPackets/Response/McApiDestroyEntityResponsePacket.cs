@@ -3,7 +3,10 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Response;
 
-public class McApiDestroyEntityResponsePacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiDestroyEntityResponsePacket(
+    string requestId,
+    McApiDestroyEntityResponsePacket.ResponseCodes responseCode)
+    : IMcApiPacket, IMcApiRIdPacket
 {
     public enum ResponseCodes : sbyte
     {
@@ -15,13 +18,7 @@ public class McApiDestroyEntityResponsePacket : IMcApiPacket, IMcApiRIdPacket
     {
     }
 
-    public McApiDestroyEntityResponsePacket(string requestId, ResponseCodes responseCode)
-    {
-        RequestId = requestId;
-        ResponseCode = responseCode;
-    }
-
-    public ResponseCodes ResponseCode { get; private set; }
+    public ResponseCodes ResponseCode { get; private set; } = responseCode;
 
     public McApiPacketType PacketType => McApiPacketType.DestroyEntityResponse;
 
@@ -37,7 +34,7 @@ public class McApiDestroyEntityResponsePacket : IMcApiPacket, IMcApiRIdPacket
         ResponseCode = (ResponseCodes)reader.GetSByte();
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiDestroyEntityResponsePacket Set(string requestId = "",
         ResponseCodes responseCode = ResponseCodes.Ok)

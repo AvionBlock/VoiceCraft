@@ -4,21 +4,14 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiLoginRequestPacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiLoginRequestPacket(string requestId, string token, Version version) : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiLoginRequestPacket() : this(string.Empty, string.Empty, new Version(0, 0, 0))
     {
     }
 
-    public McApiLoginRequestPacket(string requestId, string token, Version version)
-    {
-        RequestId = requestId;
-        Token = token;
-        Version = version;
-    }
-
-    public string Token { get; private set; }
-    public Version Version { get; private set; }
+    public string Token { get; private set; } = token;
+    public Version Version { get; private set; } = version;
 
     public McApiPacketType PacketType => McApiPacketType.LoginRequest;
 
@@ -38,7 +31,7 @@ public class McApiLoginRequestPacket : IMcApiPacket, IMcApiRIdPacket
         Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiLoginRequestPacket Set(string requestId = "", string token = "", Version? version = null)
     {

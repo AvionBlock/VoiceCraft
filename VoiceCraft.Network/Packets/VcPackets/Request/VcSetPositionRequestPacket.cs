@@ -1,21 +1,15 @@
 using System.Numerics;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetPositionRequestPacket : IVoiceCraftPacket
+public class VcSetPositionRequestPacket(Vector3 value) : IVoiceCraftPacket
 {
     public VcSetPositionRequestPacket() : this(Vector3.Zero)
     {
     }
 
-    public VcSetPositionRequestPacket(Vector3 value)
-    {
-        Value = value;
-    }
-
-    public Vector3 Value { get; private set; }
+    public Vector3 Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetPositionRequest;
 

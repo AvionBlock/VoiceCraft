@@ -1,5 +1,4 @@
 using System;
-using VoiceCraft.Core;
 using VoiceCraft.Network.Packets.VcPackets.Response;
 
 namespace VoiceCraft.Network;

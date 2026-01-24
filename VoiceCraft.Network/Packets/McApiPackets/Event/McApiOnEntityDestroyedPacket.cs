@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityDestroyedPacket : IMcApiPacket
+public class McApiOnEntityDestroyedPacket(int id) : IMcApiPacket
 {
     public McApiOnEntityDestroyedPacket() : this(0)
     {
     }
 
-    public McApiOnEntityDestroyedPacket(int id)
-    {
-        Id = id;
-    }
-
-    public int Id { get; private set; }
+    public int Id { get; private set; } = id;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityDestroyed;
 

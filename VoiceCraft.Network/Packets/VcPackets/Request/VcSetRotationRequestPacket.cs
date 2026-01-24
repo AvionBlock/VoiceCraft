@@ -1,21 +1,15 @@
 using System.Numerics;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetRotationRequestPacket : IVoiceCraftPacket
+public class VcSetRotationRequestPacket(Vector2 value) : IVoiceCraftPacket
 {
     public VcSetRotationRequestPacket() : this(Vector2.Zero)
     {
     }
 
-    public VcSetRotationRequestPacket(Vector2 value)
-    {
-        Value = value;
-    }
-
-    public Vector2 Value { get; private set; }
+    public Vector2 Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetRotationRequest;
 

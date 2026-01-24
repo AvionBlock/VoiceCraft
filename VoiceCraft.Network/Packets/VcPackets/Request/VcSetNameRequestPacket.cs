@@ -3,18 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetNameRequestPacket : IVoiceCraftPacket
+public class VcSetNameRequestPacket(string value) : IVoiceCraftPacket
 {
     public VcSetNameRequestPacket() : this(string.Empty)
     {
     }
 
-    public VcSetNameRequestPacket(string value)
-    {
-        Value = value;
-    }
-
-    public string Value { get; private set; }
+    public string Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetNameRequest;
 

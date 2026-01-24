@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityDestroyedPacket : IVoiceCraftPacket
+public class VcOnEntityDestroyedPacket(int id) : IVoiceCraftPacket
 {
     public VcOnEntityDestroyedPacket() : this(0)
     {
     }
 
-    public VcOnEntityDestroyedPacket(int id)
-    {
-        Id = id;
-    }
-
-    public int Id { get; private set; }
+    public int Id { get; private set; } = id;
 
     public VcPacketType PacketType => VcPacketType.OnEntityDestroyed;
 

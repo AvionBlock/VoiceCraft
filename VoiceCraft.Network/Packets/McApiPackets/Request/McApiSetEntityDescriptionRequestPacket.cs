@@ -3,20 +3,14 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEntityDescriptionRequestPacket : IMcApiPacket
+public class McApiSetEntityDescriptionRequestPacket(int id, string value) : IMcApiPacket
 {
     public McApiSetEntityDescriptionRequestPacket() : this(0, string.Empty)
     {
     }
 
-    public McApiSetEntityDescriptionRequestPacket(int id, string value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public string Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public string Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.SetEntityDescriptionRequest;
 

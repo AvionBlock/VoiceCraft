@@ -3,18 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiLogoutRequestPacket : IMcApiPacket
+public class McApiLogoutRequestPacket(string token = "") : IMcApiPacket
 {
     public McApiLogoutRequestPacket() : this(string.Empty)
     {
     }
 
-    public McApiLogoutRequestPacket(string token = "")
-    {
-        Token = token;
-    }
-
-    public string Token { get; private set; }
+    public string Token { get; private set; } = token;
 
     public McApiPacketType PacketType => McApiPacketType.LogoutRequest;
 

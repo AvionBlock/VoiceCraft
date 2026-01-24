@@ -1,18 +1,12 @@
 using System;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Response;
 
-public class VcAcceptResponsePacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
+public class VcAcceptResponsePacket(Guid requestId) : IVoiceCraftPacket, IVoiceCraftRIdPacket
 {
     public VcAcceptResponsePacket() : this(Guid.Empty)
     {
-    }
-
-    public VcAcceptResponsePacket(Guid requestId)
-    {
-        RequestId = requestId;
     }
 
     public VcPacketType PacketType => VcPacketType.AcceptResponse;
@@ -27,7 +21,7 @@ public class VcAcceptResponsePacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
         RequestId = reader.GetGuid();
     }
 
-    public Guid RequestId { get; private set; }
+    public Guid RequestId { get; private set; } = requestId;
 
     public VcAcceptResponsePacket Set(Guid requestId = new())
     {

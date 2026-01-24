@@ -1,22 +1,15 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEntityCaveFactorRequestPacket : IMcApiPacket
+public class McApiSetEntityCaveFactorRequestPacket(int id, float value) : IMcApiPacket
 {
     public McApiSetEntityCaveFactorRequestPacket() : this(0, 0.0f)
     {
     }
 
-    public McApiSetEntityCaveFactorRequestPacket(int id, float value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public float Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public float Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.SetEntityCaveFactorRequest;
 

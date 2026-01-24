@@ -3,19 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Response;
 
-public class McApiDenyResponsePacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiDenyResponsePacket(string requestId, string reason) : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiDenyResponsePacket() : this(string.Empty, string.Empty)
     {
     }
 
-    public McApiDenyResponsePacket(string requestId, string reason)
-    {
-        RequestId = requestId;
-        Reason = reason;
-    }
-
-    public string Reason { get; private set; }
+    public string Reason { get; private set; } = reason;
 
     public McApiPacketType PacketType => McApiPacketType.DenyResponse;
 
@@ -31,7 +25,7 @@ public class McApiDenyResponsePacket : IMcApiPacket, IMcApiRIdPacket
         Reason = reader.GetString(Constants.MaxStringLength);
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiDenyResponsePacket Set(string requestId = "", string reasonKey = "")
     {

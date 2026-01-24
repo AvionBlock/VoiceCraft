@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetServerMuteRequestPacket : IVoiceCraftPacket
+public class VcSetServerMuteRequestPacket(bool value) : IVoiceCraftPacket
 {
     public VcSetServerMuteRequestPacket() : this(false)
     {
     }
 
-    public VcSetServerMuteRequestPacket(bool value)
-    {
-        Value = value;
-    }
-
-    public bool Value { get; private set; }
+    public bool Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetServerMuteRequest;
 

@@ -3,18 +3,13 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Response;
 
-public class McApiPingResponsePacket : IMcApiPacket
+public class McApiPingResponsePacket(string token = "") : IMcApiPacket
 {
     public McApiPingResponsePacket() : this(string.Empty)
     {
     }
 
-    public McApiPingResponsePacket(string token = "")
-    {
-        Token = token;
-    }
-
-    public string Token { get; private set; }
+    public string Token { get; private set; } = token;
 
     public McApiPacketType PacketType => McApiPacketType.PingResponse;
 

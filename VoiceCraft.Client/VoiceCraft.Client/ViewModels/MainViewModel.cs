@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.ViewModels;
 

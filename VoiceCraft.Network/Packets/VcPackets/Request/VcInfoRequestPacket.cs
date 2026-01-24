@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcInfoRequestPacket : IVoiceCraftPacket
+public class VcInfoRequestPacket(int tick) : IVoiceCraftPacket
 {
-    public VcInfoRequestPacket()
+    public VcInfoRequestPacket() : this(0)
     {
     }
 
-    public VcInfoRequestPacket(int tick = 0)
-    {
-        Tick = tick;
-    }
-
-    public int Tick { get; private set; }
+    public int Tick { get; private set; } = tick;
 
     public VcPacketType PacketType => VcPacketType.InfoRequest;
 

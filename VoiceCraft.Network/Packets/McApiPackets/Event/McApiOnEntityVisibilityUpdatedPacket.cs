@@ -1,24 +1,16 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityVisibilityUpdatedPacket : IMcApiPacket
+public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) : IMcApiPacket
 {
     public McApiOnEntityVisibilityUpdatedPacket() : this(0, 0, false)
     {
     }
 
-    public McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value)
-    {
-        Id = id;
-        Id2 = id2;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public int Id2 { get; private set; }
-    public bool Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public int Id2 { get; private set; } = id2;
+    public bool Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityVisibilityUpdated;
 

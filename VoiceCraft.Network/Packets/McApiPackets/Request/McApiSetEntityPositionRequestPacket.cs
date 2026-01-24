@@ -1,23 +1,16 @@
 using System.Numerics;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEntityPositionRequestPacket : IMcApiPacket
+public class McApiSetEntityPositionRequestPacket(int id, Vector3 value) : IMcApiPacket
 {
     public McApiSetEntityPositionRequestPacket() : this(0, Vector3.Zero)
     {
     }
 
-    public McApiSetEntityPositionRequestPacket(int id, Vector3 value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public Vector3 Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public Vector3 Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.SetEntityPositionRequest;
 

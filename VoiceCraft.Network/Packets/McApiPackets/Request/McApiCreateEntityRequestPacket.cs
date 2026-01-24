@@ -5,7 +5,20 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiCreateEntityRequestPacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiCreateEntityRequestPacket(
+    string requestId,
+    string worldId,
+    string name,
+    bool muted,
+    bool deafened,
+    ushort talkBitmask,
+    ushort listenBitmask,
+    ushort effectBitmask,
+    Vector3 position,
+    Vector2 rotation,
+    float caveFactor,
+    float muffleFactor)
+    : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiCreateEntityRequestPacket() : this(
         string.Empty,
@@ -23,61 +36,23 @@ public class McApiCreateEntityRequestPacket : IMcApiPacket, IMcApiRIdPacket
     {
     }
 
-    public McApiCreateEntityRequestPacket(
-        string requestId,
-        string worldId,
-        string name,
-        bool muted,
-        bool deafened,
-        ushort talkBitmask,
-        ushort listenBitmask,
-        ushort effectBitmask,
-        Vector3 position,
-        Vector2 rotation,
-        float caveFactor,
-        float muffleFactor)
+    public McApiCreateEntityRequestPacket(string requestId, VoiceCraftEntity entity) : this(requestId, entity.WorldId,
+        entity.Name, entity.Muted, entity.Deafened, entity.TalkBitmask, entity.ListenBitmask, entity.EffectBitmask,
+        entity.Position, entity.Rotation, entity.CaveFactor, entity.MuffleFactor)
     {
-        RequestId = requestId;
-        WorldId = worldId;
-        Name = name;
-        Muted = muted;
-        Deafened = deafened;
-        TalkBitmask = talkBitmask;
-        ListenBitmask = listenBitmask;
-        EffectBitmask = effectBitmask;
-        Position = position;
-        Rotation = rotation;
-        CaveFactor = caveFactor;
-        MuffleFactor = muffleFactor;
     }
 
-    public McApiCreateEntityRequestPacket(string requestId, VoiceCraftEntity entity)
-    {
-        RequestId = requestId;
-        WorldId = entity.WorldId;
-        Name = entity.Name;
-        Muted = entity.Muted;
-        Deafened = entity.Deafened;
-        TalkBitmask = entity.TalkBitmask;
-        ListenBitmask = entity.ListenBitmask;
-        EffectBitmask = entity.EffectBitmask;
-        Position = entity.Position;
-        Rotation = entity.Rotation;
-        CaveFactor = entity.CaveFactor;
-        MuffleFactor = entity.MuffleFactor;
-    }
-
-    public string WorldId { get; private set; }
-    public string Name { get; private set; }
-    public bool Muted { get; private set; }
-    public bool Deafened { get; private set; }
-    public ushort TalkBitmask { get; private set; }
-    public ushort ListenBitmask { get; private set; }
-    public ushort EffectBitmask { get; private set; }
-    public Vector3 Position { get; private set; }
-    public Vector2 Rotation { get; private set; }
-    public float CaveFactor { get; private set; }
-    public float MuffleFactor { get; private set; }
+    public string WorldId { get; private set; } = worldId;
+    public string Name { get; private set; } = name;
+    public bool Muted { get; private set; } = muted;
+    public bool Deafened { get; private set; } = deafened;
+    public ushort TalkBitmask { get; private set; } = talkBitmask;
+    public ushort ListenBitmask { get; private set; } = listenBitmask;
+    public ushort EffectBitmask { get; private set; } = effectBitmask;
+    public Vector3 Position { get; private set; } = position;
+    public Vector2 Rotation { get; private set; } = rotation;
+    public float CaveFactor { get; private set; } = caveFactor;
+    public float MuffleFactor { get; private set; } = muffleFactor;
 
     public McApiPacketType PacketType => McApiPacketType.CreateEntityRequest;
 
@@ -116,7 +91,7 @@ public class McApiCreateEntityRequestPacket : IMcApiPacket, IMcApiRIdPacket
         MuffleFactor = reader.GetFloat();
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiCreateEntityRequestPacket Set(
         string requestId = "",

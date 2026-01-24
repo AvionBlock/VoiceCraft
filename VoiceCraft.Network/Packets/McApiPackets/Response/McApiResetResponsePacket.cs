@@ -3,7 +3,8 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Response;
 
-public class McApiResetResponsePacket : IMcApiPacket, IMcApiRIdPacket
+public class McApiResetResponsePacket(string requestId, McApiResetResponsePacket.ResponseCodes responseCode)
+    : IMcApiPacket, IMcApiRIdPacket
 {
     public enum ResponseCodes : sbyte
     {
@@ -15,13 +16,7 @@ public class McApiResetResponsePacket : IMcApiPacket, IMcApiRIdPacket
     {
     }
 
-    public McApiResetResponsePacket(string requestId, ResponseCodes responseCode)
-    {
-        RequestId = requestId;
-        ResponseCode = responseCode;
-    }
-
-    public ResponseCodes ResponseCode { get; private set; }
+    public ResponseCodes ResponseCode { get; private set; } = responseCode;
 
     public McApiPacketType PacketType => McApiPacketType.ResetResponse;
 
@@ -37,7 +32,7 @@ public class McApiResetResponsePacket : IMcApiPacket, IMcApiRIdPacket
         ResponseCode = (ResponseCodes)reader.GetSByte();
     }
 
-    public string RequestId { get; private set; }
+    public string RequestId { get; private set; } = requestId;
 
     public McApiResetResponsePacket Set(string requestId = "",
         ResponseCodes responseCode = ResponseCodes.Ok)

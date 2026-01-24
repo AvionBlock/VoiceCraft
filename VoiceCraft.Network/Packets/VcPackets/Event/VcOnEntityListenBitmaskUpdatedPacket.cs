@@ -1,22 +1,15 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityListenBitmaskUpdatedPacket : IVoiceCraftPacket
+public class VcOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IVoiceCraftPacket
 {
     public VcOnEntityListenBitmaskUpdatedPacket() : this(0, 0)
     {
     }
 
-    public VcOnEntityListenBitmaskUpdatedPacket(int id, ushort value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public ushort Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public ushort Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.OnEntityListenBitmaskUpdated;
 

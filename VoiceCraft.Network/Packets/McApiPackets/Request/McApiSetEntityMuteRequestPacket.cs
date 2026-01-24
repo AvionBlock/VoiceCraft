@@ -1,22 +1,15 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiSetEntityMuteRequestPacket : IMcApiPacket
+public class McApiSetEntityMuteRequestPacket(int id, bool value) : IMcApiPacket
 {
     public McApiSetEntityMuteRequestPacket() : this(0, false)
     {
     }
 
-    public McApiSetEntityMuteRequestPacket(int id, bool value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public bool Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public bool Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.SetEntityMuteRequest;
 

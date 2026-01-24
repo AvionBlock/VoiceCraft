@@ -1,23 +1,16 @@
 using System.Numerics;
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityRotationUpdatedPacket : IVoiceCraftPacket
+public class VcOnEntityRotationUpdatedPacket(int id, Vector2 value) : IVoiceCraftPacket
 {
     public VcOnEntityRotationUpdatedPacket() : this(0, Vector2.Zero)
     {
     }
 
-    public VcOnEntityRotationUpdatedPacket(int id, Vector2 value)
-    {
-        Id = id;
-        Value = value;
-    }
-
-    public int Id { get; private set; }
-    public Vector2 Value { get; private set; }
+    public int Id { get; private set; } = id;
+    public Vector2 Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.OnEntityRotationUpdated;
 

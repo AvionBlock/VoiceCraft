@@ -1,20 +1,14 @@
 using LiteNetLib.Utils;
-using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Request;
 
-public class VcSetCaveFactorRequest : IVoiceCraftPacket
+public class VcSetCaveFactorRequest(float value) : IVoiceCraftPacket
 {
     public VcSetCaveFactorRequest() : this(0.0f)
     {
     }
 
-    public VcSetCaveFactorRequest(float value)
-    {
-        Value = value;
-    }
-
-    public float Value { get; private set; }
+    public float Value { get; private set; } = value;
 
     public VcPacketType PacketType => VcPacketType.SetCaveFactorRequest;
 
