@@ -21,7 +21,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Client.Windows.x86
-        run: dotnet publish -c Release -r win-x86 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r win-x86 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Client.Windows.x86
         uses: actions/upload-artifact@v4
@@ -45,7 +45,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Client.Windows.x64
-        run: dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Client.Windows.x64
         uses: actions/upload-artifact@v4
@@ -69,7 +69,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Client.Windows.arm64
-        run: dotnet publish -c Release -r win-arm64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r win-arm64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Client.Windows.arm64
         uses: actions/upload-artifact@v4
@@ -93,7 +93,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Client.Linux.x64
-        run: dotnet publish -c Release -r linux-x64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r linux-x64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Client.Linux.x64
         uses: actions/upload-artifact@v4
@@ -117,7 +117,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Client.Linux.arm
-        run: dotnet publish -c Release -r linux-arm --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r linux-arm -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Client.Linux.arm
         uses: actions/upload-artifact@v4
@@ -141,7 +141,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Client.Linux.arm64
-        run: dotnet publish -c Release -r linux-arm64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r linux-arm64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Client.Linux.arm64
         uses: actions/upload-artifact@v4
@@ -168,7 +168,7 @@ jobs:
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
       - name: Publish VoiceCraft.Client.Android.arm
-        run: dotnet publish -c Release -r android-arm --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+        run: dotnet publish -c Release -r android-arm -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Upload Artifact VoiceCraft.Client.Android.arm
         uses: actions/upload-artifact@v4
@@ -195,7 +195,7 @@ jobs:
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
       - name: Publish VoiceCraft.Client.Android.arm64
-        run: dotnet publish -c Release -r android-arm64 --self-contained false -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+        run: dotnet publish -c Release -r android-arm64 -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Upload Artifact VoiceCraft.Client.Android.arm64
         uses: actions/upload-artifact@v4
