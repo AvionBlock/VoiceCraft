@@ -13,7 +13,7 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
 {
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
-    public async Task<T> StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
+    public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
         var backgroundType = typeof(T);
         if (AndroidBackgroundService.Services.ContainsKey(backgroundType))
@@ -27,7 +27,6 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         AndroidBackgroundService.Services.TryAdd(backgroundType, backgroundTask);
         await StartBackgroundService();
         backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
-        return instance;
     }
 
     public T? GetService<T>() where T : notnull

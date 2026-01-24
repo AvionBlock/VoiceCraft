@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
@@ -17,7 +16,6 @@ using VoiceCraft.Network.World;
 namespace VoiceCraft.Client.Services;
 
 public class VoiceCraftService(
-    PermissionsService permissionsService,
     VoiceCraftClient client,
     AudioService audioService,
     SettingsService settingsService,
