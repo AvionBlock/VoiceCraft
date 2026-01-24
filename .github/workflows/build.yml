@@ -310,11 +310,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'
-          
-      - name: Install IL Compiler
-        run: |
-          sudo apt-get update
-          sudo apt-get install g++-arm-linux-gnueabi
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
@@ -339,11 +334,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'
-          
-      - name: Install IL Compiler
-        run: |
-          sudo apt-get update
-          sudo apt-get install g++-aarch64-linux-gnu
           
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
