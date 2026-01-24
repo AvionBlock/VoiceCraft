@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
@@ -16,6 +17,7 @@ using VoiceCraft.Network.World;
 namespace VoiceCraft.Client.Services;
 
 public class VoiceCraftService(
+    PermissionsService permissionsService,
     VoiceCraftClient client,
     AudioService audioService,
     SettingsService settingsService,
@@ -24,8 +26,6 @@ public class VoiceCraftService(
     private McWssServer? _mcWssServer;
     private string _title = string.Empty;
     private string _description = string.Empty;
-
-    //Services
 
     //Audio
     private IAudioRecorder? _audioRecorder;
@@ -83,67 +83,78 @@ public class VoiceCraftService(
 
     public async Task ConnectAsync(string ip, int port)
     {
-        client.OnConnected += ClientOnConnected;
-        client.OnDisconnected += ClientOnDisconnected;
-        client.OnSetTitle += ClientOnSetTitle;
-        client.OnSetDescription += ClientOnSetDescription;
-        client.OnMuteUpdated += ClientOnMuteUpdated;
-        client.OnDeafenUpdated += ClientOnDeafenUpdated;
-        client.OnServerMuteUpdated += ClientOnServerMuteUpdated;
-        client.OnServerDeafenUpdated += ClientOnServerDeafenUpdated;
-        client.OnSpeakingUpdated += ClientOnSpeakingUpdated;
-        client.World.OnEntityCreated += ClientWorldOnEntityCreated;
-        client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
-
-        Title = "VoiceCraft.Status.Initializing";
-        Description = string.Empty;
-        var localeSettings = settingsService.LocaleSettings;
-        var audioSettings = settingsService.AudioSettings;
-        var networkSettings = settingsService.NetworkSettings;
-
-        //Setup Client
-        client.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
-        client.OutputVolume = audioSettings.OutputVolume;
-
-        _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
-        _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
-        _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
-        _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
-            ?.Instantiate();
-        _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
-
-        //Setup McWss Server
-        if (networkSettings.PositioningType == PositioningType.Client)
+        try
         {
-            _mcWssServer = InitializeMcWssServer(client);
-            Description =
-                $"VoiceCraft.DescriptionStatus.McWss:{networkSettings.McWssListenIp},{networkSettings.McWssHostPort}";
+            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
+                PermissionStatus.Granted)
+            {
+                throw new PermissionException("Microphone access not granted!");
+            }
+            
+            client.OnConnected += ClientOnConnected;
+            client.OnDisconnected += ClientOnDisconnected;
+            client.OnSetTitle += ClientOnSetTitle;
+            client.OnSetDescription += ClientOnSetDescription;
+            client.OnMuteUpdated += ClientOnMuteUpdated;
+            client.OnDeafenUpdated += ClientOnDeafenUpdated;
+            client.OnServerMuteUpdated += ClientOnServerMuteUpdated;
+            client.OnServerDeafenUpdated += ClientOnServerDeafenUpdated;
+            client.OnSpeakingUpdated += ClientOnSpeakingUpdated;
+            client.World.OnEntityCreated += ClientWorldOnEntityCreated;
+            client.World.OnEntityDestroyed += ClientWorldOnEntityDestroyed;
+
+            Title = "VoiceCraft.Status.Initializing";
+            Description = string.Empty;
+            var localeSettings = settingsService.LocaleSettings;
+            var audioSettings = settingsService.AudioSettings;
+            var networkSettings = settingsService.NetworkSettings;
+
+            //Setup Client
+            client.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
+            client.OutputVolume = audioSettings.OutputVolume;
+
+            _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
+            _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
+            _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
+            _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
+                ?.Instantiate();
+            _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
+
+            //Setup McWss Server
+            if (networkSettings.PositioningType == PositioningType.Client)
+            {
+                _mcWssServer = InitializeMcWssServer(client);
+                Description =
+                    $"VoiceCraft.DescriptionStatus.McWss:{networkSettings.McWssListenIp},{networkSettings.McWssHostPort}";
+            }
+
+            //Initialize and start.
+            _echoCanceler?.Initialize(_audioRecorder, _audioPlayer);
+            _gainController?.Initialize(_audioRecorder);
+            _denoiser?.Initialize(_audioRecorder);
+            _audioRecorder.Start();
+            _audioPlayer.Play();
+            _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
+
+            while (_audioRecorder.CaptureState == CaptureState.Starting ||
+                   _audioPlayer.PlaybackState == PlaybackState.Starting)
+            {
+                await Task.Delay(1);
+            }
+            
+            Title = "VoiceCraft.Status.Connecting";
+            var result = client.ConnectAsync(ip, port,
+                settingsService.UserGuid,
+                settingsService.ServerUserGuid,
+                localeSettings.Culture,
+                networkSettings.PositioningType);
+            _ = Task.Run(() => UpdateLogic(client));
+            await result;
         }
-
-        //Initialize and start.
-        _echoCanceler?.Initialize(_audioRecorder, _audioPlayer);
-        _gainController?.Initialize(_audioRecorder);
-        _denoiser?.Initialize(_audioRecorder);
-        _audioRecorder.Start();
-        _audioPlayer.Play();
-        _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
-
-        while (_audioRecorder.CaptureState == CaptureState.Starting ||
-               _audioPlayer.PlaybackState == PlaybackState.Starting)
+        catch (Exception ex)
         {
-            await Task.Delay(1);
+            DisconnectAsync(ex.Message).GetAwaiter().GetResult();
         }
-
-        //throw new Exception("test");
-
-        Title = "VoiceCraft.Status.Connecting";
-        var result = client.ConnectAsync(ip, port,
-            settingsService.UserGuid,
-            settingsService.ServerUserGuid,
-            localeSettings.Culture,
-            networkSettings.PositioningType);
-        _ = Task.Run(() => UpdateLogic(client));
-        await result;
     }
 
     public async Task DisconnectAsync(string? reason = null)
