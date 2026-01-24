@@ -105,10 +105,18 @@ public class ServerPropertiesStructure
 {
     public ServerPropertiesStructure()
     {
-        DefaultAudioEffectsConfig.Add(1, JsonSerializer.SerializeToElement(new VisibilityEffect()));
-        DefaultAudioEffectsConfig.Add(2, JsonSerializer.SerializeToElement(new ProximityEffect { MaxRange = 30 }));
-        DefaultAudioEffectsConfig.Add(4, JsonSerializer.SerializeToElement(new ProximityEchoEffect { Range = 30 }));
-        DefaultAudioEffectsConfig.Add(8, JsonSerializer.SerializeToElement(new ProximityMuffleEffect()));
+        DefaultAudioEffectsConfig.Add(1,
+            JsonSerializer.SerializeToElement(new VisibilityEffect(),
+                VisibilityEffectGenerationContext.Default.VisibilityEffect));
+        DefaultAudioEffectsConfig.Add(2,
+            JsonSerializer.SerializeToElement(new ProximityEffect { MaxRange = 30 },
+                ProximityEffectGenerationContext.Default.ProximityEffect));
+        DefaultAudioEffectsConfig.Add(4,
+            JsonSerializer.SerializeToElement(new ProximityEchoEffect { Range = 30 },
+                ProximityEchoEffectGenerationContext.Default.ProximityEchoEffect));
+        DefaultAudioEffectsConfig.Add(8,
+            JsonSerializer.SerializeToElement(new ProximityMuffleEffect(),
+                ProximityMuffleEffectGenerationContext.Default.ProximityMuffleEffect));
     }
 
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();

@@ -120,7 +120,7 @@ public static class App
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.WriteException(ex);
+                    AnsiConsole.WriteLine($"[red]{ex}[/]");
                 }
 
             StopServer(liteNetServer);
@@ -131,7 +131,7 @@ public static class App
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{Localizer.Get("Startup.Failed")}[/]");
-            AnsiConsole.WriteException(ex);
+            AnsiConsole.WriteLine($"[red]{ex}[/]");
             Shutdown(10000);
             LogService.Log(ex);
         }
@@ -192,7 +192,7 @@ public static class App
         }
         catch (Exception ex)
         {
-            AnsiConsole.WriteException(ex);
+            AnsiConsole.WriteLine($"[red]{ex}[/]");
             LogService.Log(ex);
             throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }
@@ -242,7 +242,7 @@ public static class App
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
-            AnsiConsole.WriteException(ex);
+            AnsiConsole.WriteLine($"[red]{ex}[/]");
             LogService.Log(ex);
         }
         finally

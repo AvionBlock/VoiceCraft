@@ -5,12 +5,9 @@
         One for Windows with net9.0-windows TFM, one for MacOS with net9.0-macos and one with net9.0 TFM for Linux.-->
         <TargetFramework>net9.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TrimMode>link</TrimMode>
-        <PublishAot>true</PublishAot>
         <IsAotCompatible>true</IsAotCompatible>
-        <!-- Necessary before Avalonia 12.0, was used for accessiblity APIs -->
-        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     </PropertyGroup>
 
     <PropertyGroup>

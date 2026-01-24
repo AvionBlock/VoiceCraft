@@ -219,7 +219,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Server.Windows.x64
-        run: dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Server.Windows.x64
         uses: actions/upload-artifact@v4
@@ -243,7 +243,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Server.Windows.x86
-        run: dotnet publish -c Release -r win-x86 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r win-x86 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Server.Windows.x86
         uses: actions/upload-artifact@v4
@@ -267,7 +267,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Server.Windows.arm64
-        run: dotnet publish -c Release -r win-arm64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r win-arm64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Server.Windows.arm64
         uses: actions/upload-artifact@v4
@@ -291,7 +291,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Server.Linux.x64
-        run: dotnet publish -c Release -r linux-x64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r linux-x64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Server.Linux.x64
         uses: actions/upload-artifact@v4
@@ -310,12 +310,17 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'
+          
+      - name: Install IL Compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++-arm-linux-gnueabi
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Server.Linux.arm
-        run: dotnet publish -c Release -r linux-arm --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r linux-arm -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Server.Linux.arm
         uses: actions/upload-artifact@v4
@@ -334,12 +339,17 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'
-
+          
+      - name: Install IL Compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++-aarch64-linux-gnu
+          
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
 
       - name: Publish VoiceCraft.Server.Linux.arm64
-        run: dotnet publish -c Release -r linux-arm64 --self-contained false -p:PublishSingleFile=true
+        run: dotnet publish -c Release -r linux-arm64 -p:PublishSingleFile=true
 
       - name: Upload Artifact VoiceCraft.Server.Linux.arm64
         uses: actions/upload-artifact@v4
