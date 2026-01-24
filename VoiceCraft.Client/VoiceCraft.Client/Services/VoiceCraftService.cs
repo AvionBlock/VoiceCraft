@@ -133,7 +133,7 @@ public class VoiceCraftService(
             {
                 await Task.Delay(1);
             }
-            
+
             Title = "VoiceCraft.Status.Connecting";
             var result = client.ConnectAsync(ip, port,
                 settingsService.UserGuid,
@@ -377,10 +377,10 @@ public class VoiceCraftService(
         }
         finally
         {
-            var localeReason = Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}");
-            Title = localeReason;
-            Description = localeReason;
-            notificationService.SendNotification(localeReason, Localizer.Get("Notification.VoiceCraft.Badge"));
+            Title = $"VoiceCraft.Status.Disconnected:{reason}";
+            Description = $"VoiceCraft.Status.Disconnected:{reason}";
+            notificationService.SendNotification(Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}"),
+                Localizer.Get("Notification.VoiceCraft.Badge"));
             OnDisconnected?.Invoke();
         }
     }
