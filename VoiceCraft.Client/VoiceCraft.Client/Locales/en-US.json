@@ -90,6 +90,7 @@
       "Output": "Output Settings",
       "OutputDevices": "Output Devices",
       "OutputVolume": "Output Volume",
+      "AudioClippers": "Audio Clippers",
       "TestOutput": "Test Output"
     },
     "Network": {

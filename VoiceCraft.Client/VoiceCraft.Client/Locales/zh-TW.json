@@ -90,6 +90,7 @@
       "Output": "輸出設置",
       "OutputDevices": "輸出設備",
       "OutputVolume": "輸出音量",
+      "AudioClippers": "音訊剪輯器",
       "TestOutput": "測試輸出"
     },
     "Network": {

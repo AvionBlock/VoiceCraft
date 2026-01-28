@@ -90,6 +90,7 @@
       "Output": "输出设置",
       "OutputDevices": "输出设备",
       "OutputVolume": "输出音量",
+      "AudioClippers": "音频剪辑器",
       "TestOutput": "测试输出"
     },
     "Network": {
