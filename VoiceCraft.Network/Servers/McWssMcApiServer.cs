@@ -282,10 +282,10 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         var stringBuilder = new StringBuilder();
         if (!netPeer.OutgoingQueue.TryDequeue(out var outboundPacket)) return false;
-        stringBuilder.Append(outboundPacket);
+        stringBuilder.Append(outboundPacket.Data);
         while (netPeer.OutgoingQueue.TryDequeue(out outboundPacket) &&
                stringBuilder.Length < Config.MaxStringLengthPerCommand)
-            stringBuilder.Append($"|{outboundPacket}");
+            stringBuilder.Append($"|{outboundPacket.Data}");
 
         SendPacketCommand(socket, stringBuilder.ToString());
         return true;
@@ -294,7 +294,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private void SendPacketCommand(IWebSocketConnection socket, string packetData)
     {
         var packet =
-            new McWssCommandRequest($"{Config.DataTunnelCommand} {Config.MaxStringLengthPerCommand} \"{packetData}\"");
+            new McWssCommandRequest(
+                $"{Config.DataTunnelCommand} {Config.MaxStringLengthPerCommand} \"{packetData}\"");
         socket.Send(JsonSerializer.Serialize(packet, McWssCommandRequestGenerationContext.Default.McWssCommandRequest));
     }
 

@@ -108,6 +108,7 @@ public static class App
                 {
                     liteNetServer.Update();
                     httpMcApiServer.Update();
+                    mcWssMcApiServer.Update();
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
@@ -169,6 +170,7 @@ public static class App
     
     private static void StartServer(McWssMcApiServer server)
     {
+        if (!server.Config.Enabled) return;
         try
         {
             AnsiConsole.WriteLine(Localizer.Get("McWssServer.Starting"));

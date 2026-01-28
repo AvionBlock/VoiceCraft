@@ -5,8 +5,8 @@ namespace VoiceCraft.Core
     public static class Constants
     {
         public const int Major = 1; //These need to be the same on both client and server!
-        public const int Minor = 3; //These need to be the same on both client and server!
-        public const int Patch = 1; //This does not need to be the same on client and server.
+        public const int Minor = 4; //These need to be the same on both client and server!
+        public const int Patch = 0; //This does not need to be the same on client and server.
 
         //Tick
         public const int TickRate = 50;
