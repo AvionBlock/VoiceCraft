@@ -2,7 +2,7 @@ using System;
 
 namespace VoiceCraft.Core.Interfaces;
 
-public interface IClipper
+public interface IAudioClipper
 {
     int Read(Span<float> data);
 }

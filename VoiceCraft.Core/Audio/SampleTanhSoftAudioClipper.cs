@@ -3,7 +3,7 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Audio
 {
-    public class SampleTanhSoftClipper : IClipper
+    public class SampleTanhSoftAudioClipper : IAudioClipper
     {
         public int Read(Span<float> data)
         {

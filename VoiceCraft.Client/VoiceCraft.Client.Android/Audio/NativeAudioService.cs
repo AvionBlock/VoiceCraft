@@ -30,7 +30,7 @@ public class NativeAudioService : AudioService
         IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
         IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
         IEnumerable<RegisteredDenoiser> registeredDenoisers,
-        IEnumerable<RegisteredClipper> registeredClippers)
+        IEnumerable<RegisteredAudioClipper> registeredClippers)
         : base(
             registeredAutomaticGainControllers,
             registeredEchoCancelers,

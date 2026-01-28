@@ -31,6 +31,7 @@ public class VoiceCraftService(
     private IDenoiser? _denoiser;
     private IEchoCanceler? _echoCanceler;
     private IAutomaticGainController? _gainController;
+    private IAudioClipper? _audioClipper;
 
     public VcConnectionState ConnectionState => client.ConnectionState;
 
@@ -112,6 +113,7 @@ public class VoiceCraftService(
             _gainController = audioService.GetAutomaticGainController(inputSettings.AutomaticGainController)
                 ?.Instantiate();
             _denoiser = audioService.GetDenoiser(inputSettings.Denoiser)?.Instantiate();
+            _audioClipper = audioService.GetAudioClipper(outputSettings.AudioClipper)?.Instantiate();
 
             //Setup McWss Server
             if (networkSettings.PositioningType == PositioningType.Client)
@@ -179,18 +181,21 @@ public class VoiceCraftService(
     //Audio
     private int Read(byte[] buffer, int count)
     {
-        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer);
-        var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
-        var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
-        floatBufferSpan.Clear();
+        var shortSpanBuffer = MemoryMarshal.Cast<byte, short>(buffer)[..(count / sizeof(short))];
+        var floatBuffer = ArrayPool<float>.Shared.Rent(shortSpanBuffer.Length);
+        var floatSpanBuffer = floatBuffer.AsSpan(0, shortSpanBuffer.Length);
+        floatSpanBuffer.Clear();
 
         try
         {
-            var read = Sample16ToFloat.Read(shortBufferSpan, floatBufferSpan);
-            read = client.Read(floatBufferSpan[..read]);
-            read = SampleFloatTo16.Read(floatBufferSpan[..read], shortBufferSpan);
-            if (read >= shortBufferSpan.Length) return read * sizeof(short);
-            shortBufferSpan[read..].Clear();
+            var read = Sample16ToFloat.Read(shortSpanBuffer, floatSpanBuffer);
+            read = client.Read(floatSpanBuffer[..read]);
+            if(_audioClipper != null)
+                read = _audioClipper.Read(floatSpanBuffer[..read]);
+            read = SampleVolume.Read(floatSpanBuffer[..read], client.OutputVolume);
+            read = SampleFloatTo16.Read(floatSpanBuffer[..read], shortSpanBuffer);
+            if (read >= shortSpanBuffer.Length) return read * sizeof(short);
+            shortSpanBuffer[read..].Clear();
             return count;
         }
         finally
@@ -201,15 +206,15 @@ public class VoiceCraftService(
 
     private void Write(byte[] buffer, int bytesRead)
     {
-        var shortBufferSpan = MemoryMarshal.Cast<byte, short>(buffer)[..(bytesRead / sizeof(short))];
-        var floatBuffer = ArrayPool<float>.Shared.Rent(shortBufferSpan.Length);
+        var shortSpanBuffer = MemoryMarshal.Cast<byte, short>(buffer)[..(bytesRead / sizeof(short))];
+        var floatBuffer = ArrayPool<float>.Shared.Rent(shortSpanBuffer.Length);
         try
         {
-            var floatBufferSpan = floatBuffer.AsSpan(0, shortBufferSpan.Length);
-            floatBufferSpan.Clear();
+            var floatSpanBuffer = floatBuffer.AsSpan(0, shortSpanBuffer.Length);
+            floatSpanBuffer.Clear();
 
-            var read = Sample16ToFloat.Read(shortBufferSpan, floatBuffer);
-            client.Write(floatBufferSpan[..read]);
+            var read = Sample16ToFloat.Read(shortSpanBuffer, floatBuffer);
+            client.Write(floatSpanBuffer[..read]);
         }
         finally
         {

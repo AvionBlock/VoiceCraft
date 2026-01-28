@@ -1,5 +1,6 @@
 using System;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Client.Models.Settings;
 
@@ -7,7 +8,7 @@ public class OutputSettings : Setting<OutputSettings>
 {
     private string _outputDevice = "Default";
     private float _outputVolume = 1.0f;
-    private Guid _audioClipper = Guid.Empty;
+    private Guid _audioClipper = Constants.HardAudioClipperGuid; //Set as default on initialize.
 
     public string OutputDevice
     {

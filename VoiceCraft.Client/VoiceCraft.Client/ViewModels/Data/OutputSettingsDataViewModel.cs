@@ -22,7 +22,7 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
     
     //Lists
     [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
-    [ObservableProperty] private ObservableCollection<RegisteredClipper> _audioClippers = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioClipper> _audioClippers = [];
     
     public OutputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
@@ -50,7 +50,7 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
     public async Task ReloadAvailableDevices()
     {
         OutputDevices = ["Default", ..await _audioService.GetOutputDevicesAsync()];
-        AudioClippers = new ObservableCollection<RegisteredClipper>(_audioService.RegisteredClippers);
+        AudioClippers = new ObservableCollection<RegisteredAudioClipper>(_audioService.RegisteredAudioClippers);
         
         if (!OutputDevices.Contains(OutputDevice))
             OutputDevice = "Default";

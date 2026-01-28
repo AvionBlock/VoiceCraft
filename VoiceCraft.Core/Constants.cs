@@ -60,8 +60,8 @@ namespace VoiceCraft.Core
         public static readonly Guid SpeexDspDenoiserGuid = Guid.Parse("6E911874-5D10-4C8C-8E0A-6B30DF16EF78");
         
         //Clippers
-        public static readonly Guid HardClipperGuid = Guid.Parse("2e2657ab-c1f1-435a-8cff-9382bc8b7efa");
-        public static readonly Guid TanhSoftClipperGuid = Guid.Parse("962fe030-08c3-4e21-a9c1-fcfea0745b6a");
+        public static readonly Guid HardAudioClipperGuid = Guid.Parse("2e2657ab-c1f1-435a-8cff-9382bc8b7efa");
+        public static readonly Guid TanhSoftAudioClipperGuid = Guid.Parse("962fe030-08c3-4e21-a9c1-fcfea0745b6a");
 
         //Background Images
         public static readonly Guid DockNightGuid = Guid.Parse("6b023e19-c9c5-4e06-84df-22833ccccd87");

@@ -219,14 +219,14 @@ public class App : Application
         ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
         
         //Clipper Registry
-        ServiceCollection.AddSingleton(new RegisteredClipper(
-            Constants.HardClipperGuid,
+        ServiceCollection.AddSingleton(new RegisteredAudioClipper(
+            Constants.HardAudioClipperGuid,
             "Hard Clipper",
-            () => new SampleHardClipper()));
-        ServiceCollection.AddSingleton(new RegisteredClipper(
-            Constants.TanhSoftClipperGuid,
+            () => new SampleHardAudioClipper()));
+        ServiceCollection.AddSingleton(new RegisteredAudioClipper(
+            Constants.TanhSoftAudioClipperGuid,
             "Tanh Soft Clipper",
-            () => new SampleTanhSoftClipper()));
+            () => new SampleTanhSoftAudioClipper()));
 
         return ServiceCollection.BuildServiceProvider();
     }

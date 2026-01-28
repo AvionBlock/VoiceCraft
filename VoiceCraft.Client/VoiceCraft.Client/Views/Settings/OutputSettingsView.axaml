@@ -55,11 +55,22 @@
                                 Value="{Binding OutputSettingsData.OutputVolume}" />
                     </StackPanel>
                     
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Output.AudioClippers}" />
+                    
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding OutputSettingsData.AudioClippers}"
                               DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding OutputSettingsData.AudioClipper}"
                               SelectedValueBinding="{Binding Id}" />
+                    
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  Command="{Binding TestCommand}"
+                                  IsChecked="{Binding IsPlaying}">
+                        <TextBlock Text="{locale:Localize Settings.Output.TestOutput}" />
+                    </ToggleButton>
                 </StackPanel>
             </Border>
         </ScrollViewer>

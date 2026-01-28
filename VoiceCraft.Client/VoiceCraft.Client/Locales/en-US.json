@@ -79,12 +79,17 @@
       "MicrophoneSensitivity": "Microphone Sensitivity",
       "Denoisers": "Denoisers",
       "AutomaticGainControllers": "Automatic Gain Controllers",
-      "EchoCancelers": "Echo Cancelers"
+      "EchoCancelers": "Echo Cancelers",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Microphone Test",
+        "Test": "Test"
+      }
     },
     "Output": {
       "Output": "Output Settings",
       "OutputDevices": "Output Devices",
-      "OutputVolume": "Output Volume"
+      "OutputVolume": "Output Volume",
+      "TestOutput": "Test Output"
     },
     "Network": {
       "Network": "Network Settings",

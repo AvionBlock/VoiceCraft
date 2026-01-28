@@ -62,7 +62,7 @@ public class MainActivity : AvaloniaMainActivity<App>
             x.GetServices<RegisteredAutomaticGainController>(),
             x.GetServices<RegisteredEchoCanceler>(),
             x.GetServices<RegisteredDenoiser>(),
-            x.GetServices<RegisteredClipper>()));
+            x.GetServices<RegisteredAudioClipper>()));
 
         //Register native preprocessors
         if (AutomaticGainControl.IsAvailable)

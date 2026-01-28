@@ -4,7 +4,7 @@ using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Audio
 {
-    public class SampleHardClipper : IClipper
+    public class SampleHardAudioClipper : IAudioClipper
     {
         public int Read(Span<float> data)
         {

@@ -87,6 +87,40 @@
                               DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}" />
+                    
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="15"
+                                   Text="{locale:Localize Settings.Input.MicrophoneTest.MicrophoneTest}" />
+
+                        <Grid Margin="0,10,0,0" ColumnDefinitions="Auto, *">
+                            <ToggleButton Grid.Column="0"
+                                          HorizontalAlignment="Stretch"
+                                          Command="{Binding TestCommand}"
+                                          IsChecked="{Binding IsRecording}">
+                                <TextBlock Text="{locale:Localize Settings.Input.MicrophoneTest.Test}" />
+                            </ToggleButton>
+                            <ProgressBar Grid.Column="1"
+                                         MinWidth="10"
+                                         Margin="1"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch"
+                                         Maximum="1"
+                                         Minimum="0"
+                                         ShowProgressText="True"
+                                         Value="{Binding MicrophoneValue}"
+                                         Classes.IsDetectingVoice="{Binding DetectingVoiceActivity}">
+                                <ProgressBar.Styles>
+                                    <Style Selector="ProgressBar.IsDetectingVoice">
+                                        <Style.Setters>
+                                            <Setter Property="Background" Value="#AA008800" />
+                                        </Style.Setters>
+                                    </Style>
+                                </ProgressBar.Styles>
+                            </ProgressBar>
+                        </Grid>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </ScrollViewer>
