@@ -15,6 +15,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     private readonly SettingsService _settingsService;
 
     [ObservableProperty] private string _inputDevice;
+    [ObservableProperty] private float _inputVolume;
     [ObservableProperty] private float _microphoneSensitivity;
     [ObservableProperty] private Guid _denoiser;
     [ObservableProperty] private Guid _automaticGainController;
@@ -36,6 +37,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
         _inputSettings.OnUpdated += Update;
         _inputDevice = _inputSettings.InputDevice;
+        _inputVolume = _inputSettings.InputVolume;
         _microphoneSensitivity = _inputSettings.MicrophoneSensitivity;
         _denoiser = _inputSettings.Denoiser;
         _automaticGainController = _inputSettings.AutomaticGainController;
@@ -79,6 +81,17 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         if (_updating) return;
         _updating = true;
         _inputSettings.InputDevice = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+    
+    partial void OnInputVolumeChanging(float value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.InputVolume = value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
@@ -133,6 +146,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _updating = true;
 
         InputDevice = inputSettings.InputDevice;
+        InputVolume = inputSettings.InputVolume;
         MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
         Denoiser = inputSettings.Denoiser;
         AutomaticGainController = inputSettings.AutomaticGainController;

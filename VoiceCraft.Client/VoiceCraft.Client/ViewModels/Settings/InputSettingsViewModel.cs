@@ -131,6 +131,7 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
         try
         {
             var floatCount = Sample16ToFloat.Read(shortSpanBuffer, floatSpanBuffer);
+            floatCount = SampleVolume.Read(floatSpanBuffer[..floatCount], InputSettingsData.InputVolume);
             var loudness = SampleLoudness.Read(floatSpanBuffer[..floatCount]);
             MicrophoneValue = loudness;
             DetectingVoiceActivity = loudness >= InputSettingsData.MicrophoneSensitivity;

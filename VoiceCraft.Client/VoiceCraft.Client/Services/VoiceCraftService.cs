@@ -104,8 +104,9 @@ public class VoiceCraftService(
             var networkSettings = settingsService.NetworkSettings;
 
             //Setup Client
-            client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
+            client.InputVolume = inputSettings.InputVolume;
             client.OutputVolume = outputSettings.OutputVolume;
+            client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
 
             _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
@@ -208,12 +209,13 @@ public class VoiceCraftService(
     {
         var shortSpanBuffer = MemoryMarshal.Cast<byte, short>(buffer)[..(bytesRead / sizeof(short))];
         var floatBuffer = ArrayPool<float>.Shared.Rent(shortSpanBuffer.Length);
+        var floatSpanBuffer = floatBuffer.AsSpan(0, shortSpanBuffer.Length);
+        floatSpanBuffer.Clear();
         try
         {
-            var floatSpanBuffer = floatBuffer.AsSpan(0, shortSpanBuffer.Length);
-            floatSpanBuffer.Clear();
 
-            var read = Sample16ToFloat.Read(shortSpanBuffer, floatBuffer);
+            var read = Sample16ToFloat.Read(shortSpanBuffer, floatSpanBuffer);
+            read = SampleVolume.Read(floatSpanBuffer[..read], client.InputVolume);
             client.Write(floatSpanBuffer[..read]);
         }
         finally

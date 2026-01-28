@@ -25,8 +25,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
     private readonly IAudioEncoder _audioEncoder;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
-    private float _microphoneSensitivity;
+    private float _inputVolume;
     private float _outputVolume;
+    private float _microphoneSensitivity;
     private ushort _sendTimestamp;
     private bool _serverDeafened;
     private bool _serverMuted;
@@ -38,16 +39,22 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public abstract PositioningType PositioningType { get; }
     public VcConnectionState ConnectionState { get; protected set; }
 
-    public float MicrophoneSensitivity
+    public float InputVolume
     {
-        get => _microphoneSensitivity;
-        set => _microphoneSensitivity = Math.Clamp(value, 0, 1);
+        get => _inputVolume;
+        set => _inputVolume = Math.Clamp(value, 0, 2);
     }
 
     public float OutputVolume
     {
         get => _outputVolume;
         set => _outputVolume = Math.Clamp(value, 0, 2);
+    }
+    
+    public float MicrophoneSensitivity
+    {
+        get => _microphoneSensitivity;
+        set => _microphoneSensitivity = Math.Clamp(value, 0, 1);
     }
 
     public bool SpeakingState

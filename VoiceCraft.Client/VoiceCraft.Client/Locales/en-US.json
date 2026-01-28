@@ -76,6 +76,7 @@
     "Input": {
       "Input": "Input Settings",
       "InputDevices": "Input Devices",
+      "InputVolume": "Input Volume",
       "MicrophoneSensitivity": "Microphone Sensitivity",
       "Denoisers": "Denoisers",
       "AutomaticGainControllers": "Automatic Gain Controllers",

@@ -6,6 +6,7 @@ namespace VoiceCraft.Client.Models.Settings;
 public class InputSettings : Setting<InputSettings>
 {
     private string _inputDevice = "Default";
+    private float _inputVolume = 1.0f;
     private float _microphoneSensitivity = 0.04f;
     
     private Guid _automaticGainController = Guid.Empty;
@@ -18,6 +19,18 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             _inputDevice = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+
+    public float InputVolume
+    {
+        get => _inputVolume;
+        set
+        {
+            if(value is > 2 or < 0)
+                throw new ArgumentException("Volume sensitivity must be between 0 and 2.");
+            _inputVolume = value;
             OnUpdated?.Invoke(this);
         }
     }

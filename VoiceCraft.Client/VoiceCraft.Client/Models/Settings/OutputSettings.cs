@@ -8,7 +8,7 @@ public class OutputSettings : Setting<OutputSettings>
 {
     private string _outputDevice = "Default";
     private float _outputVolume = 1.0f;
-    private Guid _audioClipper = Constants.HardAudioClipperGuid; //Set as default on initialize.
+    private Guid _audioClipper = Constants.TanhSoftAudioClipperGuid; //Set as default on initialize.
 
     public string OutputDevice
     {
