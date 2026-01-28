@@ -74,7 +74,7 @@
       "BackgroundImage": "Achtergrondafbeelding"
     },
     "Input": {
-      "Input": null,
+      "Input": "Invoerinstellingen",
       "InputDevices": "Invoerapparaten",
       "InputVolume": "Invoervolume",
       "MicrophoneSensitivity": "Microfoon gevoeligheid",
