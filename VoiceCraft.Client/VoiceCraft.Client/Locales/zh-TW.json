@@ -73,20 +73,24 @@
       "Theme": "主題",
       "BackgroundImage": "背景圖片"
     },
-    "Audio": {
-      "Audio": "音頻設置",
-      "AutomaticGainControllers": "自動增益控制器",
-      "Denoisers": "降噪器",
-      "EchoCancelers": "回聲消除器",
+    "Input": {
+      "Input": "輸入設置",
       "InputDevices": "輸入設備",
+      "InputVolume": "輸入音量",
       "MicrophoneSensitivity": "麥克風靈敏度",
-      "OutputVolume": "輸出音量",
-      "OutputDevices": "輸出設備",
-      "TestOutput": "測試輸出",
+      "Denoisers": "降噪器",
+      "AutomaticGainControllers": "自動增益控制器",
+      "EchoCancelers": "回聲消除器",
       "MicrophoneTest": {
         "MicrophoneTest": "麥克風測試",
         "Test": "測試"
       }
+    },
+    "Output": {
+      "Output": "輸出設置",
+      "OutputDevices": "輸出設備",
+      "OutputVolume": "輸出音量",
+      "TestOutput": "測試輸出"
     },
     "Network": {
       "Network": "網路設置",
