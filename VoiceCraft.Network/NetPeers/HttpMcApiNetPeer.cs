@@ -3,12 +3,12 @@ using System.Net;
 
 namespace VoiceCraft.Network.NetPeers;
 
-public class HttpMcApiNetPeer(IPEndPoint endPoint) : McApiNetPeer
+public class HttpMcApiNetPeer(IPAddress ipAddress) : McApiNetPeer
 {
     private McApiConnectionState _connectionState;
     private string _sessionToken = string.Empty;
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
-    public IPEndPoint EndPoint { get; } = endPoint;
+    public IPAddress IpAddress { get; } = ipAddress;
     public override McApiConnectionState ConnectionState => _connectionState;
     public override string SessionToken => _sessionToken;
 

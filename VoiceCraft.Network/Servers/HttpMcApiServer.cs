@@ -22,7 +22,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     : McApiServer(world, audioEffectSystem)
 {
     private HttpMcApiConfig _config = new();
-    private readonly ConcurrentDictionary<IPEndPoint, HttpMcApiNetPeer> _mcApiPeers = new();
+    private readonly ConcurrentDictionary<IPAddress, HttpMcApiNetPeer> _mcApiPeers = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private HttpListener? _httpServer;
@@ -135,7 +135,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             OnPeerDisconnected?.Invoke(httpNetPeer, sessionToken);
             if (force)
             {
-                _mcApiPeers.TryRemove(httpNetPeer.EndPoint, out _); //Remove Immediately.
+                _mcApiPeers.TryRemove(httpNetPeer.IpAddress, out _); //Remove Immediately.
                 return;
             }
 
@@ -259,7 +259,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 return;
             }
 
-            var netPeer = GetOrCreatePeer(context.Request.RemoteEndPoint);
+            var netPeer = GetOrCreatePeer(context.Request.RemoteEndPoint.Address);
             ReceivePacketsLogic(netPeer, packet.Packets, token);
             packet.Packets.Clear();
             SendPacketsLogic(netPeer, packet.Packets);
@@ -284,11 +284,11 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
     }
 
-    private HttpMcApiNetPeer GetOrCreatePeer(IPEndPoint endPoint)
+    private HttpMcApiNetPeer GetOrCreatePeer(IPAddress ipAddress)
     {
-        return _mcApiPeers.GetOrAdd(endPoint, _ =>
+        return _mcApiPeers.GetOrAdd(ipAddress, _ =>
         {
-            var httpNetPeer = new HttpMcApiNetPeer(endPoint);
+            var httpNetPeer = new HttpMcApiNetPeer(ipAddress);
             return httpNetPeer;
         });
     }
@@ -323,7 +323,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
     }
 
-    private void UpdatePeer(IPEndPoint endPoint, HttpMcApiNetPeer httpNetPeer)
+    private void UpdatePeer(IPAddress ipAddress, HttpMcApiNetPeer httpNetPeer)
     {
         lock (_reader)
         {
@@ -346,12 +346,12 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                     //Do Nothing
                 }
         }
-
+        
         if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
         Disconnect(httpNetPeer);
         //Double the amount of time. We remove the peer.
         if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
-        _mcApiPeers.TryRemove(endPoint, out _);
+        _mcApiPeers.TryRemove(ipAddress, out _);
     }
 
     public class HttpMcApiConfig

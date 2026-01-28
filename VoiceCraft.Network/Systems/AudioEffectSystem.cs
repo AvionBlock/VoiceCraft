@@ -103,7 +103,7 @@ public class AudioEffectSystem : IDisposable
         try
         {
             var read = 0;
-            Parallel.ForEach(client.World.Entities.OfType<VoiceCraftClientEntity>().Where(x => x.IsVisible), x =>
+            Parallel.ForEach(client.World.Entities.OfType<VoiceCraftClientEntity>(), x =>
             {
                 var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
                 var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
