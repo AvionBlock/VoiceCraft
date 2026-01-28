@@ -73,20 +73,18 @@
       "Theme": "Theme",
       "BackgroundImage": "Background Image"
     },
-    "Audio": {
-      "Audio": "Audio Settings",
-      "AutomaticGainControllers": "Automatic Gain Controllers",
-      "Denoisers": "Denoisers",
-      "EchoCancelers": "Echo Cancelers",
+    "Input": {
+      "Input": "Input Settings",
       "InputDevices": "Input Devices",
       "MicrophoneSensitivity": "Microphone Sensitivity",
-      "OutputVolume": "Output Volume",
+      "Denoisers": "Denoisers",
+      "AutomaticGainControllers": "Automatic Gain Controllers",
+      "EchoCancelers": "Echo Cancelers"
+    },
+    "Output": {
+      "Output": "Output Settings",
       "OutputDevices": "Output Devices",
-      "TestOutput": "Test Output",
-      "MicrophoneTest": {
-        "MicrophoneTest": "Microphone Test",
-        "Test": "Test"
-      }
+      "OutputVolume": "Output Volume"
     },
     "Network": {
       "Network": "Network Settings",

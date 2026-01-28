@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="vm:Settings.InputSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.InputSettingsView">
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{locale:Localize Settings.Input.Input}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border VerticalAlignment="Top"
+                    Padding="15"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Input.InputDevices}" />
+                    
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding InputSettingsData.InputDevices}"
+                              SelectedItem="{Binding InputSettingsData.InputDevice}" />
+                    
+                    <StackPanel>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                       Text="{locale:Localize Settings.Input.MicrophoneSensitivity}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       Text="{Binding InputSettingsData.MicrophoneSensitivity, StringFormat='{} {0:P0}'}" />
+                        </Grid>
+
+                        <Slider Maximum="1.0"
+                                Minimum="0.0"
+                                Value="{Binding InputSettingsData.MicrophoneSensitivity}" />
+                    </StackPanel>
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Input.Denoisers}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding InputSettingsData.Denoisers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding InputSettingsData.Denoiser}"
+                              SelectedValueBinding="{Binding Id}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Input.AutomaticGainControllers}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding InputSettingsData.AutomaticGainControllers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding InputSettingsData.AutomaticGainController}"
+                              SelectedValueBinding="{Binding Id}" />
+
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Input.EchoCancelers}" />
+
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding InputSettingsData.EchoCancelers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding InputSettingsData.EchoCanceler}"
+                              SelectedValueBinding="{Binding Id}" />
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

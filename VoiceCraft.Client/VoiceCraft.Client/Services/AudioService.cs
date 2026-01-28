@@ -10,21 +10,26 @@ namespace VoiceCraft.Client.Services;
 
 public abstract class AudioService
 {
+    private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
+
     private readonly ConcurrentDictionary<Guid, RegisteredAutomaticGainController> _registeredAutomaticGainControllers =
         new();
 
-    private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
     private readonly ConcurrentDictionary<Guid, RegisteredEchoCanceler> _registeredEchoCancelers = new();
+
+    private readonly ConcurrentDictionary<Guid, RegisteredClipper> _registeredClippers = new();
 
     protected AudioService(
         IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
         IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
-        IEnumerable<RegisteredDenoiser> registeredDenoisers)
+        IEnumerable<RegisteredDenoiser> registeredDenoisers,
+        IEnumerable<RegisteredClipper> registeredClippers)
     {
         _registeredAutomaticGainControllers.TryAdd(Guid.Empty,
             new RegisteredAutomaticGainController(Guid.Empty, "None", null));
         _registeredEchoCancelers.TryAdd(Guid.Empty, new RegisteredEchoCanceler(Guid.Empty, "None", null));
         _registeredDenoisers.TryAdd(Guid.Empty, new RegisteredDenoiser(Guid.Empty, "None", null));
+        _registeredClippers.TryAdd(Guid.Empty, new RegisteredClipper(Guid.Empty, "None", null));
 
         foreach (var registeredAutomaticGainController in registeredAutomaticGainControllers)
             _registeredAutomaticGainControllers.TryAdd(registeredAutomaticGainController.Id,
@@ -35,6 +40,9 @@ public abstract class AudioService
 
         foreach (var registeredDenoiser in registeredDenoisers)
             _registeredDenoisers.TryAdd(registeredDenoiser.Id, registeredDenoiser);
+
+        foreach (var registeredClipper in registeredClippers)
+            _registeredClippers.TryAdd(registeredClipper.Id, registeredClipper);
     }
 
     public IEnumerable<RegisteredDenoiser> RegisteredDenoisers => _registeredDenoisers.Values.ToArray();
@@ -43,6 +51,8 @@ public abstract class AudioService
         _registeredAutomaticGainControllers.Values.ToArray();
 
     public IEnumerable<RegisteredEchoCanceler> RegisteredEchoCancelers => _registeredEchoCancelers.Values.ToArray();
+    
+    public IEnumerable<RegisteredClipper> RegisteredClippers => _registeredClippers.Values.ToArray();
 
     public RegisteredDenoiser? GetDenoiser(Guid id)
     {
@@ -57,6 +67,11 @@ public abstract class AudioService
     public RegisteredEchoCanceler? GetEchoCanceler(Guid id)
     {
         return _registeredEchoCancelers.GetValueOrDefault(id);
+    }
+
+    public RegisteredClipper? GetClipper(Guid id)
+    {
+        return _registeredClippers.GetValueOrDefault(id);
     }
 
     public abstract Task<List<string>> GetInputDevicesAsync();
@@ -96,6 +111,17 @@ public class RegisteredDenoiser(Guid id, string name, Func<IDenoiser>? factory)
     public string Name { get; } = name;
 
     public IDenoiser? Instantiate()
+    {
+        return factory?.Invoke();
+    }
+}
+
+public class RegisteredClipper(Guid id, string name, Func<IClipper>? factory)
+{
+    public Guid Id { get; } = id;
+    public string Name { get; } = name;
+
+    public IClipper? Instantiate()
     {
         return factory?.Invoke();
     }

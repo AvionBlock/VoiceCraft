@@ -7,8 +7,8 @@
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
-             x:DataType="vm:Settings.NetworkSettingsViewModel"
-             x:Class="VoiceCraft.Client.Views.Settings.NetworkSettingsView">
+             x:DataType="vm:Settings.OutputSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.OutputSettingsView">
     <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0"
               Margin="0,0,0,10"
@@ -17,7 +17,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{locale:Localize Settings.Network.Network}"
+                       Text="{locale:Localize Settings.Output.Output}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"
@@ -36,28 +36,30 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="{locale:Localize Settings.Network.PositioningType}" />
-
+                               Text="{locale:Localize Settings.Output.OutputDevices}" />
+                    
                     <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding PositioningTypes}"
-                              SelectedValue="{Binding NetworkSettingsData.PositioningType}" />
+                              ItemsSource="{Binding OutputSettingsData.OutputDevices}"
+                              SelectedItem="{Binding OutputSettingsData.OutputDevice}" />
+                    
+                    <StackPanel>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                       Text="{locale:Localize Settings.Output.OutputVolume}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       Text="{Binding OutputSettingsData.OutputVolume, StringFormat='{} {0:P0}'}" />
+                        </Grid>
 
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="15"
-                               Text="{locale:Localize Settings.Network.McWssListenIp}" />
-
-                    <TextBox MaxLength="100" Text="{Binding NetworkSettingsData.McWssListenIp}" />
-
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="15"
-                               Text="{locale:Localize Settings.Network.McWssHostPort}" />
-
-                    <NumericUpDown Increment="1"
-                                   Maximum="65535"
-                                   Minimum="0"
-                                   Value="{Binding NetworkSettingsData.McWssHostPort}" />
+                        <Slider Maximum="2.0"
+                                Minimum="0.0"
+                                Value="{Binding OutputSettingsData.OutputVolume}" />
+                    </StackPanel>
+                    
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding OutputSettingsData.AudioClippers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding OutputSettingsData.AudioClipper}"
+                              SelectedValueBinding="{Binding Id}" />
                 </StackPanel>
             </Border>
         </ScrollViewer>

@@ -24,7 +24,7 @@ public partial class SelectedServerViewModel(
     [ObservableProperty] private string _latency = string.Empty;
     [ObservableProperty] private string _motd = string.Empty;
     [ObservableProperty] private string _positioningType = string.Empty;
-    [ObservableProperty] private ServerViewModel? _selectedServer;
+    [ObservableProperty] private ServerDataViewModel? _selectedServer;
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
     [ObservableProperty] private string _version = string.Empty;
 
@@ -39,7 +39,7 @@ public partial class SelectedServerViewModel(
     public override void OnAppearing(object? data = null)
     {
         if (data is SelectedServerNavigationData navigationData)
-            SelectedServer = new ServerViewModel(navigationData.Server, settingsService);
+            SelectedServer = new ServerDataViewModel(navigationData.Server, settingsService);
 
         Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
         Motd = string.Empty;

@@ -5,7 +5,7 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class ThemeSettingsViewModel : ObservableObject, IDisposable
+public partial class ThemeSettingsDataViewModel : ObservableObject, IDisposable
 {
     private readonly SettingsService _settingsService;
     private readonly ThemeSettings _themeSettings;
@@ -16,7 +16,7 @@ public partial class ThemeSettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private Guid _selectedTheme;
     private bool _updating;
 
-    public ThemeSettingsViewModel(SettingsService settingsService, ThemesService themesService)
+    public ThemeSettingsDataViewModel(SettingsService settingsService, ThemesService themesService)
     {
         _themeSettings = settingsService.ThemeSettings;
         _settingsService = settingsService;
@@ -72,6 +72,6 @@ public partial class ThemeSettingsViewModel : ObservableObject, IDisposable
     private void ThrowIfDisposed()
     {
         if (!_disposed) return;
-        throw new ObjectDisposedException(typeof(ThemeSettingsViewModel).ToString());
+        throw new ObjectDisposedException(typeof(ThemeSettingsDataViewModel).ToString());
     }
 }

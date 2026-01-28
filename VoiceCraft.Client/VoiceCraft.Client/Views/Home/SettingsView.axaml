@@ -9,79 +9,22 @@
              d:DesignWidth="800"
              x:DataType="vm:SettingsViewModel"
              mc:Ignorable="d">
-    <ScrollViewer>
-        <StackPanel>
-            <Button HorizontalAlignment="Stretch"
-                    Command="{Binding GoToGeneralSettingsCommand}"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Margin="0"
-                    Height="50">
+    <ListBox Background="Transparent"
+             ItemsSource="{Binding Items}"
+             SelectedItem="{Binding SelectedListItem}"
+             SelectionMode="Single">
+        <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+                <Setter Property="CornerRadius" Value="5" />
+                <Setter Property="Margin" Value="0,0,0,5" />
+            </Style>
+        </ListBox.Styles>
+        <ListBox.ItemTemplate>
+            <DataTemplate DataType="{x:Type vm:ListItemTemplate}">
                 <TextBlock FontSize="16"
-                           VerticalAlignment="Center"
                            FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.General.General'}" />
-            </Button>
-
-            <Button HorizontalAlignment="Stretch"
-                    Command="{Binding GoToAppearanceSettingsCommand}"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Margin="0"
-                    Height="50">
-                <TextBlock FontSize="16"
-                           VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Appearance.Appearance'}" />
-            </Button>
-
-            <Button HorizontalAlignment="Stretch"
-                    Command="{Binding GoToAudioSettingsCommand}"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Margin="0"
-                    Height="50">
-                <TextBlock FontSize="16"
-                           VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Audio.Audio'}" />
-            </Button>
-
-            <Button HorizontalAlignment="Stretch"
-                    Command="{Binding GoToNetworkSettingsCommand}"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Margin="0"
-                    Height="50">
-                <TextBlock FontSize="16"
-                           VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Network.Network'}" />
-            </Button>
-
-            <Button HorizontalAlignment="Stretch"
-                    Command="{Binding GoToHotKeySettingsCommand}"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Margin="0"
-                    Height="50">
-                <TextBlock FontSize="16"
-                           VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.HotKey.HotKey'}" />
-            </Button>
-
-            <Button HorizontalAlignment="Stretch"
-                    Command="{Binding GoToAdvancedSettingsCommand}"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Margin="0"
-                    Height="50">
-                <TextBlock FontSize="16"
-                           VerticalAlignment="Center"
-                           FontWeight="Bold"
-                           Text="{locale:Localize 'Settings.Advanced.Advanced'}" />
-            </Button>
-        </StackPanel>
-    </ScrollViewer>
+                           Text="{locale:Localize { Binding Title } }" />
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
 </UserControl>

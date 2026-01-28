@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace VoiceCraft.Client.Views.Settings;
 
-public partial class AudioSettingsView : UserControl
+public partial class InputSettingsView : UserControl
 {
-    public AudioSettingsView()
+    public InputSettingsView()
     {
         InitializeComponent();
     }

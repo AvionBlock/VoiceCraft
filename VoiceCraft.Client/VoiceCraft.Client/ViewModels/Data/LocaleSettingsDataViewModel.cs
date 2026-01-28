@@ -6,7 +6,7 @@ using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class LocaleSettingsViewModel : ObservableObject, IDisposable
+public partial class LocaleSettingsDataViewModel : ObservableObject, IDisposable
 {
     private readonly LocaleSettings _localeSettings;
     private readonly SettingsService _settingsService;
@@ -15,7 +15,7 @@ public partial class LocaleSettingsViewModel : ObservableObject, IDisposable
     private bool _disposed;
     private bool _updating;
 
-    public LocaleSettingsViewModel(SettingsService settingsService)
+    public LocaleSettingsDataViewModel(SettingsService settingsService)
     {
         _localeSettings = settingsService.LocaleSettings;
         _settingsService = settingsService;
@@ -58,6 +58,6 @@ public partial class LocaleSettingsViewModel : ObservableObject, IDisposable
     private void ThrowIfDisposed()
     {
         if (!_disposed) return;
-        throw new ObjectDisposedException(typeof(LocaleSettingsViewModel).ToString());
+        throw new ObjectDisposedException(typeof(LocaleSettingsDataViewModel).ToString());
     }
 }

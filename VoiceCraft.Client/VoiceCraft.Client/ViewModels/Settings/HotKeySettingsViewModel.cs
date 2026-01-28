@@ -10,8 +10,8 @@ namespace VoiceCraft.Client.ViewModels.Settings;
 public partial class HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService)
     : ViewModelBase
 {
-    [ObservableProperty] private ObservableCollection<HotKeyActionViewModel> _hotKeys =
-        new(hotKeyService.HotKeyActions.Select(x => new HotKeyActionViewModel(x.Value, x.Key)));
+    [ObservableProperty] private ObservableCollection<HotKeyActionDataViewModel> _hotKeys =
+        new(hotKeyService.HotKeyActions.Select(x => new HotKeyActionDataViewModel(x.Value, x.Key)));
 
     [RelayCommand]
     private void Cancel()

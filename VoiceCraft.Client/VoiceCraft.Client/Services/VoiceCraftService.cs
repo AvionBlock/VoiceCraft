@@ -98,19 +98,20 @@ public class VoiceCraftService(
             Title = "VoiceCraft.Status.Initializing";
             Description = string.Empty;
             var localeSettings = settingsService.LocaleSettings;
-            var audioSettings = settingsService.AudioSettings;
+            var inputSettings = settingsService.InputSettings;
+            var outputSettings = settingsService.OutputSettings;
             var networkSettings = settingsService.NetworkSettings;
 
             //Setup Client
-            client.MicrophoneSensitivity = audioSettings.MicrophoneSensitivity;
-            client.OutputVolume = audioSettings.OutputVolume;
+            client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
+            client.OutputVolume = outputSettings.OutputVolume;
 
-            _audioRecorder = InitializeAudioRecorder(audioSettings.InputDevice);
-            _audioPlayer = InitializeAudioPlayer(audioSettings.OutputDevice);
-            _echoCanceler = audioService.GetEchoCanceler(audioSettings.EchoCanceler)?.Instantiate();
-            _gainController = audioService.GetAutomaticGainController(audioSettings.AutomaticGainController)
+            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
+            _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
+            _echoCanceler = audioService.GetEchoCanceler(inputSettings.EchoCanceler)?.Instantiate();
+            _gainController = audioService.GetAutomaticGainController(inputSettings.AutomaticGainController)
                 ?.Instantiate();
-            _denoiser = audioService.GetDenoiser(audioSettings.Denoiser)?.Instantiate();
+            _denoiser = audioService.GetDenoiser(inputSettings.Denoiser)?.Instantiate();
 
             //Setup McWss Server
             if (networkSettings.PositioningType == PositioningType.Client)

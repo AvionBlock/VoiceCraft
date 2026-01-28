@@ -125,8 +125,6 @@ public class AudioEffectSystem : IDisposable
             });
 
             outputBuffer[..read].CopyTo(buffer);
-            read = SampleHardClip.Read(buffer[..read]);
-            read = SampleVolume.Read(buffer[..read], client.OutputVolume);
             return read;
         }
         finally

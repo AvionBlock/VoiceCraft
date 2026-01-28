@@ -1,11 +1,12 @@
 using System;
 using System.Numerics;
+using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Audio
 {
-    public static class SampleHardClip
+    public class SampleHardClipper : IClipper
     {
-        public static int Read(Span<float> data)
+        public int Read(Span<float> data)
         {
             //Usage of SIMD accelerated operation.
             var simdCount = 0;
@@ -26,7 +27,7 @@ namespace VoiceCraft.Core.Audio
             // Scalar remainder
             for (; simdCount < data.Length; simdCount++)
             {
-                data[simdCount] += data[simdCount];
+                data[simdCount] = Math.Clamp(data[simdCount], -1.0f, 1.0f);
             }
 
             return data.Length;

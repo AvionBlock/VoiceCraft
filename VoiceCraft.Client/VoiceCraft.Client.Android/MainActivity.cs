@@ -61,7 +61,8 @@ public class MainActivity : AvaloniaMainActivity<App>
             audioManager,
             x.GetServices<RegisteredAutomaticGainController>(),
             x.GetServices<RegisteredEchoCanceler>(),
-            x.GetServices<RegisteredDenoiser>()));
+            x.GetServices<RegisteredDenoiser>(),
+            x.GetServices<RegisteredClipper>()));
 
         //Register native preprocessors
         if (AutomaticGainControl.IsAvailable)

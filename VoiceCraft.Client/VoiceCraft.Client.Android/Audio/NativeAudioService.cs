@@ -29,11 +29,13 @@ public class NativeAudioService : AudioService
         AudioManager audioManager,
         IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
         IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
-        IEnumerable<RegisteredDenoiser> registeredDenoisers)
+        IEnumerable<RegisteredDenoiser> registeredDenoisers,
+        IEnumerable<RegisteredClipper> registeredClippers)
         : base(
             registeredAutomaticGainControllers,
             registeredEchoCancelers,
-            registeredDenoisers)
+            registeredDenoisers,
+            registeredClippers)
     {
         _audioManager = audioManager;
 

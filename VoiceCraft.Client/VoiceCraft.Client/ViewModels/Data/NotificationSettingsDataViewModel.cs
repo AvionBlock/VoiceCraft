@@ -5,7 +5,7 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class NotificationSettingsViewModel : ObservableObject, IDisposable
+public partial class NotificationSettingsDataViewModel : ObservableObject, IDisposable
 {
     private readonly NotificationSettings _notificationSettings;
     private readonly SettingsService _settingsService;
@@ -15,7 +15,7 @@ public partial class NotificationSettingsViewModel : ObservableObject, IDisposab
     private bool _disposed;
     private bool _updating;
 
-    public NotificationSettingsViewModel(SettingsService settingsService)
+    public NotificationSettingsDataViewModel(SettingsService settingsService)
     {
         _notificationSettings = settingsService.NotificationSettings;
         _settingsService = settingsService;
@@ -69,6 +69,6 @@ public partial class NotificationSettingsViewModel : ObservableObject, IDisposab
     private void ThrowIfDisposed()
     {
         if (!_disposed) return;
-        throw new ObjectDisposedException(typeof(NotificationSettingsViewModel).ToString());
+        throw new ObjectDisposedException(typeof(NotificationSettingsDataViewModel).ToString());
     }
 }

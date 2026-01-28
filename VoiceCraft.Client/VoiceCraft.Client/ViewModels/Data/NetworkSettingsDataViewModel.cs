@@ -6,7 +6,7 @@ using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
+public partial class NetworkSettingsDataViewModel : ObservableObject, IDisposable
 {
     private readonly NetworkSettings _networkSettings;
     private readonly SettingsService _settingsService;
@@ -17,7 +17,7 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     [ObservableProperty] private PositioningType _positioningType;
     private bool _updating;
 
-    public NetworkSettingsViewModel(SettingsService settingsService)
+    public NetworkSettingsDataViewModel(SettingsService settingsService)
     {
         _networkSettings = settingsService.NetworkSettings;
         _settingsService = settingsService;
@@ -84,6 +84,6 @@ public partial class NetworkSettingsViewModel : ObservableObject, IDisposable
     private void ThrowIfDisposed()
     {
         if (!_disposed) return;
-        throw new ObjectDisposedException(typeof(ServerViewModel).ToString());
+        throw new ObjectDisposedException(typeof(ServerDataViewModel).ToString());
     }
 }

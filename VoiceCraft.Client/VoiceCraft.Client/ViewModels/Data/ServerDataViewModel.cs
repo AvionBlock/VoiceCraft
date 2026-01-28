@@ -5,7 +5,7 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class ServerViewModel : ObservableObject, IDisposable
+public partial class ServerDataViewModel : ObservableObject, IDisposable
 {
     private readonly SettingsService _settingsService;
 
@@ -16,7 +16,7 @@ public partial class ServerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private ushort _port;
     private bool _updating;
 
-    public ServerViewModel(Server server, SettingsService settingsService)
+    public ServerDataViewModel(Server server, SettingsService settingsService)
     {
         Server = server;
         _settingsService = settingsService;
@@ -83,6 +83,6 @@ public partial class ServerViewModel : ObservableObject, IDisposable
     private void ThrowIfDisposed()
     {
         if (!_disposed) return;
-        throw new ObjectDisposedException(typeof(ServerViewModel).ToString());
+        throw new ObjectDisposedException(typeof(ServerDataViewModel).ToString());
     }
 }

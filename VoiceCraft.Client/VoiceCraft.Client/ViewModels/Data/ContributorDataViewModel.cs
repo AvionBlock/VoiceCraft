@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class ContributorViewModel(string name, string[] roles, Bitmap? imageIcon = null) : ObservableObject
+public partial class ContributorDataViewModel(string name, string[] roles, Bitmap? imageIcon = null) : ObservableObject
 {
     [ObservableProperty] private Bitmap? _imageIcon = imageIcon;
     [ObservableProperty] private string _name = name;

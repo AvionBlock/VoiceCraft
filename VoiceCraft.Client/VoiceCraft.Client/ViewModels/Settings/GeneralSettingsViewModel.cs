@@ -18,10 +18,10 @@ public partial class GeneralSettingsViewModel
     [ObservableProperty] private ObservableCollection<KeyValuePair<string, string>> _locales = [];
 
     //Language Settings
-    [ObservableProperty] private LocaleSettingsViewModel _localeSettings;
+    [ObservableProperty] private LocaleSettingsDataViewModel _localeSettingsData;
 
     //Notification Settings
-    [ObservableProperty] private NotificationSettingsViewModel _notificationSettings;
+    [ObservableProperty] private NotificationSettingsDataViewModel _notificationSettingsData;
 
     //Server Settings
     [ObservableProperty] private ServersSettingsViewModel _serversSettings;
@@ -31,14 +31,14 @@ public partial class GeneralSettingsViewModel
         foreach (var locale in Localizer.Languages)
             _locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
         _navigationService = navigationService;
-        _localeSettings = new LocaleSettingsViewModel(settingsService);
-        _notificationSettings = new NotificationSettingsViewModel(settingsService);
+        _localeSettingsData = new LocaleSettingsDataViewModel(settingsService);
+        _notificationSettingsData = new NotificationSettingsDataViewModel(settingsService);
         _serversSettings = new ServersSettingsViewModel(settingsService);
     }
 
     public void Dispose()
     {
-        NotificationSettings.Dispose();
+        NotificationSettingsData.Dispose();
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);
     }

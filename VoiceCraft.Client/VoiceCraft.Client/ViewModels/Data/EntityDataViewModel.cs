@@ -6,7 +6,7 @@ using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
-public partial class EntityViewModel : ObservableObject
+public partial class EntityDataViewModel : ObservableObject
 {
     private readonly Guid? _entityUserId;
     private readonly SettingsService _settingsService;
@@ -30,7 +30,7 @@ public partial class EntityViewModel : ObservableObject
     
     public VoiceCraftClientEntity Entity { get; }
 
-    public EntityViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
+    public EntityDataViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
     {
         Entity = entity;
         _userSettings = settingsService.UserSettings;

@@ -21,13 +21,13 @@ public partial class VoiceViewModel(
     : ViewModelBase, IDisposable
 {
     private VoiceCraftService? _service;
-    [ObservableProperty] private ObservableCollection<EntityViewModel> _entityViewModels = [];
+    [ObservableProperty] private ObservableCollection<EntityDataViewModel> _entityViewModels = [];
     [ObservableProperty] private bool _isDeafened;
     [ObservableProperty] private bool _isMuted;
     [ObservableProperty] private bool _isServerDeafened;
     [ObservableProperty] private bool _isServerMuted;
     [ObservableProperty] private bool _isSpeaking;
-    [ObservableProperty] private EntityViewModel? _selectedEntity;
+    [ObservableProperty] private EntityDataViewModel? _selectedEntity;
     [ObservableProperty] private bool _showModal;
     [ObservableProperty] private string _statusDescriptionText = string.Empty;
 
@@ -64,7 +64,7 @@ public partial class VoiceViewModel(
             _service.Deafened = value;
     }
 
-    partial void OnSelectedEntityChanged(EntityViewModel? value)
+    partial void OnSelectedEntityChanged(EntityDataViewModel? value)
     {
         if (value == null)
         {
@@ -200,7 +200,7 @@ public partial class VoiceViewModel(
 
     private void OnEntityAdded(VoiceCraftClientEntity entity)
     {
-        Dispatcher.UIThread.Invoke(() => { EntityViewModels.Add(new EntityViewModel(entity, settingsService)); });
+        Dispatcher.UIThread.Invoke(() => { EntityViewModels.Add(new EntityDataViewModel(entity, settingsService)); });
     }
 
     private void OnEntityRemoved(VoiceCraftClientEntity entity)
