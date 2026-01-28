@@ -5,9 +5,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OpusSharp.Core;
-using VoiceCraft.Client.Network;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -19,7 +19,7 @@ public partial class CreditsViewModel : ViewModelBase
 
     [ObservableProperty] private string _codec = string.Empty;
 
-    [ObservableProperty] private ObservableCollection<ContributorViewModel> _contributors;
+    [ObservableProperty] private ObservableCollection<ContributorDataViewModel> _contributors;
 
     [ObservableProperty] private string _version = string.Empty;
 
@@ -27,15 +27,15 @@ public partial class CreditsViewModel : ViewModelBase
     {
         _contributors =
         [
-            new ContributorViewModel(
+            new ContributorDataViewModel(
                 "SineVector241",
                 ["Credits.Roles.Author", "Credits.Roles.Programmer"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/sinePlushie.png")),
-            new ContributorViewModel(
+            new ContributorDataViewModel(
                 "Miniontoby",
                 ["Credits.Roles.Translator", "Credits.Roles.Programmer"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/minionToby.png")),
-            new ContributorViewModel(
+            new ContributorDataViewModel(
                 "Unny",
                 ["Credits.Roles.Translator"],
                 LoadImage("avares://VoiceCraft.Client/Assets/Contributors/unny.png"))

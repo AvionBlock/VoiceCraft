@@ -8,8 +8,6 @@ namespace VoiceCraft.Core.Interfaces
 
         void Initialize(IAudioRecorder recorder);
 
-        void Denoise(byte[] buffer);
-
         void Denoise(Span<byte> buffer);
     }
 }

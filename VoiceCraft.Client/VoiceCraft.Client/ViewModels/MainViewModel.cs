@@ -1,7 +1,6 @@
 ﻿using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
-using VoiceCraft.Client.Processes;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Locales;
 
@@ -14,8 +13,10 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
-        SettingsService settingsService, BackgroundService backgroundService, DiscordRpcService discordRpcService,
-        HotKeyService hotKeyService)
+        SettingsService settingsService,
+        DiscordRpcService discordRpcService,
+        HotKeyService hotKeyService,
+        IBackgroundService backgroundService)
     {
         themesService.OnBackgroundImageChanged += backgroundImage =>
         {
@@ -39,9 +40,9 @@ public partial class MainViewModel : ObservableObject
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();
-
-        backgroundService.TryGetBackgroundProcess<VoipBackgroundProcess>(out var process);
-        if (process == null) return;
-        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(process));
+        
+        var voiceCraftService = backgroundService.GetService<VoiceCraftService>();
+        if (voiceCraftService == null) return;
+        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));
     }
 }

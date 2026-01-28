@@ -10,8 +10,7 @@ public partial class VoiceView : UserControl
     {
         InitializeComponent();
     }
-
-
+    
     private void ModalBackgroundOnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var viewModel = (VoiceViewModel?)DataContext;

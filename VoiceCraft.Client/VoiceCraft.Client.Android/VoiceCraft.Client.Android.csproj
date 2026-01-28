@@ -27,7 +27,11 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <AndroidLinkMode>None</AndroidLinkMode>
+        <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     </PropertyGroup>
 
     <ItemGroup>

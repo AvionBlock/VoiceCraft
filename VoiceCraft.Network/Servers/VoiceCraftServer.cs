@@ -1,0 +1,379 @@
+using System;
+using System.Net;
+using LiteNetLib.Utils;
+using VoiceCraft.Core;
+using VoiceCraft.Core.World;
+using VoiceCraft.Network.NetPeers;
+using VoiceCraft.Network.Packets.VcPackets;
+using VoiceCraft.Network.Packets.VcPackets.Request;
+using VoiceCraft.Network.Packets.VcPackets.Response;
+using VoiceCraft.Network.World;
+
+namespace VoiceCraft.Network.Servers;
+
+public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
+{
+    protected bool Disposed;
+
+    public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
+    protected VoiceCraftWorld World { get; } = world;
+    public abstract string Motd { get; }
+    public abstract PositioningType PositioningType { get; }
+    public abstract uint MaxClients { get; }
+    public abstract int ConnectedPeers { get; }
+
+    ~VoiceCraftServer()
+    {
+        Dispose(false);
+    }
+
+    public abstract void Start();
+
+    public abstract void Update();
+
+    public abstract void Stop();
+
+    public abstract void SendUnconnectedPacket<T>(IPEndPoint endPoint, T packet) where T : IVoiceCraftPacket;
+
+    public abstract void SendPacket<T>(VoiceCraftNetPeer vcNetPeer, T packet,
+        VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable) where T : IVoiceCraftPacket;
+
+    public abstract void Broadcast<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable,
+        params VoiceCraftNetPeer?[] excludes) where T : IVoiceCraftPacket;
+
+    public abstract void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false);
+
+    public abstract void DisconnectAll(string? reason = null);
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    
+    protected abstract void AcceptRequest(VcLoginRequestPacket packet, object? data);
+
+    protected abstract void RejectRequest(VcLoginRequestPacket packet, string reason, object? data);
+
+    protected static void ProcessPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    {
+        var packetType = (VcPacketType)reader.GetByte();
+        switch (packetType)
+        {
+            case VcPacketType.LoginRequest:
+                ProcessPacket(reader, onParsed, () => new VcLoginRequestPacket());
+                break;
+            case VcPacketType.SetNameRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetNameRequestPacket());
+                break;
+            case VcPacketType.AudioRequest:
+                ProcessPacket(reader, onParsed, () => new VcAudioRequestPacket());
+                break;
+            case VcPacketType.SetMuteRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetMuteRequestPacket());
+                break;
+            case VcPacketType.SetDeafenRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetDeafenRequestPacket());
+                break;
+            case VcPacketType.SetWorldIdRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetWorldIdRequestPacket());
+                break;
+            case VcPacketType.SetPositionRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetPositionRequestPacket());
+                break;
+            case VcPacketType.SetRotationRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
+                break;
+            case VcPacketType.SetCaveFactorRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetCaveFactorRequest());
+                break;
+            case VcPacketType.SetMuffleFactorRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetMuffleFactorRequest());
+                break;
+            case VcPacketType.InfoRequest:
+            case VcPacketType.LogoutRequest:
+            case VcPacketType.InfoResponse:
+            case VcPacketType.AcceptResponse:
+            case VcPacketType.DenyResponse:
+            case VcPacketType.SetServerMuteRequest:
+            case VcPacketType.SetServerDeafenRequest:
+            case VcPacketType.SetTalkBitmaskRequest:
+            case VcPacketType.SetListenBitmaskRequest:
+            case VcPacketType.SetEffectBitmaskRequest:
+            case VcPacketType.SetTitleRequest:
+            case VcPacketType.SetDescriptionRequest:
+            case VcPacketType.SetEntityVisibilityRequest:
+            case VcPacketType.OnEffectUpdated:
+            case VcPacketType.OnEntityCreated:
+            case VcPacketType.OnNetworkEntityCreated:
+            case VcPacketType.OnEntityDestroyed:
+            case VcPacketType.OnEntityNameUpdated:
+            case VcPacketType.OnEntityMuteUpdated:
+            case VcPacketType.OnEntityDeafenUpdated:
+            case VcPacketType.OnEntityServerMuteUpdated:
+            case VcPacketType.OnEntityServerDeafenUpdated:
+            case VcPacketType.OnEntityTalkBitmaskUpdated:
+            case VcPacketType.OnEntityListenBitmaskUpdated:
+            case VcPacketType.OnEntityEffectBitmaskUpdated:
+            case VcPacketType.OnEntityPositionUpdated:
+            case VcPacketType.OnEntityRotationUpdated:
+            case VcPacketType.OnEntityCaveFactorUpdated:
+            case VcPacketType.OnEntityMuffleFactorUpdated:
+            case VcPacketType.OnEntityAudioReceived:
+            default:
+                return;
+        }
+    }
+
+    protected static void ProcessUnconnectedPacket(NetDataReader reader, Action<IVoiceCraftPacket> onParsed)
+    {
+        var packetType = (VcPacketType)reader.GetByte();
+        switch (packetType)
+        {
+            case VcPacketType.InfoRequest:
+                ProcessPacket(reader, onParsed, () => new VcInfoRequestPacket());
+                break;
+            case VcPacketType.LoginRequest:
+            case VcPacketType.LogoutRequest:
+            case VcPacketType.InfoResponse:
+            case VcPacketType.AcceptResponse:
+            case VcPacketType.DenyResponse:
+            case VcPacketType.SetNameRequest:
+            case VcPacketType.AudioRequest:
+            case VcPacketType.SetMuteRequest:
+            case VcPacketType.SetDeafenRequest:
+            case VcPacketType.SetServerMuteRequest:
+            case VcPacketType.SetServerDeafenRequest:
+            case VcPacketType.SetWorldIdRequest:
+            case VcPacketType.SetTalkBitmaskRequest:
+            case VcPacketType.SetListenBitmaskRequest:
+            case VcPacketType.SetEffectBitmaskRequest:
+            case VcPacketType.SetPositionRequest:
+            case VcPacketType.SetRotationRequest:
+            case VcPacketType.SetCaveFactorRequest:
+            case VcPacketType.SetMuffleFactorRequest:
+            case VcPacketType.SetTitleRequest:
+            case VcPacketType.SetDescriptionRequest:
+            case VcPacketType.SetEntityVisibilityRequest:
+            case VcPacketType.OnEffectUpdated:
+            case VcPacketType.OnEntityCreated:
+            case VcPacketType.OnNetworkEntityCreated:
+            case VcPacketType.OnEntityDestroyed:
+            case VcPacketType.OnEntityNameUpdated:
+            case VcPacketType.OnEntityMuteUpdated:
+            case VcPacketType.OnEntityDeafenUpdated:
+            case VcPacketType.OnEntityServerMuteUpdated:
+            case VcPacketType.OnEntityServerDeafenUpdated:
+            case VcPacketType.OnEntityTalkBitmaskUpdated:
+            case VcPacketType.OnEntityListenBitmaskUpdated:
+            case VcPacketType.OnEntityEffectBitmaskUpdated:
+            case VcPacketType.OnEntityPositionUpdated:
+            case VcPacketType.OnEntityRotationUpdated:
+            case VcPacketType.OnEntityCaveFactorUpdated:
+            case VcPacketType.OnEntityMuffleFactorUpdated:
+            case VcPacketType.OnEntityAudioReceived:
+            default:
+                return;
+        }
+    }
+
+    protected void ExecutePacket(IVoiceCraftPacket packet, object? data = null)
+    {
+        switch (packet)
+        {
+            //Core. DO NOT CHANGE
+            //Requests
+            case VcInfoRequestPacket infoRequestPacket:
+                HandleInfoRequestPacket(infoRequestPacket, data);
+                break;
+            case VcLoginRequestPacket loginRequestPacket:
+                HandleLoginRequestPacket(loginRequestPacket, data);
+                break;
+            case VcSetNameRequestPacket setNameRequestPacket:
+                HandleSetNameRequestPacket(setNameRequestPacket, data);
+                break;
+            case VcAudioRequestPacket audioRequestPacket:
+                HandleAudioRequestPacket(audioRequestPacket, data);
+                break;
+            case VcSetMuteRequestPacket setMuteRequestPacket:
+                HandleSetMuteRequestPacket(setMuteRequestPacket, data);
+                break;
+            case VcSetDeafenRequestPacket setDeafenRequestPacket:
+                HandleSetDeafenRequestPacket(setDeafenRequestPacket, data);
+                break;
+            case VcSetWorldIdRequestPacket setWorldIdRequestPacket:
+                HandleSetWorldIdRequestPacket(setWorldIdRequestPacket, data);
+                break;
+            case VcSetPositionRequestPacket setPositionRequestPacket:
+                HandleSetPositionRequestPacket(setPositionRequestPacket, data);
+                break;
+            case VcSetRotationRequestPacket setRotationRequestPacket:
+                HandleSetRotationRequestPacket(setRotationRequestPacket, data);
+                break;
+            case VcSetCaveFactorRequest setCaveFactorRequestPacket:
+                HandleSetCaveFactorRequestPacket(setCaveFactorRequestPacket, data);
+                break;
+            case VcSetMuffleFactorRequest setMuffleFactorRequestPacket:
+                HandleSetMuffleFactorRequestPacket(setMuffleFactorRequestPacket, data);
+                break;
+            default:
+                return;
+        }
+    }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Disposed) return;
+        if (disposing)
+        {
+            Stop();
+        }
+        Disposed = true;
+    }
+
+    #region Packet Events
+
+    private void HandleInfoRequestPacket(VcInfoRequestPacket packet, object? data)
+    {
+        if (data is not IPEndPoint endPoint) return;
+        var responsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket())
+            .Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
+        SendUnconnectedPacket(endPoint, responsePacket);
+    }
+
+    private void HandleLoginRequestPacket(VcLoginRequestPacket packet, object? data)
+    {
+        if (packet.Version.Major != Version.Major || packet.Version.Minor != Version.Minor)
+        {
+            RejectRequest(packet, "VoiceCraft.DisconnectReason.IncompatibleVersion", data);
+            return;
+        }
+
+        if (ConnectedPeers >= MaxClients)
+        {
+            RejectRequest(packet, "VoiceCraft.DisconnectReason.ServerFull", data);
+            return;
+        }
+
+        if (packet.PositioningType != PositioningType)
+            switch (PositioningType)
+            {
+                case PositioningType.Server:
+                    RejectRequest(packet, "VoiceCraft.DisconnectReason.ServerSidedOnly", data);
+                    return;
+                case PositioningType.Client:
+                    RejectRequest(packet, "VoiceCraft.DisconnectReason.ClientSidedOnly", data);
+                    return;
+                default:
+                    RejectRequest(packet, "VoiceCraft.DisconnectReason.Error", data);
+                    return;
+            }
+
+        AcceptRequest(packet, data);
+    }
+
+    private static void HandleSetNameRequestPacket(VcSetNameRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        networkEntity.Name = packet.Value;
+    }
+
+    private static void HandleAudioRequestPacket(VcAudioRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.Muted || networkEntity.ServerMuted) return;
+        networkEntity.ReceiveAudio(packet.Buffer, packet.Timestamp, packet.FrameLoudness);
+    }
+
+    private static void HandleSetMuteRequestPacket(VcSetMuteRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        networkEntity.Muted = packet.Value;
+    }
+
+    private static void HandleSetDeafenRequestPacket(VcSetDeafenRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        networkEntity.Deafened = packet.Value;
+    }
+
+    private static void HandleSetWorldIdRequestPacket(VcSetWorldIdRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        networkEntity.WorldId = packet.Value;
+    }
+
+    private static void HandleSetPositionRequestPacket(VcSetPositionRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        networkEntity.Position = packet.Value;
+    }
+
+    private static void HandleSetRotationRequestPacket(VcSetRotationRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        networkEntity.Rotation = packet.Value;
+    }
+
+    private static void HandleSetCaveFactorRequestPacket(VcSetCaveFactorRequest packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        networkEntity.CaveFactor = packet.Value;
+    }
+
+    private static void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        networkEntity.MuffleFactor = packet.Value;
+    }
+
+    #endregion
+
+    private static void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed, Func<T> packetFactory)
+        where T : IVoiceCraftPacket
+    {
+        var packet = PacketPool<T>.GetPacket(packetFactory);
+        try
+        {
+            packet.Deserialize(reader);
+            onParsed.Invoke(packet);
+        }
+        finally
+        {
+            PacketPool<T>.Return(packet);
+        }
+    }
+}

@@ -28,6 +28,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C19859
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Server", "VoiceCraft.Server\VoiceCraft.Server.csproj", "{D9B5546C-7B63-45FF-9426-B876A373CA2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Network", "VoiceCraft.Network\VoiceCraft.Network.csproj", "{FA09B4F6-6FC5-4A0B-99F5-FACDB53D999E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,7 @@ Global
 		{C470CD60-D67C-4795-B942-44F6258A7EFA} = {754070F7-4DB3-484A-81A1-3AE1027A617C}
 		{D789BEEE-6F40-4971-99FB-6058587BDCC1} = {D85570AD-9558-48D2-A505-DD4E4BDAB405}
 		{D9B5546C-7B63-45FF-9426-B876A373CA2B} = {C1985940-0CD7-4C0D-9F3C-780C64790A84}
+		{FA09B4F6-6FC5-4A0B-99F5-FACDB53D999E} = {D85570AD-9558-48D2-A505-DD4E4BDAB405}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6BDCB7FE-9745-4739-997D-A5AA120661FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -81,5 +84,9 @@ Global
 		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9B5546C-7B63-45FF-9426-B876A373CA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA09B4F6-6FC5-4A0B-99F5-FACDB53D999E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA09B4F6-6FC5-4A0B-99F5-FACDB53D999E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA09B4F6-6FC5-4A0B-99F5-FACDB53D999E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA09B4F6-6FC5-4A0B-99F5-FACDB53D999E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

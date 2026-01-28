@@ -33,6 +33,7 @@ public static class LogService
 
     public static void LogCrash(Exception exception)
     {
+        if (exception is TaskCanceledException) return; //Ignore this shit.
         Console.WriteLine(exception);
         _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
         TrimCrashLogs();

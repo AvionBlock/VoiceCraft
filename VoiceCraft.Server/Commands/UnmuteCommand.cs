@@ -1,13 +1,13 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class UnmuteCommand : Command
 {
-    public UnmuteCommand(VoiceCraftServer server) : base(
+    public UnmuteCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.Unmute.Name"),
         Localizer.Get("Commands.Unmute.Description"))
     {
@@ -21,7 +21,7 @@ public class UnmuteCommand : Command
         {
             var id = result.GetRequiredValue(idArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             switch (entity)
             {
                 case null:

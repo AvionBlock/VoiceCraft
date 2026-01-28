@@ -33,7 +33,7 @@
                  SelectedItem="{Binding SelectedEntity}"
                  SelectionMode="Single">
             <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vmData:EntityViewModel">
+                <DataTemplate x:DataType="vmData:EntityDataViewModel">
                     <Grid ColumnDefinitions="Auto, *, Auto">
                         <TextBlock Grid.Column="0"
                                    HorizontalAlignment="Left"

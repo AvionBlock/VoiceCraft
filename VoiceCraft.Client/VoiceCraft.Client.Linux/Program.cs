@@ -6,6 +6,8 @@ using VoiceCraft.Client.Linux.Audio;
 using VoiceCraft.Client.Linux.Permissions;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.Linux;
 
@@ -27,20 +29,26 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
                 Constants.SpeexDspEchoCancelerGuid,
                 "SpeexDsp Echo Canceler",
-                typeof(SpeexDspEchoCanceler)));
+                () => new SpeexDspEchoCanceler()));
             App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
                 Constants.SpeexDspAutomaticGainControllerGuid,
                 "SpeexDsp Automatic Gain Controller",
-                typeof(SpeexDspAutomaticGainController)));
+                () => new SpeexDspAutomaticGainController()));
             App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
                 Constants.SpeexDspDenoiserGuid,
                 "SpeexDsp Denoiser",
-                typeof(SpeexDspDenoiser)));
+                () => new SpeexDspDenoiser()));
 
             App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
-            App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+            App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
+                new NativeBackgroundService(x.GetRequiredService));
+            App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
+                new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
+                    x.GetRequiredService<IAudioDecoder>));
+            App.ServiceCollection.AddTransient<IAudioEncoder, NativeAudioEncoder>();
+            App.ServiceCollection.AddTransient<IAudioDecoder, NativeAudioDecoder>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

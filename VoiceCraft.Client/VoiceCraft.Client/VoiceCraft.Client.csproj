@@ -4,8 +4,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,6 +35,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
+        <ProjectReference Include="..\..\VoiceCraft.Network\VoiceCraft.Network.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -40,14 +40,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding PositioningTypes}"
-                              SelectedValue="{Binding NetworkSettings.PositioningType}" />
+                              SelectedValue="{Binding NetworkSettingsData.PositioningType}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Network.McWssListenIp}" />
 
-                    <TextBox MaxLength="100" Text="{Binding NetworkSettings.McWssListenIp}" />
+                    <TextBox MaxLength="100" Text="{Binding NetworkSettingsData.McWssListenIp}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -57,7 +57,7 @@
                     <NumericUpDown Increment="1"
                                    Maximum="65535"
                                    Minimum="0"
-                                   Value="{Binding NetworkSettings.McWssHostPort}" />
+                                   Value="{Binding NetworkSettingsData.McWssHostPort}" />
                 </StackPanel>
             </Border>
         </ScrollViewer>

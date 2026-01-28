@@ -10,9 +10,10 @@ using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Android.Audio;
-using VoiceCraft.Client.Android.Background;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Network.Clients;
 using Debug = System.Diagnostics.Debug;
 using Exception = System.Exception;
 
@@ -60,42 +61,49 @@ public class MainActivity : AvaloniaMainActivity<App>
             audioManager,
             x.GetServices<RegisteredAutomaticGainController>(),
             x.GetServices<RegisteredEchoCanceler>(),
-            x.GetServices<RegisteredDenoiser>()));
+            x.GetServices<RegisteredDenoiser>(),
+            x.GetServices<RegisteredAudioClipper>()));
 
         //Register native preprocessors
         if (AutomaticGainControl.IsAvailable)
             App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
                 NativeAutomaticGainControllerGuid,
                 "Native Automatic Gain Controller",
-                typeof(NativeAutomaticGainController)));
+                () => new NativeAutomaticGainController()));
         if (AcousticEchoCanceler.IsAvailable)
             App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
                 NativeEchoCancelerGuid,
                 "Native Echo Canceler",
-                typeof(NativeEchoCanceler)));
+                () => new NativeEchoCanceler()));
         if (NoiseSuppressor.IsAvailable)
             App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
                 NativeDenoiserGuid,
                 "Native Denoiser",
-                typeof(NativeDenoiser)));
+                () => new NativeDenoiser()));
 
         //Register Speex Preprocessors
         App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
             Constants.SpeexDspEchoCancelerGuid,
             "SpeexDsp Echo Canceler",
-            typeof(SpeexDspEchoCanceler)));
+            () => new SpeexDspEchoCanceler()));
         App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
             Constants.SpeexDspAutomaticGainControllerGuid,
             "SpeexDsp Automatic Gain Controller",
-            typeof(SpeexDspAutomaticGainController)));
+            () => new SpeexDspAutomaticGainController()));
         App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
             Constants.SpeexDspDenoiserGuid,
             "SpeexDsp Denoiser",
-            typeof(SpeexDspDenoiser)));
+            () => new SpeexDspDenoiser()));
 
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
-        App.ServiceCollection.AddSingleton<BackgroundService, NativeBackgroundService>();
+        App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
+            new NativeBackgroundService(x.GetRequiredService<PermissionsService>(), x.GetRequiredService));
+        App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
+            new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
+                x.GetRequiredService<IAudioDecoder>));
+        App.ServiceCollection.AddTransient<IAudioEncoder, NativeAudioEncoder>();
+        App.ServiceCollection.AddTransient<IAudioDecoder, NativeAudioDecoder>();
         App.ServiceCollection.AddTransient<Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Permissions.Microphone>();
 

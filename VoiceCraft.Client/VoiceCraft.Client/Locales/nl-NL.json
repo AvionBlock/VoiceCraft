@@ -73,20 +73,25 @@
       "Theme": "Thema",
       "BackgroundImage": "Achtergrondafbeelding"
     },
-    "Audio": {
-      "Audio": "Audio Instellingen",
-      "AutomaticGainControllers": "Automatische versterkingsregelaars",
-      "Denoisers": "Ruis-onderdrukkers",
-      "EchoCancelers": "Echo-onderdrukkers",
+    "Input": {
+      "Input": "Invoerinstellingen",
       "InputDevices": "Invoerapparaten",
+      "InputVolume": "Invoervolume",
       "MicrophoneSensitivity": "Microfoon gevoeligheid",
-      "OutputVolume": "Uitgangsvolume",
-      "OutputDevices": "Uitvoerapparaten",
-      "TestOutput": "Uitvoer testen",
+      "Denoisers": "Ruis-onderdrukkers",
+      "AutomaticGainControllers": "Automatische versterkingsregelaars",
+      "EchoCancelers": "Echo-onderdrukkers",
       "MicrophoneTest": {
         "MicrophoneTest": "Microfoon Test",
         "Test": "Test"
       }
+    },
+    "Output": {
+      "Output": "Uitvoer Instellingen",
+      "OutputDevices": "Uitvoerapparaten",
+      "OutputVolume": "Uitvoervolume",
+      "AudioClippers": "Audio Clippers",
+      "TestOutput": "Uitvoer testen"
     },
     "Network": {
       "Network": "Netwerk Instellingen",

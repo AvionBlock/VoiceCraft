@@ -36,6 +36,7 @@ public partial class AdvancedSettingsViewModel(
     [RelayCommand]
     private void Cancel()
     {
+        if (DisableBackButton) return;
         navigationService.Back();
     }
 }

@@ -1,13 +1,13 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class UndeafenCommand : Command
 {
-    public UndeafenCommand(VoiceCraftServer server) : base(
+    public UndeafenCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.Undeafen.Name"),
         Localizer.Get("Commands.Undeafen.Description"))
     {
@@ -21,7 +21,7 @@ public class UndeafenCommand : Command
         {
             var id = result.GetRequiredValue(idArgument);
 
-            var entity = server.World.GetEntity(id);
+            var entity = world.GetEntity(id);
             switch (entity)
             {
                 case null:

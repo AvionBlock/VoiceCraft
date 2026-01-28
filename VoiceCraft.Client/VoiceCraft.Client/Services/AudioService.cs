@@ -10,21 +10,26 @@ namespace VoiceCraft.Client.Services;
 
 public abstract class AudioService
 {
+    private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
+
     private readonly ConcurrentDictionary<Guid, RegisteredAutomaticGainController> _registeredAutomaticGainControllers =
         new();
 
-    private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
     private readonly ConcurrentDictionary<Guid, RegisteredEchoCanceler> _registeredEchoCancelers = new();
+
+    private readonly ConcurrentDictionary<Guid, RegisteredAudioClipper> _registeredAudioClippers = new();
 
     protected AudioService(
         IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
         IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
-        IEnumerable<RegisteredDenoiser> registeredDenoisers)
+        IEnumerable<RegisteredDenoiser> registeredDenoisers,
+        IEnumerable<RegisteredAudioClipper> registeredClippers)
     {
         _registeredAutomaticGainControllers.TryAdd(Guid.Empty,
             new RegisteredAutomaticGainController(Guid.Empty, "None", null));
         _registeredEchoCancelers.TryAdd(Guid.Empty, new RegisteredEchoCanceler(Guid.Empty, "None", null));
         _registeredDenoisers.TryAdd(Guid.Empty, new RegisteredDenoiser(Guid.Empty, "None", null));
+        _registeredAudioClippers.TryAdd(Guid.Empty, new RegisteredAudioClipper(Guid.Empty, "None", null));
 
         foreach (var registeredAutomaticGainController in registeredAutomaticGainControllers)
             _registeredAutomaticGainControllers.TryAdd(registeredAutomaticGainController.Id,
@@ -35,6 +40,9 @@ public abstract class AudioService
 
         foreach (var registeredDenoiser in registeredDenoisers)
             _registeredDenoisers.TryAdd(registeredDenoiser.Id, registeredDenoiser);
+
+        foreach (var registeredClipper in registeredClippers)
+            _registeredAudioClippers.TryAdd(registeredClipper.Id, registeredClipper);
     }
 
     public IEnumerable<RegisteredDenoiser> RegisteredDenoisers => _registeredDenoisers.Values.ToArray();
@@ -43,6 +51,8 @@ public abstract class AudioService
         _registeredAutomaticGainControllers.Values.ToArray();
 
     public IEnumerable<RegisteredEchoCanceler> RegisteredEchoCancelers => _registeredEchoCancelers.Values.ToArray();
+    
+    public IEnumerable<RegisteredAudioClipper> RegisteredAudioClippers => _registeredAudioClippers.Values.ToArray();
 
     public RegisteredDenoiser? GetDenoiser(Guid id)
     {
@@ -59,6 +69,11 @@ public abstract class AudioService
         return _registeredEchoCancelers.GetValueOrDefault(id);
     }
 
+    public RegisteredAudioClipper? GetAudioClipper(Guid id)
+    {
+        return _registeredAudioClippers.GetValueOrDefault(id);
+    }
+
     public abstract Task<List<string>> GetInputDevicesAsync();
 
     public abstract Task<List<string>> GetOutputDevicesAsync();
@@ -68,49 +83,46 @@ public abstract class AudioService
     public abstract IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format);
 }
 
-public class RegisteredEchoCanceler(Guid id, string name, Type? type)
+public class RegisteredEchoCanceler(Guid id, string name, Func<IEchoCanceler>? factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
     public IEchoCanceler? Instantiate()
     {
-        //IL 2077 warning here.
-        if (type != null)
-#pragma warning disable IL2067
-            return Activator.CreateInstance(type) as IEchoCanceler;
-#pragma warning restore IL2067
-        return null;
+        return factory?.Invoke();
     }
 }
 
-public class RegisteredAutomaticGainController(Guid id, string name, Type? type)
+public class RegisteredAutomaticGainController(Guid id, string name, Func<IAutomaticGainController>? factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
     public IAutomaticGainController? Instantiate()
     {
-        if (type != null)
-#pragma warning disable IL2067
-            return Activator.CreateInstance(type) as IAutomaticGainController;
-#pragma warning restore IL2067
-        return null;
+        return factory?.Invoke();
     }
 }
 
-public class RegisteredDenoiser(Guid id, string name, Type? type)
+public class RegisteredDenoiser(Guid id, string name, Func<IDenoiser>? factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
     public IDenoiser? Instantiate()
     {
-        //IL 2077 warning here.
-        if (type != null)
-#pragma warning disable IL2067
-            return Activator.CreateInstance(type) as IDenoiser;
-#pragma warning restore IL2067
-        return null;
+        return factory?.Invoke();
+    }
+}
+
+public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper>? factory)
+{
+    public Guid Id { get; } = id;
+    public string Name { get; } = name;
+
+    public IAudioClipper? Instantiate()
+    {
+        return factory?.Invoke();
     }
 }

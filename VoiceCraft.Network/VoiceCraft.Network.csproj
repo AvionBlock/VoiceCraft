@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Fleck" />
+        <PackageReference Include="LiteNetLib"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Packets\" />
+    </ItemGroup>
+
+</Project>

@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
 namespace VoiceCraft.Core.World
 {
-    public class VoiceCraftEntity
+    public class VoiceCraftEntity(int id)
     {
-        private readonly Dictionary<int, VoiceCraftEntity> _visibleEntities = new Dictionary<int, VoiceCraftEntity>();
+        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities = new();
         private float _caveFactor;
         private bool _deafened;
         private ushort _effectBitmask = ushort.MaxValue;
@@ -21,17 +22,8 @@ namespace VoiceCraft.Core.World
         private ushort _talkBitmask = ushort.MaxValue;
         private string _worldId = string.Empty;
 
-        //Modifiers for modifying data for later?
-
-        public VoiceCraftEntity(int id, VoiceCraftWorld world)
-        {
-            Id = id;
-            World = world;
-        }
-
         //Properties
-        public int Id { get; }
-        public VoiceCraftWorld World { get; }
+        public int Id { get; } = id;
         public float Loudness => IsSpeaking ? _loudness : 0f;
         public bool IsSpeaking => (DateTime.UtcNow - LastSpoke).TotalMilliseconds < Constants.SilenceThresholdMs;
         public DateTime LastSpoke { get; private set; } = DateTime.MinValue;
@@ -72,7 +64,7 @@ namespace VoiceCraft.Core.World
         public void RemoveVisibleEntity(VoiceCraftEntity entity)
         {
             if (entity == this) return;
-            if (!_visibleEntities.Remove(entity.Id)) return;
+            if (!_visibleEntities.Remove(entity.Id, out _)) return;
             OnVisibleEntityRemoved?.Invoke(entity, this);
         }
 
@@ -80,11 +72,11 @@ namespace VoiceCraft.Core.World
         {
             List<int>? keysToRemove = null;
             foreach (var entity in _visibleEntities.Where(entity => entity.Value.Destroyed))
-                (keysToRemove ??= new List<int>()).Add(entity.Key);
+                (keysToRemove ??= []).Add(entity.Key);
 
             if (keysToRemove == null) return;
             foreach (var key in keysToRemove)
-                _visibleEntities.Remove(key);
+                _visibleEntities.Remove(key, out _);
         }
 
         public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)

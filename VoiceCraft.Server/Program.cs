@@ -4,9 +4,10 @@ using Fleck;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network.Servers;
+using VoiceCraft.Network.Systems;
 using VoiceCraft.Server.Commands;
 using VoiceCraft.Server.Locales;
-using VoiceCraft.Server.Servers;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
@@ -30,9 +31,9 @@ public static class Program
         var serviceCollection = new ServiceCollection();
 
         //Servers
-        serviceCollection.AddSingleton<VoiceCraftServer>();
-        serviceCollection.AddSingleton<McWssServer>();
-        serviceCollection.AddSingleton<McHttpServer>();
+        serviceCollection.AddSingleton<LiteNetVoiceCraftServer>();
+        serviceCollection.AddSingleton<HttpMcApiServer>();
+        serviceCollection.AddSingleton<McWssMcApiServer>();
 
         //Systems
         serviceCollection.AddSingleton<EventHandlerSystem>();

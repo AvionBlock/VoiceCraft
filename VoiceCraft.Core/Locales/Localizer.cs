@@ -13,7 +13,7 @@ namespace VoiceCraft.Core.Locales
 
         //Private set language
         private string _language = "";
-        public static Localizer Instance { get; } = new Localizer();
+        public static Localizer Instance { get; } = new();
 
         public static IBaseLocalizer BaseLocalizer
         {

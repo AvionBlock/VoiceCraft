@@ -2,7 +2,8 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core;
+using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -12,12 +13,12 @@ public partial class NetworkSettingsViewModel(
     : ViewModelBase, IDisposable
 {
     //Network Settings
-    [ObservableProperty] private Data.NetworkSettingsViewModel _networkSettings = new(settingsService);
+    [ObservableProperty] private NetworkSettingsDataViewModel _networkSettingsData = new(settingsService);
     [ObservableProperty] private PositioningType[] _positioningTypes = Enum.GetValues<PositioningType>();
 
     public void Dispose()
     {
-        NetworkSettings.Dispose();
+        NetworkSettingsData.Dispose();
         GC.SuppressFinalize(this);
     }
 

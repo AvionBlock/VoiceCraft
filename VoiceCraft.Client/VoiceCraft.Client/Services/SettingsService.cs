@@ -24,7 +24,8 @@ public class SettingsService
     // ReSharper disable once InconsistentNaming
     public Guid UserGuid => _settings.UserGuid;
     public Guid ServerUserGuid => _settings.ServerUserGuid;
-    public AudioSettings AudioSettings => _settings.AudioSettings;
+    public InputSettings InputSettings => _settings.InputSettings;
+    public OutputSettings OutputSettings => _settings.OutputSettings;
     public LocaleSettings LocaleSettings => _settings.LocaleSettings;
     public NotificationSettings NotificationSettings => _settings.NotificationSettings;
     public ServersSettings ServersSettings => _settings.ServersSettings;
@@ -65,7 +66,8 @@ public class SettingsService
                 SettingsStructureGenerationContext.Default.SettingsStructure);
         if (loadedSettings == null) return;
 
-        loadedSettings.AudioSettings.OnLoading();
+        loadedSettings.InputSettings.OnLoading();
+        loadedSettings.OutputSettings.OnLoading();
         loadedSettings.LocaleSettings.OnLoading();
         loadedSettings.NotificationSettings.OnLoading();
         loadedSettings.ServersSettings.OnLoading();
@@ -78,7 +80,8 @@ public class SettingsService
 
     private async Task SaveSettingsAsync()
     {
-        AudioSettings.OnSaving();
+        InputSettings.OnSaving();
+        OutputSettings.OnSaving();
         LocaleSettings.OnSaving();
         NotificationSettings.OnSaving();
         ServersSettings.OnSaving();
@@ -118,7 +121,8 @@ public class SettingsStructure
 {
     public Guid UserGuid { get; set; } = Guid.NewGuid();
     public Guid ServerUserGuid { get; set; } = Guid.NewGuid();
-    public AudioSettings AudioSettings { get; set; } = new();
+    public InputSettings InputSettings { get; set; } = new();
+    public OutputSettings OutputSettings { get; set; } = new();
     public LocaleSettings LocaleSettings { get; set; } = new();
     public NotificationSettings NotificationSettings { get; set; } = new();
     public ServersSettings ServersSettings { get; set; } = new();

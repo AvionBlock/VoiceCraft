@@ -2,13 +2,13 @@ using System.CommandLine;
 using Spectre.Console;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
-using VoiceCraft.Server.Servers;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Server.Commands;
 
 public class ListCommand : Command
 {
-    public ListCommand(VoiceCraftServer server) : base(
+    public ListCommand(VoiceCraftWorld world) : base(
         Localizer.Get("Commands.List.Name"),
         Localizer.Get("Commands.List.Description"))
     {
@@ -41,7 +41,7 @@ public class ListCommand : Command
                 .AddColumn(Localizer.Get("Tables.ListCommandEntities.Rotation"))
                 .AddColumn(Localizer.Get("Tables.ListCommandEntities.WorldId"));
 
-            var list = server.World.Entities;
+            var list = world.Entities;
             if (clientsOnly)
                 list = list.OfType<VoiceCraftNetworkEntity>();
 

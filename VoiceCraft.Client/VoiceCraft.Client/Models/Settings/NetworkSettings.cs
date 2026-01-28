@@ -1,6 +1,6 @@
 using System;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core;
+using VoiceCraft.Network;
 
 namespace VoiceCraft.Client.Models.Settings;
 

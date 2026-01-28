@@ -10,11 +10,13 @@ namespace VoiceCraft.Client.Linux.Audio;
 public class NativeAudioService(
     IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
     IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
-    IEnumerable<RegisteredDenoiser> registeredDenoisers)
+    IEnumerable<RegisteredDenoiser> registeredDenoisers,
+    IEnumerable<RegisteredAudioClipper> registeredClippers)
     : AudioService(
         registeredAutomaticGainControllers,
         registeredEchoCancelers,
-        registeredDenoisers)
+        registeredDenoisers,
+        registeredClippers)
 {
     public override IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format)
     {

@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:DataType="vm:Settings.OutputSettingsViewModel"
+             x:Class="VoiceCraft.Client.Views.Settings.OutputSettingsView">
+    <Grid RowDefinitions="Auto, *">
+        <Grid Grid.Row="0"
+              Margin="0,0,0,10"
+              Background="{DynamicResource BackgroundBrush}">
+            <TextBlock Margin="10"
+                       VerticalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{locale:Localize Settings.Output.Output}"
+                       TextAlignment="Center" />
+            <Button Padding="10"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    Command="{Binding CancelCommand}"
+                    CornerRadius="0">
+                <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
+            </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1"
+                      Margin="10,0,10,10">
+            <Border VerticalAlignment="Top"
+                    Padding="15"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Output.OutputDevices}" />
+                    
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding OutputSettingsData.OutputDevices}"
+                              SelectedItem="{Binding OutputSettingsData.OutputDevice}" />
+                    
+                    <StackPanel>
+                        <Grid ColumnDefinitions="Auto, Auto">
+                            <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                       Text="{locale:Localize Settings.Output.OutputVolume}" />
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                       Text="{Binding OutputSettingsData.OutputVolume, StringFormat='{} {0:P0}'}" />
+                        </Grid>
+
+                        <Slider Maximum="2.0"
+                                Minimum="0.0"
+                                Value="{Binding OutputSettingsData.OutputVolume}" />
+                    </StackPanel>
+                    
+                    <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="15"
+                               Text="{locale:Localize Settings.Output.AudioClippers}" />
+                    
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding OutputSettingsData.AudioClippers}"
+                              DisplayMemberBinding="{Binding Name}"
+                              SelectedValue="{Binding OutputSettingsData.AudioClipper}"
+                              SelectedValueBinding="{Binding Id}" />
+                    
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  Command="{Binding TestCommand}"
+                                  IsChecked="{Binding IsPlaying}">
+                        <TextBlock Text="{locale:Localize Settings.Output.TestOutput}" />
+                    </ToggleButton>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

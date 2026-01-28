@@ -41,7 +41,7 @@
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Locales}"
                               DisplayMemberBinding="{Binding Key}"
-                              SelectedValue="{Binding LocaleSettings.Culture}"
+                              SelectedValue="{Binding LocaleSettingsData.Culture}"
                               SelectedValueBinding="{Binding Value}" />
 
                     <TextBlock HorizontalAlignment="Left"
@@ -52,7 +52,7 @@
                     <NumericUpDown Increment="1"
                                    Maximum="65535"
                                    Minimum="0"
-                                   Value="{Binding NotificationSettings.DismissDelayMs}" />
+                                   Value="{Binding NotificationSettingsData.DismissDelayMs}" />
 
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding ServersSettings.HideServerAddresses}">
@@ -60,7 +60,7 @@
                     </ToggleButton>
 
                     <ToggleButton HorizontalAlignment="Stretch"
-                                  IsChecked="{Binding NotificationSettings.DisableNotifications}">
+                                  IsChecked="{Binding NotificationSettingsData.DisableNotifications}">
                         <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
                     </ToggleButton>
                 </StackPanel>

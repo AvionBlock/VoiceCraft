@@ -16,11 +16,11 @@ public partial class AppearanceSettingsViewModel(
         new(themesService.RegisteredBackgroundImages);
 
     [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
-    [ObservableProperty] private ThemeSettingsViewModel _themeSettings = new(settingsService, themesService);
+    [ObservableProperty] private ThemeSettingsDataViewModel _themeSettingsData = new(settingsService, themesService);
 
     public void Dispose()
     {
-        ThemeSettings.Dispose();
+        ThemeSettingsData.Dispose();
         GC.SuppressFinalize(this);
     }
 

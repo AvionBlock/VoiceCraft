@@ -14,7 +14,7 @@ public partial class ServersViewModel(
     SettingsService settings)
     : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private ServerViewModel? _selectedServer;
+    [ObservableProperty] private ServerDataViewModel? _selectedServer;
 
     [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settings);
 
@@ -24,7 +24,7 @@ public partial class ServersViewModel(
         GC.SuppressFinalize(this);
     }
 
-    partial void OnSelectedServerChanged(ServerViewModel? value)
+    partial void OnSelectedServerChanged(ServerDataViewModel? value)
     {
         if (value == null) return;
         navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(value.Server));
@@ -38,16 +38,16 @@ public partial class ServersViewModel(
     }
 
     [RelayCommand]
-    private void DeleteServer(ServerViewModel server)
+    private void DeleteServer(ServerDataViewModel serverData)
     {
-        ServersSettings.ServersSettings.RemoveServer(server.Server);
-        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Removed:{server.Name}"),
+        ServersSettings.ServersSettings.RemoveServer(serverData.Server);
+        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Removed:{serverData.Name}"),
             Localizer.Get("Notification.Servers.Badge"));
         _ = settings.SaveAsync();
     }
 
     [RelayCommand]
-    private void EditServer(ServerViewModel? server)
+    private void EditServer(ServerDataViewModel? server)
     {
         if (server == null) return;
         navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(server.Server));

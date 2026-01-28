@@ -1,105 +1,95 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core;
-using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Linux;
 
-public class NativeBackgroundService(NotificationService notificationService) : BackgroundService
+public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBackgroundService
 {
-    private readonly ConcurrentDictionary<Type, BackgroundProcess> _processes = [];
-    private Task? _backgroundWorker;
-    public override event Action<IBackgroundProcess>? OnProcessStarted;
-    public override event Action<IBackgroundProcess>? OnProcessStopped;
+    private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
+    private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
-    public override async Task StartBackgroundProcess<T>(T process, int timeout = 5000)
+    public Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
-        var processType = typeof(T);
-        if (_processes.ContainsKey(processType))
-            throw new InvalidOperationException("A background process of this type has already been queued/started!");
+        var backgroundType = typeof(T);
+        if (Services.ContainsKey(backgroundType))
+            throw new InvalidOperationException();
 
-        var backgroundProcess = new BackgroundProcess(process);
-        _processes.TryAdd(processType, backgroundProcess);
-        if (!StartBackgroundWorker())
-        {
-            _processes.Clear();
-            throw new Exception("Failed to start background process! Background worker failed to start!");
-        }
+        if (BackgroundFactory.Invoke(backgroundType) is not T instance)
+            throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
 
-        var startTime = DateTime.UtcNow;
-        while (backgroundProcess.Status == BackgroundProcessStatus.Stopped)
-        {
-            if ((DateTime.UtcNow - startTime).TotalMilliseconds >= timeout)
-            {
-                _processes.TryRemove(processType, out _);
-                backgroundProcess.Dispose();
-                throw new Exception("Failed to start background process!");
-            }
-
-            await Task.Delay(10); //Don't burn the CPU!
-        }
-    }
-
-    public override Task StopBackgroundProcess<T>()
-    {
-        var processType = typeof(T);
-        if (!_processes.TryRemove(processType, out var process)) return Task.CompletedTask;
-        process.Stop();
-        process.Dispose();
-        OnProcessStopped?.Invoke(process.Process);
+        var backgroundTask = new BackgroundTask(instance);
+        backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
+        Services.TryAdd(backgroundType, backgroundTask);
+        backgroundTask.Start(() => startAction.Invoke(instance, _ => {}, _ => {}));
         return Task.CompletedTask;
     }
 
-    public override bool TryGetBackgroundProcess<T>(out T? process) where T : default
+    public T? GetService<T>() where T : notnull
     {
-        var processType = typeof(T);
-        if (!_processes.TryGetValue(processType, out var value))
+        if (Services.TryGetValue(typeof(T), out var service) && service.TaskInstance is T taskInstance)
+            return taskInstance;
+        return default;
+    }
+
+    public void Dispose()
+    {
+        foreach (var service in Services.Values)
         {
-            process = default;
-            return false;
+            service.Dispose();
         }
-
-        process = (T?)value.Process;
-        return process != null;
+        GC.SuppressFinalize(this);
     }
 
-    private bool StartBackgroundWorker()
+    private static void BackgroundTaskOnCompleted(BackgroundTask task)
     {
-        if (_backgroundWorker is { IsCompleted: false }) return true;
-        _backgroundWorker = Task.Run(BackgroundLogic);
-        return true;
+        task.OnCompleted -= BackgroundTaskOnCompleted;
+        Services.TryRemove(task.TaskInstance.GetType(), out _);
     }
 
-    private async Task BackgroundLogic()
+    private class BackgroundTask(object taskInstance) : IDisposable
     {
-        try
+        public event Action<BackgroundTask>? OnCompleted;
+        public Task? RunningTask { get; private set; }
+        public object TaskInstance { get; } = taskInstance;
+
+        public void Start(Action startAction)
         {
-            while (!_processes.IsEmpty)
+            RunningTask = Task.Run(() =>
             {
-                await Task.Delay(500);
-                foreach (var process in _processes)
+                try
                 {
-                    if (process.Value.Status == BackgroundProcessStatus.Stopped)
-                    {
-                        process.Value.Start();
-                        OnProcessStarted?.Invoke(process.Value.Process);
-                        continue;
-                    }
-
-                    if (!process.Value.IsCompleted) continue;
-                    if (!_processes.Remove(process.Key, out _)) continue;
-                    process.Value.Dispose();
-                    OnProcessStopped?.Invoke(process.Value.Process);
+                    startAction.Invoke();
                 }
+                finally
+                {
+                    Dispose();
+                    OnCompleted?.Invoke(this);
+                }
+            });
+
+            var sw = new SpinWait();
+            while (RunningTask.Status < TaskStatus.Running)
+            {
+                sw.SpinOnce();
             }
         }
-        catch (Exception ex)
+
+        public void Dispose()
         {
-            notificationService.SendErrorNotification(Localizer.Get($"BackgroundService.BackgroundError:{ex.Message}"));
+            try
+            {
+                if (TaskInstance is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            catch
+            {
+                //Do Nothing
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 }

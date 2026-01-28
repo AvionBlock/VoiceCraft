@@ -1,0 +1,235 @@
+using System;
+using System.Numerics;
+using System.Text.Json;
+using Fleck;
+using VoiceCraft.Core.World;
+using VoiceCraft.Network.Packets.McWssPackets;
+
+namespace VoiceCraft.Client.Servers;
+
+public class McWssServer(VoiceCraftEntity client) : IDisposable
+{
+    private bool _customEventTriggered;
+    private string _localPlayerName = string.Empty;
+    private string _localPlayerRequestId = string.Empty;
+    private IWebSocketConnection? _peerConnection;
+    private WebSocketServer? _wsServer;
+    public bool IsStarted { get; private set; }
+
+    public void Dispose()
+    {
+        Stop();
+        OnConnected = null;
+        OnDisconnected = null;
+        GC.SuppressFinalize(this);
+    }
+
+    public event Action<string>? OnConnected;
+    public event Action? OnDisconnected;
+
+    public void Start(string ip, int port)
+    {
+        Stop();
+
+        try
+        {
+            _customEventTriggered = false;
+            _wsServer = new WebSocketServer($"ws://{ip}:{port}");
+
+            _wsServer.Start(socket =>
+            {
+                socket.OnOpen = () => OnClientConnected(socket);
+                socket.OnClose = () => OnClientDisconnected(socket);
+                socket.OnMessage = message => OnMessageReceived(socket, message);
+            });
+            IsStarted = true;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("McWssServer.Exceptions.Failed", ex);
+        }
+    }
+
+    public void Stop()
+    {
+        try
+        {
+            if (_wsServer == null) return;
+            _peerConnection?.Close();
+            _wsServer.Dispose();
+            _wsServer = null;
+        }
+        finally
+        {
+            IsStarted = false;
+        }
+    }
+
+    private static string SendCommand(IWebSocketConnection socket, string command)
+    {
+        var packet = new McWssCommandRequest(command);
+        socket.Send(JsonSerializer.Serialize(packet, McWssCommandRequestGenerationContext.Default.McWssCommandRequest));
+        return packet.header.requestId;
+    }
+
+    private static void SendEventSubscribe(IWebSocketConnection socket, string eventName)
+    {
+        var packet = new McWssEventSubscribeRequest(eventName);
+        socket.Send(JsonSerializer.Serialize(packet,
+            McWssEventSubscribeRequestGenerationContext.Default.McWssEventSubscribeRequest));
+    }
+
+    private void OnClientConnected(IWebSocketConnection socket)
+    {
+        if (_peerConnection != null)
+            socket.Close(); //Full.
+
+        _customEventTriggered = false;
+        _peerConnection = socket;
+        SendEventSubscribe(_peerConnection, "PlayerTravelled");
+        SendEventSubscribe(_peerConnection, "PlayerTransform");
+        SendEventSubscribe(_peerConnection, "PlayerTeleported");
+        _localPlayerRequestId = SendCommand(_peerConnection, "/getlocalplayername");
+    }
+
+    private void OnClientDisconnected(IWebSocketConnection socket)
+    {
+        if (_peerConnection?.ConnectionInfo.Id != socket.ConnectionInfo.Id) return;
+        _peerConnection = null;
+        OnDisconnected?.Invoke();
+    }
+
+    private void OnMessageReceived(IWebSocketConnection _, string message)
+    {
+        try
+        {
+            var genericPacket = JsonSerializer.Deserialize<McWssGenericPacket>(message,
+                McWssGenericPacketGenerationContext.Default.McWssGenericPacket);
+            if (genericPacket == null) return;
+
+            switch (genericPacket.header.messagePurpose)
+            {
+                case "commandResponse":
+                    HandleCommandResponse(genericPacket, message);
+                    break;
+                case "event":
+                    HandleEvent(genericPacket, message);
+                    break;
+            }
+        }
+        catch
+        {
+            //Do Nothing
+        }
+    }
+
+    private void HandleCommandResponse(McWssGenericPacket genericPacket, string data)
+    {
+        if (genericPacket.header.requestId != _localPlayerRequestId) return;
+        var localPlayerNameCommandResponse = JsonSerializer.Deserialize<McWssLocalPlayerNameCommandResponse>(data,
+            McWssLocalPlayerNameCommandResponseGenerationContext.Default.McWssLocalPlayerNameCommandResponse);
+        if (localPlayerNameCommandResponse == null) return;
+        _localPlayerName = localPlayerNameCommandResponse.LocalPlayerName;
+        client.Name = _localPlayerName;
+        OnConnected?.Invoke(_localPlayerName);
+    }
+
+    private void HandleEvent(McWssGenericPacket genericPacket, string data)
+    {
+        switch (genericPacket.header.eventName)
+        {
+            case "PlayerTravelled":
+                var playerTravelledEventPacket = JsonSerializer.Deserialize<McWssPlayerTravelledEvent>(data,
+                    McWssPlayerTravelledEventGenerationContext.Default.McWssPlayerTravelledEvent);
+                if (playerTravelledEventPacket == null) return;
+                HandlePlayerTravelledEvent(playerTravelledEventPacket);
+                break;
+            case "PlayerTransform":
+                var playerTransformEventPacket = JsonSerializer.Deserialize<McWssPlayerTransformEvent>(data,
+                    McWssPlayerTransformEventGenerationContext.Default.McWssPlayerTransformEvent);
+                if (playerTransformEventPacket == null) return;
+                HandlePlayerTransformEvent(playerTransformEventPacket);
+                break;
+            case "PlayerTeleported":
+                var playerTeleportedEventPacket = JsonSerializer.Deserialize<McWssPlayerTeleportedEvent>(data,
+                    McWssPlayerTeleportedEventGenerationContext.Default.McWssPlayerTeleportedEvent);
+                if (playerTeleportedEventPacket == null) return;
+                HandlePlayerTeleportedEvent(playerTeleportedEventPacket);
+                break;
+            case "LocalPlayerUpdated": //Custom event for injected MC clients.
+                var localPlayerUpdatedEventPacket = JsonSerializer.Deserialize<McWssLocalPlayerUpdatedEvent>(data,
+                    McWssLocalPlayerUpdatedEventGenerationContext.Default.McWssLocalPlayerUpdatedEvent);
+                if (localPlayerUpdatedEventPacket == null) return;
+                HandleLocalPlayerUpdatedEvent(localPlayerUpdatedEventPacket);
+                break;
+        }
+    }
+
+    private void HandlePlayerTravelledEvent(McWssPlayerTravelledEvent playerTravelledEvent)
+    {
+        if (_customEventTriggered || playerTravelledEvent.body.player.name != _localPlayerName) return;
+        var position = playerTravelledEvent.body.player.position;
+        var rotation = playerTravelledEvent.body.player.yRot;
+        var dimensionId = playerTravelledEvent.body.player.dimension;
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(0, rotation);
+        client.WorldId = dimensionId switch
+        {
+            0 => "minecraft:overworld",
+            1 => "minecraft:nether",
+            2 => "minecraft:end",
+            _ => $"{dimensionId}"
+        };
+    }
+
+    private void HandlePlayerTransformEvent(McWssPlayerTransformEvent playerTransformEvent)
+    {
+        if (_customEventTriggered || playerTransformEvent.body.player.name != _localPlayerName) return;
+        var position = playerTransformEvent.body.player.position;
+        var rotation = playerTransformEvent.body.player.yRot;
+        var dimensionId = playerTransformEvent.body.player.dimension;
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(0, rotation);
+        client.WorldId = dimensionId switch
+        {
+            0 => "minecraft:overworld",
+            1 => "minecraft:nether",
+            2 => "minecraft:end",
+            _ => $"{dimensionId}"
+        };
+    }
+
+    private void HandlePlayerTeleportedEvent(McWssPlayerTeleportedEvent playerTeleportedEvent)
+    {
+        if (_customEventTriggered || playerTeleportedEvent.body.player.name != _localPlayerName) return;
+        var position = playerTeleportedEvent.body.player.position;
+        var rotation = playerTeleportedEvent.body.player.yRot;
+        var dimensionId = playerTeleportedEvent.body.player.dimension;
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(0, rotation);
+        client.WorldId = dimensionId switch
+        {
+            0 => "minecraft:overworld",
+            1 => "minecraft:nether",
+            2 => "minecraft:end",
+            _ => $"{dimensionId}"
+        };
+    }
+
+    private void HandleLocalPlayerUpdatedEvent(McWssLocalPlayerUpdatedEvent localPlayerUpdatedEvent)
+    {
+        _customEventTriggered = true;
+        var name = localPlayerUpdatedEvent.body.playerName;
+        var position = localPlayerUpdatedEvent.body.position;
+        var rotation = localPlayerUpdatedEvent.body.rotation;
+        var worldId = localPlayerUpdatedEvent.body.worldId;
+        var caveFactor = localPlayerUpdatedEvent.body.caveFactor;
+        var muffleFactor = localPlayerUpdatedEvent.body.mufflefactor;
+        client.Name = name;
+        client.Position = new Vector3(position.x, position.y, position.z);
+        client.Rotation = new Vector2(rotation.x, rotation.y);
+        client.WorldId = worldId;
+        client.CaveFactor = caveFactor;
+        client.MuffleFactor = muffleFactor;
+    }
+}

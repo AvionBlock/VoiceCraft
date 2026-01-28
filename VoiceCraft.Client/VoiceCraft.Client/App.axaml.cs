@@ -19,6 +19,7 @@ using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Locales;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
@@ -118,6 +119,7 @@ public class App : Application
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
+        ServiceCollection.AddSingleton<VoiceCraftService>();
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -125,14 +127,15 @@ public class App : Application
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
         ServiceCollection.AddTransient<EditServerViewModel>();
-        ServiceCollection.AddTransient<SelectedServerViewModel>();
-        ServiceCollection.AddTransient<VoiceViewModel>();
         ServiceCollection.AddTransient<GeneralSettingsViewModel>();
         ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
-        ServiceCollection.AddTransient<AudioSettingsViewModel>();
+        ServiceCollection.AddTransient<InputSettingsViewModel>();
+        ServiceCollection.AddTransient<OutputSettingsViewModel>();
         ServiceCollection.AddTransient<NetworkSettingsViewModel>();
         ServiceCollection.AddTransient<HotKeySettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
+        ServiceCollection.AddTransient<SelectedServerViewModel>();
+        ServiceCollection.AddTransient<VoiceViewModel>();
 
         //Home Pages
         ServiceCollection.AddSingleton<AddServerViewModel>();
@@ -145,19 +148,20 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
-        ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
-        ServiceCollection.AddKeyedTransient<Control, VoiceView>(typeof(VoiceView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CrashLogView>(typeof(CrashLogView).FullName);
         ServiceCollection.AddKeyedTransient<Control, GeneralSettingsView>(typeof(GeneralSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AppearanceSettingsView>(typeof(AppearanceSettingsView).FullName);
-        ServiceCollection.AddKeyedTransient<Control, AudioSettingsView>(typeof(AudioSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, InputSettingsView>(typeof(InputSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, OutputSettingsView>(typeof(OutputSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, NetworkSettingsView>(typeof(NetworkSettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HotKeySettingsView>(typeof(HotKeySettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AdvancedSettingsView>(typeof(AdvancedSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, VoiceView>(typeof(VoiceView).FullName);
 
         //Themes Registry
         ServiceCollection.AddSingleton(new RegisteredTheme(
@@ -213,6 +217,16 @@ public class App : Application
         //HotKey Registry
         ServiceCollection.AddSingleton<HotKeyAction, MuteAction>();
         ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
+        
+        //Clipper Registry
+        ServiceCollection.AddSingleton(new RegisteredAudioClipper(
+            Constants.HardAudioClipperGuid,
+            "Hard Clipper",
+            () => new SampleHardAudioClipper()));
+        ServiceCollection.AddSingleton(new RegisteredAudioClipper(
+            Constants.TanhSoftAudioClipperGuid,
+            "Tanh Soft Clipper",
+            () => new SampleTanhSoftAudioClipper()));
 
         return ServiceCollection.BuildServiceProvider();
     }

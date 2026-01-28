@@ -13,8 +13,7 @@ public class VoiceCraftRootCommand : RootCommand
         };
         var languageOption = new Option<string>("--language")
         {
-            Description = "The language to use when voicecraft starts. Overrides the ServerProperties.json file.",
-            DefaultValueFactory = _ => "en-US"
+            Description = "The language to use when voicecraft starts. Overrides the ServerProperties.json file."
         };
         Add(exitOnInvalidPropertiesOption);
         Add(languageOption);

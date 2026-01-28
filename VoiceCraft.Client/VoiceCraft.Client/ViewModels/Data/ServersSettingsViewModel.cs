@@ -14,7 +14,7 @@ public partial class ServersSettingsViewModel : ObservableObject, IDisposable
     public readonly ServersSettings ServersSettings;
     private bool _disposed;
     [ObservableProperty] private bool _hideServerAddresses;
-    [ObservableProperty] private ObservableCollection<ServerViewModel> _servers;
+    [ObservableProperty] private ObservableCollection<ServerDataViewModel> _servers;
     private bool _updating;
 
     public ServersSettingsViewModel(SettingsService settingsService)
@@ -23,8 +23,8 @@ public partial class ServersSettingsViewModel : ObservableObject, IDisposable
         _settingsService = settingsService;
         ServersSettings.OnUpdated += Update;
         _hideServerAddresses = ServersSettings.HideServerAddresses;
-        _servers = new ObservableCollection<ServerViewModel>(
-            ServersSettings.Servers.Select(s => new ServerViewModel(s, _settingsService)));
+        _servers = new ObservableCollection<ServerDataViewModel>(
+            ServersSettings.Servers.Select(s => new ServerDataViewModel(s, _settingsService)));
     }
 
     public void Dispose()
@@ -55,8 +55,8 @@ public partial class ServersSettingsViewModel : ObservableObject, IDisposable
 
         HideServerAddresses = serversSettings.HideServerAddresses;
         foreach (var server in Servers) server.Dispose();
-        Servers = new ObservableCollection<ServerViewModel>(
-            serversSettings.Servers.Select(x => new ServerViewModel(x, _settingsService)));
+        Servers = new ObservableCollection<ServerDataViewModel>(
+            serversSettings.Servers.Select(x => new ServerDataViewModel(x, _settingsService)));
 
         _updating = false;
     }

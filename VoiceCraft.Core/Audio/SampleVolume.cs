@@ -5,10 +5,10 @@ namespace VoiceCraft.Core.Audio
 {
     public static class SampleVolume
     {
-        public static int Read(Span<float> data, int count, float volume)
+        public static int Read(Span<float> data, float volume)
         {
             if (Math.Abs(volume - 1.0f) < Constants.FloatingPointTolerance)
-                return count; // Skip if volume is essentially 1.0
+                return data.Length; // Skip if volume is essentially 1.0
             
             volume = Math.Clamp(volume, 0.0f, 2.0f); //Clamp the values.
             
@@ -17,12 +17,12 @@ namespace VoiceCraft.Core.Audio
             var simdLength = Vector<float>.Count;
 
             // Ensure there's enough data for SIMD operations
-            if (Vector.IsHardwareAccelerated && count >= simdLength)
+            if (Vector.IsHardwareAccelerated && data.Length >= simdLength)
             {
                 var volumeVector = new Vector<float>(volume);
                 
                 // Process SIMD chunks
-                for (; simdCount <= count - simdLength; simdCount += simdLength)
+                for (; simdCount <= data.Length - simdLength; simdCount += simdLength)
                 {
                     var vectorS = new Vector<float>(data.Slice(simdCount, Vector<float>.Count));
                     vectorS *= volumeVector;
@@ -31,12 +31,12 @@ namespace VoiceCraft.Core.Audio
             }
             
             // Process remaining samples (scalar fallback)
-            for (; simdCount < count; simdCount++)
+            for (; simdCount < data.Length; simdCount++)
             {
                 data[simdCount] *= volume;
             }
 
-            return count;
+            return data.Length;
         }
     }
 }
