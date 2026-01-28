@@ -73,8 +73,8 @@
       "Theme": "Thema",
       "BackgroundImage": "Achtergrondafbeelding"
     },
-    "Audio": {
-      "Audio": "Audio Instellingen",
+    "Input": {
+      "Input": null,
       "InputDevices": "Invoerapparaten",
       "InputVolume": "Invoervolume",
       "MicrophoneSensitivity": "Microfoon gevoeligheid",
