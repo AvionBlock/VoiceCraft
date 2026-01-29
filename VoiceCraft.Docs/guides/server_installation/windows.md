@@ -58,8 +58,8 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
   "pack_id": "71ebb3ba-e9db-4546-9520-05f20b17dcb6",
   "version": [
     1,
-    3,
-    1
+    4,
+    0
   ]
 }
 ```
@@ -72,8 +72,8 @@ If there are multiple addon's then you will need to edit the file like this:
     "pack_id": "71ebb3ba-e9db-4546-9520-05f20b17dcb6",
     "version": [
       1,
-      3,
-      1
+      4,
+      0
     ]
   },
   ...
@@ -87,8 +87,8 @@ If there are multiple addon's then you will need to edit the file like this:
   "pack_id": "30b512be-77d1-4a61-bdb7-6c2f4062f889",
   "version": [
     1,
-    3,
-    1
+    4,
+    0
   ]
 }
 ```
