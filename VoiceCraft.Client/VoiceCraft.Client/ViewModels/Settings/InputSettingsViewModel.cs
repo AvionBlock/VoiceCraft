@@ -154,20 +154,19 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     {
         lock (_lock)
         {
+            var result = false;
+            IsRecording = false;
+            MicrophoneValue = 0;
+            DetectingVoiceActivity = false;
+            
             if (_audioRecorder != null)
             {
                 _audioRecorder.OnDataAvailable -= OnDataAvailable;
                 _audioRecorder.OnRecordingStopped -= OnRecordingStopped;
-                IsRecording = false;
-                MicrophoneValue = 0;
-                DetectingVoiceActivity = false;
                 if (_audioRecorder.CaptureState == CaptureState.Capturing)
                     _audioRecorder.Stop();
                 _audioRecorder.Dispose();
-            }
-            else
-            {
-                return false;
+                result = true;
             }
 
             _denoiser?.Dispose();
@@ -175,7 +174,7 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
             _audioRecorder = null;
             _denoiser = null;
             _gainController = null;
-            return true;
+            return result;
         }
     }
 }
