@@ -346,27 +346,3 @@ jobs:
         with:
           name: VoiceCraft.Server.Linux.arm64
           path: ./VoiceCraft.Server/bin/Release/net9.0/linux-arm64/publish
-          
-  Build_Server_Linux-Musl-Arm64:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./VoiceCraft.Server
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Dotnet
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '9.x'
-
-      - name: Install VoiceCraft.Server WorkLoads
-        run: dotnet workload restore
-
-      - name: Publish VoiceCraft.Server.Linux.musl.arm64
-        run: dotnet publish -c Release -r linux-musl-arm64 -p:PublishSingleFile=true
-
-      - name: Upload Artifact VoiceCraft.Server.Linux.musl.arm64
-        uses: actions/upload-artifact@v4
-        with:
-          name: VoiceCraft.Server.Linux.musl.arm64
-          path: ./VoiceCraft.Server/bin/Release/net9.0/linux-musl-arm64/publish
