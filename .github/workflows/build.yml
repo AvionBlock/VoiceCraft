@@ -368,5 +368,5 @@ jobs:
       - name: Upload Artifact VoiceCraft.Server.Linux.musl.arm64
         uses: actions/upload-artifact@v4
         with:
-          name: VoiceCraft.Server.Linux.arm64
+          name: VoiceCraft.Server.Linux.musl.arm64
           path: ./VoiceCraft.Server/bin/Release/net9.0/linux-musl-arm64/publish
