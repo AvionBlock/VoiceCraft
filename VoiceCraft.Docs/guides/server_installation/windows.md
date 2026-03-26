@@ -6,7 +6,8 @@ Go to the [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/lat
 The \<Architecture\> to choose and download needs to be the architecture of your CPU, the most common one is x64.
 
 You will also need to download and install the [Dotnet9.0](https://dotnet.microsoft.com/en-us/download) drivers before
-being able to run the application if you have not done so already.
+being able to run the application if you have downloaded **any version** below **v1.4.0** and if you have not done so
+already.
 
 # Installing & running the server
 
