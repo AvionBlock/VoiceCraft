@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -23,9 +22,9 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
     //Lists
     [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
-    [ObservableProperty] private ObservableCollection<RegisteredDenoiser> _denoisers = [];
-    [ObservableProperty] private ObservableCollection<RegisteredAutomaticGainController> _automaticGainControllers = [];
-    [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _denoisers = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _automaticGainControllers = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _echoCancelers = [];
     private bool _disposed;
     private bool _updating;
 
@@ -43,7 +42,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _automaticGainController = _inputSettings.AutomaticGainController;
         _echoCanceler = _inputSettings.EchoCanceler;
 
-        _ = ReloadAvailableDevices();
+        ReloadAvailableDevices();
     }
 
     public void Dispose()
@@ -55,14 +54,12 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task ReloadAvailableDevices()
+    public void ReloadAvailableDevices()
     {
-        InputDevices = ["Default", ..await _audioService.GetInputDevicesAsync()];
-        Denoisers = new ObservableCollection<RegisteredDenoiser>(_audioService.RegisteredDenoisers);
-        AutomaticGainControllers =
-            new ObservableCollection<RegisteredAutomaticGainController>(
-                _audioService.RegisteredAutomaticGainControllers);
-        EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);
+        InputDevices = ["Default", ..AudioService.GetInputDevices()];
+        Denoisers = [];
+        AutomaticGainControllers = [];
+        EchoCancelers = [];
 
         if (!InputDevices.Contains(InputDevice))
             InputDevice = "Default";

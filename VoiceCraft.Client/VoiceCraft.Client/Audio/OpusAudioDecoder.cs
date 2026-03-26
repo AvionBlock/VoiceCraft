@@ -1,13 +1,13 @@
 using System;
-using OpusSharp.Core;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
+using OpusSharp.Core;
 
-namespace VoiceCraft.Client.Android.Audio;
+namespace VoiceCraft.Client.Audio;
 
-public class NativeAudioDecoder : IAudioDecoder
+public class OpusAudioDecoder : IAudioDecoder
 {
-    private readonly OpusDecoder _opusDecoder = new(Constants.SampleRate, Constants.Channels);
+    private readonly OpusDecoder _opusDecoder = new(Constants.SampleRate, Constants.RecordingChannels);
     
     public int Decode(Span<byte> buffer, Span<float> output, int samples)
     {

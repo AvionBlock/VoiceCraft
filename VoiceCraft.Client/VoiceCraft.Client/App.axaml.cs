@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
@@ -20,6 +21,7 @@ using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
@@ -227,6 +229,10 @@ public class App : Application
             Constants.TanhSoftAudioClipperGuid,
             "Tanh Soft Clipper",
             () => new SampleTanhSoftAudioClipper()));
+        
+        //Codec Registry
+        ServiceCollection.AddTransient<IAudioEncoder, OpusAudioEncoder>();
+        ServiceCollection.AddTransient<IAudioDecoder, OpusAudioDecoder>();
 
         return ServiceCollection.BuildServiceProvider();
     }

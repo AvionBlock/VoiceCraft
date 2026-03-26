@@ -28,9 +28,6 @@ public class VoiceCraftService(
     //Audio
     private IAudioRecorder? _audioRecorder;
     private IAudioPlayer? _audioPlayer;
-    private IDenoiser? _denoiser;
-    private IEchoCanceler? _echoCanceler;
-    private IAutomaticGainController? _gainController;
     private IAudioClipper? _audioClipper;
 
     public VcConnectionState ConnectionState => client.ConnectionState;
@@ -110,10 +107,6 @@ public class VoiceCraftService(
 
             _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
-            _echoCanceler = audioService.GetEchoCanceler(inputSettings.EchoCanceler)?.Instantiate();
-            _gainController = audioService.GetAutomaticGainController(inputSettings.AutomaticGainController)
-                ?.Instantiate();
-            _denoiser = audioService.GetDenoiser(inputSettings.Denoiser)?.Instantiate();
             _audioClipper = audioService.GetAudioClipper(outputSettings.AudioClipper)?.Instantiate();
 
             //Setup McWss Server
@@ -125,9 +118,6 @@ public class VoiceCraftService(
             }
 
             //Initialize and start.
-            _echoCanceler?.Initialize(_audioRecorder, _audioPlayer);
-            _gainController?.Initialize(_audioRecorder);
-            _denoiser?.Initialize(_audioRecorder);
             _audioRecorder.Start();
             _audioPlayer.Play();
             _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
@@ -334,7 +324,7 @@ public class VoiceCraftService(
     private IAudioRecorder InitializeAudioRecorder(string inputDevice)
     {
         var audioRecorder =
-            audioService.CreateAudioRecorder(Constants.SampleRate, Constants.Channels, Constants.Format);
+            audioService.CreateAudioRecorder(Constants.SampleRate, Constants.RecordingChannels, Constants.Format);
         audioRecorder.BufferMilliseconds = Constants.FrameSizeMs;
         audioRecorder.SelectedDevice = inputDevice == "Default" ? null : inputDevice;
         audioRecorder.OnDataAvailable += Write;

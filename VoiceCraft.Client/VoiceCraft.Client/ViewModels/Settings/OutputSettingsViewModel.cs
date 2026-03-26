@@ -36,8 +36,8 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         _notificationService = notificationService;
         _outputSettingsData = new OutputSettingsDataViewModel(settingsService, _audioService);
         _sineWaveGenerator = new SineWaveGenerator(Constants.SampleRate);
-
-        _ = OutputSettingsData.ReloadAvailableDevices();
+        
+        OutputSettingsData.ReloadAvailableDevices();
     }
 
     public void Dispose()
@@ -68,7 +68,7 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
     public override void OnAppearing(object? data = null)
     {
         base.OnAppearing(data);
-        _ = OutputSettingsData.ReloadAvailableDevices();
+        OutputSettingsData.ReloadAvailableDevices();
     }
 
     public override void OnDisappearing()
@@ -106,7 +106,7 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
             {
                 _audioClipper = _audioService.GetAudioClipper(OutputSettingsData.AudioClipper)?.Instantiate();
                 _audioPlayer =
-                    _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
+                    _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.RecordingChannels, Constants.Format);
                 _audioPlayer.SelectedDevice =
                     OutputSettingsData.OutputDevice == "Default" ? null : OutputSettingsData.OutputDevice;
                 _audioPlayer.BufferMilliseconds = 100;

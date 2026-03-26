@@ -2,71 +2,34 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using VoiceCraft.Core;
+using Ownaudio.Core;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services;
 
-public abstract class AudioService
+public class AudioService
 {
-    private readonly ConcurrentDictionary<Guid, RegisteredDenoiser> _registeredDenoisers = new();
-
-    private readonly ConcurrentDictionary<Guid, RegisteredAutomaticGainController> _registeredAutomaticGainControllers =
-        new();
-
-    private readonly ConcurrentDictionary<Guid, RegisteredEchoCanceler> _registeredEchoCancelers = new();
-
+    private readonly ConcurrentDictionary<Guid, RegisteredAudioPreprocessor> _registeredAudioPreprocessors = new();
     private readonly ConcurrentDictionary<Guid, RegisteredAudioClipper> _registeredAudioClippers = new();
 
     protected AudioService(
-        IEnumerable<RegisteredAutomaticGainController> registeredAutomaticGainControllers,
-        IEnumerable<RegisteredEchoCanceler> registeredEchoCancelers,
-        IEnumerable<RegisteredDenoiser> registeredDenoisers,
+        IEnumerable<RegisteredAudioPreprocessor> registeredAudioPreprocessors,
         IEnumerable<RegisteredAudioClipper> registeredClippers)
     {
-        _registeredAutomaticGainControllers.TryAdd(Guid.Empty,
-            new RegisteredAutomaticGainController(Guid.Empty, "None", null));
-        _registeredEchoCancelers.TryAdd(Guid.Empty, new RegisteredEchoCanceler(Guid.Empty, "None", null));
-        _registeredDenoisers.TryAdd(Guid.Empty, new RegisteredDenoiser(Guid.Empty, "None", null));
-        _registeredAudioClippers.TryAdd(Guid.Empty, new RegisteredAudioClipper(Guid.Empty, "None", null));
-
-        foreach (var registeredAutomaticGainController in registeredAutomaticGainControllers)
-            _registeredAutomaticGainControllers.TryAdd(registeredAutomaticGainController.Id,
-                registeredAutomaticGainController);
-
-        foreach (var registeredEchoCanceler in registeredEchoCancelers)
-            _registeredEchoCancelers.TryAdd(registeredEchoCanceler.Id, registeredEchoCanceler);
-
-        foreach (var registeredDenoiser in registeredDenoisers)
-            _registeredDenoisers.TryAdd(registeredDenoiser.Id, registeredDenoiser);
-
+        foreach (var audioPreprocessor in registeredAudioPreprocessors)
+            _registeredAudioPreprocessors.TryAdd(audioPreprocessor.Id, audioPreprocessor);
         foreach (var registeredClipper in registeredClippers)
             _registeredAudioClippers.TryAdd(registeredClipper.Id, registeredClipper);
     }
 
-    public IEnumerable<RegisteredDenoiser> RegisteredDenoisers => _registeredDenoisers.Values.ToArray();
+    public IEnumerable<RegisteredAudioPreprocessor> RegisteredAudioPreprocessors =>
+        _registeredAudioPreprocessors.Values.ToArray();
 
-    public IEnumerable<RegisteredAutomaticGainController> RegisteredAutomaticGainControllers =>
-        _registeredAutomaticGainControllers.Values.ToArray();
-
-    public IEnumerable<RegisteredEchoCanceler> RegisteredEchoCancelers => _registeredEchoCancelers.Values.ToArray();
-    
     public IEnumerable<RegisteredAudioClipper> RegisteredAudioClippers => _registeredAudioClippers.Values.ToArray();
 
-    public RegisteredDenoiser? GetDenoiser(Guid id)
+    public RegisteredAudioPreprocessor? GetAudioPreprocessor(Guid id)
     {
-        return _registeredDenoisers.GetValueOrDefault(id);
-    }
-
-    public RegisteredAutomaticGainController? GetAutomaticGainController(Guid id)
-    {
-        return _registeredAutomaticGainControllers.GetValueOrDefault(id);
-    }
-
-    public RegisteredEchoCanceler? GetEchoCanceler(Guid id)
-    {
-        return _registeredEchoCancelers.GetValueOrDefault(id);
+        return _registeredAudioPreprocessors.GetValueOrDefault(id);
     }
 
     public RegisteredAudioClipper? GetAudioClipper(Guid id)
@@ -74,55 +37,39 @@ public abstract class AudioService
         return _registeredAudioClippers.GetValueOrDefault(id);
     }
 
-    public abstract Task<List<string>> GetInputDevicesAsync();
-
-    public abstract Task<List<string>> GetOutputDevicesAsync();
-
-    public abstract IAudioRecorder CreateAudioRecorder(int sampleRate, int channels, AudioFormat format);
-
-    public abstract IAudioPlayer CreateAudioPlayer(int sampleRate, int channels, AudioFormat format);
-}
-
-public class RegisteredEchoCanceler(Guid id, string name, Func<IEchoCanceler>? factory)
-{
-    public Guid Id { get; } = id;
-    public string Name { get; } = name;
-
-    public IEchoCanceler? Instantiate()
+    public static IEnumerable<string> GetInputDevices()
     {
-        return factory?.Invoke();
+        using var engine = AudioEngineFactory.CreateDefault();
+        engine.Initialize(AudioConfig.Default);
+        return engine.GetInputDevices().Select(x => x.Name);
+    }
+
+    public static IEnumerable<string> GetOutputDevices()
+    {
+        using var engine = AudioEngineFactory.CreateDefault();
+        engine.Initialize(AudioConfig.Default);
+        return engine.GetOutputDevices().Select(x => x.Name);
     }
 }
 
-public class RegisteredAutomaticGainController(Guid id, string name, Func<IAutomaticGainController>? factory)
+public class RegisteredAudioPreprocessor(Guid id, string name, Func<IAudioPreprocessor> factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
-    public IAutomaticGainController? Instantiate()
+    public IAudioPreprocessor Instantiate()
     {
-        return factory?.Invoke();
+        return factory.Invoke();
     }
 }
 
-public class RegisteredDenoiser(Guid id, string name, Func<IDenoiser>? factory)
+public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper> factory)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
 
-    public IDenoiser? Instantiate()
+    public IAudioClipper Instantiate()
     {
-        return factory?.Invoke();
-    }
-}
-
-public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper>? factory)
-{
-    public Guid Id { get; } = id;
-    public string Name { get; } = name;
-
-    public IAudioClipper? Instantiate()
-    {
-        return factory?.Invoke();
+        return factory.Invoke();
     }
 }

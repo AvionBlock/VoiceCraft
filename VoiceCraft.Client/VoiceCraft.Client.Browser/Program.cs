@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
 using Microsoft.Extensions.DependencyInjection;
-using VoiceCraft.Client.Browser.Audio;
 using VoiceCraft.Client.Browser.Permissions;
 using VoiceCraft.Client.Services;
 
@@ -21,8 +20,7 @@ internal sealed class Program
         LogService.NativeStorageService = nativeStorage;
         LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-
-        App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+        
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();

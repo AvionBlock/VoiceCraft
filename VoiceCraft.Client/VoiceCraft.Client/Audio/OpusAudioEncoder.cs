@@ -4,15 +4,15 @@ using OpusSharp.Core.Extensions;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Linux.Audio;
+namespace VoiceCraft.Client.Audio;
 
-public class NativeAudioEncoder: IAudioEncoder
+public class OpusAudioEncoder: IAudioEncoder
 {
     private readonly OpusEncoder _opusEncoder;
 
-    public NativeAudioEncoder()
+    public OpusAudioEncoder()
     {
-        _opusEncoder = new OpusEncoder(Constants.SampleRate, Constants.Channels,
+        _opusEncoder = new OpusEncoder(Constants.SampleRate, Constants.RecordingChannels,
             OpusPredefinedValues.OPUS_APPLICATION_VOIP);
         _opusEncoder.SetPacketLostPercent(20); //Expected packet loss, might make this change over time later.
         _opusEncoder.SetBitRate(32000);
