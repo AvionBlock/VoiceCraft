@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SoundFlow.Abstracts.Devices;
 using SoundFlow.Components;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
@@ -17,7 +18,6 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
     private readonly AudioService _audioService;
     private readonly NavigationService _navigationService;
     private readonly NotificationService _notificationService;
-    private readonly SineWaveGenerator _sineWaveGenerator;
     private readonly Lock _lock = new();
 
     [ObservableProperty] private OutputSettingsDataViewModel _outputSettingsData;
@@ -35,7 +35,6 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         _audioService = audioService;
         _notificationService = notificationService;
         _outputSettingsData = new OutputSettingsDataViewModel(settingsService, _audioService);
-        _sineWaveGenerator = new SineWaveGenerator(Constants.SampleRate);
 
         OutputSettingsData.ReloadDevices();
     }
@@ -79,9 +78,9 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
 
     private int Read(Span<float> buffer)
     {
-        var read = _sineWaveGenerator.Read(buffer);
+        var read = buffer.Length;
         if (_audioClipper != null)
-            read = _audioClipper.Read(buffer[..read]);
+            read = _audioClipper.Read(buffer);
         read = SampleVolume.Read(buffer[..read], OutputSettingsData.OutputVolume);
         return read;
     }
@@ -95,12 +94,15 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
                 _audioClipper = _audioService.GetAudioClipper(OutputSettingsData.AudioClipper)?.Instantiate();
                 _playbackDevice = _audioService.InitializePlaybackDevice(
                     Constants.SampleRate,
-                    Constants.FrameSize,
                     Constants.PlaybackChannels,
+                    Constants.FrameSize,
                     OutputSettingsData.OutputDevice);
-                _playbackDevice.MasterMixer.AddComponent(new Oscillator(_playbackDevice.Engine,
-                    _playbackDevice.Format));
-                _playbackDevice.MasterMixer.Volume = OutputSettingsData.OutputVolume;
+
+                var callbackComponent = new CallbackProvider(_playbackDevice.Engine, _playbackDevice.Format, Read);
+                callbackComponent.ConnectInput(new Oscillator(_playbackDevice.Engine, _playbackDevice.Format));
+                _playbackDevice.MasterMixer.AddComponent(callbackComponent);
+                
+                _playbackDevice.Start();
                 IsPlaying = true;
             }
         }
@@ -118,7 +120,6 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
             var result = false;
             IsPlaying = false;
 
-            
             if (_playbackDevice != null)
             {
                 _playbackDevice.Stop();
@@ -126,7 +127,6 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
                 _playbackDevice = null;
                 result = true;
             }
-            
 
             _audioClipper = null;
             return result;

@@ -95,8 +95,8 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
                 _audioPreprocessor = new CombinedAudioPreprocessor(gainController, denoiser, null);
                 _captureDevice = _audioService.InitializeCaptureDevice(
                     Constants.SampleRate,
-                    Constants.FrameSize,
                     Constants.RecordingChannels,
+                    Constants.FrameSize,
                     InputSettingsData.InputDevice);
                 _captureDevice.Start();
                 _captureDevice.OnAudioProcessed += Write;
