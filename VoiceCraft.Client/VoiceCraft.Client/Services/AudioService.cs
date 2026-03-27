@@ -2,20 +2,27 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Ownaudio.Core;
+using SoundFlow.Abstracts;
+using SoundFlow.Abstracts.Devices;
+using SoundFlow.Backends.MiniAudio.Devices;
+using SoundFlow.Enums;
+using SoundFlow.Structs;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services;
 
 public class AudioService
 {
+    private readonly AudioEngine _engine;
     private readonly ConcurrentDictionary<Guid, RegisteredAudioPreprocessor> _registeredAudioPreprocessors = new();
     private readonly ConcurrentDictionary<Guid, RegisteredAudioClipper> _registeredAudioClippers = new();
 
-    protected AudioService(
+    public AudioService(
+        AudioEngine engine,
         IEnumerable<RegisteredAudioPreprocessor> registeredAudioPreprocessors,
         IEnumerable<RegisteredAudioClipper> registeredClippers)
     {
+        _engine = engine;
         foreach (var audioPreprocessor in registeredAudioPreprocessors)
             _registeredAudioPreprocessors.TryAdd(audioPreprocessor.Id, audioPreprocessor);
         foreach (var registeredClipper in registeredClippers)
@@ -37,18 +44,54 @@ public class AudioService
         return _registeredAudioClippers.GetValueOrDefault(id);
     }
 
-    public static IEnumerable<string> GetInputDevices()
+    public IEnumerable<string> GetInputDevices()
     {
-        using var engine = AudioEngineFactory.CreateDefault();
-        engine.Initialize(AudioConfig.Default);
-        return engine.GetInputDevices().Select(x => x.Name);
+        _engine.UpdateAudioDevicesInfo();
+        return _engine.CaptureDevices.Select(x => x.Name);
     }
 
-    public static IEnumerable<string> GetOutputDevices()
+    public IEnumerable<string> GetOutputDevices()
     {
-        using var engine = AudioEngineFactory.CreateDefault();
-        engine.Initialize(AudioConfig.Default);
-        return engine.GetOutputDevices().Select(x => x.Name);
+        _engine.UpdateAudioDevicesInfo();
+        return _engine.PlaybackDevices.Select(x => x.Name);
+    }
+
+    public AudioCaptureDevice InitializeCaptureDevice(int sampleRate, int channels, uint frameSize, string inputDevice)
+    {
+        _engine.UpdateAudioDevicesInfo();
+        var format = new AudioFormat()
+        {
+            SampleRate = sampleRate,
+            Channels = channels,
+            Format = SampleFormat.F32
+        };
+        var config = new MiniAudioDeviceConfig()
+        {
+            PeriodSizeInFrames = frameSize
+        };
+        var device = _engine.CaptureDevices.FirstOrDefault(x => x.Name == inputDevice);
+        return _engine.InitializeCaptureDevice(device, format, config);
+    }
+
+    public AudioPlaybackDevice InitializePlaybackDevice(
+        int sampleRate,
+        int channels,
+        uint frameSize,
+        string outputDevice)
+    {
+        _engine.UpdateAudioDevicesInfo();
+        var format = new AudioFormat()
+        {
+            SampleRate = sampleRate,
+            Channels = channels,
+            Format = SampleFormat.F32
+        };
+        var config = new MiniAudioDeviceConfig()
+        {
+            PeriodSizeInFrames = frameSize
+        };
+        var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);
+        return _engine.InitializePlaybackDevice(device, format, config);
     }
 }
 

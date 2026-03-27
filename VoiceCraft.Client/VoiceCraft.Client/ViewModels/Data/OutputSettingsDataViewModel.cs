@@ -33,8 +33,6 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         _outputDevice = _outputSettings.OutputDevice;
         _outputVolume = _outputSettings.OutputVolume;
         _audioClipper = _outputSettings.AudioClipper;
-        
-        ReloadAvailableDevices();
     }
 
     public void Dispose()
@@ -46,9 +44,9 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
     
-    public void ReloadAvailableDevices()
+    public void ReloadDevices()
     {
-        OutputDevices = ["Default", ..AudioService.GetOutputDevices()];
+        OutputDevices = ["Default", .._audioService.GetOutputDevices()];
         AudioClippers = [.._audioService.RegisteredAudioClippers];
         
         if (!OutputDevices.Contains(OutputDevice))

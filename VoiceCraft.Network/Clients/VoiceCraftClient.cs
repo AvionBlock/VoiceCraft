@@ -158,7 +158,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         encodeBuffer.AsSpan().Clear();
         try
         {
-            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.SamplesPerFrame);
+            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.FrameSize);
             SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
                 .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
         }

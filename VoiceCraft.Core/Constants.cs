@@ -20,7 +20,6 @@ namespace VoiceCraft.Core
         public const int MaxPacketPoolSize = 100; //100 Packets Per type.
 
         //Audio
-        private const int FrameSizeMs = 20;
         private const int OutputBufferSizeMs = FrameSizeMs * 50;
         private const int PrefillBufferSizeMs = FrameSizeMs * 2;
         
@@ -28,6 +27,8 @@ namespace VoiceCraft.Core
         public const int BitDepth = 16;
         public const int RecordingChannels = 1;
         public const int PlaybackChannels = 2;
+        
+        public const int FrameSizeMs = 20;
         public const int FrameSize = SampleRate / 1000 * FrameSizeMs;
         public const int OutputBufferSize = SampleRate / 1000 * OutputBufferSizeMs;
         public const int PrefillBufferSize = SampleRate / 1000 * PrefillBufferSizeMs;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Interfaces;
 
@@ -10,11 +11,32 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
     private KeyValuePair<Guid, IAudioPreprocessor>? _gainController;
     private KeyValuePair<Guid, IAudioPreprocessor>? _denoiser;
     private KeyValuePair<Guid, IAudioPreprocessor>? _echoCanceller;
+    private readonly Lock _lock = new();
+    private bool _disposed;
 
-    public bool DenoiserEnabled { get; set; }
-    public bool GainControllerEnabled { get; set; }
-    public bool EchoCancellerEnabled { get; set; }
-    public int TargetGain { get; set; }
+    public bool DenoiserEnabled
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
+
+    public bool GainControllerEnabled
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
+
+    public bool EchoCancellerEnabled
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
+
+    public int TargetGain
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
 
     public CombinedAudioPreprocessor(
         RegisteredAudioPreprocessor? gainController,
@@ -23,25 +45,41 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
     {
         if (gainController != null)
             SetGainController(gainController);
-        if(denoiser != null)
+        if (denoiser != null)
             SetDenoiser(denoiser);
-        if(echoCanceller != null)
+        if (echoCanceller != null)
             SetEchoCanceller(echoCanceller);
+    }
+
+    ~CombinedAudioPreprocessor()
+    {
+        Dispose(false);
     }
 
     public void Dispose()
     {
-        // TODO release managed resources here
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     public void Process(Span<float> buffer)
     {
-        throw new NotImplementedException();
+        ThrowIfDisposed();
+        lock (_lock)
+        {
+            _gainController?.Value.Process(buffer);
+            _denoiser?.Value.Process(buffer);
+            _echoCanceller?.Value.Process(buffer);
+        }
     }
 
     public void ProcessPlayback(Span<float> buffer)
     {
-        throw new NotImplementedException();
+        ThrowIfDisposed();
+        lock (_lock)
+        {
+            _echoCanceller?.Value.ProcessPlayback(buffer);
+        }
     }
 
     private void SetGainController(RegisteredAudioPreprocessor gainController)
@@ -60,7 +98,7 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
             _gainController.Value.Value.GainControllerEnabled = true;
             return;
         }
-        
+
         var denoiserInstance = denoiser.Instantiate();
         denoiserInstance.GainControllerEnabled = false;
         denoiserInstance.DenoiserEnabled = true;
@@ -75,16 +113,39 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
             _gainController.Value.Value.EchoCancellerEnabled = true;
             return;
         }
+
         if (_denoiser != null && echoCanceller.Id == _denoiser.Value.Key)
         {
             _denoiser.Value.Value.EchoCancellerEnabled = false;
             return;
         }
-        
+
         var echoCancellerInstance = echoCanceller.Instantiate();
         echoCancellerInstance.GainControllerEnabled = false;
         echoCancellerInstance.DenoiserEnabled = true;
         echoCancellerInstance.EchoCancellerEnabled = false;
         _echoCanceller = new KeyValuePair<Guid, IAudioPreprocessor>(echoCanceller.Id, echoCancellerInstance);
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (!_disposed) return;
+        throw new ObjectDisposedException(typeof(CombinedAudioPreprocessor).ToString());
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        lock (_lock)
+        {
+            if (disposing)
+            {
+                _gainController?.Value.Dispose();
+                _denoiser?.Value.Dispose();
+                _echoCanceller?.Value.Dispose();
+            }
+
+            _disposed = true;
+        }
     }
 }

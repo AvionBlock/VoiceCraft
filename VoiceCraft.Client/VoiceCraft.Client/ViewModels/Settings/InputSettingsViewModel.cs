@@ -4,9 +4,12 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel;
+using SoundFlow.Abstracts.Devices;
+using SoundFlow.Enums;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
@@ -23,7 +26,7 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     [ObservableProperty] private bool _isRecording;
     [ObservableProperty] private float _microphoneValue;
     [ObservableProperty] private bool _detectingVoiceActivity;
-    private AudioRecorder? _audioRecorder;
+    private AudioCaptureDevice? _captureDevice;
     private CombinedAudioPreprocessor? _audioPreprocessor;
 
     public InputSettingsViewModel(
@@ -37,9 +40,9 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
         _audioService = audioService;
         _notificationService = notificationService;
         _permissionsService = permissionsService;
-        _inputSettingsData = new InputSettingsDataViewModel(settingsService, _audioService);
+        _inputSettingsData = new InputSettingsDataViewModel(settingsService, audioService);
 
-        InputSettingsData.ReloadAvailableDevices();
+        InputSettingsData.ReloadDevices();
     }
 
     public void Dispose()
@@ -67,7 +70,7 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     public override void OnAppearing(object? data = null)
     {
         base.OnAppearing(data);
-        InputSettingsData.ReloadAvailableDevices();
+        InputSettingsData.ReloadDevices();
     }
 
     public override void OnDisappearing()
@@ -90,9 +93,13 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
                 var denoiser = _audioService.GetAudioPreprocessor(InputSettingsData.Denoiser);
                 var gainController = _audioService.GetAudioPreprocessor(InputSettingsData.AutomaticGainController);
                 _audioPreprocessor = new CombinedAudioPreprocessor(gainController, denoiser, null);
-                _audioRecorder = new AudioRecorder();
-                _audioRecorder.StartRecording(OnDataAvailable);
-                
+                _captureDevice = _audioService.InitializeCaptureDevice(
+                    Constants.SampleRate,
+                    Constants.FrameSize,
+                    Constants.RecordingChannels,
+                    InputSettingsData.InputDevice);
+                _captureDevice.Start();
+                _captureDevice.OnAudioProcessed += Write;
                 IsRecording = true;
             }
         }
@@ -105,23 +112,14 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     }
 
 
-    private void OnDataAvailable(Span<float> buffer)
+    private void Write(Span<float> buffer, Capability _)
     {
         _audioPreprocessor?.Process(buffer);
-        
+
         var floatCount = SampleVolume.Read(buffer, InputSettingsData.InputVolume);
         var loudness = SampleLoudness.Read(buffer[..floatCount]);
         MicrophoneValue = loudness;
         DetectingVoiceActivity = loudness >= InputSettingsData.MicrophoneSensitivity;
-    }
-
-    //Need to implement.
-    private void OnRecordingStopped(Exception? ex)
-    {
-        CloseRecorder();
-
-        if (ex != null)
-            _notificationService.SendErrorNotification(ex.Message);
     }
 
     private bool CloseRecorder()
@@ -132,13 +130,13 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
             IsRecording = false;
             MicrophoneValue = 0;
             DetectingVoiceActivity = false;
-            
-            if (_audioRecorder != null)
+
+            if (_captureDevice != null)
             {
-                _audioRecorder.StopRecording();
-                //Gonna have to dispose.
+                _captureDevice.Stop();
+                _captureDevice.Dispose();
+                _captureDevice = null;
                 result = true;
-                _audioRecorder = null;
             }
 
             _audioPreprocessor?.Dispose();

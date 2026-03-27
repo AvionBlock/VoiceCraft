@@ -31,7 +31,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
         <PackageReference Include="OpusSharp"/>
-        <PackageReference Include="OwnAudioSharp.Basic" />
+        <PackageReference Include="SoundFlow" />
     </ItemGroup>
 
     <ItemGroup>

@@ -30,8 +30,8 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
     public InputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
-        _inputSettings = settingsService.InputSettings;
         _audioService = audioService;
+        _inputSettings = settingsService.InputSettings;
         _settingsService = settingsService;
 
         _inputSettings.OnUpdated += Update;
@@ -41,8 +41,6 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _denoiser = _inputSettings.Denoiser;
         _automaticGainController = _inputSettings.AutomaticGainController;
         _echoCanceler = _inputSettings.EchoCanceler;
-
-        ReloadAvailableDevices();
     }
 
     public void Dispose()
@@ -54,9 +52,9 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void ReloadAvailableDevices()
+    public void ReloadDevices()
     {
-        InputDevices = ["Default", ..AudioService.GetInputDevices()];
+        InputDevices = ["Default", .._audioService.GetInputDevices()];
         Denoisers = [];
         AutomaticGainControllers = [];
         EchoCancelers = [];
