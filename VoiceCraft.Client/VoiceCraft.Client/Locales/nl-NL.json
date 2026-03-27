@@ -130,28 +130,6 @@
       }
     }
   },
-  "Audio": {
-    "Recorder": {
-      "InitFailed": "Recorder kan niet worden geïnitialiseerd!",
-      "Init": "Recorder is niet geïnitialiseerd!"
-    },
-    "Player": {
-      "InitFailed": "Audiospeler kan niet worden geïnitialiseerd!",
-      "Init": "Audiospeler is niet geïnitialiseerd!"
-    },
-    "AEC": {
-      "InitFailed": "Echo-onderdrukker kan niet worden geïnitialiseerd!",
-      "Init": "Echo-onderdrukker is niet geïnitialiseerd!"
-    },
-    "AGC": {
-      "InitFailed": "Gain-controller kan niet worden geïnitialiseerd!",
-      "Init": "Gain-controller is niet geïnitialiseerd!"
-    },
-    "DN": {
-      "InitFailed": "Denoiser kan niet worden geïnitialiseerd!",
-      "Init": "Denoiser is niet geïnitialiseerd!"
-    }
-  },
   "McWssServer": {
     "Exceptions": {
       "Failed": "Kan McWss Server niet starten! Controleer of een ander proces dezelfde poort gebruikt!,"

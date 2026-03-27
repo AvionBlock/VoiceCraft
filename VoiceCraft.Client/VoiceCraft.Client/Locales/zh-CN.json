@@ -130,28 +130,6 @@
       }
     }
   },
-  "Audio": {
-    "Recorder": {
-      "InitFailed": "录音器初始化失败！",
-      "Init": "录音器未初始化！"
-    },
-    "Player": {
-      "InitFailed": "播放器初始化失败！",
-      "Init": "播放器未初始化！"
-    },
-    "AEC": {
-      "InitFailed": "回声消除器初始化失败！",
-      "Init": "回声消除器未初始化！"
-    },
-    "AGC": {
-      "InitFailed": "增益控制器初始化失败！",
-      "Init": "增益控制器未初始化！"
-    },
-    "DN": {
-      "InitFailed": "降噪器初始化失败！",
-      "Init": "降噪器未初始化！"
-    }
-  },
   "McWssServer": {
     "Exceptions": {
       "Failed": "无法启动 McWss 服务器! 请检查是否有其他进程正在使用相同的端口!"
