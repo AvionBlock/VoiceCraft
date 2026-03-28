@@ -117,6 +117,12 @@ public class AudioService
         var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);
         return _engine.InitializePlaybackDevice(device, format, config);
     }
+    
+    private class EmptyRegisteredAudioPreprocessor()
+        : RegisteredAudioPreprocessor(Guid.Empty, "None", () => throw new NotSupportedException(), true, true, true);
+    
+    private class EmptyRegisteredAudioClipper()
+        : RegisteredAudioClipper(Guid.Empty, "None", () => throw new NotSupportedException());
 }
 
 public class RegisteredAudioPreprocessor(
@@ -139,9 +145,6 @@ public class RegisteredAudioPreprocessor(
     }
 }
 
-public class EmptyRegisteredAudioPreprocessor()
-    : RegisteredAudioPreprocessor(Guid.Empty, "None", () => throw new NotSupportedException(), true, true, true);
-
 public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper> factory)
 {
     public Guid Id { get; } = id;
@@ -152,6 +155,3 @@ public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper> fa
         return factory.Invoke();
     }
 }
-
-public class EmptyRegisteredAudioClipper()
-    : RegisteredAudioClipper(Guid.Empty, "None", () => throw new NotSupportedException());
