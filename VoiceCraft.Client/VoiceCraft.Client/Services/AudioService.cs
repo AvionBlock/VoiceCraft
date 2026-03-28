@@ -5,6 +5,7 @@ using System.Linq;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio.Devices;
+using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 using VoiceCraft.Core.Interfaces;
@@ -67,7 +68,12 @@ public class AudioService
         };
         var config = new MiniAudioDeviceConfig()
         {
-            PeriodSizeInFrames = frameSize
+            PeriodSizeInFrames = frameSize,
+            AAudio = new AAudioSettings()
+            {
+                ContentType = AAudioContentType.Speech,
+                Usage = AAudioUsage.VoiceCommunication
+            }
         };
         var device = _engine.CaptureDevices.FirstOrDefault(x => x.Name == inputDevice);
         return _engine.InitializeCaptureDevice(device, format, config);
@@ -88,7 +94,12 @@ public class AudioService
         };
         var config = new MiniAudioDeviceConfig()
         {
-            PeriodSizeInFrames = frameSize
+            PeriodSizeInFrames = frameSize,
+            AAudio = new AAudioSettings()
+            {
+                ContentType = AAudioContentType.Music,
+                Usage = AAudioUsage.Media
+            }
         };
         var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);
         return _engine.InitializePlaybackDevice(device, format, config);
