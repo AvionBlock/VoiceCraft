@@ -22,10 +22,10 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         if (BackgroundFactory.Invoke(backgroundType) is not T instance)
             throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
 
+        await StartBackgroundService();
         var backgroundTask = new BackgroundTask(instance);
         backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
         AndroidBackgroundService.Services.TryAdd(backgroundType, backgroundTask);
-        await StartBackgroundService();
         backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
     }
 
@@ -62,7 +62,7 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
             "Notifications are required to show running background processes and errors.");
         
         if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
-            PermissionStatus.Granted) { 
+            PermissionStatus.Granted) {
             throw new PermissionException("Microphone access not granted!");
         }
 

@@ -123,7 +123,11 @@ public class VoiceCraftService(
 
             //Start.
             _audioRecorder.Start();
+            if (!_audioRecorder.IsRunning)
+                throw new Exception("VoiceCraft.DisconnectReason.Error");
             _audioPlayer.Start();
+            if (!_audioRecorder.IsRunning)
+                throw new Exception("VoiceCraft.DisconnectReason.Error");
             _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
 
             Title = "VoiceCraft.Status.Connecting";

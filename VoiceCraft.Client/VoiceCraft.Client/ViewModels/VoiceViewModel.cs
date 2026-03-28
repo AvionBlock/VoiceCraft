@@ -15,6 +15,7 @@ using VoiceCraft.Network.World;
 namespace VoiceCraft.Client.ViewModels;
 
 public partial class VoiceViewModel(
+    NotificationService notificationService,
     NavigationService navigationService,
     SettingsService settingsService,
     IBackgroundService backgroundService)
@@ -114,6 +115,12 @@ public partial class VoiceViewModel(
                         x.OnUpdateTitle -= updateTitle;
                         x.OnUpdateDescription -= updateDescription;
                     }
+                }).ContinueWith(x =>
+                {
+                    if (x.Exception == null) return;
+                    notificationService.SendErrorNotification(x.Exception.Message);
+                    notificationService.SendNotification("VoiceCraft.DisconnectReason.Error");
+                    OnDisconnected();
                 });
                 break;
         }
