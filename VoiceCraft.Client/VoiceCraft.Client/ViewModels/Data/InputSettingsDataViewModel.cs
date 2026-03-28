@@ -55,9 +55,9 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     public void ReloadDevices()
     {
         InputDevices = ["Default", .._audioService.GetInputDevices()];
-        Denoisers = [];
-        AutomaticGainControllers = [];
-        EchoCancelers = [];
+        Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
+        AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
+        EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
 
         if (!InputDevices.Contains(InputDevice))
             InputDevice = "Default";
@@ -79,7 +79,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
-    
+
     partial void OnInputVolumeChanging(float value)
     {
         ThrowIfDisposed();

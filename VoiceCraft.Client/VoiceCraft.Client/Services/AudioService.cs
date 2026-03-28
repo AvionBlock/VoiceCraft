@@ -15,6 +15,7 @@ namespace VoiceCraft.Client.Services;
 public class AudioService
 {
     private readonly AudioEngine _engine;
+
     private readonly ConcurrentDictionary<Guid, RegisteredAudioPreprocessor> _registeredAudioPreprocessors = new();
     private readonly ConcurrentDictionary<Guid, RegisteredAudioClipper> _registeredAudioClippers = new();
 
@@ -24,6 +25,9 @@ public class AudioService
         IEnumerable<RegisteredAudioClipper> registeredClippers)
     {
         _engine = engine;
+        _registeredAudioPreprocessors.TryAdd(Guid.Empty, new EmptyRegisteredAudioPreprocessor());
+        _registeredAudioClippers.TryAdd(Guid.Empty, new EmptyRegisteredAudioClipper());
+        
         foreach (var audioPreprocessor in registeredAudioPreprocessors)
             _registeredAudioPreprocessors.TryAdd(audioPreprocessor.Id, audioPreprocessor);
         foreach (var registeredClipper in registeredClippers)
@@ -33,16 +37,17 @@ public class AudioService
     public IEnumerable<RegisteredAudioPreprocessor> RegisteredAudioPreprocessors =>
         _registeredAudioPreprocessors.Values.ToArray();
 
-    public IEnumerable<RegisteredAudioClipper> RegisteredAudioClippers => _registeredAudioClippers.Values.ToArray();
+    public IEnumerable<RegisteredAudioClipper> RegisteredAudioClippers =>
+        _registeredAudioClippers.Values.ToArray();
 
     public RegisteredAudioPreprocessor? GetAudioPreprocessor(Guid id)
     {
-        return _registeredAudioPreprocessors.GetValueOrDefault(id);
+        return id == Guid.Empty ? null : _registeredAudioPreprocessors.GetValueOrDefault(id);
     }
 
     public RegisteredAudioClipper? GetAudioClipper(Guid id)
     {
-        return _registeredAudioClippers.GetValueOrDefault(id);
+        return id == Guid.Empty ? null : _registeredAudioClippers.GetValueOrDefault(id);
     }
 
     public IEnumerable<string> GetInputDevices()
@@ -106,16 +111,28 @@ public class AudioService
     }
 }
 
-public class RegisteredAudioPreprocessor(Guid id, string name, Func<IAudioPreprocessor> factory)
+public class RegisteredAudioPreprocessor(
+    Guid id,
+    string name,
+    Func<IAudioPreprocessor> factory,
+    bool denoiserSupported,
+    bool gainControllerSupported,
+    bool echoCancelerSupported)
 {
     public Guid Id { get; } = id;
     public string Name { get; } = name;
+    public bool DenoiserSupported { get; } = denoiserSupported;
+    public bool GainControllerSupported { get; } = gainControllerSupported;
+    public bool EchoCancelerSupported { get; } = echoCancelerSupported;
 
     public IAudioPreprocessor Instantiate()
     {
         return factory.Invoke();
     }
 }
+
+public class EmptyRegisteredAudioPreprocessor()
+    : RegisteredAudioPreprocessor(Guid.Empty, "None", () => throw new NotSupportedException(), true, true, true);
 
 public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper> factory)
 {
@@ -127,3 +144,6 @@ public class RegisteredAudioClipper(Guid id, string name, Func<IAudioClipper> fa
         return factory.Invoke();
     }
 }
+
+public class EmptyRegisteredAudioClipper()
+    : RegisteredAudioClipper(Guid.Empty, "None", () => throw new NotSupportedException());

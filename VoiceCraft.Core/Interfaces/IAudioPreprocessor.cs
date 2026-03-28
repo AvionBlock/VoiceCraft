@@ -6,7 +6,7 @@ public interface IAudioPreprocessor : IDisposable
 {
     bool DenoiserEnabled { get; set; }
     bool GainControllerEnabled { get; set; }
-    bool EchoCancellerEnabled { get; set; }
+    bool EchoCancelerEnabled { get; set; }
     int TargetGain { get; set; }
     
     void Process(Span<float> buffer);

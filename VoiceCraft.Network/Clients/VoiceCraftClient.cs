@@ -146,8 +146,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _lastAudioPeakTime = DateTime.UtcNow;
 
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
-        if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
-            ConnectionState != VcConnectionState.Connected || Muted || ServerMuted)
+        if (ConnectionState != VcConnectionState.Connected || 
+            ServerMuted ||
+            Muted ||
+            (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs)
         {
             SpeakingState = false;
             return;

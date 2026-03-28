@@ -47,7 +47,7 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
         }
     }
 
-    public bool EchoCancellerEnabled
+    public bool EchoCancelerEnabled
     {
         get
         {
@@ -91,7 +91,7 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
         _captureBufferFrame = new short[frameSize * nbSpeakers];
         DenoiserEnabled = true;
         GainControllerEnabled = true;
-        EchoCancellerEnabled = true;
+        EchoCancelerEnabled = true;
         TargetGain = 26000;
         
         _echoCanceler.Ctl(EchoCancellationCtl.SPEEX_ECHO_SET_SAMPLING_RATE, ref sampleRate);

@@ -30,13 +30,18 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
                 new NativeBackgroundService(x.GetRequiredService));
             App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(x =>
-                new RegisteredAudioPreprocessor(Constants.SpeexDspPreprocessorGuid, "Speex",
+                new RegisteredAudioPreprocessor(
+                    Constants.SpeexDspPreprocessorGuid, 
+                    "Speex",
                     () => new SpeexDspPreprocessor(
                         Constants.SampleRate,
                         Constants.BitDepth,
                         Constants.FrameSize,
                         Constants.RecordingChannels,
-                        Constants.PlaybackChannels)));
+                        Constants.PlaybackChannels),
+                    true,
+                    true,
+                    true));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
                 new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
                     x.GetRequiredService<IAudioDecoder>));

@@ -26,7 +26,7 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
         set => throw new NotSupportedException();
     }
 
-    public bool EchoCancellerEnabled
+    public bool EchoCancelerEnabled
     {
         get => throw new NotSupportedException();
         set => throw new NotSupportedException();
@@ -87,7 +87,7 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
         var gainControllerInstance = gainController.Instantiate();
         gainControllerInstance.GainControllerEnabled = true;
         gainControllerInstance.DenoiserEnabled = false;
-        gainControllerInstance.EchoCancellerEnabled = false;
+        gainControllerInstance.EchoCancelerEnabled = false;
         _gainController = new KeyValuePair<Guid, IAudioPreprocessor>(gainController.Id, gainControllerInstance);
     }
 
@@ -102,7 +102,7 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
         var denoiserInstance = denoiser.Instantiate();
         denoiserInstance.GainControllerEnabled = false;
         denoiserInstance.DenoiserEnabled = true;
-        denoiserInstance.EchoCancellerEnabled = false;
+        denoiserInstance.EchoCancelerEnabled = false;
         _denoiser = new KeyValuePair<Guid, IAudioPreprocessor>(denoiser.Id, denoiserInstance);
     }
 
@@ -110,20 +110,20 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
     {
         if (_gainController != null && echoCanceller.Id == _gainController.Value.Key)
         {
-            _gainController.Value.Value.EchoCancellerEnabled = true;
+            _gainController.Value.Value.EchoCancelerEnabled = true;
             return;
         }
 
         if (_denoiser != null && echoCanceller.Id == _denoiser.Value.Key)
         {
-            _denoiser.Value.Value.EchoCancellerEnabled = false;
+            _denoiser.Value.Value.EchoCancelerEnabled = false;
             return;
         }
 
         var echoCancellerInstance = echoCanceller.Instantiate();
         echoCancellerInstance.GainControllerEnabled = false;
         echoCancellerInstance.DenoiserEnabled = true;
-        echoCancellerInstance.EchoCancellerEnabled = false;
+        echoCancellerInstance.EchoCancelerEnabled = false;
         _echoCanceller = new KeyValuePair<Guid, IAudioPreprocessor>(echoCanceller.Id, echoCancellerInstance);
     }
 
