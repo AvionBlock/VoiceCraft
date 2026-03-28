@@ -146,8 +146,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             _lastAudioPeakTime = DateTime.UtcNow;
 
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
-        if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
-            ConnectionState != VcConnectionState.Connected || Muted || ServerMuted)
+        if (ConnectionState != VcConnectionState.Connected || 
+            ServerMuted ||
+            Muted ||
+            (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs)
         {
             SpeakingState = false;
             return;
@@ -158,7 +160,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         encodeBuffer.AsSpan().Clear();
         try
         {
-            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.SamplesPerFrame);
+            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.FrameSize);
             SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
                 .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
         }

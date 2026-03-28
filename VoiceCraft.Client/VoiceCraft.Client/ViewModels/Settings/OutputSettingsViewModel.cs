@@ -1,9 +1,10 @@
 using System;
-using System.Buffers;
-using System.Runtime.InteropServices;
 using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SoundFlow.Abstracts.Devices;
+using SoundFlow.Components;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
@@ -17,12 +18,11 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
     private readonly AudioService _audioService;
     private readonly NavigationService _navigationService;
     private readonly NotificationService _notificationService;
-    private readonly SineWaveGenerator _sineWaveGenerator;
     private readonly Lock _lock = new();
 
     [ObservableProperty] private OutputSettingsDataViewModel _outputSettingsData;
     [ObservableProperty] private bool _isPlaying;
-    private IAudioPlayer? _audioPlayer;
+    private AudioPlaybackDevice? _playbackDevice;
     private IAudioClipper? _audioClipper;
 
     public OutputSettingsViewModel(
@@ -35,9 +35,8 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         _audioService = audioService;
         _notificationService = notificationService;
         _outputSettingsData = new OutputSettingsDataViewModel(settingsService, _audioService);
-        _sineWaveGenerator = new SineWaveGenerator(Constants.SampleRate);
 
-        _ = OutputSettingsData.ReloadAvailableDevices();
+        OutputSettingsData.ReloadDevices();
     }
 
     public void Dispose()
@@ -68,7 +67,7 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
     public override void OnAppearing(object? data = null)
     {
         base.OnAppearing(data);
-        _ = OutputSettingsData.ReloadAvailableDevices();
+        OutputSettingsData.ReloadDevices();
     }
 
     public override void OnDisappearing()
@@ -77,25 +76,13 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         ClosePlayer();
     }
 
-    private int Read(byte[] buffer, int length)
+    private int Read(Span<float> buffer)
     {
-        var shortSpanBuffer = MemoryMarshal.Cast<byte, short>(buffer)[..(length / sizeof(short))];
-        var floatBuffer = ArrayPool<float>.Shared.Rent(shortSpanBuffer.Length);
-        var floatSpanBuffer = floatBuffer.AsSpan(0, shortSpanBuffer.Length);
-        floatSpanBuffer.Clear();
-        try
-        {
-            var floatCount = Sample16ToFloat.Read(shortSpanBuffer, floatSpanBuffer);
-            floatCount = _sineWaveGenerator.Read(floatSpanBuffer[..floatCount]);
-            if(_audioClipper != null)
-                floatCount = _audioClipper.Read(floatSpanBuffer[..floatCount]);
-            floatCount = SampleVolume.Read(floatSpanBuffer[..floatCount], OutputSettingsData.OutputVolume);
-            return SampleFloatTo16.Read(floatSpanBuffer[..floatCount], shortSpanBuffer) * sizeof(short);
-        }
-        finally
-        {
-            ArrayPool<float>.Shared.Return(floatBuffer);
-        }
+        var read = buffer.Length;
+        if (_audioClipper != null)
+            read = _audioClipper.Read(buffer);
+        read = SampleVolume.Read(buffer[..read], OutputSettingsData.OutputVolume);
+        return read;
     }
 
     private void OpenPlayer()
@@ -105,46 +92,44 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
             lock (_lock)
             {
                 _audioClipper = _audioService.GetAudioClipper(OutputSettingsData.AudioClipper)?.Instantiate();
-                _audioPlayer =
-                    _audioService.CreateAudioPlayer(Constants.SampleRate, Constants.Channels, Constants.Format);
-                _audioPlayer.SelectedDevice =
-                    OutputSettingsData.OutputDevice == "Default" ? null : OutputSettingsData.OutputDevice;
-                _audioPlayer.BufferMilliseconds = 100;
-                _audioPlayer.OnPlaybackStopped += OnPlaybackStopped;
-                _audioPlayer.Initialize(Read);
-                _audioPlayer.Play();
+                _playbackDevice = _audioService.InitializePlaybackDevice(
+                    Constants.SampleRate,
+                    Constants.PlaybackChannels,
+                    Constants.FrameSize,
+                    OutputSettingsData.OutputDevice);
+
+                var callbackComponent = new CallbackProvider(_playbackDevice.Engine, _playbackDevice.Format, Read);
+                callbackComponent.ConnectInput(new Oscillator(_playbackDevice.Engine, _playbackDevice.Format));
+                _playbackDevice.MasterMixer.AddComponent(callbackComponent);
+                
+                _playbackDevice.Start();
                 IsPlaying = true;
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             ClosePlayer();
             _notificationService.SendErrorNotification(ex.Message);
         }
-    }
-    
-    
-    private void OnPlaybackStopped(Exception? ex)
-    {
-        ClosePlayer();
-
-        if (ex != null)
-            _notificationService.SendErrorNotification(ex.Message);
     }
 
     private bool ClosePlayer()
     {
         lock (_lock)
         {
-            if (_audioPlayer == null) return false;
-            _audioPlayer.OnPlaybackStopped -= OnPlaybackStopped;
+            var result = false;
             IsPlaying = false;
-            if (_audioPlayer.PlaybackState == PlaybackState.Playing)
-                _audioPlayer.Stop();
+
+            if (_playbackDevice != null)
+            {
+                _playbackDevice.Stop();
+                _playbackDevice.Dispose();
+                _playbackDevice = null;
+                result = true;
+            }
+
             _audioClipper = null;
-            _audioPlayer.Dispose();
-            _audioPlayer = null;
-            return true;
+            return result;
         }
     }
 }

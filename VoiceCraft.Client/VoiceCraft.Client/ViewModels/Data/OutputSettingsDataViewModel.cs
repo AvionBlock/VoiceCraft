@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -34,8 +33,6 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         _outputDevice = _outputSettings.OutputDevice;
         _outputVolume = _outputSettings.OutputVolume;
         _audioClipper = _outputSettings.AudioClipper;
-        
-        _ = ReloadAvailableDevices();
     }
 
     public void Dispose()
@@ -47,10 +44,10 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
     
-    public async Task ReloadAvailableDevices()
+    public void ReloadDevices()
     {
-        OutputDevices = ["Default", ..await _audioService.GetOutputDevicesAsync()];
-        AudioClippers = new ObservableCollection<RegisteredAudioClipper>(_audioService.RegisteredAudioClippers);
+        OutputDevices = ["Default", .._audioService.GetOutputDevices()];
+        AudioClippers = [.._audioService.RegisteredAudioClippers];
         
         if (!OutputDevices.Contains(OutputDevice))
             OutputDevice = "Default";

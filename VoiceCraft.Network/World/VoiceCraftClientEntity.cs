@@ -13,8 +13,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     private readonly IAudioDecoder _decoder;
     private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(100));
 
-    private readonly SampleBufferProvider<float> _outputBuffer = new(Constants.OutputBufferSamples)
-        { PrefillSize = Constants.PrefillBufferSamples };
+    private readonly SampleBufferProvider<float> _outputBuffer = new(Constants.OutputBufferSize)
+        { PrefillSize = Constants.PrefillBufferSize };
 
     private DateTime _lastPacket = DateTime.MinValue;
     private bool _speaking;
@@ -141,7 +141,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     private int GetNextPacket(Span<float> buffer)
     {
-        if (buffer.Length < Constants.SamplesPerFrame)
+        if (buffer.Length < Constants.FrameSize)
             return 0;
 
         lock (_jitterBuffer)
@@ -151,10 +151,10 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 if (!_jitterBuffer.Get(out var packet))
                     return (DateTime.UtcNow - _lastPacket).TotalMilliseconds > Constants.SilenceThresholdMs
                         ? 0
-                        : _decoder.Decode(null, buffer, Constants.SamplesPerFrame);
+                        : _decoder.Decode(null, buffer, Constants.FrameSize);
 
                 _lastPacket = DateTime.UtcNow;
-                return _decoder.Decode(packet.Data, buffer, Constants.SamplesPerFrame);
+                return _decoder.Decode(packet.Data, buffer, Constants.FrameSize);
             }
             catch
             {
@@ -166,7 +166,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     private async Task TaskLogicAsync()
     {
         var startTick = Environment.TickCount;
-        var readBuffer = new float[Constants.SamplesPerFrame];
+        var readBuffer = new float[Constants.FrameSize];
         while (!Destroyed)
             try
             {

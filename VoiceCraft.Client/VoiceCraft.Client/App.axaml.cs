@@ -8,6 +8,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
+using SoundFlow.Abstracts;
+using SoundFlow.Backends.MiniAudio;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
@@ -20,6 +23,7 @@ using VoiceCraft.Client.Views.Home;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
@@ -217,8 +221,17 @@ public class App : Application
         //HotKey Registry
         ServiceCollection.AddSingleton<HotKeyAction, MuteAction>();
         ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
-        
-        //Clipper Registry
+
+        //Audio Registry
+        ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
+        ServiceCollection.AddSingleton<AudioService>(x =>
+            new AudioService(
+                x.GetRequiredService<AudioEngine>(),
+                x.GetServices<RegisteredAudioPreprocessor>(),
+                x.GetServices<RegisteredAudioClipper>()
+            ));
+        ServiceCollection.AddTransient<IAudioEncoder, OpusAudioEncoder>();
+        ServiceCollection.AddTransient<IAudioDecoder, OpusAudioDecoder>();
         ServiceCollection.AddSingleton(new RegisteredAudioClipper(
             Constants.HardAudioClipperGuid,
             "Hard Clipper",
