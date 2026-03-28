@@ -11,31 +11,40 @@ namespace VoiceCraft.Client.Android;
 
 public class NativeBackgroundService(PermissionsService permissionsService, Func<Type, object> backgroundFactory) : IBackgroundService
 {
+    private readonly SemaphoreSlim _semaphore = new (1, 1);
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
     public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
-        var backgroundType = typeof(T);
-        if (AndroidBackgroundService.Services.ContainsKey(backgroundType))
-            throw new InvalidOperationException();
-
-        if (BackgroundFactory.Invoke(backgroundType) is not T instance)
-            throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
-
-        var backgroundTask = new BackgroundTask(instance);
-        backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
-        AndroidBackgroundService.Services.TryAdd(backgroundType, backgroundTask);
+        await _semaphore.WaitAsync();
         try
         {
-            await StartBackgroundService();
-            backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
+            var backgroundType = typeof(T);
+            if (AndroidBackgroundService.Services.ContainsKey(backgroundType))
+                throw new InvalidOperationException();
+
+            if (BackgroundFactory.Invoke(backgroundType) is not T instance)
+                throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
+
+            var backgroundTask = new BackgroundTask(instance);
+            backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
+            AndroidBackgroundService.Services.TryAdd(backgroundType, backgroundTask);
+            try
+            {
+                await StartBackgroundService();
+                backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
+            }
+            catch
+            {
+                AndroidBackgroundService.Services.TryRemove(backgroundType, out _);
+                backgroundTask.OnCompleted -= BackgroundTaskOnCompleted;
+                backgroundTask.Dispose();
+                throw;
+            }
         }
-        catch
+        finally
         {
-            AndroidBackgroundService.Services.TryRemove(backgroundType, out _);
-            backgroundTask.OnCompleted -= BackgroundTaskOnCompleted;
-            backgroundTask.Dispose();
-            throw;
+            _semaphore.Release();
         }
     }
 
