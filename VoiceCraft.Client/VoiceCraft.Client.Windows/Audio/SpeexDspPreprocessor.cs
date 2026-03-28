@@ -77,10 +77,8 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
         }
     }
 
-    public SpeexDspPreprocessor(int sampleRate, int bitDepth, int frameSize, int nbMicrophones, int nbSpeakers)
+    public SpeexDspPreprocessor(int sampleRate, int frameSize, int nbMicrophones, int nbSpeakers)
     {
-        if(bitDepth != 16)
-            throw new ArgumentException("BitDepth must be 16!");
         if(nbMicrophones != 1)
             throw new ArgumentException("Number of microphones must be 1!");
         var filterLength = 100 * sampleRate / 1000;
@@ -117,11 +115,11 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
 
         try
         {
-            SampleFloatTo16.Read(buffer, shortSpanBuffer);
+            var read = SampleFloatTo16.Read(buffer, shortSpanBuffer);
             _preprocessor.Run(shortSpanBuffer);
             if(_echoCancelEnabled)
                 ProcessEchoCancel(shortSpanBuffer);
-            Sample16ToFloat.Read(shortSpanBuffer, buffer);
+            Sample16ToFloat.Read(shortSpanBuffer[..read], buffer);
         }
         finally
         {
@@ -133,14 +131,14 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
     {
         ThrowIfDisposed();
         var shortBuffer = ArrayPool<short>.Shared.Rent(buffer.Length);
+        var shortSpanBuffer = shortBuffer.AsSpan();
+        shortSpanBuffer.Clear();
         try
         {
             lock (_captureBuffer)
             {
-                var shortSpanBuffer = shortBuffer.AsSpan();
-                shortSpanBuffer.Clear();
-                SampleFloatTo16.Read(buffer, shortSpanBuffer);
-                _captureBuffer.Write(shortSpanBuffer);
+                var read = SampleFloatTo16.Read(buffer, shortSpanBuffer);
+                _captureBuffer.Write(shortSpanBuffer[..read]);
             }
         }
         finally

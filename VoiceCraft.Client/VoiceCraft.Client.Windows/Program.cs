@@ -35,7 +35,6 @@ internal sealed class Program
                     "Speex",
                     () => new SpeexDspPreprocessor(
                         Constants.SampleRate,
-                        Constants.BitDepth,
                         Constants.FrameSize,
                         Constants.RecordingChannels,
                         Constants.PlaybackChannels),

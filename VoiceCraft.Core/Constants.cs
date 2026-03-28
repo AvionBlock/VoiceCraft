@@ -24,7 +24,6 @@ namespace VoiceCraft.Core
         private const int PrefillBufferSizeMs = FrameSizeMs * 2;
         
         public const int SampleRate = 48000;
-        public const int BitDepth = 16;
         public const int RecordingChannels = 1;
         public const int PlaybackChannels = 2;
         
