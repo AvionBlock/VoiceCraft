@@ -56,7 +56,7 @@ public class MainActivity : AvaloniaMainActivity<App>
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
             new NativeBackgroundService(x.GetRequiredService<PermissionsService>(), x.GetRequiredService));
-        App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(x =>
+        App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
             new RegisteredAudioPreprocessor(
                 Constants.SpeexDspPreprocessorGuid, 
                 "Speex",

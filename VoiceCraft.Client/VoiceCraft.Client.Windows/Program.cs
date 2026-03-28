@@ -29,7 +29,7 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
                 new NativeBackgroundService(x.GetRequiredService));
-            App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(x =>
+            App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
                 new RegisteredAudioPreprocessor(
                     Constants.SpeexDspPreprocessorGuid, 
                     "Speex",
