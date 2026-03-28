@@ -22,11 +22,21 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         if (BackgroundFactory.Invoke(backgroundType) is not T instance)
             throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
 
-        await StartBackgroundService();
         var backgroundTask = new BackgroundTask(instance);
         backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
         AndroidBackgroundService.Services.TryAdd(backgroundType, backgroundTask);
-        backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
+        try
+        {
+            await StartBackgroundService();
+            backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
+        }
+        catch
+        {
+            AndroidBackgroundService.Services.TryRemove(backgroundType, out _);
+            backgroundTask.OnCompleted -= BackgroundTaskOnCompleted;
+            backgroundTask.Dispose();
+            throw;
+        }
     }
 
     public T? GetService<T>() where T : notnull
