@@ -41,8 +41,6 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
         _notificationService = notificationService;
         _permissionsService = permissionsService;
         _inputSettingsData = new InputSettingsDataViewModel(settingsService, audioService);
-
-        InputSettingsData.ReloadDevices();
     }
 
     public void Dispose()

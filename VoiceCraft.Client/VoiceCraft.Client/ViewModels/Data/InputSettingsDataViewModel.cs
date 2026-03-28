@@ -58,7 +58,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
         AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
         EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
-
+        
         if (!InputDevices.Contains(InputDevice))
             InputDevice = "Default";
         if (Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)

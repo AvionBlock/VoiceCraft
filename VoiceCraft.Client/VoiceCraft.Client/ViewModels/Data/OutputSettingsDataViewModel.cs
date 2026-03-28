@@ -12,17 +12,17 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
     private readonly AudioService _audioService;
     private readonly OutputSettings _outputSettings;
     private readonly SettingsService _settingsService;
-    
+
     [ObservableProperty] private string _outputDevice;
     [ObservableProperty] private float _outputVolume;
     [ObservableProperty] private Guid _audioClipper;
     private bool _disposed;
     private bool _updating;
-    
+
     //Lists
     [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioClipper> _audioClippers = [];
-    
+
     public OutputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
         _outputSettings = settingsService.OutputSettings;
@@ -43,18 +43,17 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         _disposed = true;
         GC.SuppressFinalize(this);
     }
-    
+
     public void ReloadDevices()
     {
         OutputDevices = ["Default", .._audioService.GetOutputDevices()];
         AudioClippers = [.._audioService.RegisteredAudioClippers];
-        
         if (!OutputDevices.Contains(OutputDevice))
             OutputDevice = "Default";
         if (AudioClippers.FirstOrDefault(x => x.Id == AudioClipper) == null)
             AudioClipper = Guid.Empty;
     }
-    
+
     partial void OnOutputDeviceChanging(string value)
     {
         ThrowIfDisposed();
@@ -98,7 +97,7 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
 
         _updating = false;
     }
-    
+
     private void ThrowIfDisposed()
     {
         if (!_disposed) return;

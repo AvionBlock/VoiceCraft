@@ -76,8 +76,12 @@ public class AudioService
             PeriodSizeInFrames = frameSize,
             AAudio = new AAudioSettings()
             {
-                ContentType = AAudioContentType.Speech,
-                Usage = AAudioUsage.VoiceCommunication
+                Usage = AAudioUsage.VoiceCommunication,
+                InputPreset = AAudioInputPreset.VoiceCommunication
+            },
+            OpenSL = new OpenSlSettings()
+            {
+                RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
             }
         };
         var device = _engine.CaptureDevices.FirstOrDefault(x => x.Name == inputDevice);
@@ -104,6 +108,10 @@ public class AudioService
             {
                 ContentType = AAudioContentType.Music,
                 Usage = AAudioUsage.Media
+            },
+            OpenSL = new OpenSlSettings()
+            {
+                StreamType = OpenSlStreamType.Media
             }
         };
         var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);

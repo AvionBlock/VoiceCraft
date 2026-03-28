@@ -35,8 +35,6 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         _audioService = audioService;
         _notificationService = notificationService;
         _outputSettingsData = new OutputSettingsDataViewModel(settingsService, _audioService);
-
-        OutputSettingsData.ReloadDevices();
     }
 
     public void Dispose()
