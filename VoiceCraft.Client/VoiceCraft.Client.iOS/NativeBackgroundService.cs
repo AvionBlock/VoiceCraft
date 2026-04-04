@@ -35,16 +35,43 @@ public class NativeBackgroundService(
             if (BackgroundFactory.Invoke(backgroundType) is not T instance)
                 throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
 
-            _backgroundKeeper.Start();
+            BackgroundTask? backgroundTask = null;
+            var keeperStarted = false;
+            var serviceAdded = false;
 
-            var backgroundTask = new BackgroundTask(instance);
-            backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
-            Services.TryAdd(backgroundType, backgroundTask);
-            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }), () =>
+            try
             {
-                if (Services.IsEmpty)
+                _backgroundKeeper.Start();
+                keeperStarted = true;
+
+                backgroundTask = new BackgroundTask(instance);
+                backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
+                if (!Services.TryAdd(backgroundType, backgroundTask))
+                    throw new InvalidOperationException();
+                serviceAdded = true;
+
+                backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }), () =>
+                {
+                    if (Services.IsEmpty)
+                        _backgroundKeeper.Stop();
+                });
+            }
+            catch
+            {
+                if (backgroundTask != null)
+                {
+                    backgroundTask.OnCompleted -= BackgroundTaskOnCompleted;
+                    backgroundTask.Dispose();
+                }
+
+                if (serviceAdded)
+                    Services.TryRemove(backgroundType, out _);
+
+                if (keeperStarted && Services.IsEmpty)
                     _backgroundKeeper.Stop();
-            });
+
+                throw;
+            }
         }
         finally
         {
