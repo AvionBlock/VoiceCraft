@@ -15,7 +15,18 @@ public class OpusAudioEncoder: IAudioEncoder
     {
         _opusEncoder = new OpusEncoder(Constants.SampleRate, Constants.RecordingChannels,
             OpusPredefinedValues.OPUS_APPLICATION_VOIP);
-        _opusEncoder.SetPacketLostPercent(20); //Expected packet loss, might make this change over time later.
+
+        // On iOS, this CTL can return OPUS_BAD_ARG in some runtime/package combinations.
+        // It's an optimization hint, so we safely skip it if unsupported.
+        try
+        {
+            _opusEncoder.SetPacketLostPercent(20); // Expected packet loss hint.
+        }
+        catch (OpusException)
+        {
+            // Ignore and continue with defaults.
+        }
+
         _opusEncoder.SetBitRate(32000);
     }
 

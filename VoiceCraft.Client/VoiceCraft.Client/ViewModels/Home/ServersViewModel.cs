@@ -26,9 +26,15 @@ public partial class ServersViewModel(
 
     partial void OnSelectedServerChanged(ServerDataViewModel? value)
     {
-        if (value == null) return;
-        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(value.Server));
+        OpenServer(value);
         SelectedServer = null;
+    }
+
+    [RelayCommand]
+    private void OpenServer(ServerDataViewModel? server)
+    {
+        if (server == null) return;
+        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.Server));
     }
 
     [RelayCommand]

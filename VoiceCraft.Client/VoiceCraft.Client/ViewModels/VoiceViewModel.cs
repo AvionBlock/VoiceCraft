@@ -119,7 +119,10 @@ public partial class VoiceViewModel(
                 }).ContinueWith(x =>
                 {
                     if (x.Exception == null) return;
-                    notificationService.SendErrorNotification(x.Exception.Message);
+                    var flattened = x.Exception.Flatten();
+                    var message = flattened.InnerException?.ToString() ?? flattened.ToString();
+                    LogService.Log(flattened);
+                    notificationService.SendErrorNotification(message);
                     notificationService.SendNotification(Localizer.Get("VoiceCraft.DisconnectReason.Error"));
                     OnDisconnected();
                 });

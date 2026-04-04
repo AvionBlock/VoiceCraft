@@ -38,6 +38,8 @@ public class ServersSettings : Setting<ServersSettings>
             throw new Exception("Server name cannot be empty or whitespace!");
         if (string.IsNullOrWhiteSpace(server.Ip))
             throw new Exception("Server IP cannot be empty or whitespace!");
+        if (server.Port is < 1 or > 65535)
+            throw new Exception("Server port must be between 1 and 65535.");
         if (server.Name.Length > Server.NameLimit)
             throw new Exception($"Server name cannot be longer than {Server.NameLimit} characters!");
         if (server.Ip.Length > Server.IpLimit)
@@ -105,6 +107,8 @@ public class Server : Setting<Server>
         get => _port;
         set
         {
+            if (value is < 1 or > 65535)
+                throw new ArgumentException("Port must be between 1 and 65535.");
             _port = value;
             OnUpdated?.Invoke(this);
         }

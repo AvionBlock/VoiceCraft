@@ -29,7 +29,7 @@
     <PackageVersion Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Maui.Essentials" Version="9.0.120" />
-    <PackageVersion Include="OpusSharp" Version="1.6.3" />
+    <PackageVersion Include="OpusSharp" Version="1.6.5" />
     <PackageVersion Include="System.Text.Json" Version="10.0.5" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />

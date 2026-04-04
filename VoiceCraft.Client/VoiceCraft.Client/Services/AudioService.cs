@@ -8,6 +8,7 @@ using SoundFlow.Backends.MiniAudio.Devices;
 using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
+using VoiceCraft.Client.Audio;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services;
@@ -71,20 +72,47 @@ public class AudioService
             Channels = channels,
             Format = SampleFormat.F32
         };
-        var config = new MiniAudioDeviceConfig()
+        DeviceConfig config;
+        if (OperatingSystem.IsIOS() && _engine is IosFallbackAudioEngine)
         {
-            PeriodSizeInFrames = frameSize,
-            AAudio = new AAudioSettings()
+            config = new IosFallbackDeviceConfig
             {
-                Usage = AAudioUsage.VoiceCommunication,
-                InputPreset = AAudioInputPreset.VoiceCommunication
-            },
-            OpenSL = new OpenSlSettings()
+                PeriodSizeInFrames = frameSize
+            };
+        }
+        else
+        {
+            var miniAudioConfig = new MiniAudioDeviceConfig()
             {
-                RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
+                PeriodSizeInFrames = frameSize
+            };
+            config = miniAudioConfig;
+
+            if (OperatingSystem.IsAndroid())
+            {
+                miniAudioConfig.AAudio = new AAudioSettings()
+                {
+                    Usage = AAudioUsage.VoiceCommunication,
+                    InputPreset = AAudioInputPreset.VoiceCommunication
+                };
+                miniAudioConfig.OpenSL = new OpenSlSettings()
+                {
+                    RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
+                };
             }
-        };
+            else if (OperatingSystem.IsIOS())
+            {
+                miniAudioConfig.CoreAudio = new CoreAudioSettings()
+                {
+                    AllowNominalSampleRateChange = true
+                };
+            }
+        }
+
         var device = _engine.CaptureDevices.FirstOrDefault(x => x.Name == inputDevice);
+        if (device.Id == nint.Zero)
+            device = _engine.CaptureDevices.FirstOrDefault(x => x.IsDefault);
+
         return _engine.InitializeCaptureDevice(device, format, config);
     }
 
@@ -101,20 +129,47 @@ public class AudioService
             Channels = channels,
             Format = SampleFormat.F32
         };
-        var config = new MiniAudioDeviceConfig()
+        DeviceConfig config;
+        if (OperatingSystem.IsIOS() && _engine is IosFallbackAudioEngine)
         {
-            PeriodSizeInFrames = frameSize,
-            AAudio = new AAudioSettings()
+            config = new IosFallbackDeviceConfig
             {
-                ContentType = AAudioContentType.Music,
-                Usage = AAudioUsage.Media
-            },
-            OpenSL = new OpenSlSettings()
+                PeriodSizeInFrames = frameSize
+            };
+        }
+        else
+        {
+            var miniAudioConfig = new MiniAudioDeviceConfig()
             {
-                StreamType = OpenSlStreamType.Media
+                PeriodSizeInFrames = frameSize
+            };
+            config = miniAudioConfig;
+
+            if (OperatingSystem.IsAndroid())
+            {
+                miniAudioConfig.AAudio = new AAudioSettings()
+                {
+                    ContentType = AAudioContentType.Music,
+                    Usage = AAudioUsage.Media
+                };
+                miniAudioConfig.OpenSL = new OpenSlSettings()
+                {
+                    StreamType = OpenSlStreamType.Media
+                };
             }
-        };
+            else if (OperatingSystem.IsIOS())
+            {
+                miniAudioConfig.CoreAudio = new CoreAudioSettings()
+                {
+                    AllowNominalSampleRateChange = true
+                };
+            }
+        }
+
         var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);
+        if (device.Id == nint.Zero)
+            device = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
+
         return _engine.InitializePlaybackDevice(device, format, config);
     }
 }

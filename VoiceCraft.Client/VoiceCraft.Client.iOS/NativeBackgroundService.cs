@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using VoiceCraft.Client.Services;
+
+namespace VoiceCraft.Client.iOS;
+
+public class NativeBackgroundService(
+    PermissionsService permissionsService,
+    Func<Type, object> backgroundFactory)
+    : IBackgroundService
+{
+    private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
+
+    public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
+                PermissionStatus.Granted)
+            {
+                throw new PermissionException("Microphone access not granted!");
+            }
+
+            var backgroundType = typeof(T);
+            if (Services.ContainsKey(backgroundType))
+                throw new InvalidOperationException();
+
+            if (BackgroundFactory.Invoke(backgroundType) is not T instance)
+                throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
+
+            var backgroundTask = new BackgroundTask(instance);
+            backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
+            Services.TryAdd(backgroundType, backgroundTask);
+            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }));
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public T? GetService<T>() where T : notnull
+    {
+        if (Services.TryGetValue(typeof(T), out var service) && service.TaskInstance is T taskInstance)
+            return taskInstance;
+        return default;
+    }
+
+    public void Dispose()
+    {
+        foreach (var service in Services.Values)
+            service.Dispose();
+
+        GC.SuppressFinalize(this);
+    }
+
+    private static void BackgroundTaskOnCompleted(BackgroundTask task)
+    {
+        task.OnCompleted -= BackgroundTaskOnCompleted;
+        Services.TryRemove(task.TaskInstance.GetType(), out _);
+    }
+
+    private class BackgroundTask(object taskInstance) : IDisposable
+    {
+        public event Action<BackgroundTask>? OnCompleted;
+        public Task? RunningTask { get; private set; }
+        public object TaskInstance { get; } = taskInstance;
+
+        public void Start(Action startAction)
+        {
+            RunningTask = Task.Run(() =>
+            {
+                try
+                {
+                    startAction.Invoke();
+                }
+                finally
+                {
+                    Dispose();
+                    OnCompleted?.Invoke(this);
+                }
+            });
+
+            var sw = new SpinWait();
+            while (RunningTask.Status < TaskStatus.Running)
+                sw.SpinOnce();
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                if (TaskInstance is IDisposable disposable)
+                    disposable.Dispose();
+            }
+            catch
+            {
+                // Do Nothing
+            }
+
+            GC.SuppressFinalize(this);
+        }
+    }
+}

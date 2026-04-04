@@ -33,6 +33,7 @@
                         <StackPanel Grid.Row="0"
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal"
+                                    VerticalAlignment="Top"
                                     Spacing="10">
                             <Button Padding="5"
                                     Command="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).EditServerCommand}"

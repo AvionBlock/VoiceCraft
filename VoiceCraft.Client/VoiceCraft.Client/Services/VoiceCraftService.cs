@@ -141,6 +141,7 @@ public class VoiceCraftService(
         }
         catch (Exception ex)
         {
+            LogService.Log(ex);
             DisconnectAsync(ex.Message).GetAwaiter().GetResult();
         }
     }

@@ -18,7 +18,9 @@
     },
     "CrashLogs": {
       "Badge": "CrashLogs",
-      "Cleared": "Successfully cleared all logs."
+      "Cleared": "Successfully cleared all logs.",
+      "Copied": "Crash logs copied to clipboard.",
+      "Empty": "No crash logs to copy."
     },
     "Error": {
       "Badge": "Error",
