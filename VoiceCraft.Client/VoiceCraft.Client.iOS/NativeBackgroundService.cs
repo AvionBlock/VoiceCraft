@@ -14,6 +14,7 @@ public class NativeBackgroundService(
 {
     private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly IosBackgroundExecutionKeeper _backgroundKeeper = new();
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
     public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
@@ -34,10 +35,16 @@ public class NativeBackgroundService(
             if (BackgroundFactory.Invoke(backgroundType) is not T instance)
                 throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
 
+            _backgroundKeeper.Start();
+
             var backgroundTask = new BackgroundTask(instance);
             backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
             Services.TryAdd(backgroundType, backgroundTask);
-            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }));
+            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }), () =>
+            {
+                if (Services.IsEmpty)
+                    _backgroundKeeper.Stop();
+            });
         }
         finally
         {
@@ -57,6 +64,8 @@ public class NativeBackgroundService(
         foreach (var service in Services.Values)
             service.Dispose();
 
+        Services.Clear();
+        _backgroundKeeper.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -72,7 +81,7 @@ public class NativeBackgroundService(
         public Task? RunningTask { get; private set; }
         public object TaskInstance { get; } = taskInstance;
 
-        public void Start(Action startAction)
+        public void Start(Action startAction, Action onComplete)
         {
             RunningTask = Task.Run(() =>
             {
@@ -84,6 +93,7 @@ public class NativeBackgroundService(
                 {
                     Dispose();
                     OnCompleted?.Invoke(this);
+                    onComplete.Invoke();
                 }
             });
 

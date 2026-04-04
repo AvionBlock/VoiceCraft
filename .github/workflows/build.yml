@@ -202,6 +202,31 @@ jobs:
         with:
           name: VoiceCraft.Client.Android.arm64
           path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-arm64/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
+
+  Build_iOS_Arm64:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./VoiceCraft.Client/VoiceCraft.Client.iOS
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.x'
+
+      - name: Install VoiceCraft.Client.iOS WorkLoads
+        run: dotnet workload restore
+
+      - name: Publish VoiceCraft.Client.iOS.arm64 (Unsigned IPA)
+        run: dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:ValidateXcodeVersion=false
+
+      - name: Upload Artifact VoiceCraft.Client.iOS.arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceCraft.Client.iOS.arm64
+          path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/*.ipa
   
   Build_Server_Windows_x64:
     runs-on: ubuntu-latest
