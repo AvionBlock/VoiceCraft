@@ -8,6 +8,8 @@ using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
+using SoundFlow.Abstracts;
+using SoundFlow.Backends.MiniAudio;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -52,6 +54,7 @@ public class MainActivity : AvaloniaMainActivity<App>
         if (audioManager == null)
             throw new Exception($"Could not find {AudioService}. Cannot initialize audio service.");
 
+        App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<IBackgroundService>(x =>

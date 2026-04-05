@@ -18,7 +18,9 @@
     },
     "CrashLogs": {
       "Badge": "崩溃日志",
-      "Cleared": "成功清除所有日志。"
+      "Cleared": "成功清除所有日志。",
+      "Copied": "崩溃日志已复制到剪贴板。",
+      "Empty": "没有可复制的崩溃日志。"
     },
     "Error": {
       "Badge": "错误",

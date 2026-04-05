@@ -141,6 +141,7 @@ public class VoiceCraftService(
         }
         catch (Exception ex)
         {
+            LogService.Log(ex);
             DisconnectAsync(ex.Message).GetAwaiter().GetResult();
         }
     }
@@ -181,6 +182,7 @@ public class VoiceCraftService(
     private void Write(Span<float> buffer, Capability _)
     {
         _audioPreprocessor?.Process(buffer);
+        SampleVolume.Read(buffer, client.InputVolume);
         client.Write(buffer);
     }
 

@@ -116,14 +116,14 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
 
         if (_denoiser != null && echoCanceller.Id == _denoiser.Value.Key)
         {
-            _denoiser.Value.Value.EchoCancelerEnabled = false;
+            _denoiser.Value.Value.EchoCancelerEnabled = true;
             return;
         }
 
         var echoCancellerInstance = echoCanceller.Instantiate();
         echoCancellerInstance.GainControllerEnabled = false;
-        echoCancellerInstance.DenoiserEnabled = true;
-        echoCancellerInstance.EchoCancelerEnabled = false;
+        echoCancellerInstance.DenoiserEnabled = false;
+        echoCancellerInstance.EchoCancelerEnabled = true;
         _echoCanceller = new KeyValuePair<Guid, IAudioPreprocessor>(echoCanceller.Id, echoCancellerInstance);
     }
 

@@ -18,7 +18,9 @@
     },
     "CrashLogs": {
       "Badge": "CrashLogs",
-      "Cleared": "Alle logs zijn succesvol geleegd."
+      "Cleared": "Alle logs zijn succesvol geleegd.",
+      "Copied": "Crashlogboeken zijn gekopieerd naar het klembord.",
+      "Empty": "Geen crashlogboeken om te kopiëren."
     },
     "Error": {
       "Badge": "Fout",

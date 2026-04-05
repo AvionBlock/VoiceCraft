@@ -1,5 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia;
+using Microsoft.Extensions.DependencyInjection;
+using SoundFlow.Abstracts;
+using SoundFlow.Backends.MiniAudio;
+using VoiceCraft.Client.MacOS.Permissions;
+using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.MacOS;
 
@@ -11,8 +19,31 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+        var nativeStorage = new NativeStorageService();
+        LogService.NativeStorageService = nativeStorage;
+        LogService.Load();
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+        try
+        {
+            App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
+            App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
+            App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
+            App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
+                new NativeBackgroundService(x.GetRequiredService));
+            App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
+                new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
+                    x.GetRequiredService<IAudioDecoder>));
+            App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        finally
+        {
+            if (App.ServiceProvider != null)
+            {
+                var serviceProvider = App.ServiceProvider;
+                serviceProvider.Dispose();
+            }
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
@@ -22,5 +53,18 @@ internal sealed class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();
+    }
+
+    private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        try
+        {
+            if (e.ExceptionObject is Exception ex)
+                LogService.LogCrash(ex); //Log it
+        }
+        catch (Exception writeEx)
+        {
+            Debug.WriteLine(writeEx); //We don't want to crash if the log failed.
+        }
     }
 }

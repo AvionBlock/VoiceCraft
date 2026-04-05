@@ -27,7 +27,7 @@ public class AudioService
         _engine = engine;
         _registeredAudioPreprocessors.TryAdd(Guid.Empty, new EmptyRegisteredAudioPreprocessor());
         _registeredAudioClippers.TryAdd(Guid.Empty, new EmptyRegisteredAudioClipper());
-        
+
         foreach (var audioPreprocessor in registeredAudioPreprocessors)
             _registeredAudioPreprocessors.TryAdd(audioPreprocessor.Id, audioPreprocessor);
         foreach (var registeredClipper in registeredClippers)
@@ -82,9 +82,17 @@ public class AudioService
             OpenSL = new OpenSlSettings()
             {
                 RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
+            },
+            CoreAudio = new CoreAudioSettings()
+            {
+                AllowNominalSampleRateChange = true
             }
         };
+
         var device = _engine.CaptureDevices.FirstOrDefault(x => x.Name == inputDevice);
+        if (device.Id == nint.Zero)
+            device = _engine.CaptureDevices.FirstOrDefault(x => x.IsDefault);
+
         return _engine.InitializeCaptureDevice(device, format, config);
     }
 
@@ -112,15 +120,23 @@ public class AudioService
             OpenSL = new OpenSlSettings()
             {
                 StreamType = OpenSlStreamType.Media
+            },
+            CoreAudio = new CoreAudioSettings()
+            {
+                AllowNominalSampleRateChange = true
             }
         };
+
         var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);
+        if (device.Id == nint.Zero)
+            device = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
+
         return _engine.InitializePlaybackDevice(device, format, config);
     }
-    
+
     private class EmptyRegisteredAudioPreprocessor()
         : RegisteredAudioPreprocessor(Guid.Empty, "None", () => throw new NotSupportedException(), true, true, true);
-    
+
     private class EmptyRegisteredAudioClipper()
         : RegisteredAudioClipper(Guid.Empty, "None", () => throw new NotSupportedException());
 }

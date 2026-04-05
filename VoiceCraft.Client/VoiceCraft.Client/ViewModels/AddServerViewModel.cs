@@ -12,9 +12,31 @@ public partial class AddServerViewModel(
     SettingsService settings,
     NavigationService navigationService) : ViewModelBase
 {
+    private bool _updatingPort;
+
     [ObservableProperty] private Server _server = new();
+    [ObservableProperty] private decimal? _serverPort = 9050;
 
     [ObservableProperty] private ServersSettings _servers = settings.ServersSettings;
+
+    partial void OnServerChanged(Server value)
+    {
+        _updatingPort = true;
+        ServerPort = value.Port;
+        _updatingPort = false;
+    }
+
+    partial void OnServerPortChanged(decimal? value)
+    {
+        if (_updatingPort) return;
+        if (value == null) return;
+        var clamped = Math.Clamp(decimal.ToInt32(decimal.Round(value.Value)), 1, 65535);
+        _updatingPort = true;
+        Server.Port = (ushort)clamped;
+        if (ServerPort != clamped)
+            ServerPort = clamped;
+        _updatingPort = false;
+    }
 
     [RelayCommand]
     private void Cancel()
@@ -27,6 +49,9 @@ public partial class AddServerViewModel(
     {
         try
         {
+            if (ServerPort == null)
+                throw new Exception("Server port must be between 1 and 65535.");
+
             Servers.AddServer(Server);
             notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Added:{Server.Name}"),
                 Localizer.Get("Notification.Servers.Badge"));

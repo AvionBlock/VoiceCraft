@@ -18,7 +18,9 @@
     },
     "CrashLogs": {
       "Badge": "崩潰日志",
-      "Cleared": "成功清除所有日志。"
+      "Cleared": "成功清除所有日志。",
+      "Copied": "崩潰日志已複製到剪貼簿。",
+      "Empty": "沒有可複製的崩潰日志。"
     },
     "Error": {
       "Badge": "錯誤",

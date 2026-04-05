@@ -36,14 +36,22 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Button Width="50"
-                Height="50"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Margin="15"
-                CornerRadius="50"
-                Command="{Binding ClearLogsCommand}">
-            <PathIcon Data="{StaticResource DeleteRegular}" />
-        </Button>
+        <StackPanel HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Margin="15"
+                    Spacing="10">
+            <Button Width="50"
+                    Height="50"
+                    CornerRadius="50"
+                    Command="{Binding CopyLogsCommand}">
+                <PathIcon Data="{StaticResource CopyRegular}" />
+            </Button>
+            <Button Width="50"
+                    Height="50"
+                    CornerRadius="50"
+                    Command="{Binding ClearLogsCommand}">
+                <PathIcon Data="{StaticResource DeleteRegular}" />
+            </Button>
+        </StackPanel>
     </Panel>
 </UserControl>

@@ -50,9 +50,25 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     public override void Start()
     {
         Stop();
+        var listenerPrefix = BuildListenerPrefix(_config.Hostname);
         _httpServer = new HttpListener();
-        _httpServer.Prefixes.Add(_config.Hostname);
-        _httpServer.Start();
+        _httpServer.Prefixes.Add(listenerPrefix);
+        try
+        {
+            _httpServer.Start();
+        }
+        catch (HttpListenerException ex) when (ex.NativeErrorCode == 99)
+        {
+            throw new InvalidOperationException(
+                $"McHttp cannot bind to '{_config.Hostname}'. This address is not available inside the current environment/container. " +
+                "Use 0.0.0.0 or the container local IP from 'ip a'.", ex);
+        }
+        catch (HttpListenerException ex) when (ex.NativeErrorCode == 13)
+        {
+            throw new InvalidOperationException(
+                $"McHttp cannot bind to '{_config.Hostname}' due to insufficient permissions for this address/port.", ex);
+        }
+
         _ = ListenerLoop(_httpServer);
     }
 
@@ -65,8 +81,29 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     public override void Stop()
     {
         if (_httpServer == null) return;
-        _httpServer.Stop();
-        _httpServer.Close();
+        try
+        {
+            if (_httpServer.IsListening)
+                _httpServer.Stop();
+        }
+        catch (ObjectDisposedException)
+        {
+            //Do Nothing
+        }
+        catch (HttpListenerException)
+        {
+            //Do Nothing
+        }
+
+        try
+        {
+            _httpServer.Close();
+        }
+        catch (ObjectDisposedException)
+        {
+            //Do Nothing
+        }
+
         _httpServer = null;
     }
 
@@ -217,10 +254,21 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
 
     private async Task ListenerLoop(HttpListener listener)
     {
-        while (listener.IsListening)
+        try
         {
-            var context = await listener.GetContextAsync();
-            await HandleRequest(context);
+            while (listener.IsListening)
+            {
+                var context = await listener.GetContextAsync();
+                await HandleRequest(context);
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            //Do Nothing
+        }
+        catch (HttpListenerException)
+        {
+            //Do Nothing
         }
     }
 
@@ -352,6 +400,31 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         //Double the amount of time. We remove the peer.
         if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
         _mcApiPeers.TryRemove(ipAddress, out _);
+    }
+
+    private static string BuildListenerPrefix(string configuredHostname)
+    {
+        if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
+            throw new InvalidOperationException(
+                $"Invalid McHttp hostname '{configuredHostname}'. Expected format like 'http://0.0.0.0:9050/'.");
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException(
+                $"Invalid McHttp hostname '{configuredHostname}'. Only 'http://' is supported.");
+
+        var port = uri.IsDefaultPort ? 80 : uri.Port;
+        if (port is < 1 or > 65535)
+            throw new InvalidOperationException($"Invalid McHttp port '{port}' in hostname '{configuredHostname}'.");
+
+        var host = uri.Host;
+        if (host == "0.0.0.0")
+        {
+            var replaced = $"{Uri.UriSchemeHttp}://+:{port}/";
+            Console.WriteLine(
+                $"[McHttp] Hostname '{configuredHostname}' uses 0.0.0.0. Replacing listener host with '+' => '{replaced}'.");
+            host = "+";
+        }
+
+        return $"{Uri.UriSchemeHttp}://{host}:{port}/";
     }
 
     public class HttpMcApiConfig
