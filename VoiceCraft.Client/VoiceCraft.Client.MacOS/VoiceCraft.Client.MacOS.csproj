@@ -5,6 +5,7 @@
         One for Windows with net9.0-windows TFM, one for MacOS with net9.0-macos and one with net9.0 TFM for Linux.-->
         <TargetFramework>net9.0-macos</TargetFramework>
         <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+        <AssemblyName>VoiceCraft</AssemblyName>
         <ApplicationTitle>VoiceCraft</ApplicationTitle>
         <ApplicationId>com.avionblock.voicecraft.client.macos</ApplicationId>
         <InfoPlist>Info.plist</InfoPlist>

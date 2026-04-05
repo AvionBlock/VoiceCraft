@@ -261,14 +261,24 @@ jobs:
       - name: Zip VoiceCraft.Client.MacOS.${{ matrix.arch }}
         run: |
           cd ./bin/Release/net9.0-macos/${{ matrix.rid }}
-          ditto -c -k --sequesterRsrc --keepParent VoiceCraft.Client.MacOS.app VoiceCraft.Client.MacOS.${{ matrix.arch }}.zip
+          APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -print -quit)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "No .app bundle found"
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$APP_BUNDLE" VoiceCraft.Client.MacOS.${{ matrix.arch }}.zip
 
       - name: Build VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
         run: |
           cd ./bin/Release/net9.0-macos/${{ matrix.rid }}
+          APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -print -quit)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "No .app bundle found"
+            exit 1
+          fi
           rm -rf dmg-root
           mkdir -p dmg-root
-          cp -R VoiceCraft.Client.MacOS.app dmg-root/
+          cp -R "$APP_BUNDLE" dmg-root/
           ln -s /Applications dmg-root/Applications
           hdiutil create \
             -volname "VoiceCraft" \
