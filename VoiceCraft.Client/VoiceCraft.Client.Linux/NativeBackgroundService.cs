@@ -22,8 +22,19 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
 
         var backgroundTask = new BackgroundTask(instance);
         backgroundTask.OnCompleted += BackgroundTaskOnCompleted;
-        Services.TryAdd(backgroundType, backgroundTask);
-        backgroundTask.Start(() => startAction.Invoke(instance, _ => {}, _ => {}));
+        try
+        {
+            Services.TryAdd(backgroundType, backgroundTask);
+            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }));
+        }
+        catch
+        {
+            Services.TryRemove(backgroundType, out _);
+            backgroundTask.OnCompleted -= BackgroundTaskOnCompleted;
+            backgroundTask.Dispose();
+            throw;
+        }
+
         return Task.CompletedTask;
     }
 
