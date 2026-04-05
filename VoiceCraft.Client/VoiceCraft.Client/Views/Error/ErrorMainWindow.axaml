@@ -9,6 +9,6 @@
         MinHeight="200" MinWidth="200"
         Height="850" Width="1600"
         Icon="/Assets/vc.png"
-        Title="{locale:Localize Error.WindowTitle}">
+        Title="{locale:Localize Errors.WindowTitle}">
     <views:ErrorView />
 </Window>

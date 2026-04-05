@@ -39,7 +39,13 @@
     "Servers": "Servers",
     "Settings": "Instellingen",
     "Credits": "Kredieten",
-    "CrashLogs": "Crashlogboeken"
+    "CrashLogs": "Crashlogboeken",
+    "ServersList": {
+      "Ip": "IP: {0}",
+      "Port": "Poort: {0}",
+      "IpHidden": "IP-adres: ****",
+      "PortHidden": "Poort: ****"
+    }
   },
   "AddServer": {
     "AddServer": "Server toevoegen",
@@ -75,7 +81,20 @@
     "Appearance": {
       "Appearance": "Uiterlijk",
       "Theme": "Thema",
-      "BackgroundImage": "Achtergrondafbeelding"
+      "BackgroundImage": "Achtergrondafbeelding",
+      "Themes": {
+        "Dark": "Donker",
+        "DarkPurple": "Donker paars",
+        "DarkGreen": "Donkergroen",
+        "Light": "Licht"
+      },
+      "BackgroundImages": {
+        "DockNight": "Dock Nacht",
+        "DockDay": "Dock Dag",
+        "LethalCraft": "Lethal Craft",
+        "BlockSenseSpawn": "BlockSense Spawn",
+        "SineSmpBase": "SineSMP Basis"
+      }
     },
     "Input": {
       "Input": "Invoerinstellingen",
@@ -88,6 +107,9 @@
       "MicrophoneTest": {
         "MicrophoneTest": "Microfoon Test",
         "Test": "Test"
+      },
+      "Preprocessors": {
+        "Speex": "Speex"
       }
     },
     "Output": {
@@ -95,7 +117,11 @@
       "OutputDevices": "Uitvoerapparaten",
       "OutputVolume": "Uitvoervolume",
       "AudioClippers": "Audio-clippers",
-      "TestOutput": "Uitvoer testen"
+      "TestOutput": "Uitvoer testen",
+      "Clippers": {
+        "Hard": "Harde clipper",
+        "TanhSoft": "Tanh zachte clipper"
+      }
     },
     "Network": {
       "Network": "Netwerk Instellingen",
@@ -163,21 +189,10 @@
   "App": {
     "Title": "VoiceCraft"
   },
-  "Error": {
-    "WindowTitle": "Fout"
-  },
   "Voice": {
     "Modal": {
       "Volume": "Volume",
       "Muted": "Gedempt"
-    }
-  },
-  "Servers": {
-    "List": {
-      "Ip": "IP: {0}",
-      "Port": "Poort: {0}",
-      "IpHidden": "IP-adres: ****",
-      "PortHidden": "Poort: ****"
     }
   },
   "Validation": {
@@ -197,7 +212,8 @@
   "Errors": {
     "TestCrash": "Taak succesvol mislukt.",
     "ViewNotFound": "Niet gevonden: {0}",
-    "ImageFileNotFound": "Kan afbeeldingsbestand niet vinden."
+    "ImageFileNotFound": "Kan afbeeldingsbestand niet vinden.",
+    "WindowTitle": "Fout"
   },
   "Permissions": {
     "Notifications": {
@@ -210,32 +226,12 @@
     }
   },
   "Discord": {
-    "State": {
+    "Rpc": {
       "InPage": "Op pagina {0}"
     }
   },
   "Common": {
     "Default": "Standaard",
     "None": "Geen"
-  },
-  "Themes": {
-    "Dark": "Donker",
-    "DarkPurple": "Donker paars",
-    "DarkGreen": "Donkergroen",
-    "Light": "Licht"
-  },
-  "BackgroundImages": {
-    "DockNight": "Dock Nacht",
-    "DockDay": "Dock Dag",
-    "LethalCraft": "Lethal Craft",
-    "BlockSenseSpawn": "BlockSense Spawn",
-    "SineSmpBase": "SineSMP Basis"
-  },
-  "AudioPreprocessors": {
-    "Speex": "Speex"
-  },
-  "AudioClippers": {
-    "Hard": "Harde clipper",
-    "TanhSoft": "Tanh zachte clipper"
   }
 }

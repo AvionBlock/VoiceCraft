@@ -35,7 +35,7 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
                 new RegisteredAudioPreprocessor(
                     Constants.SpeexDspPreprocessorGuid, 
-                    "AudioPreprocessors.Speex",
+                    "Settings.Input.Preprocessors.Speex",
                     () => new SpeexDspPreprocessor(
                         Constants.SampleRate,
                         Constants.FrameSize,

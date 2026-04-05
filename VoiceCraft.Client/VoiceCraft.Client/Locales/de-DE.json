@@ -39,7 +39,13 @@
     "Servers": "Server",
     "Settings": "Einstellungen",
     "Credits": "Mitwirkende",
-    "CrashLogs": "Absturzprotokolle"
+    "CrashLogs": "Absturzprotokolle",
+    "ServersList": {
+      "Ip": "IP: {0}",
+      "Port": "Port: {0}",
+      "IpHidden": "IP: ****",
+      "PortHidden": "Hafen: ****"
+    }
   },
   "AddServer": {
     "AddServer": "Server hinzufügen",
@@ -75,7 +81,20 @@
     "Appearance": {
       "Appearance": "Darstellung",
       "Theme": "Thema",
-      "BackgroundImage": "Hintergrundbild"
+      "BackgroundImage": "Hintergrundbild",
+      "Themes": {
+        "Dark": "Dunkel",
+        "DarkPurple": "Dunkellila",
+        "DarkGreen": "Dunkelgrün",
+        "Light": "Hell"
+      },
+      "BackgroundImages": {
+        "DockNight": "Dock Night",
+        "DockDay": "Dock Day",
+        "LethalCraft": "Lethal Craft",
+        "BlockSenseSpawn": "BlockSense Spawn",
+        "SineSmpBase": "SineSMP Base"
+      }
     },
     "Input": {
       "Input": "Eingabeeinstellungen",
@@ -88,6 +107,9 @@
       "MicrophoneTest": {
         "MicrophoneTest": "Mikrofontest",
         "Test": "Prüfen"
+      },
+      "Preprocessors": {
+        "Speex": "Speex"
       }
     },
     "Output": {
@@ -95,7 +117,11 @@
       "OutputDevices": "Ausgabegeräte",
       "OutputVolume": "Ausgangslautstärke",
       "AudioClippers": "Audio-Clipper",
-      "TestOutput": "Testausgabe"
+      "TestOutput": "Testausgabe",
+      "Clippers": {
+        "Hard": "Harter Clipper",
+        "TanhSoft": "Tanh Soft Clipper"
+      }
     },
     "Network": {
       "Network": "Netzwerkeinstellungen",
@@ -163,21 +189,10 @@
   "App": {
     "Title": "VoiceCraft"
   },
-  "Error": {
-    "WindowTitle": "Fehler"
-  },
   "Voice": {
     "Modal": {
       "Volume": "Lautstärke",
       "Muted": "Stumm"
-    }
-  },
-  "Servers": {
-    "List": {
-      "Ip": "IP: {0}",
-      "Port": "Port: {0}",
-      "IpHidden": "IP: ****",
-      "PortHidden": "Hafen: ****"
     }
   },
   "Validation": {
@@ -197,7 +212,8 @@
   "Errors": {
     "TestCrash": "Die Aufgabe ist erfolgreich fehlgeschlagen.",
     "ViewNotFound": "Nicht gefunden: {0}",
-    "ImageFileNotFound": "Bilddatei konnte nicht gefunden werden."
+    "ImageFileNotFound": "Bilddatei konnte nicht gefunden werden.",
+    "WindowTitle": "Fehler"
   },
   "Permissions": {
     "Notifications": {
@@ -210,32 +226,12 @@
     }
   },
   "Discord": {
-    "State": {
+    "Rpc": {
       "InPage": "Auf Seite {0}"
     }
   },
   "Common": {
     "Default": "Standard",
     "None": "Keine"
-  },
-  "Themes": {
-    "Dark": "Dunkel",
-    "DarkPurple": "Dunkellila",
-    "DarkGreen": "Dunkelgrün",
-    "Light": "Hell"
-  },
-  "BackgroundImages": {
-    "DockNight": "Dock Night",
-    "DockDay": "Dock Day",
-    "LethalCraft": "Lethal Craft",
-    "BlockSenseSpawn": "BlockSense Spawn",
-    "SineSmpBase": "SineSMP Base"
-  },
-  "AudioPreprocessors": {
-    "Speex": "Speex"
-  },
-  "AudioClippers": {
-    "Hard": "Harter Clipper",
-    "TanhSoft": "Tanh Soft Clipper"
   }
 }

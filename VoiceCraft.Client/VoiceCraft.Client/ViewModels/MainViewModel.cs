@@ -29,7 +29,7 @@ public partial class MainViewModel : ObservableObject
             Content = viewModel;
             discordRpcService.SetState(
                 Localizer.Get(
-                    $"Discord.State.InPage:{viewModel.GetType().Name.Replace("ViewModel", "")}"));
+                    $"Discord.Rpc.InPage:{viewModel.GetType().Name.Replace("ViewModel", "")}"));
         };
         //Initialize Themes
         var themeSettings = settingsService.ThemeSettings;

@@ -39,7 +39,13 @@
     "Servers": "Серверы",
     "Settings": "Настройки",
     "Credits": "Авторы",
-    "CrashLogs": "Крэш-логи"
+    "CrashLogs": "Крэш-логи",
+    "ServersList": {
+      "Ip": "IP: {0}",
+      "Port": "Порт: {0}",
+      "IpHidden": "Адрес: ****",
+      "PortHidden": "Порт: ****"
+    }
   },
   "AddServer": {
     "AddServer": "Добавить сервер",
@@ -75,7 +81,20 @@
     "Appearance": {
       "Appearance": "Внешний вид",
       "Theme": "Тема",
-      "BackgroundImage": "Фоновое изображение"
+      "BackgroundImage": "Фоновое изображение",
+      "Themes": {
+        "Dark": "Темная",
+        "DarkPurple": "Темно-фиолетовая",
+        "DarkGreen": "Темно-зеленая",
+        "Light": "Светлая"
+      },
+      "BackgroundImages": {
+        "DockNight": "Dock Night",
+        "DockDay": "Dock Day",
+        "LethalCraft": "Lethal Craft",
+        "BlockSenseSpawn": "BlockSense Spawn",
+        "SineSmpBase": "SineSMP Base"
+      }
     },
     "Input": {
       "Input": "Настройки ввода",
@@ -88,6 +107,9 @@
       "MicrophoneTest": {
         "MicrophoneTest": "Проверка микрофона",
         "Test": "Тест"
+      },
+      "Preprocessors": {
+        "Speex": "Speex"
       }
     },
     "Output": {
@@ -95,7 +117,11 @@
       "OutputDevices": "Устройства вывода",
       "OutputVolume": "Громкость вывода",
       "AudioClippers": "Аудио-клипперы",
-      "TestOutput": "Проверить вывод"
+      "TestOutput": "Проверить вывод",
+      "Clippers": {
+        "Hard": "Жесткий клиппер",
+        "TanhSoft": "Мягкий tanh-клиппер"
+      }
     },
     "Network": {
       "Network": "Сетевые настройки",
@@ -163,21 +189,10 @@
   "App": {
     "Title": "VoiceCraft"
   },
-  "Error": {
-    "WindowTitle": "Ошибка"
-  },
   "Voice": {
     "Modal": {
       "Volume": "Громкость",
       "Muted": "Отключен"
-    }
-  },
-  "Servers": {
-    "List": {
-      "Ip": "IP: {0}",
-      "Port": "Порт: {0}",
-      "IpHidden": "Адрес: ****",
-      "PortHidden": "Порт: ****"
     }
   },
   "Validation": {
@@ -197,7 +212,8 @@
   "Errors": {
     "TestCrash": "Задача успешно завершилась с ошибкой.",
     "ViewNotFound": "Не найдено: {0}",
-    "ImageFileNotFound": "Не удалось найти файл изображения."
+    "ImageFileNotFound": "Не удалось найти файл изображения.",
+    "WindowTitle": "Ошибка"
   },
   "Permissions": {
     "Notifications": {
@@ -210,32 +226,12 @@
     }
   },
   "Discord": {
-    "State": {
+    "Rpc": {
       "InPage": "На странице {0}"
     }
   },
   "Common": {
     "Default": "По умолчанию",
     "None": "Нет"
-  },
-  "Themes": {
-    "Dark": "Темная",
-    "DarkPurple": "Темно-фиолетовая",
-    "DarkGreen": "Темно-зеленая",
-    "Light": "Светлая"
-  },
-  "BackgroundImages": {
-    "DockNight": "Dock Night",
-    "DockDay": "Dock Day",
-    "LethalCraft": "Lethal Craft",
-    "BlockSenseSpawn": "BlockSense Spawn",
-    "SineSmpBase": "SineSMP Base"
-  },
-  "AudioPreprocessors": {
-    "Speex": "Speex"
-  },
-  "AudioClippers": {
-    "Hard": "Жесткий клиппер",
-    "TanhSoft": "Мягкий tanh-клиппер"
   }
 }

@@ -14,10 +14,10 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _ip;
     [ObservableProperty] private string _name;
     [ObservableProperty] private ushort _port;
-    public string IpTextKey => $"Servers.List.Ip:{Ip}";
-    public string PortTextKey => $"Servers.List.Port:{Port}";
-    public string HiddenIpTextKey => "Servers.List.IpHidden";
-    public string HiddenPortTextKey => "Servers.List.PortHidden";
+    public string IpTextKey => $"Home.ServersList.Ip:{Ip}";
+    public string PortTextKey => $"Home.ServersList.Port:{Port}";
+    public string HiddenIpTextKey => "Home.ServersList.IpHidden";
+    public string HiddenPortTextKey => "Home.ServersList.PortHidden";
     private bool _updating;
 
     public ServerDataViewModel(Server server, SettingsService settingsService)

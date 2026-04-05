@@ -39,7 +39,13 @@
     "Servers": "服务器",
     "Settings": "设置",
     "Credits": "制作人员",
-    "CrashLogs": "崩溃日志"
+    "CrashLogs": "崩溃日志",
+    "ServersList": {
+      "Ip": "IP：{0}",
+      "Port": "端口：{0}",
+      "IpHidden": "IP:****",
+      "PortHidden": "港口： ****"
+    }
   },
   "AddServer": {
     "AddServer": "添加服务器",
@@ -75,7 +81,20 @@
     "Appearance": {
       "Appearance": "外观设置",
       "Theme": "主题",
-      "BackgroundImage": "背景图片"
+      "BackgroundImage": "背景图片",
+      "Themes": {
+        "Dark": "黑暗的",
+        "DarkPurple": "深紫色",
+        "DarkGreen": "深绿色",
+        "Light": "光"
+      },
+      "BackgroundImages": {
+        "DockNight": "Dock Night",
+        "DockDay": "Dock Day",
+        "LethalCraft": "Lethal Craft",
+        "BlockSenseSpawn": "BlockSense Spawn",
+        "SineSmpBase": "SineSMP Base"
+      }
     },
     "Input": {
       "Input": "输入设置",
@@ -88,6 +107,9 @@
       "MicrophoneTest": {
         "MicrophoneTest": "麦克风测试",
         "Test": "测试"
+      },
+      "Preprocessors": {
+        "Speex": "Speex"
       }
     },
     "Output": {
@@ -95,7 +117,11 @@
       "OutputDevices": "输出设备",
       "OutputVolume": "输出音量",
       "AudioClippers": "音频剪辑器",
-      "TestOutput": "测试输出"
+      "TestOutput": "测试输出",
+      "Clippers": {
+        "Hard": "硬剪刀",
+        "TanhSoft": "Tanh 软剪"
+      }
     },
     "Network": {
       "Network": "网络设置",
@@ -163,21 +189,10 @@
   "App": {
     "Title": "VoiceCraft"
   },
-  "Error": {
-    "WindowTitle": "错误"
-  },
   "Voice": {
     "Modal": {
       "Volume": "体积",
       "Muted": "静音"
-    }
-  },
-  "Servers": {
-    "List": {
-      "Ip": "IP：{0}",
-      "Port": "端口：{0}",
-      "IpHidden": "IP:****",
-      "PortHidden": "港口： ****"
     }
   },
   "Validation": {
@@ -197,7 +212,8 @@
   "Errors": {
     "TestCrash": "任务失败成功。",
     "ViewNotFound": "未找到：{0}",
-    "ImageFileNotFound": "找不到图像文件。"
+    "ImageFileNotFound": "找不到图像文件。",
+    "WindowTitle": "错误"
   },
   "Permissions": {
     "Notifications": {
@@ -210,32 +226,12 @@
     }
   },
   "Discord": {
-    "State": {
+    "Rpc": {
       "InPage": "在页 {0} 中"
     }
   },
   "Common": {
     "Default": "默认",
     "None": "没有任何"
-  },
-  "Themes": {
-    "Dark": "黑暗的",
-    "DarkPurple": "深紫色",
-    "DarkGreen": "深绿色",
-    "Light": "光"
-  },
-  "BackgroundImages": {
-    "DockNight": "Dock Night",
-    "DockDay": "Dock Day",
-    "LethalCraft": "Lethal Craft",
-    "BlockSenseSpawn": "BlockSense Spawn",
-    "SineSmpBase": "SineSMP Base"
-  },
-  "AudioPreprocessors": {
-    "Speex": "Speex"
-  },
-  "AudioClippers": {
-    "Hard": "硬剪刀",
-    "TanhSoft": "Tanh 软剪"
   }
 }

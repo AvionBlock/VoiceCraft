@@ -172,28 +172,28 @@ public class App : Application
         //Themes Registry
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkThemeGuid,
-            "Themes.Dark",
+            "Settings.Appearance.Themes.Dark",
             ThemeVariant.Dark,
             [new Styles()],
             [new Colors(), new Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkPurpleThemeGuid,
-            "Themes.DarkPurple",
+            "Settings.Appearance.Themes.DarkPurple",
             ThemeVariant.Dark,
             [new Themes.DarkPurple.Styles()],
             [new Themes.DarkPurple.Colors(), new Themes.DarkPurple.Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkGreenThemeGuid,
-            "Themes.DarkGreen",
+            "Settings.Appearance.Themes.DarkGreen",
             ThemeVariant.Dark,
             [new Themes.DarkGreen.Styles()],
             [new Themes.DarkGreen.Colors(), new Themes.DarkGreen.Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.LightThemeGuid,
-            "Themes.Light",
+            "Settings.Appearance.Themes.Light",
             ThemeVariant.Light,
             [new Themes.Light.Styles()],
             [new Themes.Light.Colors(), new Themes.Light.Resources()]));
@@ -201,23 +201,23 @@ public class App : Application
         //Background Image Registry
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.DockNightGuid,
-            "BackgroundImages.DockNight",
+            "Settings.Appearance.BackgroundImages.DockNight",
             "avares://VoiceCraft.Client/Assets/bgdark.png"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.DockDayGuid,
-            "BackgroundImages.DockDay",
+            "Settings.Appearance.BackgroundImages.DockDay",
             "avares://VoiceCraft.Client/Assets/bglight.png"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.LethalCraftGuid,
-            "BackgroundImages.LethalCraft",
+            "Settings.Appearance.BackgroundImages.LethalCraft",
             "avares://VoiceCraft.Client/Assets/lethalCraft.png"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.BlockSenseSpawnGuid,
-            "BackgroundImages.BlockSenseSpawn",
+            "Settings.Appearance.BackgroundImages.BlockSenseSpawn",
             "avares://VoiceCraft.Client/Assets/blocksensespawn.jpg"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.SineSmpBaseGuid,
-            "BackgroundImages.SineSmpBase",
+            "Settings.Appearance.BackgroundImages.SineSmpBase",
             "avares://VoiceCraft.Client/Assets/sinesmpbase.png"));
 
         //HotKey Registry
@@ -235,11 +235,11 @@ public class App : Application
         ServiceCollection.AddTransient<IAudioDecoder, OpusAudioDecoder>();
         ServiceCollection.AddSingleton(new RegisteredAudioClipper(
             Constants.HardAudioClipperGuid,
-            "AudioClippers.Hard",
+            "Settings.Output.Clippers.Hard",
             () => new SampleHardAudioClipper()));
         ServiceCollection.AddSingleton(new RegisteredAudioClipper(
             Constants.TanhSoftAudioClipperGuid,
-            "AudioClippers.TanhSoft",
+            "Settings.Output.Clippers.TanhSoft",
             () => new SampleTanhSoftAudioClipper()));
 
         return ServiceCollection.BuildServiceProvider();
