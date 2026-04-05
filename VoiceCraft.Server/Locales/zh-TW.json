@@ -78,7 +78,7 @@
       "Protocol": "協議"
     },
     "ListCommandEntities": {
-      "Id": "Id",
+      "Id": "ID",
       "Name": "名稱",
       "Position": "位置",
       "Rotation": "方向",
@@ -92,60 +92,70 @@
       "EntityNotAClient": "ID 為 {0} 的實體不是一個客戶端實體!"
     },
     "RootCommand": {
-      "Description": "執行 VoiceCraft 命令."
+      "Name": "VoiceCraft 應用程式伺服器 root 指令。",
+      "Description": "執行 VoiceCraft 命令.",
+      "Options": {
+        "ExitOnInvalidProperties": {
+          "Description": "當 VoiceCraft 伺服器無法解析 ServerProperties.json 檔案時退出。"
+        },
+        "Language": {
+          "Description": "Voicecraft 啟動時所使用的語言。覆蓋 ServerProperties.json 檔案。"
+        }
+      }
     },
     "List": {
-      "Name": "list",
+      "Name": "清單",
       "Description": "列出實體.",
       "Showing": "顯示 {0} 個實體.",
       "Options": {
         "ClientsOnly": {
-          "Name": "clientsOnly",
+          "Name": "限客戶",
           "Description": "只顯示網絡連接的客戶端實體."
         },
         "Limit": {
-          "Name": "limit",
+          "Name": "限制",
           "Description": "限制顯示的實體數量."
         }
       },
       "Exceptions": {
-        "LimitArgument": "限制不能小於零!"
+        "LimitArgument": "限制不能小於零!",
+        "Limit": "限制不能小於零！"
       }
     },
     "SetTitle": {
-      "Name": "settitle",
+      "Name": "設定標題",
       "Description": "設置一個客戶端實體的標題.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "客戶端實體的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "價值",
           "Description": "要設置的標題的內容."
         }
       }
     },
     "SetDescription": {
-      "Name": "setdescription",
+      "Name": "設定描述",
       "Description": "設置一個客戶端實體的描述.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "客戶端實體的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "價值",
           "Description": "要設置的描述的內容."
         }
       }
     },
     "SetPosition": {
-      "Name": "setposition",
+      "Name": "設定位置",
       "Description": "設置一個實體的位置.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         },
         "X": {
@@ -163,83 +173,83 @@
       }
     },
     "SetWorldId": {
-      "Name": "setworldid",
+      "Name": "設定世界ID",
       "Description": "設置一個實體的世界 ID.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "價值",
           "Description": "要設置的實體的世界 ID."
         }
       }
     },
     "SetName": {
-      "Name": "setname",
+      "Name": "設定名稱",
       "Description": "設置一個實體的名稱.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "價值",
           "Description": "要設置的實體的名稱."
         }
       }
     },
     "Stop": {
-      "Name": "stop",
+      "Name": "停止",
       "Description": "停止伺服器."
     },
     "Kick": {
-      "Name": "kick",
+      "Name": "踢",
       "Description": "踢出客戶端.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         }
       }
     },
     "Mute": {
-      "Name": "mute",
+      "Name": "沉默的",
       "Description": "將實體/客戶端靜音.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         }
       }
     },
     "Unmute": {
-      "Name": "unmute",
+      "Name": "取消靜音",
       "Description": "取消實體/客戶端靜音.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         }
       }
     },
     "Deafen": {
-      "Name": "deafen",
+      "Name": "震耳欲聾",
       "Description": "使實體/客戶端失聽.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         }
       }
     },
     "Undeafen": {
-      "Name": "undeafen",
+      "Name": "不聾的",
       "Description": "恢復實體/客戶端聽力.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "實體的 ID."
         }
       }

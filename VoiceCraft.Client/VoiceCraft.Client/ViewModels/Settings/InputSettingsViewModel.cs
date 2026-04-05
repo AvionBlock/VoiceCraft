@@ -11,6 +11,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -82,9 +83,9 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
         try
         {
             if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
-                    "VoiceCraft requires the microphone permission to be granted in order to test recording!") !=
+                    Localizer.Get("Permissions.Microphone.RequiredForTesting")) !=
                 PermissionStatus.Granted)
-                throw new InvalidOperationException("Could not create recorder, Microphone permission not granted.");
+                throw new InvalidOperationException(Localizer.Get("Permissions.Microphone.NotGranted"));
 
             lock (_lock)
             {

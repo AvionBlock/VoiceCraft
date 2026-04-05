@@ -14,6 +14,10 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _ip;
     [ObservableProperty] private string _name;
     [ObservableProperty] private ushort _port;
+    public string IpTextKey => $"Servers.List.Ip:{Ip}";
+    public string PortTextKey => $"Servers.List.Port:{Port}";
+    public string HiddenIpTextKey => "Servers.List.IpHidden";
+    public string HiddenPortTextKey => "Servers.List.PortHidden";
     private bool _updating;
 
     public ServerDataViewModel(Server server, SettingsService settingsService)
@@ -56,6 +60,11 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
+    
+    partial void OnIpChanged(string value)
+    {
+        OnPropertyChanged(nameof(IpTextKey));
+    }
 
     partial void OnPortChanging(ushort value)
     {
@@ -67,6 +76,11 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
+    
+    partial void OnPortChanged(ushort value)
+    {
+        OnPropertyChanged(nameof(PortTextKey));
+    }
 
     private void Update(Server server)
     {
@@ -76,6 +90,8 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
         Name = server.Name;
         Ip = server.Ip;
         Port = server.Port;
+        OnPropertyChanged(nameof(IpTextKey));
+        OnPropertyChanged(nameof(PortTextKey));
 
         _updating = false;
     }

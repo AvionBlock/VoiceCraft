@@ -1,5 +1,6 @@
 using System;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Models.Settings;
 
@@ -29,7 +30,7 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             if(value is > 2 or < 0)
-                throw new ArgumentException("Volume sensitivity must be between 0 and 2.");
+                throw new ArgumentException(Localizer.Get("Validation.Audio.InputVolumeRange"));
             _inputVolume = value;
             OnUpdated?.Invoke(this);
         }
@@ -41,7 +42,7 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             if (value is > 1 or < 0)
-                throw new ArgumentException("Microphone sensitivity must be between 0 and 1.");
+                throw new ArgumentException(Localizer.Get("Validation.Audio.MicrophoneSensitivityRange"));
             _microphoneSensitivity = value;
             OnUpdated?.Invoke(this);
         }

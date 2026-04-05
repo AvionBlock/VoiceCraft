@@ -1,6 +1,8 @@
 {
   "BackgroundService": {
-    "BackgroundError": "背景服務錯誤: {0}"
+    "BackgroundError": "背景服務錯誤: {0}",
+    "Running": "跑步...",
+    "ChannelName": "嗓音"
   },
   "Notification": {
     "VoiceCraft": {
@@ -124,7 +126,7 @@
       "ServerInfo": "伺服器信息",
       "Status": {
         "Latency": "延遲: {0}",
-        "Motd": "Motd: {0}",
+        "Motd": "型號：{0}",
         "PositioningType": "定位類型: {0}",
         "ConnectedClients": "已連接客戶端: {0}",
         "Version": "版本: {0}",
@@ -157,5 +159,83 @@
       "Shutdown": "伺服器關閉！",
       "Error": "嘗試登錄時發生錯誤！"
     }
+  },
+  "App": {
+    "Title": "VoiceCraft"
+  },
+  "Error": {
+    "WindowTitle": "錯誤"
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "體積",
+      "Muted": "靜音"
+    }
+  },
+  "Servers": {
+    "List": {
+      "Ip": "IP：{0}",
+      "Port": "連接埠：{0}",
+      "IpHidden": "IP:****",
+      "PortHidden": "港口： ****"
+    }
+  },
+  "Validation": {
+    "Server": {
+      "NameRequired": "伺服器名稱不能為空或空格！",
+      "IpRequired": "伺服器IP不能為空或空格！",
+      "PortRange": "伺服器連接埠必須介於 1 和 65535 之間。",
+      "NameTooLong": "伺服器名稱不能超過 {0} 個字元！",
+      "IpTooLong": "伺服器 IP 不能超過 {0} 個字元！"
+    },
+    "Audio": {
+      "InputVolumeRange": "輸入音量必須介於 0 和 2 之間。",
+      "MicrophoneSensitivityRange": "麥克風靈敏度必須介於 0 和 1 之間。",
+      "OutputVolumeRange": "輸出音量必須介於 0 和 2 之間。"
+    }
+  },
+  "Errors": {
+    "TestCrash": "任務失敗成功。",
+    "ViewNotFound": "找不到：{0}",
+    "ImageFileNotFound": "找不到圖像檔。"
+  },
+  "Permissions": {
+    "Notifications": {
+      "RequiredForBackground": "需要通知來顯示正在運行的後台進程和錯誤。"
+    },
+    "Microphone": {
+      "RequiredForTesting": "VoiceCraft 需要授予麥克風權限才能測試錄音！",
+      "NotGranted": "無法建立錄音機，未授予麥克風權限。",
+      "NotGrantedBackground": "未授予麥克風存取權限！"
+    }
+  },
+  "Discord": {
+    "State": {
+      "InPage": "在頁 {0} 中"
+    }
+  },
+  "Common": {
+    "Default": "預設",
+    "None": "沒有任何"
+  },
+  "Themes": {
+    "Dark": "黑暗的",
+    "DarkPurple": "深紫色",
+    "DarkGreen": "深綠色",
+    "Light": "光"
+  },
+  "BackgroundImages": {
+    "DockNight": "Dock Night",
+    "DockDay": "Dock Day",
+    "LethalCraft": "Lethal Craft",
+    "BlockSenseSpawn": "BlockSense Spawn",
+    "SineSmpBase": "SineSMP Base"
+  },
+  "AudioPreprocessors": {
+    "Speex": "Speex"
+  },
+  "AudioClippers": {
+    "Hard": "硬剪刀",
+    "TanhSoft": "Tanh 軟剪"
   }
 }

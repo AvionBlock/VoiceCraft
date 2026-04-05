@@ -1,0 +1,241 @@
+{
+  "BackgroundService": {
+    "BackgroundError": "Błąd w tle: {0}",
+    "Running": "Działanie...",
+    "ChannelName": "Głos"
+  },
+  "Notification": {
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "Servers",
+      "Added": "{0} został dodany.",
+      "Edited": "{0} został edytowany.",
+      "Removed": "{0} został usunięty."
+    },
+    "GC": {
+      "Badge": "GC",
+      "Triggered": "Uruchomiono zbieranie śmieci. Pamięć wyczyszczona: {0}mb."
+    },
+    "CrashLogs": {
+      "Badge": "Dzienniki awarii",
+      "Cleared": "Pomyślnie wyczyszczono wszystkie dzienniki.",
+      "Copied": "Dzienniki awarii skopiowane do schowka.",
+      "Empty": "Brak dzienników awarii do skopiowania."
+    },
+    "Error": {
+      "Badge": "Błąd",
+      "VoipFailedToStart": "Pracownik pracujący w tle nie mógł rozpocząć procesu VOIP!",
+      "VoipBackgroundError": "Błąd tła VoIP: {0}"
+    },
+    "McWss": {
+      "Badge": "McWss",
+      "Connected": "Ustanowiono połączenie McWss: {0}",
+      "Disconnected": "Połączenie McWss rozłączone!"
+    }
+  },
+  "Home": {
+    "Servers": "Serwery",
+    "Settings": "Ustawienia",
+    "Credits": "Autorzy",
+    "CrashLogs": "Logi awarii"
+  },
+  "AddServer": {
+    "AddServer": "Dodaj serwer",
+    "Name": "Nazwa",
+    "IP": "IP",
+    "Port": "Port"
+  },
+  "EditServer": {
+    "EditServer": "Edytuj serwer",
+    "Name": "Nazwa",
+    "IP": "IP",
+    "Port": "Port"
+  },
+  "Credits": {
+    "AppVersion": "Wersja aplikacji: {0}",
+    "Version": "Wersja: {0}",
+    "Codec": "Kodek: {0}",
+    "Contributors": "Współautorzy",
+    "Roles": {
+      "Author": "Autor",
+      "Translator": "Tłumacz",
+      "Programmer": "Programista"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "Ustawienia ogólne",
+      "Language": "Język",
+      "NotificationDismiss": "Odrzucenie powiadomienia (ms)",
+      "DisableNotifications": "Wyłącz powiadomienia",
+      "HideServerAddresses": "Ukryj adresy serwerów"
+    },
+    "Appearance": {
+      "Appearance": "Wygląd",
+      "Theme": "Motyw",
+      "BackgroundImage": "Obraz tła"
+    },
+    "Input": {
+      "Input": "Ustawienia wejścia",
+      "InputDevices": "Urządzenia wejściowe",
+      "InputVolume": "Głośność wejściowa",
+      "MicrophoneSensitivity": "Czułość mikrofonu",
+      "Denoisers": "Odszumiacze",
+      "AutomaticGainControllers": "Automatyczne regulatory wzmocnienia",
+      "EchoCancelers": "Tłumiki echa",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Test mikrofonu",
+        "Test": "Test"
+      }
+    },
+    "Output": {
+      "Output": "Ustawienia wyjścia",
+      "OutputDevices": "Urządzenia wyjściowe",
+      "OutputVolume": "Głośność wyjściowa",
+      "AudioClippers": "Obcinacze audio",
+      "TestOutput": "Wyjście testowe"
+    },
+    "Network": {
+      "Network": "Ustawienia sieci",
+      "PositioningType": "Typ pozycjonowania",
+      "McWssListenIp": "Adres IP nasłuchiwania MCWSS",
+      "McWssHostPort": "Port hosta MCWSS"
+    },
+    "HotKey": {
+      "HotKey": "Skróty klawiszowe",
+      "Actions": {
+        "Mute": "Niemy",
+        "Deafen": "Zagłuszać"
+      }
+    },
+    "Advanced": {
+      "Advanced": "Ustawienia zaawansowane",
+      "TriggerGc": "Uruchom zbieracz śmieci",
+      "Crash": "Awaria testowa"
+    }
+  },
+  "SelectedServer": {
+    "Address": "Adres",
+    "PingInformation": "Informacje o pingu",
+    "Connect": "Połącz",
+    "Edit": "Edytuj serwer",
+    "Delete": "Usuń serwer",
+    "ServerInfo": {
+      "ServerInfo": "Informacje o serwerze",
+      "Status": {
+        "Latency": "Opóźnienie: {0}",
+        "Motd": "Mod: {0}",
+        "PositioningType": "Typ pozycjonowania: {0}",
+        "ConnectedClients": "Połączeni klienci: {0}",
+        "Version": "Wersja: {0}",
+        "Pinging": "Pingowanie..."
+      }
+    }
+  },
+  "McWssServer": {
+    "Exceptions": {
+      "Failed": "Nie udało się uruchomić serwera McWss! Sprawdź, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "Inicjowanie...",
+      "Connecting": "Złączony...",
+      "Connected": "Połączony!",
+      "Disconnected": "Bezładny! Powód: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "McWss Słucha: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "Ręczne rozłączenie.",
+      "ServerFull": "Serwer jest pełny!",
+      "IncompatibleVersion": "Niekompatybilna wersja klienta/serwera!",
+      "ServerSidedOnly": "Serwer akceptuje tylko pozycjonowanie po stronie serwera!",
+      "ClientSidedOnly": "Serwer akceptuje tylko pozycjonowanie po stronie klienta!",
+      "Kicked": "Kopnięty!",
+      "Shutdown": "Wyłączenie serwera!",
+      "Error": "Wystąpił błąd podczas próby połączenia!"
+    }
+  },
+  "App": {
+    "Title": "VoiceCraft"
+  },
+  "Error": {
+    "WindowTitle": "Błąd"
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Głośność",
+      "Muted": "Wyciszony"
+    }
+  },
+  "Servers": {
+    "List": {
+      "Ip": "IP: {0}",
+      "Port": "Port: {0}",
+      "IpHidden": "IP: ****",
+      "PortHidden": "Port: ****"
+    }
+  },
+  "Validation": {
+    "Server": {
+      "NameRequired": "Nazwa serwera nie może być pusta!",
+      "IpRequired": "IP serwera nie może być puste!",
+      "PortRange": "Port serwera musi być między 1 a 65535.",
+      "NameTooLong": "Nazwa serwera nie może być dłuższa niż {0} znaków!",
+      "IpTooLong": "IP serwera nie może być dłuższe niż {0} znaków!"
+    },
+    "Audio": {
+      "InputVolumeRange": "Głośność wejścia musi być między 0 a 2.",
+      "MicrophoneSensitivityRange": "Czułość mikrofonu musi być między 0 a 1.",
+      "OutputVolumeRange": "Głośność wyjścia musi być między 0 a 2."
+    }
+  },
+  "Errors": {
+    "TestCrash": "Zadanie nie powiodło się pomyślnie.",
+    "ViewNotFound": "Nie znaleziono: {0}",
+    "ImageFileNotFound": "Nie można znaleźć pliku obrazu."
+  },
+  "Permissions": {
+    "Notifications": {
+      "RequiredForBackground": "Powiadomienia są wymagane, aby pokazać działające procesy i błędy w tle."
+    },
+    "Microphone": {
+      "RequiredForTesting": "VoiceCraft wymaga pozwolenia na korzystanie z mikrofonu, aby przetestować nagrywanie!",
+      "NotGranted": "Nie można utworzyć rejestratora, nie przyznano uprawnień do mikrofonu.",
+      "NotGrantedBackground": "Dostęp do mikrofonu nie został przyznany!"
+    }
+  },
+  "Discord": {
+    "State": {
+      "InPage": "Na stronie {0}"
+    }
+  },
+  "Common": {
+    "Default": "Domyślne",
+    "None": "Brak"
+  },
+  "Themes": {
+    "Dark": "Ciemny",
+    "DarkPurple": "Ciemnofioletowy",
+    "DarkGreen": "Ciemnozielony",
+    "Light": "Jasny"
+  },
+  "BackgroundImages": {
+    "DockNight": "Dock Night",
+    "DockDay": "Dock Day",
+    "LethalCraft": "Lethal Craft",
+    "BlockSenseSpawn": "BlockSense Spawn",
+    "SineSmpBase": "SineSMP Base"
+  },
+  "AudioPreprocessors": {
+    "Speex": "Speex"
+  },
+  "AudioClippers": {
+    "Hard": "Twardy Clipper",
+    "TanhSoft": "Miękki Tanh Clipper"
+  }
+}

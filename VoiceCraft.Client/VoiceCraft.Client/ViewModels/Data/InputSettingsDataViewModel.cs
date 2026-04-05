@@ -4,11 +4,13 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 {
+    private const string DefaultDeviceInvariant = "Default";
     private readonly AudioService _audioService;
     private readonly InputSettings _inputSettings;
     private readonly SettingsService _settingsService;
@@ -54,13 +56,16 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
     public void ReloadDevices()
     {
-        InputDevices = ["Default", .._audioService.GetInputDevices()];
+        var defaultLabel = Localizer.Get("Common.Default");
+        InputDevices = [defaultLabel, .._audioService.GetInputDevices()];
         Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
         AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
         EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
         
+        if (InputDevice == DefaultDeviceInvariant)
+            InputDevice = defaultLabel;
         if (!InputDevices.Contains(InputDevice))
-            InputDevice = "Default";
+            InputDevice = defaultLabel;
         if (Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
             Denoiser = Guid.Empty;
         if (AutomaticGainControllers.FirstOrDefault(x => x.Id == AutomaticGainController) == null)
@@ -75,7 +80,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
         if (_updating) return;
         _updating = true;
-        _inputSettings.InputDevice = value;
+        _inputSettings.InputDevice = value == Localizer.Get("Common.Default") ? DefaultDeviceInvariant : value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
@@ -140,7 +145,9 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         if (_updating) return;
         _updating = true;
 
-        InputDevice = inputSettings.InputDevice;
+        InputDevice = inputSettings.InputDevice == DefaultDeviceInvariant
+            ? Localizer.Get("Common.Default")
+            : inputSettings.InputDevice;
         InputVolume = inputSettings.InputVolume;
         MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
         Denoiser = inputSettings.Denoiser;

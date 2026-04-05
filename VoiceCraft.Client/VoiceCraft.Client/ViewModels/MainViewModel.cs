@@ -27,7 +27,9 @@ public partial class MainViewModel : ObservableObject
         navigationService.OnViewModelChanged += viewModel =>
         {
             Content = viewModel;
-            discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
+            discordRpcService.SetState(
+                Localizer.Get(
+                    $"Discord.State.InPage:{viewModel.GetType().Name.Replace("ViewModel", "")}"));
         };
         //Initialize Themes
         var themeSettings = settingsService.ThemeSettings;

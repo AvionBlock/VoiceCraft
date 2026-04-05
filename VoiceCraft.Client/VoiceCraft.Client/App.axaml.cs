@@ -40,6 +40,9 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
+        Localizer.Instance.Language = Constants.DefaultLanguage;
+
         try
         {
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
@@ -169,28 +172,28 @@ public class App : Application
         //Themes Registry
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkThemeGuid,
-            "Dark",
+            "Themes.Dark",
             ThemeVariant.Dark,
             [new Styles()],
             [new Colors(), new Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkPurpleThemeGuid,
-            "Dark Purple",
+            "Themes.DarkPurple",
             ThemeVariant.Dark,
             [new Themes.DarkPurple.Styles()],
             [new Themes.DarkPurple.Colors(), new Themes.DarkPurple.Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.DarkGreenThemeGuid,
-            "Dark Green",
+            "Themes.DarkGreen",
             ThemeVariant.Dark,
             [new Themes.DarkGreen.Styles()],
             [new Themes.DarkGreen.Colors(), new Themes.DarkGreen.Resources()]));
 
         ServiceCollection.AddSingleton(new RegisteredTheme(
             Constants.LightThemeGuid,
-            "Light",
+            "Themes.Light",
             ThemeVariant.Light,
             [new Themes.Light.Styles()],
             [new Themes.Light.Colors(), new Themes.Light.Resources()]));
@@ -198,23 +201,23 @@ public class App : Application
         //Background Image Registry
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.DockNightGuid,
-            "Dock Night",
+            "BackgroundImages.DockNight",
             "avares://VoiceCraft.Client/Assets/bgdark.png"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.DockDayGuid,
-            "Dock Day",
+            "BackgroundImages.DockDay",
             "avares://VoiceCraft.Client/Assets/bglight.png"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.LethalCraftGuid,
-            "Lethal Craft",
+            "BackgroundImages.LethalCraft",
             "avares://VoiceCraft.Client/Assets/lethalCraft.png"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.BlockSenseSpawnGuid,
-            "BlockSense Spawn",
+            "BackgroundImages.BlockSenseSpawn",
             "avares://VoiceCraft.Client/Assets/blocksensespawn.jpg"));
         ServiceCollection.AddSingleton(new RegisteredBackgroundImage(
             Constants.SineSmpBaseGuid,
-            "SineSMP Base",
+            "BackgroundImages.SineSmpBase",
             "avares://VoiceCraft.Client/Assets/sinesmpbase.png"));
 
         //HotKey Registry
@@ -232,11 +235,11 @@ public class App : Application
         ServiceCollection.AddTransient<IAudioDecoder, OpusAudioDecoder>();
         ServiceCollection.AddSingleton(new RegisteredAudioClipper(
             Constants.HardAudioClipperGuid,
-            "Hard Clipper",
+            "AudioClippers.Hard",
             () => new SampleHardAudioClipper()));
         ServiceCollection.AddSingleton(new RegisteredAudioClipper(
             Constants.TanhSoftAudioClipperGuid,
-            "Tanh Soft Clipper",
+            "AudioClippers.TanhSoft",
             () => new SampleTanhSoftAudioClipper()));
 
         return ServiceCollection.BuildServiceProvider();
@@ -244,7 +247,6 @@ public class App : Application
 
     private void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
     }
 }

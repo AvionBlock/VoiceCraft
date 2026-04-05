@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:server="clr-namespace:VoiceCraft.Client.ViewModels.Data"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
              d:DesignHeight="450"
              d:DesignWidth="800"
              x:DataType="vm:ServersViewModel"
@@ -56,10 +57,10 @@
                                    Classes.HideAddress="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).ServersSettings.HideServerAddresses}">
                             <TextBlock.Styles>
                                 <Style Selector="TextBlock.ShowAddress">
-                                    <Setter Property="Text" Value="{Binding Ip, StringFormat='IP: {0}'}" />
+                                    <Setter Property="Text" Value="{locale:Localize {Binding IpTextKey}}" />
                                 </Style>
                                 <Style Selector="TextBlock.HideAddress">
-                                    <Setter Property="Text" Value="IP: ****" />
+                                    <Setter Property="Text" Value="{locale:Localize {Binding HiddenIpTextKey}}" />
                                 </Style>
                             </TextBlock.Styles>
                         </TextBlock>
@@ -72,10 +73,10 @@
                                    Classes.HideAddress="{Binding $parent[ListBox].((vm:ServersViewModel)DataContext).ServersSettings.HideServerAddresses}">
                             <TextBlock.Styles>
                                 <Style Selector="TextBlock.ShowAddress">
-                                    <Setter Property="Text" Value="{Binding Port, StringFormat='Port: {0}'}" />
+                                    <Setter Property="Text" Value="{locale:Localize {Binding PortTextKey}}" />
                                 </Style>
                                 <Style Selector="TextBlock.HideAddress">
-                                    <Setter Property="Text" Value="Port: ****" />
+                                    <Setter Property="Text" Value="{locale:Localize {Binding HiddenPortTextKey}}" />
                                 </Style>
                             </TextBlock.Styles>
                         </TextBlock>

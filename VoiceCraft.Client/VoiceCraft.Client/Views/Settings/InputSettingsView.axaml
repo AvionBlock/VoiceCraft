@@ -75,9 +75,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.Denoisers}"
-                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding InputSettingsData.Denoiser}"
-                              SelectedValueBinding="{Binding Id}" />
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{locale:Localize {Binding Name}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -86,9 +91,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.AutomaticGainControllers}"
-                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding InputSettingsData.AutomaticGainController}"
-                              SelectedValueBinding="{Binding Id}" />
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{locale:Localize {Binding Name}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -97,9 +107,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.EchoCancelers}"
-                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
-                              SelectedValueBinding="{Binding Id}" />
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{locale:Localize {Binding Name}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left"

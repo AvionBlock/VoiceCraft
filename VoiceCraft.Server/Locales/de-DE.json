@@ -1,0 +1,258 @@
+{
+  "Startup": {
+    "Starting": "Server wird gestartet...",
+    "Success": "Server erfolgreich gestartet!",
+    "Failed": "Beim Starten des Servers ist ein Fehler aufgetreten!",
+    "Commands": {
+      "Registering": "Befehle werden registriert...",
+      "Success": "{0}-Befehle erfolgreich registriert!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Server wird heruntergefahren...",
+    "StartingIn": "Server wird in {0}ms heruntergefahren...",
+    "Success": "Server erfolgreich heruntergefahren!"
+  },
+  "ServerProperties": {
+    "Loading": "Laden der Datei „ServerProperties.json“ unter {0}",
+    "Success": "Servereigenschaften erfolgreich geladen!",
+    "Failed": "Servereigenschaften konnten nicht geladen werden! Zurückgreifen auf Standardeigenschaften! Fehler: {0}",
+    "NotFound": "ServerProperties.json wurde im aktuellen und/oder Unterverzeichnis nicht gefunden! Datei wird generiert...",
+    "FailNotFound": "ServerProperties.json wurde im aktuellen und/oder Unterverzeichnis nicht gefunden!",
+    "Generating": {
+      "Generating": "Generieren der Datei „ServerProperties.json“ unter {0}",
+      "Success": "Datei „ServerProperties.json“ unter {0} erfolgreich generiert",
+      "Failed": "Fehler beim Generieren der Datei „ServerProperties.json“ unter {0}! Fehler: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "JSON-Daten aus der geladenen Datei konnten nicht geparst werden!"
+    }
+  },
+  "Title": {
+    "Starting": "Beginnt...",
+    "Running": "Läuft!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Kunde verbunden! UserGuid: {0}",
+      "Disconnected": "Clientverbindung getrennt! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi-Client verbunden! Token: {0}",
+        "Disconnected": "Verbindung zum McApi-Client getrennt! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "VoiceCraft-Server wird gestartet...",
+    "Success": "Der VoiceCraft-Server wurde erfolgreich gestartet!",
+    "Stopping": "Der VoiceCraft-Server wird gestoppt...",
+    "Stopped": "Der VoiceCraft-Server wurde erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "VoiceCraft Server konnte nicht gestartet werden! Bitte prüfen Sie, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "McWss-Server wird gestartet...",
+    "Success": "Der McWss-Server wurde erfolgreich gestartet!",
+    "Stopping": "McWss-Server wird gestoppt...",
+    "Stopped": "Der McWss-Server wurde erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "McWss-Server konnte nicht gestartet werden! Bitte prüfen Sie, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "McHttp-Server wird gestartet...",
+    "Success": "Der McHttp-Server wurde erfolgreich gestartet!",
+    "Stopping": "McHttp-Server wird gestoppt...",
+    "Stopped": "Der McHttp-Server wurde erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "McHttp-Server konnte nicht gestartet werden! Bitte prüfen Sie, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Server",
+      "Port": "Hafen",
+      "Protocol": "Protokoll"
+    },
+    "ListCommandEntities": {
+      "Id": "Ausweis",
+      "Name": "Name",
+      "Position": "Position",
+      "Rotation": "Drehung",
+      "WorldId": "Welt-ID"
+    }
+  },
+  "Commands": {
+    "Exception": "Beim Versuch, den Befehl {0} auszuführen, ist ein Fehler aufgetreten!",
+    "Exceptions": {
+      "EntityNotFound": "Entität mit der ID konnte nicht gefunden werden: {0}",
+      "EntityNotAClient": "Die Entität mit der ID {0} ist keine Client-Entität!"
+    },
+    "RootCommand": {
+      "Name": "VoiceCraft-Server-Hauptbefehl.",
+      "Description": "Führt einen VoiceCraft-Befehl aus.",
+      "Options": {
+        "ExitOnInvalidProperties": {
+          "Description": "Wird beendet, wenn der VoiceCraft-Server die Datei ServerProperties.json nicht analysieren kann."
+        },
+        "Language": {
+          "Description": "Die Sprache, die beim Start von Voicecraft verwendet werden soll. Überschreibt die Datei ServerProperties.json."
+        }
+      }
+    },
+    "List": {
+      "Name": "Liste",
+      "Description": "Listet Entitäten auf.",
+      "Showing": "Es werden {0}-Entitäten angezeigt.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "Nur Kunden",
+          "Description": "Zeigt nur vernetzte Client-Entitäten an."
+        },
+        "Limit": {
+          "Name": "Limit",
+          "Description": "Begrenzt die Anzahl der angezeigten Entitäten."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Der Grenzwert darf nicht kleiner als Null sein!",
+        "Limit": "Der Grenzwert darf nicht kleiner als Null sein!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "Legt einen Titel für die Anwendung einer Cliententität fest.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die Entitäts-ID des Kunden."
+        },
+        "Value": {
+          "Name": "Wert",
+          "Description": "Der für den Titel festzulegende Wert."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "Beschreibung festlegen",
+      "Description": "Legt eine Beschreibung für die Anwendung einer Cliententität fest.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die Entitäts-ID des Kunden."
+        },
+        "Value": {
+          "Name": "Wert",
+          "Description": "Der für die Beschreibung festzulegende Wert."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "Legt eine Position für eine Entität fest.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        },
+        "X": {
+          "Name": "X",
+          "Description": "Die festzulegende X-Position."
+        },
+        "Y": {
+          "Name": "j",
+          "Description": "Die festzulegende Y-Position."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "Die einzustellende Z-Position."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "Legt eine WorldId für eine Entität fest.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        },
+        "Value": {
+          "Name": "Wert",
+          "Description": "Der Wert zum Festlegen der WorldId der Entität."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "Setname",
+      "Description": "Legt einen Namen für eine Entität fest.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        },
+        "Value": {
+          "Name": "Wert",
+          "Description": "Der Wert zum Festlegen des Namens der Entität."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stoppen",
+      "Description": "Stoppt den Server."
+    },
+    "Kick": {
+      "Name": "Kick",
+      "Description": "Tritt einen Kunden.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "stumm",
+      "Description": "Schaltet eine Entität/einen Client stumm.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "Stummschaltung aufheben",
+      "Description": "Hebt die Stummschaltung einer Entität/eines Clients auf.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "taub",
+      "Description": "Macht eine Entität/einen Klienten taub.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "taub",
+      "Description": "Macht eine Entität/einen Klienten taub.",
+      "Arguments": {
+        "Id": {
+          "Name": "Ausweis",
+          "Description": "Die ID der Entität."
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 using System;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Models.Settings;
 
@@ -26,7 +27,7 @@ public class OutputSettings : Setting<OutputSettings>
         set
         {
             if (value is > 2 or < 0)
-                throw new ArgumentException("Output Volume must be between 0 and 2.");
+                throw new ArgumentException(Localizer.Get("Validation.Audio.OutputVolumeRange"));
             _outputVolume = value;
             OnUpdated?.Invoke(this);
         }

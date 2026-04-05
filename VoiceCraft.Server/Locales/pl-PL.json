@@ -1,0 +1,258 @@
+{
+  "Startup": {
+    "Starting": "Uruchamianie serwera...",
+    "Success": "Serwer uruchomiony pomyślnie!",
+    "Failed": "Wystąpił błąd podczas uruchamiania serwera!",
+    "Commands": {
+      "Registering": "Rejestrowanie poleceń...",
+      "Success": "Pomyślnie zarejestrowano polecenia {0}!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Wyłączanie serwera...",
+    "StartingIn": "Zamykanie serwera za {0}ms...",
+    "Success": "Serwer został pomyślnie wyłączony!"
+  },
+  "ServerProperties": {
+    "Loading": "Ładowanie pliku ServerProperties.json pod adresem {0}",
+    "Success": "Pomyślnie załadowano właściwości serwera!",
+    "Failed": "Nie udało się załadować właściwości serwera! Powrót do domyślnych właściwości! Błąd: {0}",
+    "NotFound": "Plik ServerProperties.json nie został znaleziony w bieżącym i/lub podkatalogach! Generuję plik...",
+    "FailNotFound": "Plik ServerProperties.json nie został znaleziony w bieżącym i/lub podkatalogach!",
+    "Generating": {
+      "Generating": "Generowanie pliku ServerProperties.json pod adresem {0}",
+      "Success": "Pomyślnie wygenerowano plik ServerProperties.json pod adresem {0}",
+      "Failed": "Nie udało się wygenerować pliku ServerProperties.json pod adresem {0}! Błąd: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "Nie udało się przeanalizować danych JSON z załadowanego pliku!"
+    }
+  },
+  "Title": {
+    "Starting": "Startowy...",
+    "Running": "Działanie!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Klient podłączony! Podręcznik użytkownika: {0}",
+      "Disconnected": "Klient rozłączony! Podręcznik użytkownika: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "Klient McApi podłączony! Token: {0}",
+        "Disconnected": "Klient McApi został odłączony! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "Uruchamiam serwer VoiceCraft...",
+    "Success": "Pomyślnie uruchomiono serwer VoiceCraft!",
+    "Stopping": "Zatrzymywanie serwera VoiceCraft...",
+    "Stopped": "Pomyślnie zatrzymano serwer VoiceCraft!",
+    "Exceptions": {
+      "Failed": "Nie udało się uruchomić serwera VoiceCraft! Sprawdź, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "Uruchamiam serwer McWss...",
+    "Success": "Pomyślnie uruchomiono serwer McWss!",
+    "Stopping": "Zatrzymywanie serwera McWss...",
+    "Stopped": "Pomyślnie zatrzymano serwer McWss!",
+    "Exceptions": {
+      "Failed": "Nie udało się uruchomić serwera McWss! Sprawdź, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "Uruchamiam serwer McHttp...",
+    "Success": "Pomyślnie uruchomiono serwer McHttp!",
+    "Stopping": "Zatrzymywanie serwera McHttp...",
+    "Stopped": "Pomyślnie zatrzymano serwer McHttp!",
+    "Exceptions": {
+      "Failed": "Nie udało się uruchomić serwera McHttp! Sprawdź, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Serwer",
+      "Port": "Port",
+      "Protocol": "Protokół"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "Nazwa",
+      "Position": "Pozycja",
+      "Rotation": "Obrót",
+      "WorldId": "Identyfikator świata"
+    }
+  },
+  "Commands": {
+    "Exception": "Wystąpił błąd podczas próby wykonania polecenia {0}!",
+    "Exceptions": {
+      "EntityNotFound": "Nie można znaleźć elementu o identyfikatorze: {0}",
+      "EntityNotAClient": "Podmiot o identyfikatorze {0} nie jest podmiotem klienta!"
+    },
+    "RootCommand": {
+      "Name": "Główne polecenie serwera VoiceCraft.",
+      "Description": "Wykonuje polecenie VoiceCraft.",
+      "Options": {
+        "ExitOnInvalidProperties": {
+          "Description": "Zamyka działanie, gdy serwer VoiceCraft nie może przeanalizować pliku ServerProperties.json."
+        },
+        "Language": {
+          "Description": "Język używany podczas uruchamiania modułu głosowego. Zastępuje plik ServerProperties.json."
+        }
+      }
+    },
+    "List": {
+      "Name": "lista",
+      "Description": "Wyświetla listę podmiotów.",
+      "Showing": "Wyświetlanie elementów {0}.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "Tylko klienci",
+          "Description": "Pokazuje tylko jednostki klientów sieciowych."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "Ogranicza liczbę wyświetlanych elementów."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Limit nie może być mniejszy od zera!",
+        "Limit": "Limit nie może być mniejszy od zera!"
+      }
+    },
+    "SetTitle": {
+      "Name": "ustawić tytuł",
+      "Description": "Ustawia tytuł aplikacji jednostki klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu klienta."
+        },
+        "Value": {
+          "Name": "wartość",
+          "Description": "Wartość, która ma zostać ustawiona dla tytułu."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "zestawopis",
+      "Description": "Ustawia opis aplikacji jednostki klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu klienta."
+        },
+        "Value": {
+          "Name": "wartość",
+          "Description": "Wartość, która ma zostać ustawiona dla opisu."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "ustawiona pozycja",
+      "Description": "Ustawia pozycję elementu.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        },
+        "X": {
+          "Name": "X",
+          "Description": "Pozycja X do ustawienia."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "Pozycja Y do ustawienia."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "Pozycja Z do ustawienia."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "Ustawia WorldId dla jednostki.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        },
+        "Value": {
+          "Name": "wartość",
+          "Description": "Wartość do ustawienia WorldId jednostki."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "nazwa zestawu",
+      "Description": "Ustawia nazwę encji.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        },
+        "Value": {
+          "Name": "wartość",
+          "Description": "Wartość, aby ustawić nazwę jednostki."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "zatrzymywać się",
+      "Description": "Zatrzymuje serwer."
+    },
+    "Kick": {
+      "Name": "rzut",
+      "Description": "Kopie klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "niemy",
+      "Description": "Wycisza podmiot/klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "wyłącz wyciszenie",
+      "Description": "Wyłącza wyciszenie jednostki/klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "zagłuszać",
+      "Description": "Ogłusza istotę/klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "niegłuchy",
+      "Description": "Unieszkodliwia istotę/klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Identyfikator podmiotu."
+        }
+      }
+    }
+  }
+}

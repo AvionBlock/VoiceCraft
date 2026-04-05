@@ -6,6 +6,7 @@ using Android.Content;
 using Android.OS;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Android;
 
@@ -78,11 +79,11 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         if (AndroidBackgroundService.IsStarted) return;
         //Don't care if it's granted or not.
         await permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
-            "Notifications are required to show running background processes and errors.");
+            Localizer.Get("Permissions.Notifications.RequiredForBackground"));
         
         if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
             PermissionStatus.Granted) {
-            throw new PermissionException("Microphone access not granted!");
+            throw new PermissionException(Localizer.Get("Permissions.Microphone.NotGrantedBackground"));
         }
 
         var context = Application.Context;

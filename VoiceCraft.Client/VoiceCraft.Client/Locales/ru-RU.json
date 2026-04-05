@@ -1,0 +1,241 @@
+{
+  "BackgroundService": {
+    "BackgroundError": "Ошибка фоновой службы: {0}",
+    "Running": "Работает...",
+    "ChannelName": "Голос"
+  },
+  "Notification": {
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "Серверы",
+      "Added": "{0} добавлен.",
+      "Edited": "{0} изменен.",
+      "Removed": "{0} удален."
+    },
+    "GC": {
+      "Badge": "GC",
+      "Triggered": "Сборка мусора запущена. Освобождено памяти: {0} МБ."
+    },
+    "CrashLogs": {
+      "Badge": "Крэш-логи",
+      "Cleared": "Все логи успешно очищены.",
+      "Copied": "Крэш-логи скопированы в буфер обмена.",
+      "Empty": "Нет крэш-логов для копирования."
+    },
+    "Error": {
+      "Badge": "Ошибка",
+      "VoipFailedToStart": "Фоновому процессу не удалось запустить VOIP!",
+      "VoipBackgroundError": "Ошибка фонового VOIP-процесса: {0}"
+    },
+    "McWss": {
+      "Badge": "McWss",
+      "Connected": "Подключение McWss установлено: {0}",
+      "Disconnected": "Подключение McWss разорвано!"
+    }
+  },
+  "Home": {
+    "Servers": "Серверы",
+    "Settings": "Настройки",
+    "Credits": "Авторы",
+    "CrashLogs": "Крэш-логи"
+  },
+  "AddServer": {
+    "AddServer": "Добавить сервер",
+    "Name": "Имя",
+    "IP": "Адрес",
+    "Port": "Порт"
+  },
+  "EditServer": {
+    "EditServer": "Редактировать сервер",
+    "Name": "Имя",
+    "IP": "Адрес",
+    "Port": "Порт"
+  },
+  "Credits": {
+    "AppVersion": "Версия приложения: {0}",
+    "Version": "Версия: {0}",
+    "Codec": "Кодек: {0}",
+    "Contributors": "Участники",
+    "Roles": {
+      "Author": "Автор",
+      "Translator": "Переводчик",
+      "Programmer": "Разработчик"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "Общие настройки",
+      "Language": "Язык",
+      "NotificationDismiss": "Скрытие уведомлений (мс)",
+      "DisableNotifications": "Отключить уведомления",
+      "HideServerAddresses": "Скрывать адреса серверов"
+    },
+    "Appearance": {
+      "Appearance": "Внешний вид",
+      "Theme": "Тема",
+      "BackgroundImage": "Фоновое изображение"
+    },
+    "Input": {
+      "Input": "Настройки ввода",
+      "InputDevices": "Устройства ввода",
+      "InputVolume": "Громкость ввода",
+      "MicrophoneSensitivity": "Чувствительность микрофона",
+      "Denoisers": "Шумоподавители",
+      "AutomaticGainControllers": "Автоматическая регулировка усиления",
+      "EchoCancelers": "Эхоподавители",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Проверка микрофона",
+        "Test": "Тест"
+      }
+    },
+    "Output": {
+      "Output": "Настройки вывода",
+      "OutputDevices": "Устройства вывода",
+      "OutputVolume": "Громкость вывода",
+      "AudioClippers": "Аудио-клипперы",
+      "TestOutput": "Проверить вывод"
+    },
+    "Network": {
+      "Network": "Сетевые настройки",
+      "PositioningType": "Тип позиционирования",
+      "McWssListenIp": "IP-адрес прослушивания MCWSS",
+      "McWssHostPort": "Порт хоста MCWSS"
+    },
+    "HotKey": {
+      "HotKey": "Горячие клавиши",
+      "Actions": {
+        "Mute": "Выключить микрофон",
+        "Deafen": "Оглушить"
+      }
+    },
+    "Advanced": {
+      "Advanced": "Расширенные настройки",
+      "TriggerGc": "Запустить сборщик мусора",
+      "Crash": "Тестовый краш"
+    }
+  },
+  "SelectedServer": {
+    "Address": "Адрес",
+    "PingInformation": "Информация о пинге",
+    "Connect": "Подключиться",
+    "Edit": "Редактировать сервер",
+    "Delete": "Удалить сервер",
+    "ServerInfo": {
+      "ServerInfo": "Информация о сервере",
+      "Status": {
+        "Latency": "Задержка: {0}",
+        "Motd": "MOTD: {0}",
+        "PositioningType": "Тип позиционирования: {0}",
+        "ConnectedClients": "Подключено клиентов: {0}",
+        "Version": "Версия: {0}",
+        "Pinging": "Пинг..."
+      }
+    }
+  },
+  "McWssServer": {
+    "Exceptions": {
+      "Failed": "Не удалось запустить сервер McWss! Проверьте, не занят ли порт другим процессом!"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "Инициализация...",
+      "Connecting": "Подключение...",
+      "Connected": "Подключено!",
+      "Disconnected": "Отключено! Причина: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "McWss прослушивает: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "Отключено вручную.",
+      "ServerFull": "Сервер заполнен!",
+      "IncompatibleVersion": "Несовместимая версия клиента/сервера!",
+      "ServerSidedOnly": "Сервер принимает только server-side позиционирование!",
+      "ClientSidedOnly": "Сервер принимает только client-side позиционирование!",
+      "Kicked": "Вы были кикнуты!",
+      "Shutdown": "Сервер выключен!",
+      "Error": "Произошла ошибка при подключении!"
+    }
+  },
+  "App": {
+    "Title": "VoiceCraft"
+  },
+  "Error": {
+    "WindowTitle": "Ошибка"
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Громкость",
+      "Muted": "Отключен"
+    }
+  },
+  "Servers": {
+    "List": {
+      "Ip": "IP: {0}",
+      "Port": "Порт: {0}",
+      "IpHidden": "Адрес: ****",
+      "PortHidden": "Порт: ****"
+    }
+  },
+  "Validation": {
+    "Server": {
+      "NameRequired": "Имя сервера не может быть пустым!",
+      "IpRequired": "IP сервера не может быть пустым!",
+      "PortRange": "Порт сервера должен быть в диапазоне от 1 до 65535.",
+      "NameTooLong": "Имя сервера не может быть длиннее {0} символов!",
+      "IpTooLong": "IP сервера не может быть длиннее {0} символов!"
+    },
+    "Audio": {
+      "InputVolumeRange": "Громкость входа должна быть между 0 и 2.",
+      "MicrophoneSensitivityRange": "Чувствительность микрофона должна быть между 0 и 1.",
+      "OutputVolumeRange": "Громкость выхода должна быть между 0 и 2."
+    }
+  },
+  "Errors": {
+    "TestCrash": "Задача успешно завершилась с ошибкой.",
+    "ViewNotFound": "Не найдено: {0}",
+    "ImageFileNotFound": "Не удалось найти файл изображения."
+  },
+  "Permissions": {
+    "Notifications": {
+      "RequiredForBackground": "Уведомления нужны для отображения активных фоновых процессов и ошибок."
+    },
+    "Microphone": {
+      "RequiredForTesting": "Для проверки записи VoiceCraft требуется разрешение на использование микрофона!",
+      "NotGranted": "Не удалось создать запись: разрешение на микрофон не выдано.",
+      "NotGrantedBackground": "Доступ к микрофону не предоставлен!"
+    }
+  },
+  "Discord": {
+    "State": {
+      "InPage": "На странице {0}"
+    }
+  },
+  "Common": {
+    "Default": "По умолчанию",
+    "None": "Нет"
+  },
+  "Themes": {
+    "Dark": "Темная",
+    "DarkPurple": "Темно-фиолетовая",
+    "DarkGreen": "Темно-зеленая",
+    "Light": "Светлая"
+  },
+  "BackgroundImages": {
+    "DockNight": "Dock Night",
+    "DockDay": "Dock Day",
+    "LethalCraft": "Lethal Craft",
+    "BlockSenseSpawn": "BlockSense Spawn",
+    "SineSmpBase": "SineSMP Base"
+  },
+  "AudioPreprocessors": {
+    "Speex": "Speex"
+  },
+  "AudioClippers": {
+    "Hard": "Жесткий клиппер",
+    "TanhSoft": "Мягкий tanh-клиппер"
+  }
+}

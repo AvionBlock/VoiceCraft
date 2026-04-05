@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.iOS;
 
@@ -25,7 +26,7 @@ public class NativeBackgroundService(
             if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
                 PermissionStatus.Granted)
             {
-                throw new PermissionException("Microphone access not granted!");
+                throw new PermissionException(Localizer.Get("Permissions.Microphone.NotGrantedBackground"));
             }
 
             var backgroundType = typeof(T);

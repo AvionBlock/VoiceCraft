@@ -28,9 +28,9 @@ public partial class AdvancedSettingsViewModel(
     }
 
     [RelayCommand]
-    private static void Crash()
+    private void Crash()
     {
-        throw new Exception("Task failed successfully.");
+        throw new Exception(Localizer.Get("Errors.TestCrash"));
     }
 
     [RelayCommand]

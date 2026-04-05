@@ -78,7 +78,7 @@
       "Protocol": "Protocol"
     },
     "ListCommandEntities": {
-      "Id": "Id",
+      "Id": "Identiteitskaart",
       "Name": "Naam",
       "Position": "Positie",
       "Rotation": "Rotatie",
@@ -92,7 +92,16 @@
       "EntityNotAClient": "Entiteit met id {0} is geen client entiteit!"
     },
     "RootCommand": {
-      "Description": "Voert een VoiceCraft opdracht uit."
+      "Name": "VoiceCraft applicatie server root opdracht.",
+      "Description": "Voert een VoiceCraft opdracht uit.",
+      "Options": {
+        "ExitOnInvalidProperties": {
+          "Description": "Sluit af wanneer de VoiceCraft-server het ServerProperties.json-bestand niet kan parsen."
+        },
+        "Language": {
+          "Description": "De taal die gebruikt wordt wanneer VoiceCraft start. Overschrijft het ServerProperties.json-bestand."
+        }
+      }
     },
     "List": {
       "Name": "lijst",
@@ -109,7 +118,8 @@
         }
       },
       "Exceptions": {
-        "LimitArgument": "Limiet mag niet kleiner zijn dan nul!"
+        "LimitArgument": "Limiet mag niet kleiner zijn dan nul!",
+        "Limit": "Limiet mag niet kleiner zijn dan nul!"
       }
     },
     "SetTitle": {
@@ -117,7 +127,7 @@
       "Description": "Stelt een titel in voor de applicatie van een client entiteit.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De client z'n entiteit id."
         },
         "Value": {
@@ -131,7 +141,7 @@
       "Description": "Stelt een beschrijving in voor de applicatie van een client entiteit.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De client z'n entiteit id."
         },
         "Value": {
@@ -145,15 +155,15 @@
       "Description": "Stelt de positie in voor een entiteit.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         },
         "X": {
-          "Name": "x",
+          "Name": "X",
           "Description": "De X positie om in te stellen."
         },
         "Y": {
-          "Name": "y",
+          "Name": "j",
           "Description": "De Y positie om in te stellen."
         },
         "Z": {
@@ -167,7 +177,7 @@
       "Description": "Stelt een WereldId in voor een entiteit.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         },
         "Value": {
@@ -181,7 +191,7 @@
       "Description": "Stelt een naam in voor een entiteit.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         },
         "Value": {
@@ -195,51 +205,51 @@
       "Description": "Stopt de server."
     },
     "Kick": {
-      "Name": "kick",
+      "Name": "trap",
       "Description": "Schop een client uit de server.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         }
       }
     },
     "Mute": {
-      "Name": "mute",
+      "Name": "stom",
       "Description": "Demp een entiteit/client.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         }
       }
     },
     "Unmute": {
-      "Name": "unmute",
+      "Name": "dempen opheffen",
       "Description": "Hef het dempen op van een entiteit/client.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         }
       }
     },
     "Deafen": {
-      "Name": "deafen",
+      "Name": "doof maken",
       "Description": "Maak een entiteit/client onhoorbaar.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         }
       }
     },
     "Undeafen": {
-      "Name": "undeafen",
+      "Name": "ondoof",
       "Description": "Maak een entiteit/client hoorbaar.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "Identiteitskaart",
           "Description": "De entiteit id."
         }
       }

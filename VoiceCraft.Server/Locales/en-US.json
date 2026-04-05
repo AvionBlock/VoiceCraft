@@ -92,7 +92,16 @@
       "EntityNotAClient": "Entity with id {0} is not a client entity!"
     },
     "RootCommand": {
-      "Description": "Executes a VoiceCraft command."
+      "Name": "VoiceCraft application server root command.",
+      "Description": "Executes a VoiceCraft command.",
+      "Options": {
+        "ExitOnInvalidProperties": {
+          "Description": "Exits when the VoiceCraft server fails to parse the ServerProperties.json file."
+        },
+        "Language": {
+          "Description": "The language to use when voicecraft starts. Overrides the ServerProperties.json file."
+        }
+      }
     },
     "List": {
       "Name": "list",
@@ -109,7 +118,8 @@
         }
       },
       "Exceptions": {
-        "LimitArgument": "Limit cannot be less than zero!"
+        "LimitArgument": "Limit cannot be less than zero!",
+        "Limit": "Limit cannot be less than zero!"
       }
     },
     "SetTitle": {

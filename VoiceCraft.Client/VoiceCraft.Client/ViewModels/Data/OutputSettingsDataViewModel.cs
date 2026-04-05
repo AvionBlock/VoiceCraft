@@ -4,11 +4,13 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
 {
+    private const string DefaultDeviceInvariant = "Default";
     private readonly AudioService _audioService;
     private readonly OutputSettings _outputSettings;
     private readonly SettingsService _settingsService;
@@ -46,10 +48,13 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
 
     public void ReloadDevices()
     {
-        OutputDevices = ["Default", .._audioService.GetOutputDevices()];
+        var defaultLabel = Localizer.Get("Common.Default");
+        OutputDevices = [defaultLabel, .._audioService.GetOutputDevices()];
         AudioClippers = [.._audioService.RegisteredAudioClippers];
+        if (OutputDevice == DefaultDeviceInvariant)
+            OutputDevice = defaultLabel;
         if (!OutputDevices.Contains(OutputDevice))
-            OutputDevice = "Default";
+            OutputDevice = defaultLabel;
         if (AudioClippers.FirstOrDefault(x => x.Id == AudioClipper) == null)
             AudioClipper = Guid.Empty;
     }
@@ -60,7 +65,7 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
 
         if (_updating) return;
         _updating = true;
-        _outputSettings.OutputDevice = value;
+        _outputSettings.OutputDevice = value == Localizer.Get("Common.Default") ? DefaultDeviceInvariant : value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
@@ -92,7 +97,9 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         if (_updating) return;
         _updating = true;
 
-        OutputDevice = outputSettings.OutputDevice;
+        OutputDevice = outputSettings.OutputDevice == DefaultDeviceInvariant
+            ? Localizer.Get("Common.Default")
+            : outputSettings.OutputDevice;
         OutputVolume = outputSettings.OutputVolume;
 
         _updating = false;

@@ -1,6 +1,8 @@
 {
   "BackgroundService": {
-    "BackgroundError": "Background Error: {0}"
+    "BackgroundError": "Background Error: {0}",
+    "Running": "Running...",
+    "ChannelName": "Voice"
   },
   "Notification": {
     "VoiceCraft": {
@@ -157,5 +159,83 @@
       "Shutdown": "Server shutdown!",
       "Error": "An error occurred while trying to connect!"
     }
+  },
+  "App": {
+    "Title": "VoiceCraft"
+  },
+  "Error": {
+    "WindowTitle": "Error"
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Volume",
+      "Muted": "Muted"
+    }
+  },
+  "Servers": {
+    "List": {
+      "Ip": "IP: {0}",
+      "Port": "Port: {0}",
+      "IpHidden": "IP: ****",
+      "PortHidden": "Port: ****"
+    }
+  },
+  "Validation": {
+    "Server": {
+      "NameRequired": "Server name cannot be empty or whitespace!",
+      "IpRequired": "Server IP cannot be empty or whitespace!",
+      "PortRange": "Server port must be between 1 and 65535.",
+      "NameTooLong": "Server name cannot be longer than {0} characters!",
+      "IpTooLong": "Server IP cannot be longer than {0} characters!"
+    },
+    "Audio": {
+      "InputVolumeRange": "Input volume must be between 0 and 2.",
+      "MicrophoneSensitivityRange": "Microphone sensitivity must be between 0 and 1.",
+      "OutputVolumeRange": "Output volume must be between 0 and 2."
+    }
+  },
+  "Errors": {
+    "TestCrash": "Task failed successfully.",
+    "ViewNotFound": "Not Found: {0}",
+    "ImageFileNotFound": "Could not find image file."
+  },
+  "Permissions": {
+    "Notifications": {
+      "RequiredForBackground": "Notifications are required to show running background processes and errors."
+    },
+    "Microphone": {
+      "RequiredForTesting": "VoiceCraft requires the microphone permission to be granted in order to test recording!",
+      "NotGranted": "Could not create recorder, microphone permission not granted.",
+      "NotGrantedBackground": "Microphone access not granted!"
+    }
+  },
+  "Discord": {
+    "State": {
+      "InPage": "In page {0}"
+    }
+  },
+  "Common": {
+    "Default": "Default",
+    "None": "None"
+  },
+  "Themes": {
+    "Dark": "Dark",
+    "DarkPurple": "Dark Purple",
+    "DarkGreen": "Dark Green",
+    "Light": "Light"
+  },
+  "BackgroundImages": {
+    "DockNight": "Dock Night",
+    "DockDay": "Dock Day",
+    "LethalCraft": "Lethal Craft",
+    "BlockSenseSpawn": "BlockSense Spawn",
+    "SineSmpBase": "SineSMP Base"
+  },
+  "AudioPreprocessors": {
+    "Speex": "Speex"
+  },
+  "AudioClippers": {
+    "Hard": "Hard Clipper",
+    "TanhSoft": "Tanh Soft Clipper"
   }
 }

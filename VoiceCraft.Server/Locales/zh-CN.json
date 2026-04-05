@@ -78,7 +78,7 @@
       "Protocol": "协议"
     },
     "ListCommandEntities": {
-      "Id": "Id",
+      "Id": "ID",
       "Name": "名称",
       "Position": "位置",
       "Rotation": "方向",
@@ -92,60 +92,70 @@
       "EntityNotAClient": "ID 为 {0} 的实体不是一个客户端实体!"
     },
     "RootCommand": {
-      "Description": "执行 VoiceCraft 命令."
+      "Name": "VoiceCraft 应用程序服务器 root 命令。",
+      "Description": "执行 VoiceCraft 命令.",
+      "Options": {
+        "ExitOnInvalidProperties": {
+          "Description": "当 VoiceCraft 服务器无法解析 ServerProperties.json 文件时退出。"
+        },
+        "Language": {
+          "Description": "Voicecraft 启动时使用的语言。覆盖 ServerProperties.json 文件。"
+        }
+      }
     },
     "List": {
-      "Name": "list",
+      "Name": "列表",
       "Description": "列出实体.",
       "Showing": "显示 {0} 个实体.",
       "Options": {
         "ClientsOnly": {
-          "Name": "clientsOnly",
+          "Name": "仅限客户",
           "Description": "只显示网络连接的客户端实体."
         },
         "Limit": {
-          "Name": "limit",
+          "Name": "限制",
           "Description": "限制显示的实体数量."
         }
       },
       "Exceptions": {
-        "LimitArgument": "限制不能小于零!"
+        "LimitArgument": "限制不能小于零!",
+        "Limit": "限制不能小于零！"
       }
     },
     "SetTitle": {
-      "Name": "settitle",
+      "Name": "设置标题",
       "Description": "设置一个客户端实体的标题.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "客户端实体的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "价值",
           "Description": "要设置的标题的内容."
         }
       }
     },
     "SetDescription": {
-      "Name": "setdescription",
+      "Name": "设置描述",
       "Description": "设置一个客户端实体的描述.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "客户端实体的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "价值",
           "Description": "要设置的描述的内容."
         }
       }
     },
     "SetPosition": {
-      "Name": "setposition",
+      "Name": "设置位置",
       "Description": "设置一个实体的位置.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         },
         "X": {
@@ -163,79 +173,83 @@
       }
     },
     "SetWorldId": {
-      "Name": "setworldid",
+      "Name": "设置世界ID",
       "Description": "设置一个实体的世界 ID.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "价值",
           "Description": "要设置的实体的世界 ID."
         }
       }
     },
     "SetName": {
-      "Name": "setname",
+      "Name": "设置名称",
       "Description": "设置一个实体的名称.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         },
         "Value": {
-          "Name": "value",
+          "Name": "价值",
           "Description": "要设置的实体的名称."
         }
       }
     },
+    "Stop": {
+      "Name": "停止",
+      "Description": "停止服务器。"
+    },
     "Kick": {
-      "Name": "kick",
+      "Name": "踢",
       "Description": "踢出客户端.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         }
       }
     },
     "Mute": {
-      "Name": "mute",
+      "Name": "沉默的",
       "Description": "将实体/客户端静音.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         }
       }
     },
     "Unmute": {
-      "Name": "unmute",
+      "Name": "取消静音",
       "Description": "取消实体/客户端静音.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         }
       }
     },
     "Deafen": {
-      "Name": "deafen",
+      "Name": "震耳欲聋",
       "Description": "使实体/客户端失聪.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         }
       }
     },
     "Undeafen": {
-      "Name": "undeafen",
+      "Name": "不聋的",
       "Description": "恢复实体/客户端听力.",
       "Arguments": {
         "Id": {
-          "Name": "id",
+          "Name": "ID",
           "Description": "实体的 ID."
         }
       }

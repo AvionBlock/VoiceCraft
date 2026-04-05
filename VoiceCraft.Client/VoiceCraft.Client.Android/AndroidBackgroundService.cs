@@ -16,8 +16,8 @@ public class AndroidBackgroundService : Service
 {
     private const int NotificationId = 1000;
     private const string ChannelId = "1001";
-    public static string Title = "VoiceCraft";
-    public static string Description = "Running...";
+    public static string Title = "Notification.VoiceCraft.Badge";
+    public static string Description = "BackgroundService.Running";
     public static bool IsStarted { get; private set; }
 
     public static ConcurrentDictionary<Type, NativeBackgroundService.BackgroundTask> Services { get; } = new();
@@ -83,7 +83,10 @@ public class AndroidBackgroundService : Service
 
         if (Build.VERSION.SdkInt < BuildVersionCodes.O) return notificationBuilder;
 #pragma warning disable CA1416
-        var notificationChannel = new NotificationChannel(ChannelId, "Voice", NotificationImportance.Low);
+        var notificationChannel = new NotificationChannel(
+            ChannelId,
+            Localizer.Get("BackgroundService.ChannelName"),
+            NotificationImportance.Low);
 
         if (context.GetSystemService(NotificationService) is not NotificationManager notificationManager)
             return notificationBuilder;

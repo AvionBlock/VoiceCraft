@@ -40,9 +40,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Themes}"
-                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding ThemeSettingsData.SelectedTheme}"
-                              SelectedValueBinding="{Binding Id}" />
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{locale:Localize {Binding Name}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
@@ -51,9 +56,14 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding BackgroundImages}"
-                              DisplayMemberBinding="{Binding Name}"
                               SelectedValue="{Binding ThemeSettingsData.SelectedBackgroundImage}"
-                              SelectedValueBinding="{Binding Id}" />
+                              SelectedValueBinding="{Binding Id}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{locale:Localize {Binding Name}}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                 </StackPanel>
             </Border>
         </ScrollViewer>

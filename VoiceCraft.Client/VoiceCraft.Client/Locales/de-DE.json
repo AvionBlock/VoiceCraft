@@ -1,0 +1,241 @@
+{
+  "BackgroundService": {
+    "BackgroundError": "Hintergrundfehler: {0}",
+    "Running": "Läuft...",
+    "ChannelName": "Stimme"
+  },
+  "Notification": {
+    "VoiceCraft": {
+      "Badge": "VoiceCraft"
+    },
+    "Servers": {
+      "Badge": "Servers",
+      "Added": "{0} wurde hinzugefügt.",
+      "Edited": "{0} wurde bearbeitet.",
+      "Removed": "{0} wurde entfernt."
+    },
+    "GC": {
+      "Badge": "GC",
+      "Triggered": "Garbage Collection ausgelöst. Speicher gelöscht: {0}mb."
+    },
+    "CrashLogs": {
+      "Badge": "CrashLogs",
+      "Cleared": "Alle Protokolle wurden erfolgreich gelöscht.",
+      "Copied": "Absturzprotokolle werden in die Zwischenablage kopiert.",
+      "Empty": "Keine Absturzprotokolle zum Kopieren."
+    },
+    "Error": {
+      "Badge": "Fehler",
+      "VoipFailedToStart": "Der Hintergrundarbeiter konnte den VOIP-Prozess nicht starten!",
+      "VoipBackgroundError": "VoIP-Hintergrundfehler: {0}"
+    },
+    "McWss": {
+      "Badge": "McWss",
+      "Connected": "McWss-Verbindung hergestellt: {0}",
+      "Disconnected": "McWss-Verbindung getrennt!"
+    }
+  },
+  "Home": {
+    "Servers": "Server",
+    "Settings": "Einstellungen",
+    "Credits": "Mitwirkende",
+    "CrashLogs": "Absturzprotokolle"
+  },
+  "AddServer": {
+    "AddServer": "Server hinzufügen",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Hafen"
+  },
+  "EditServer": {
+    "EditServer": "Server bearbeiten",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Hafen"
+  },
+  "Credits": {
+    "AppVersion": "App-Version: {0}",
+    "Version": "Version: {0}",
+    "Codec": "Codec: {0}",
+    "Contributors": "Mitwirkende",
+    "Roles": {
+      "Author": "Autor",
+      "Translator": "Übersetzer",
+      "Programmer": "Programmierer"
+    }
+  },
+  "Settings": {
+    "General": {
+      "General": "Allgemeine Einstellungen",
+      "Language": "Sprache",
+      "NotificationDismiss": "Benachrichtigung verwerfen (ms)",
+      "DisableNotifications": "Deaktivieren Sie Benachrichtigungen",
+      "HideServerAddresses": "Serveradressen ausblenden"
+    },
+    "Appearance": {
+      "Appearance": "Darstellung",
+      "Theme": "Thema",
+      "BackgroundImage": "Hintergrundbild"
+    },
+    "Input": {
+      "Input": "Eingabeeinstellungen",
+      "InputDevices": "Eingabegeräte",
+      "InputVolume": "Eingangslautstärke",
+      "MicrophoneSensitivity": "Mikrofonempfindlichkeit",
+      "Denoisers": "Denoiser",
+      "AutomaticGainControllers": "Automatische Verstärkungsregler",
+      "EchoCancelers": "Echokompensatoren",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Mikrofontest",
+        "Test": "Prüfen"
+      }
+    },
+    "Output": {
+      "Output": "Ausgabeeinstellungen",
+      "OutputDevices": "Ausgabegeräte",
+      "OutputVolume": "Ausgangslautstärke",
+      "AudioClippers": "Audio-Clipper",
+      "TestOutput": "Testausgabe"
+    },
+    "Network": {
+      "Network": "Netzwerkeinstellungen",
+      "PositioningType": "Positionierungstyp",
+      "McWssListenIp": "MCWSS-Listening-IP-Adresse",
+      "McWssHostPort": "MCWSS-Host-Port"
+    },
+    "HotKey": {
+      "HotKey": "Hotkeys",
+      "Actions": {
+        "Mute": "Stumm",
+        "Deafen": "Taub"
+      }
+    },
+    "Advanced": {
+      "Advanced": "Erweiterte Einstellungen",
+      "TriggerGc": "Garbage Collector auslösen",
+      "Crash": "Testabsturz"
+    }
+  },
+  "SelectedServer": {
+    "Address": "Adresse",
+    "PingInformation": "Ping-Informationen",
+    "Connect": "Verbinden",
+    "Edit": "Server bearbeiten",
+    "Delete": "Server löschen",
+    "ServerInfo": {
+      "ServerInfo": "Serverinformationen",
+      "Status": {
+        "Latency": "Latenz: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "Positionierungstyp: {0}",
+        "ConnectedClients": "Verbundene Clients: {0}",
+        "Version": "Version: {0}",
+        "Pinging": "Ping..."
+      }
+    }
+  },
+  "McWssServer": {
+    "Exceptions": {
+      "Failed": "McWss-Server konnte nicht gestartet werden! Bitte prüfen Sie, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "VoiceCraft": {
+    "Status": {
+      "Initializing": "Initialisierung...",
+      "Connecting": "Verbinden...",
+      "Connected": "Verbunden!",
+      "Disconnected": "Getrennt! Grund: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "McWss Zuhören: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "Manuelle Trennung.",
+      "ServerFull": "Server ist voll!",
+      "IncompatibleVersion": "Inkompatible Client/Server-Version!",
+      "ServerSidedOnly": "Server akzeptiert nur serverseitige Positionierung!",
+      "ClientSidedOnly": "Server akzeptiert nur clientseitige Positionierung!",
+      "Kicked": "Getreten!",
+      "Shutdown": "Serverabschaltung!",
+      "Error": "Beim Verbindungsversuch ist ein Fehler aufgetreten!"
+    }
+  },
+  "App": {
+    "Title": "VoiceCraft"
+  },
+  "Error": {
+    "WindowTitle": "Fehler"
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Lautstärke",
+      "Muted": "Stumm"
+    }
+  },
+  "Servers": {
+    "List": {
+      "Ip": "IP: {0}",
+      "Port": "Port: {0}",
+      "IpHidden": "IP: ****",
+      "PortHidden": "Hafen: ****"
+    }
+  },
+  "Validation": {
+    "Server": {
+      "NameRequired": "Servername darf nicht leer sein!",
+      "IpRequired": "Server-IP darf nicht leer sein!",
+      "PortRange": "Server-Port muss zwischen 1 und 65535 liegen.",
+      "NameTooLong": "Servername darf nicht länger als {0} Zeichen sein!",
+      "IpTooLong": "Server-IP darf nicht länger als {0} Zeichen sein!"
+    },
+    "Audio": {
+      "InputVolumeRange": "Eingangslautstärke muss zwischen 0 und 2 liegen.",
+      "MicrophoneSensitivityRange": "Mikrofonempfindlichkeit muss zwischen 0 und 1 liegen.",
+      "OutputVolumeRange": "Ausgangslautstärke muss zwischen 0 und 2 liegen."
+    }
+  },
+  "Errors": {
+    "TestCrash": "Die Aufgabe ist erfolgreich fehlgeschlagen.",
+    "ViewNotFound": "Nicht gefunden: {0}",
+    "ImageFileNotFound": "Bilddatei konnte nicht gefunden werden."
+  },
+  "Permissions": {
+    "Notifications": {
+      "RequiredForBackground": "Benachrichtigungen sind erforderlich, um laufende Hintergrundprozesse und Fehler anzuzeigen."
+    },
+    "Microphone": {
+      "RequiredForTesting": "VoiceCraft benötigt zum Testen der Aufnahme die Erteilung der Mikrofonberechtigung!",
+      "NotGranted": "Rekorder konnte nicht erstellt werden, Mikrofonberechtigung nicht erteilt.",
+      "NotGrantedBackground": "Mikrofonzugriff nicht gewährt!"
+    }
+  },
+  "Discord": {
+    "State": {
+      "InPage": "Auf Seite {0}"
+    }
+  },
+  "Common": {
+    "Default": "Standard",
+    "None": "Keine"
+  },
+  "Themes": {
+    "Dark": "Dunkel",
+    "DarkPurple": "Dunkellila",
+    "DarkGreen": "Dunkelgrün",
+    "Light": "Hell"
+  },
+  "BackgroundImages": {
+    "DockNight": "Dock Night",
+    "DockDay": "Dock Day",
+    "LethalCraft": "Lethal Craft",
+    "BlockSenseSpawn": "BlockSense Spawn",
+    "SineSmpBase": "SineSMP Base"
+  },
+  "AudioPreprocessors": {
+    "Speex": "Speex"
+  },
+  "AudioClippers": {
+    "Hard": "Harter Clipper",
+    "TanhSoft": "Tanh Soft Clipper"
+  }
+}

@@ -50,7 +50,7 @@ public partial class AddServerViewModel(
         try
         {
             if (ServerPort == null)
-                throw new Exception("Server port must be between 1 and 65535.");
+                throw new Exception(Localizer.Get("Validation.Server.PortRange"));
 
             Servers.AddServer(Server);
             notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Added:{Server.Name}"),

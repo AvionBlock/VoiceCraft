@@ -1,6 +1,8 @@
 {
   "BackgroundService": {
-    "BackgroundError": "Achtergrondwerker fout: {0}"
+    "BackgroundError": "Achtergrondwerker fout: {0}",
+    "Running": "Actief...",
+    "ChannelName": "Spraak"
   },
   "Notification": {
     "VoiceCraft": {
@@ -36,7 +38,7 @@
   "Home": {
     "Servers": "Servers",
     "Settings": "Instellingen",
-    "Credits": "Credits",
+    "Credits": "Kredieten",
     "CrashLogs": "Crashlogboeken"
   },
   "AddServer": {
@@ -92,7 +94,7 @@
       "Output": "Uitvoer Instellingen",
       "OutputDevices": "Uitvoerapparaten",
       "OutputVolume": "Uitvoervolume",
-      "AudioClippers": "Audio Clippers",
+      "AudioClippers": "Audio-clippers",
       "TestOutput": "Uitvoer testen"
     },
     "Network": {
@@ -157,5 +159,83 @@
       "Shutdown": "Server afgesloten!",
       "Error": "Er is een fout opgetreden tijdens het verbinden!"
     }
+  },
+  "App": {
+    "Title": "VoiceCraft"
+  },
+  "Error": {
+    "WindowTitle": "Fout"
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Volume",
+      "Muted": "Gedempt"
+    }
+  },
+  "Servers": {
+    "List": {
+      "Ip": "IP: {0}",
+      "Port": "Poort: {0}",
+      "IpHidden": "IP-adres: ****",
+      "PortHidden": "Poort: ****"
+    }
+  },
+  "Validation": {
+    "Server": {
+      "NameRequired": "Servernaam mag niet leeg zijn of alleen uit spaties bestaan!",
+      "IpRequired": "Server-IP mag niet leeg zijn of alleen uit spaties bestaan!",
+      "PortRange": "Serverpoort moet tussen 1 en 65535 liggen.",
+      "NameTooLong": "Servernaam mag niet langer zijn dan {0} tekens!",
+      "IpTooLong": "Server-IP mag niet langer zijn dan {0} tekens!"
+    },
+    "Audio": {
+      "InputVolumeRange": "Invoervolume moet tussen 0 en 2 liggen.",
+      "MicrophoneSensitivityRange": "Microfoongevoeligheid moet tussen 0 en 1 liggen.",
+      "OutputVolumeRange": "Uitvoervolume moet tussen 0 en 2 liggen."
+    }
+  },
+  "Errors": {
+    "TestCrash": "Taak succesvol mislukt.",
+    "ViewNotFound": "Niet gevonden: {0}",
+    "ImageFileNotFound": "Kan afbeeldingsbestand niet vinden."
+  },
+  "Permissions": {
+    "Notifications": {
+      "RequiredForBackground": "Meldingen zijn vereist om actieve achtergrondprocessen en fouten te tonen."
+    },
+    "Microphone": {
+      "RequiredForTesting": "VoiceCraft vereist microfoonmachtiging om opnemen te kunnen testen!",
+      "NotGranted": "Kon recorder niet maken, microfoonmachtiging niet verleend.",
+      "NotGrantedBackground": "Microfoontoegang niet verleend!"
+    }
+  },
+  "Discord": {
+    "State": {
+      "InPage": "Op pagina {0}"
+    }
+  },
+  "Common": {
+    "Default": "Standaard",
+    "None": "Geen"
+  },
+  "Themes": {
+    "Dark": "Donker",
+    "DarkPurple": "Donker paars",
+    "DarkGreen": "Donkergroen",
+    "Light": "Licht"
+  },
+  "BackgroundImages": {
+    "DockNight": "Dock Nacht",
+    "DockDay": "Dock Dag",
+    "LethalCraft": "Lethal Craft",
+    "BlockSenseSpawn": "BlockSense Spawn",
+    "SineSmpBase": "SineSMP Basis"
+  },
+  "AudioPreprocessors": {
+    "Speex": "Speex"
+  },
+  "AudioClippers": {
+    "Hard": "Harde clipper",
+    "TanhSoft": "Tanh zachte clipper"
   }
 }

@@ -1,19 +1,20 @@
 using System.CommandLine;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Server.Commands;
 
 public class VoiceCraftRootCommand : RootCommand
 {
-    public VoiceCraftRootCommand() : base("VoiceCraft application server root command.")
+    public VoiceCraftRootCommand() : base(Localizer.Get("Commands.RootCommand.Name"))
     {
         var exitOnInvalidPropertiesOption = new Option<bool>("--exit-on-invalid-properties")
         {
-            Description = "Exits when the VoiceCraft server fails to parse the ServerProperties.json file.",
+            Description = Localizer.Get("Commands.RootCommand.Options.ExitOnInvalidProperties.Description"),
             DefaultValueFactory = _ => false
         };
         var languageOption = new Option<string>("--language")
         {
-            Description = "The language to use when voicecraft starts. Overrides the ServerProperties.json file."
+            Description = Localizer.Get("Commands.RootCommand.Options.Language.Description")
         };
         Add(exitOnInvalidPropertiesOption);
         Add(languageOption);

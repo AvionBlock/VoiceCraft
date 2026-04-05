@@ -54,7 +54,7 @@ public partial class EditServerViewModel(
         try
         {
             if (EditableServerPort == null)
-                throw new Exception("Server port must be between 1 and 65535.");
+                throw new Exception(Localizer.Get("Validation.Server.PortRange"));
 
             Server.Name = EditableServer.Name;
             Server.Ip = EditableServer.Ip;

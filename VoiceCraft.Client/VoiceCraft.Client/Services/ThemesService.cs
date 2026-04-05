@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Services;
 
@@ -23,8 +24,10 @@ public class ThemesService
     public ThemesService(IEnumerable<RegisteredTheme> registeredThemes,
         IEnumerable<RegisteredBackgroundImage> registeredBackgroundImages)
     {
-        _registeredThemes.TryAdd(Guid.Empty, new RegisteredTheme(Guid.Empty, "Default", ThemeVariant.Default, [], []));
-        _registeredBackgroundImages.TryAdd(Guid.Empty, new RegisteredBackgroundImage(Guid.Empty, "None", string.Empty));
+        _registeredThemes.TryAdd(Guid.Empty,
+            new RegisteredTheme(Guid.Empty, "Common.Default", ThemeVariant.Default, [], []));
+        _registeredBackgroundImages.TryAdd(Guid.Empty,
+            new RegisteredBackgroundImage(Guid.Empty, "Common.None", string.Empty));
 
         foreach (var registeredTheme in registeredThemes) _registeredThemes.TryAdd(registeredTheme.Id, registeredTheme);
 
@@ -139,7 +142,7 @@ public class RegisteredBackgroundImage(Guid id, string name, string path)
         if (AssetLoader.Exists(new Uri(Path)))
             return BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
 
-        throw new FileNotFoundException("Could not find image file.", Path);
+        throw new FileNotFoundException(Localizer.Get("Errors.ImageFileNotFound"), Path);
     }
 
     public void UnloadBitmap()
