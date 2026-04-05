@@ -26,10 +26,15 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="SharpHook"/>
-        <PackageReference Include="SpeexDSPSharp"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <BundleResource Include="Resources\AppIcon.icns">
+            <Link>AppIcon.icns</Link>
+        </BundleResource>
     </ItemGroup>
 </Project>

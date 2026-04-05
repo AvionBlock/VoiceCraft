@@ -4,10 +4,8 @@ using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using SoundFlow.Abstracts;
 using SoundFlow.Backends.MiniAudio;
-using VoiceCraft.Client.MacOS.Audio;
 using VoiceCraft.Client.MacOS.Permissions;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.Clients;
 
@@ -32,18 +30,6 @@ internal sealed class Program
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
                 new NativeBackgroundService(x.GetRequiredService));
-            App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
-                new RegisteredAudioPreprocessor(
-                    Constants.SpeexDspPreprocessorGuid,
-                    "Speex",
-                    () => new SpeexDspPreprocessor(
-                        Constants.SampleRate,
-                        Constants.FrameSize,
-                        Constants.RecordingChannels,
-                        Constants.PlaybackChannels),
-                    true,
-                    true,
-                    true));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
                 new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
                     x.GetRequiredService<IAudioDecoder>));

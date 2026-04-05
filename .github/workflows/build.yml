@@ -228,6 +228,79 @@ jobs:
           name: VoiceCraft.Client.iOS.arm64
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
 
+  Build_MacOS:
+    runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: osx-arm64
+            arch: arm64
+          - rid: osx-x64
+            arch: x64
+    defaults:
+      run:
+        working-directory: ./VoiceCraft.Client/VoiceCraft.Client.MacOS
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "9.0.312"
+
+      - name: Install VoiceCraft.Client.MacOS WorkLoads
+        run: dotnet workload restore
+
+      - name: Restore VoiceCraft.Client.MacOS.${{ matrix.arch }}
+        run: dotnet restore -r ${{ matrix.rid }}
+
+      - name: Publish VoiceCraft.Client.MacOS.${{ matrix.arch }}
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --no-restore -p:ValidateXcodeVersion=false
+
+      - name: Zip VoiceCraft.Client.MacOS.${{ matrix.arch }}
+        run: |
+          cd ./bin/Release/net9.0-macos/${{ matrix.rid }}
+          ditto -c -k --sequesterRsrc --keepParent VoiceCraft.Client.MacOS.app VoiceCraft.Client.MacOS.${{ matrix.arch }}.zip
+
+      - name: Build VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
+        run: |
+          cd ./bin/Release/net9.0-macos/${{ matrix.rid }}
+          rm -rf dmg-root
+          mkdir -p dmg-root
+          cp -R VoiceCraft.Client.MacOS.app dmg-root/
+          ln -s /Applications dmg-root/Applications
+          hdiutil create \
+            -volname "VoiceCraft" \
+            -srcfolder dmg-root \
+            -ov \
+            -format UDZO \
+            VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
+
+      - name: Normalize VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg name
+        run: |
+          cd ./bin/Release/net9.0-macos/${{ matrix.rid }}
+          PKG_PATH=$(ls ./publish/*.pkg | head -n 1)
+          cp "$PKG_PATH" "VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg"
+
+      - name: Upload Artifact VoiceCraft.Client.MacOS.${{ matrix.arch }}.zip
+        uses: actions/upload-artifact@v6
+        with:
+          name: VoiceCraft.Client.MacOS.${{ matrix.arch }}.zip
+          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net9.0-macos/${{ matrix.rid }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.zip
+
+      - name: Upload Artifact VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
+        uses: actions/upload-artifact@v6
+        with:
+          name: VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
+          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net9.0-macos/${{ matrix.rid }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
+
+      - name: Upload Artifact VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
+        uses: actions/upload-artifact@v6
+        with:
+          name: VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
+          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net9.0-macos/${{ matrix.rid }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
+
   Build_Server_Windows_x64:
     runs-on: ubuntu-latest
     defaults:
