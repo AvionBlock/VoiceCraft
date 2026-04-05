@@ -50,9 +50,8 @@ namespace VoiceCraft.Core
 
         //Settings GUIDS.
         //Preprocessors
+        //public static readonly Guid NativePreprocessorGuid = Guid.Parse("f35d855f-8fe6-4cd4-bf32-a656b5f5df27");
         public static readonly Guid SpeexDspPreprocessorGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
-        public static readonly Guid NativeVoiceProcessingPreprocessorGuid =
-            Guid.Parse("f35d855f-8fe6-4cd4-bf32-a656b5f5df27");
 
         //Clippers
         public static readonly Guid HardAudioClipperGuid = Guid.Parse("2e2657ab-c1f1-435a-8cff-9382bc8b7efa");
