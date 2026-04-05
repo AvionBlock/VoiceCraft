@@ -121,7 +121,7 @@ public static class App
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.WriteLine($"[red]{ex}[/]");
+                    AnsiConsole.MarkupLine($"[red]{ex}[/]");
                 }
 
             StopServer(liteNetServer);
@@ -132,7 +132,7 @@ public static class App
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{Localizer.Get("Startup.Failed")}[/]");
-            AnsiConsole.WriteLine($"[red]{ex}[/]");
+            AnsiConsole.MarkupLine($"[red]{ex}[/]");
             Shutdown(10000);
             LogService.Log(ex);
         }
@@ -244,7 +244,7 @@ public static class App
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
-            AnsiConsole.WriteLine($"[red]{ex}[/]");
+            AnsiConsole.MarkupLine($"[red]{ex}[/]");
             LogService.Log(ex);
         }
         finally
