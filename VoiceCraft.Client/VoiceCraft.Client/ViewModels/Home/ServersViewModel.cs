@@ -23,18 +23,17 @@ public partial class ServersViewModel(
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);
     }
+    
+    private void OpenServer(ServerDataViewModel? server)
+    {
+        if (server == null) return;
+        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.Server));
+    }
 
     partial void OnSelectedServerChanged(ServerDataViewModel? value)
     {
         OpenServer(value);
         SelectedServer = null;
-    }
-
-    [RelayCommand]
-    private void OpenServer(ServerDataViewModel? server)
-    {
-        if (server == null) return;
-        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.Server));
     }
 
     [RelayCommand]
