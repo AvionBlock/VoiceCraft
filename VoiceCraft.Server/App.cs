@@ -194,7 +194,7 @@ public static class App
         }
         catch (Exception ex)
         {
-            AnsiConsole.WriteLine($"[red]{ex}[/]");
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
             LogService.Log(ex);
             throw new Exception(Localizer.Get("McHttpServer.Exceptions.Failed"));
         }

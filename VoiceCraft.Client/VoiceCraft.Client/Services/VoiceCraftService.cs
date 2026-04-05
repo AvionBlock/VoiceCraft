@@ -182,6 +182,7 @@ public class VoiceCraftService(
     private void Write(Span<float> buffer, Capability _)
     {
         _audioPreprocessor?.Process(buffer);
+        SampleVolume.Read(buffer, client.InputVolume);
         client.Write(buffer);
     }
 
