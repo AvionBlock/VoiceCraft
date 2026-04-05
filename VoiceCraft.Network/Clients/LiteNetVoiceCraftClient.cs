@@ -37,9 +37,9 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     public override async Task<ServerInfo> PingAsync(string ip, int port, CancellationToken token = default)
     {
-        if(_netManager == null)
+        if (_netManager == null)
             StartNetManager();
-        
+
         var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket()).Set(Environment.TickCount);
         SendUnconnectedPacket(ip, port, packet);
         var response = await GetUnconnectedResponseAsync<VcInfoResponsePacket>(TimeSpan.FromSeconds(8), token);
@@ -55,7 +55,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         StartNetManager();
         if (_netManager == null)
             throw new Exception(); //Should never happen.
-        
+
         Reset();
         var requestId = Guid.NewGuid();
         var packet = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket())
@@ -263,19 +263,19 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         {
             case DisconnectReason.ConnectionRejected:
             case DisconnectReason.RemoteConnectionClose:
-            {
-                if (disconnectInfo.AdditionalData.IsNull)
-                    break;
-                ProcessPacket(disconnectInfo.AdditionalData, packet =>
                 {
-                    disconnectReason = packet switch
+                    if (disconnectInfo.AdditionalData.IsNull)
+                        break;
+                    ProcessPacket(disconnectInfo.AdditionalData, packet =>
                     {
-                        VcDenyResponsePacket denyResponsePacket => denyResponsePacket.Reason,
-                        VcLogoutRequestPacket logoutRequestPacket => logoutRequestPacket.Reason,
-                        _ => disconnectReason
-                    };
-                });
-            }
+                        disconnectReason = packet switch
+                        {
+                            VcDenyResponsePacket denyResponsePacket => denyResponsePacket.Reason,
+                            VcLogoutRequestPacket logoutRequestPacket => logoutRequestPacket.Reason,
+                            _ => disconnectReason
+                        };
+                    });
+                }
                 break;
             case DisconnectReason.ConnectionFailed:
             case DisconnectReason.Timeout:
@@ -293,7 +293,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         _ = DisconnectAsync(disconnectReason);
     }
-    
+
     private void NetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
     {
         try
@@ -315,7 +315,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
         catch
         {
-            //Do Nothing
+            // Do nothing
         }
     }
 

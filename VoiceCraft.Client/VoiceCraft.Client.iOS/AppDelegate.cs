@@ -9,7 +9,6 @@ using UIKit;
 using SoundFlow.Abstracts;
 using VoiceCraft.Client.iOS.Audio;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.Clients;
 

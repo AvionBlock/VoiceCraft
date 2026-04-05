@@ -209,39 +209,21 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
         if (frameCount <= 0)
             return;
 
-        var audioBuffers = buffer.AudioBufferList;
-        if (audioBuffers.Count <= 0)
+        var sourceChannels = (int)Math.Max(1, buffer.Format.ChannelCount);
+        var sourcePointers = buffer.FloatChannelData;
+        if (sourcePointers == IntPtr.Zero)
             return;
 
-        var sourceChannels = 0;
-        float[][]? planar = null;
-        float[]? interleaved = null;
-
-        if (audioBuffers.Count == 1)
+        var source = new float[sourceChannels][];
+        for (var ch = 0; ch < sourceChannels; ch++)
         {
-            var ab = audioBuffers[0];
-            var interleavedChannels = Math.Max(1, (int)ab.NumberChannels);
-            var samples = (int)Math.Min(ab.DataByteSize / sizeof(float), frameCount * interleavedChannels);
-            if (samples <= 0 || ab.Data == IntPtr.Zero)
-                return;
+            source[ch] = ArrayPool<float>.Shared.Rent(frameCount);
+            Array.Clear(source[ch], 0, frameCount);
 
-            interleaved = ArrayPool<float>.Shared.Rent(samples);
-            Marshal.Copy(ab.Data, interleaved, 0, samples);
-            sourceChannels = interleavedChannels;
-        }
-        else
-        {
-            sourceChannels = audioBuffers.Count;
-            planar = new float[sourceChannels][];
-            for (var ch = 0; ch < sourceChannels; ch++)
+            var channelPtr = Marshal.ReadIntPtr(sourcePointers, ch * IntPtr.Size);
+            if (channelPtr != IntPtr.Zero)
             {
-                var ab = audioBuffers[ch];
-                var samples = (int)Math.Min(ab.DataByteSize / sizeof(float), frameCount);
-                planar[ch] = ArrayPool<float>.Shared.Rent(frameCount);
-                Array.Clear(planar[ch], 0, frameCount);
-
-                if (samples > 0 && ab.Data != IntPtr.Zero)
-                    Marshal.Copy(ab.Data, planar[ch], 0, samples);
+                Marshal.Copy(channelPtr, source[ch], 0, frameCount);
             }
         }
 
@@ -252,57 +234,43 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
             var output = outputBuffer.AsSpan(0, outputLength);
             output.Clear();
 
-            if (interleaved != null)
+            for (var frame = 0; frame < frameCount; frame++)
             {
-                var interleavedSamples = interleaved;
-                for (var frame = 0; frame < frameCount; frame++)
+                if (targetChannels == 1)
                 {
-                    if (targetChannels == 1)
+                    var sum = 0f;
+                    for (var ch = 0; ch < sourceChannels; ch++)
                     {
-                        var sum = 0f;
-                        for (var ch = 0; ch < sourceChannels; ch++)
-                            sum += interleavedSamples[Math.Min(interleavedSamples.Length - 1, frame * sourceChannels + ch)];
-                        output[frame] = sum / sourceChannels;
+                        var sample = source[ch][frame];
+                        if (!float.IsFinite(sample))
+                            sample = 0f;
+
+                        sum += sample;
                     }
-                    else if (sourceChannels == 1)
-                    {
-                        var sample = interleavedSamples[Math.Min(interleavedSamples.Length - 1, frame)];
-                        for (var ch = 0; ch < targetChannels; ch++)
-                            output[frame * targetChannels + ch] = sample;
-                    }
-                    else
-                    {
-                        for (var ch = 0; ch < targetChannels; ch++)
-                        {
-                            var sourceIndex = Math.Min(sourceChannels - 1, ch);
-                            output[frame * targetChannels + ch] =
-                                interleavedSamples[Math.Min(interleavedSamples.Length - 1, frame * sourceChannels + sourceIndex)];
-                        }
-                    }
+
+                    output[frame] = sum / sourceChannels;
+                    continue;
                 }
-            }
-            else if (planar != null)
-            {
-                for (var frame = 0; frame < frameCount; frame++)
+
+                if (sourceChannels == 1)
                 {
-                    if (targetChannels == 1)
-                    {
-                        var sum = 0f;
-                        for (var ch = 0; ch < sourceChannels; ch++)
-                            sum += planar[ch][frame];
-                        output[frame] = sum / sourceChannels;
-                    }
-                    else if (sourceChannels == 1)
-                    {
-                        var sample = planar[0][frame];
-                        for (var ch = 0; ch < targetChannels; ch++)
-                            output[frame * targetChannels + ch] = sample;
-                    }
-                    else
-                    {
-                        for (var ch = 0; ch < targetChannels; ch++)
-                            output[frame * targetChannels + ch] = planar[Math.Min(sourceChannels - 1, ch)][frame];
-                    }
+                    var sample = source[0][frame];
+                    if (!float.IsFinite(sample))
+                        sample = 0f;
+
+                    for (var ch = 0; ch < targetChannels; ch++)
+                        output[frame * targetChannels + ch] = sample;
+                    continue;
+                }
+
+                for (var ch = 0; ch < targetChannels; ch++)
+                {
+                    var sourceIndex = Math.Min(sourceChannels - 1, ch);
+                    var sample = source[sourceIndex][frame];
+                    if (!float.IsFinite(sample))
+                        sample = 0f;
+
+                    output[frame * targetChannels + ch] = sample;
                 }
             }
 
@@ -310,14 +278,8 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
         }
         finally
         {
-            if (interleaved != null)
-                ArrayPool<float>.Shared.Return(interleaved);
-            if (planar != null)
-            {
-                foreach (var channel in planar)
-                    ArrayPool<float>.Shared.Return(channel);
-            }
-
+            foreach (var channel in source)
+                ArrayPool<float>.Shared.Return(channel);
             ArrayPool<float>.Shared.Return(outputBuffer);
         }
     }
@@ -371,6 +333,9 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
 
         session.SetPreferredSampleRate(Format.SampleRate, out error);
         ThrowIfError(error, "Failed to set preferred sample rate.");
+
+        session.SetPreferredIOBufferDuration(Constants.FrameSizeMs / 1000d, out error);
+        ThrowIfError(error, "Failed to set preferred I/O buffer duration.");
 
         session.SetActive(true, out error);
         ThrowIfError(error, "Failed to activate iOS audio session.");

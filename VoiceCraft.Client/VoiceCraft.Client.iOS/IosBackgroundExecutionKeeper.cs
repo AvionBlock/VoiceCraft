@@ -10,7 +10,6 @@ namespace VoiceCraft.Client.iOS;
 internal sealed class IosBackgroundExecutionKeeper : IDisposable
 {
     private readonly object _lock = new();
-    private AVAudioEngine? _engine;
     private NSObject? _didEnterBackgroundObserver;
     private NSObject? _willEnterForegroundObserver;
     private nint _backgroundTaskId = UIApplication.BackgroundTaskInvalid;
@@ -24,7 +23,6 @@ internal sealed class IosBackgroundExecutionKeeper : IDisposable
                 return;
 
             ConfigureAudioSession();
-            StartAudioEngine();
             RegisterLifecycleObservers();
             BeginBackgroundTask();
             _isStarted = true;
@@ -39,7 +37,6 @@ internal sealed class IosBackgroundExecutionKeeper : IDisposable
                 return;
 
             UnregisterLifecycleObservers();
-            StopAudioEngine();
             EndBackgroundTask();
             DeactivateAudioSession();
             _isStarted = false;
@@ -77,45 +74,6 @@ internal sealed class IosBackgroundExecutionKeeper : IDisposable
 
         session.SetActive(true, out error);
         ThrowIfError(error);
-    }
-
-    private void StartAudioEngine()
-    {
-        _engine = new AVAudioEngine();
-        var input = _engine.InputNode;
-        var inputFormat = input.GetBusOutputFormat(0);
-
-        // Tap keeps the input pipeline active while app is backgrounded.
-        input.InstallTapOnBus(0, 1024, inputFormat, static (_, _) => { });
-
-        _engine.Prepare();
-        NSError? error;
-        var started = _engine.StartAndReturnError(out error);
-        if (!started || error != null)
-        {
-            StopAudioEngine();
-            ThrowIfError(error);
-            throw new InvalidOperationException("Failed to start iOS background audio engine.");
-        }
-    }
-
-    private void StopAudioEngine()
-    {
-        if (_engine == null)
-            return;
-
-        try
-        {
-            _engine.InputNode.RemoveTapOnBus(0);
-        }
-        catch
-        {
-            // Do nothing.
-        }
-
-        _engine.Stop();
-        _engine.Dispose();
-        _engine = null;
     }
 
     private static void DeactivateAudioSession()
