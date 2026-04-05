@@ -223,12 +223,6 @@ public class App : Application
         ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
 
         //Audio Registry
-        ServiceCollection.AddSingleton<AudioEngine>(_ =>
-        {
-            if (OperatingSystem.IsIOS())
-                return new IosFallbackAudioEngine();
-            return new MiniAudioEngine();
-        });
         ServiceCollection.AddSingleton<AudioService>(x =>
             new AudioService(
                 x.GetRequiredService<AudioEngine>(),

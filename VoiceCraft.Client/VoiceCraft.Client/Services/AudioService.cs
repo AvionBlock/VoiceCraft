@@ -8,7 +8,6 @@ using SoundFlow.Backends.MiniAudio.Devices;
 using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
-using VoiceCraft.Client.Audio;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services;
@@ -28,7 +27,7 @@ public class AudioService
         _engine = engine;
         _registeredAudioPreprocessors.TryAdd(Guid.Empty, new EmptyRegisteredAudioPreprocessor());
         _registeredAudioClippers.TryAdd(Guid.Empty, new EmptyRegisteredAudioClipper());
-        
+
         foreach (var audioPreprocessor in registeredAudioPreprocessors)
             _registeredAudioPreprocessors.TryAdd(audioPreprocessor.Id, audioPreprocessor);
         foreach (var registeredClipper in registeredClippers)
@@ -72,42 +71,23 @@ public class AudioService
             Channels = channels,
             Format = SampleFormat.F32
         };
-        DeviceConfig config;
-        if (OperatingSystem.IsIOS() && _engine is IosFallbackAudioEngine)
+        var config = new MiniAudioDeviceConfig()
         {
-            config = new IosFallbackDeviceConfig
+            PeriodSizeInFrames = frameSize,
+            AAudio = new AAudioSettings()
             {
-                PeriodSizeInFrames = frameSize
-            };
-        }
-        else
-        {
-            var miniAudioConfig = new MiniAudioDeviceConfig()
+                Usage = AAudioUsage.VoiceCommunication,
+                InputPreset = AAudioInputPreset.VoiceCommunication
+            },
+            OpenSL = new OpenSlSettings()
             {
-                PeriodSizeInFrames = frameSize
-            };
-            config = miniAudioConfig;
-
-            if (OperatingSystem.IsAndroid())
+                RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
+            },
+            CoreAudio = new CoreAudioSettings()
             {
-                miniAudioConfig.AAudio = new AAudioSettings()
-                {
-                    Usage = AAudioUsage.VoiceCommunication,
-                    InputPreset = AAudioInputPreset.VoiceCommunication
-                };
-                miniAudioConfig.OpenSL = new OpenSlSettings()
-                {
-                    RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
-                };
+                AllowNominalSampleRateChange = true
             }
-            else if (OperatingSystem.IsIOS())
-            {
-                miniAudioConfig.CoreAudio = new CoreAudioSettings()
-                {
-                    AllowNominalSampleRateChange = true
-                };
-            }
-        }
+        };
 
         var device = _engine.CaptureDevices.FirstOrDefault(x => x.Name == inputDevice);
         if (device.Id == nint.Zero)
@@ -129,42 +109,23 @@ public class AudioService
             Channels = channels,
             Format = SampleFormat.F32
         };
-        DeviceConfig config;
-        if (OperatingSystem.IsIOS() && _engine is IosFallbackAudioEngine)
+        var config = new MiniAudioDeviceConfig()
         {
-            config = new IosFallbackDeviceConfig
+            PeriodSizeInFrames = frameSize,
+            AAudio = new AAudioSettings()
             {
-                PeriodSizeInFrames = frameSize
-            };
-        }
-        else
-        {
-            var miniAudioConfig = new MiniAudioDeviceConfig()
+                ContentType = AAudioContentType.Music,
+                Usage = AAudioUsage.Media
+            },
+            OpenSL = new OpenSlSettings()
             {
-                PeriodSizeInFrames = frameSize
-            };
-            config = miniAudioConfig;
-
-            if (OperatingSystem.IsAndroid())
+                StreamType = OpenSlStreamType.Media
+            },
+            CoreAudio = new CoreAudioSettings()
             {
-                miniAudioConfig.AAudio = new AAudioSettings()
-                {
-                    ContentType = AAudioContentType.Music,
-                    Usage = AAudioUsage.Media
-                };
-                miniAudioConfig.OpenSL = new OpenSlSettings()
-                {
-                    StreamType = OpenSlStreamType.Media
-                };
+                AllowNominalSampleRateChange = true
             }
-            else if (OperatingSystem.IsIOS())
-            {
-                miniAudioConfig.CoreAudio = new CoreAudioSettings()
-                {
-                    AllowNominalSampleRateChange = true
-                };
-            }
-        }
+        };
 
         var device = _engine.PlaybackDevices.FirstOrDefault(x => x.Name == outputDevice);
         if (device.Id == nint.Zero)
@@ -172,10 +133,10 @@ public class AudioService
 
         return _engine.InitializePlaybackDevice(device, format, config);
     }
-    
+
     private class EmptyRegisteredAudioPreprocessor()
         : RegisteredAudioPreprocessor(Guid.Empty, "None", () => throw new NotSupportedException(), true, true, true);
-    
+
     private class EmptyRegisteredAudioClipper()
         : RegisteredAudioClipper(Guid.Empty, "None", () => throw new NotSupportedException());
 }

@@ -6,6 +6,8 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using UIKit;
+using SoundFlow.Abstracts;
+using VoiceCraft.Client.iOS.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
@@ -25,20 +27,13 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
         LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
+        App.ServiceCollection.AddSingleton<AudioEngine, IosMiniAudioEngine>();
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
             new NativeBackgroundService(
                 x.GetRequiredService<PermissionsService>(),
                 x.GetRequiredService));
-        App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
-            new RegisteredAudioPreprocessor(
-                Constants.NativeVoiceProcessingPreprocessorGuid,
-                "iOS Voice Processing",
-                () => new IosAudioPreprocessor(),
-                true,
-                true,
-                true));
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new LiteNetVoiceCraftClient(
                 x.GetRequiredService<IAudioEncoder>(),

@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
+using SoundFlow.Abstracts;
+using SoundFlow.Backends.MiniAudio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Windows.Audio;
 using VoiceCraft.Client.Windows.Permissions;
@@ -25,6 +27,7 @@ internal sealed class Program
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         try
         {
+            App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<IBackgroundService>(x =>

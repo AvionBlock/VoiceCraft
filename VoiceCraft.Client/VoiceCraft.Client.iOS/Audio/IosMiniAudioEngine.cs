@@ -3,22 +3,23 @@ using System.Buffers;
 using System.Threading;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
+using SoundFlow.Backends.MiniAudio.Devices;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 
-namespace VoiceCraft.Client.Audio;
+namespace VoiceCraft.Client.iOS.Audio;
 
-public sealed class IosFallbackAudioEngine : AudioEngine
+public sealed class IosMiniAudioEngine : AudioEngine
 {
     private static readonly NativeDataFormat[] DefaultFormats =
     [
-        new NativeDataFormat { Format = SampleFormat.F32, Channels = 1, SampleRate = 48_000, Flags = 0 },
-        new NativeDataFormat { Format = SampleFormat.F32, Channels = 2, SampleRate = 48_000, Flags = 0 }
+        new() { Format = SampleFormat.F32, Channels = 1, SampleRate = 48_000, Flags = 0 },
+        new() { Format = SampleFormat.F32, Channels = 2, SampleRate = 48_000, Flags = 0 }
     ];
 
     private static readonly DeviceInfo DefaultPlaybackDevice = new()
     {
-        Id = (nint)1,
+        Id = 1,
         Name = "iOS Default Output",
         IsDefault = true,
         SupportedDataFormats = DefaultFormats
@@ -26,13 +27,13 @@ public sealed class IosFallbackAudioEngine : AudioEngine
 
     private static readonly DeviceInfo DefaultCaptureDevice = new()
     {
-        Id = (nint)2,
+        Id = 2,
         Name = "iOS Default Input",
         IsDefault = true,
         SupportedDataFormats = DefaultFormats
     };
 
-    public IosFallbackAudioEngine()
+    public IosMiniAudioEngine()
     {
         UpdateAudioDevicesInfo();
     }
@@ -43,12 +44,12 @@ public sealed class IosFallbackAudioEngine : AudioEngine
 
     public override AudioPlaybackDevice InitializePlaybackDevice(DeviceInfo? deviceInfo, AudioFormat format, DeviceConfig? config = null)
     {
-        return new IosFallbackAudioPlaybackDevice(this, deviceInfo ?? DefaultPlaybackDevice, format, config ?? new IosFallbackDeviceConfig());
+        return new IosFallbackAudioPlaybackDevice(this, deviceInfo ?? DefaultPlaybackDevice, format, config ?? new MiniAudioDeviceConfig());
     }
 
     public override AudioCaptureDevice InitializeCaptureDevice(DeviceInfo? deviceInfo, AudioFormat format, DeviceConfig? config = null)
     {
-        return new IosFallbackAudioCaptureDevice(this, deviceInfo ?? DefaultCaptureDevice, format, config ?? new IosFallbackDeviceConfig());
+        return new IosFallbackAudioCaptureDevice(this, deviceInfo ?? DefaultCaptureDevice, format, config ?? new MiniAudioDeviceConfig());
     }
 
     public override FullDuplexDevice InitializeFullDuplexDevice(DeviceInfo? playbackDeviceInfo, DeviceInfo? captureDeviceInfo, AudioFormat format, DeviceConfig? config = null)
@@ -97,11 +98,6 @@ public sealed class IosFallbackAudioEngine : AudioEngine
     }
 }
 
-public sealed class IosFallbackDeviceConfig : DeviceConfig
-{
-    public uint PeriodSizeInFrames { get; init; } = 960;
-}
-
 internal sealed class IosFallbackAudioCaptureDevice : AudioCaptureDevice
 {
     private Timer? _timer;
@@ -115,8 +111,8 @@ internal sealed class IosFallbackAudioCaptureDevice : AudioCaptureDevice
         Info = deviceInfo;
 
         var channels = Math.Max(1, format.Channels);
-        var frames = config is IosFallbackDeviceConfig fallback
-            ? fallback.PeriodSizeInFrames
+        var frames = config is MiniAudioDeviceConfig deviceConfig
+            ? deviceConfig.PeriodSizeInFrames
             : 960u;
         _frameSamples = (int)(Math.Max(1u, frames) * (uint)channels);
         _periodMs = Math.Max(5, (int)Math.Round((double)Math.Max(1u, frames) / Math.Max(1, format.SampleRate) * 1000d));
