@@ -9,7 +9,6 @@ using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using SoundFlow.Abstracts;
-using SoundFlow.Backends.MiniAudio;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
