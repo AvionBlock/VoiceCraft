@@ -15,7 +15,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Windows WorkLoads
         run: dotnet workload restore
@@ -39,7 +39,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Windows WorkLoads
         run: dotnet workload restore
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Windows WorkLoads
         run: dotnet workload restore
@@ -87,7 +87,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Linux WorkLoads
         run: dotnet workload restore
@@ -111,7 +111,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Linux WorkLoads
         run: dotnet workload restore
@@ -135,7 +135,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Linux WorkLoads
         run: dotnet workload restore
@@ -159,7 +159,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Android WorkLoads
         run: dotnet workload restore
@@ -186,7 +186,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.Android WorkLoads
         run: dotnet workload restore
@@ -214,7 +214,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Client.iOS WorkLoads
         run: dotnet workload restore
@@ -238,7 +238,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
@@ -262,7 +262,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
@@ -286,7 +286,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
@@ -310,7 +310,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
@@ -334,7 +334,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
@@ -358,7 +358,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.302"
+          dotnet-version: "9.0.312"
 
       - name: Install VoiceCraft.Server WorkLoads
         run: dotnet workload restore
