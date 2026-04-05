@@ -226,7 +226,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.iOS.arm64
-          path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/*.ipa
+          path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
 
   Build_Server_Windows_x64:
     runs-on: ubuntu-latest
