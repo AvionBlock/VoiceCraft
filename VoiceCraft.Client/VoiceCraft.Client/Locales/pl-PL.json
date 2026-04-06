@@ -105,7 +105,7 @@
   "CrashLogs": {
     "Title": "Logi awarii",
     "Notification": {
-      "Badge": "CrashLogs",
+      "Badge": "Logi awarii",
       "Cleared": "Pomyślnie wyczyszczono wszystkie logi.",
       "Copied": "Logi awarii skopiowano do schowka.",
       "Empty": "Brak logów awarii do skopiowania."
@@ -141,7 +141,7 @@
       "Title": "Informacje o serwerze",
       "Status": {
         "Latency": "Opóźnienie: {0}",
-        "Motd": "Motd: {0}",
+        "Motd": "MOTD: {0}",
         "PositioningType": "Typ pozycjonowania: {0}",
         "ConnectedClients": "Połączonych klientów: {0}",
         "Version": "Wersja: {0}",

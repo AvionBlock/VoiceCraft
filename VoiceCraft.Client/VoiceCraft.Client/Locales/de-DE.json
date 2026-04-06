@@ -105,7 +105,7 @@
   "CrashLogs": {
     "Title": "Absturzprotokolle",
     "Notification": {
-      "Badge": "CrashLogs",
+      "Badge": "Absturzprotokolle",
       "Cleared": "Alle Protokolle wurden erfolgreich gelöscht.",
       "Copied": "Absturzprotokolle wurden in die Zwischenablage kopiert.",
       "Empty": "Keine Absturzprotokolle zum Kopieren vorhanden."
@@ -141,7 +141,7 @@
       "Title": "Serverinformationen",
       "Status": {
         "Latency": "Latenz: {0}",
-        "Motd": "Motd: {0}",
+        "Motd": "MOTD: {0}",
         "PositioningType": "Positionierungstyp: {0}",
         "ConnectedClients": "Verbundene Clients: {0}",
         "Version": "Version: {0}",
@@ -206,7 +206,7 @@
     "Clippers": {
       "None": "Keine",
       "Hard": "Harter Clipper",
-      "TanhSoft": "Tanh Soft Clipper"
+      "TanhSoft": "Weicher Tanh-Clipper"
     },
     "AudioDeviceInfo": {
       "Default": "{0} - Standard"

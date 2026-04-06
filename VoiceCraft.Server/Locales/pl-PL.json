@@ -1,246 +1,246 @@
 {
   "Startup": {
-    "Starting": "Server starting...",
-    "Success": "Server successfully started!",
-    "Failed": "An error occurred while trying to startup the server!",
+    "Starting": "Uruchamianie serwera...",
+    "Success": "Serwer uruchomiono pomyslnie!",
+    "Failed": "Wystapil blad podczas uruchamiania serwera!",
     "Commands": {
-      "Registering": "Registering commands...",
-      "Success": "Successfully registered {0} commands!"
+      "Registering": "Rejestrowanie polecen...",
+      "Success": "Pomyslnie zarejestrowano {0} polecen!"
     }
   },
   "Shutdown": {
-    "Starting": "Shutting down server...",
-    "StartingIn": "Shutting down server in {0}ms...",
-    "Success": "Successfully shutdown server!"
+    "Starting": "Wylaczanie serwera...",
+    "StartingIn": "Serwer zostanie wylaczony za {0}ms...",
+    "Success": "Serwer zostal pomyslnie wylaczony!"
   },
   "ServerProperties": {
-    "Loading": "Loading ServerProperties.json file at {0}",
-    "Success": "Successfully loaded server properties!",
-    "Failed": "Failed to load server properties! Falling back to default properties! Error: {0}",
-    "NotFound": "ServerProperties.json was not found in the current and/or sub directories! Generating file...",
-    "FailNotFound": "ServerProperties.json was not found in the current and/or sub directories!",
+    "Loading": "Ladowanie pliku ServerProperties.json z {0}",
+    "Success": "Wlasciwosci serwera zaladowano pomyslnie!",
+    "Failed": "Nie udalo sie zaladowac wlasciwosci serwera! Uzywane sa wartosci domyslne! Blad: {0}",
+    "NotFound": "Nie znaleziono pliku ServerProperties.json w biezacym katalogu ani podkatalogach! Tworzenie pliku...",
+    "FailNotFound": "Nie znaleziono pliku ServerProperties.json w biezacym katalogu ani podkatalogach!",
     "Generating": {
-      "Generating": "Generating ServerProperties.json file at {0}",
-      "Success": "Successfully generated ServerProperties.json file at {0}",
-      "Failed": "Failed to generate ServerProperties.json file at {0}! Error: {1}"
+      "Generating": "Tworzenie pliku ServerProperties.json w {0}",
+      "Success": "Pomyslnie utworzono plik ServerProperties.json w {0}",
+      "Failed": "Nie udalo sie utworzyc pliku ServerProperties.json w {0}! Blad: {1}"
     },
     "Exceptions": {
-      "ParseJson": "Failed to parse JSON data from the loaded file!"
+      "ParseJson": "Nie udalo sie odczytac danych JSON z zaladowanego pliku!"
     }
   },
   "Title": {
-    "Starting": "Starting...",
-    "Running": "Running!"
+    "Starting": "Uruchamianie...",
+    "Running": "Dziala!"
   },
   "Events": {
     "Client": {
-      "Connected": "Client Connected! UserGuid: {0}",
-      "Disconnected": "Client Disconnected! UserGuid: {0}"
+      "Connected": "Klient polaczony! UserGuid: {0}",
+      "Disconnected": "Klient rozlaczony! UserGuid: {0}"
     },
     "McApi": {
       "Client": {
-        "Connected": "McApi Client Connected! Token: {0}",
-        "Disconnected": "McApi Client Disconnected! Token: {0}"
+        "Connected": "Klient McApi polaczony! Token: {0}",
+        "Disconnected": "Klient McApi rozlaczony! Token: {0}"
       }
     }
   },
   "VoiceCraftServer": {
-    "Starting": "Starting VoiceCraft server...",
-    "Success": "Successfully started the VoiceCraft server!",
-    "Stopping": "Stopping VoiceCraft server...",
-    "Stopped": "Successfully stopped the VoiceCraft server!",
+    "Starting": "Uruchamianie serwera VoiceCraft...",
+    "Success": "Serwer VoiceCraft uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera VoiceCraft...",
+    "Stopped": "Serwer VoiceCraft zostal pomyslnie zatrzymany!",
     "Exceptions": {
-      "Failed": "Failed to start VoiceCraft Server! Please check if another process is using the same port!"
+      "Failed": "Nie udalo sie uruchomic serwera VoiceCraft! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
     }
   },
   "McWssServer": {
-    "Starting": "Starting McWss server...",
-    "Success": "Successfully started the McWss server!",
-    "Stopping": "Stopping McWss server...",
-    "Stopped": "Successfully stopped the McWss server!",
+    "Starting": "Uruchamianie serwera McWss...",
+    "Success": "Serwer McWss uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera McWss...",
+    "Stopped": "Serwer McWss zostal pomyslnie zatrzymany!",
     "Exceptions": {
-      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+      "Failed": "Nie udalo sie uruchomic serwera McWss! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
     }
   },
   "McHttpServer": {
-    "Starting": "Starting McHttp server...",
-    "Success": "Successfully started the McHttp server!",
-    "Stopping": "Stopping McHttp server...",
-    "Stopped": "Successfully stopped the McHttp server!",
+    "Starting": "Uruchamianie serwera McHttp...",
+    "Success": "Serwer McHttp uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera McHttp...",
+    "Stopped": "Serwer McHttp zostal pomyslnie zatrzymany!",
     "Exceptions": {
-      "Failed": "Failed to start McHttp Server! Please check if another process is using the same port!"
+      "Failed": "Nie udalo sie uruchomic serwera McHttp! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
     }
   },
   "Tables": {
     "ServerSetup": {
-      "Server": "Server",
+      "Server": "Serwer",
       "Port": "Port",
-      "Protocol": "Protocol"
+      "Protocol": "Protokol"
     },
     "ListCommandEntities": {
-      "Id": "Id",
-      "Name": "Name",
-      "Position": "Position",
-      "Rotation": "Rotation",
-      "WorldId": "WorldId"
+      "Id": "ID",
+      "Name": "Nazwa",
+      "Position": "Pozycja",
+      "Rotation": "Rotacja",
+      "WorldId": "ID swiata"
     }
   },
   "Commands": {
-    "Exception": "An error occurred while trying to execute the command {0}!",
+    "Exception": "Wystapil blad podczas wykonywania polecenia {0}!",
     "Exceptions": {
-      "EntityNotFound": "Could not find entity with the id: {0}",
-      "EntityNotAClient": "Entity with id {0} is not a client entity!"
+      "EntityNotFound": "Nie znaleziono bytu o ID: {0}",
+      "EntityNotAClient": "Byt o ID {0} nie jest bytem klienta!"
     },
     "RootCommand": {
-      "Description": "Executes a VoiceCraft command."
+      "Description": "Wykonuje polecenie VoiceCraft."
     },
     "List": {
       "Name": "list",
-      "Description": "Lists entities.",
-      "Showing": "Showing {0} entities.",
+      "Description": "Wyswietla byty.",
+      "Showing": "Wyswietlanie {0} bytow.",
       "Options": {
         "ClientsOnly": {
           "Name": "clientsOnly",
-          "Description": "Shows networked client entities only."
+          "Description": "Pokazuje tylko sieciowe byty klientow."
         },
         "Limit": {
           "Name": "limit",
-          "Description": "Limits the number of shown entities."
+          "Description": "Ogranicza liczbe wyswietlanych bytow."
         }
       },
       "Exceptions": {
-        "LimitArgument": "Limit cannot be less than zero!"
+        "LimitArgument": "Limit nie moze byc mniejszy od zera!"
       }
     },
     "SetTitle": {
       "Name": "settitle",
-      "Description": "Sets a title for a client entity's application.",
+      "Description": "Ustawia tytul aplikacji bytu klienta.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The client's entity id."
+          "Description": "ID bytu klienta."
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set for the title."
+          "Description": "Wartosc, ktora ma zostac ustawiona jako tytul."
         }
       }
     },
     "SetDescription": {
       "Name": "setdescription",
-      "Description": "Sets a description for a client entity's application.",
+      "Description": "Ustawia opis aplikacji bytu klienta.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The client's entity id."
+          "Description": "ID bytu klienta."
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set for the description."
+          "Description": "Wartosc, ktora ma zostac ustawiona jako opis."
         }
       }
     },
     "SetPosition": {
       "Name": "setposition",
-      "Description": "Sets a position for an entity.",
+      "Description": "Ustawia pozycje bytu.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         },
         "X": {
           "Name": "x",
-          "Description": "The X position to set."
+          "Description": "Wartosc pozycji X do ustawienia."
         },
         "Y": {
           "Name": "y",
-          "Description": "The Y position to set."
+          "Description": "Wartosc pozycji Y do ustawienia."
         },
         "Z": {
           "Name": "z",
-          "Description": "The Z position to set."
+          "Description": "Wartosc pozycji Z do ustawienia."
         }
       }
     },
     "SetWorldId": {
       "Name": "setworldid",
-      "Description": "Sets a WorldId for an entity.",
+      "Description": "Ustawia WorldId dla bytu.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set the entity's WorldId."
+          "Description": "Wartosc, ktora ma zostac ustawiona jako WorldId bytu."
         }
       }
     },
     "SetName": {
       "Name": "setname",
-      "Description": "Sets a name for an entity.",
+      "Description": "Ustawia nazwe bytu.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set the entity's Name."
+          "Description": "Wartosc, ktora ma zostac ustawiona jako nazwa bytu."
         }
       }
     },
     "Stop": {
       "Name": "stop",
-      "Description": "Stops the server."
+      "Description": "Zatrzymuje serwer."
     },
     "Kick": {
       "Name": "kick",
-      "Description": "Kicks a client.",
+      "Description": "Wyrzuca klienta.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         }
       }
     },
     "Mute": {
       "Name": "mute",
-      "Description": "Mutes an entity/client.",
+      "Description": "Wycisza byt lub klienta.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         }
       }
     },
     "Unmute": {
       "Name": "unmute",
-      "Description": "Unmutes an entity/client.",
+      "Description": "Odcisza byt lub klienta.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         }
       }
     },
     "Deafen": {
       "Name": "deafen",
-      "Description": "Deafens an entity/client.",
+      "Description": "Oglusza byt lub klienta.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         }
       }
     },
     "Undeafen": {
       "Name": "undeafen",
-      "Description": "Undeafens an entity/client.",
+      "Description": "Przywraca slyszenie bytowi lub klientowi.",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "ID bytu."
         }
       }
     }

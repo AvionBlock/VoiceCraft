@@ -192,7 +192,7 @@
     },
     "Stop": {
       "Name": "stop",
-      "Description": "Stops the server."
+      "Description": "停止服务器。"
     },
     "Kick": {
       "Name": "kick",

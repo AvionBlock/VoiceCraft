@@ -3,96 +3,96 @@
     "Title": "Servers",
     "Notification": {
       "Badge": "Servers",
-      "Removed": "{0} has been removed."
+      "Removed": "{0} is verwijderd."
     }
   },
   "Settings": {
-    "Title": "Settings",
+    "Title": "Instellingen",
     "General": {
-      "Title": "General Settings",
+      "Title": "Algemene instellingen",
       "Language": "Taal",
-      "NotificationDismiss": "Meldingen afwijzen(ms)",
-      "DisableNotifications": "Notificaties uitschakelen",
+      "NotificationDismiss": "Melding sluiten (ms)",
+      "DisableNotifications": "Meldingen uitschakelen",
       "HideServerAddresses": "Serveradressen verbergen"
     },
     "Appearance": {
-      "Title": "Appearance",
+      "Title": "Uiterlijk",
       "Theme": "Thema",
       "BackgroundImage": "Achtergrondafbeelding"
     },
     "Input": {
-      "Title": "Input Settings",
+      "Title": "Invoerinstellingen",
       "InputDevices": "Invoerapparaten",
       "InputVolume": "Invoervolume",
-      "MicrophoneSensitivity": "Microfoon gevoeligheid",
-      "Denoisers": "Ruis-onderdrukkers",
+      "MicrophoneSensitivity": "Microfoongevoeligheid",
+      "Denoisers": "Ruisonderdrukkers",
       "AutomaticGainControllers": "Automatische versterkingsregelaars",
       "EchoCancelers": "Echo-onderdrukkers",
       "MicrophoneTest": {
-        "MicrophoneTest": "Microfoon Test",
+        "MicrophoneTest": "Microfoontest",
         "Test": "Test"
       },
       "Notification": {
-        "Badge": "Input Settings"
+        "Badge": "Invoerinstellingen"
       },
       "Validation": {
-        "InputVolume": "Input volume must be between 0 and 2.",
-        "MicrophoneSensitivity": "Microphone sensitivity must be between 0 and 2."
+        "InputVolume": "Het invoervolume moet tussen 0 en 2 liggen.",
+        "MicrophoneSensitivity": "De microfoongevoeligheid moet tussen 0 en 2 liggen."
       },
       "Permissions": {
-        "MicrophoneNotGranted": "Microphone access not granted!"
+        "MicrophoneNotGranted": "Toegang tot de microfoon is niet verleend!"
       }
     },
     "Output": {
-      "Title": "Output Settings",
+      "Title": "Uitvoerinstellingen",
       "OutputDevices": "Uitvoerapparaten",
       "OutputVolume": "Uitvoervolume",
-      "AudioClippers": "Audio Clippers",
+      "AudioClippers": "Audioclippers",
       "TestOutput": "Uitvoer testen",
       "Notification": {
-        "Badge": "Output Settings"
+        "Badge": "Uitvoerinstellingen"
       },
       "Validation": {
-        "OutputVolume": "Output Volume must be between 0 and 2."
+        "OutputVolume": "Het uitvoervolume moet tussen 0 en 2 liggen."
       }
     },
     "Network": {
-      "Title": "Network Settings",
+      "Title": "Netwerkinstellingen",
       "PositioningType": "Positioneringstype",
-      "McWssListenIp": "MCWSS Luister IP-adres",
-      "McWssHostPort": "MCWSS Host Poort"
+      "McWssListenIp": "MCWSS-luister-IP-adres",
+      "McWssHostPort": "MCWSS-hostpoort"
     },
     "HotKey": {
-      "Title": "HotKey",
+      "Title": "Sneltoetsen",
       "Actions": {
         "Mute": "Dempen",
-        "Deafen": "Onhoorbaar maken"
+        "Deafen": "Doof maken"
       }
     },
     "Advanced": {
-      "Title": "Advanced Settings",
-      "TriggerGc": "Garbage Collector Triggeren",
-      "Crash": "Crash Testen",
+      "Title": "Geavanceerde instellingen",
+      "TriggerGc": "Garbagecollector uitvoeren",
+      "Crash": "Testcrash",
       "Notification": {
         "GC": {
           "Badge": "GC",
-          "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
+          "Triggered": "Garbage Collection uitgevoerd. Vrijgemaakt geheugen: {0}mb."
         }
       }
     },
     "Servers": {
       "Validation": {
-        "Name": "Server name cannot be empty or whitespace!",
-        "Ip": "Server IP cannot be empty or whitespace!",
-        "Port": "Server port must be between 1 and 65535!",
-        "NameLimit": "Server name cannot be longer than {0} characters!",
-        "IpLimit": "Server IP cannot be longer than {0} characters!"
+        "Name": "Servernaam mag niet leeg zijn of alleen uit spaties bestaan!",
+        "Ip": "Server-IP mag niet leeg zijn of alleen uit spaties bestaan!",
+        "Port": "Serverpoort moet tussen 1 en 65535 liggen!",
+        "NameLimit": "Servernaam mag niet langer zijn dan {0} tekens!",
+        "IpLimit": "Server-IP mag niet langer zijn dan {0} tekens!"
       }
     }
   },
   "Credits": {
     "Title": "Credits",
-    "AppVersion": "App Versie: {0}",
+    "AppVersion": "App-versie: {0}",
     "Version": "Versie: {0}",
     "Codec": "Codec: {0}",
     "Contributors": "Bijdragers",
@@ -103,45 +103,45 @@
     }
   },
   "CrashLogs": {
-    "Title": "Crash Logs",
+    "Title": "Crashlogboeken",
     "Notification": {
-      "Badge": "CrashLogs",
-      "Cleared": "Successfully cleared all logs.",
-      "Copied": "Crash logs copied to clipboard.",
-      "Empty": "No crash logs to copy."
+      "Badge": "Crashlogboeken",
+      "Cleared": "Alle logboeken zijn succesvol gewist.",
+      "Copied": "Crashlogboeken zijn naar het klembord gekopieerd.",
+      "Empty": "Geen crashlogboeken om te kopieren."
     }
   },
   "AddServer": {
-    "Title": "Add Server",
+    "Title": "Server toevoegen",
     "Name": "Naam",
     "IP": "IP",
     "Port": "Poort",
     "Notification": {
-      "Badge": "Add Server",
-      "Added": "{0} has been added."
+      "Badge": "Server toevoegen",
+      "Added": "{0} is toegevoegd."
     }
   },
   "EditServer": {
-    "Title": "Edit Server",
+    "Title": "Server bewerken",
     "Name": "Naam",
     "IP": "IP",
     "Port": "Poort",
     "Notification": {
-      "Badge": "Edit Server",
-      "Edited": "{0} has been edited."
+      "Badge": "Server bewerken",
+      "Edited": "{0} is bewerkt."
     }
   },
   "SelectedServer": {
     "Address": "Adres",
-    "PingInformation": "Ping Informatie",
-    "Connect": "Verbind",
+    "PingInformation": "Pinginformatie",
+    "Connect": "Verbinden",
     "Edit": "Server bewerken",
     "Delete": "Server verwijderen",
     "ServerInfo": {
-      "Title": "Server Info",
+      "Title": "Serverinformatie",
       "Status": {
         "Latency": "Latentie: {0}",
-        "Motd": "Motd: {0}",
+        "Motd": "MOTD: {0}",
         "PositioningType": "Positioneringstype: {0}",
         "ConnectedClients": "Verbonden clients: {0}",
         "Version": "Versie: {0}",
@@ -149,22 +149,22 @@
       }
     },
     "Notification": {
-      "Badge": "Selected Server",
-      "Failed": "Failed to start VOIP process!",
-      "Removed": "{0} has been removed."
+      "Badge": "Geselecteerde server",
+      "Failed": "Het starten van het VOIP-proces is mislukt!",
+      "Removed": "{0} is verwijderd."
     }
   },
   "Voice": {
     "Modal": {
       "Volume": "Volume",
-      "Muted": "Muted"
+      "Muted": "Gedempt"
     }
   },
   "VoiceCraft": {
     "Notification": {
       "Badge": "VoiceCraft",
-      "Error": "An error occurred while trying to connect!",
-      "Disconnected": "Disconnected! Reason: {0}"
+      "Error": "Er is een fout opgetreden tijdens het verbinden!",
+      "Disconnected": "Verbinding verbroken! Reden: {0}"
     },
     "Status": {
       "Initializing": "Initialiseren...",
@@ -176,12 +176,12 @@
       "McWss": "McWss luistert op: {0}:{1}"
     },
     "DisconnectReason": {
-      "Manual": "Handmatig verbinding verbroken.",
+      "Manual": "Handmatig losgekoppeld.",
       "ServerFull": "Server is vol!",
-      "IncompatibleVersion": "Incompatibele client/server versie!",
-      "ServerSidedOnly": "Server accepteert alleen positionering aan de serverzijde!",
-      "ClientSidedOnly": "Server accepteert alleen positionering aan de clientzijde!",
-      "Kicked": "Verwijderd!",
+      "IncompatibleVersion": "Incompatibele client-/serverversie!",
+      "ServerSidedOnly": "Server accepteert alleen server-side positionering!",
+      "ClientSidedOnly": "Server accepteert alleen client-side positionering!",
+      "Kicked": "Gekickt!",
       "Shutdown": "Server afgesloten!",
       "Error": "Er is een fout opgetreden tijdens het verbinden!"
     }
@@ -189,41 +189,41 @@
   "McWss": {
     "Notification": {
       "Badge": "McWss",
-      "Connected": "McWss Connection Established: {0}",
-      "Disconnected": "McWss Connection Disconnected!",
-      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+      "Connected": "McWss-verbinding tot stand gebracht: {0}",
+      "Disconnected": "McWss-verbinding verbroken!",
+      "Failed": "Het starten van de McWss-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
     }
   },
   "PermissionsService": {
     "Notification": {
-      "Badge": "Permissions Service"
+      "Badge": "Machtigingsservice"
     }
   },
   "AudioService": {
     "Preprocessors": {
-      "Speex": "Speex Preprocessor"
+      "Speex": "Speex-voorbewerker"
     },
     "Clippers": {
-      "None": "None",
-      "Hard": "Hard Clipper",
-      "TanhSoft": "Tanh Soft Clipper"
+      "None": "Geen",
+      "Hard": "Harde clipper",
+      "TanhSoft": "Zachte Tanh-clipper"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - Default"
+      "Default": "{0} - Standaard"
     }
   },
   "ThemesService": {
     "Themes": {
-      "Default": "Default",
-      "Dark": "Dark",
-      "DarkPurple": "Dark Purple",
-      "DarkGreen": "Dark Green",
-      "Light": "Light"
+      "Default": "Standaard",
+      "Dark": "Donker",
+      "DarkPurple": "Donkerpaars",
+      "DarkGreen": "Donkergroen",
+      "Light": "Licht"
     },
     "BackgroundImages": {
-      "None": "None",
-      "DockNight": "Dock Night",
-      "DockDay": "Dock Day",
+      "None": "Geen",
+      "DockNight": "Dock nacht",
+      "DockDay": "Dock dag",
       "LethalCraft": "Lethal Craft",
       "BlockSenseSpawn": "BlockSense Spawn",
       "SineSmpBase": "SineSMP Base"
@@ -231,13 +231,13 @@
   },
   "BackgroundService": {
     "Title": "VoiceCraft",
-    "Description": "Running...",
+    "Description": "Actief...",
     "Permissions": {
-      "NotificationNotGranted": "Notifications are required to show running background processes and errors.",
-      "MicrophoneNotGranted": "Microphone access not granted!"
+      "NotificationNotGranted": "Meldingen zijn vereist om achtergrondprocessen en fouten te tonen.",
+      "MicrophoneNotGranted": "Toegang tot de microfoon is niet verleend!"
     }
   },
   "ViewLocatorService": {
-    "NotFound": "View not found: {0}"
+    "NotFound": "Weergave niet gevonden: {0}"
   }
 }
