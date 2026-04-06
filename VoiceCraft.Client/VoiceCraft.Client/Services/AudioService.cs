@@ -145,7 +145,7 @@ public class AudioService
 
 public class AudioDeviceInfo(string name, bool isDefault)
 {
-    public string DisplayName => isDefault ? Localizer.Get($"AudioService.AudioDeviceInfo.Default:{name}") : name;
+    public string DisplayName => IsDefault ? Localizer.Get($"AudioService.AudioDeviceInfo.Default:{Name}") : Name;
     public string Name { get; } = name;
     public bool IsDefault { get; } = isDefault;
 }
