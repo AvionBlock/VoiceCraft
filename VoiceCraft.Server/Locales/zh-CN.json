@@ -190,6 +190,10 @@
         }
       }
     },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Stops the server."
+    },
     "Kick": {
       "Name": "kick",
       "Description": "踢出客户端.",

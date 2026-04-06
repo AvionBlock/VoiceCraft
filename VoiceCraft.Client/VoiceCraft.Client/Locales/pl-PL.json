@@ -1,0 +1,243 @@
+{
+  "Servers": {
+    "Title": "Serwery",
+    "Notification": {
+      "Badge": "Serwery",
+      "Removed": "{0} został usunięty."
+    }
+  },
+  "Settings": {
+    "Title": "Ustawienia",
+    "General": {
+      "Title": "Ustawienia ogólne",
+      "Language": "Język",
+      "NotificationDismiss": "Zamykanie powiadomienia (ms)",
+      "DisableNotifications": "Wyłącz powiadomienia",
+      "HideServerAddresses": "Ukryj adresy serwerów"
+    },
+    "Appearance": {
+      "Title": "Wygląd",
+      "Theme": "Motyw",
+      "BackgroundImage": "Obraz tła"
+    },
+    "Input": {
+      "Title": "Ustawienia wejścia",
+      "InputDevices": "Urządzenia wejściowe",
+      "InputVolume": "Głośność wejścia",
+      "MicrophoneSensitivity": "Czułość mikrofonu",
+      "Denoisers": "Redukcja szumów",
+      "AutomaticGainControllers": "Automatyczna regulacja wzmocnienia",
+      "EchoCancelers": "Redukcja echa",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Test mikrofonu",
+        "Test": "Test"
+      },
+      "Notification": {
+        "Badge": "Ustawienia wejścia"
+      },
+      "Validation": {
+        "InputVolume": "Głośność wejścia musi być w zakresie od 0 do 2.",
+        "MicrophoneSensitivity": "Czułość mikrofonu musi być w zakresie od 0 do 2."
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "Brak dostępu do mikrofonu!"
+      }
+    },
+    "Output": {
+      "Title": "Ustawienia wyjścia",
+      "OutputDevices": "Urządzenia wyjściowe",
+      "OutputVolume": "Głośność wyjścia",
+      "AudioClippers": "Clippery audio",
+      "TestOutput": "Test wyjścia",
+      "Notification": {
+        "Badge": "Ustawienia wyjścia"
+      },
+      "Validation": {
+        "OutputVolume": "Głośność wyjścia musi być w zakresie od 0 do 2."
+      }
+    },
+    "Network": {
+      "Title": "Ustawienia sieci",
+      "PositioningType": "Typ pozycjonowania",
+      "McWssListenIp": "Adres IP nasłuchiwania MCWSS",
+      "McWssHostPort": "Port hosta MCWSS"
+    },
+    "HotKey": {
+      "Title": "Skróty klawiszowe",
+      "Actions": {
+        "Mute": "Wycisz",
+        "Deafen": "Zagłusz"
+      }
+    },
+    "Advanced": {
+      "Title": "Ustawienia zaawansowane",
+      "TriggerGc": "Uruchom garbage collector",
+      "Crash": "Test awarii",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "Uruchomiono garbage collection. Zwolniona pamięć: {0}mb."
+        }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "Nazwa serwera nie może być pusta ani zawierać tylko spacji!",
+        "Ip": "IP serwera nie może być puste ani zawierać tylko spacji!",
+        "Port": "Port serwera musi być w zakresie od 1 do 65535!",
+        "NameLimit": "Nazwa serwera nie może być dłuższa niż {0} znaków!",
+        "IpLimit": "IP serwera nie może być dłuższe niż {0} znaków!"
+      }
+    }
+  },
+  "Credits": {
+    "Title": "Twórcy",
+    "AppVersion": "Wersja aplikacji: {0}",
+    "Version": "Wersja: {0}",
+    "Codec": "Kodek: {0}",
+    "Contributors": "Współtwórcy",
+    "Roles": {
+      "Author": "Autor",
+      "Translator": "Tłumacz",
+      "Programmer": "Programista"
+    }
+  },
+  "CrashLogs": {
+    "Title": "Logi awarii",
+    "Notification": {
+      "Badge": "CrashLogs",
+      "Cleared": "Pomyślnie wyczyszczono wszystkie logi.",
+      "Copied": "Logi awarii skopiowano do schowka.",
+      "Empty": "Brak logów awarii do skopiowania."
+    }
+  },
+  "AddServer": {
+    "Title": "Dodaj serwer",
+    "Name": "Nazwa",
+    "IP": "IP",
+    "Port": "Port",
+    "Notification": {
+      "Badge": "Dodaj serwer",
+      "Added": "{0} został dodany."
+    }
+  },
+  "EditServer": {
+    "Title": "Edytuj serwer",
+    "Name": "Nazwa",
+    "IP": "IP",
+    "Port": "Port",
+    "Notification": {
+      "Badge": "Edytuj serwer",
+      "Edited": "{0} został edytowany."
+    }
+  },
+  "SelectedServer": {
+    "Address": "Adres",
+    "PingInformation": "Informacje o ping",
+    "Connect": "Połącz",
+    "Edit": "Edytuj serwer",
+    "Delete": "Usuń serwer",
+    "ServerInfo": {
+      "Title": "Informacje o serwerze",
+      "Status": {
+        "Latency": "Opóźnienie: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "Typ pozycjonowania: {0}",
+        "ConnectedClients": "Połączonych klientów: {0}",
+        "Version": "Wersja: {0}",
+        "Pinging": "Pingowanie..."
+      }
+    },
+    "Notification": {
+      "Badge": "Wybrany serwer",
+      "Failed": "Nie udało się uruchomić procesu VOIP!",
+      "Removed": "{0} został usunięty."
+    }
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Głośność",
+      "Muted": "Wyciszony"
+    }
+  },
+  "VoiceCraft": {
+    "Notification": {
+      "Badge": "VoiceCraft",
+      "Error": "Wystąpił błąd podczas łączenia!",
+      "Disconnected": "Rozłączono! Powód: {0}"
+    },
+    "Status": {
+      "Initializing": "Inicjalizacja...",
+      "Connecting": "Łączenie...",
+      "Connected": "Połączono!",
+      "Disconnected": "Rozłączono! Powód: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "Nasłuchiwanie McWss: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "Ręczne rozłączenie.",
+      "ServerFull": "Serwer jest pełny!",
+      "IncompatibleVersion": "Niekompatybilna wersja klienta/serwera!",
+      "ServerSidedOnly": "Serwer akceptuje tylko pozycjonowanie po stronie serwera!",
+      "ClientSidedOnly": "Serwer akceptuje tylko pozycjonowanie po stronie klienta!",
+      "Kicked": "Wyrzucono!",
+      "Shutdown": "Serwer wyłączony!",
+      "Error": "Wystąpił błąd podczas łączenia!"
+    }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "Połączenie McWss nawiązane: {0}",
+      "Disconnected": "Połączenie McWss zostało rozłączone!",
+      "Failed": "Nie udało się uruchomić serwera McWss! Sprawdź, czy port nie jest zajęty przez inny proces!"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "Usługa uprawnień"
+    }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Preprocesor Speex"
+    },
+    "Clippers": {
+      "None": "Brak",
+      "Hard": "Twardy clipper",
+      "TanhSoft": "Miękki clipper Tanh"
+    },
+    "AudioDeviceInfo": {
+      "Default": "{0} - Domyślne"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "Domyślny",
+      "Dark": "Ciemny",
+      "DarkPurple": "Ciemny fiolet",
+      "DarkGreen": "Ciemna zieleń",
+      "Light": "Jasny"
+    },
+    "BackgroundImages": {
+      "None": "Brak",
+      "DockNight": "Dock nocą",
+      "DockDay": "Dock za dnia",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense Spawn",
+      "SineSmpBase": "SineSMP Base"
+    }
+  },
+  "BackgroundService": {
+    "Title": "VoiceCraft",
+    "Description": "Działa...",
+    "Permissions": {
+      "NotificationNotGranted": "Powiadomienia są wymagane do pokazywania procesów w tle i błędów.",
+      "MicrophoneNotGranted": "Brak dostępu do mikrofonu!"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "Nie znaleziono widoku: {0}"
+  }
+}

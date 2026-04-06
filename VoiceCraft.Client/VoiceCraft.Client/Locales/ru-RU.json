@@ -1,0 +1,243 @@
+{
+  "Servers": {
+    "Title": "Серверы",
+    "Notification": {
+      "Badge": "Серверы",
+      "Removed": "{0} удалён."
+    }
+  },
+  "Settings": {
+    "Title": "Настройки",
+    "General": {
+      "Title": "Общие настройки",
+      "Language": "Язык",
+      "NotificationDismiss": "Скрытие уведомления (мс)",
+      "DisableNotifications": "Отключить уведомления",
+      "HideServerAddresses": "Скрывать адреса серверов"
+    },
+    "Appearance": {
+      "Title": "Внешний вид",
+      "Theme": "Тема",
+      "BackgroundImage": "Фоновое изображение"
+    },
+    "Input": {
+      "Title": "Настройки ввода",
+      "InputDevices": "Устройства ввода",
+      "InputVolume": "Громкость ввода",
+      "MicrophoneSensitivity": "Чувствительность микрофона",
+      "Denoisers": "Шумоподавители",
+      "AutomaticGainControllers": "Автоматическая регулировка усиления",
+      "EchoCancelers": "Подавление эха",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Проверка микрофона",
+        "Test": "Тест"
+      },
+      "Notification": {
+        "Badge": "Настройки ввода"
+      },
+      "Validation": {
+        "InputVolume": "Громкость ввода должна быть между 0 и 2.",
+        "MicrophoneSensitivity": "Чувствительность микрофона должна быть между 0 и 2."
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "Доступ к микрофону не предоставлен!"
+      }
+    },
+    "Output": {
+      "Title": "Настройки вывода",
+      "OutputDevices": "Устройства вывода",
+      "OutputVolume": "Громкость вывода",
+      "AudioClippers": "Клипперы аудио",
+      "TestOutput": "Проверить вывод",
+      "Notification": {
+        "Badge": "Настройки вывода"
+      },
+      "Validation": {
+        "OutputVolume": "Громкость вывода должна быть между 0 и 2."
+      }
+    },
+    "Network": {
+      "Title": "Сетевые настройки",
+      "PositioningType": "Тип позиционирования",
+      "McWssListenIp": "IP-адрес прослушивания MCWSS",
+      "McWssHostPort": "Порт хоста MCWSS"
+    },
+    "HotKey": {
+      "Title": "Горячие клавиши",
+      "Actions": {
+        "Mute": "Выключить микрофон",
+        "Deafen": "Оглушить"
+      }
+    },
+    "Advanced": {
+      "Title": "Расширенные настройки",
+      "TriggerGc": "Запустить сборщик мусора",
+      "Crash": "Тестовый сбой",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "Сборка мусора запущена. Очищено памяти: {0}mb."
+        }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "Имя сервера не может быть пустым или состоять только из пробелов!",
+        "Ip": "IP сервера не может быть пустым или состоять только из пробелов!",
+        "Port": "Порт сервера должен быть в диапазоне от 1 до 65535!",
+        "NameLimit": "Имя сервера не может быть длиннее {0} символов!",
+        "IpLimit": "IP сервера не может быть длиннее {0} символов!"
+      }
+    }
+  },
+  "Credits": {
+    "Title": "Авторы",
+    "AppVersion": "Версия приложения: {0}",
+    "Version": "Версия: {0}",
+    "Codec": "Кодек: {0}",
+    "Contributors": "Участники",
+    "Roles": {
+      "Author": "Автор",
+      "Translator": "Переводчик",
+      "Programmer": "Разработчик"
+    }
+  },
+  "CrashLogs": {
+    "Title": "Журналы сбоев",
+    "Notification": {
+      "Badge": "CrashLogs",
+      "Cleared": "Все журналы успешно очищены.",
+      "Copied": "Журналы сбоев скопированы в буфер обмена.",
+      "Empty": "Нет журналов сбоев для копирования."
+    }
+  },
+  "AddServer": {
+    "Title": "Добавить сервер",
+    "Name": "Название",
+    "IP": "IP",
+    "Port": "Порт",
+    "Notification": {
+      "Badge": "Добавить сервер",
+      "Added": "{0} добавлен."
+    }
+  },
+  "EditServer": {
+    "Title": "Изменить сервер",
+    "Name": "Название",
+    "IP": "IP",
+    "Port": "Порт",
+    "Notification": {
+      "Badge": "Изменить сервер",
+      "Edited": "{0} изменён."
+    }
+  },
+  "SelectedServer": {
+    "Address": "Адрес",
+    "PingInformation": "Информация о пинге",
+    "Connect": "Подключиться",
+    "Edit": "Изменить сервер",
+    "Delete": "Удалить сервер",
+    "ServerInfo": {
+      "Title": "Информация о сервере",
+      "Status": {
+        "Latency": "Задержка: {0}",
+        "Motd": "Motd: {0}",
+        "PositioningType": "Тип позиционирования: {0}",
+        "ConnectedClients": "Подключённые клиенты: {0}",
+        "Version": "Версия: {0}",
+        "Pinging": "Пинг..."
+      }
+    },
+    "Notification": {
+      "Badge": "Выбранный сервер",
+      "Failed": "Не удалось запустить процесс VOIP!",
+      "Removed": "{0} удалён."
+    }
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Громкость",
+      "Muted": "Без звука"
+    }
+  },
+  "VoiceCraft": {
+    "Notification": {
+      "Badge": "VoiceCraft",
+      "Error": "Произошла ошибка при попытке подключения!",
+      "Disconnected": "Отключено! Причина: {0}"
+    },
+    "Status": {
+      "Initializing": "Инициализация...",
+      "Connecting": "Подключение...",
+      "Connected": "Подключено!",
+      "Disconnected": "Отключено! Причина: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "McWss слушает: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "Ручное отключение.",
+      "ServerFull": "Сервер переполнен!",
+      "IncompatibleVersion": "Несовместимая версия клиента/сервера!",
+      "ServerSidedOnly": "Сервер принимает только серверное позиционирование!",
+      "ClientSidedOnly": "Сервер принимает только клиентское позиционирование!",
+      "Kicked": "Вы были кикнуты!",
+      "Shutdown": "Сервер остановлен!",
+      "Error": "Произошла ошибка при попытке подключения!"
+    }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "Подключение McWss установлено: {0}",
+      "Disconnected": "Подключение McWss разорвано!",
+      "Failed": "Не удалось запустить сервер McWss! Проверьте, не занят ли порт другим процессом!"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "Сервис разрешений"
+    }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Предобработчик Speex"
+    },
+    "Clippers": {
+      "None": "Нет",
+      "Hard": "Жёсткий клиппер",
+      "TanhSoft": "Мягкий клиппер Tanh"
+    },
+    "AudioDeviceInfo": {
+      "Default": "{0} - По умолчанию"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "По умолчанию",
+      "Dark": "Тёмная",
+      "DarkPurple": "Тёмно-фиолетовая",
+      "DarkGreen": "Тёмно-зелёная",
+      "Light": "Светлая"
+    },
+    "BackgroundImages": {
+      "None": "Нет",
+      "DockNight": "Док ночью",
+      "DockDay": "Док днём",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense Spawn",
+      "SineSmpBase": "SineSMP Base"
+    }
+  },
+  "BackgroundService": {
+    "Title": "VoiceCraft",
+    "Description": "Работает...",
+    "Permissions": {
+      "NotificationNotGranted": "Уведомления нужны для показа фоновых процессов и ошибок.",
+      "MicrophoneNotGranted": "Доступ к микрофону не предоставлен!"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "Представление не найдено: {0}"
+  }
+}

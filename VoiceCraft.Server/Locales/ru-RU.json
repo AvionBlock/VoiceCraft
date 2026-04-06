@@ -1,0 +1,248 @@
+{
+  "Startup": {
+    "Starting": "Запуск сервера...",
+    "Success": "Сервер успешно запущен!",
+    "Failed": "Произошла ошибка при запуске сервера!",
+    "Commands": {
+      "Registering": "Регистрация команд...",
+      "Success": "Успешно зарегистрировано команд: {0}!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Остановка сервера...",
+    "StartingIn": "Остановка сервера через {0}мс...",
+    "Success": "Сервер успешно остановлен!"
+  },
+  "ServerProperties": {
+    "Loading": "Загрузка файла ServerProperties.json по пути {0}",
+    "Success": "Свойства сервера успешно загружены!",
+    "Failed": "Не удалось загрузить свойства сервера! Используются значения по умолчанию! Ошибка: {0}",
+    "NotFound": "ServerProperties.json не найден в текущей и/или дочерних директориях! Генерация файла...",
+    "FailNotFound": "ServerProperties.json не найден в текущей и/или дочерних директориях!",
+    "Generating": {
+      "Generating": "Генерация файла ServerProperties.json по пути {0}",
+      "Success": "Файл ServerProperties.json успешно сгенерирован по пути {0}",
+      "Failed": "Не удалось сгенерировать ServerProperties.json по пути {0}! Ошибка: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "Не удалось разобрать JSON-данные из загруженного файла!"
+    }
+  },
+  "Title": {
+    "Starting": "Запуск...",
+    "Running": "Работает!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Клиент подключён! UserGuid: {0}",
+      "Disconnected": "Клиент отключён! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "Клиент McApi подключён! Token: {0}",
+        "Disconnected": "Клиент McApi отключён! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "Запуск сервера VoiceCraft...",
+    "Success": "Сервер VoiceCraft успешно запущен!",
+    "Stopping": "Остановка сервера VoiceCraft...",
+    "Stopped": "Сервер VoiceCraft успешно остановлен!",
+    "Exceptions": {
+      "Failed": "Не удалось запустить сервер VoiceCraft! Проверьте, не используется ли этот порт другим процессом!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "Запуск сервера McWss...",
+    "Success": "Сервер McWss успешно запущен!",
+    "Stopping": "Остановка сервера McWss...",
+    "Stopped": "Сервер McWss успешно остановлен!",
+    "Exceptions": {
+      "Failed": "Не удалось запустить сервер McWss! Проверьте, не используется ли этот порт другим процессом!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "Запуск сервера McHttp...",
+    "Success": "Сервер McHttp успешно запущен!",
+    "Stopping": "Остановка сервера McHttp...",
+    "Stopped": "Сервер McHttp успешно остановлен!",
+    "Exceptions": {
+      "Failed": "Не удалось запустить сервер McHttp! Проверьте, не используется ли этот порт другим процессом!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Сервер",
+      "Port": "Порт",
+      "Protocol": "Протокол"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "Имя",
+      "Position": "Позиция",
+      "Rotation": "Поворот",
+      "WorldId": "WorldId"
+    }
+  },
+  "Commands": {
+    "Exception": "Произошла ошибка при выполнении команды {0}!",
+    "Exceptions": {
+      "EntityNotFound": "Не удалось найти сущность с id: {0}",
+      "EntityNotAClient": "Сущность с id {0} не является клиентской!"
+    },
+    "RootCommand": {
+      "Description": "Выполняет команду VoiceCraft."
+    },
+    "List": {
+      "Name": "list",
+      "Description": "Показывает список сущностей.",
+      "Showing": "Показано сущностей: {0}.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "Показывать только сетевые клиентские сущности."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "Ограничивает количество отображаемых сущностей."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Лимит не может быть меньше нуля!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "Устанавливает заголовок приложения клиентской сущности.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id клиентской сущности."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Значение заголовка."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setdescription",
+      "Description": "Устанавливает описание приложения клиентской сущности.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id клиентской сущности."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Значение описания."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "Устанавливает позицию сущности.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "Значение X-позиции."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "Значение Y-позиции."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "Значение Z-позиции."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "Устанавливает WorldId для сущности.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Значение WorldId для сущности."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "Устанавливает имя сущности.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Значение имени сущности."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Останавливает сервер."
+    },
+    "Kick": {
+      "Name": "kick",
+      "Description": "Кикает клиента.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "Отключает микрофон сущности/клиента.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "Включает микрофон сущности/клиента.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "Оглушает сущность/клиента.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "Снимает оглушение с сущности/клиента.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Id сущности."
+        }
+      }
+    }
+  }
+}
