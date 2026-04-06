@@ -1,7 +1,6 @@
 # VoiceCraft Proximity Chat
 
-Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS (soon), Linux and MacOS
-(soon).
+Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
 
 <p align="center">
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
@@ -37,7 +36,7 @@ audio effects, audio simulations, authentication, and more!
 
 ## Packages, Guides And Resources
 
-- ### [Wiki](https://avionblock.github.io/VoiceCraft/)
+- ### [Wiki](https://voicecraft.avion.team/en)
 - ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
 - ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
 - ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
