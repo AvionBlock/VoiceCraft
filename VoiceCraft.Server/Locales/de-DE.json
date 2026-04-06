@@ -1,0 +1,248 @@
+{
+  "Startup": {
+    "Starting": "Server wird gestartet...",
+    "Success": "Server erfolgreich gestartet!",
+    "Failed": "Beim Starten des Servers ist ein Fehler aufgetreten!",
+    "Commands": {
+      "Registering": "Befehle werden registriert...",
+      "Success": "{0} Befehle erfolgreich registriert!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Server wird heruntergefahren...",
+    "StartingIn": "Server wird in {0}ms heruntergefahren...",
+    "Success": "Server erfolgreich heruntergefahren!"
+  },
+  "ServerProperties": {
+    "Loading": "ServerProperties.json wird geladen aus {0}",
+    "Success": "Servereigenschaften erfolgreich geladen!",
+    "Failed": "Servereigenschaften konnten nicht geladen werden! Standardwerte werden verwendet! Fehler: {0}",
+    "NotFound": "ServerProperties.json wurde im aktuellen und/oder in Unterverzeichnissen nicht gefunden! Datei wird erzeugt...",
+    "FailNotFound": "ServerProperties.json wurde im aktuellen und/oder in Unterverzeichnissen nicht gefunden!",
+    "Generating": {
+      "Generating": "ServerProperties.json wird erzeugt in {0}",
+      "Success": "ServerProperties.json wurde erfolgreich erzeugt in {0}",
+      "Failed": "ServerProperties.json konnte nicht erzeugt werden in {0}! Fehler: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "JSON-Daten aus der geladenen Datei konnten nicht gelesen werden!"
+    }
+  },
+  "Title": {
+    "Starting": "Startet...",
+    "Running": "Laeuft!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Client verbunden! UserGuid: {0}",
+      "Disconnected": "Client getrennt! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi-Client verbunden! Token: {0}",
+        "Disconnected": "McApi-Client getrennt! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "VoiceCraft-Server wird gestartet...",
+    "Success": "VoiceCraft-Server erfolgreich gestartet!",
+    "Stopping": "VoiceCraft-Server wird gestoppt...",
+    "Stopped": "VoiceCraft-Server erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "VoiceCraft-Server konnte nicht gestartet werden! Bitte pruefe, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "McWss-Server wird gestartet...",
+    "Success": "McWss-Server erfolgreich gestartet!",
+    "Stopping": "McWss-Server wird gestoppt...",
+    "Stopped": "McWss-Server erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "McWss-Server konnte nicht gestartet werden! Bitte pruefe, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "McHttp-Server wird gestartet...",
+    "Success": "McHttp-Server erfolgreich gestartet!",
+    "Stopping": "McHttp-Server wird gestoppt...",
+    "Stopped": "McHttp-Server erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "McHttp-Server konnte nicht gestartet werden! Bitte pruefe, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Server",
+      "Port": "Port",
+      "Protocol": "Protokoll"
+    },
+    "ListCommandEntities": {
+      "Id": "ID",
+      "Name": "Name",
+      "Position": "Position",
+      "Rotation": "Rotation",
+      "WorldId": "Welt-ID"
+    }
+  },
+  "Commands": {
+    "Exception": "Beim Ausfuehren des Befehls {0} ist ein Fehler aufgetreten!",
+    "Exceptions": {
+      "EntityNotFound": "Entitaet mit der ID {0} wurde nicht gefunden!",
+      "EntityNotAClient": "Entitaet mit der ID {0} ist keine Client-Entitaet!"
+    },
+    "RootCommand": {
+      "Description": "Fuehrt einen VoiceCraft-Befehl aus."
+    },
+    "List": {
+      "Name": "list",
+      "Description": "Listet Entitaeten auf.",
+      "Showing": "{0} Entitaeten werden angezeigt.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "Zeigt nur vernetzte Client-Entitaeten an."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "Begrenzt die Anzahl der angezeigten Entitaeten."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Das Limit darf nicht kleiner als null sein!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "Setzt einen Titel fuer die Anwendung einer Client-Entitaet.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Client-Entitaet."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Der Wert, der als Titel gesetzt werden soll."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setdescription",
+      "Description": "Setzt eine Beschreibung fuer die Anwendung einer Client-Entitaet.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Client-Entitaet."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Der Wert, der als Beschreibung gesetzt werden soll."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "Setzt eine Position fuer eine Entitaet.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "Die zu setzende X-Position."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "Die zu setzende Y-Position."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "Die zu setzende Z-Position."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "Setzt eine Welt-ID fuer eine Entitaet.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Der Wert, der als Welt-ID gesetzt werden soll."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "Setzt einen Namen fuer eine Entitaet.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Der Wert, der als Name der Entitaet gesetzt werden soll."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Stoppt den Server."
+    },
+    "Kick": {
+      "Name": "kick",
+      "Description": "Wirft einen Client hinaus.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "Schaltet eine Entitaet oder einen Client stumm.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "Hebt die Stummschaltung einer Entitaet oder eines Clients auf.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "Schaltet eine Entitaet oder einen Client auf taub.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "Hebt das Taubschalten einer Entitaet oder eines Clients auf.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "Die ID der Entitaet."
+        }
+      }
+    }
+  }
+}
