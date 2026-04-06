@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -24,8 +23,8 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
             if (CrashLogs.Count <= 0)
             {
                 notificationService.SendNotification(
-                    Localizer.Get("Notification.CrashLogs.Empty"),
-                    Localizer.Get("Notification.CrashLogs.Badge"));
+                    "CrashLogs.Notification.Badge",
+                    "CrashLogs.Notification.Empty");
                 return;
             }
 
@@ -39,12 +38,14 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
 
             await Clipboard.Default.SetTextAsync(text.ToString().Trim());
             notificationService.SendSuccessNotification(
-                Localizer.Get("Notification.CrashLogs.Copied"),
-                Localizer.Get("Notification.CrashLogs.Badge"));
+                "CrashLogs.Notification.Badge",
+                "CrashLogs.Notification.Copied");
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification(ex.Message);
+            notificationService.SendErrorNotification(
+                "CrashLogs.Notification.Badge",
+                ex.Message);
         }
     }
 
@@ -55,12 +56,15 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
         {
             LogService.ClearCrashLogs();
             CrashLogs.Clear();
-            notificationService.SendSuccessNotification(Localizer.Get("Notification.CrashLogs.Cleared"),
-                Localizer.Get("Notification.CrashLogs.Badge"));
+            notificationService.SendSuccessNotification(
+                "CrashLogs.Notification.Badge",
+                "CrashLogs.Notification.Cleared");
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification(ex.Message);
+            notificationService.SendErrorNotification(
+                "CrashLogs.Notification.Badge",
+                ex.Message);
         }
     }
 

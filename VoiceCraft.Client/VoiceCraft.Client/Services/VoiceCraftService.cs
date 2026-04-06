@@ -8,7 +8,6 @@ using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network;
 using VoiceCraft.Client.Servers;
@@ -115,7 +114,7 @@ public class VoiceCraftService(
             client.InputVolume = inputSettings.InputVolume;
             client.OutputVolume = outputSettings.OutputVolume;
             client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
-            
+
             _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
             _audioPreprocessor = InitializeAudioPreprocessor(inputSettings);
@@ -271,14 +270,16 @@ public class VoiceCraftService(
 
     private void OnMcWssConnected(string playerName)
     {
-        notificationService.SendSuccessNotification(Localizer.Get($"Notification.McWss.Connected:{playerName}"),
-            Localizer.Get("Notification.McWss.Badge"));
+        notificationService.SendSuccessNotification(
+            "McWss.Notification.Badge",
+            $"McWss.Notification.Connected:{playerName}");
     }
 
     private void OnMcWssDisconnected()
     {
-        notificationService.SendNotification(Localizer.Get("Notification.McWss.Disconnected"),
-            Localizer.Get("Notification.McWss.Badge"));
+        notificationService.SendNotification(
+            "McWss.Notification.Badge",
+            "McWss.Notification.Disconnected");
     }
 
     //Setup Functions.
@@ -341,8 +342,9 @@ public class VoiceCraftService(
         {
             Title = $"VoiceCraft.Status.Disconnected:{reason}";
             Description = $"VoiceCraft.Status.Disconnected:{reason}";
-            notificationService.SendNotification(Localizer.Get($"VoiceCraft.Status.Disconnected:{reason}"),
-                Localizer.Get("Notification.VoiceCraft.Badge"));
+            notificationService.SendNotification(
+                "VoiceCraft.Notification.Badge",
+                $"VoiceCraft.Notification.Disconnected:{reason}");
             OnDisconnected?.Invoke();
         }
     }

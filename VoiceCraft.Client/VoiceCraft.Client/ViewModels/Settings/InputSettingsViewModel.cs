@@ -105,7 +105,9 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
         {
             CloseRecorder();
             // ReSharper disable once InconsistentlySynchronizedField
-            _notificationService.SendErrorNotification(ex.Message);
+            _notificationService.SendErrorNotification(
+                "Settings.Input.Notification.Badge", 
+                ex.Message);
         }
     }
 

@@ -21,7 +21,9 @@ public class PermissionsService(
                 return status;
             case PermissionStatus.Denied when DeviceInfo.Platform == DevicePlatform.iOS:
                 if (!string.IsNullOrWhiteSpace(rationalDescription))
-                    notificationService.SendErrorNotification(rationalDescription);
+                    notificationService.SendErrorNotification(
+                        "PermissionsService.Notification.Badge",
+                        rationalDescription);
                 return status;
             case PermissionStatus.Unknown:
             case PermissionStatus.Disabled:
@@ -34,7 +36,9 @@ public class PermissionsService(
         status = await permission.RequestAsync();
 
         if (permission.ShouldShowRationale() && !string.IsNullOrWhiteSpace(rationalDescription))
-            notificationService.SendErrorNotification(rationalDescription);
+            notificationService.SendErrorNotification(
+                "PermissionsService.Notification.Badge",
+                rationalDescription);
         return status;
     }
 }

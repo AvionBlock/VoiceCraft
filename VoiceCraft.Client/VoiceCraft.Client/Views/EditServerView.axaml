@@ -47,7 +47,7 @@
                     <Button HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             Command="{Binding EditServerCommand}">
-                        <TextBlock Text="{locale:Localize 'EditServer.EditServer'}" TextAlignment="Center" />
+                        <TextBlock Text="{locale:Localize 'EditServer.Title'}" TextAlignment="Center" />
                     </Button>
                 </StackPanel>
             </Border>

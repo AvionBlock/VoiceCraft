@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -53,15 +52,16 @@ public partial class AddServerViewModel(
                 throw new Exception("Server port must be between 1 and 65535.");
 
             Servers.AddServer(Server);
-            notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Added:{Server.Name}"),
-                Localizer.Get("Notification.Servers.Badge"));
+            notificationService.SendSuccessNotification(
+                "AddServer.Notification.Badge",
+                $"AddServer.Notification.Added:{Server.Name}");
             Server = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification(ex.Message);
+            notificationService.SendErrorNotification("AddServer.Notification.Badge", ex.Message);
         }
     }
 }

@@ -19,10 +19,10 @@ public partial class HomeViewModel : ViewModelBase
     public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits,
         CrashLogViewModel crashLog)
     {
-        _items.Add(new ListItemTemplate("Home.Servers", servers, "HomeRegular"));
-        _items.Add(new ListItemTemplate("Home.Settings", settings, "SettingsRegular"));
-        _items.Add(new ListItemTemplate("Home.Credits", credits, "InformationRegular"));
-        _items.Add(new ListItemTemplate("Home.CrashLogs", crashLog, "NotebookErrorRegular"));
+        _items.Add(new ListItemTemplate("Servers.Title", servers, "HomeRegular"));
+        _items.Add(new ListItemTemplate("Settings.Title", settings, "SettingsRegular"));
+        _items.Add(new ListItemTemplate("Credits.Title", credits, "InformationRegular"));
+        _items.Add(new ListItemTemplate("CrashLogs.Title", crashLog, "NotebookErrorRegular"));
 
         SelectedListItem = _items[0];
         _content = _items[0].Content;

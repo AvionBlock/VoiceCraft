@@ -107,7 +107,9 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         catch (Exception ex)
         {
             ClosePlayer();
-            _notificationService.SendErrorNotification(ex.Message);
+            _notificationService.SendErrorNotification(
+                "Settings.Output.Notification.Badge",
+                ex.Message);
         }
     }
 

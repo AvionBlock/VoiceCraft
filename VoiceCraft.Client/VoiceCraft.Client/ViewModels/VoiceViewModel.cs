@@ -9,7 +9,6 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.Locales;
 using VoiceCraft.Network;
 using VoiceCraft.Network.World;
 
@@ -122,8 +121,12 @@ public partial class VoiceViewModel(
                     var flattened = x.Exception.Flatten();
                     var message = flattened.InnerException?.ToString() ?? flattened.ToString();
                     LogService.Log(flattened);
-                    notificationService.SendErrorNotification(message);
-                    notificationService.SendNotification(Localizer.Get("VoiceCraft.DisconnectReason.Error"));
+                    notificationService.SendErrorNotification(
+                        "VoiceCraft.Notification.Badge",
+                        message);
+                    notificationService.SendNotification(
+                        "VoiceCraft.Notification.Badge",
+                        "VoiceCraft.Notification.Error");
                     OnDisconnected();
                 });
                 break;

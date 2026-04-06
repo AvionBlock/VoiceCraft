@@ -1,57 +1,78 @@
 {
-  "BackgroundService": {
-    "BackgroundError": "Background Error: {0}"
-  },
-  "Notification": {
-    "VoiceCraft": {
-      "Badge": "VoiceCraft"
-    },
-    "Servers": {
+  "Servers": {
+    "Title": "Servers",
+    "Notification": {
       "Badge": "Servers",
-      "Added": "{0} has been added.",
-      "Edited": "{0} has been edited.",
       "Removed": "{0} has been removed."
-    },
-    "GC": {
-      "Badge": "GC",
-      "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
-    },
-    "CrashLogs": {
-      "Badge": "CrashLogs",
-      "Cleared": "Successfully cleared all logs.",
-      "Copied": "Crash logs copied to clipboard.",
-      "Empty": "No crash logs to copy."
-    },
-    "Error": {
-      "Badge": "Error",
-      "VoipFailedToStart": "Background worker failed to start VOIP process!",
-      "VoipBackgroundError": "Voip Background Error: {0}"
-    },
-    "McWss": {
-      "Badge": "McWss",
-      "Connected": "McWss Connection Established: {0}",
-      "Disconnected": "McWss Connection Disconnected!"
     }
   },
-  "Home": {
-    "Servers": "Servers",
-    "Settings": "Settings",
-    "Credits": "Credits",
-    "CrashLogs": "Crash Logs"
-  },
-  "AddServer": {
-    "AddServer": "Add Server",
-    "Name": "Name",
-    "IP": "IP",
-    "Port": "Port"
-  },
-  "EditServer": {
-    "EditServer": "Edit Server",
-    "Name": "Name",
-    "IP": "IP",
-    "Port": "Port"
+  "Settings": {
+    "Title": "Settings",
+    "General": {
+      "Title": "General Settings",
+      "Language": "Language",
+      "NotificationDismiss": "Notification Dismiss(ms)",
+      "DisableNotifications": "Disable Notifications",
+      "HideServerAddresses": "Hide Server Addresses"
+    },
+    "Appearance": {
+      "Title": "Appearance",
+      "Theme": "Theme",
+      "BackgroundImage": "Background Image"
+    },
+    "Input": {
+      "Title": "Input Settings",
+      "InputDevices": "Input Devices",
+      "InputVolume": "Input Volume",
+      "MicrophoneSensitivity": "Microphone Sensitivity",
+      "Denoisers": "Denoisers",
+      "AutomaticGainControllers": "Automatic Gain Controllers",
+      "EchoCancelers": "Echo Cancelers",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Microphone Test",
+        "Test": "Test"
+      },
+      "Notification": {
+        "Badge": "Input Settings"
+      }
+    },
+    "Output": {
+      "Title": "Output Settings",
+      "OutputDevices": "Output Devices",
+      "OutputVolume": "Output Volume",
+      "AudioClippers": "Audio Clippers",
+      "TestOutput": "Test Output",
+      "Notification": {
+        "Badge": "Output Settings"
+      }
+    },
+    "Network": {
+      "Title": "Network Settings",
+      "PositioningType": "Positioning Type",
+      "McWssListenIp": "MCWSS Listening IP Address",
+      "McWssHostPort": "MCWSS Host Port"
+    },
+    "HotKey": {
+      "Title": "HotKey",
+      "Actions": {
+        "Mute": "Mute",
+        "Deafen": "Deafen"
+      }
+    },
+    "Advanced": {
+      "Title": "Advanced Settings",
+      "TriggerGc": "Trigger Garbage Collector",
+      "Crash": "Test Crash",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
+        }
+      }
+    }
   },
   "Credits": {
+    "Title": "Credits",
     "AppVersion": "App Version: {0}",
     "Version": "Version: {0}",
     "Codec": "Codec: {0}",
@@ -62,56 +83,34 @@
       "Programmer": "Programmer"
     }
   },
-  "Settings": {
-    "General": {
-      "General": "General Settings",
-      "Language": "Language",
-      "NotificationDismiss": "Notification Dismiss(ms)",
-      "DisableNotifications": "Disable Notifications",
-      "HideServerAddresses": "Hide Server Addresses"
-    },
-    "Appearance": {
-      "Appearance": "Appearance",
-      "Theme": "Theme",
-      "BackgroundImage": "Background Image"
-    },
-    "Input": {
-      "Input": "Input Settings",
-      "InputDevices": "Input Devices",
-      "InputVolume": "Input Volume",
-      "MicrophoneSensitivity": "Microphone Sensitivity",
-      "Denoisers": "Denoisers",
-      "AutomaticGainControllers": "Automatic Gain Controllers",
-      "EchoCancelers": "Echo Cancelers",
-      "MicrophoneTest": {
-        "MicrophoneTest": "Microphone Test",
-        "Test": "Test"
-      }
-    },
-    "Output": {
-      "Output": "Output Settings",
-      "OutputDevices": "Output Devices",
-      "OutputVolume": "Output Volume",
-      "AudioClippers": "Audio Clippers",
-      "TestOutput": "Test Output"
-    },
-    "Network": {
-      "Network": "Network Settings",
-      "PositioningType": "Positioning Type",
-      "McWssListenIp": "MCWSS Listening IP Address",
-      "McWssHostPort": "MCWSS Host Port"
-    },
-    "HotKey": {
-      "HotKey": "HotKey",
-      "Actions": {
-        "Mute": "Mute",
-        "Deafen": "Deafen"
-      }
-    },
-    "Advanced": {
-      "Advanced": "Advanced Settings",
-      "TriggerGc": "Trigger Garbage Collector",
-      "Crash": "Test Crash"
+  "CrashLogs": {
+    "Title": "Crash Logs",
+    "Notification": {
+      "Badge": "CrashLogs",
+      "Cleared": "Successfully cleared all logs.",
+      "Copied": "Crash logs copied to clipboard.",
+      "Empty": "No crash logs to copy."
+    }
+  },
+  
+  "AddServer": {
+    "Title": "Add Server",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port",
+    "Notification": {
+      "Badge": "Add Server",
+      "Added": "{0} has been added."
+    }
+  },
+  "EditServer": {
+    "Title": "Edit Server",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port",
+    "Notification": {
+      "Badge": "Edit Server",
+      "Edited": "{0} has been edited."
     }
   },
   "SelectedServer": {
@@ -121,7 +120,7 @@
     "Edit": "Edit Server",
     "Delete": "Delete Server",
     "ServerInfo": {
-      "ServerInfo": "Server Info",
+      "Title": "Server Info",
       "Status": {
         "Latency": "Latency: {0}",
         "Motd": "Motd: {0}",
@@ -130,14 +129,20 @@
         "Version": "Version: {0}",
         "Pinging": "Pinging..."
       }
+    },
+    "Notification": {
+      "Badge": "Selected Server",
+      "Failed": "Failed to start VOIP process!",
+      "Removed": "{0} has been removed."
     }
   },
-  "McWssServer": {
-    "Exceptions": {
-      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
-    }
-  },
+  
   "VoiceCraft": {
+    "Notification": {
+      "Badge": "VoiceCraft",
+      "Error": "An error occurred while trying to connect!",
+      "Disconnected": "Disconnected! Reason: {0}"
+    },
     "Status": {
       "Initializing": "Initializing...",
       "Connecting": "Connecting...",
@@ -156,6 +161,19 @@
       "Kicked": "Kicked!",
       "Shutdown": "Server shutdown!",
       "Error": "An error occurred while trying to connect!"
+    }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "McWss Connection Established: {0}",
+      "Disconnected": "McWss Connection Disconnected!",
+      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "Permissions Service"
     }
   }
 }

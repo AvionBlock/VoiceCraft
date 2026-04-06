@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
@@ -60,15 +59,16 @@ public partial class EditServerViewModel(
             Server.Ip = EditableServer.Ip;
             Server.Port = EditableServer.Port;
 
-            notificationService.SendNotification(Localizer.Get($"Notification.Servers.Edited:{Server.Name}"),
-                Localizer.Get("Notification.Servers.Badge"));
+            notificationService.SendNotification(
+                "EditServer.Notification.Badge",
+                $"EditServer.Notification.Edited:{Server.Name}");
             EditableServer = new Server();
             _ = settings.SaveAsync();
             navigationService.Back();
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification(ex.Message);
+            notificationService.SendErrorNotification("EditServer.Notification.Badge", ex.Message);
         }
     }
 }

@@ -82,7 +82,9 @@ public partial class SelectedServerViewModel(
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification(Localizer.Get("Notification.Error.VoipFailedToStart"));
+            notificationService.SendErrorNotification(
+                "SelectedServer.Notification.Badge",
+                "SelectedServer.Notification.Failed");
             LogService.Log(ex);
         }
     }
@@ -100,8 +102,8 @@ public partial class SelectedServerViewModel(
         if (SelectedServer == null) return;
         ServersSettings.ServersSettings.RemoveServer(SelectedServer.Server);
         notificationService.SendSuccessNotification(
-            Localizer.Get($"Notification.Servers.Removed:{SelectedServer.Name}"),
-            Localizer.Get("Notification.Servers.Badge"));
+            "SelectedServer.Notification.Badge",
+            $"SelectedServer.Notification.Removed:{SelectedServer.Name}");
         _ = settingsService.SaveAsync();
         navigationService.Back();
     }

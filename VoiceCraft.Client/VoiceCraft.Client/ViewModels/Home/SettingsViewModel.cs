@@ -13,19 +13,19 @@ public partial class SettingsViewModel : ViewModelBase
 
     public SettingsViewModel(NavigationService navigationService)
     {
-        _items.Add(new ListItemTemplate("Settings.General.General",
+        _items.Add(new ListItemTemplate("Settings.General.Title",
             () => { navigationService.NavigateTo<GeneralSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Appearance.Appearance",
+        _items.Add(new ListItemTemplate("Settings.Appearance.Title",
             () => { navigationService.NavigateTo<AppearanceSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Input.Input",
+        _items.Add(new ListItemTemplate("Settings.Input.Title",
             () => { navigationService.NavigateTo<InputSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Output.Output",
+        _items.Add(new ListItemTemplate("Settings.Output.Title",
             () => { navigationService.NavigateTo<OutputSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Network.Network",
+        _items.Add(new ListItemTemplate("Settings.Network.Title",
             () => { navigationService.NavigateTo<NetworkSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.HotKey.HotKey",
+        _items.Add(new ListItemTemplate("Settings.HotKey.Title",
             () => { navigationService.NavigateTo<HotKeySettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Advanced.Advanced",
+        _items.Add(new ListItemTemplate("Settings.Advanced.Title",
             () => { navigationService.NavigateTo<AdvancedSettingsViewModel>(); }));
     }
 

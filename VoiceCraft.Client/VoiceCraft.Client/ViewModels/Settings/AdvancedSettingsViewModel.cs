@@ -1,7 +1,6 @@
 using System;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -17,13 +16,14 @@ public partial class AdvancedSettingsViewModel(
             var previousSnapshot = GC.GetTotalMemory(false);
             GC.Collect();
             notificationService.SendNotification(
-                Localizer.Get(
-                    $"Notification.GC.Triggered:{Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}"),
-                Localizer.Get("Notification.GC.Badge"));
+                "Settings.Advanced.Notification.GC.Badge",
+                $"Settings.Advanced.Notification.GC.Triggered:{Math.Max(previousSnapshot - GC.GetTotalMemory(false), 0) / 1000000}");
         }
         catch (Exception ex)
         {
-            notificationService.SendErrorNotification(ex.Message);
+            notificationService.SendErrorNotification(
+                "Settings.Advanced.Notification.GC.Badge",
+                ex.Message);
         }
     }
 
