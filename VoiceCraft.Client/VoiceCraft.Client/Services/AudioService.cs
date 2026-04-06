@@ -54,13 +54,47 @@ public class AudioService
     public IEnumerable<AudioDeviceInfo> GetInputDevices()
     {
         _engine.UpdateAudioDevicesInfo();
-        return _engine.CaptureDevices.Select(x => new AudioDeviceInfo(x.Name, x.IsDefault));
+        var devices = new List<AudioDeviceInfo>();
+        AudioDeviceInfo? defaultDevice = null;
+        foreach (var device in _engine.CaptureDevices)
+        {
+            if (device.IsDefault)
+            {
+                defaultDevice = new AudioDeviceInfo(
+                    "Default",
+                    Localizer.Get($"AudioService.AudioDeviceInfo.Default:{device.Name}"),
+                    true);
+            }
+
+            devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
+        }
+        
+        if(defaultDevice != null)
+            devices.Insert(0, defaultDevice);
+        return devices;
     }
 
     public IEnumerable<AudioDeviceInfo> GetOutputDevices()
     {
         _engine.UpdateAudioDevicesInfo();
-        return _engine.PlaybackDevices.Select(x => new AudioDeviceInfo(x.Name, x.IsDefault));
+        var devices = new List<AudioDeviceInfo>();
+        AudioDeviceInfo? defaultDevice = null;
+        foreach (var device in _engine.PlaybackDevices)
+        {
+            if (device.IsDefault)
+            {
+                defaultDevice = new AudioDeviceInfo(
+                    "Default",
+                    Localizer.Get($"AudioService.AudioDeviceInfo.Default:{device.Name}"),
+                    true);
+            }
+
+            devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
+        }
+        
+        if(defaultDevice != null)
+            devices.Insert(0, defaultDevice);
+        return devices;
     }
 
     public AudioCaptureDevice InitializeCaptureDevice(int sampleRate, int channels, uint frameSize, string inputDevice)
@@ -143,9 +177,9 @@ public class AudioService
         : RegisteredAudioClipper(Guid.Empty, "AudioService.Clippers.None", () => throw new NotSupportedException());
 }
 
-public class AudioDeviceInfo(string name, bool isDefault)
+public class AudioDeviceInfo(string name, string displayName, bool isDefault)
 {
-    public string DisplayName => IsDefault ? Localizer.Get($"AudioService.AudioDeviceInfo.Default:{Name}") : Name;
+    public string DisplayName { get; } = displayName;
     public string Name { get; } = name;
     public bool IsDefault { get; } = isDefault;
 }
