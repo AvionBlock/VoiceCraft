@@ -109,6 +109,9 @@
     <ItemGroup>
         <EmbeddedResource Include="Locales\nl-NL.json"/>
         <EmbeddedResource Include="Locales\en-US.json"/>
+        <EmbeddedResource Include="Locales\de-DE.json"/>
+        <EmbeddedResource Include="Locales\pl-PL.json"/>
+        <EmbeddedResource Include="Locales\ru-RU.json"/>
         <EmbeddedResource Include="Locales\zh-CN.json"/>
         <EmbeddedResource Include="Locales\zh-TW.json"/>
     </ItemGroup>

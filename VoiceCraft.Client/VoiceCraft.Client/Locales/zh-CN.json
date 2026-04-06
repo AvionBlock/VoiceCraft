@@ -1,57 +1,97 @@
 {
-  "BackgroundService": {
-    "BackgroundError": "背景服务错误: {0}"
-  },
-  "Notification": {
-    "VoiceCraft": {
-      "Badge": "VoiceCraft"
-    },
-    "Servers": {
+  "Servers": {
+    "Title": "服务器",
+    "Notification": {
       "Badge": "服务器",
-      "Added": "{0} 已添加。",
-      "Edited": "{0} 已编辑。",
       "Removed": "{0} 已删除。"
-    },
-    "GC": {
-      "Badge": "垃圾回收",
-      "Triggered": "垃圾回收触发。内存清除: {0}mb。"
-    },
-    "CrashLogs": {
-      "Badge": "崩溃日志",
-      "Cleared": "成功清除所有日志。",
-      "Copied": "崩溃日志已复制到剪贴板。",
-      "Empty": "没有可复制的崩溃日志。"
-    },
-    "Error": {
-      "Badge": "错误",
-      "VoipFailedToStart": "背景服务无法启动VOIP进程！",
-      "VoipBackgroundError": "VOIP背景服务错误: {0}"
-    },
-    "McWss": {
-      "Badge": "McWss",
-      "Connected": "McWss 连接已建立: {0}",
-      "Disconnected": "McWss 连接已断开！"
     }
   },
-  "Home": {
-    "Servers": "服务器",
-    "Settings": "设置",
-    "Credits": "制作人员",
-    "CrashLogs": "崩溃日志"
-  },
-  "AddServer": {
-    "AddServer": "添加服务器",
-    "Name": "服务器名称",
-    "IP": "IP地址",
-    "Port": "端口"
-  },
-  "EditServer": {
-    "EditServer": "修改服务器",
-    "Name": "服务器名称",
-    "IP": "IP地址",
-    "Port": "端口"
+  "Settings": {
+    "Title": "设置",
+    "General": {
+      "Title": "常规设置",
+      "Language": "语言",
+      "NotificationDismiss": "通知消失时间(毫秒)",
+      "DisableNotifications": "禁用通知",
+      "HideServerAddresses": "隐藏服务器地址"
+    },
+    "Appearance": {
+      "Title": "外观",
+      "Theme": "主题",
+      "BackgroundImage": "背景图片"
+    },
+    "Input": {
+      "Title": "输入设置",
+      "InputDevices": "输入设备",
+      "InputVolume": "输入音量",
+      "MicrophoneSensitivity": "麦克风灵敏度",
+      "Denoisers": "降噪器",
+      "AutomaticGainControllers": "自动增益控制器",
+      "EchoCancelers": "回声消除器",
+      "MicrophoneTest": {
+        "MicrophoneTest": "麦克风测试",
+        "Test": "测试"
+      },
+      "Notification": {
+        "Badge": "输入设置"
+      },
+      "Validation": {
+        "InputVolume": "输入音量必须在 0 到 2 之间。",
+        "MicrophoneSensitivity": "麦克风灵敏度必须在 0 到 2 之间。"
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "未授予麦克风访问权限！"
+      }
+    },
+    "Output": {
+      "Title": "输出设置",
+      "OutputDevices": "输出设备",
+      "OutputVolume": "输出音量",
+      "AudioClippers": "音频限幅器",
+      "TestOutput": "测试输出",
+      "Notification": {
+        "Badge": "输出设置"
+      },
+      "Validation": {
+        "OutputVolume": "输出音量必须在 0 到 2 之间。"
+      }
+    },
+    "Network": {
+      "Title": "网络设置",
+      "PositioningType": "定位类型",
+      "McWssListenIp": "MCWSS 监听 IP 地址",
+      "McWssHostPort": "MCWSS 主机端口"
+    },
+    "HotKey": {
+      "Title": "快捷键",
+      "Actions": {
+        "Mute": "静音",
+        "Deafen": "拒听"
+      }
+    },
+    "Advanced": {
+      "Title": "高级设置",
+      "TriggerGc": "触发垃圾回收",
+      "Crash": "测试崩溃",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "已触发垃圾回收。清理的内存: {0}mb。"
+        }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "服务器名称不能为空或仅包含空白字符！",
+        "Ip": "服务器 IP 不能为空或仅包含空白字符！",
+        "Port": "服务器端口必须在 1 到 65535 之间！",
+        "NameLimit": "服务器名称不能超过 {0} 个字符！",
+        "IpLimit": "服务器 IP 不能超过 {0} 个字符！"
+      }
+    }
   },
   "Credits": {
+    "Title": "致谢",
     "AppVersion": "应用版本: {0}",
     "Version": "版本: {0}",
     "Codec": "编解码器: {0}",
@@ -62,82 +102,70 @@
       "Programmer": "程序员"
     }
   },
-  "Settings": {
-    "General": {
-      "General": "常规设置",
-      "Language": "语言",
-      "NotificationDismiss": "通知消失时间(毫秒)",
-      "DisableNotifications": "禁用通知",
-      "HideServerAddresses": "隐藏服务器地址"
-    },
-    "Appearance": {
-      "Appearance": "外观设置",
-      "Theme": "主题",
-      "BackgroundImage": "背景图片"
-    },
-    "Input": {
-      "Input": "输入设置",
-      "InputDevices": "输入设备",
-      "InputVolume": "输入音量",
-      "MicrophoneSensitivity": "麦克风灵敏度",
-      "Denoisers": "降噪器",
-      "AutomaticGainControllers": "自动增益控制器",
-      "EchoCancelers": "回声消除器",
-      "MicrophoneTest": {
-        "MicrophoneTest": "麦克风测试",
-        "Test": "测试"
-      }
-    },
-    "Output": {
-      "Output": "输出设置",
-      "OutputDevices": "输出设备",
-      "OutputVolume": "输出音量",
-      "AudioClippers": "音频剪辑器",
-      "TestOutput": "测试输出"
-    },
-    "Network": {
-      "Network": "网络设置",
-      "PositioningType": "定位类型",
-      "McWssListenIp": "MCWSS 监听IP地址",
-      "McWssHostPort": "MCWSS主机端口"
-    },
-    "HotKey": {
-      "HotKey": "快捷键",
-      "Actions": {
-        "Mute": "静音",
-        "Deafen": "拒听"
-      }
-    },
-    "Advanced": {
-      "Advanced": "高级设置",
-      "TriggerGc": "触发垃圾回收",
-      "Crash": "测试崩溃"
+  "CrashLogs": {
+    "Title": "崩溃日志",
+    "Notification": {
+      "Badge": "崩溃日志",
+      "Cleared": "已成功清除所有日志。",
+      "Copied": "崩溃日志已复制到剪贴板。",
+      "Empty": "没有可复制的崩溃日志。"
+    }
+  },
+  "AddServer": {
+    "Title": "添加服务器",
+    "Name": "名称",
+    "IP": "IP",
+    "Port": "端口",
+    "Notification": {
+      "Badge": "添加服务器",
+      "Added": "{0} 已添加。"
+    }
+  },
+  "EditServer": {
+    "Title": "编辑服务器",
+    "Name": "名称",
+    "IP": "IP",
+    "Port": "端口",
+    "Notification": {
+      "Badge": "编辑服务器",
+      "Edited": "{0} 已编辑。"
     }
   },
   "SelectedServer": {
     "Address": "地址",
-    "PingInformation": "Ping信息",
+    "PingInformation": "Ping 信息",
     "Connect": "连接",
     "Edit": "编辑服务器",
     "Delete": "删除服务器",
     "ServerInfo": {
-      "ServerInfo": "服务器信息",
+      "Title": "服务器信息",
       "Status": {
         "Latency": "延迟: {0}",
-        "Motd": "Motd: {0}",
+        "Motd": "MOTD: {0}",
         "PositioningType": "定位类型: {0}",
         "ConnectedClients": "已连接客户端: {0}",
         "Version": "版本: {0}",
-        "Pinging": "正在Ping..."
+        "Pinging": "正在 Ping..."
       }
+    },
+    "Notification": {
+      "Badge": "已选服务器",
+      "Failed": "无法启动 VOIP 进程！",
+      "Removed": "{0} 已删除。"
     }
   },
-  "McWssServer": {
-    "Exceptions": {
-      "Failed": "无法启动 McWss 服务器! 请检查是否有其他进程正在使用相同的端口!"
+  "Voice": {
+    "Modal": {
+      "Volume": "音量",
+      "Muted": "已静音"
     }
   },
   "VoiceCraft": {
+    "Notification": {
+      "Badge": "VoiceCraft",
+      "Error": "连接时发生错误！",
+      "Disconnected": "已断开连接！原因: {0}"
+    },
     "Status": {
       "Initializing": "正在初始化...",
       "Connecting": "正在连接...",
@@ -151,11 +179,65 @@
       "Manual": "手动断开连接。",
       "ServerFull": "服务器已满！",
       "IncompatibleVersion": "客户端/服务器版本不兼容！",
-      "ServerSidedOnly": "服务器只接受服务器端定位！",
+      "ServerSidedOnly": "服务器只接受服务端定位！",
       "ClientSidedOnly": "服务器只接受客户端定位！",
-      "Kicked": "被踢出服务器！",
-      "Shutdown": "服务器关闭！",
-      "Error": "尝试登录时发生错误！"
+      "Kicked": "已被踢出！",
+      "Shutdown": "服务器已关闭！",
+      "Error": "连接时发生错误！"
     }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "McWss 连接已建立: {0}",
+      "Disconnected": "McWss 连接已断开！",
+      "Failed": "无法启动 McWss 服务器！请检查是否有其他进程正在使用相同端口！"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "权限服务"
+    }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Speex 预处理器"
+    },
+    "Clippers": {
+      "None": "无",
+      "Hard": "硬限幅器",
+      "TanhSoft": "Tanh 软限幅器"
+    },
+    "AudioDeviceInfo": {
+      "Default": "{0} - 默认"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "默认",
+      "Dark": "深色",
+      "DarkPurple": "深紫色",
+      "DarkGreen": "深绿色",
+      "Light": "浅色"
+    },
+    "BackgroundImages": {
+      "None": "无",
+      "DockNight": "码头夜景",
+      "DockDay": "码头日景",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense 出生点",
+      "SineSmpBase": "SineSMP 基地"
+    }
+  },
+  "BackgroundService": {
+    "Title": "VoiceCraft",
+    "Description": "运行中...",
+    "Permissions": {
+      "NotificationNotGranted": "需要通知权限来显示后台进程和错误。",
+      "MicrophoneNotGranted": "未授予麦克风访问权限！"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "未找到视图: {0}"
   }
 }
