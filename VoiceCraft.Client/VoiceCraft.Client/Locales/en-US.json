@@ -175,5 +175,32 @@
     "Notification": {
       "Badge": "Permissions Service"
     }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Speex Preprocessor"
+    },
+    "Clippers": {
+      "None": "None",
+      "Hard": "Hard Clipper",
+      "TanhSoft": "Tanh Soft Clipper"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "Default",
+      "Dark": "Dark",
+      "DarkPurple": "Dark Purple",
+      "DarkGreen": "Dark Green",
+      "Light": "Light"
+    },
+    "BackgroundImages": {
+      "None": "None",
+      "DockNight": "Dock Night",
+      "DockDay": "Dock Day",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense Spawn",
+      "SineSmpBase": "SineSMP Base"
+    }
   }
 }

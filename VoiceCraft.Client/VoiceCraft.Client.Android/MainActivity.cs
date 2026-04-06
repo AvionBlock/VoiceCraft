@@ -62,7 +62,7 @@ public class MainActivity : AvaloniaMainActivity<App>
         App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
             new RegisteredAudioPreprocessor(
                 Constants.SpeexDspPreprocessorGuid, 
-                "Speex",
+                "AudioService.Preprocessors.Speex",
                 () => new SpeexDspPreprocessor(
                     Constants.SampleRate,
                     Constants.FrameSize,

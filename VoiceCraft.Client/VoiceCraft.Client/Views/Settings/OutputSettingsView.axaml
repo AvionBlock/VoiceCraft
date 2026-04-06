@@ -62,7 +62,7 @@
                     
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding OutputSettingsData.AudioClippers}"
-                              DisplayMemberBinding="{Binding Name}"
+                              DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding OutputSettingsData.AudioClipper}"
                               SelectedValueBinding="{Binding Id}" />
                     

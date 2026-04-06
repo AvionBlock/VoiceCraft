@@ -75,7 +75,7 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.Denoisers}"
-                              DisplayMemberBinding="{Binding Name}"
+                              DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.Denoiser}"
                               SelectedValueBinding="{Binding Id}" />
 
@@ -86,7 +86,7 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.AutomaticGainControllers}"
-                              DisplayMemberBinding="{Binding Name}"
+                              DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.AutomaticGainController}"
                               SelectedValueBinding="{Binding Id}" />
 
@@ -97,7 +97,7 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.EchoCancelers}"
-                              DisplayMemberBinding="{Binding Name}"
+                              DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}" />
                     

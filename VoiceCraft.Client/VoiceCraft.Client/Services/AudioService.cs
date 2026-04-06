@@ -135,10 +135,11 @@ public class AudioService
     }
 
     private class EmptyRegisteredAudioPreprocessor()
-        : RegisteredAudioPreprocessor(Guid.Empty, "None", () => throw new NotSupportedException(), true, true, true);
+        : RegisteredAudioPreprocessor(Guid.Empty, "AudioService.Clippers.None", () => throw new NotSupportedException(),
+            true, true, true);
 
     private class EmptyRegisteredAudioClipper()
-        : RegisteredAudioClipper(Guid.Empty, "None", () => throw new NotSupportedException());
+        : RegisteredAudioClipper(Guid.Empty, "AudioService.Clippers.None", () => throw new NotSupportedException());
 }
 
 public class RegisteredAudioPreprocessor(
