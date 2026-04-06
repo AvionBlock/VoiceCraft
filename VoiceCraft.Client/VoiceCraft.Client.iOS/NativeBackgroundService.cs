@@ -25,7 +25,7 @@ public class NativeBackgroundService(
             if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
                 PermissionStatus.Granted)
             {
-                throw new PermissionException("Microphone access not granted!");
+                throw new PermissionException("BackgroundService.Permissions.MicrophoneNotGranted");
             }
 
             var backgroundType = typeof(T);

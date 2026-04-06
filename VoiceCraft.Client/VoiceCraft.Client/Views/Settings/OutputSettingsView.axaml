@@ -40,7 +40,9 @@
                     
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding OutputSettingsData.OutputDevices}"
-                              SelectedItem="{Binding OutputSettingsData.OutputDevice}" />
+                              SelectedValue="{Binding OutputSettingsData.OutputDevice}"
+                              DisplayMemberBinding="{Binding DisplayName}"
+                              SelectedValueBinding="{Binding Name}"/>
                     
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">

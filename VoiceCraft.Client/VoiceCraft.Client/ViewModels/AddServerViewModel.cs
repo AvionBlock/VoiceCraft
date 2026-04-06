@@ -48,9 +48,6 @@ public partial class AddServerViewModel(
     {
         try
         {
-            if (ServerPort == null)
-                throw new Exception("Server port must be between 1 and 65535.");
-
             Servers.AddServer(Server);
             notificationService.SendSuccessNotification(
                 "AddServer.Notification.Badge",

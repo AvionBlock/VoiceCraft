@@ -37,11 +37,13 @@
                                VerticalAlignment="Center"
                                FontSize="15"
                                Text="{locale:Localize Settings.Input.InputDevices}" />
-                    
+
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.InputDevices}"
-                              SelectedItem="{Binding InputSettingsData.InputDevice}" />
-                    
+                              SelectedValue="{Binding InputSettingsData.InputDevice}"
+                              DisplayMemberBinding="{Binding DisplayName}"
+                              SelectedValueBinding="{Binding Name}"/>
+
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">
                             <TextBlock Grid.Column="0" VerticalAlignment="Center"
@@ -54,7 +56,7 @@
                                 Minimum="0.0"
                                 Value="{Binding InputSettingsData.InputVolume}" />
                     </StackPanel>
-                    
+
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">
                             <TextBlock Grid.Column="0" VerticalAlignment="Center"
@@ -100,7 +102,7 @@
                               DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}" />
-                    
+
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left"
                                    VerticalAlignment="Center"

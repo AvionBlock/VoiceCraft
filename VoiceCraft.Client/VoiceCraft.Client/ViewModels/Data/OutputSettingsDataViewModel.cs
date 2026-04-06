@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -20,7 +21,7 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
     private bool _updating;
 
     //Lists
-    [ObservableProperty] private ObservableCollection<string> _outputDevices = [];
+    [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _outputDevices = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioClipper> _audioClippers = [];
 
     public OutputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
@@ -46,10 +47,10 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
 
     public void ReloadDevices()
     {
-        OutputDevices = ["Default", .._audioService.GetOutputDevices()];
+        OutputDevices = [.._audioService.GetOutputDevices()];
         AudioClippers = [.._audioService.RegisteredAudioClippers];
-        if (!OutputDevices.Contains(OutputDevice))
-            OutputDevice = "Default";
+        if (OutputDevices.All(outputDevice => outputDevice.Name != OutputDevice))
+            OutputDevice = OutputDevices.First(x => x.IsDefault).Name;
         if (AudioClippers.FirstOrDefault(x => x.Id == AudioClipper) == null)
             AudioClipper = Guid.Empty;
     }

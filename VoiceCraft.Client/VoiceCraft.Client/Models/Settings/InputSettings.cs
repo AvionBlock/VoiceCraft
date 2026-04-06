@@ -29,7 +29,7 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             if(value is > 2 or < 0)
-                throw new ArgumentException("Volume sensitivity must be between 0 and 2.");
+                throw new ArgumentException("Settings.Input.Validation.InputVolume");
             _inputVolume = value;
             OnUpdated?.Invoke(this);
         }
@@ -41,7 +41,7 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             if (value is > 1 or < 0)
-                throw new ArgumentException("Microphone sensitivity must be between 0 and 1.");
+                throw new ArgumentException("Settings.Input.Validation.MicrophonesSensitivity");
             _microphoneSensitivity = value;
             OnUpdated?.Invoke(this);
         }

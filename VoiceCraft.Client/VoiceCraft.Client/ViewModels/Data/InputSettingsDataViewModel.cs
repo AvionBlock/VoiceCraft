@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -21,7 +22,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     [ObservableProperty] private Guid _echoCanceler;
 
     //Lists
-    [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
+    [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _inputDevices = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _denoisers = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _automaticGainControllers = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _echoCancelers = [];
@@ -54,13 +55,13 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
     public void ReloadDevices()
     {
-        InputDevices = ["Default", .._audioService.GetInputDevices()];
+        InputDevices = [.._audioService.GetInputDevices()];
         Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
         AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
         EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
         
-        if (!InputDevices.Contains(InputDevice))
-            InputDevice = "Default";
+        if (InputDevices.All(outputDevice => outputDevice.Name != InputDevice))
+            InputDevice = InputDevices.First(x => x.IsDefault).Name;
         if (Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
             Denoiser = Guid.Empty;
         if (AutomaticGainControllers.FirstOrDefault(x => x.Id == AutomaticGainController) == null)

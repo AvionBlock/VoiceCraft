@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using VoiceCraft.Client.ViewModels;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Services;
 
@@ -15,7 +16,7 @@ public class ViewLocatorService(Func<string, Control?> getView) : IDataTemplate
         var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
         var view = getView(name);
 
-        return view ?? new TextBlock { Text = "Not Found: " + name };
+        return view ?? new TextBlock { Text = Localizer.Get($"ViewLocatorService.ViewNotFound:{name}") };
     }
 
     public bool Match(object? data)

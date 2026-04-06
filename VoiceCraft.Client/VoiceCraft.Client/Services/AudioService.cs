@@ -9,6 +9,7 @@ using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Services;
 
@@ -50,16 +51,16 @@ public class AudioService
         return id == Guid.Empty ? null : _registeredAudioClippers.GetValueOrDefault(id);
     }
 
-    public IEnumerable<string> GetInputDevices()
+    public IEnumerable<AudioDeviceInfo> GetInputDevices()
     {
         _engine.UpdateAudioDevicesInfo();
-        return _engine.CaptureDevices.Select(x => x.Name);
+        return _engine.CaptureDevices.Select(x => new AudioDeviceInfo(x.Name, x.IsDefault));
     }
 
-    public IEnumerable<string> GetOutputDevices()
+    public IEnumerable<AudioDeviceInfo> GetOutputDevices()
     {
         _engine.UpdateAudioDevicesInfo();
-        return _engine.PlaybackDevices.Select(x => x.Name);
+        return _engine.PlaybackDevices.Select(x => new AudioDeviceInfo(x.Name, x.IsDefault));
     }
 
     public AudioCaptureDevice InitializeCaptureDevice(int sampleRate, int channels, uint frameSize, string inputDevice)
@@ -140,6 +141,13 @@ public class AudioService
 
     private class EmptyRegisteredAudioClipper()
         : RegisteredAudioClipper(Guid.Empty, "AudioService.Clippers.None", () => throw new NotSupportedException());
+}
+
+public class AudioDeviceInfo(string name, bool isDefault)
+{
+    public string DisplayName => isDefault ? Localizer.Get($"AudioService.AudioDeviceInfo.Default:{name}") : name;
+    public string Name { get; } = name;
+    public bool IsDefault { get; } = isDefault;
 }
 
 public class RegisteredAudioPreprocessor(

@@ -78,11 +78,11 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         if (AndroidBackgroundService.IsStarted) return;
         //Don't care if it's granted or not.
         await permissionsService.CheckAndRequestPermission<Permissions.PostNotifications>(
-            "Notifications are required to show running background processes and errors.");
+            "BackgroundService.Permissions.NotificationNotGranted");
         
         if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
             PermissionStatus.Granted) {
-            throw new PermissionException("Microphone access not granted!");
+            throw new PermissionException("BackgroundService.Permissions.MicrophoneNotGranted");
         }
 
         var context = Application.Context;

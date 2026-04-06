@@ -26,7 +26,7 @@ public class OutputSettings : Setting<OutputSettings>
         set
         {
             if (value is > 2 or < 0)
-                throw new ArgumentException("Output Volume must be between 0 and 2.");
+                throw new ArgumentException("Settings.Input.Validation.OutputVolume");
             _outputVolume = value;
             OnUpdated?.Invoke(this);
         }

@@ -192,7 +192,7 @@
                                Text="{Binding SelectedEntity.DisplayName, FallbackValue='N.A.'}" />
                     <Grid ColumnDefinitions="Auto, Auto">
                         <TextBlock Grid.Column="0" VerticalAlignment="Center"
-                                   Text="Volume" />
+                                   Text="{locale:Localize Voice.Modal.Volume}" />
                         <TextBlock Grid.Column="1" VerticalAlignment="Center"
                                    Text="{Binding SelectedEntity.Volume, StringFormat='{} {0:P0}', FallbackValue='N.A.'}" />
                     </Grid>
@@ -201,7 +201,7 @@
                             Value="{Binding SelectedEntity.Volume, FallbackValue=0}" />
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding SelectedEntity.UserMuted, FallbackValue=False}">
-                        <TextBlock Text="Muted" />
+                        <TextBlock Text="{locale:Localize Voice.Modal.Muted}" />
                     </ToggleButton>
                 </StackPanel>
             </Border>

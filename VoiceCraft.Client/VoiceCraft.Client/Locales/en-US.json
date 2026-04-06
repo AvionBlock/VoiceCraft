@@ -34,6 +34,13 @@
       },
       "Notification": {
         "Badge": "Input Settings"
+      },
+      "Validation": {
+        "InputVolume": "Input volume must be between 0 and 2.",
+        "MicrophoneSensitivity": "Microphone sensitivity must be between 0 and 2."
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "Microphone access not granted!"
       }
     },
     "Output": {
@@ -44,6 +51,9 @@
       "TestOutput": "Test Output",
       "Notification": {
         "Badge": "Output Settings"
+      },
+      "Validation": {
+        "OutputVolume": "Output Volume must be between 0 and 2."
       }
     },
     "Network": {
@@ -68,6 +78,15 @@
           "Badge": "GC",
           "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
         }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "Server name cannot be empty or whitespace!",
+        "Ip": "Server IP cannot be empty or whitespace!",
+        "Port": "Server port must be between 1 and 65535!",
+        "NameLimit": "Server name cannot be longer than {0} characters!",
+        "IpLimit": "Server IP cannot be longer than {0} characters!"
       }
     }
   },
@@ -136,6 +155,12 @@
       "Removed": "{0} has been removed."
     }
   },
+  "Voice": {
+    "Modal": {
+      "Volume": "Volume",
+      "Muted": "Muted"
+    }
+  },
   
   "VoiceCraft": {
     "Notification": {
@@ -171,6 +196,7 @@
       "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
     }
   },
+  
   "PermissionsService": {
     "Notification": {
       "Badge": "Permissions Service"
@@ -184,6 +210,9 @@
       "None": "None",
       "Hard": "Hard Clipper",
       "TanhSoft": "Tanh Soft Clipper"
+    },
+    "AudioDeviceInfo": {
+      "Default": "{0} - Default"
     }
   },
   "ThemesService": {
@@ -202,5 +231,16 @@
       "BlockSenseSpawn": "BlockSense Spawn",
       "SineSmpBase": "SineSMP Base"
     }
+  },
+  "BackgroundService": {
+    "Title": "VoiceCraft",
+    "Description": "Running...",
+    "Permissions": {
+      "NotificationNotGranted": "Notifications are required to show running background processes and errors.",
+      "MicrophoneNotGranted": "Microphone access not granted!"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "View not found: {0}"
   }
 }

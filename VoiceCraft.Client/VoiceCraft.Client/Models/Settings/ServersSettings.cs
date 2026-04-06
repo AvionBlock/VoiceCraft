@@ -35,15 +35,15 @@ public class ServersSettings : Setting<ServersSettings>
     public void AddServer(Server server)
     {
         if (string.IsNullOrWhiteSpace(server.Name))
-            throw new Exception("Server name cannot be empty or whitespace!");
+            throw new ArgumentException("Settings.Servers.Validation.Name");
         if (string.IsNullOrWhiteSpace(server.Ip))
-            throw new Exception("Server IP cannot be empty or whitespace!");
+            throw new ArgumentException("Settings.Servers.Validation.Ip");
         if (server.Port < 1)
-            throw new Exception("Server port must be between 1 and 65535.");
+            throw new ArgumentException("Settings.Servers.Validation.Port");
         if (server.Name.Length > Server.NameLimit)
-            throw new Exception($"Server name cannot be longer than {Server.NameLimit} characters!");
+            throw new ArgumentException($"Settings.Servers.Validation.NameLimit:{Server.NameLimit}");
         if (server.Ip.Length > Server.IpLimit)
-            throw new Exception($"Server IP cannot be longer than {Server.IpLimit} characters!");
+            throw new ArgumentException($"Settings.Servers.Validation.IpLimit:{Server.IpLimit}");
 
         _servers.Insert(0, server);
         OnUpdated?.Invoke(this);
@@ -84,7 +84,7 @@ public class Server : Setting<Server>
         set
         {
             if (value.Length > NameLimit)
-                throw new ArgumentException($"Name cannot be longer than {NameLimit} characters!");
+                throw new ArgumentException($"Settings.Servers.Validation.NameLimit:{NameLimit}");
             _name = value;
             OnUpdated?.Invoke(this);
         }
@@ -96,7 +96,7 @@ public class Server : Setting<Server>
         set
         {
             if (value.Length > IpLimit)
-                throw new ArgumentException($"IP address cannot be longer than {IpLimit} characters!");
+                throw new ArgumentException($"Settings.Servers.Validation.IpLimit:{IpLimit}");
             _ip = value;
             OnUpdated?.Invoke(this);
         }
@@ -108,7 +108,7 @@ public class Server : Setting<Server>
         set
         {
             if (value < 1)
-                throw new ArgumentException("Port must be between 1 and 65535.");
+                throw new ArgumentException("Settings.Servers.Validation.Port");
             _port = value;
             OnUpdated?.Invoke(this);
         }

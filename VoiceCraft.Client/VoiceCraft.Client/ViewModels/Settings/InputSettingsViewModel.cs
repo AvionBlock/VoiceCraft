@@ -81,10 +81,8 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>(
-                    "VoiceCraft requires the microphone permission to be granted in order to test recording!") !=
-                PermissionStatus.Granted)
-                throw new InvalidOperationException("Could not create recorder, Microphone permission not granted.");
+            if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
+                throw new PermissionException("Settings.Input.Permissions.MicrophoneNotGranted");
 
             lock (_lock)
             {
