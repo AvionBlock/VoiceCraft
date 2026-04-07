@@ -17,7 +17,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{locale:Localize Settings.Network.Network}"
+                       Text="{locale:Localize Settings.Network.Title}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"

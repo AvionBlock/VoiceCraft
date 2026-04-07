@@ -38,7 +38,11 @@ public partial class CreditsViewModel : ViewModelBase
             new ContributorDataViewModel(
                 "Unny",
                 ["Credits.Roles.Translator"],
-                LoadImage("avares://VoiceCraft.Client/Assets/Contributors/unny.png"))
+                LoadImage("avares://VoiceCraft.Client/Assets/Contributors/unny.png")),
+            new ContributorDataViewModel(
+                "AlphaMSq",
+                ["Credits.Roles.Translator", "Credits.Roles.Programmer"],
+                LoadImage("avares://VoiceCraft.Client/Assets/Contributors/alphamsq.png"))
         ];
 
         Localizer.Instance.OnLanguageChanged += UpdateLocalizations;

@@ -18,7 +18,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{locale:Localize AddServer.AddServer}"
+                       Text="{locale:Localize AddServer.Title}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"
@@ -41,12 +41,12 @@
                     <TextBlock Text="{locale:Localize AddServer.Port}" />
                     <NumericUpDown Increment="1"
                                    Maximum="65535"
-                                   Minimum="0"
-                                   Value="{Binding Server.Port}" />
+                                   Minimum="1"
+                                   Value="{Binding ServerPort}" />
                     <Button HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             Command="{Binding AddServerCommand}">
-                        <TextBlock Text="{locale:Localize AddServer.AddServer}" TextAlignment="Center" />
+                        <TextBlock Text="{locale:Localize AddServer.Title}" TextAlignment="Center" />
                     </Button>
                 </StackPanel>
             </Border>

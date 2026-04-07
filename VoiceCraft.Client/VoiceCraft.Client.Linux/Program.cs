@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
+using SoundFlow.Abstracts;
+using SoundFlow.Backends.MiniAudio;
 using VoiceCraft.Client.Linux.Audio;
 using VoiceCraft.Client.Linux.Permissions;
 using VoiceCraft.Client.Services;
@@ -25,30 +27,26 @@ internal sealed class Program
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         try
         {
-            //Register Speex Preprocessors
-            App.ServiceCollection.AddSingleton(new RegisteredEchoCanceler(
-                Constants.SpeexDspEchoCancelerGuid,
-                "SpeexDsp Echo Canceler",
-                () => new SpeexDspEchoCanceler()));
-            App.ServiceCollection.AddSingleton(new RegisteredAutomaticGainController(
-                Constants.SpeexDspAutomaticGainControllerGuid,
-                "SpeexDsp Automatic Gain Controller",
-                () => new SpeexDspAutomaticGainController()));
-            App.ServiceCollection.AddSingleton(new RegisteredDenoiser(
-                Constants.SpeexDspDenoiserGuid,
-                "SpeexDsp Denoiser",
-                () => new SpeexDspDenoiser()));
-
-            App.ServiceCollection.AddSingleton<AudioService, NativeAudioService>();
+            App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
             App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
                 new NativeBackgroundService(x.GetRequiredService));
+            App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
+                new RegisteredAudioPreprocessor(
+                    Constants.SpeexDspPreprocessorGuid,
+                    "AudioService.Preprocessors.Speex",
+                    () => new SpeexDspPreprocessor(
+                        Constants.SampleRate,
+                        Constants.FrameSize,
+                        Constants.RecordingChannels,
+                        Constants.PlaybackChannels),
+                    true,
+                    true,
+                    true));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
                 new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
                     x.GetRequiredService<IAudioDecoder>));
-            App.ServiceCollection.AddTransient<IAudioEncoder, NativeAudioEncoder>();
-            App.ServiceCollection.AddTransient<IAudioDecoder, NativeAudioDecoder>();
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

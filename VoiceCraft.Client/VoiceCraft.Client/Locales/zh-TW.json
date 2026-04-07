@@ -1,81 +1,28 @@
 {
-  "BackgroundService": {
-    "BackgroundError": "背景服務錯誤: {0}"
-  },
-  "Notification": {
-    "VoiceCraft": {
-      "Badge": "VoiceCraft"
-    },
-    "Servers": {
+  "Servers": {
+    "Title": "伺服器",
+    "Notification": {
       "Badge": "伺服器",
-      "Added": "{0} 已添加。",
-      "Edited": "{0} 已編輯。",
       "Removed": "{0} 已刪除。"
-    },
-    "GC": {
-      "Badge": "垃圾回收",
-      "Triggered": "垃圾回收觸發。內存清除: {0}mb。"
-    },
-    "CrashLogs": {
-      "Badge": "崩潰日志",
-      "Cleared": "成功清除所有日志。"
-    },
-    "Error": {
-      "Badge": "錯誤",
-      "VoipFailedToStart": "背景服務無法啟動VOIP進程！",
-      "VoipBackgroundError": "VOIP背景服務錯誤: {0}"
-    },
-    "McWss": {
-      "Badge": "McWss",
-      "Connected": "McWss 連接已建立: {0}",
-      "Disconnected": "McWss 連接已斷開！"
-    }
-  },
-  "Home": {
-    "Servers": "伺服器",
-    "Settings": "設置",
-    "Credits": "製作人員",
-    "CrashLogs": "崩潰日志"
-  },
-  "AddServer": {
-    "AddServer": "添加伺服器",
-    "Name": "伺服器名稱",
-    "IP": "IP地址",
-    "Port": "端口"
-  },
-  "EditServer": {
-    "EditServer": "修改伺服器",
-    "Name": "伺服器名稱",
-    "IP": "IP地址",
-    "Port": "端口"
-  },
-  "Credits": {
-    "AppVersion": "應用版本: {0}",
-    "Version": "版本: {0}",
-    "Codec": "編解碼器: {0}",
-    "Contributors": "貢獻者",
-    "Roles": {
-      "Author": "作者",
-      "Translator": "翻譯者",
-      "Programmer": "程序員"
     }
   },
   "Settings": {
+    "Title": "設定",
     "General": {
-      "General": "常規設置",
+      "Title": "一般設定",
       "Language": "語言",
       "NotificationDismiss": "通知消失時間(毫秒)",
-      "DisableNotifications": "禁用通知",
+      "DisableNotifications": "停用通知",
       "HideServerAddresses": "隱藏伺服器地址"
     },
     "Appearance": {
-      "Appearance": "外觀設置",
+      "Title": "外觀",
       "Theme": "主題",
       "BackgroundImage": "背景圖片"
     },
     "Input": {
-      "Input": "輸入設置",
-      "InputDevices": "輸入設備",
+      "Title": "輸入設定",
+      "InputDevices": "輸入裝置",
       "InputVolume": "輸入音量",
       "MicrophoneSensitivity": "麥克風靈敏度",
       "Denoisers": "降噪器",
@@ -84,98 +31,213 @@
       "MicrophoneTest": {
         "MicrophoneTest": "麥克風測試",
         "Test": "測試"
+      },
+      "Notification": {
+        "Badge": "輸入設定"
+      },
+      "Validation": {
+        "InputVolume": "輸入音量必須介於 0 到 2 之間。",
+        "MicrophoneSensitivity": "麥克風靈敏度必須介於 0 到 2 之間。"
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "未授予麥克風存取權限！"
       }
     },
     "Output": {
-      "Output": "輸出設置",
-      "OutputDevices": "輸出設備",
+      "Title": "輸出設定",
+      "OutputDevices": "輸出裝置",
       "OutputVolume": "輸出音量",
-      "AudioClippers": "音訊剪輯器",
-      "TestOutput": "測試輸出"
+      "AudioClippers": "音訊限幅器",
+      "TestOutput": "測試輸出",
+      "Notification": {
+        "Badge": "輸出設定"
+      },
+      "Validation": {
+        "OutputVolume": "輸出音量必須介於 0 到 2 之間。"
+      }
     },
     "Network": {
-      "Network": "網路設置",
+      "Title": "網路設定",
       "PositioningType": "定位類型",
-      "McWssListenIp": "MCWSS監聽IP地址",
-      "McWssHostPort": "MCWSS主機端口"
+      "McWssListenIp": "MCWSS 監聽 IP 位址",
+      "McWssHostPort": "MCWSS 主機連接埠"
     },
     "HotKey": {
-      "HotKey": "快捷鍵",
+      "Title": "快捷鍵",
       "Actions": {
         "Mute": "靜音",
         "Deafen": "拒聽"
       }
     },
     "Advanced": {
-      "Advanced": "高級設置",
+      "Title": "進階設定",
       "TriggerGc": "觸發垃圾回收",
-      "Crash": "測試崩潰"
-    }
-  },
-  "SelectedServer": {
-    "Address": "地址",
-    "PingInformation": "Ping信息",
-    "Connect": "連接",
-    "Edit": "編輯伺服器",
-    "Delete": "刪除伺服器",
-    "ServerInfo": {
-      "ServerInfo": "伺服器信息",
-      "Status": {
-        "Latency": "延遲: {0}",
-        "Motd": "Motd: {0}",
-        "PositioningType": "定位類型: {0}",
-        "ConnectedClients": "已連接客戶端: {0}",
-        "Version": "版本: {0}",
-        "Pinging": "正在Ping..."
+      "Crash": "測試當機",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "已觸發垃圾回收。清理的記憶體: {0}mb。"
+        }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "伺服器名稱不能為空或只包含空白字元！",
+        "Ip": "伺服器 IP 不能為空或只包含空白字元！",
+        "Port": "伺服器連接埠必須介於 1 到 65535 之間！",
+        "NameLimit": "伺服器名稱不能超過 {0} 個字元！",
+        "IpLimit": "伺服器 IP 不能超過 {0} 個字元！"
       }
     }
   },
-  "Audio": {
-    "Recorder": {
-      "InitFailed": "錄音器初始化失敗！",
-      "Init": "錄音器未初始化！"
-    },
-    "Player": {
-      "InitFailed": "播放器初始化失敗！",
-      "Init": "播放器未初始化！"
-    },
-    "AEC": {
-      "InitFailed": "回聲消除器初始化失敗！",
-      "Init": "回聲消除器未初始化！"
-    },
-    "AGC": {
-      "InitFailed": "增益控制器初始化失敗！",
-      "Init": "增益控制器未初始化！"
-    },
-    "DN": {
-      "InitFailed": "降噪器初始化失敗！",
-      "Init": "降噪器未初始化！"
+  "Credits": {
+    "Title": "致謝",
+    "AppVersion": "應用程式版本: {0}",
+    "Version": "版本: {0}",
+    "Codec": "編解碼器: {0}",
+    "Contributors": "貢獻者",
+    "Roles": {
+      "Author": "作者",
+      "Translator": "翻譯者",
+      "Programmer": "程式設計師"
     }
   },
-  "McWssServer": {
-    "Exceptions": {
-      "Failed": "無法啟動 McWss 伺服器! 請檢查是否有其他進程正在使用相同的端口!"
+  "CrashLogs": {
+    "Title": "當機記錄",
+    "Notification": {
+      "Badge": "當機記錄",
+      "Cleared": "已成功清除所有記錄。",
+      "Copied": "當機記錄已複製到剪貼簿。",
+      "Empty": "沒有可複製的當機記錄。"
+    }
+  },
+  "AddServer": {
+    "Title": "新增伺服器",
+    "Name": "名稱",
+    "IP": "IP",
+    "Port": "連接埠",
+    "Notification": {
+      "Badge": "新增伺服器",
+      "Added": "{0} 已新增。"
+    }
+  },
+  "EditServer": {
+    "Title": "編輯伺服器",
+    "Name": "名稱",
+    "IP": "IP",
+    "Port": "連接埠",
+    "Notification": {
+      "Badge": "編輯伺服器",
+      "Edited": "{0} 已編輯。"
+    }
+  },
+  "SelectedServer": {
+    "Address": "位址",
+    "PingInformation": "Ping 資訊",
+    "Connect": "連線",
+    "Edit": "編輯伺服器",
+    "Delete": "刪除伺服器",
+    "ServerInfo": {
+      "Title": "伺服器資訊",
+      "Status": {
+        "Latency": "延遲: {0}",
+        "Motd": "MOTD: {0}",
+        "PositioningType": "定位類型: {0}",
+        "ConnectedClients": "已連線客戶端: {0}",
+        "Version": "版本: {0}",
+        "Pinging": "正在 Ping..."
+      }
+    },
+    "Notification": {
+      "Badge": "已選伺服器",
+      "Failed": "無法啟動 VOIP 程序！",
+      "Removed": "{0} 已刪除。"
+    }
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "音量",
+      "Muted": "已靜音"
     }
   },
   "VoiceCraft": {
+    "Notification": {
+      "Badge": "VoiceCraft",
+      "Error": "連線時發生錯誤！",
+      "Disconnected": "已中斷連線！原因: {0}"
+    },
     "Status": {
       "Initializing": "正在初始化...",
-      "Connecting": "正在連接...",
-      "Connected": "已連接！",
-      "Disconnected": "已斷開連接！原因: {0}"
+      "Connecting": "正在連線...",
+      "Connected": "已連線！",
+      "Disconnected": "已中斷連線！原因: {0}"
     },
     "DescriptionStatus": {
       "McWss": "McWss 監聽: {0}:{1}"
     },
     "DisconnectReason": {
-      "Manual": "手動斷開連接。",
+      "Manual": "手動中斷連線。",
       "ServerFull": "伺服器已滿！",
-      "IncompatibleVersion": "客戶端/伺服器版本不兼容！",
+      "IncompatibleVersion": "客戶端/伺服器版本不相容！",
       "ServerSidedOnly": "伺服器只接受伺服器端定位！",
       "ClientSidedOnly": "伺服器只接受客戶端定位！",
-      "Kicked": "被踢出伺服器！",
-      "Shutdown": "伺服器關閉！",
-      "Error": "嘗試登錄時發生錯誤！"
+      "Kicked": "已被踢出！",
+      "Shutdown": "伺服器已關閉！",
+      "Error": "連線時發生錯誤！"
     }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "McWss 連線已建立: {0}",
+      "Disconnected": "McWss 連線已中斷！",
+      "Failed": "無法啟動 McWss 伺服器！請檢查是否有其他程序正在使用相同連接埠！"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "權限服務"
+    }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Speex 預處理器"
+    },
+    "Clippers": {
+      "None": "無",
+      "Hard": "硬限幅器",
+      "TanhSoft": "Tanh 軟限幅器"
+    },
+    "AudioDeviceInfo": {
+      "Default": "{0} - 預設"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "預設",
+      "Dark": "深色",
+      "DarkPurple": "深紫色",
+      "DarkGreen": "深綠色",
+      "Light": "淺色"
+    },
+    "BackgroundImages": {
+      "None": "無",
+      "DockNight": "碼頭夜景",
+      "DockDay": "碼頭日景",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense 出生點",
+      "SineSmpBase": "SineSMP 基地"
+    }
+  },
+  "BackgroundService": {
+    "Title": "VoiceCraft",
+    "Description": "執行中...",
+    "Permissions": {
+      "NotificationNotGranted": "需要通知權限才能顯示背景程序與錯誤。",
+      "MicrophoneNotGranted": "未授予麥克風存取權限！"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "找不到檢視: {0}"
   }
 }

@@ -5,7 +5,7 @@ namespace VoiceCraft.Core
     public static class Constants
     {
         public const int Major = 1; //These need to be the same on both client and server!
-        public const int Minor = 4; //These need to be the same on both client and server!
+        public const int Minor = 5; //These need to be the same on both client and server!
         public const int Patch = 0; //This does not need to be the same on client and server.
 
         //Tick
@@ -20,20 +20,18 @@ namespace VoiceCraft.Core
         public const int MaxPacketPoolSize = 100; //100 Packets Per type.
 
         //Audio
-        public const AudioFormat Format = AudioFormat.Pcm16;
-        public const int BitDepth = 16;
+        private const int OutputBufferSizeMs = FrameSizeMs * 50;
+        private const int PrefillBufferSizeMs = FrameSizeMs * 2;
+
         public const int SampleRate = 48000;
-        public const int Channels = 1;
+        public const int RecordingChannels = 1;
+        public const int PlaybackChannels = 2;
+
         public const int FrameSizeMs = 20;
+        public const int FrameSize = SampleRate / 1000 * FrameSizeMs;
+        public const int OutputBufferSize = SampleRate / 1000 * OutputBufferSizeMs;
+        public const int PrefillBufferSize = SampleRate / 1000 * PrefillBufferSizeMs;
         public const int SilenceThresholdMs = 200; //200ms silence threshold.
-        //Enough to hold 1 second of audio. BECAUSE CERTAIN PLATFORMS FAIL TO WORK WITH SMALL BUFFERS!
-        public const int OutputBufferSizeMs = FrameSizeMs * 50;
-        // Prefill buffer before we start releasing into the audio driver to prevent hitches.
-        public const int PrefillBufferSizeMs = FrameSizeMs * 2;
-        //Audio Calculations
-        public const int SamplesPerFrame = SampleRate / 1000 * FrameSizeMs; //960 samples per frame.
-        public const int OutputBufferSamples = SampleRate / 1000 * OutputBufferSizeMs;
-        public const int PrefillBufferSamples = SampleRate / 1000 * PrefillBufferSizeMs;
 
         //Default Country Code & Fallback
         public const string DefaultLanguage = "en-US";
@@ -51,14 +49,10 @@ namespace VoiceCraft.Core
         public const string LargeImageText = "VoiceCraft";
 
         //Settings GUIDS.
-        //Speex DSP
-        public static readonly Guid SpeexDspEchoCancelerGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
+        //Preprocessors
+        //public static readonly Guid NativePreprocessorGuid = Guid.Parse("f35d855f-8fe6-4cd4-bf32-a656b5f5df27");
+        public static readonly Guid SpeexDspPreprocessorGuid = Guid.Parse("b4844eca-d5c0-497a-9819-7e4fa9ffa7ed");
 
-        public static readonly Guid SpeexDspAutomaticGainControllerGuid =
-            Guid.Parse("AE3F02FF-41A7-41FD-87A0-8EB0DA82B21C");
-
-        public static readonly Guid SpeexDspDenoiserGuid = Guid.Parse("6E911874-5D10-4C8C-8E0A-6B30DF16EF78");
-        
         //Clippers
         public static readonly Guid HardAudioClipperGuid = Guid.Parse("2e2657ab-c1f1-435a-8cff-9382bc8b7efa");
         public static readonly Guid TanhSoftAudioClipperGuid = Guid.Parse("962fe030-08c3-4e21-a9c1-fcfea0745b6a");

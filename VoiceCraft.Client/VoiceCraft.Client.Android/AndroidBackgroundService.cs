@@ -16,8 +16,8 @@ public class AndroidBackgroundService : Service
 {
     private const int NotificationId = 1000;
     private const string ChannelId = "1001";
-    public static string Title = "VoiceCraft";
-    public static string Description = "Running...";
+    public static string Title = "BackgroundService.Title";
+    public static string Description = "BackgroundService.Description";
     public static bool IsStarted { get; private set; }
 
     public static ConcurrentDictionary<Type, NativeBackgroundService.BackgroundTask> Services { get; } = new();

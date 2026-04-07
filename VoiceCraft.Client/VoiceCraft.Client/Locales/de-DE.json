@@ -1,0 +1,243 @@
+{
+  "Servers": {
+    "Title": "Server",
+    "Notification": {
+      "Badge": "Server",
+      "Removed": "{0} wurde entfernt."
+    }
+  },
+  "Settings": {
+    "Title": "Einstellungen",
+    "General": {
+      "Title": "Allgemeine Einstellungen",
+      "Language": "Sprache",
+      "NotificationDismiss": "Benachrichtigung ausblenden (ms)",
+      "DisableNotifications": "Benachrichtigungen deaktivieren",
+      "HideServerAddresses": "Serveradressen ausblenden"
+    },
+    "Appearance": {
+      "Title": "Darstellung",
+      "Theme": "Design",
+      "BackgroundImage": "Hintergrundbild"
+    },
+    "Input": {
+      "Title": "Eingabeeinstellungen",
+      "InputDevices": "Eingabegeräte",
+      "InputVolume": "Eingabelautstärke",
+      "MicrophoneSensitivity": "Mikrofonempfindlichkeit",
+      "Denoisers": "Rauschunterdrückung",
+      "AutomaticGainControllers": "Automatische Verstärkungsregelung",
+      "EchoCancelers": "Echo-Unterdrückung",
+      "MicrophoneTest": {
+        "MicrophoneTest": "Mikrofontest",
+        "Test": "Test"
+      },
+      "Notification": {
+        "Badge": "Eingabeeinstellungen"
+      },
+      "Validation": {
+        "InputVolume": "Die Eingabelautstärke muss zwischen 0 und 2 liegen.",
+        "MicrophoneSensitivity": "Die Mikrofonempfindlichkeit muss zwischen 0 und 2 liegen."
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "Kein Zugriff auf das Mikrofon!"
+      }
+    },
+    "Output": {
+      "Title": "Ausgabeeinstellungen",
+      "OutputDevices": "Ausgabegeräte",
+      "OutputVolume": "Ausgabelautstärke",
+      "AudioClippers": "Audio-Clipper",
+      "TestOutput": "Ausgabe testen",
+      "Notification": {
+        "Badge": "Ausgabeeinstellungen"
+      },
+      "Validation": {
+        "OutputVolume": "Die Ausgabelautstärke muss zwischen 0 und 2 liegen."
+      }
+    },
+    "Network": {
+      "Title": "Netzwerkeinstellungen",
+      "PositioningType": "Positionierungstyp",
+      "McWssListenIp": "MCWSS Listening-IP-Adresse",
+      "McWssHostPort": "MCWSS-Host-Port"
+    },
+    "HotKey": {
+      "Title": "Hotkeys",
+      "Actions": {
+        "Mute": "Stummschalten",
+        "Deafen": "Taub schalten"
+      }
+    },
+    "Advanced": {
+      "Title": "Erweiterte Einstellungen",
+      "TriggerGc": "Garbage Collector auslösen",
+      "Crash": "Testabsturz",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "Garbage Collection ausgelöst. Freigegebener Speicher: {0}mb."
+        }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "Der Servername darf nicht leer sein oder nur Leerzeichen enthalten!",
+        "Ip": "Die Server-IP darf nicht leer sein oder nur Leerzeichen enthalten!",
+        "Port": "Der Server-Port muss zwischen 1 und 65535 liegen!",
+        "NameLimit": "Der Servername darf nicht länger als {0} Zeichen sein!",
+        "IpLimit": "Die Server-IP darf nicht länger als {0} Zeichen sein!"
+      }
+    }
+  },
+  "Credits": {
+    "Title": "Mitwirkende",
+    "AppVersion": "App-Version: {0}",
+    "Version": "Version: {0}",
+    "Codec": "Codec: {0}",
+    "Contributors": "Beitragende",
+    "Roles": {
+      "Author": "Autor",
+      "Translator": "Übersetzer",
+      "Programmer": "Programmierer"
+    }
+  },
+  "CrashLogs": {
+    "Title": "Absturzprotokolle",
+    "Notification": {
+      "Badge": "Absturzprotokolle",
+      "Cleared": "Alle Protokolle wurden erfolgreich gelöscht.",
+      "Copied": "Absturzprotokolle wurden in die Zwischenablage kopiert.",
+      "Empty": "Keine Absturzprotokolle zum Kopieren vorhanden."
+    }
+  },
+  "AddServer": {
+    "Title": "Server hinzufügen",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port",
+    "Notification": {
+      "Badge": "Server hinzufügen",
+      "Added": "{0} wurde hinzugefügt."
+    }
+  },
+  "EditServer": {
+    "Title": "Server bearbeiten",
+    "Name": "Name",
+    "IP": "IP",
+    "Port": "Port",
+    "Notification": {
+      "Badge": "Server bearbeiten",
+      "Edited": "{0} wurde bearbeitet."
+    }
+  },
+  "SelectedServer": {
+    "Address": "Adresse",
+    "PingInformation": "Ping-Informationen",
+    "Connect": "Verbinden",
+    "Edit": "Server bearbeiten",
+    "Delete": "Server löschen",
+    "ServerInfo": {
+      "Title": "Serverinformationen",
+      "Status": {
+        "Latency": "Latenz: {0}",
+        "Motd": "MOTD: {0}",
+        "PositioningType": "Positionierungstyp: {0}",
+        "ConnectedClients": "Verbundene Clients: {0}",
+        "Version": "Version: {0}",
+        "Pinging": "Ping läuft..."
+      }
+    },
+    "Notification": {
+      "Badge": "Ausgewählter Server",
+      "Failed": "VOIP-Prozess konnte nicht gestartet werden!",
+      "Removed": "{0} wurde entfernt."
+    }
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "Lautstärke",
+      "Muted": "Stumm"
+    }
+  },
+  "VoiceCraft": {
+    "Notification": {
+      "Badge": "VoiceCraft",
+      "Error": "Beim Verbinden ist ein Fehler aufgetreten!",
+      "Disconnected": "Getrennt! Grund: {0}"
+    },
+    "Status": {
+      "Initializing": "Initialisierung...",
+      "Connecting": "Verbinden...",
+      "Connected": "Verbunden!",
+      "Disconnected": "Getrennt! Grund: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "McWss lauscht auf: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "Manuelle Trennung.",
+      "ServerFull": "Server ist voll!",
+      "IncompatibleVersion": "Inkompatible Client-/Server-Version!",
+      "ServerSidedOnly": "Server akzeptiert nur serverseitige Positionierung!",
+      "ClientSidedOnly": "Server akzeptiert nur clientseitige Positionierung!",
+      "Kicked": "Gekickt!",
+      "Shutdown": "Server heruntergefahren!",
+      "Error": "Beim Verbinden ist ein Fehler aufgetreten!"
+    }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "McWss-Verbindung hergestellt: {0}",
+      "Disconnected": "McWss-Verbindung getrennt!",
+      "Failed": "McWss-Server konnte nicht gestartet werden! Prüfe, ob der Port bereits verwendet wird!"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "Berechtigungsdienst"
+    }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Speex-Preprocessor"
+    },
+    "Clippers": {
+      "None": "Keine",
+      "Hard": "Harter Clipper",
+      "TanhSoft": "Weicher Tanh-Clipper"
+    },
+    "AudioDeviceInfo": {
+      "Default": "{0} - Standard"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "Standard",
+      "Dark": "Dunkel",
+      "DarkPurple": "Dunkellila",
+      "DarkGreen": "Dunkelgrün",
+      "Light": "Hell"
+    },
+    "BackgroundImages": {
+      "None": "Keine",
+      "DockNight": "Dock Nacht",
+      "DockDay": "Dock Tag",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense Spawn",
+      "SineSmpBase": "SineSMP Base"
+    }
+  },
+  "BackgroundService": {
+    "Title": "VoiceCraft",
+    "Description": "Läuft...",
+    "Permissions": {
+      "NotificationNotGranted": "Benachrichtigungen sind erforderlich, um Hintergrundprozesse und Fehler anzuzeigen.",
+      "MicrophoneNotGranted": "Kein Zugriff auf das Mikrofon!"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "Ansicht nicht gefunden: {0}"
+  }
+}

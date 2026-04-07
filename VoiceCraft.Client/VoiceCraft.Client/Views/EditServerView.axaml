@@ -42,12 +42,12 @@
                     <TextBlock Text="{locale:Localize 'EditServer.Port'}" />
                     <NumericUpDown Increment="1"
                                    Maximum="65535"
-                                   Minimum="0"
-                                   Value="{Binding EditableServer.Port}" />
+                                   Minimum="1"
+                                   Value="{Binding EditableServerPort}" />
                     <Button HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             Command="{Binding EditServerCommand}">
-                        <TextBlock Text="{locale:Localize 'EditServer.EditServer'}" TextAlignment="Center" />
+                        <TextBlock Text="{locale:Localize 'EditServer.Title'}" TextAlignment="Center" />
                     </Button>
                 </StackPanel>
             </Border>

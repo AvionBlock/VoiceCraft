@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
@@ -22,17 +22,17 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     [ObservableProperty] private Guid _echoCanceler;
 
     //Lists
-    [ObservableProperty] private ObservableCollection<string> _inputDevices = [];
-    [ObservableProperty] private ObservableCollection<RegisteredDenoiser> _denoisers = [];
-    [ObservableProperty] private ObservableCollection<RegisteredAutomaticGainController> _automaticGainControllers = [];
-    [ObservableProperty] private ObservableCollection<RegisteredEchoCanceler> _echoCancelers = [];
+    [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _inputDevices = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _denoisers = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _automaticGainControllers = [];
+    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _echoCancelers = [];
     private bool _disposed;
     private bool _updating;
 
     public InputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
-        _inputSettings = settingsService.InputSettings;
         _audioService = audioService;
+        _inputSettings = settingsService.InputSettings;
         _settingsService = settingsService;
 
         _inputSettings.OnUpdated += Update;
@@ -42,8 +42,6 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _denoiser = _inputSettings.Denoiser;
         _automaticGainController = _inputSettings.AutomaticGainController;
         _echoCanceler = _inputSettings.EchoCanceler;
-
-        _ = ReloadAvailableDevices();
     }
 
     public void Dispose()
@@ -55,17 +53,15 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task ReloadAvailableDevices()
+    public void ReloadDevices()
     {
-        InputDevices = ["Default", ..await _audioService.GetInputDevicesAsync()];
-        Denoisers = new ObservableCollection<RegisteredDenoiser>(_audioService.RegisteredDenoisers);
-        AutomaticGainControllers =
-            new ObservableCollection<RegisteredAutomaticGainController>(
-                _audioService.RegisteredAutomaticGainControllers);
-        EchoCancelers = new ObservableCollection<RegisteredEchoCanceler>(_audioService.RegisteredEchoCancelers);
-
-        if (!InputDevices.Contains(InputDevice))
-            InputDevice = "Default";
+        InputDevices = [.._audioService.GetInputDevices()];
+        Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
+        AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
+        EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
+        
+        if (InputDevices.All(outputDevice => outputDevice.Name != InputDevice))
+            InputDevice = InputDevices.First(x => x.IsDefault).Name;
         if (Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
             Denoiser = Guid.Empty;
         if (AutomaticGainControllers.FirstOrDefault(x => x.Id == AutomaticGainController) == null)
@@ -84,7 +80,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
-    
+
     partial void OnInputVolumeChanging(float value)
     {
         ThrowIfDisposed();

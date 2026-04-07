@@ -1,7 +1,6 @@
 # VoiceCraft Proximity Chat
 
-Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS (soon), Linux and MacOS
-(soon).
+Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
 
 <p align="center">
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
@@ -37,7 +36,7 @@ audio effects, audio simulations, authentication, and more!
 
 ## Packages, Guides And Resources
 
-- ### [Wiki](https://avionblock.github.io/VoiceCraft/)
+- ### [Wiki](https://voicecraft.avion.team/en)
 - ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
 - ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
 - ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
@@ -52,17 +51,17 @@ audio effects, audio simulations, authentication, and more!
 - ❗ Unknown status (limited support)
 - ❌ Not planned, Not supported.
 
-| Device      | x64 | x86 | arm32 | arm64 | Audio Backend |
-|-------------|-----|-----|-------|-------|---------------|
-| Linux       | ✅   | ❌   | ✅     | ✅     | OpenAL        |
-| Android     | ❎   | ❎   | ✅     | ✅     | Android API   |
-| Windows     | ✅   | ✅   | ❌     | ✅     | WinMM         |
-| iOS         | ❌   | ❌   | ✅     | ✅     | N.A.          |
-| MacOS       | ✅   | ❌   | ❌     | ✅     | N.A.          |
-| Web         | ❗   | ❗   | ❗     | ❗     | Web API       |
-| XBOX        | ❌   | ❌   | ❌     | ❌     | N.A.          |
-| PlayStation | ❌   | ❌   | ❌     | ❌     | N.A.          |
-| Switch      | ❌   | ❌   | ❌     | ❌     | N.A.          |
+| Device      | x64 | x86 | arm32 | arm64 | Supported Audio Backends         |
+|-------------|-----|-----|-------|-------|:---------------------------------|
+| Linux       | ✅   | ❌   | ✅     | ✅     | PulseAudio, JACK, ALSA           |
+| Android     | ❎   | ❎   | ✅     | ✅     | AAudio, OpenSL                   |
+| Windows     | ✅   | ✅   | ❌     | ✅     | WinMM, WASAPI, DirectSound, JACK |
+| iOS         | ❌   | ❌   | ✅     | ✅     | Core Audio                       |
+| MacOS       | ✅   | ❌   | ❌     | ✅     | Core Audio, JACK                 |
+| Web         | ❗   | ❗   | ❗     | ❗     | Web API                          |
+| XBOX        | ❌   | ❌   | ❌     | ❌     | N.A.                             |
+| PlayStation | ❌   | ❌   | ❌     | ❌     | N.A.                             |
+| Switch      | ❌   | ❌   | ❌     | ❌     | N.A.                             |
 
 ## Hosts
 
@@ -85,9 +84,8 @@ audio effects, audio simulations, authentication, and more!
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
 - [Message.Avalonia](https://github.com/xiyaowong/Message.Avalonia)
 - [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
-- [NAudio](https://github.com/naudio/NAudio)
-- [OpenTK (OpenAL)](https://github.com/opentk/opentk)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
+- [Soundflow](https://github.com/LSXPrime/SoundFlow/tree/master)
 
 ### Server
 

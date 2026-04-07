@@ -3,13 +3,17 @@
 <plist version="1.0">
     <dict>
         <key>CFBundleDisplayName</key>
-        <string>VoiceCraft.Client</string>
+        <string>VoiceCraft</string>
+        <key>CFBundleName</key>
+        <string>VoiceCraft</string>
         <key>CFBundleIdentifier</key>
-        <string>companyName.VoiceCraft.Client</string>
+        <string>com.avionblock.voicecraft.client</string>
         <key>CFBundleShortVersionString</key>
-        <string>1.0</string>
+        <string>1.5.0</string>
         <key>CFBundleVersion</key>
-        <string>1.0</string>
+        <string>1.5.0</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>VoiceCraft needs microphone access for voice chat.</string>
         <key>LSRequiresIPhoneOS</key>
         <true/>
         <key>MinimumOSVersion</key>
@@ -23,8 +27,14 @@
         <string>LaunchScreen</string>
         <key>UIRequiredDeviceCapabilities</key>
         <array>
-            <string>armv7</string>
+            <string>arm64</string>
         </array>
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>audio</string>
+        </array>
+        <key>CFBundleIconName</key>
+        <string>AppIcon</string>
         <key>UISupportedInterfaceOrientations</key>
         <array>
             <string>UIInterfaceOrientationPortrait</string>

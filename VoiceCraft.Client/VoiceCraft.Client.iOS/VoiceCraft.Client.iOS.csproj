@@ -3,8 +3,27 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net9.0-ios</TargetFramework>
         <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+        <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+        <ApplicationTitle>VoiceCraft</ApplicationTitle>
+        <ApplicationId>com.avionblock.voicecraft.client</ApplicationId>
+        <ApplicationVersion>$(Version)</ApplicationVersion>
+        <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
+        <BuildIpa>true</BuildIpa>
+        <ArchiveOnBuild>false</ArchiveOnBuild>
+        <EnableCodeSigning>false</EnableCodeSigning>
+        <ValidateXcodeVersion>false</ValidateXcodeVersion>
+        <AppIcon>AppIcon</AppIcon>
+        <XSAppIconAssets>Resources/Assets.xcassets/AppIcon.appiconset</XSAppIconAssets>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ImageAsset Include="Resources\Assets.xcassets\AppIcon.appiconset\**\*" />
+        <BundleResource Remove="Resources\Assets.xcassets\**\*" />
+        <BundleResource Remove="Resources\Icons\**\*" />
+        <None Remove="Resources\Icons\**\*" />
+        <Content Remove="Resources\Icons\**\*" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.iOS"/>
@@ -12,5 +31,17 @@
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
+    </ItemGroup>
+
+    <!--
+      SoundFlow 1.4.0 packs iOS native assets under runtimes/iOS-arm64 (capital iOS),
+      but its runtime loader resolves runtimes/ios-arm64 on device. We duplicate the
+      framework into the expected lowercase path to prevent DllNotFoundException.
+    -->
+    <ItemGroup>
+        <_SoundFlowIosRuntime Include="$(NuGetPackageRoot)soundflow\1.4.0\runtimes\iOS-arm64\native\miniaudio.framework\**\*" />
+        <BundleResource Include="@(_SoundFlowIosRuntime)">
+            <Link>runtimes\ios-arm64\native\miniaudio.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        </BundleResource>
     </ItemGroup>
 </Project>

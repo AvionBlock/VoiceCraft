@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -23,11 +22,16 @@ public partial class ServersViewModel(
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);
     }
+    
+    private void OpenServer(ServerDataViewModel? server)
+    {
+        if (server == null) return;
+        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.Server));
+    }
 
     partial void OnSelectedServerChanged(ServerDataViewModel? value)
     {
-        if (value == null) return;
-        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(value.Server));
+        OpenServer(value);
         SelectedServer = null;
     }
 
@@ -41,8 +45,9 @@ public partial class ServersViewModel(
     private void DeleteServer(ServerDataViewModel serverData)
     {
         ServersSettings.ServersSettings.RemoveServer(serverData.Server);
-        notificationService.SendSuccessNotification(Localizer.Get($"Notification.Servers.Removed:{serverData.Name}"),
-            Localizer.Get("Notification.Servers.Badge"));
+        notificationService.SendSuccessNotification(
+            "Servers.Notification.Badge",
+            $"Servers.Notification.Removed:{serverData.Name}");
         _ = settings.SaveAsync();
     }
 

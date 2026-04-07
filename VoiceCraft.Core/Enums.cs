@@ -2,13 +2,6 @@ namespace VoiceCraft.Core
 {
     #region Audio
 
-    public enum AudioFormat
-    {
-        Pcm8,
-        Pcm16,
-        PcmFloat
-    }
-
     public enum CaptureState
     {
         Stopped,

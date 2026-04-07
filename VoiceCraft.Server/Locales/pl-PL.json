@@ -1,0 +1,248 @@
+{
+  "Startup": {
+    "Starting": "Uruchamianie serwera...",
+    "Success": "Serwer uruchomiono pomyslnie!",
+    "Failed": "Wystapil blad podczas uruchamiania serwera!",
+    "Commands": {
+      "Registering": "Rejestrowanie polecen...",
+      "Success": "Pomyslnie zarejestrowano {0} polecen!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Wylaczanie serwera...",
+    "StartingIn": "Serwer zostanie wylaczony za {0}ms...",
+    "Success": "Serwer zostal pomyslnie wylaczony!"
+  },
+  "ServerProperties": {
+    "Loading": "Ladowanie pliku ServerProperties.json z {0}",
+    "Success": "Wlasciwosci serwera zaladowano pomyslnie!",
+    "Failed": "Nie udalo sie zaladowac wlasciwosci serwera! Uzywane sa wartosci domyslne! Blad: {0}",
+    "NotFound": "Nie znaleziono pliku ServerProperties.json w biezacym katalogu ani podkatalogach! Tworzenie pliku...",
+    "FailNotFound": "Nie znaleziono pliku ServerProperties.json w biezacym katalogu ani podkatalogach!",
+    "Generating": {
+      "Generating": "Tworzenie pliku ServerProperties.json w {0}",
+      "Success": "Pomyslnie utworzono plik ServerProperties.json w {0}",
+      "Failed": "Nie udalo sie utworzyc pliku ServerProperties.json w {0}! Blad: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "Nie udalo sie odczytac danych JSON z zaladowanego pliku!"
+    }
+  },
+  "Title": {
+    "Starting": "Uruchamianie...",
+    "Running": "Dziala!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Klient polaczony! UserGuid: {0}",
+      "Disconnected": "Klient rozlaczony! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "Klient McApi polaczony! Token: {0}",
+        "Disconnected": "Klient McApi rozlaczony! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "Uruchamianie serwera VoiceCraft...",
+    "Success": "Serwer VoiceCraft uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera VoiceCraft...",
+    "Stopped": "Serwer VoiceCraft zostal pomyslnie zatrzymany!",
+    "Exceptions": {
+      "Failed": "Nie udalo sie uruchomic serwera VoiceCraft! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "Uruchamianie serwera McWss...",
+    "Success": "Serwer McWss uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera McWss...",
+    "Stopped": "Serwer McWss zostal pomyslnie zatrzymany!",
+    "Exceptions": {
+      "Failed": "Nie udalo sie uruchomic serwera McWss! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "Uruchamianie serwera McHttp...",
+    "Success": "Serwer McHttp uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera McHttp...",
+    "Stopped": "Serwer McHttp zostal pomyslnie zatrzymany!",
+    "Exceptions": {
+      "Failed": "Nie udalo sie uruchomic serwera McHttp! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Serwer",
+      "Port": "Port",
+      "Protocol": "Protokol"
+    },
+    "ListCommandEntities": {
+      "Id": "ID",
+      "Name": "Nazwa",
+      "Position": "Pozycja",
+      "Rotation": "Rotacja",
+      "WorldId": "ID swiata"
+    }
+  },
+  "Commands": {
+    "Exception": "Wystapil blad podczas wykonywania polecenia {0}!",
+    "Exceptions": {
+      "EntityNotFound": "Nie znaleziono bytu o ID: {0}",
+      "EntityNotAClient": "Byt o ID {0} nie jest bytem klienta!"
+    },
+    "RootCommand": {
+      "Description": "Wykonuje polecenie VoiceCraft."
+    },
+    "List": {
+      "Name": "list",
+      "Description": "Wyswietla byty.",
+      "Showing": "Wyswietlanie {0} bytow.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "Pokazuje tylko sieciowe byty klientow."
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "Ogranicza liczbe wyswietlanych bytow."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Limit nie moze byc mniejszy od zera!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "Ustawia tytul aplikacji bytu klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu klienta."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Wartosc, ktora ma zostac ustawiona jako tytul."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setdescription",
+      "Description": "Ustawia opis aplikacji bytu klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu klienta."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Wartosc, ktora ma zostac ustawiona jako opis."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "Ustawia pozycje bytu.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "Wartosc pozycji X do ustawienia."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "Wartosc pozycji Y do ustawienia."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "Wartosc pozycji Z do ustawienia."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "Ustawia WorldId dla bytu.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Wartosc, ktora ma zostac ustawiona jako WorldId bytu."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "Ustawia nazwe bytu.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "Wartosc, ktora ma zostac ustawiona jako nazwa bytu."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Zatrzymuje serwer."
+    },
+    "Kick": {
+      "Name": "kick",
+      "Description": "Wyrzuca klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "Wycisza byt lub klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "Odcisza byt lub klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "Oglusza byt lub klienta.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "Przywraca slyszenie bytowi lub klientowi.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "ID bytu."
+        }
+      }
+    }
+  }
+}

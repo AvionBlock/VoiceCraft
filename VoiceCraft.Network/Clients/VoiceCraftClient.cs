@@ -20,7 +20,6 @@ namespace VoiceCraft.Network.Clients;
 public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 {
     protected bool Disposed;
-
     //Audio
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
     private readonly IAudioEncoder _audioEncoder;
@@ -141,13 +140,25 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public void Write(Span<float> buffer)
     {
+        for (var i = 0; i < buffer.Length; i++)
+        {
+            var value = buffer[i];
+            if (float.IsFinite(value))
+                continue;
+
+            buffer[i] = 0f;
+        }
+
         var frameLoudness = SampleLoudness.Read(buffer);
         if (frameLoudness >= MicrophoneSensitivity)
             _lastAudioPeakTime = DateTime.UtcNow;
 
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
-        if ((DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs ||
-            ConnectionState != VcConnectionState.Connected || Muted || ServerMuted)
+        var shouldDrop = ConnectionState != VcConnectionState.Connected ||
+            ServerMuted ||
+            Muted ||
+            (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs;
+        if (shouldDrop)
         {
             SpeakingState = false;
             return;
@@ -158,7 +169,20 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         encodeBuffer.AsSpan().Clear();
         try
         {
-            var bytesEncoded = _audioEncoder.Encode(buffer, encodeBuffer, Constants.SamplesPerFrame);
+            var bytesEncoded = _audioEncoder.Encode(
+                buffer,
+                encodeBuffer.AsSpan(0, Constants.MaximumEncodedBytes),
+                Constants.FrameSize);
+            if (bytesEncoded <= 0)
+            {
+                return;
+            }
+
+            if (bytesEncoded > Constants.MaximumEncodedBytes)
+            {
+                return;
+            }
+
             SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
                 .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
         }
