@@ -4,7 +4,6 @@ on:
 
 jobs:
   VoiceCraft-Client-Windows:
-    if: false
     runs-on: windows-latest
     strategy:
       matrix:
@@ -61,7 +60,6 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-${{ matrix.arch }}/publish/
           
   VoiceCraft-Client-Android:
-    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -93,7 +91,6 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
 
   VoiceCraft-Client-iOS:
-    if: false
     runs-on: macos-26
     defaults:
       run:
@@ -118,7 +115,6 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
           
   VoiceCraft-Client-MacOS:
-    if: false
     runs-on: macos-26
     strategy:
       matrix:
@@ -238,8 +234,11 @@ jobs:
           
   Publish-Draft:
     runs-on: ubuntu-latest
-    needs: [
+    needs: ["VoiceCraft-Client-Windows", 
             "VoiceCraft-Client-Linux", 
+            "VoiceCraft-Client-Android", 
+            "VoiceCraft-Client-iOS", 
+            "VoiceCraft-Client-MacOS", 
             "VoiceCraft-Server-Windows", 
             "VoiceCraft-Server-Linux"]
     steps:
