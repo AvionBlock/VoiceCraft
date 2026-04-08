@@ -134,6 +134,9 @@ jobs:
 
       - name: Install WorkLoads
         run: dotnet workload restore
+
+      - name: Restore ${{ matrix.arch }} Workloads
+        run: dotnet restore -r osx-${{ matrix.arch }}
         
       - name: Publish Build
         run: dotnet publish -c Release -r osx-${{ matrix.arch }} --no-restore -p:ValidateXcodeVersion=false
