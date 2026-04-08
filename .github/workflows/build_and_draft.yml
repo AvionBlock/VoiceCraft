@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  VoiceCraft.Client.Windows:
+  VoiceCraft-Client-Windows:
     runs-on: windows-latest
     strategy:
       matrix:
@@ -33,7 +33,7 @@ jobs:
           name: VoiceCraft.Client.Windows.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-${{ matrix.arch }}/publish/
           
-  VoiceCraft.Client.Linux:
+  VoiceCraft-Client-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -61,7 +61,7 @@ jobs:
           name: VoiceCraft.Client.Linux.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-${{ matrix.arch }}/publish/
           
-  VoiceCraft.Client.Android:
+  VoiceCraft-Client-Android:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -92,7 +92,7 @@ jobs:
           name: VoiceCraft.Client.Android.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
 
-  VoiceCraft.Client.iOS:
+  VoiceCraft-Client-iOS:
     runs-on: macos-26
     defaults:
       run:
@@ -116,7 +116,7 @@ jobs:
           name: VoiceCraft.Client.iOS.arm64
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
           
-  VoiceCraft.Client.MacOS:
+  VoiceCraft-Client-MacOS:
     runs-on: macos-26
     strategy:
       matrix:
@@ -175,7 +175,7 @@ jobs:
           name: VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
           path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net9.0-macos/osx-${{ matrix.arch }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
 
-  VoiceCraft.Server.Windows:
+  VoiceCraft-Server-Windows:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -203,7 +203,7 @@ jobs:
           name: VoiceCraft.Server.Windows.${{ matrix.arch }}
           path: ./VoiceCraft.Server/bin/Release/net9.0/win-${{ matrix.arch }}/publish
           
-  VoiceCraft.Server.Linux:
+  VoiceCraft-Server-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
