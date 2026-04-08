@@ -68,9 +68,8 @@ public class AudioService
 
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
-        
-        if(defaultDevice != null)
-            devices.Insert(0, defaultDevice);
+
+        devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
         return devices;
     }
 
@@ -92,8 +91,7 @@ public class AudioService
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
         
-        if(defaultDevice != null)
-            devices.Insert(0, defaultDevice);
+        devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
         return devices;
     }
 
