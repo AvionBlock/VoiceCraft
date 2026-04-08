@@ -260,5 +260,5 @@ jobs:
             ## Notes
             - ...
           draft: true
-          files: artifacts/*.zip
+          files: artifacts/*/*.zip
           generate_release_notes: true
