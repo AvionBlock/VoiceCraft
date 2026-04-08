@@ -4,6 +4,7 @@ on:
 
 jobs:
   VoiceCraft-Client-Windows:
+    if: false
     runs-on: windows-latest
     strategy:
       matrix:
@@ -60,6 +61,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-${{ matrix.arch }}/publish/
           
   VoiceCraft-Client-Android:
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -91,6 +93,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
 
   VoiceCraft-Client-iOS:
+    if: false
     runs-on: macos-26
     defaults:
       run:
@@ -252,7 +255,6 @@ jobs:
           
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
         with:
           tag_name: draft
           name: Draft Release ${{ github.run_number }}
