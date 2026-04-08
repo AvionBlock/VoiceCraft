@@ -118,6 +118,7 @@ jobs:
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
           
   VoiceCraft-Client-MacOS:
+    if: false
     runs-on: macos-26
     strategy:
       matrix:
@@ -237,11 +238,9 @@ jobs:
           
   Publish-Draft:
     runs-on: ubuntu-latest
-    needs: ["VoiceCraft-Client-Windows", 
+    needs: [
             "VoiceCraft-Client-Linux", 
             "VoiceCraft-Client-Android", 
-            "VoiceCraft-Client-iOS", 
-            "VoiceCraft-Client-MacOS", 
             "VoiceCraft-Server-Windows", 
             "VoiceCraft-Server-Linux"]
     steps:
