@@ -240,7 +240,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [
             "VoiceCraft-Client-Linux", 
-            "VoiceCraft-Client-Android", 
             "VoiceCraft-Server-Windows", 
             "VoiceCraft-Server-Linux"]
     steps:
