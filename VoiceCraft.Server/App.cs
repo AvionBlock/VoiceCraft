@@ -15,7 +15,8 @@ public static class App
     private static readonly CancellationTokenSource Cts = new();
     private static string? _bufferedCommand;
 
-    public static async Task Start(bool exitOnInvalidProperties, string? language = null)
+    public static async Task Start(bool exitOnInvalidProperties, string? language = null,
+        ServerRuntimeOverrides? runtimeOverrides = null)
     {
         var languageOverriden = !string.IsNullOrWhiteSpace(language);
         //Set language if overriden.
@@ -44,6 +45,8 @@ public static class App
 
             //Properties
             properties.Load(exitOnInvalidProperties);
+            if (runtimeOverrides != null)
+                properties.ApplyRuntimeOverrides(runtimeOverrides);
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;

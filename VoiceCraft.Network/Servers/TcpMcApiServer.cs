@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +16,6 @@ using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;
-using VoiceCraft.Network.Packets.McTcpPackets;
 using VoiceCraft.Network.Systems;
 
 namespace VoiceCraft.Network.Servers;
@@ -117,8 +115,10 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                if (netPeer is not TcpMcApiNetPeer tcpNetPeer)
+                    return;
+
+                tcpNetPeer.OutgoingRawQueue.Enqueue(_writer.CopyData());
             }
         }
         finally
@@ -141,11 +141,11 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = _writer.CopyData();
                 foreach (var netPeer in netPeers)
                 {
                     if (excludes.Contains(netPeer.Value)) continue;
-                    netPeer.Value.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                    netPeer.Value.OutgoingRawQueue.Enqueue(encodedPacket);
                 }
             }
         }
@@ -209,8 +209,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                tcpNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                tcpNetPeer.OutgoingRawQueue.Enqueue(_writer.CopyData());
             }
         }
         finally
@@ -264,28 +263,18 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (payload == null)
                     break;
 
-                var packet = JsonSerializer.Deserialize<McTcpUpdatePacket>(payload,
-                    McTcpUpdatePacketGenerationContext.Default.McTcpUpdatePacket);
-                if (packet == null)
-                    break;
-
                 if (!_mcApiPeers.TryGetValue(client, out var peer))
                     break;
 
+                if (!TryReadPayload(payload, out var token, out var packets))
+                    break;
+
                 var responseTask = peer.CreatePendingResponseTask();
-                ReceivePacketsLogic(peer, packet.Packets, packet.Token);
+                ReceivePacketsLogic(peer, packets, token);
                 var responsePackets = await responseTask.WaitAsync(cancellationToken);
-                var response = JsonSerializer.Serialize(new McTcpUpdatePacket
-                    {
-                        Packets = responsePackets
-                    },
-                    McTcpUpdatePacketGenerationContext.Default.McTcpUpdatePacket);
+                var response = WritePayload(string.Empty, responsePackets);
                 await WriteFrameAsync(stream, response, cancellationToken);
             }
-        }
-        catch (JsonException)
-        {
-            // Do Nothing
         }
         catch (OperationCanceledException)
         {
@@ -355,12 +344,12 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     {
         lock (_reader)
         {
-            while (tcpNetPeer.IncomingQueue.TryDequeue(out var packet))
+            while (tcpNetPeer.IncomingRawQueue.TryDequeue(out var packet))
                 try
                 {
                     var packetToken = packet.Token;
                     _reader.Clear();
-                    _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
+                    _reader.SetSource(packet.Data);
                     ProcessPacket(_reader, mcApiPacket =>
                     {
                         tcpNetPeer.LastUpdate = DateTime.UtcNow;
@@ -380,12 +369,12 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     {
         if (!netPeer.HasPendingResponse()) return;
 
-        var packets = new List<string>();
-        while (netPeer.OutgoingQueue.TryDequeue(out var packet))
+        var packets = new List<byte[]>();
+        while (netPeer.OutgoingRawQueue.TryDequeue(out var packet))
         {
             try
             {
-                packets.Add(packet.Data);
+                packets.Add(packet);
             }
             catch
             {
@@ -396,13 +385,13 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         netPeer.CompletePendingResponse(packets);
     }
 
-    private static void ReceivePacketsLogic(TcpMcApiNetPeer tcpNetPeer, List<string> packets, string token)
+    private static void ReceivePacketsLogic(TcpMcApiNetPeer tcpNetPeer, IReadOnlyList<byte[]> packets, string token)
     {
         foreach (var data in packets.Where(data => data.Length > 0))
         {
             try
             {
-                tcpNetPeer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, token));
+                tcpNetPeer.IncomingRawQueue.Enqueue(new TcpMcApiNetPeer.QueuedRawPacket(data, token));
             }
             catch
             {
@@ -411,7 +400,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         }
     }
 
-    private static async Task<string?> ReadFrameAsync(NetworkStream stream, CancellationToken cancellationToken)
+    private static async Task<byte[]?> ReadFrameAsync(NetworkStream stream, CancellationToken cancellationToken)
     {
         var headerBuffer = new byte[FrameHeaderSize];
         if (!await ReadExactAsync(stream, headerBuffer, cancellationToken))
@@ -431,12 +420,11 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         if (!await ReadExactAsync(stream, payloadBuffer, cancellationToken))
             return null;
 
-        return Encoding.UTF8.GetString(payloadBuffer);
+        return payloadBuffer;
     }
 
-    private static async Task WriteFrameAsync(NetworkStream stream, string payload, CancellationToken cancellationToken)
+    private static async Task WriteFrameAsync(NetworkStream stream, byte[] payloadBuffer, CancellationToken cancellationToken)
     {
-        var payloadBuffer = Encoding.UTF8.GetBytes(payload);
         if (payloadBuffer.Length > MaxFramePayloadLength)
             throw new InvalidOperationException("McTcp response payload exceeds the maximum frame size.");
 
@@ -449,6 +437,83 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
 
         await stream.WriteAsync(frameBuffer, cancellationToken);
         await stream.FlushAsync(cancellationToken);
+    }
+
+    private static bool TryReadPayload(byte[] payload, out string token, out List<byte[]> packets)
+    {
+        token = string.Empty;
+        packets = [];
+        if (payload.Length < 8)
+            return false;
+
+        var offset = 0;
+        if (!TryReadInt32(payload, ref offset, out var tokenLength) || tokenLength < 0 || payload.Length - offset < tokenLength)
+            return false;
+
+        token = tokenLength == 0 ? string.Empty : Encoding.UTF8.GetString(payload, offset, tokenLength);
+        offset += tokenLength;
+
+        if (!TryReadInt32(payload, ref offset, out var packetCount) || packetCount < 0)
+            return false;
+
+        packets = new List<byte[]>(packetCount);
+        for (var i = 0; i < packetCount; i++)
+        {
+            if (!TryReadInt32(payload, ref offset, out var packetLength) || packetLength <= 0 ||
+                payload.Length - offset < packetLength)
+                return false;
+
+            var packet = new byte[packetLength];
+            Buffer.BlockCopy(payload, offset, packet, 0, packetLength);
+            packets.Add(packet);
+            offset += packetLength;
+        }
+
+        return offset == payload.Length;
+    }
+
+    private static byte[] WritePayload(string token, IReadOnlyList<byte[]> packets)
+    {
+        var tokenBytes = string.IsNullOrEmpty(token) ? [] : Encoding.UTF8.GetBytes(token);
+        var payloadLength = 4 + tokenBytes.Length + 4;
+        foreach (var packet in packets)
+            payloadLength += 4 + packet.Length;
+
+        var payload = new byte[payloadLength];
+        var offset = 0;
+        WriteInt32(payload, ref offset, tokenBytes.Length);
+        if (tokenBytes.Length > 0)
+        {
+            tokenBytes.CopyTo(payload, offset);
+            offset += tokenBytes.Length;
+        }
+
+        WriteInt32(payload, ref offset, packets.Count);
+        foreach (var packet in packets)
+        {
+            WriteInt32(payload, ref offset, packet.Length);
+            packet.CopyTo(payload, offset);
+            offset += packet.Length;
+        }
+
+        return payload;
+    }
+
+    private static bool TryReadInt32(byte[] payload, ref int offset, out int value)
+    {
+        value = 0;
+        if (payload.Length - offset < 4)
+            return false;
+
+        value = BinaryPrimitives.ReadInt32BigEndian(payload.AsSpan(offset, 4));
+        offset += 4;
+        return true;
+    }
+
+    private static void WriteInt32(byte[] payload, ref int offset, int value)
+    {
+        BinaryPrimitives.WriteInt32BigEndian(payload.AsSpan(offset, 4), value);
+        offset += 4;
     }
 
     private static async ValueTask<bool> ReadExactAsync(NetworkStream stream, byte[] buffer,

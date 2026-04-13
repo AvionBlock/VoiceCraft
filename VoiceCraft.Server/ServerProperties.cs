@@ -31,7 +31,6 @@ public class ServerProperties
                 throw new Exception(Localizer.Get("ServerProperties.FailNotFound"));
             AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
-            ApplyEnvironmentOverrides(_properties);
             ParseAudioEffects();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
             return;
@@ -39,9 +38,33 @@ public class ServerProperties
 
         var file = files[0];
         _properties = LoadFile(file, throwOnInvalidProperties);
-        ApplyEnvironmentOverrides(_properties);
         ParseAudioEffects();
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
+    }
+
+    public void ApplyRuntimeOverrides(ServerRuntimeOverrides overrides)
+    {
+        if (!string.IsNullOrWhiteSpace(overrides.ServerKey))
+        {
+            _properties.McHttpConfig.LoginToken = overrides.ServerKey;
+            _properties.McTcpConfig.LoginToken = overrides.ServerKey;
+            _properties.McWssConfig.LoginToken = overrides.ServerKey;
+        }
+
+        if (overrides.TransportPort is >= 1 and <= 65535)
+        {
+            _properties.McTcpConfig.Port = overrides.TransportPort.Value;
+            _properties.McHttpConfig.Hostname = SetHttpPort(_properties.McHttpConfig.Hostname, overrides.TransportPort.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(overrides.TransportHost))
+        {
+            _properties.McTcpConfig.Hostname = overrides.TransportHost;
+            _properties.McHttpConfig.Hostname = SetHttpHost(_properties.McHttpConfig.Hostname, overrides.TransportHost);
+        }
+
+        if (overrides.TransportMode.Length > 0)
+            ApplyTransportModeOverrides(overrides.TransportMode);
     }
 
     private static ServerPropertiesStructure LoadFile(string path, bool throwOnInvalidConfig)
@@ -103,55 +126,6 @@ public class ServerProperties
         }
     }
 
-    private static void ApplyEnvironmentOverrides(ServerPropertiesStructure properties)
-    {
-        var transportMode = Environment.GetEnvironmentVariable("GEYSERVOICE_TRANSPORT_MODE");
-        var transportHost = Environment.GetEnvironmentVariable("GEYSERVOICE_TRANSPORT_HOST");
-        var transportPort = Environment.GetEnvironmentVariable("GEYSERVOICE_TRANSPORT_PORT");
-        var serverKey = Environment.GetEnvironmentVariable("GEYSERVOICE_SERVER_KEY");
-        var httpEnabled = Environment.GetEnvironmentVariable("GEYSERVOICE_HTTP_ENABLED");
-
-        if (!string.IsNullOrWhiteSpace(serverKey))
-        {
-            properties.McHttpConfig.LoginToken = serverKey;
-            properties.McTcpConfig.LoginToken = serverKey;
-            properties.McWssConfig.LoginToken = serverKey;
-        }
-
-        if (!string.IsNullOrWhiteSpace(transportPort) && int.TryParse(transportPort, out var parsedPort) &&
-            parsedPort is >= 1 and <= 65535)
-        {
-            properties.McTcpConfig.Port = parsedPort;
-            properties.McHttpConfig.Hostname = SetHttpPort(properties.McHttpConfig.Hostname, parsedPort);
-        }
-
-        if (!string.IsNullOrWhiteSpace(transportHost))
-        {
-            properties.McTcpConfig.Hostname = transportHost;
-            properties.McHttpConfig.Hostname = SetHttpHost(properties.McHttpConfig.Hostname, transportHost);
-        }
-
-        if (!string.IsNullOrWhiteSpace(transportMode))
-        {
-            switch (transportMode.Trim().ToLowerInvariant())
-            {
-                case "local-socket":
-                case "tcp":
-                case "tcp-socket":
-                    properties.McTcpConfig.Enabled = true;
-                    properties.McHttpConfig.Enabled = false;
-                    break;
-                case "http":
-                    properties.McHttpConfig.Enabled = true;
-                    properties.McTcpConfig.Enabled = false;
-                    break;
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(httpEnabled) && bool.TryParse(httpEnabled, out var isHttpEnabled))
-            properties.McHttpConfig.Enabled = isHttpEnabled;
-    }
-
     private static string SetHttpHost(string configuredHostname, string host)
     {
         if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
@@ -172,6 +146,53 @@ public class ServerProperties
         {
             Port = port
         }.Uri.ToString();
+    }
+
+    private void ApplyTransportModeOverrides(IReadOnlyCollection<string> transportModes)
+    {
+        _properties.McHttpConfig.Enabled = false;
+        _properties.McTcpConfig.Enabled = false;
+        _properties.McWssConfig.Enabled = false;
+
+        foreach (var transportMode in ParseTransportModes(transportModes))
+        {
+            switch (transportMode)
+            {
+                case "http":
+                    _properties.McHttpConfig.Enabled = true;
+                    break;
+                case "tcp":
+                    _properties.McTcpConfig.Enabled = true;
+                    break;
+                case "wss":
+                case "ws":
+                case "websocket":
+                case "websockets":
+                    _properties.McWssConfig.Enabled = true;
+                    break;
+                default:
+                    throw new ArgumentException(
+                        $"Unsupported transport mode '{transportMode}'. Supported values are: http, tcp, wss.");
+            }
+        }
+    }
+
+    private static IEnumerable<string> ParseTransportModes(IEnumerable<string> transportModes)
+    {
+        return transportModes
+            .SelectMany(x => x.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Select(NormalizeTransportMode)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeTransportMode(string transportMode)
+    {
+        return transportMode.Trim().ToLowerInvariant() switch
+        {
+            "local-socket" => "tcp",
+            "tcp-socket" => "tcp",
+            _ => transportMode.Trim().ToLowerInvariant()
+        };
     }
 }
 
@@ -198,6 +219,14 @@ public class ServerPropertiesStructure
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
     public TcpMcApiServer.McTcpConfig McTcpConfig { get; set; } = new();
     public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
+}
+
+public class ServerRuntimeOverrides
+{
+    public string[] TransportMode { get; set; } = [];
+    public string? TransportHost { get; set; }
+    public int? TransportPort { get; set; }
+    public string? ServerKey { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

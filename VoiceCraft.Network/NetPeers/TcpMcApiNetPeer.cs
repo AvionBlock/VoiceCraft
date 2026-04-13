@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -10,10 +11,12 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
     private McApiConnectionState _connectionState;
     private string _sessionToken = string.Empty;
     private readonly object _responseLock = new();
-    private TaskCompletionSource<List<string>>? _pendingResponse;
+    private TaskCompletionSource<List<byte[]>>? _pendingResponse;
 
     public TcpClient Client { get; } = client;
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
+    public ConcurrentQueue<QueuedRawPacket> IncomingRawQueue { get; } = new();
+    public ConcurrentQueue<byte[]> OutgoingRawQueue { get; } = new();
     public override McApiConnectionState ConnectionState => _connectionState;
     public override string SessionToken => _sessionToken;
 
@@ -27,18 +30,18 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
         _sessionToken = token;
     }
 
-    public Task<List<string>> CreatePendingResponseTask()
+    public Task<List<byte[]>> CreatePendingResponseTask()
     {
         lock (_responseLock)
         {
-            _pendingResponse ??= new TaskCompletionSource<List<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pendingResponse ??= new TaskCompletionSource<List<byte[]>>(TaskCreationOptions.RunContinuationsAsynchronously);
             return _pendingResponse.Task;
         }
     }
 
-    public void CompletePendingResponse(List<string> packets)
+    public void CompletePendingResponse(List<byte[]> packets)
     {
-        TaskCompletionSource<List<string>>? pendingResponse;
+        TaskCompletionSource<List<byte[]>>? pendingResponse;
         lock (_responseLock)
         {
             pendingResponse = _pendingResponse;
@@ -58,7 +61,7 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
 
     public void CancelPendingResponse()
     {
-        TaskCompletionSource<List<string>>? pendingResponse;
+        TaskCompletionSource<List<byte[]>>? pendingResponse;
         lock (_responseLock)
         {
             pendingResponse = _pendingResponse;
@@ -66,5 +69,11 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
         }
 
         pendingResponse?.TrySetCanceled();
+    }
+
+    public readonly struct QueuedRawPacket(byte[] data, string token)
+    {
+        public byte[] Data { get; } = data;
+        public string Token { get; } = token;
     }
 }
