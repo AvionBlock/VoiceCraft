@@ -190,8 +190,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "McWss-Verbindung hergestellt: {0}",
-      "Disconnected": "McWss-Verbindung getrennt!",
-      "Failed": "McWss-Server konnte nicht gestartet werden! Prüfe, ob der Port bereits verwendet wird!"
+      "Disconnected": "McWss-Verbindung getrennt!"
     }
   },
   "PermissionsService": {

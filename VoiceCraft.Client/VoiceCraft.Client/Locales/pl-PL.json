@@ -190,8 +190,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "Połączenie McWss nawiązane: {0}",
-      "Disconnected": "Połączenie McWss zostało rozłączone!",
-      "Failed": "Nie udało się uruchomić serwera McWss! Sprawdź, czy port nie jest zajęty przez inny proces!"
+      "Disconnected": "Połączenie McWss zostało rozłączone!"
     }
   },
   "PermissionsService": {

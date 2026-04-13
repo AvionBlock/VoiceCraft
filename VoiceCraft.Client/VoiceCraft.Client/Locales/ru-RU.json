@@ -190,8 +190,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "Подключение McWss установлено: {0}",
-      "Disconnected": "Подключение McWss разорвано!",
-      "Failed": "Не удалось запустить сервер McWss! Проверьте, не занят ли порт другим процессом!"
+      "Disconnected": "Подключение McWss разорвано!"
     }
   },
   "PermissionsService": {

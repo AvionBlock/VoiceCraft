@@ -190,8 +190,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "McWss-verbinding tot stand gebracht: {0}",
-      "Disconnected": "McWss-verbinding verbroken!",
-      "Failed": "Het starten van de McWss-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+      "Disconnected": "McWss-verbinding verbroken!"
     }
   },
   "PermissionsService": {

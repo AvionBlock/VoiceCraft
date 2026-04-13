@@ -190,8 +190,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "McWss 連線已建立: {0}",
-      "Disconnected": "McWss 連線已中斷！",
-      "Failed": "無法啟動 McWss 伺服器！請檢查是否有其他程序正在使用相同連接埠！"
+      "Disconnected": "McWss 連線已中斷！"
     }
   },
   "PermissionsService": {

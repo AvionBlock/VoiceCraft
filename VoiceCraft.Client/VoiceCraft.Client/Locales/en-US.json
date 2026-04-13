@@ -192,8 +192,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "McWss Connection Established: {0}",
-      "Disconnected": "McWss Connection Disconnected!",
-      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+      "Disconnected": "McWss Connection Disconnected!"
     }
   },
   

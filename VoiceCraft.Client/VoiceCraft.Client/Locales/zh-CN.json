@@ -190,8 +190,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "McWss 连接已建立: {0}",
-      "Disconnected": "McWss 连接已断开！",
-      "Failed": "无法启动 McWss 服务器！请检查是否有其他进程正在使用相同端口！"
+      "Disconnected": "McWss 连接已断开！"
     }
   },
   "PermissionsService": {
