@@ -71,6 +71,15 @@
       "Failed": "Het starten van McHttp-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
     }
   },
+  "McTcpServer": {
+    "Starting": "McTcp-server starten...",
+    "Success": "De McTcp-server is succesvol gestart!",
+    "Stopping": "McTcp-server stoppen...",
+    "Stopped": "De McTcp-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van McTcp-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "Server",

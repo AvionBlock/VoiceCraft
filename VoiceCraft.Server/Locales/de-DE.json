@@ -71,6 +71,15 @@
       "Failed": "McHttp-Server konnte nicht gestartet werden! Bitte pruefe, ob ein anderer Prozess denselben Port verwendet!"
     }
   },
+  "McTcpServer": {
+    "Starting": "McTcp-Server wird gestartet...",
+    "Success": "McTcp-Server erfolgreich gestartet!",
+    "Stopping": "McTcp-Server wird gestoppt...",
+    "Stopped": "McTcp-Server erfolgreich gestoppt!",
+    "Exceptions": {
+      "Failed": "McTcp-Server konnte nicht gestartet werden! Bitte pruefe, ob ein anderer Prozess denselben Port verwendet!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "Server",
