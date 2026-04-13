@@ -337,6 +337,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         return _mcApiPeers.GetOrAdd(ipAddress, _ =>
         {
             var httpNetPeer = new HttpMcApiNetPeer(ipAddress);
+            httpNetPeer.Tag = this;
             return httpNetPeer;
         });
     }

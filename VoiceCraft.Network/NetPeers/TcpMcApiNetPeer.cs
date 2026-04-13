@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+namespace VoiceCraft.Network.NetPeers;
+
+public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
+{
+    private McApiConnectionState _connectionState;
+    private string _sessionToken = string.Empty;
+    private readonly object _responseLock = new();
+    private TaskCompletionSource<List<string>>? _pendingResponse;
+
+    public TcpClient Client { get; } = client;
+    public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
+    public override McApiConnectionState ConnectionState => _connectionState;
+    public override string SessionToken => _sessionToken;
+
+    public void SetConnectionState(McApiConnectionState state)
+    {
+        _connectionState = state;
+    }
+
+    public void SetSessionToken(string token)
+    {
+        _sessionToken = token;
+    }
+
+    public Task<List<string>> CreatePendingResponseTask()
+    {
+        lock (_responseLock)
+        {
+            _pendingResponse ??= new TaskCompletionSource<List<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            return _pendingResponse.Task;
+        }
+    }
+
+    public void CompletePendingResponse(List<string> packets)
+    {
+        TaskCompletionSource<List<string>>? pendingResponse;
+        lock (_responseLock)
+        {
+            pendingResponse = _pendingResponse;
+            _pendingResponse = null;
+        }
+
+        pendingResponse?.TrySetResult(packets);
+    }
+
+    public bool HasPendingResponse()
+    {
+        lock (_responseLock)
+        {
+            return _pendingResponse != null;
+        }
+    }
+
+    public void CancelPendingResponse()
+    {
+        TaskCompletionSource<List<string>>? pendingResponse;
+        lock (_responseLock)
+        {
+            pendingResponse = _pendingResponse;
+            _pendingResponse = null;
+        }
+
+        pendingResponse?.TrySetCanceled();
+    }
+}

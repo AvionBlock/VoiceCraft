@@ -19,6 +19,7 @@ public class ServerProperties
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
     public McWssMcApiServer.McWssMcApiConfig McWssConfig => _properties.McWssConfig;
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig => _properties.McHttpConfig;
+    public TcpMcApiServer.McTcpConfig McTcpConfig => _properties.McTcpConfig;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
     public void Load(bool throwOnInvalidProperties)
@@ -30,6 +31,7 @@ public class ServerProperties
                 throw new Exception(Localizer.Get("ServerProperties.FailNotFound"));
             AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
+            ApplyEnvironmentOverrides(_properties);
             ParseAudioEffects();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
             return;
@@ -37,6 +39,7 @@ public class ServerProperties
 
         var file = files[0];
         _properties = LoadFile(file, throwOnInvalidProperties);
+        ApplyEnvironmentOverrides(_properties);
         ParseAudioEffects();
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
     }
@@ -99,6 +102,77 @@ public class ServerProperties
             DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
         }
     }
+
+    private static void ApplyEnvironmentOverrides(ServerPropertiesStructure properties)
+    {
+        var transportMode = Environment.GetEnvironmentVariable("GEYSERVOICE_TRANSPORT_MODE");
+        var transportHost = Environment.GetEnvironmentVariable("GEYSERVOICE_TRANSPORT_HOST");
+        var transportPort = Environment.GetEnvironmentVariable("GEYSERVOICE_TRANSPORT_PORT");
+        var serverKey = Environment.GetEnvironmentVariable("GEYSERVOICE_SERVER_KEY");
+        var httpEnabled = Environment.GetEnvironmentVariable("GEYSERVOICE_HTTP_ENABLED");
+
+        if (!string.IsNullOrWhiteSpace(serverKey))
+        {
+            properties.McHttpConfig.LoginToken = serverKey;
+            properties.McTcpConfig.LoginToken = serverKey;
+            properties.McWssConfig.LoginToken = serverKey;
+        }
+
+        if (!string.IsNullOrWhiteSpace(transportPort) && int.TryParse(transportPort, out var parsedPort) &&
+            parsedPort is >= 1 and <= 65535)
+        {
+            properties.McTcpConfig.Port = parsedPort;
+            properties.McHttpConfig.Hostname = SetHttpPort(properties.McHttpConfig.Hostname, parsedPort);
+        }
+
+        if (!string.IsNullOrWhiteSpace(transportHost))
+        {
+            properties.McTcpConfig.Hostname = transportHost;
+            properties.McHttpConfig.Hostname = SetHttpHost(properties.McHttpConfig.Hostname, transportHost);
+        }
+
+        if (!string.IsNullOrWhiteSpace(transportMode))
+        {
+            switch (transportMode.Trim().ToLowerInvariant())
+            {
+                case "local-socket":
+                case "tcp":
+                case "tcp-socket":
+                    properties.McTcpConfig.Enabled = true;
+                    properties.McHttpConfig.Enabled = false;
+                    break;
+                case "http":
+                    properties.McHttpConfig.Enabled = true;
+                    properties.McTcpConfig.Enabled = false;
+                    break;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(httpEnabled) && bool.TryParse(httpEnabled, out var isHttpEnabled))
+            properties.McHttpConfig.Enabled = isHttpEnabled;
+    }
+
+    private static string SetHttpHost(string configuredHostname, string host)
+    {
+        if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
+            return configuredHostname;
+
+        return new UriBuilder(uri)
+        {
+            Host = host
+        }.Uri.ToString();
+    }
+
+    private static string SetHttpPort(string configuredHostname, int port)
+    {
+        if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
+            return configuredHostname;
+
+        return new UriBuilder(uri)
+        {
+            Port = port
+        }.Uri.ToString();
+    }
 }
 
 public class ServerPropertiesStructure
@@ -122,6 +196,7 @@ public class ServerPropertiesStructure
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssMcApiServer.McWssMcApiConfig McWssConfig { get; set; } = new();
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
+    public TcpMcApiServer.McTcpConfig McTcpConfig { get; set; } = new();
     public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
 }
 

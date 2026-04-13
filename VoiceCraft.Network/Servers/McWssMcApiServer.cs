@@ -307,6 +307,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
             socket.Close(); //Full.
 
         var netPeer = new McWssMcApiNetPeer(socket);
+        netPeer.Tag = this;
         _mcApiPeers.TryAdd(socket, netPeer);
     }
 
