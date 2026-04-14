@@ -7,7 +7,12 @@ namespace VoiceCraft.Core.Audio
         public static int Read(Span<float> data, Span<short> dstBuffer)
         {
             for (var i = 0; i < data.Length; i++)
-                dstBuffer[i] = Math.Clamp((short)(data[i] * short.MaxValue), short.MinValue, short.MaxValue);
+            {
+                var clamped = Math.Clamp(data[i], -1f, 1f);
+                dstBuffer[i] = clamped <= -1f
+                    ? short.MinValue
+                    : (short)(clamped * short.MaxValue);
+            }
             return data.Length;
         }
     }
