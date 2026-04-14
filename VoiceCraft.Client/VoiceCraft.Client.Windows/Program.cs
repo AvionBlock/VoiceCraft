@@ -27,6 +27,9 @@ internal sealed class Program
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         try
         {
+            if (!VcRuntimeBootstrapper.EnsureInstalledOrPrompt())
+                return;
+
             App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
             App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
             App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);

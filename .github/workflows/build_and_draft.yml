@@ -56,6 +56,13 @@ jobs:
       - name: Publish Build
         run: dotnet publish -c Release -r win-${{ matrix.arch }} -p:PublishSingleFile=true
 
+      - name: Download VC++ Redistributable
+        shell: pwsh
+        run: |
+          $uri = "https://aka.ms/vc14/vc_redist.${{ matrix.arch }}.exe"
+          $outFile = "./bin/Release/net9.0-windows/win-${{ matrix.arch }}/publish/vc_redist.${{ matrix.arch }}.exe"
+          Invoke-WebRequest -Uri $uri -OutFile $outFile
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
