@@ -338,6 +338,8 @@ public class EventHandlerSystem : IDisposable
                 if (networkEntity.PositioningType == PositioningType.Server)
                     _liteNetServer.SendPacket(networkEntity.NetPeer,
                         PacketPool<VcSetNameRequestPacket>.GetPacket(() => new VcSetNameRequestPacket()).Set(name));
+
+                _liteNetServer.Broadcast(packet, VcDeliveryMethod.Reliable, networkEntity.NetPeer);
             }
             else
             {
