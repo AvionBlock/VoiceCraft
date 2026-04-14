@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace VoiceCraft.Network.NetPeers;
@@ -10,7 +11,7 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
 {
     private McApiConnectionState _connectionState;
     private string _sessionToken = string.Empty;
-    private readonly object _responseLock = new();
+    private readonly Lock _responseLock = new();
     private TaskCompletionSource<List<byte[]>>? _pendingResponse;
 
     public TcpClient Client { get; } = client;

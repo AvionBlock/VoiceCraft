@@ -18,7 +18,7 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private readonly Lock _mixerLockObj = new();
+    private readonly Lock _lock = new();
 
     public IImmutableDictionary<ushort, IAudioEffect> AudioEffects
     {
@@ -111,7 +111,7 @@ public class AudioEffectSystem : IDisposable
                 try
                 {
                     var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
-                    lock (_mixerLockObj)
+                    lock (_lock)
                     {
                         read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
                         // ReSharper disable once AccessToModifiedClosure
