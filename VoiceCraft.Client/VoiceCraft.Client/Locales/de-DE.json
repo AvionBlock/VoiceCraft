@@ -66,7 +66,8 @@
       "Title": "Hotkeys",
       "Actions": {
         "Mute": "Stummschalten",
-        "Deafen": "Taub schalten"
+        "Deafen": "Taub schalten",
+        "PushToTalk": "Zum Sprechen gedrückt halten"
       }
     },
     "Advanced": {

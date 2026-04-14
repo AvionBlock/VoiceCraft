@@ -3,11 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             xmlns:settings="clr-namespace:VoiceCraft.Client.ViewModels.Settings"
              xmlns:locale="using:VoiceCraft.Client.Locales"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
-             x:DataType="vm:Settings.HotKeySettingsViewModel"
+             x:DataType="settings:HotKeySettingsViewModel"
              x:Class="VoiceCraft.Client.Views.Settings.HotKeySettingsView">
     <ScrollViewer>
         <Grid RowDefinitions="Auto, *">
@@ -31,22 +32,44 @@
             <ListBox Grid.Row="1"
                      Background="Transparent"
                      Margin="10, 10, 10, 10"
-                     ItemsSource="{Binding HotKeys}"
-                     IsHitTestVisible="False">
+                     ItemsSource="{Binding HotKeys}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid RowDefinitions="Auto, *">
+                        <Grid RowDefinitions="Auto, *"
+                              ColumnDefinitions="*,Auto">
                             <TextBlock FontSize="16"
                                        FontWeight="Bold"
                                        Grid.Row="0"
+                                       Grid.Column="0"
                                        Text="{locale:Localize {Binding Title}}" />
-                            <Border Grid.Row="1" Classes="tag" Padding="5" HorizontalAlignment="Left">
+                            <Border Grid.Row="1" Grid.Column="0" Classes="tag" Padding="5" HorizontalAlignment="Left">
                                 <TextBlock Text="{Binding Keybind}" />
                             </Border>
+                            <Button Grid.RowSpan="2"
+                                    Grid.Column="1"
+                                    Margin="10,0,0,0"
+                                    Command="{Binding $parent[settings:HotKeySettingsViewModel].StartRebindCommand}"
+                                    CommandParameter="{Binding}">
+                                <TextBlock Text="Rebind" />
+                            </Button>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            <Border Grid.Row="1"
+                    IsVisible="{Binding IsRebinding}"
+                    Background="#AA000000">
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Width="300"
+                            Spacing="10">
+                    <TextBlock HorizontalAlignment="Center"
+                               Text="{Binding RebindingTitle}" />
+                    <TextBox Watermark="Press keys like LeftControl + LeftShift + M"
+                             AttachedToVisualTree="HotKeyCapture_OnAttachedToVisualTree"
+                             KeyDown="HotKeyCapture_OnKeyDown" />
+                </StackPanel>
+            </Border>
         </Grid>
     </ScrollViewer>
 </UserControl>

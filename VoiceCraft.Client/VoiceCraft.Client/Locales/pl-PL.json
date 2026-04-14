@@ -66,7 +66,8 @@
       "Title": "Skróty klawiszowe",
       "Actions": {
         "Mute": "Wycisz",
-        "Deafen": "Zagłusz"
+        "Deafen": "Zagłusz",
+        "PushToTalk": "Przytrzymaj, aby mówić"
       }
     },
     "Advanced": {

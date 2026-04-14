@@ -13,14 +13,14 @@ public class NativeHotKeyService : HotKeyService
     private readonly List<KeyCode> _pressedKeys = [];
     private readonly StringBuilder _stringBuilder = new();
 
-    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions) : base(registeredHotKeyActions)
+    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) : base(registeredHotKeyActions, settingsService)
     {
         _hook = new EventLoopGlobalHook();
         _hook.KeyPressed += OnKeyPressed;
         _hook.KeyReleased += OnKeyReleased;
     }
 
-    public override void Initialize()
+    protected override void InitializeCore()
     {
         _ = _hook.RunAsync();
     }
@@ -52,7 +52,7 @@ public class NativeHotKeyService : HotKeyService
             _stringBuilder.Append($"{cleanKey}{(i < _pressedKeys.Count - 1 ? "\0" : "")}");
         }
 
-        if (HotKeyActions.TryGetValue(_stringBuilder.ToString(), out var action)) action.Press();
+        if (HotKeyActions.TryGetValue(HotKeyService.NormalizeKeyCombo(_stringBuilder.ToString()), out var action)) action.Press();
     }
 
     private void OnKeyReleased(object? sender, KeyboardHookEventArgs e)
@@ -68,6 +68,6 @@ public class NativeHotKeyService : HotKeyService
 
         _pressedKeys.Remove(e.Data.KeyCode);
 
-        if (HotKeyActions.TryGetValue(_stringBuilder.ToString(), out var action)) action.Release();
+        if (HotKeyActions.TryGetValue(HotKeyService.NormalizeKeyCombo(_stringBuilder.ToString()), out var action)) action.Release();
     }
 }

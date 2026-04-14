@@ -1,29 +1,102 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using VoiceCraft.Client.Models.Settings;
 
 namespace VoiceCraft.Client.Services;
 
 public abstract class HotKeyService : IDisposable
 {
-    protected HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions)
+    private readonly Dictionary<string, HotKeyAction> _actionsById;
+    private readonly Dictionary<string, HotKeyAction> _hotKeyActions = new(StringComparer.Ordinal);
+    private readonly HotKeySettings _hotKeySettings;
+    private bool _initialized;
+
+    protected HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService)
     {
-        foreach (var registeredHotKeyAction in registeredHotKeyActions)
-            HotKeyActions.Add(registeredHotKeyAction.DefaultKeyCombo, registeredHotKeyAction);
+        _hotKeySettings = settingsService.HotKeySettings;
+        _actionsById = registeredHotKeyActions.ToDictionary(x => x.Id, StringComparer.Ordinal);
+        _hotKeySettings.OnUpdated += OnHotKeySettingsUpdated;
+        ReloadBindings();
     }
 
-    public Dictionary<string, HotKeyAction> HotKeyActions { get; } = new();
+    public IReadOnlyDictionary<string, HotKeyAction> HotKeyActions => _hotKeyActions;
+
+    public event Action? OnBindingsChanged;
 
     public virtual void Dispose()
     {
-        //We do nothing by default
+        _hotKeySettings.OnUpdated -= OnHotKeySettingsUpdated;
         GC.SuppressFinalize(this);
     }
 
-    public abstract void Initialize();
+    public void Initialize()
+    {
+        if (_initialized) return;
+        InitializeCore();
+        _initialized = true;
+    }
+
+    public IReadOnlyList<HotKeyBinding> GetBindings()
+    {
+        return _actionsById.Values
+            .Select(action => new HotKeyBinding(action, GetBindingForAction(action)))
+            .ToArray();
+    }
+
+    public string GetBindingForAction(HotKeyAction action)
+    {
+        return _hotKeySettings.Bindings.GetValueOrDefault(action.Id) ?? action.DefaultKeyCombo;
+    }
+
+    public void SetBinding(string actionId, string keyCombo)
+    {
+        if (!_actionsById.ContainsKey(actionId))
+            throw new ArgumentException($"Unknown hotkey action '{actionId}'.", nameof(actionId));
+
+        keyCombo = NormalizeKeyCombo(keyCombo);
+        var bindings = new Dictionary<string, string>(_hotKeySettings.Bindings, StringComparer.Ordinal);
+
+        foreach (var existingBinding in bindings.Where(x => x.Value == keyCombo && x.Key != actionId).ToArray())
+            bindings.Remove(existingBinding.Key);
+
+        bindings[actionId] = keyCombo;
+        _hotKeySettings.Bindings = bindings;
+    }
+
+    public static string NormalizeKeyCombo(IEnumerable<string> keys)
+    {
+        return NormalizeKeyCombo(string.Join("\0", keys.Where(x => !string.IsNullOrWhiteSpace(x))));
+    }
+
+    public static string NormalizeKeyCombo(string keyCombo)
+    {
+        var keys = keyCombo
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return string.Join("\0", keys);
+    }
+
+    protected abstract void InitializeCore();
+
+    private void ReloadBindings()
+    {
+        _hotKeyActions.Clear();
+        foreach (var action in _actionsById.Values)
+            _hotKeyActions[GetBindingForAction(action)] = action;
+    }
+
+    private void OnHotKeySettingsUpdated(HotKeySettings _)
+    {
+        ReloadBindings();
+        OnBindingsChanged?.Invoke();
+    }
 }
 
 public abstract class HotKeyAction
 {
+    public abstract string Id { get; }
     public abstract string Title { get; }
     public abstract string DefaultKeyCombo { get; }
 
@@ -36,8 +109,15 @@ public abstract class HotKeyAction
     }
 }
 
+public sealed class HotKeyBinding(HotKeyAction action, string keyCombo)
+{
+    public HotKeyAction Action { get; } = action;
+    public string KeyCombo { get; } = keyCombo;
+}
+
 public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 {
+    public override string Id => "Mute";
     public override string Title => "Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
 
@@ -51,6 +131,7 @@ public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 
 public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
 {
+    public override string Id => "Deafen";
     public override string Title => "Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
 
@@ -59,5 +140,36 @@ public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
         var service = backgroundService.GetService<VoiceCraftService>();
         if(service == null) return;
         service.Deafened = !service.Deafened;
+    }
+}
+
+public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyAction
+{
+    private bool _active;
+    private bool _restoreMutedState;
+
+    public override string Id => "PushToTalk";
+    public override string Title => "PushToTalk";
+    public override string DefaultKeyCombo => "LeftControl";
+
+    public override void Press()
+    {
+        if (_active) return;
+        var service = backgroundService.GetService<VoiceCraftService>();
+        if (service == null) return;
+        _active = true;
+        _restoreMutedState = service.Muted;
+        service.Muted = false;
+    }
+
+    public override void Release()
+    {
+        if (!_active) return;
+        var service = backgroundService.GetService<VoiceCraftService>();
+        _active = false;
+        if (service == null) return;
+        if (_restoreMutedState)
+            service.Muted = true;
+        _restoreMutedState = false;
     }
 }

@@ -66,7 +66,8 @@
       "Title": "Sneltoetsen",
       "Actions": {
         "Mute": "Dempen",
-        "Deafen": "Doof maken"
+        "Deafen": "Doof maken",
+        "PushToTalk": "Ingedrukt houden om te praten"
       }
     },
     "Advanced": {
