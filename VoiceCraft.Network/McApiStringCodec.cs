@@ -1,46 +1,57 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 
 namespace VoiceCraft.Network;
 
 public static class McApiStringCodec
 {
-    private const char EscapeMarker = '\uE000';
-    private const char PaddingMarker = '\uE001';
+    // Printable ASCII only, excluding characters known to be problematic for MCBE/data tunnel transport.
+    private const string Alphabet =
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$&'()*+,-./:;<=>?@[]^_`{}~";
 
-    private static readonly (int Start, int End)[] SafeRanges =
-    [
-        (0x0020, 0x0021),
-        (0x0023, 0x005B),
-        (0x005D, 0x007B),
-        (0x007D, 0x007E),
-        (0x0080, 0xD7FF),
-        (0xE002, 0xFFFF)
-    ];
-
-    private static readonly int SafeCharCount = SafeRanges.Sum(range => range.End - range.Start + 1);
+    private static readonly BigInteger Base = Alphabet.Length;
+    private static readonly int[] ReverseLookup = BuildReverseLookup();
+    internal static int AlphabetSize => Alphabet.Length;
 
     public static string Encode(ReadOnlySpan<byte> data)
     {
         if (data.Length == 0)
             return string.Empty;
 
-        var builder = new StringBuilder(data.Length / 2 + 2);
-        for (var i = 0; i < data.Length; i += 2)
-        {
-            var value = (ushort)(data[i] << 8);
-            if (i + 1 < data.Length)
-                value |= data[i + 1];
+        var leadingZeroCount = 0;
+        while (leadingZeroCount < data.Length && data[leadingZeroCount] == 0)
+            leadingZeroCount++;
 
-            AppendEncodedValue(builder, value);
+        var builder = new StringBuilder(data.Length * 2);
+        for (var i = 0; i < leadingZeroCount; i++)
+            builder.Append(Alphabet[0]);
+
+        if (leadingZeroCount == data.Length)
+            return builder.ToString();
+
+        var magnitude = new byte[data.Length - leadingZeroCount + 1];
+        for (var i = 0; i < data.Length - leadingZeroCount; i++)
+            magnitude[i] = data[data.Length - 1 - i];
+
+        var value = new BigInteger(magnitude);
+        Span<char> buffer = stackalloc char[512];
+
+        while (value > BigInteger.Zero)
+        {
+            value = BigInteger.DivRem(value, Base, out var remainder);
+            if (buffer.Length == 0)
+                throw new InvalidOperationException("Unexpected buffer exhaustion.");
+            builder.Append(Alphabet[(int)remainder]);
         }
 
-        if ((data.Length & 1) != 0)
-            builder.Append(EscapeMarker).Append(PaddingMarker);
+        if (builder.Length == leadingZeroCount)
+            builder.Append(Alphabet[0]);
 
-        return builder.ToString();
+        var chars = builder.ToString().ToCharArray();
+        Array.Reverse(chars, leadingZeroCount, chars.Length - leadingZeroCount);
+        return new string(chars);
     }
 
     public static byte[] Decode(string data)
@@ -48,86 +59,57 @@ public static class McApiStringCodec
         if (string.IsNullOrEmpty(data))
             return [];
 
-        var bytes = new List<byte>(data.Length * 2);
-        for (var i = 0; i < data.Length; i++)
+        var leadingZeroCount = 0;
+        while (leadingZeroCount < data.Length && data[leadingZeroCount] == Alphabet[0])
+            leadingZeroCount++;
+
+        var value = BigInteger.Zero;
+        for (var i = leadingZeroCount; i < data.Length; i++)
         {
             var current = data[i];
-            if (current != EscapeMarker)
-            {
-                AppendDecodedValue(bytes, GetSafeCharIndex(current));
-                continue;
-            }
+            if (current >= ReverseLookup.Length || ReverseLookup[current] < 0)
+                throw new ArgumentException($"Character '{current}' is not valid in an encoded McApi payload.",
+                    nameof(data));
 
-            if (++i >= data.Length)
-                throw new ArgumentException("Encoded string ended unexpectedly after an escape marker.", nameof(data));
-
-            var escaped = data[i];
-            if (escaped == PaddingMarker)
-            {
-                if (i != data.Length - 1)
-                    throw new ArgumentException("Padding marker must appear only at the end of the encoded string.",
-                        nameof(data));
-
-                if (bytes.Count == 0)
-                    throw new ArgumentException("Padding marker cannot be used without encoded payload.", nameof(data));
-
-                bytes.RemoveAt(bytes.Count - 1);
-                break;
-            }
-
-            AppendDecodedValue(bytes, SafeCharCount + GetSafeCharIndex(escaped));
+            value *= Base;
+            value += ReverseLookup[current];
         }
 
-        return bytes.ToArray();
+        var decoded = value == BigInteger.Zero ? [] : value.ToByteArray(isUnsigned: true, isBigEndian: true);
+        if (leadingZeroCount == 0)
+            return decoded;
+
+        var output = new byte[leadingZeroCount + decoded.Length];
+        if (decoded.Length > 0)
+            Buffer.BlockCopy(decoded, 0, output, leadingZeroCount, decoded.Length);
+        return output;
     }
 
-    private static void AppendEncodedValue(StringBuilder builder, int value)
+    public static bool IsSafePayloadCharacter(char value)
     {
-        if (value < SafeCharCount)
-        {
-            builder.Append(GetSafeChar(value));
-            return;
-        }
-
-        builder.Append(EscapeMarker);
-        builder.Append(GetSafeChar(value - SafeCharCount));
+        return value < ReverseLookup.Length && ReverseLookup[value] >= 0;
     }
 
-    private static void AppendDecodedValue(List<byte> bytes, int value)
+    internal static char GetAlphabetChar(int index)
     {
-        bytes.Add((byte)(value >> 8));
-        bytes.Add((byte)value);
-    }
-
-    private static char GetSafeChar(int index)
-    {
-        if (index < 0 || index >= SafeCharCount)
+        if (index < 0 || index >= Alphabet.Length)
             throw new ArgumentOutOfRangeException(nameof(index));
-
-        foreach (var (start, end) in SafeRanges)
-        {
-            var rangeLength = end - start + 1;
-            if (index < rangeLength)
-                return (char)(start + index);
-
-            index -= rangeLength;
-        }
-
-        throw new ArgumentOutOfRangeException(nameof(index));
+        return Alphabet[index];
     }
 
-    private static int GetSafeCharIndex(char value)
+    internal static int GetAlphabetIndex(char value)
     {
-        var index = 0;
-        foreach (var (start, end) in SafeRanges)
-        {
-            if (value >= start && value <= end)
-                return index + value - start;
+        if (value >= ReverseLookup.Length || ReverseLookup[value] < 0)
+            throw new ArgumentException($"Character '{value}' is not valid in an encoded McApi payload.",
+                nameof(value));
+        return ReverseLookup[value];
+    }
 
-            index += end - start + 1;
-        }
-
-        throw new ArgumentException($"Character U+{(int)value:X4} is not valid in an encoded McApi payload.",
-            nameof(value));
+    private static int[] BuildReverseLookup()
+    {
+        var lookup = Enumerable.Repeat(-1, 128).ToArray();
+        for (var i = 0; i < Alphabet.Length; i++)
+            lookup[Alphabet[i]] = i;
+        return lookup;
     }
 }

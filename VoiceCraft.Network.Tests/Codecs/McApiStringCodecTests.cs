@@ -34,12 +34,15 @@ public class McApiStringCodecTests
 
         Assert.All(encoded, ch =>
         {
+            Assert.True(McApiStringCodec.IsSafePayloadCharacter(ch));
             Assert.False(ch == '|');
             Assert.False(ch == '"');
             Assert.False(ch == '\\');
+            Assert.False(ch == '%');
+            Assert.False(ch == ' ');
             Assert.False(ch < 0x20);
             Assert.False(ch == 0x7F);
-            Assert.False(char.IsSurrogate(ch));
+            Assert.True(ch <= 0x7E);
         });
     }
 
@@ -49,14 +52,18 @@ public class McApiStringCodecTests
         Assert.Throws<ArgumentException>(() => McApiStringCodec.Decode("|"));
         Assert.Throws<ArgumentException>(() => McApiStringCodec.Decode("\""));
         Assert.Throws<ArgumentException>(() => McApiStringCodec.Decode("\\"));
+        Assert.Throws<ArgumentException>(() => McApiStringCodec.Decode("%"));
+        Assert.Throws<ArgumentException>(() => McApiStringCodec.Decode(" "));
     }
 
     [Fact]
-    public void Decode_Rejects_InvalidPaddingPlacement()
+    public void EncodeDecode_Preserves_LeadingZeroBytes()
     {
-        var invalid = "\uE000\uE001abc";
+        var data = new byte[] { 0, 0, 0, 1, 2, 3, 0, 4 };
+        var encoded = McApiStringCodec.Encode(data);
+        var decoded = McApiStringCodec.Decode(encoded);
 
-        Assert.Throws<ArgumentException>(() => McApiStringCodec.Decode(invalid));
+        Assert.Equal(data, decoded);
     }
 
     [Fact]
