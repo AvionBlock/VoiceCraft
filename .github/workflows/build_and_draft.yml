@@ -4,22 +4,32 @@ on:
 
 jobs:
   VoiceCraft-Tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-26]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v5
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: ${{ startsWith(matrix.os, 'macos') && '9.0.312' || '9.0.x' }}
 
       - name: Restore Core Tests
         run: dotnet restore ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj
+
+      - name: Restore Client Tests
+        run: dotnet restore ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj
 
       - name: Restore Network Tests
         run: dotnet restore ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj
 
       - name: Run Core Tests
         run: dotnet test ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj -c Release --no-restore
+
+      - name: Run Client Tests
+        run: dotnet test ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj -c Release --no-restore
 
       - name: Run Network Tests
         run: dotnet test ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj -c Release --no-restore
