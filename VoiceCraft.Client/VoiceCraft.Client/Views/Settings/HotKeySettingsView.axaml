@@ -11,8 +11,7 @@
              x:Name="Root"
              x:DataType="settings:HotKeySettingsViewModel"
              x:Class="VoiceCraft.Client.Views.Settings.HotKeySettingsView">
-    <ScrollViewer>
-        <Grid RowDefinitions="Auto, *">
+    <Grid RowDefinitions="Auto, *">
             <Grid Grid.Row="0"
                   Margin="0,0,0,10"
                   Background="{DynamicResource BackgroundBrush}">
@@ -30,47 +29,109 @@
                     <PathIcon Data="{DynamicResource ArrowLeftRegular}" />
                 </Button>
             </Grid>
-            <ListBox Grid.Row="1"
-                     Background="Transparent"
-                     Margin="10, 10, 10, 10"
-                     ItemsSource="{Binding HotKeys}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:HotKeyActionDataViewModel">
-                        <Grid RowDefinitions="Auto, *"
-                              ColumnDefinitions="*,Auto">
-                            <TextBlock FontSize="16"
-                                       FontWeight="Bold"
-                                       Grid.Row="0"
-                                       Grid.Column="0"
-                                       Text="{locale:Localize {Binding Title}}" />
-                            <Border Grid.Row="1" Grid.Column="0" Classes="tag" Padding="5" HorizontalAlignment="Left">
-                                <TextBlock Text="{Binding Keybind}" />
-                            </Border>
-                            <Button Grid.RowSpan="2"
-                                    Grid.Column="1"
-                                    Margin="10,0,0,0"
-                                    Command="{Binding #Root.DataContext.StartRebindCommand}"
-                                    CommandParameter="{Binding}">
-                                <TextBlock Text="Rebind" />
-                            </Button>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <Border Grid.Row="1"
+            <ScrollViewer Grid.Row="1"
+                          Margin="10,0,10,10">
+                <Border VerticalAlignment="Top"
+                        Padding="15"
+                        Classes="card">
+                    <StackPanel Spacing="14">
+                        <Border Classes="card"
+                                Padding="12">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="12">
+                                <StackPanel Grid.Column="0"
+                                            Spacing="4">
+                                    <TextBlock FontSize="16"
+                                               FontWeight="Bold"
+                                               Text="{locale:Localize Settings.HotKey.PlayPushToTalkCues}" />
+                                </StackPanel>
+                                <ToggleSwitch Grid.Column="1"
+                                              OffContent=""
+                                              OnContent=""
+                                              IsChecked="{Binding PlayPushToTalkCues}" />
+                            </Grid>
+                        </Border>
+                        <ItemsControl ItemsSource="{Binding HotKeys}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:HotKeyActionDataViewModel">
+                                    <Border Classes="card"
+                                            Padding="12"
+                                            Margin="0,0,0,8">
+                                        <Grid RowDefinitions="Auto,Auto"
+                                              ColumnDefinitions="*,Auto"
+                                              ColumnSpacing="12"
+                                              RowSpacing="8">
+                                            <TextBlock FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Grid.Row="0"
+                                                       Grid.Column="0"
+                                                       Text="{locale:Localize {Binding Title}}" />
+                                            <Border Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Classes="tag"
+                                                    Padding="6,4"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding Keybind}" />
+                                            </Border>
+                                            <Button Grid.RowSpan="2"
+                                                    Grid.Column="1"
+                                                    MinWidth="96"
+                                                    HorizontalAlignment="Right"
+                                                    Command="{Binding #Root.DataContext.StartRebindCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <TextBlock Text="{locale:Localize Settings.HotKey.Rebind}" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+            <Border Grid.RowSpan="2"
                     IsVisible="{Binding IsRebinding}"
-                    Background="#AA000000">
-                <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Width="300"
-                            Spacing="10">
-                    <TextBlock HorizontalAlignment="Center"
-                               Text="{Binding RebindingTitle}" />
-                    <TextBox Watermark="Press keys like LeftControl + LeftShift + M"
-                             AttachedToVisualTree="HotKeyCapture_OnAttachedToVisualTree"
-                             KeyDown="HotKeyCapture_OnKeyDown" />
-                </StackPanel>
+                    Background="#AA000000"
+                    Focusable="True"
+                    AttachedToVisualTree="HotKeyCapture_OnAttachedToVisualTree"
+                    KeyDown="HotKeyCapture_OnKeyDown"
+                    KeyUp="HotKeyCapture_OnKeyUp"
+                    PointerPressed="HotKeyCapture_OnPointerPressed"
+                    PointerReleased="HotKeyCapture_OnPointerReleased">
+                <Border HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="420"
+                        Padding="20"
+                        Classes="card">
+                    <StackPanel Spacing="12">
+                        <TextBlock HorizontalAlignment="Center"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Text="{Binding RebindingTitle}" />
+                        <TextBlock HorizontalAlignment="Center"
+                                   Opacity="0.85"
+                                   Text="{locale:Localize Settings.HotKey.CapturePrompt}" />
+                        <Border Classes="tag"
+                                Padding="10"
+                                MinHeight="46">
+                            <TextBlock VerticalAlignment="Center"
+                                       Text="{Binding RebindingPreview}" />
+                        </Border>
+                        <StackPanel Orientation="Horizontal"
+                                    Spacing="10"
+                                    HorizontalAlignment="Center">
+                            <Button MinWidth="120"
+                                    Command="{Binding ConfirmRebindCommand}">
+                                <TextBlock Text="{locale:Localize Settings.HotKey.SaveBinding}" />
+                            </Button>
+                            <Button MinWidth="100"
+                                    Command="{Binding CancelRebindCommand}">
+                                <TextBlock Text="{locale:Localize Settings.HotKey.CancelRebind}" />
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </Border>
         </Grid>
-    </ScrollViewer>
+    
 </UserControl>

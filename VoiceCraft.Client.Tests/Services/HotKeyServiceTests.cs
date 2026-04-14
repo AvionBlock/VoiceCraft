@@ -29,6 +29,23 @@ public class HotKeyServiceTests
         Assert.Equal("LeftControl\0LeftShift\0D", bindings.Single(x => x.Action.Id == "Deafen").KeyCombo);
     }
 
+    [Fact]
+    public void NormalizeKeyCombo_SortsInputsToMakeBindingsOrderIndependent()
+    {
+        var normalized = HotKeyService.NormalizeKeyCombo("MouseButton4\0LeftShift\0LeftControl");
+
+        Assert.Equal("LeftControl\0LeftShift\0MouseButton4", normalized);
+    }
+
+    [Theory]
+    [InlineData("Left", "MouseLeft")]
+    [InlineData("XButton1", "MouseButton4")]
+    [InlineData("Button5", "MouseButton5")]
+    public void NormalizeMouseButton_ReturnsCanonicalButtonName(string input, string expected)
+    {
+        Assert.Equal(expected, HotKeyService.NormalizeMouseButton(input));
+    }
+
     private static TestHotKeyService CreateService()
     {
         InitializeLocalizer();

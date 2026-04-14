@@ -64,6 +64,11 @@
     },
     "HotKey": {
       "Title": "Hotkeys",
+      "Rebind": "Neu belegen",
+      "CapturePrompt": "Taste oder Maustaste drücken",
+      "SaveBinding": "Belegung speichern",
+      "CancelRebind": "Abbrechen",
+      "PlayPushToTalkCues": "Push-to-Talk-Sounds abspielen",
       "Actions": {
         "Mute": "Stummschalten",
         "Deafen": "Taub schalten",

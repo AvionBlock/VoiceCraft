@@ -64,6 +64,11 @@
     },
     "HotKey": {
       "Title": "Skróty klawiszowe",
+      "Rebind": "Przypisz ponownie",
+      "CapturePrompt": "Naciśnij klawisz lub przycisk myszy",
+      "SaveBinding": "Zapisz przypisanie",
+      "CancelRebind": "Anuluj",
+      "PlayPushToTalkCues": "Odtwarzaj dźwięki Push To Talk",
       "Actions": {
         "Mute": "Wycisz",
         "Deafen": "Zagłusz",

@@ -74,8 +74,27 @@ public abstract class HotKeyService : IDisposable
         var keys = keyCombo
             .Split('\0', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.Ordinal)
+            .OrderBy(x => x, StringComparer.Ordinal)
             .ToArray();
         return string.Join("\0", keys);
+    }
+
+    public static string NormalizeMouseButton(string buttonName)
+    {
+        return buttonName switch
+        {
+            "Left" => "MouseLeft",
+            "Right" => "MouseRight",
+            "Middle" => "MouseMiddle",
+            "XButton1" => "MouseButton4",
+            "XButton2" => "MouseButton5",
+            "Button1" => "MouseLeft",
+            "Button2" => "MouseRight",
+            "Button3" => "MouseMiddle",
+            "Button4" => "MouseButton4",
+            "Button5" => "MouseButton5",
+            _ => buttonName.StartsWith("Mouse", StringComparison.Ordinal) ? buttonName : $"Mouse{buttonName}"
+        };
     }
 
     protected abstract void InitializeCore();
@@ -143,7 +162,7 @@ public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
     }
 }
 
-public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyAction
+public class PushToTalkAction(IBackgroundService backgroundService, PushToTalkCueService cueService) : HotKeyAction
 {
     private bool _active;
     private bool _restoreMutedState;
@@ -160,6 +179,7 @@ public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyActi
         _active = true;
         _restoreMutedState = service.Muted;
         service.Muted = false;
+        cueService.PlayActivatedCue();
     }
 
     public override void Release()
@@ -171,5 +191,6 @@ public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyActi
         if (_restoreMutedState)
             service.Muted = true;
         _restoreMutedState = false;
+        cueService.PlayReleasedCue();
     }
 }

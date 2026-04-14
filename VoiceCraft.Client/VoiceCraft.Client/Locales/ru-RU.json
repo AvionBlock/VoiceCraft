@@ -64,6 +64,11 @@
     },
     "HotKey": {
       "Title": "Горячие клавиши",
+      "Rebind": "Переназначить",
+      "CapturePrompt": "Нажми клавишу или кнопку мыши",
+      "SaveBinding": "Сохранить",
+      "CancelRebind": "Отмена",
+      "PlayPushToTalkCues": "Проигрывать звуки Push To Talk",
       "Actions": {
         "Mute": "Выключить микрофон",
         "Deafen": "Оглушить",

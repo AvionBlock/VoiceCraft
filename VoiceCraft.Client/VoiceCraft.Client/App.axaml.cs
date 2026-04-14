@@ -123,6 +123,7 @@ public class App : Application
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
         ServiceCollection.AddSingleton<VoiceCraftService>();
+        ServiceCollection.AddSingleton<PushToTalkCueService>();
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();

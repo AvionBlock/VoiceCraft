@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -11,16 +12,20 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
 {
     private readonly NavigationService _navigationService;
     private readonly HotKeySettingsDataViewModel _hotKeySettingsData;
+    private string? _rebindActionId;
 
     [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<HotKeyActionDataViewModel> _hotKeys;
     [ObservableProperty] private bool _isRebinding;
     [ObservableProperty] private string _rebindingTitle = string.Empty;
+    [ObservableProperty] private string _rebindingPreview = string.Empty;
+    [ObservableProperty] private bool _playPushToTalkCues;
 
-    public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService)
+    public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService, SettingsService settingsService)
     {
         _navigationService = navigationService;
-        _hotKeySettingsData = new HotKeySettingsDataViewModel(hotKeyService);
+        _hotKeySettingsData = new HotKeySettingsDataViewModel(hotKeyService, settingsService);
         _hotKeys = _hotKeySettingsData.HotKeys;
+        _playPushToTalkCues = _hotKeySettingsData.PlayPushToTalkCues;
     }
 
     public void Dispose()
@@ -40,22 +45,51 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
     private void StartRebind(HotKeyActionDataViewModel hotKey)
     {
         if (IsRebinding) return;
+        _rebindActionId = hotKey.Action.Id;
         IsRebinding = true;
         DisableBackButton = true;
-        RebindingTitle = hotKey.Title;
+        RebindingTitle = Localizer.Get(hotKey.Title);
+        RebindingPreview = hotKey.Keybind;
     }
 
     [RelayCommand]
-    private void CaptureBinding(string? text)
+    private void UpdateBindingPreview(string? text)
     {
         if (!IsRebinding || string.IsNullOrWhiteSpace(text)) return;
-        var action = HotKeys.FirstOrDefault(x => x.Title == RebindingTitle)?.Action;
-        if (action == null) return;
         var keys = text.Split(" + ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        _hotKeySettingsData.SetBinding(action, HotKeyService.NormalizeKeyCombo(keys));
+        RebindingPreview = HotKeyService.NormalizeKeyCombo(keys).Replace("\0", " + ");
+    }
+
+    [RelayCommand]
+    private void ClearBindingPreview()
+    {
+        if (!IsRebinding) return;
+        RebindingPreview = string.Empty;
+    }
+
+    [RelayCommand]
+    private void ConfirmRebind()
+    {
+        if (!IsRebinding || string.IsNullOrWhiteSpace(RebindingPreview) || string.IsNullOrWhiteSpace(_rebindActionId)) return;
+        var action = HotKeys.FirstOrDefault(x => x.Action.Id == _rebindActionId)?.Action;
+        if (action == null) return;
+        _hotKeySettingsData.SetBinding(action, HotKeyService.NormalizeKeyCombo(RebindingPreview.Replace(" + ", "\0")));
         HotKeys = _hotKeySettingsData.HotKeys;
+        CancelRebind();
+    }
+
+    [RelayCommand]
+    private void CancelRebind()
+    {
+        _rebindActionId = null;
         IsRebinding = false;
         DisableBackButton = false;
         RebindingTitle = string.Empty;
+        RebindingPreview = string.Empty;
+    }
+
+    partial void OnPlayPushToTalkCuesChanged(bool value)
+    {
+        _hotKeySettingsData.PlayPushToTalkCues = value;
     }
 }

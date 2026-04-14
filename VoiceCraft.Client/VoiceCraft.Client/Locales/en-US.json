@@ -64,6 +64,11 @@
     },
     "HotKey": {
       "Title": "HotKey",
+      "Rebind": "Rebind",
+      "CapturePrompt": "Press a key or mouse button",
+      "SaveBinding": "Save Binding",
+      "CancelRebind": "Cancel",
+      "PlayPushToTalkCues": "Play Push To Talk sounds",
       "Actions": {
         "Mute": "Mute",
         "Deafen": "Deafen",

@@ -64,6 +64,11 @@
     },
     "HotKey": {
       "Title": "快捷鍵",
+      "Rebind": "重新綁定",
+      "CapturePrompt": "按下按鍵或滑鼠按鈕",
+      "SaveBinding": "儲存綁定",
+      "CancelRebind": "取消",
+      "PlayPushToTalkCues": "播放按住說話提示音",
       "Actions": {
         "Mute": "靜音",
         "Deafen": "拒聽",
