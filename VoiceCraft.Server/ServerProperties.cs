@@ -42,29 +42,31 @@ public class ServerProperties
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
     }
 
-    public void ApplyRuntimeOverrides(ServerRuntimeOverrides overrides)
+    public void ApplyRuntimeOverrides(RuntimeOptions options)
     {
-        if (!string.IsNullOrWhiteSpace(overrides.ServerKey))
+        if (!string.IsNullOrWhiteSpace(options.ServerKey))
         {
-            _properties.McHttpConfig.LoginToken = overrides.ServerKey;
-            _properties.McTcpConfig.LoginToken = overrides.ServerKey;
-            _properties.McWssConfig.LoginToken = overrides.ServerKey;
+            _properties.McHttpConfig.LoginToken = options.ServerKey;
+            _properties.McTcpConfig.LoginToken = options.ServerKey;
+            _properties.McWssConfig.LoginToken = options.ServerKey;
         }
 
-        if (overrides.TransportPort is >= 1 and <= 65535)
+        if (options.TransportPort is >= 1 and <= 65535)
         {
-            _properties.McTcpConfig.Port = overrides.TransportPort.Value;
-            _properties.McHttpConfig.Hostname = SetHttpPort(_properties.McHttpConfig.Hostname, overrides.TransportPort.Value);
+            _properties.McTcpConfig.Port = options.TransportPort.Value;
+            _properties.McHttpConfig.Hostname = SetUriPort(_properties.McHttpConfig.Hostname, options.TransportPort.Value);
+            _properties.McWssConfig.Hostname = SetUriPort(_properties.McWssConfig.Hostname, options.TransportPort.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(overrides.TransportHost))
+        if (!string.IsNullOrWhiteSpace(options.TransportHost))
         {
-            _properties.McTcpConfig.Hostname = overrides.TransportHost;
-            _properties.McHttpConfig.Hostname = SetHttpHost(_properties.McHttpConfig.Hostname, overrides.TransportHost);
+            _properties.McTcpConfig.Hostname = options.TransportHost;
+            _properties.McHttpConfig.Hostname = SetUriHost(_properties.McHttpConfig.Hostname, options.TransportHost);
+            _properties.McWssConfig.Hostname = SetUriHost(_properties.McWssConfig.Hostname, options.TransportHost);
         }
 
-        if (overrides.TransportMode.Length > 0)
-            ApplyTransportModeOverrides(overrides.TransportMode);
+        if (options.TransportMode.Length > 0)
+            ApplyTransportModeOverrides(options.TransportMode);
     }
 
     private static ServerPropertiesStructure LoadFile(string path, bool throwOnInvalidConfig)
@@ -126,7 +128,7 @@ public class ServerProperties
         }
     }
 
-    private static string SetHttpHost(string configuredHostname, string host)
+    private static string SetUriHost(string configuredHostname, string host)
     {
         if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
             return configuredHostname;
@@ -137,7 +139,7 @@ public class ServerProperties
         }.Uri.ToString();
     }
 
-    private static string SetHttpPort(string configuredHostname, int port)
+    private static string SetUriPort(string configuredHostname, int port)
     {
         if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
             return configuredHostname;
@@ -221,8 +223,10 @@ public class ServerPropertiesStructure
     public Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig { get; set; } = [];
 }
 
-public class ServerRuntimeOverrides
+public class RuntimeOptions
 {
+    public bool ExitOnInvalidProperties { get; set; }
+    public string? Language { get; set; }
     public string[] TransportMode { get; set; } = [];
     public string? TransportHost { get; set; }
     public int? TransportPort { get; set; }

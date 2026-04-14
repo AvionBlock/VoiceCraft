@@ -6,30 +6,35 @@ public class VoiceCraftRootCommand : RootCommand
 {
     public VoiceCraftRootCommand() : base("VoiceCraft application server root command.")
     {
-        var exitOnInvalidPropertiesOption = new Option<bool>("--exit-on-invalid-properties", "-e")
+        var exitOnInvalidPropertiesOption = new Option<bool>("--exit-on-invalid-properties", "-eip")
         {
             Description = "Exits when the VoiceCraft server fails to parse the ServerProperties.json file.",
             DefaultValueFactory = _ => false
         };
-        var languageOption = new Option<string>("--language", "-l")
+        var languageOption = new Option<string?>("--language", "-l")
         {
-            Description = "The language to use when voicecraft starts. Overrides the ServerProperties.json file."
+            Description = "The language to use when voicecraft starts. Overrides the ServerProperties.json file.",
+            DefaultValueFactory = _ => null
         };
-        var transportModeOption = new Option<string[]>("--transport-mode", "-m")
+        var transportModeOption = new Option<string[]>("--transport-mode", "-tm")
         {
-            Description = "Choose which Minecraft API transports to enable for this run, for example 'http,tcp' or 'wss'."
+            Description = "Choose which Minecraft API transports to enable for this run, for example http, tcp or wss.",
+            DefaultValueFactory = _ => []
         };
-        var transportHostOption = new Option<string>("--transport-host", "-th")
+        var transportHostOption = new Option<string?>("--transport-host", "-th")
         {
-            Description = "Set the host address used by the Minecraft API transports for this run."
+            Description = "Set the host address used by the Minecraft API transports for this run.",
+            DefaultValueFactory = _ => null
         };
-        var transportPortOption = new Option<int?>("--transport-port", "-p")
+        var transportPortOption = new Option<int?>("--transport-port", "-tp")
         {
-            Description = "Set the port used by the Minecraft API transports for this run."
+            Description = "Set the port used by the Minecraft API transports for this run.",
+            DefaultValueFactory = _ => null
         };
-        var serverKeyOption = new Option<string>("--server-key", "-k")
+        var serverKeyOption = new Option<string?>("--server-key", "-sk")
         {
-            Description = "Set the shared server key used by Minecraft API clients to authenticate."
+            Description = "Set the shared server key used by Minecraft API clients to authenticate.",
+            DefaultValueFactory = _ => null
         };
         Add(exitOnInvalidPropertiesOption);
         Add(languageOption);
@@ -40,16 +45,16 @@ public class VoiceCraftRootCommand : RootCommand
         
         SetAction(async result =>
         {
-            var exitOnInvalidProperties = result.GetValue(exitOnInvalidPropertiesOption);
-            var language = result.GetValue(languageOption);
-            var runtimeOverrides = new ServerRuntimeOverrides
+            var runtimeOptions = new RuntimeOptions
             {
+                ExitOnInvalidProperties = result.GetValue(exitOnInvalidPropertiesOption),
+                Language = result.GetValue(languageOption),
                 TransportMode = result.GetValue(transportModeOption) ?? [],
                 TransportHost = result.GetValue(transportHostOption),
                 TransportPort = result.GetValue(transportPortOption),
                 ServerKey = result.GetValue(serverKeyOption)
             };
-            await App.Start(exitOnInvalidProperties, language, runtimeOverrides);
+            await App.Start(runtimeOptions);
         });
     }
 }

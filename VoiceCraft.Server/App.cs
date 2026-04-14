@@ -15,13 +15,12 @@ public static class App
     private static readonly CancellationTokenSource Cts = new();
     private static string? _bufferedCommand;
 
-    public static async Task Start(bool exitOnInvalidProperties, string? language = null,
-        ServerRuntimeOverrides? runtimeOverrides = null)
+    public static async Task Start(RuntimeOptions runtimeOptions)
     {
-        var languageOverriden = !string.IsNullOrWhiteSpace(language);
+        var languageOverriden = !string.IsNullOrWhiteSpace(runtimeOptions.Language);
         //Set language if overriden.
         if (languageOverriden)
-            Localizer.Instance.Language = language ?? "en-US";
+            Localizer.Instance.Language = runtimeOptions.Language ?? "en-US";
 
         //Servers
         var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
@@ -44,9 +43,8 @@ public static class App
             AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
-            properties.Load(exitOnInvalidProperties);
-            if (runtimeOverrides != null)
-                properties.ApplyRuntimeOverrides(runtimeOverrides);
+            properties.Load(runtimeOptions.ExitOnInvalidProperties);
+            properties.ApplyRuntimeOverrides(runtimeOptions);
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
