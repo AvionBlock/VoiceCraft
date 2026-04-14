@@ -256,7 +256,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     {
         try
         {
-            using var stream = client.GetStream();
+            await using var stream = client.GetStream();
             while (!cancellationToken.IsCancellationRequested && client.Connected)
             {
                 var payload = await ReadFrameAsync(stream, cancellationToken);
@@ -475,9 +475,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     private static byte[] WritePayload(string token, IReadOnlyList<byte[]> packets)
     {
         var tokenBytes = string.IsNullOrEmpty(token) ? [] : Encoding.UTF8.GetBytes(token);
-        var payloadLength = 4 + tokenBytes.Length + 4;
-        foreach (var packet in packets)
-            payloadLength += 4 + packet.Length;
+        var payloadLength = 4 + tokenBytes.Length + 4 + packets.Sum(packet => 4 + packet.Length);
 
         var payload = new byte[payloadLength];
         var offset = 0;
