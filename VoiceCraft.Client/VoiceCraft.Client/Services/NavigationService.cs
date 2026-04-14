@@ -58,6 +58,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
         if (_history.ElementAt(0) is IDisposable disposable)
             disposable.Dispose(); //Moving off the stack. We dispose it if it implemented IDisposable.
         _history.RemoveAt(0);
+        _historyIndex = _history.Count - 1;
     }
 
     private void SetCurrentViewModel(ViewModelBase viewModel, object? data = null)
