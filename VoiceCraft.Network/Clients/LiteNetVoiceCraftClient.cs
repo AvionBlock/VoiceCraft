@@ -42,8 +42,10 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket()).Set(Environment.TickCount);
         SendUnconnectedPacket(ip, port, packet);
-        var response = await GetUnconnectedResponseAsync<VcInfoResponsePacket>(TimeSpan.FromSeconds(8), token);
-        return new ServerInfo(response);
+        return await GetUnconnectedResponseAsync<VcInfoResponsePacket, ServerInfo>(
+            response => new ServerInfo(response),
+            TimeSpan.FromSeconds(8),
+            token);
     }
 
     public override async Task ConnectAsync(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
@@ -71,7 +73,10 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
                 _netPeer = new LiteNetVoiceCraftNetPeer(peer, userGuid, serverUserGuid, locale, positioningType);
             }
 
-            _ = await GetResponseAsync<VcAcceptResponsePacket>(requestId, TimeSpan.FromSeconds(8));
+            _ = await GetResponseAsync<VcAcceptResponsePacket, Guid>(
+                requestId,
+                response => response.RequestId,
+                TimeSpan.FromSeconds(8));
             ConnectionState = VcConnectionState.Connected;
             OnConnected?.Invoke();
         }
@@ -185,10 +190,13 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         _netManager = null;
     }
 
-    private async Task<T> GetUnconnectedResponseAsync<T>(TimeSpan timeout, CancellationToken token = default)
-        where T : IVoiceCraftPacket
+    private async Task<TResult> GetUnconnectedResponseAsync<TPacket, TResult>(
+        Func<TPacket, TResult> selector,
+        TimeSpan timeout,
+        CancellationToken token = default)
+        where TPacket : IVoiceCraftPacket
     {
-        var tcs = new TaskCompletionSource<T>();
+        var tcs = new TaskCompletionSource<TResult>();
         using var cts = new CancellationTokenSource(timeout);
         cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
         token.Register(() => tcs.TrySetException(new OperationCanceledException()));
@@ -206,15 +214,19 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         void EventCallback(IVoiceCraftPacket packet)
         {
-            if (packet is not T typedPacket) return;
-            tcs.TrySetResult(typedPacket);
+            if (packet is not TPacket typedPacket) return;
+            tcs.TrySetResult(selector(typedPacket));
         }
     }
 
-    private async Task<T> GetResponseAsync<T>(Guid requestId, TimeSpan timeout, CancellationToken token = default)
-        where T : IVoiceCraftPacket, IVoiceCraftRIdPacket
+    private async Task<TResult> GetResponseAsync<TPacket, TResult>(
+        Guid requestId,
+        Func<TPacket, TResult> selector,
+        TimeSpan timeout,
+        CancellationToken token = default)
+        where TPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
     {
-        var tcs = new TaskCompletionSource<T>();
+        var tcs = new TaskCompletionSource<TResult>();
         var dTcs = new TaskCompletionSource<string?>();
         using var cts = new CancellationTokenSource(timeout);
         cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
@@ -235,8 +247,8 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         void EventCallback(IVoiceCraftPacket packet)
         {
-            if (packet is not T typedPacket || typedPacket.RequestId != requestId) return;
-            tcs.TrySetResult(typedPacket);
+            if (packet is not TPacket typedPacket || typedPacket.RequestId != requestId) return;
+            tcs.TrySetResult(selector(typedPacket));
         }
 
         void OnDisconnectedCallback(string? reason)
