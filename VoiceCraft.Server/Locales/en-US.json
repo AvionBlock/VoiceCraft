@@ -71,6 +71,15 @@
       "Failed": "Failed to start McHttp Server! Please check if another process is using the same port!"
     }
   },
+  "McTcpServer": {
+    "Starting": "Starting McTcp server...",
+    "Success": "Successfully started the McTcp server!",
+    "Stopping": "Stopping McTcp server...",
+    "Stopped": "Successfully stopped the McTcp server!",
+    "Exceptions": {
+      "Failed": "Failed to start McTcp Server! Please check if another process is using the same port!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "Server",

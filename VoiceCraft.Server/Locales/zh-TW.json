@@ -71,6 +71,15 @@
       "Failed": "無法啟動 McHttp 伺服器! 請檢查是否有其他進程正在使用相同的端口!"
     }
   },
+  "McTcpServer": {
+    "Starting": "正在啟動 McTcp 伺服器...",
+    "Success": "成功啟動 McTcp 伺服器!",
+    "Stopping": "正在停止 McTcp 伺服器...",
+    "Stopped": "成功停止 McTcp 伺服器!",
+    "Exceptions": {
+      "Failed": "無法啟動 McTcp 伺服器! 請檢查是否有其他進程正在使用相同的端口!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "伺服器",

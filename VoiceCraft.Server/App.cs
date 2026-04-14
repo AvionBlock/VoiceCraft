@@ -15,17 +15,18 @@ public static class App
     private static readonly CancellationTokenSource Cts = new();
     private static string? _bufferedCommand;
 
-    public static async Task Start(bool exitOnInvalidProperties, string? language = null)
+    public static async Task Start(RuntimeOptions runtimeOptions)
     {
-        var languageOverriden = !string.IsNullOrWhiteSpace(language);
+        var languageOverriden = !string.IsNullOrWhiteSpace(runtimeOptions.Language);
         //Set language if overriden.
         if (languageOverriden)
-            Localizer.Instance.Language = language ?? "en-US";
+            Localizer.Instance.Language = runtimeOptions.Language ?? "en-US";
 
         //Servers
         var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
         var mcWssMcApiServer = Program.ServiceProvider.GetRequiredService<McWssMcApiServer>();
         var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
+        var tcpMcApiServer = Program.ServiceProvider.GetRequiredService<TcpMcApiServer>();
         //Systems
         var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
         var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
@@ -42,7 +43,8 @@ public static class App
             AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
-            properties.Load(exitOnInvalidProperties);
+            properties.Load(runtimeOptions.ExitOnInvalidProperties);
+            properties.ApplyRuntimeOverrides(runtimeOptions);
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
@@ -57,10 +59,12 @@ public static class App
             liteNetServer.Config = properties.VoiceCraftConfig;
             mcWssMcApiServer.Config = properties.McWssConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
+            tcpMcApiServer.Config = properties.McTcpConfig;
 
             //Server Startup
             StartServer(liteNetServer);
             StartServer(httpMcApiServer);
+            StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
 
             //Server Started
@@ -78,6 +82,12 @@ public static class App
                 $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
                 httpMcApiServer.Config.Enabled ? httpMcApiServer.Config.Hostname : "[red]-[/]",
                 $"[{(httpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
+            serverSetupTable.AddRow(
+                $"[{(tcpMcApiServer.Config.Enabled ? "green" : "red")}]McTcp[/]",
+                tcpMcApiServer.Config.Enabled
+                    ? $"{tcpMcApiServer.Config.Hostname}:{tcpMcApiServer.Config.Port}"
+                    : "[red]-[/]",
+                $"[{(tcpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP[/]");
             serverSetupTable.AddRow(
                 $"[{(mcWssMcApiServer.Config.Enabled ? "green" : "red")}]McWss[/]",
                 mcWssMcApiServer.Config.Enabled ? mcWssMcApiServer.Config.Hostname : "[red]-[/]",
@@ -108,6 +118,7 @@ public static class App
                 {
                     liteNetServer.Update();
                     httpMcApiServer.Update();
+                    tcpMcApiServer.Update();
                     mcWssMcApiServer.Update();
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
@@ -126,6 +137,7 @@ public static class App
 
             StopServer(liteNetServer);
             StopServer(httpMcApiServer);
+            StopServer(tcpMcApiServer);
             StopServer(mcWssMcApiServer);
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("Shutdown.Success")}[/]");
         }
@@ -200,6 +212,23 @@ public static class App
         }
     }
 
+    private static void StartServer(TcpMcApiServer server)
+    {
+        if (!server.Config.Enabled) return;
+        try
+        {
+            AnsiConsole.WriteLine(Localizer.Get("McTcpServer.Starting"));
+            server.Start();
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Success")}[/]");
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+            LogService.Log(ex);
+            throw new Exception(Localizer.Get("McTcpServer.Exceptions.Failed"));
+        }
+    }
+
     private static void StopServer(LiteNetVoiceCraftServer server)
     {
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
@@ -221,6 +250,14 @@ public static class App
         AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Stopping"));
         server.Stop();
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Stopped")}[/]");
+    }
+
+    private static void StopServer(TcpMcApiServer server)
+    {
+        if (!server.Config.Enabled) return;
+        AnsiConsole.WriteLine(Localizer.Get("McTcpServer.Stopping"));
+        server.Stop();
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Stopped")}[/]");
     }
 
     private static async Task FlushCommand(RootCommand rootCommand)

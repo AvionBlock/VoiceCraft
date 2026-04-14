@@ -8,7 +8,7 @@ namespace VoiceCraft.Client.Services;
 
 public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel, uint historyMaxSize = 100)
 {
-    private readonly Lock _lockObject = new();
+    private readonly Lock _lock = new();
     private ViewModelBase? _currentViewModel;
     private List<ViewModelBase> _history = [];
     private int _historyIndex = -1;
@@ -18,7 +18,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
     {
         get
         {
-            lock (_lockObject)
+            lock (_lock)
             {
                 return _history.Count > 0 && _historyIndex < _history.Count - 1;
             }
@@ -30,7 +30,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
     {
         get
         {
-            lock (_lockObject)
+            lock (_lock)
             {
                 return _historyIndex > 0;
             }
@@ -72,7 +72,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
     // ReSharper disable once MemberCanBePrivate.Global
     public ViewModelBase? Go(int offset = 0, bool checkBackButton = false)
     {
-        lock (_lockObject)
+        lock (_lock)
         {
             if (checkBackButton && (_currentViewModel?.DisableBackButton ?? false))
                 return _currentViewModel;
@@ -103,7 +103,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
 
     public void NavigateTo<T>(object? data = null) where T : ViewModelBase
     {
-        lock (_lockObject)
+        lock (_lock)
         {
             var viewModel = InstantiateViewModel<T>();
             SetCurrentViewModel(viewModel, data);
