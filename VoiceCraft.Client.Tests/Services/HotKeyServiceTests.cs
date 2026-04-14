@@ -1,5 +1,7 @@
+using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Tests.Services;
 
@@ -29,6 +31,7 @@ public class HotKeyServiceTests
 
     private static TestHotKeyService CreateService()
     {
+        InitializeLocalizer();
         var storage = new FakeStorageService();
         var settings = new SettingsService(storage);
         return new TestHotKeyService(
@@ -36,6 +39,11 @@ public class HotKeyServiceTests
              new TestAction("Deafen", "Deafen", "LeftControl\0LeftShift\0D"),
              new TestAction("PushToTalk", "PushToTalk", "LeftControl")],
             settings);
+    }
+
+    private static void InitializeLocalizer()
+    {
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
     }
 
     private sealed class TestHotKeyService(IEnumerable<HotKeyAction> actions, SettingsService settingsService)
