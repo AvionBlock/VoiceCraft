@@ -40,65 +40,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="Themes\Light\Colors.axaml.cs">
-            <DependentUpon>VcColors.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\Light\Resources.axaml.cs">
-            <DependentUpon>VcResources.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\Light\Styles.axaml.cs">
-            <DependentUpon>VcStyles.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Views\Error\ErrorMainWindow.axaml.cs">
-            <DependentUpon>ErrorMainWindow.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkPurple\Colors.axaml.cs">
-            <DependentUpon>Colors.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkPurple\Resources.axaml.cs">
-            <DependentUpon>Resources.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkPurple\Styles.axaml.cs">
-            <DependentUpon>Styles.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
-            <DependentUpon>Colors.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkGreen\Colors.axaml.cs">
-            <DependentUpon>Colors.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
-            <DependentUpon>Resources.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkGreen\Resources.axaml.cs">
-            <DependentUpon>Resources.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
-            <DependentUpon>Styles.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Themes\DarkGreen\Styles.axaml.cs">
-            <DependentUpon>Styles.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-        <Compile Update="Views\AddServerView.axaml.cs">
-            <DependentUpon>AddServerView.axaml</DependentUpon>
-            <SubType>Code</SubType>
-        </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
         <EmbeddedResource Include="Locales\nl-NL.json"/>
         <EmbeddedResource Include="Locales\en-US.json"/>
         <EmbeddedResource Include="Locales\de-DE.json"/>
@@ -106,11 +47,5 @@
         <EmbeddedResource Include="Locales\ru-RU.json"/>
         <EmbeddedResource Include="Locales\zh-CN.json"/>
         <EmbeddedResource Include="Locales\zh-TW.json"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <AdditionalFiles Include="Themes\DarkGreen\Colors.axaml"/>
-        <AdditionalFiles Include="Themes\DarkGreen\Resources.axaml"/>
-        <AdditionalFiles Include="Themes\DarkGreen\Styles.axaml"/>
     </ItemGroup>
 </Project>
