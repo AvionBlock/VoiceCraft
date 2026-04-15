@@ -18,7 +18,6 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
     [ObservableProperty] private bool _isRebinding;
     [ObservableProperty] private string _rebindingTitle = string.Empty;
     [ObservableProperty] private string _rebindingPreview = string.Empty;
-    [ObservableProperty] private bool _playPushToTalkCues;
 
     public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService)
     {

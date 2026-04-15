@@ -38,39 +38,32 @@
             <Border VerticalAlignment="Top"
                     Padding="15"
                     Classes="card">
-                <StackPanel Spacing="14">
-                    <ToggleButton HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Center"
-                                  IsChecked="{Binding PlayPushToTalkCues}">
-                        <TextBlock Text="{locale:Localize 'Settings.HotKey.PlayPushToTalkCues'}" TextAlignment="Center" />
-                    </ToggleButton>
-                    <ItemsControl ItemsSource="{Binding HotKeys}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="data:HotKeyActionDataViewModel">
-                                <Border Margin="0,0,0,8">
-                                    <Grid RowDefinitions="Auto,Auto"
-                                          ColumnDefinitions="*,Auto"
-                                          ColumnSpacing="12"
-                                          RowSpacing="8">
-                                        <TextBlock FontSize="16"
-                                                   FontWeight="Bold"
-                                                   Grid.Row="0"
-                                                   Grid.Column="0"
-                                                   Text="{locale:Localize {Binding Title}}" />
-                                        <Button Grid.Row="1"
-                                                Grid.Column="0"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Stretch"
-                                                Command="{Binding $parent[ItemsControl].((vm:HotKeySettingsViewModel)DataContext).StartRebindCommand}"
-                                                CommandParameter="{Binding}">
-                                            <TextBlock Text="{Binding Keybind}" />
-                                        </Button>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                <ItemsControl ItemsSource="{Binding HotKeys}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="data:HotKeyActionDataViewModel">
+                            <Border Margin="0,0,0,8">
+                                <Grid RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="12"
+                                      RowSpacing="8">
+                                    <TextBlock FontSize="16"
+                                               FontWeight="Bold"
+                                               Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="{locale:Localize {Binding Title}}" />
+                                    <Button Grid.Row="1"
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding $parent[ItemsControl].((vm:HotKeySettingsViewModel)DataContext).StartRebindCommand}"
+                                            CommandParameter="{Binding}">
+                                        <TextBlock Text="{Binding Keybind}" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Border>
         </ScrollViewer>
         <Border Grid.Row="1"
