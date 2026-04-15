@@ -10,7 +10,7 @@ public class NativeHotKeyService : HotKeyService
     {
     }
 
-    protected override void InitializeCore()
+    public override void Initialize()
     {
     }
 
