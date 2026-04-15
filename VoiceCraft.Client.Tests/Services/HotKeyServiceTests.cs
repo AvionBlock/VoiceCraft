@@ -1,5 +1,4 @@
 using VoiceCraft.Client.Locales;
-using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Locales;
 
@@ -66,7 +65,7 @@ public class HotKeyServiceTests
     private sealed class TestHotKeyService(IEnumerable<HotKeyAction> actions, SettingsService settingsService)
         : HotKeyService(actions, settingsService)
     {
-        protected override void InitializeCore()
+        public override void Initialize()
         {
         }
     }

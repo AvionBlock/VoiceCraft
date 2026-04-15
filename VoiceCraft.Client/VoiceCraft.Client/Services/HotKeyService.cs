@@ -10,7 +10,7 @@ public abstract class HotKeyService : IDisposable
     private readonly Dictionary<string, HotKeyAction> _actionsById;
     private readonly Dictionary<string, HotKeyAction> _hotKeyActions = new(StringComparer.Ordinal);
     private readonly HotKeySettings _hotKeySettings;
-    private bool _initialized;
+    protected IReadOnlyDictionary<string, HotKeyAction> HotKeyActions => _hotKeyActions;
 
     protected HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService)
     {
@@ -20,8 +20,6 @@ public abstract class HotKeyService : IDisposable
         ReloadBindings();
     }
 
-    public IReadOnlyDictionary<string, HotKeyAction> HotKeyActions => _hotKeyActions;
-
     public event Action? OnBindingsChanged;
 
     public virtual void Dispose()
@@ -30,23 +28,13 @@ public abstract class HotKeyService : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void Initialize()
-    {
-        if (_initialized) return;
-        InitializeCore();
-        _initialized = true;
-    }
+    public abstract void Initialize();
 
     public IReadOnlyList<HotKeyBinding> GetBindings()
     {
         return _actionsById.Values
             .Select(action => new HotKeyBinding(action, GetBindingForAction(action)))
             .ToArray();
-    }
-
-    public string GetBindingForAction(HotKeyAction action)
-    {
-        return _hotKeySettings.Bindings.GetValueOrDefault(action.Id) ?? action.DefaultKeyCombo;
     }
 
     public void SetBinding(string actionId, string keyCombo)
@@ -96,8 +84,11 @@ public abstract class HotKeyService : IDisposable
             _ => buttonName.StartsWith("Mouse", StringComparison.Ordinal) ? buttonName : $"Mouse{buttonName}"
         };
     }
-
-    protected abstract void InitializeCore();
+    
+    private string GetBindingForAction(HotKeyAction action)
+    {
+        return _hotKeySettings.Bindings.GetValueOrDefault(action.Id) ?? action.DefaultKeyCombo;
+    }
 
     private void ReloadBindings()
     {

@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using SharpHook;
-using SharpHook.Data;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Linux;
 
 public class NativeHotKeyService : HotKeyService
 {
+    private bool _initialized;
     private readonly EventLoopGlobalHook _hook;
     private readonly List<string> _pressedInputs = [];
 
@@ -21,9 +20,11 @@ public class NativeHotKeyService : HotKeyService
         _hook.MouseReleased += OnMouseReleased;
     }
 
-    protected override void InitializeCore()
+    public override void Initialize()
     {
+        if (_initialized) return;
         _ = _hook.RunAsync();
+        _initialized = true;
     }
 
     public override void Dispose()
@@ -55,26 +56,26 @@ public class NativeHotKeyService : HotKeyService
 
     private void OnMousePressed(object? sender, MouseHookEventArgs e)
     {
-        ProcessPressedInput(HotKeyService.NormalizeMouseButton(e.Data.Button.ToString()));
+        ProcessPressedInput(NormalizeMouseButton(e.Data.Button.ToString()));
     }
 
     private void OnMouseReleased(object? sender, MouseHookEventArgs e)
     {
-        ProcessReleasedInput(HotKeyService.NormalizeMouseButton(e.Data.Button.ToString()));
+        ProcessReleasedInput(NormalizeMouseButton(e.Data.Button.ToString()));
     }
 
     private void ProcessPressedInput(string input)
     {
         if (_pressedInputs.Contains(input)) return;
         _pressedInputs.Add(input);
-        if (HotKeyActions.TryGetValue(HotKeyService.NormalizeKeyCombo(_pressedInputs), out var action))
+        if (HotKeyActions.TryGetValue(NormalizeKeyCombo(_pressedInputs), out var action))
             action.Press();
     }
 
     private void ProcessReleasedInput(string input)
     {
         if (!_pressedInputs.Contains(input)) return;
-        var keyCombo = HotKeyService.NormalizeKeyCombo(_pressedInputs);
+        var keyCombo = NormalizeKeyCombo(_pressedInputs);
         _pressedInputs.Remove(input);
         if (HotKeyActions.TryGetValue(keyCombo, out var action))
             action.Release();

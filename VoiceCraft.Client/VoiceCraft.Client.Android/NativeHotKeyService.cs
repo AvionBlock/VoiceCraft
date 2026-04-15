@@ -6,11 +6,12 @@ namespace VoiceCraft.Client.Android;
 
 public class NativeHotKeyService : HotKeyService
 {
-    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) : base(registeredHotKeyActions, settingsService)
+    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) :
+        base(registeredHotKeyActions, settingsService)
     {
     }
 
-    protected override void InitializeCore()
+    public override void Initialize()
     {
     }
 
