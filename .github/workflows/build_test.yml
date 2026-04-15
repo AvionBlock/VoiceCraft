@@ -108,6 +108,10 @@ jobs:
     defaults:
       run:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Android
+    env:
+      ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+      ALIAS: ${{ secrets.ALIAS }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
     steps:
       - uses: actions/checkout@v5
 
@@ -120,35 +124,27 @@ jobs:
         run: dotnet workload restore
 
       - name: Setup Keystore File
-        if: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE != '' }}
-        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android.keystore
+        if: ${{ github.event_name != 'pull_request' && env.ANDROID_KEYSTORE != '' }}
+        run: echo "$ANDROID_KEYSTORE" | base64 --decode > android.keystore
 
-      - name: Publish Signed Build
-        if: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE != '' }}
+      - name: Publish Build (Signed)
+        if: ${{ github.event_name != 'pull_request' && env.ANDROID_KEYSTORE != '' }}
         run: >
           dotnet publish -c Release -r android-${{ matrix.arch }}
           -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore=./android.keystore
-          -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }}
-          -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }}
-          -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+          -p:AndroidSigningKeyAlias=$ALIAS
+          -p:AndroidSigningKeyPass=$KEYSTORE_PASSWORD
+          -p:AndroidSigningStorePass=$KEYSTORE_PASSWORD
 
-      - name: Publish Unsigned Build
-        if: ${{ github.event_name == 'pull_request' || secrets.ANDROID_KEYSTORE == '' }}
+      - name: Publish Build (Unsigned)
+        if: ${{ github.event_name == 'pull_request' || env.ANDROID_KEYSTORE == '' }}
         run: dotnet publish -c Release -r android-${{ matrix.arch }}
 
-      - name: Upload Signed Artifact
-        if: ${{ github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE != '' }}
+      - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: VoiceCraft.Client.Android.${{ matrix.arch }}.signed
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/*Signed.apk
-
-      - name: Upload Unsigned Artifact
-        if: ${{ github.event_name == 'pull_request' || secrets.ANDROID_KEYSTORE == '' }}
-        uses: actions/upload-artifact@v6
-        with:
-          name: VoiceCraft.Client.Android.${{ matrix.arch }}.unsigned
+          name: VoiceCraft.Client.Android.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/*.apk
 
   VoiceCraft-Client-iOS:
