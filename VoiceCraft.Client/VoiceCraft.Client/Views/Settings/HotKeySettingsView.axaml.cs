@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using VoiceCraft.Client.Services;
@@ -19,17 +20,10 @@ public partial class HotKeySettingsView : UserControl
         DataContextChanged += OnDataContextChanged;
     }
 
-    private void HotKeyCapture_OnAttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
-    {
-        ResetCapture(clearPreview: false);
-        if (sender is InputElement inputElement)
-            inputElement.Focus();
-    }
-
     private void HotKeyCapture_OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (DataContext is not HotKeySettingsViewModel viewModel) return;
-        if (e.Key is Key.None or Key.System) return;
+        if (!viewModel.IsRebinding || e.Key is Key.None or Key.System) return;
 
         _pressedKeys.Add(e.Key);
         UpdatePreview(viewModel);
@@ -38,7 +32,8 @@ public partial class HotKeySettingsView : UserControl
 
     private void HotKeyCapture_OnKeyUp(object? sender, KeyEventArgs e)
     {
-        if (e.Key is Key.None or Key.System) return;
+        if (DataContext is not HotKeySettingsViewModel viewModel) return;
+        if (!viewModel.IsRebinding ||e.Key is Key.None or Key.System) return;
 
         _pressedKeys.Remove(e.Key);
         e.Handled = true;
@@ -47,6 +42,7 @@ public partial class HotKeySettingsView : UserControl
     private void HotKeyCapture_OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (DataContext is not HotKeySettingsViewModel viewModel) return;
+        if (!viewModel.IsRebinding) return;
 
         var mouseButton = GetMouseButton(e.GetCurrentPoint(this).Properties.PointerUpdateKind);
 
@@ -60,6 +56,9 @@ public partial class HotKeySettingsView : UserControl
 
     private void HotKeyCapture_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
+        if (DataContext is not HotKeySettingsViewModel viewModel) return;
+        if (!viewModel.IsRebinding) return;
+        
         var mouseButton = e.InitialPressMouseButton switch
         {
             MouseButton.Left => HotKeyService.NormalizeMouseButton("Left"),
@@ -98,9 +97,7 @@ public partial class HotKeySettingsView : UserControl
 
     private void UpdatePreview(HotKeySettingsViewModel viewModel)
     {
-        var keys = new List<string>();
-        foreach (var key in _pressedKeys)
-            keys.Add(key.ToString());
+        var keys = _pressedKeys.Select(key => key.ToString()).ToList();
         keys.AddRange(_pressedMouseButtons);
         viewModel.UpdateBindingPreviewCommand.Execute(string.Join(" + ", keys));
     }
