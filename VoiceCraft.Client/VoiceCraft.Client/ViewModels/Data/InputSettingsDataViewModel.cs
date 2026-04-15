@@ -19,6 +19,8 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     [ObservableProperty] private Guid _denoiser;
     [ObservableProperty] private Guid _automaticGainController;
     [ObservableProperty] private Guid _echoCanceler;
+    [ObservableProperty] private bool _pushToTalkEnabled;
+    [ObservableProperty] private bool _pushToTalkCue;
 
     //Lists
     [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _inputDevices = [];
@@ -41,6 +43,8 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _denoiser = _inputSettings.Denoiser;
         _automaticGainController = _inputSettings.AutomaticGainController;
         _echoCanceler = _inputSettings.EchoCanceler;
+        _pushToTalkEnabled = _inputSettings.PushToTalkEnabled;
+        _pushToTalkCue = _inputSettings.PushToTalkCue;
     }
 
     public void Dispose()
@@ -135,6 +139,28 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _updating = false;
     }
 
+    partial void OnPushToTalkEnabledChanging(bool value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.PushToTalkEnabled = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+    
+    partial void OnPushToTalkCueChanging(bool value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.PushToTalkCue = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
     private void Update(InputSettings inputSettings)
     {
         if (_updating) return;
@@ -146,6 +172,8 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         Denoiser = inputSettings.Denoiser;
         AutomaticGainController = inputSettings.AutomaticGainController;
         EchoCanceler = inputSettings.EchoCanceler;
+        PushToTalkEnabled = inputSettings.PushToTalkEnabled;
+        PushToTalkCue = inputSettings.PushToTalkCue;
 
         _updating = false;
     }

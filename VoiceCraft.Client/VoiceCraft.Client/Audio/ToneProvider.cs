@@ -1,44 +1,50 @@
 using System;
+using System.Threading;
 using SoundFlow.Abstracts;
 using SoundFlow.Structs;
 
 namespace VoiceCraft.Client.Audio;
 
-public sealed class ToneProvider : SoundComponent
+public sealed class ToneProvider(AudioEngine engine, AudioFormat format) : SoundComponent(engine, format)
 {
-    private readonly float _amplitude;
-    private readonly int _fadeSamples;
-    private readonly float _frequency;
-    private readonly int _totalFrames;
+    private readonly Lock _lock = new();
+    private readonly int _fadeSamples = Math.Max(1, format.SampleRate / 100);
+    private int _totalFrames = Math.Max(1, 0 * format.SampleRate);
+    private float _amplitude = 0.18f;
+    private float _frequency;
     private int _frameIndex;
 
-    public ToneProvider(AudioEngine engine, AudioFormat format, float frequency, TimeSpan duration, float amplitude = 0.18f)
-        : base(engine, format)
+    public void Play(TimeSpan duration, float frequency, float amplitude = 0.18f)
     {
-        _frequency = frequency;
-        _amplitude = amplitude;
-        _totalFrames = Math.Max(1, (int)(duration.TotalSeconds * format.SampleRate));
-        _fadeSamples = Math.Max(1, format.SampleRate / 100);
+        lock (_lock)
+        {
+            _frequency = frequency;
+            _amplitude = amplitude;
+            _totalFrames = Math.Max(1, (int)(duration.TotalSeconds * Format.SampleRate));
+            _frameIndex = 0;
+        }
     }
-
-    public bool IsFinished => _frameIndex >= _totalFrames;
 
     protected override void GenerateAudio(Span<float> buffer, int channels)
     {
         buffer.Clear();
 
-        for (var sampleIndex = 0; sampleIndex < buffer.Length; sampleIndex += channels)
+        lock (_lock)
         {
-            if (_frameIndex >= _totalFrames)
-                break;
+            for (var sampleIndex = 0; sampleIndex < buffer.Length; sampleIndex += channels)
+            {
+                if (_frameIndex >= _totalFrames)
+                    break;
 
-            var fadeMultiplier = GetFadeMultiplier(_frameIndex);
-            var sample = MathF.Sin((2f * MathF.PI * _frequency * _frameIndex) / Format.SampleRate) * _amplitude * fadeMultiplier;
+                var fadeMultiplier = GetFadeMultiplier(_frameIndex);
+                var sample = MathF.Sin((2f * MathF.PI * _frequency * _frameIndex) / Format.SampleRate) * _amplitude *
+                             fadeMultiplier;
 
-            for (var channel = 0; channel < channels && sampleIndex + channel < buffer.Length; channel++)
-                buffer[sampleIndex + channel] = sample;
+                for (var channel = 0; channel < channels && sampleIndex + channel < buffer.Length; channel++)
+                    buffer[sampleIndex + channel] = sample;
 
-            _frameIndex++;
+                _frameIndex++;
+            }
         }
     }
 
@@ -48,9 +54,6 @@ public sealed class ToneProvider : SoundComponent
             return frame / (float)_fadeSamples;
 
         var remaining = _totalFrames - frame;
-        if (remaining < _fadeSamples)
-            return Math.Max(0f, remaining / (float)_fadeSamples);
-
-        return 1f;
+        return remaining < _fadeSamples ? Math.Max(0f, remaining / (float)_fadeSamples) : 1f;
     }
 }

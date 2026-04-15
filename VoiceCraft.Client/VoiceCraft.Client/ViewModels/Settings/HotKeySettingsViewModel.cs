@@ -20,12 +20,11 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
     [ObservableProperty] private string _rebindingPreview = string.Empty;
     [ObservableProperty] private bool _playPushToTalkCues;
 
-    public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService, SettingsService settingsService)
+    public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService)
     {
         _navigationService = navigationService;
-        _hotKeySettingsData = new HotKeySettingsDataViewModel(hotKeyService, settingsService);
+        _hotKeySettingsData = new HotKeySettingsDataViewModel(hotKeyService);
         _hotKeys = _hotKeySettingsData.HotKeys;
-        _playPushToTalkCues = _hotKeySettingsData.PlayPushToTalkCues;
     }
 
     public void Dispose()
@@ -86,10 +85,5 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
         DisableBackButton = false;
         RebindingTitle = string.Empty;
         RebindingPreview = string.Empty;
-    }
-
-    partial void OnPlayPushToTalkCuesChanged(bool value)
-    {
-        _hotKeySettingsData.PlayPushToTalkCues = value;
     }
 }

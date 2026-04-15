@@ -153,35 +153,23 @@ public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
     }
 }
 
-public class PushToTalkAction(IBackgroundService backgroundService, PushToTalkCueService cueService) : HotKeyAction
+public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyAction
 {
-    private bool _active;
-    private bool _restoreMutedState;
-
     public override string Id => "PushToTalk";
     public override string Title => "PushToTalk";
     public override string DefaultKeyCombo => "LeftControl";
 
     public override void Press()
     {
-        if (_active) return;
         var service = backgroundService.GetService<VoiceCraftService>();
         if (service == null) return;
-        _active = true;
-        _restoreMutedState = service.Muted;
-        service.Muted = false;
-        cueService.PlayActivatedCue();
+        service.PushToTalk = true;
     }
 
     public override void Release()
     {
-        if (!_active) return;
         var service = backgroundService.GetService<VoiceCraftService>();
-        _active = false;
         if (service == null) return;
-        if (_restoreMutedState)
-            service.Muted = true;
-        _restoreMutedState = false;
-        cueService.PlayReleasedCue();
+        service.PushToTalk = false;
     }
 }
