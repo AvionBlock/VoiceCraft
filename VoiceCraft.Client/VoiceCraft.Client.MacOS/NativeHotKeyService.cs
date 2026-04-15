@@ -20,7 +20,7 @@ public class NativeHotKeyService : HotKeyService
         _hook.MouseReleased += OnMouseReleased;
     }
 
-    protected override void Initialize()
+    public override void Initialize()
     {
         if (_initialized) return;
         _ = _hook.RunAsync();
