@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using SharpHook;
-using SharpHook.Data;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.MacOS;
 
 public class NativeHotKeyService : HotKeyService
 {
+    private bool _initialized;
     private readonly EventLoopGlobalHook _hook;
     private readonly List<string> _pressedInputs = [];
 
@@ -21,14 +20,17 @@ public class NativeHotKeyService : HotKeyService
         _hook.MouseReleased += OnMouseReleased;
     }
 
-    protected override void InitializeCore()
+    protected override void Initialize()
     {
+        if (_initialized) return;
         _ = _hook.RunAsync();
+        _initialized = true;
     }
 
     public override void Dispose()
     {
         _hook.KeyPressed -= OnKeyPressed;
+        _hook.KeyReleased -= OnKeyReleased;
         _hook.MousePressed -= OnMousePressed;
         _hook.MouseReleased -= OnMouseReleased;
         try

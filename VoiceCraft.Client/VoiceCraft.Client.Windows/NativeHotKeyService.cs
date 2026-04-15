@@ -30,6 +30,7 @@ public class NativeHotKeyService : HotKeyService
     public override void Dispose()
     {
         _hook.KeyPressed -= OnKeyPressed;
+        _hook.KeyReleased -= OnKeyReleased;
         _hook.MousePressed -= OnMousePressed;
         _hook.MouseReleased -= OnMouseReleased;
         try
