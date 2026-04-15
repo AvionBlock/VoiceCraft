@@ -31,9 +31,17 @@ public class HotKeyServiceTests
     [Fact]
     public void NormalizeKeyCombo_SortsInputsToMakeBindingsOrderIndependent()
     {
-        var normalized = HotKeyService.NormalizeKeyCombo("MouseButton4\0LeftShift\0LeftControl");
+        var normalized = HotKeyService.NormalizeKeyCombo("MouseButton4\0LeftShift\0LeftCtrl\0A");
 
-        Assert.Equal("LeftControl\0LeftShift\0MouseButton4", normalized);
+        Assert.Equal("LeftControl\0LeftShift\0MouseButton4\0A", normalized);
+    }
+
+    [Fact]
+    public void NormalizeKeyCombo_NormalizesAvaloniaControlAliasesToNativeHookNames()
+    {
+        var normalized = HotKeyService.NormalizeKeyCombo("LeftCtrl\0S");
+
+        Assert.Equal("LeftControl\0S", normalized);
     }
 
     [Theory]

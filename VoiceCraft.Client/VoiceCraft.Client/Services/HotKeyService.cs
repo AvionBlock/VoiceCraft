@@ -61,10 +61,64 @@ public abstract class HotKeyService : IDisposable
     {
         var keys = keyCombo
             .Split('\0', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(NormalizeKeyName)
             .Distinct(StringComparer.Ordinal)
-            .OrderBy(x => x, StringComparer.Ordinal)
+            .OrderBy(GetKeySortOrder)
+            .ThenBy(x => x, StringComparer.Ordinal)
             .ToArray();
         return string.Join("\0", keys);
+    }
+
+    private static string NormalizeKeyName(string keyName)
+    {
+        return keyName switch
+        {
+            "LeftCtrl" => "LeftControl",
+            "RightCtrl" => "RightControl",
+            "Ctrl" => "Control",
+            "ControlKey" => "Control",
+            "LControlKey" => "LeftControl",
+            "RControlKey" => "RightControl",
+            "LShiftKey" => "LeftShift",
+            "RShiftKey" => "RightShift",
+            "Menu" => "Alt",
+            "LMenu" => "LeftAlt",
+            "RMenu" => "RightAlt",
+            "LWin" => "LeftMeta",
+            "RWin" => "RightMeta",
+            "LeftWindows" => "LeftMeta",
+            "RightWindows" => "RightMeta",
+            _ => keyName.StartsWith("Button", StringComparison.Ordinal) ||
+                 keyName.StartsWith("XButton", StringComparison.Ordinal) ||
+                 keyName is "Left" or "Right" or "Middle"
+                ? NormalizeMouseButton(keyName)
+                : keyName
+        };
+    }
+
+    private static int GetKeySortOrder(string keyName)
+    {
+        return keyName switch
+        {
+            "LeftControl" => 0,
+            "RightControl" => 1,
+            "Control" => 2,
+            "LeftShift" => 10,
+            "RightShift" => 11,
+            "Shift" => 12,
+            "LeftAlt" => 20,
+            "RightAlt" => 21,
+            "Alt" => 22,
+            "LeftMeta" => 30,
+            "RightMeta" => 31,
+            "Meta" => 32,
+            "MouseLeft" => 100,
+            "MouseRight" => 101,
+            "MouseMiddle" => 102,
+            "MouseButton4" => 103,
+            "MouseButton5" => 104,
+            _ => 1000
+        };
     }
 
     public static string NormalizeMouseButton(string buttonName)
