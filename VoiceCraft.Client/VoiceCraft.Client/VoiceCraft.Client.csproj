@@ -40,14 +40,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml"/>
-        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCColors.axaml.cs"/>
-        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCIcons.axaml"/>
-        <UpToDateCheckInput Remove="Assets\Themes\Dark\VCStyles.axaml"/>
-        <UpToDateCheckInput Remove="Themes\Lavender Dark\Colors.axaml"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Compile Update="Themes\Light\Colors.axaml.cs">
             <DependentUpon>VcColors.axaml</DependentUpon>
             <SubType>Code</SubType>
