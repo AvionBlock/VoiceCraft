@@ -53,18 +53,6 @@ public partial class VoiceViewModel(
         GC.SuppressFinalize(this);
     }
 
-    partial void OnIsMutedChanged(bool value)
-    {
-        if (_service != null)
-            _service.Muted = value;
-    }
-
-    partial void OnIsDeafenedChanged(bool value)
-    {
-        if (_service != null)
-            _service.Deafened = value;
-    }
-
     partial void OnSelectedEntityChanged(EntityDataViewModel? value)
     {
         if (value == null)
@@ -74,6 +62,22 @@ public partial class VoiceViewModel(
         }
 
         ShowModal = true;
+    }
+
+    [RelayCommand]
+    private void ToggleMute()
+    {
+        if (_service == null) return;
+        _service.Muted = !_service.Muted;
+        IsMuted = _service.Muted;
+    }
+    
+    [RelayCommand]
+    private void ToggleDeafen()
+    {
+        if (_service == null) return;
+        _service.Deafened = !_service.Deafened;
+        IsDeafened = _service.Deafened;
     }
 
     [RelayCommand]

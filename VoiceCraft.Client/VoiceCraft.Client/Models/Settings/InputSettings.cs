@@ -12,6 +12,9 @@ public class InputSettings : Setting<InputSettings>
     private Guid _automaticGainController = Guid.Empty;
     private Guid _denoiser = Guid.Empty;
     private Guid _echoCanceler = Guid.Empty;
+    
+    private bool _pushToTalkEnabled;
+    private bool _pushToTalkCue = true;
 
     public string InputDevice
     {
@@ -73,6 +76,26 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             _echoCanceler = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+
+    public bool PushToTalkEnabled
+    {
+        get => _pushToTalkEnabled;
+        set
+        {
+            _pushToTalkEnabled = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+
+    public bool PushToTalkCue
+    {
+        get => _pushToTalkCue;
+        set
+        {
+            _pushToTalkCue = value;
             OnUpdated?.Invoke(this);
         }
     }

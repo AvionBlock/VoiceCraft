@@ -102,6 +102,16 @@
                               DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}" />
+                    
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding InputSettingsData.PushToTalkEnabled}">
+                        <TextBlock Text="{locale:Localize Settings.Input.PushToTalkEnabled}" />
+                    </ToggleButton>
+                    
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding InputSettingsData.PushToTalkCue}">
+                        <TextBlock Text="{locale:Localize Settings.Input.PushToTalkCue}" />
+                    </ToggleButton>
 
                     <StackPanel>
                         <TextBlock HorizontalAlignment="Left"

@@ -60,6 +60,26 @@ public partial class CreditsViewModel : ViewModelBase
             Localizer.Get(
                 $"Credits.AppVersion:{Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A."}");
         Version = Localizer.Get($"Credits.Version:{VoiceCraftClient.Version.ToString()}");
-        Codec = Localizer.Get($"Credits.Codec:{OpusInfo.Version()}");
+        Codec = Localizer.Get($"Credits.Codec:{GetCodecVersion()}");
+    }
+
+    private static string GetCodecVersion()
+    {
+        try
+        {
+            return OpusInfo.Version();
+        }
+        catch (DllNotFoundException)
+        {
+            return "N.A.";
+        }
+        catch (BadImageFormatException)
+        {
+            return "N.A.";
+        }
+        catch (TypeInitializationException)
+        {
+            return "N.A.";
+        }
     }
 }

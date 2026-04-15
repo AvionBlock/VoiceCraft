@@ -95,7 +95,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
             }
         }
@@ -119,7 +119,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 foreach (var netPeer in netPeers)
                 {
                     if (excludes.Contains(netPeer.Value)) continue;
@@ -159,7 +159,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(netPeer));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
             }
         }
@@ -208,7 +208,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 mcWssNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
             }
         }
@@ -232,7 +232,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         try
         {
             if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
-            var packets = data.Split("|");
+            var packets = McWssPacketFraming.Unpack(data);
 
             foreach (var packet in packets)
                 peer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(packet, string.Empty));
@@ -251,7 +251,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 try
                 {
                     _reader.Clear();
-                    _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
+                    _reader.SetSource(McApiStringCodec.Decode(packet.Data));
                     ProcessPacket(_reader, mcApiPacket =>
                     {
                         mcWssNetPeer.LastUpdate = DateTime.UtcNow;
@@ -282,10 +282,31 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         var stringBuilder = new StringBuilder();
         if (!netPeer.OutgoingQueue.TryDequeue(out var outboundPacket)) return false;
-        stringBuilder.Append(outboundPacket.Data);
-        while (netPeer.OutgoingQueue.TryDequeue(out outboundPacket) &&
-               stringBuilder.Length < Config.MaxStringLengthPerCommand)
-            stringBuilder.Append($"|{outboundPacket.Data}");
+        McWssPacketFraming.TryAppendFrame(
+            stringBuilder,
+            outboundPacket.Data,
+            (int)Config.MaxStringLengthPerCommand,
+            allowOversizedFirstFrame: true);
+
+        var deferredPackets = new List<McApiNetPeer.QueuedPacket>();
+        while (netPeer.OutgoingQueue.TryDequeue(out outboundPacket))
+        {
+            if (McWssPacketFraming.TryAppendFrame(
+                    stringBuilder,
+                    outboundPacket.Data,
+                    (int)Config.MaxStringLengthPerCommand,
+                    allowOversizedFirstFrame: false))
+                continue;
+
+            deferredPackets.Add(outboundPacket);
+            break;
+        }
+
+        while (netPeer.OutgoingQueue.TryDequeue(out outboundPacket))
+            deferredPackets.Add(outboundPacket);
+
+        foreach (var deferredPacket in deferredPackets)
+            netPeer.OutgoingQueue.Enqueue(deferredPacket);
 
         SendPacketCommand(socket, stringBuilder.ToString());
         return true;

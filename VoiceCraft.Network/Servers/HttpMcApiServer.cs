@@ -121,7 +121,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
             }
         }
@@ -145,7 +145,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 foreach (var netPeer in netPeers)
                 {
                     if (excludes.Contains(netPeer.Value)) continue;
@@ -184,7 +184,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(netPeer));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
             }
         }
@@ -233,7 +233,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
+                var encodedPacket = McApiStringCodec.Encode(_writer.AsReadOnlySpan());
                 httpNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
             }
         }
@@ -381,7 +381,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 {
                     var packetToken = packet.Token;
                     _reader.Clear();
-                    _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
+                    _reader.SetSource(McApiStringCodec.Decode(packet.Data));
                     ProcessPacket(_reader, mcApiPacket =>
                     {
                         httpNetPeer.LastUpdate = DateTime.UtcNow;
