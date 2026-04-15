@@ -1,9 +1,9 @@
 using System;
+using System.Collections;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
@@ -100,12 +100,20 @@ public class App : Application
     private static void DisableAvaloniaDataAnnotationValidation()
     {
 #pragma warning disable IL2026
-        // Get an array of plugins to remove
-        var dataValidationPluginsToRemove =
-            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+#pragma warning disable IL2075
+        var bindingPluginsType = typeof(Application).Assembly.GetType("Avalonia.Data.Core.Plugins.BindingPlugins");
+        var dataValidatorsProperty = bindingPluginsType?.GetProperty("DataValidators");
+        var dataValidators = dataValidatorsProperty?.GetValue(null) as IList;
+        if (dataValidators is null)
+            return;
 
-        // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
+        var pluginsToRemove = dataValidators
+            .Cast<object>()
+            .Where(x => x.GetType().Name == "DataAnnotationsValidationPlugin")
+            .ToArray();
+        foreach (var plugin in pluginsToRemove)
+            dataValidators.Remove(plugin);
+#pragma warning restore IL2075
 #pragma warning restore IL2026
     }
 

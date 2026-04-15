@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
@@ -19,15 +19,9 @@
         <PackageReference Include="Avalonia"/>
         <PackageReference Include="Avalonia.Themes.Fluent"/>
         <PackageReference Include="Avalonia.Fonts.Inter"/>
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics">
-            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-        </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="DiscordRichPresence"/>
         <PackageReference Include="Fleck"/>
-        <PackageReference Include="Message.Avalonia"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
         <PackageReference Include="OpusSharp"/>
@@ -37,6 +31,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
         <ProjectReference Include="..\..\VoiceCraft.Network\VoiceCraft.Network.csproj" />
+        <ProjectReference Include="C:\Users\user\Documents\GitHub\Message.Avalonia\Message.Avalonia\Message.Avalonia.csproj" />
     </ItemGroup>
 
     <ItemGroup>

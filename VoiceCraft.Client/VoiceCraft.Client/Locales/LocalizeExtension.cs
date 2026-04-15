@@ -33,8 +33,8 @@ public class LocalizeExtension(object arg) : MarkupExtension
             };
         }
 
-        if (arg is not IBinding binding)
-            throw new Exception("Argument must be of type IBinding or string!");
+        if (arg is not BindingBase binding)
+            throw new Exception("Argument must be of type BindingBase or string!");
 
         var mb = new MultiBinding
         {
