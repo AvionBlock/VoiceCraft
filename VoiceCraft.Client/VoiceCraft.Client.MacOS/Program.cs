@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +32,7 @@ internal sealed class Program
                 new NativeBackgroundService(x.GetRequiredService));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
                 new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
-                    x.GetRequiredService<IAudioDecoder>));
+                    () => x.GetRequiredService<IAudioDecoder>()));
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

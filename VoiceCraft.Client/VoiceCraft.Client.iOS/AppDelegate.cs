@@ -36,7 +36,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new LiteNetVoiceCraftClient(
                 x.GetRequiredService<IAudioEncoder>(),
-                x.GetRequiredService<IAudioDecoder>));
+                () => x.GetRequiredService<IAudioDecoder>()));
         App.ServiceCollection.AddTransient<Permissions.Microphone>();
     }
 

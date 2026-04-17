@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Media;
@@ -233,6 +234,9 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
 
 internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
 {
+    private delegate void SoundComponentProcessDelegate(SoundComponent component, Span<float> outputBuffer, int channels);
+    private static readonly SoundComponentProcessDelegate ProcessComponent = BuildProcessDelegate();
+
     private readonly Lock _lock = new();
     private readonly AudioTrack _nativePlayer;
     private readonly float[] _buffer;
@@ -355,10 +359,19 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
                 // Process the audio graph
                 var soloed = Engine.GetSoloedComponent();
                 if (soloed != null)
-                    soloed.Process(_buffer, Format.Channels);
+                    ProcessComponent(soloed, _buffer, Format.Channels);
                 else
-                    MasterMixer.Process(_buffer, Format.Channels);
+                    ProcessComponent(MasterMixer, _buffer, Format.Channels);
             }
         }
+    }
+
+    private static SoundComponentProcessDelegate BuildProcessDelegate()
+    {
+        var method = typeof(SoundComponent).GetMethod("Process", BindingFlags.Instance | BindingFlags.NonPublic);
+        if (method == null)
+            throw new InvalidOperationException("SoundFlow process method not found.");
+
+        return (SoundComponentProcessDelegate)method.CreateDelegate(typeof(SoundComponentProcessDelegate));
     }
 }

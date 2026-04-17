@@ -43,9 +43,10 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
-        var audioManager = (AudioManager?)global::Android.App.Application.Context.GetSystemService(global::Android.Content.Context.AudioService);
+        var audioServiceName = global::Android.Content.Context.AudioService;
+        var audioManager = (AudioManager?)global::Android.App.Application.Context.GetSystemService(audioServiceName);
         if (audioManager == null)
-            throw new Exception($"Could not find {global::Android.Content.Context.AudioService}. Cannot initialize audio service.");
+            throw new Exception($"Could not find {audioServiceName}. Cannot initialize audio service.");
 
         App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
@@ -67,7 +68,7 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new LiteNetVoiceCraftClient(
                 x.GetRequiredService<IAudioEncoder>(),
-                x.GetRequiredService<IAudioDecoder>()));
+                () => x.GetRequiredService<IAudioDecoder>()));
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone>();
     }
