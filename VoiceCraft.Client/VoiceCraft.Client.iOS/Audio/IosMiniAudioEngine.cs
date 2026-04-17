@@ -124,7 +124,7 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
         _periodFrames = config is MiniAudioDeviceConfig deviceConfig && deviceConfig.PeriodSizeInFrames > 0
             ? deviceConfig.PeriodSizeInFrames
             : 960u;
-        _chunkSamples = Constants.FrameSize * Math.Max(1, format.Channels);
+        _chunkSamples = (int)_periodFrames * Math.Max(1, format.Channels);
         _stagingBuffer = new float[_chunkSamples * 8];
         _stagingCount = 0;
     }

@@ -4,7 +4,7 @@
         <TargetFramework>net10.0-android</TargetFramework>
         <MinimumRequiredVersion>21</MinimumRequiredVersion>
         <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
-        <TargetPlatformVersion>35</TargetPlatformVersion>
+        <TargetPlatformVersion>36</TargetPlatformVersion>
         <Nullable>enable</Nullable>
         <ApplicationId>com.AvionBlock.VoiceCraft.Client</ApplicationId>
         <ApplicationVersion>$(AndroidVersion)</ApplicationVersion>
