@@ -23,6 +23,9 @@ public class VoiceCraftService(
     NotificationService notificationService)
 {
     private McWssServer? _mcWssServer;
+    private bool _pttEnabled;
+    private bool _pttCue;
+    private bool _pushToTalk;
     private string _title = string.Empty;
     private string _description = string.Empty;
 
@@ -30,6 +33,7 @@ public class VoiceCraftService(
     private AudioPlaybackDevice? _audioPlayer;
     private AudioCaptureDevice? _audioRecorder;
     private CombinedAudioPreprocessor? _audioPreprocessor;
+    private ToneProvider? _pttToneProvider;
     private IAudioClipper? _audioClipper;
 
     public VcConnectionState ConnectionState => client.ConnectionState;
@@ -37,13 +41,31 @@ public class VoiceCraftService(
     public bool Muted
     {
         get => client.Muted;
-        set => client.Muted = value;
+        set
+        {
+            if (_pttEnabled) return;
+            client.Muted = value;
+        }
     }
 
     public bool Deafened
     {
         get => client.Deafened;
         set => client.Deafened = value;
+    }
+
+    public bool PushToTalk
+    {
+        get => _pushToTalk;
+        set
+        {
+            if (!_pttEnabled || _pushToTalk == value) return;
+            _pushToTalk = value;
+            client.Muted = !value;
+            
+            if(_pttCue)
+                _pttToneProvider?.Play(TimeSpan.FromMilliseconds(80), value ? 880f : 620f);
+        }
     }
 
     public string Title
@@ -102,6 +124,9 @@ public class VoiceCraftService(
             var outputSettings = settingsService.OutputSettings;
             var networkSettings = settingsService.NetworkSettings;
 
+            _pttEnabled = inputSettings.PushToTalkEnabled;
+            _pttCue = inputSettings.PushToTalkCue;
+
             //Setup McWss Server
             if (networkSettings.PositioningType == PositioningType.Client)
             {
@@ -114,10 +139,12 @@ public class VoiceCraftService(
             client.InputVolume = inputSettings.InputVolume;
             client.OutputVolume = outputSettings.OutputVolume;
             client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
+            client.Muted = _pttEnabled;
 
             _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
             _audioPreprocessor = InitializeAudioPreprocessor(inputSettings);
+            _pttToneProvider = InitializeToneProvider(_audioPlayer);
             _audioClipper = audioService.GetAudioClipper(outputSettings.AudioClipper)?.Instantiate();
 
             //Start.
@@ -289,6 +316,13 @@ public class VoiceCraftService(
         var denoiser = audioService.GetAudioPreprocessor(inputSettings.Denoiser);
         var echoCanceler = audioService.GetAudioPreprocessor(inputSettings.EchoCanceler);
         return new CombinedAudioPreprocessor(gainController, denoiser, echoCanceler);
+    }
+
+    private static ToneProvider InitializeToneProvider(AudioPlaybackDevice playbackDevice)
+    {
+        var toneProvider = new ToneProvider(playbackDevice.Engine, playbackDevice.Format);
+        playbackDevice.MasterMixer.AddComponent(toneProvider);
+        return toneProvider;
     }
 
     private AudioCaptureDevice InitializeAudioRecorder(string inputDevice)

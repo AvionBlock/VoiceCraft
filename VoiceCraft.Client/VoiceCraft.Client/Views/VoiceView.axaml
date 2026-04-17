@@ -103,7 +103,8 @@
             <ToggleButton CornerRadius="50"
                           Width="50"
                           Height="50"
-                          IsChecked="{Binding IsMuted}">
+                          IsChecked="{Binding IsMuted}"
+                          Command="{Binding ToggleMuteCommand}">
                 <Panel>
                     <PathIcon Data="{StaticResource MicOnRegular}"
                               Classes.IsSpeaking="{Binding IsSpeaking}">
@@ -138,7 +139,8 @@
             <ToggleButton CornerRadius="50"
                           Width="50"
                           Height="50"
-                          IsChecked="{Binding IsDeafened}">
+                          IsChecked="{Binding IsDeafened}"
+                          Command="{Binding ToggleDeafenCommand}">
                 <Panel>
                     <PathIcon Data="{StaticResource SpeakerRegular}">
                         <PathIcon.IsVisible>

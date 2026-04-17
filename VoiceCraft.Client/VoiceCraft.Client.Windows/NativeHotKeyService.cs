@@ -1,33 +1,38 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using SharpHook;
-using SharpHook.Data;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Windows;
 
 public class NativeHotKeyService : HotKeyService
 {
+    private bool _initialized;
     private readonly EventLoopGlobalHook _hook;
-    private readonly List<KeyCode> _pressedKeys = [];
-    private readonly StringBuilder _stringBuilder = new();
+    private readonly List<string> _pressedInputs = [];
 
-    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions) : base(registeredHotKeyActions)
+    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) : base(registeredHotKeyActions, settingsService)
     {
         _hook = new EventLoopGlobalHook();
         _hook.KeyPressed += OnKeyPressed;
         _hook.KeyReleased += OnKeyReleased;
+        _hook.MousePressed += OnMousePressed;
+        _hook.MouseReleased += OnMouseReleased;
     }
 
     public override void Initialize()
     {
+        if (_initialized) return;
         _ = _hook.RunAsync();
+        _initialized = true;
     }
 
     public override void Dispose()
     {
         _hook.KeyPressed -= OnKeyPressed;
+        _hook.KeyReleased -= OnKeyReleased;
+        _hook.MousePressed -= OnMousePressed;
+        _hook.MouseReleased -= OnMouseReleased;
         try
         {
             _hook.Dispose();
@@ -42,32 +47,38 @@ public class NativeHotKeyService : HotKeyService
 
     private void OnKeyPressed(object? sender, KeyboardHookEventArgs e)
     {
-        if (_pressedKeys.Contains(e.Data.KeyCode)) return;
-        _pressedKeys.Add(e.Data.KeyCode);
-        _stringBuilder.Clear();
-
-        for (var i = 0; i < _pressedKeys.Count; i++)
-        {
-            var cleanKey = _pressedKeys[i].ToString().Replace("Vc", "");
-            _stringBuilder.Append($"{cleanKey}{(i < _pressedKeys.Count - 1 ? "\0" : "")}");
-        }
-
-        if (HotKeyActions.TryGetValue(_stringBuilder.ToString(), out var action)) action.Press();
+        ProcessPressedInput(e.Data.KeyCode.ToString().Replace("Vc", ""));
     }
 
     private void OnKeyReleased(object? sender, KeyboardHookEventArgs e)
     {
-        if (!_pressedKeys.Contains(e.Data.KeyCode)) return;
-        _stringBuilder.Clear();
+        ProcessReleasedInput(e.Data.KeyCode.ToString().Replace("Vc", ""));
+    }
 
-        for (var i = 0; i < _pressedKeys.Count; i++)
-        {
-            var cleanKey = _pressedKeys[i].ToString().Replace("Vc", "");
-            _stringBuilder.Append($"{cleanKey}{(i < _pressedKeys.Count - 1 ? "\0" : "")}");
-        }
+    private void OnMousePressed(object? sender, MouseHookEventArgs e)
+    {
+        ProcessPressedInput(NormalizeMouseButton(e.Data.Button.ToString()));
+    }
 
-        _pressedKeys.Remove(e.Data.KeyCode);
+    private void OnMouseReleased(object? sender, MouseHookEventArgs e)
+    {
+        ProcessReleasedInput(NormalizeMouseButton(e.Data.Button.ToString()));
+    }
 
-        if (HotKeyActions.TryGetValue(_stringBuilder.ToString(), out var action)) action.Release();
+    private void ProcessPressedInput(string input)
+    {
+        if (_pressedInputs.Contains(input)) return;
+        _pressedInputs.Add(input);
+        if (HotKeyActions.TryGetValue(NormalizeKeyCombo(_pressedInputs), out var action))
+            action.Press();
+    }
+
+    private void ProcessReleasedInput(string input)
+    {
+        if (!_pressedInputs.Contains(input)) return;
+        var keyCombo = NormalizeKeyCombo(_pressedInputs);
+        _pressedInputs.Remove(input);
+        if (HotKeyActions.TryGetValue(keyCombo, out var action))
+            action.Release();
     }
 }

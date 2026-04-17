@@ -58,6 +58,13 @@ jobs:
       - name: Publish Build
         run: dotnet publish -c Release -r win-${{ matrix.arch }} -p:PublishSingleFile=true
 
+      - name: Download VC++ Redistributable
+        shell: pwsh
+        run: |
+          $uri = "https://aka.ms/vc14/vc_redist.${{ matrix.arch }}.exe"
+          $outFile = "./bin/Release/net9.0-windows/win-${{ matrix.arch }}/publish/vc_redist.${{ matrix.arch }}.exe"
+          Invoke-WebRequest -Uri $uri -OutFile $outFile
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
@@ -96,13 +103,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ arm, arm64 ]
+        arch: [arm, arm64]
       fail-fast: false
     defaults:
       run:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.Android
+    env:
+      ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+      ALIAS: ${{ secrets.ALIAS }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
     steps:
       - uses: actions/checkout@v5
+
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
@@ -112,16 +124,28 @@ jobs:
         run: dotnet workload restore
 
       - name: Setup Keystore File
-        run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
+        if: ${{ github.event_name != 'pull_request' && env.ANDROID_KEYSTORE != '' }}
+        run: echo "$ANDROID_KEYSTORE" | base64 --decode > android.keystore
 
-      - name: Publish Build
-        run: dotnet publish -c Release -r android-${{ matrix.arch }} -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+      - name: Publish Build (Signed)
+        if: ${{ github.event_name != 'pull_request' && env.ANDROID_KEYSTORE != '' }}
+        run: >
+          dotnet publish -c Release -r android-${{ matrix.arch }}
+          -p:AndroidKeyStore=true
+          -p:AndroidSigningKeyStore=./android.keystore
+          -p:AndroidSigningKeyAlias=$ALIAS
+          -p:AndroidSigningKeyPass=$KEYSTORE_PASSWORD
+          -p:AndroidSigningStorePass=$KEYSTORE_PASSWORD
+
+      - name: Publish Build (Unsigned)
+        if: ${{ github.event_name == 'pull_request' || env.ANDROID_KEYSTORE == '' }}
+        run: dotnet publish -c Release -r android-${{ matrix.arch }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.Android.${{ matrix.arch }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/*.apk
 
   VoiceCraft-Client-iOS:
     runs-on: macos-26

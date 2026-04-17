@@ -32,6 +32,7 @@ public class SettingsService
     public ThemeSettings ThemeSettings => _settings.ThemeSettings;
     public NetworkSettings NetworkSettings => _settings.NetworkSettings;
     public UserSettings UserSettings => _settings.UserSettings;
+    public HotKeySettings HotKeySettings => _settings.HotKeySettings;
 
     public async Task SaveImmediate()
     {
@@ -74,6 +75,7 @@ public class SettingsService
         loadedSettings.ThemeSettings.OnLoading();
         loadedSettings.NetworkSettings.OnLoading();
         loadedSettings.UserSettings.OnLoading();
+        loadedSettings.HotKeySettings.OnLoading();
 
         _settings = loadedSettings;
     }
@@ -88,6 +90,7 @@ public class SettingsService
         ThemeSettings.OnSaving();
         NetworkSettings.OnSaving();
         UserSettings.OnSaving();
+        HotKeySettings.OnSaving();
 
         await _storageService.SaveAsync(Constants.SettingsFile,
             JsonSerializer.SerializeToUtf8Bytes(_settings,
@@ -129,6 +132,7 @@ public class SettingsStructure
     public ThemeSettings ThemeSettings { get; set; } = new();
     public NetworkSettings NetworkSettings { get; set; } = new();
     public UserSettings UserSettings { get; set; } = new();
+    public HotKeySettings HotKeySettings { get; set; } = new();
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

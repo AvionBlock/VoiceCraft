@@ -228,6 +228,7 @@ public class App : Application
         //HotKey Registry
         ServiceCollection.AddSingleton<HotKeyAction, MuteAction>();
         ServiceCollection.AddSingleton<HotKeyAction, DeafenAction>();
+        ServiceCollection.AddSingleton<HotKeyAction, PushToTalkAction>();
 
         //Audio Registry
         ServiceCollection.AddSingleton<AudioService>(x =>

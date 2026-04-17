@@ -1,29 +1,166 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using VoiceCraft.Client.Models.Settings;
 
 namespace VoiceCraft.Client.Services;
 
 public abstract class HotKeyService : IDisposable
 {
-    protected HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions)
+    private readonly Dictionary<string, HotKeyAction> _actionsById;
+    private readonly Dictionary<string, HotKeyAction> _hotKeyActions = new(StringComparer.Ordinal);
+    private readonly HotKeySettings _hotKeySettings;
+    protected IReadOnlyDictionary<string, HotKeyAction> HotKeyActions => _hotKeyActions;
+
+    protected HotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService)
     {
-        foreach (var registeredHotKeyAction in registeredHotKeyActions)
-            HotKeyActions.Add(registeredHotKeyAction.DefaultKeyCombo, registeredHotKeyAction);
+        _hotKeySettings = settingsService.HotKeySettings;
+        _actionsById = registeredHotKeyActions.ToDictionary(x => x.Id, StringComparer.Ordinal);
+        _hotKeySettings.OnUpdated += OnHotKeySettingsUpdated;
+        ReloadBindings();
     }
 
-    public Dictionary<string, HotKeyAction> HotKeyActions { get; } = new();
+    public event Action? OnBindingsChanged;
 
     public virtual void Dispose()
     {
-        //We do nothing by default
+        _hotKeySettings.OnUpdated -= OnHotKeySettingsUpdated;
         GC.SuppressFinalize(this);
     }
 
     public abstract void Initialize();
+
+    public IReadOnlyList<HotKeyBinding> GetBindings()
+    {
+        return _actionsById.Values
+            .Select(action => new HotKeyBinding(action, GetBindingForAction(action)))
+            .ToArray();
+    }
+
+    public void SetBinding(string actionId, string keyCombo)
+    {
+        if (!_actionsById.ContainsKey(actionId))
+            throw new ArgumentException($"Unknown hotkey action '{actionId}'.", nameof(actionId));
+
+        keyCombo = NormalizeKeyCombo(keyCombo);
+        var bindings = new Dictionary<string, string>(_hotKeySettings.Bindings, StringComparer.Ordinal);
+
+        foreach (var existingBinding in bindings.Where(x => x.Value == keyCombo && x.Key != actionId).ToArray())
+            bindings.Remove(existingBinding.Key);
+
+        bindings[actionId] = keyCombo;
+        _hotKeySettings.Bindings = bindings;
+    }
+
+    public static string NormalizeKeyCombo(IEnumerable<string> keys)
+    {
+        return NormalizeKeyCombo(string.Join("\0", keys.Where(x => !string.IsNullOrWhiteSpace(x))));
+    }
+
+    public static string NormalizeKeyCombo(string keyCombo)
+    {
+        var keys = keyCombo
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(NormalizeKeyName)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(GetKeySortOrder)
+            .ThenBy(x => x, StringComparer.Ordinal)
+            .ToArray();
+        return string.Join("\0", keys);
+    }
+
+    private static string NormalizeKeyName(string keyName)
+    {
+        return keyName switch
+        {
+            "LeftCtrl" => "LeftControl",
+            "RightCtrl" => "RightControl",
+            "Ctrl" => "Control",
+            "ControlKey" => "Control",
+            "LControlKey" => "LeftControl",
+            "RControlKey" => "RightControl",
+            "LShiftKey" => "LeftShift",
+            "RShiftKey" => "RightShift",
+            "Menu" => "Alt",
+            "LMenu" => "LeftAlt",
+            "RMenu" => "RightAlt",
+            "LWin" => "LeftMeta",
+            "RWin" => "RightMeta",
+            "LeftWindows" => "LeftMeta",
+            "RightWindows" => "RightMeta",
+            _ => keyName.StartsWith("Button", StringComparison.Ordinal) ||
+                 keyName.StartsWith("XButton", StringComparison.Ordinal) ||
+                 keyName is "Left" or "Right" or "Middle"
+                ? NormalizeMouseButton(keyName)
+                : keyName
+        };
+    }
+
+    private static int GetKeySortOrder(string keyName)
+    {
+        return keyName switch
+        {
+            "LeftControl" => 0,
+            "RightControl" => 1,
+            "Control" => 2,
+            "LeftShift" => 10,
+            "RightShift" => 11,
+            "Shift" => 12,
+            "LeftAlt" => 20,
+            "RightAlt" => 21,
+            "Alt" => 22,
+            "LeftMeta" => 30,
+            "RightMeta" => 31,
+            "Meta" => 32,
+            "MouseLeft" => 100,
+            "MouseRight" => 101,
+            "MouseMiddle" => 102,
+            "MouseButton4" => 103,
+            "MouseButton5" => 104,
+            _ => 1000
+        };
+    }
+
+    public static string NormalizeMouseButton(string buttonName)
+    {
+        return buttonName switch
+        {
+            "Left" => "MouseLeft",
+            "Right" => "MouseRight",
+            "Middle" => "MouseMiddle",
+            "XButton1" => "MouseButton4",
+            "XButton2" => "MouseButton5",
+            "Button1" => "MouseLeft",
+            "Button2" => "MouseRight",
+            "Button3" => "MouseMiddle",
+            "Button4" => "MouseButton4",
+            "Button5" => "MouseButton5",
+            _ => buttonName.StartsWith("Mouse", StringComparison.Ordinal) ? buttonName : $"Mouse{buttonName}"
+        };
+    }
+    
+    private string GetBindingForAction(HotKeyAction action)
+    {
+        return _hotKeySettings.Bindings.GetValueOrDefault(action.Id) ?? action.DefaultKeyCombo;
+    }
+
+    private void ReloadBindings()
+    {
+        _hotKeyActions.Clear();
+        foreach (var action in _actionsById.Values)
+            _hotKeyActions[GetBindingForAction(action)] = action;
+    }
+
+    private void OnHotKeySettingsUpdated(HotKeySettings _)
+    {
+        ReloadBindings();
+        OnBindingsChanged?.Invoke();
+    }
 }
 
 public abstract class HotKeyAction
 {
+    public abstract string Id { get; }
     public abstract string Title { get; }
     public abstract string DefaultKeyCombo { get; }
 
@@ -36,8 +173,15 @@ public abstract class HotKeyAction
     }
 }
 
+public sealed class HotKeyBinding(HotKeyAction action, string keyCombo)
+{
+    public HotKeyAction Action { get; } = action;
+    public string KeyCombo { get; } = keyCombo;
+}
+
 public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 {
+    public override string Id => "Mute";
     public override string Title => "Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
 
@@ -51,6 +195,7 @@ public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 
 public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
 {
+    public override string Id => "Deafen";
     public override string Title => "Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
 
@@ -59,5 +204,26 @@ public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
         var service = backgroundService.GetService<VoiceCraftService>();
         if(service == null) return;
         service.Deafened = !service.Deafened;
+    }
+}
+
+public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyAction
+{
+    public override string Id => "PushToTalk";
+    public override string Title => "PushToTalk";
+    public override string DefaultKeyCombo => "LeftControl";
+
+    public override void Press()
+    {
+        var service = backgroundService.GetService<VoiceCraftService>();
+        if (service == null) return;
+        service.PushToTalk = true;
+    }
+
+    public override void Release()
+    {
+        var service = backgroundService.GetService<VoiceCraftService>();
+        if (service == null) return;
+        service.PushToTalk = false;
     }
 }

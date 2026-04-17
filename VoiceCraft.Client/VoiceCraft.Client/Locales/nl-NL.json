@@ -64,9 +64,15 @@
     },
     "HotKey": {
       "Title": "Sneltoetsen",
+      "Rebind": "Opnieuw toewijzen",
+      "CapturePrompt": "Druk op een toets of muisknop",
+      "SaveBinding": "Binding opslaan",
+      "CancelRebind": "Annuleren",
+      "PlayPushToTalkCues": "Push-to-talk-geluiden afspelen",
       "Actions": {
         "Mute": "Dempen",
-        "Deafen": "Doof maken"
+        "Deafen": "Doof maken",
+        "PushToTalk": "Ingedrukt houden om te praten"
       }
     },
     "Advanced": {
