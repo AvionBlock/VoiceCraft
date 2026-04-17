@@ -1,39 +1,20 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Android.Media;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
+using SoundFlow.Backends.MiniAudio.Devices;
+using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
-using SoundFlow.Structs;
-using AudioFormat = SoundFlow.Structs.AudioFormat;
 
 namespace VoiceCraft.Client.Android.Audio;
 
 public class AndroidMiniAudioEngine : AudioEngine
 {
-    private static readonly NativeDataFormat[] DefaultFormats =
-    [
-        new() { Format = SampleFormat.F32, Channels = 1, SampleRate = 48_000, Flags = 0 },
-        new() { Format = SampleFormat.F32, Channels = 2, SampleRate = 48_000, Flags = 0 }
-    ];
-    
-    private static readonly DeviceInfo DefaultPlaybackDevice = new()
-    {
-        Id = 1,
-        Name = "Android Default Output",
-        IsDefault = true,
-        SupportedDataFormats = DefaultFormats
-    };
-
-    private static readonly DeviceInfo DefaultCaptureDevice = new()
-    {
-        Id = 2,
-        Name = "Android Default Input",
-        IsDefault = true,
-        SupportedDataFormats = DefaultFormats
-    };
-    
     private readonly AudioManager _audioManager;
+
     public AndroidMiniAudioEngine(AudioManager audioManager)
     {
         _audioManager = audioManager;
@@ -44,31 +25,40 @@ public class AndroidMiniAudioEngine : AudioEngine
     {
     }
 
-    public override AudioPlaybackDevice InitializePlaybackDevice(DeviceInfo? deviceInfo, AudioFormat format,
+    public override AudioPlaybackDevice InitializePlaybackDevice(
+        SoundFlow.Structs.DeviceInfo? deviceInfo, 
+        SoundFlow.Structs.AudioFormat format,
         DeviceConfig? config = null)
     {
         throw new System.NotImplementedException();
     }
 
-    public override AudioCaptureDevice InitializeCaptureDevice(DeviceInfo? deviceInfo, AudioFormat format,
+    public override AudioCaptureDevice InitializeCaptureDevice(
+        SoundFlow.Structs.DeviceInfo? deviceInfo, 
+        SoundFlow.Structs.AudioFormat format,
         DeviceConfig? config = null)
     {
         throw new System.NotImplementedException();
     }
 
-    public override FullDuplexDevice InitializeFullDuplexDevice(DeviceInfo? playbackDeviceInfo,
-        DeviceInfo? captureDeviceInfo,
-        AudioFormat format, DeviceConfig? config = null)
+    public override FullDuplexDevice InitializeFullDuplexDevice(
+        SoundFlow.Structs.DeviceInfo? playbackDeviceInfo,
+        SoundFlow.Structs.DeviceInfo? captureDeviceInfo,
+        SoundFlow.Structs.AudioFormat format, DeviceConfig? config = null)
     {
         throw new NotSupportedException("Full duplex mode is not supported by the Android audio engine.");
     }
 
-    public override AudioCaptureDevice InitializeLoopbackDevice(AudioFormat format, DeviceConfig? config = null)
+    public override AudioCaptureDevice InitializeLoopbackDevice(
+        SoundFlow.Structs.AudioFormat format,
+        DeviceConfig? config = null)
     {
         throw new NotSupportedException("Loopback capture is not supported on Android.");
     }
 
-    public override AudioPlaybackDevice SwitchDevice(AudioPlaybackDevice oldDevice, DeviceInfo newDeviceInfo,
+    public override AudioPlaybackDevice SwitchDevice(
+        AudioPlaybackDevice oldDevice,
+        SoundFlow.Structs.DeviceInfo newDeviceInfo,
         DeviceConfig? config = null)
     {
         var shouldRun = oldDevice.IsRunning;
@@ -81,7 +71,9 @@ public class AndroidMiniAudioEngine : AudioEngine
         return next;
     }
 
-    public override AudioCaptureDevice SwitchDevice(AudioCaptureDevice oldDevice, DeviceInfo newDeviceInfo,
+    public override AudioCaptureDevice SwitchDevice(
+        AudioCaptureDevice oldDevice, 
+        SoundFlow.Structs.DeviceInfo newDeviceInfo,
         DeviceConfig? config = null)
     {
         var shouldRun = oldDevice.IsRunning;
@@ -94,25 +86,279 @@ public class AndroidMiniAudioEngine : AudioEngine
         return next;
     }
 
-    public override FullDuplexDevice SwitchDevice(FullDuplexDevice oldDevice, DeviceInfo? newPlaybackInfo,
-        DeviceInfo? newCaptureInfo, DeviceConfig? config = null)
+    public override FullDuplexDevice SwitchDevice(
+        FullDuplexDevice oldDevice,
+        SoundFlow.Structs.DeviceInfo? newPlaybackInfo,
+        SoundFlow.Structs.DeviceInfo? newCaptureInfo, 
+        DeviceConfig? config = null)
     {
         throw new NotSupportedException("Full duplex mode is not supported by the Android audio engine.");
     }
 
     public sealed override void UpdateAudioDevicesInfo()
     {
-        var androidPlaybackDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs);
-        if (androidPlaybackDevices == null) return;
-        var playbackDevices = new List<DeviceInfo>() { DefaultPlaybackDevice };
-        var captureDevices = new List<DeviceInfo>() { DefaultCaptureDevice };
+        UpdatePlaybackDevices();
+        UpdateCaptureDevices();
+    }
 
-        foreach (var device in androidPlaybackDevices)
+    private void UpdatePlaybackDevices()
+    {
+        var androidPlaybackDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs);
+        if (androidPlaybackDevices != null)
         {
-            playbackDevices.Add(new DeviceInfo()
+            PlaybackDevices = androidPlaybackDevices.Select(device => new SoundFlow.Structs.DeviceInfo()
+                { Name = $"{device.ProductName} - {device.Type}", Id = device.Id, IsDefault = false }).ToArray();
+        }
+        else
+        {
+            PlaybackDevices = [];
+        }
+    }
+
+    private void UpdateCaptureDevices()
+    {
+        var androidCaptureDevices = _audioManager.GetDevices(GetDevicesTargets.Inputs);
+        if (androidCaptureDevices != null)
+        {
+            CaptureDevices = androidCaptureDevices.Select(device => new SoundFlow.Structs.DeviceInfo()
+                { Name = $"{device.ProductName} - {device.Type}", Id = device.Id, IsDefault = false }).ToArray();
+        }
+        else
+        {
+            CaptureDevices = [];
+        }
+    }
+}
+
+internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
+{
+    private readonly Lock _lock = new();
+    private readonly AudioRecord _nativeRecorder;
+    private readonly float[] _buffer;
+
+    public AndroidAudioCaptureDevice(
+        AudioManager audioManager,
+        AudioEngine engine,
+        SoundFlow.Structs.DeviceInfo? deviceInfo,
+        SoundFlow.Structs.AudioFormat format,
+        DeviceConfig config) : base(engine, format, config)
+    {
+        Capability = Capability.Record;
+        Info = deviceInfo;
+
+        var deviceConfig = config as MiniAudioDeviceConfig;
+        var periodFrames = deviceConfig?.PeriodSizeInFrames switch
+        {
+            > 0 => deviceConfig.PeriodSizeInFrames,
+            _ => 960u
+        };
+        var source = deviceConfig?.AAudio?.InputPreset switch
+        {
+            AAudioInputPreset.Camcorder => AudioSource.Camcorder,
+            AAudioInputPreset.VoiceRecognition => AudioSource.VoiceRecognition,
+            AAudioInputPreset.VoiceCommunication => AudioSource.VoiceCommunication,
+            _ => AudioSource.Default
+        };
+        var channelMask = Format.Channels switch
+        {
+            1 => ChannelIn.Mono,
+            2 => ChannelIn.Stereo,
+            _ => throw new NotSupportedException()
+        };
+        var periods = deviceConfig?.Periods > 0 ? deviceConfig.Periods : 3;
+        var bufferSize = periodFrames * format.Channels;
+        _buffer = new float[bufferSize];
+
+        _nativeRecorder = new AudioRecord(
+            source,
+            format.SampleRate,
+            channelMask,
+            Encoding.PcmFloat,
+            (int)(bufferSize * sizeof(float) * periods));
+        var device = audioManager.GetDevices(GetDevicesTargets.Inputs)
+            ?.FirstOrDefault(device => device.Id == deviceInfo?.Id);
+        _nativeRecorder.SetPreferredDevice(device);
+    }
+
+    public override void Start()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed || IsRunning)
+                return;
+
+            _nativeRecorder.StartRecording();
+            Task.Run(RecordingLogic);
+            IsRunning = true;
+        }
+    }
+
+    public override void Stop()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed || !IsRunning)
+                return;
+
+            _nativeRecorder.Stop();
+            IsRunning = false;
+        }
+    }
+
+    public override void Dispose()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed) return;
+            OnDisposedHandler();
+            _nativeRecorder.Dispose();
+            IsDisposed = true;
+        }
+    }
+
+    private void RecordingLogic()
+    {
+        while (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
+        {
+            lock (_lock)
             {
-                SupportedDataFormats = [new NativeDataFormat() {  } ]
-            });
+                Array.Clear(_buffer, 0, _buffer.Length);
+                var read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
+                if (read <= 0) return;
+                InvokeOnAudioProcessed(_buffer);
+            }
+        }
+    }
+}
+
+internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
+{
+    private readonly Lock _lock = new();
+    private readonly AudioTrack _nativePlayer;
+    private readonly float[] _buffer;
+    
+    public AndroidAudioPlaybackDevice(
+        AudioManager audioManager,
+        AudioEngine engine,
+        SoundFlow.Structs.DeviceInfo? deviceInfo,
+        SoundFlow.Structs.AudioFormat format,
+        DeviceConfig config) : base(engine, format, config)
+    {
+        Capability = Capability.Playback;
+        Info = deviceInfo;
+        
+        var deviceConfig = config as MiniAudioDeviceConfig;
+        var periodFrames = deviceConfig?.PeriodSizeInFrames switch
+        {
+            > 0 => deviceConfig.PeriodSizeInFrames,
+            _ => 960u
+        };
+        var usage = deviceConfig?.AAudio?.Usage switch
+        {
+            AAudioUsage.Media => AudioUsageKind.Media,
+            AAudioUsage.VoiceCommunication => AudioUsageKind.VoiceCommunication,
+            AAudioUsage.VoiceCommunicationSignalling => AudioUsageKind.VoiceCommunicationSignalling,
+            AAudioUsage.Alarm => AudioUsageKind.Alarm,
+            AAudioUsage.Notification => AudioUsageKind.Notification,
+            AAudioUsage.NotificationRingtone => AudioUsageKind.NotificationRingtone,
+            AAudioUsage.NotificationEvent => AudioUsageKind.NotificationEvent,
+            AAudioUsage.AssistanceAccessibility =>  AudioUsageKind.AssistanceAccessibility,
+            AAudioUsage.AssistanceNavigationGuidance =>  AudioUsageKind.AssistanceNavigationGuidance,
+            AAudioUsage.AssistanceSonification =>  AudioUsageKind.AssistanceSonification,
+            AAudioUsage.Game => AudioUsageKind.Game,
+            _ => AudioUsageKind.Unknown
+        };
+        var content = deviceConfig?.AAudio?.ContentType switch
+        {
+            AAudioContentType.Speech => AudioContentType.Speech,
+            AAudioContentType.Music => AudioContentType.Music,
+            AAudioContentType.Movie => AudioContentType.Movie,
+            AAudioContentType.Sonification => AudioContentType.Sonification,
+            _ => AudioContentType.Unknown
+        };
+        var channelMask = Format.Channels switch
+        {
+            1 => ChannelOut.Mono,
+            2 => ChannelOut.Stereo,
+            _ => throw new NotSupportedException()
+        };
+        var periods = deviceConfig?.Periods > 0 ? deviceConfig.Periods : 3;
+        var bufferSize = periodFrames * format.Channels;
+        _buffer = new float[bufferSize];
+
+        var attributes = new AudioAttributes.Builder()
+            .SetUsage(usage)!
+            .SetContentType(content)!
+            .Build()!;
+        var audioFormat = new AudioFormat.Builder()
+            .SetEncoding(Encoding.PcmFloat)!
+            .SetSampleRate(Format.SampleRate)!
+            .SetChannelMask(channelMask)
+            .Build()!;
+
+        _nativePlayer = new AudioTrack.Builder()
+            .SetAudioAttributes(attributes)
+            .SetAudioFormat(audioFormat)
+            .SetBufferSizeInBytes((int)(bufferSize * sizeof(float) * periods))
+            .SetTransferMode(AudioTrackMode.Stream)
+            .Build();
+        _nativePlayer.SetVolume(1.0f);
+        
+        var device = audioManager.GetDevices(GetDevicesTargets.Outputs)
+            ?.FirstOrDefault(device => device.Id == deviceInfo?.Id);
+        _nativePlayer.SetPreferredDevice(device);
+    }
+    
+    public override void Start()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed || IsRunning)
+                return;
+
+            _nativePlayer.Play();
+            Task.Run(PlaybackLogic);
+            IsRunning = true;
+        }
+    }
+
+    public override void Stop()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed || !IsRunning)
+                return;
+
+            _nativePlayer.Stop();
+            IsRunning = false;
+        }
+    }
+
+    public override void Dispose()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed) return;
+            OnDisposedHandler();
+            _nativePlayer.Dispose();
+            IsDisposed = true;
+        }
+    }
+    
+    private void PlaybackLogic()
+    {
+        while (_nativePlayer is { PlayState: PlayState.Playing, State: AudioTrackState.Initialized })
+        {
+            lock (_lock)
+            {
+                Array.Clear(_buffer, 0, _buffer.Length);
+                // Process the audio graph
+                var soloed = Engine.GetSoloedComponent();
+                if (soloed != null)
+                    soloed.Process(_buffer, Format.Channels);
+                else
+                    MasterMixer.Process(_buffer, Format.Channels);
+            }
         }
     }
 }
