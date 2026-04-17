@@ -22,6 +22,7 @@
         <PackageReference Include="CommunityToolkit.Mvvm"/>
         <PackageReference Include="DiscordRichPresence"/>
         <PackageReference Include="Fleck"/>
+        <PackageReference Include="AvionBlock.Message.Avalonia"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
         <PackageReference Include="Microsoft.Maui.Essentials"/>
         <PackageReference Include="OpusSharp"/>
@@ -31,7 +32,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
         <ProjectReference Include="..\..\VoiceCraft.Network\VoiceCraft.Network.csproj" />
-        <ProjectReference Include="C:\Users\user\Documents\GitHub\Message.Avalonia\Message.Avalonia\Message.Avalonia.csproj" />
     </ItemGroup>
 
     <ItemGroup>
