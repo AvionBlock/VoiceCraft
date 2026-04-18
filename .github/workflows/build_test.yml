@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [arm, arm64]
+        rid: [android-arm64]
       fail-fast: false
     defaults:
       run:
@@ -130,7 +130,8 @@ jobs:
       - name: Publish Build (Signed)
         if: ${{ github.event_name != 'pull_request' && env.ANDROID_KEYSTORE != '' }}
         run: >
-          dotnet publish -c Release -r android-${{ matrix.arch }}
+          dotnet publish -c Release
+          -p:RuntimeIdentifier=${{ matrix.rid }}
           -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore=./android.keystore
           -p:AndroidSigningKeyAlias=$ALIAS
@@ -139,13 +140,13 @@ jobs:
 
       - name: Publish Build (Unsigned)
         if: ${{ github.event_name == 'pull_request' || env.ANDROID_KEYSTORE == '' }}
-        run: dotnet publish -c Release -r android-${{ matrix.arch }}
+        run: dotnet publish -c Release -p:RuntimeIdentifier=${{ matrix.rid }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: VoiceCraft.Client.Android.${{ matrix.arch }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-${{ matrix.arch }}/publish/*.apk
+          name: VoiceCraft.Client.Android.${{ matrix.rid }}
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/${{ matrix.rid }}/publish/*.apk
 
   VoiceCraft-Client-iOS:
     runs-on: macos-26
