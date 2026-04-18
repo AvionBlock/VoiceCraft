@@ -1,4 +1,3 @@
-using System;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
@@ -18,34 +17,18 @@ namespace VoiceCraft.Client.Android;
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
 public class MainActivity : AvaloniaMainActivity
 {
+    protected override void OnCreate(Bundle? app)
+    {
+        OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
+        Platform.Init(this, app);
+        base.OnCreate(app);
+    }
+    
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
         Permission[] grantResults)
     {
         Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
         base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    protected override void OnCreate(Bundle? app)
-    {
-        OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
-
-        Platform.Init(this, app);
-        base.OnCreate(app);
-    }
-
-    protected override void OnDestroy()
-    {
-        try
-        {
-            if (App.ServiceProvider == null) return;
-            var serviceProvider = App.ServiceProvider;
-            serviceProvider.Dispose();
-        }
-        finally
-        {
-            base.OnDestroy();
-        }
     }
 
     private static bool BackButtonBehavior()

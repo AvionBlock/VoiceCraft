@@ -45,8 +45,9 @@ internal sealed class Program
                     true,
                     true));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
-                new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
-                    () => x.GetRequiredService<IAudioDecoder>()));
+                new LiteNetVoiceCraftClient(
+                    x.GetRequiredService<IAudioEncoder>(),
+                    x.GetRequiredService<IAudioDecoder>));
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

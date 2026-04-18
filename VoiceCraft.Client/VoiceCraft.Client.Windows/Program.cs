@@ -37,7 +37,7 @@ internal sealed class Program
                 new NativeBackgroundService(x.GetRequiredService));
             App.ServiceCollection.AddSingleton<RegisteredAudioPreprocessor>(_ =>
                 new RegisteredAudioPreprocessor(
-                    Constants.SpeexDspPreprocessorGuid, 
+                    Constants.SpeexDspPreprocessorGuid,
                     "AudioService.Preprocessors.Speex",
                     () => new SpeexDspPreprocessor(
                         Constants.SampleRate,
@@ -48,8 +48,9 @@ internal sealed class Program
                     true,
                     true));
             App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
-                new LiteNetVoiceCraftClient(x.GetRequiredService<IAudioEncoder>(),
-                    () => x.GetRequiredService<IAudioDecoder>()));
+                new LiteNetVoiceCraftClient(
+                    x.GetRequiredService<IAudioEncoder>(),
+                    x.GetRequiredService<IAudioDecoder>));
             App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }

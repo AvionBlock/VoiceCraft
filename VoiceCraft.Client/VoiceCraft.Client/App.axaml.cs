@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -42,10 +40,6 @@ public class App : Application
     {
         try
         {
-            // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-            // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-            DisableAvaloniaDataAnnotationValidation();
-
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
 
@@ -60,6 +54,12 @@ public class App : Application
                     desktop.MainWindow.Closing += (__, ___) =>
                     {
                         _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
+                    };
+                    break;
+                case IActivityApplicationLifetime activityLifetime:
+                    activityLifetime.MainViewFactory = () => new MainView()
+                    {
+                        DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
                     break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
@@ -83,6 +83,12 @@ public class App : Application
                         DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
                     };
                     break;
+                case IActivityApplicationLifetime activityLifetime:
+                    activityLifetime.MainViewFactory = () => new MainView()
+                    {
+                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                    };
+                    break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
                     singleViewPlatform.MainView = new ErrorView
                     {
@@ -95,26 +101,6 @@ public class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    private static void DisableAvaloniaDataAnnotationValidation()
-    {
-#pragma warning disable IL2026
-#pragma warning disable IL2075
-        var bindingPluginsType = typeof(Application).Assembly.GetType("Avalonia.Data.Core.Plugins.BindingPlugins");
-        var dataValidatorsProperty = bindingPluginsType?.GetProperty("DataValidators");
-        var dataValidators = dataValidatorsProperty?.GetValue(null) as IList;
-        if (dataValidators is null)
-            return;
-
-        var pluginsToRemove = dataValidators
-            .Cast<object>()
-            .Where(x => x.GetType().Name == "DataAnnotationsValidationPlugin")
-            .ToArray();
-        foreach (var plugin in pluginsToRemove)
-            dataValidators.Remove(plugin);
-#pragma warning restore IL2075
-#pragma warning restore IL2026
     }
 
     private static ServiceProvider BuildServiceProvider()

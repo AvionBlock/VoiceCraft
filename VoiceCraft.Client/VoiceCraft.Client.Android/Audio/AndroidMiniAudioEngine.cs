@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace VoiceCraft.Client.Android.Audio;
 public class AndroidMiniAudioEngine : AudioEngine
 {
     private readonly AudioManager _audioManager;
+    private readonly List<AudioDevice> _activeDevices = [];
 
     public AndroidMiniAudioEngine(AudioManager audioManager)
     {
@@ -24,22 +26,42 @@ public class AndroidMiniAudioEngine : AudioEngine
 
     protected override void CleanupBackend()
     {
+        foreach (var device in _activeDevices.ToList())
+        {
+            device.Dispose();
+        }
+
+        _activeDevices.Clear();
     }
 
     public override AudioPlaybackDevice InitializePlaybackDevice(
-        SoundFlow.Structs.DeviceInfo? deviceInfo, 
+        SoundFlow.Structs.DeviceInfo? deviceInfo,
         SoundFlow.Structs.AudioFormat format,
         DeviceConfig? config = null)
     {
-        throw new System.NotImplementedException();
+        if (config != null && config is not MiniAudioDeviceConfig)
+            throw new ArgumentException($"config must be of type {typeof(MiniAudioDeviceConfig)}");
+        config ??= new MiniAudioDeviceConfig();
+        
+        var device = new AndroidAudioPlaybackDevice(_audioManager, this, deviceInfo, format, config);
+        _activeDevices.Add(device);
+        device.OnDisposed += OnDeviceDisposing;
+        return device;
     }
 
     public override AudioCaptureDevice InitializeCaptureDevice(
-        SoundFlow.Structs.DeviceInfo? deviceInfo, 
+        SoundFlow.Structs.DeviceInfo? deviceInfo,
         SoundFlow.Structs.AudioFormat format,
         DeviceConfig? config = null)
     {
-        throw new System.NotImplementedException();
+        if (config != null && config is not MiniAudioDeviceConfig)
+            throw new ArgumentException($"config must be of type {typeof(MiniAudioDeviceConfig)}");
+        config ??= new MiniAudioDeviceConfig();
+        
+        var device = new AndroidAudioCaptureDevice(_audioManager, this, deviceInfo, format, config);
+        _activeDevices.Add(device);
+        device.OnDisposed += OnDeviceDisposing;
+        return device;
     }
 
     public override FullDuplexDevice InitializeFullDuplexDevice(
@@ -73,7 +95,7 @@ public class AndroidMiniAudioEngine : AudioEngine
     }
 
     public override AudioCaptureDevice SwitchDevice(
-        AudioCaptureDevice oldDevice, 
+        AudioCaptureDevice oldDevice,
         SoundFlow.Structs.DeviceInfo newDeviceInfo,
         DeviceConfig? config = null)
     {
@@ -90,7 +112,7 @@ public class AndroidMiniAudioEngine : AudioEngine
     public override FullDuplexDevice SwitchDevice(
         FullDuplexDevice oldDevice,
         SoundFlow.Structs.DeviceInfo? newPlaybackInfo,
-        SoundFlow.Structs.DeviceInfo? newCaptureInfo, 
+        SoundFlow.Structs.DeviceInfo? newCaptureInfo,
         DeviceConfig? config = null)
     {
         throw new NotSupportedException("Full duplex mode is not supported by the Android audio engine.");
@@ -127,6 +149,14 @@ public class AndroidMiniAudioEngine : AudioEngine
         else
         {
             CaptureDevices = [];
+        }
+    }
+    
+    private void OnDeviceDisposing(object? sender, EventArgs e)
+    {
+        if (sender is AudioDevice device)
+        {
+            _activeDevices.Remove(device);
         }
     }
 }
@@ -234,13 +264,15 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
 
 internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
 {
-    private delegate void SoundComponentProcessDelegate(SoundComponent component, Span<float> outputBuffer, int channels);
+    private delegate void SoundComponentProcessDelegate(SoundComponent component, Span<float> outputBuffer,
+        int channels);
+
     private static readonly SoundComponentProcessDelegate ProcessComponent = BuildProcessDelegate();
 
     private readonly Lock _lock = new();
     private readonly AudioTrack _nativePlayer;
     private readonly float[] _buffer;
-    
+
     public AndroidAudioPlaybackDevice(
         AudioManager audioManager,
         AudioEngine engine,
@@ -250,7 +282,7 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
     {
         Capability = Capability.Playback;
         Info = deviceInfo;
-        
+
         var deviceConfig = config as MiniAudioDeviceConfig;
         var periodFrames = deviceConfig?.PeriodSizeInFrames switch
         {
@@ -266,9 +298,9 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             AAudioUsage.Notification => AudioUsageKind.Notification,
             AAudioUsage.NotificationRingtone => AudioUsageKind.NotificationRingtone,
             AAudioUsage.NotificationEvent => AudioUsageKind.NotificationEvent,
-            AAudioUsage.AssistanceAccessibility =>  AudioUsageKind.AssistanceAccessibility,
-            AAudioUsage.AssistanceNavigationGuidance =>  AudioUsageKind.AssistanceNavigationGuidance,
-            AAudioUsage.AssistanceSonification =>  AudioUsageKind.AssistanceSonification,
+            AAudioUsage.AssistanceAccessibility => AudioUsageKind.AssistanceAccessibility,
+            AAudioUsage.AssistanceNavigationGuidance => AudioUsageKind.AssistanceNavigationGuidance,
+            AAudioUsage.AssistanceSonification => AudioUsageKind.AssistanceSonification,
             AAudioUsage.Game => AudioUsageKind.Game,
             _ => AudioUsageKind.Unknown
         };
@@ -307,12 +339,12 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             .SetTransferMode(AudioTrackMode.Stream)
             .Build();
         _nativePlayer.SetVolume(1.0f);
-        
+
         var device = audioManager.GetDevices(GetDevicesTargets.Outputs)
             ?.FirstOrDefault(device => device.Id == deviceInfo?.Id);
         _nativePlayer.SetPreferredDevice(device);
     }
-    
+
     public override void Start()
     {
         lock (_lock)
@@ -333,6 +365,8 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             if (IsDisposed || !IsRunning)
                 return;
 
+            _nativePlayer.Pause();
+            _nativePlayer.Flush();
             _nativePlayer.Stop();
             IsRunning = false;
         }
@@ -348,7 +382,7 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             IsDisposed = true;
         }
     }
-    
+
     private void PlaybackLogic()
     {
         while (_nativePlayer is { PlayState: PlayState.Playing, State: AudioTrackState.Initialized })
@@ -362,6 +396,7 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
                     ProcessComponent(soloed, _buffer, Format.Channels);
                 else
                     ProcessComponent(MasterMixer, _buffer, Format.Channels);
+                _nativePlayer.Write(_buffer, 0, _buffer.Length, WriteMode.Blocking);
             }
         }
     }
@@ -369,9 +404,8 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
     private static SoundComponentProcessDelegate BuildProcessDelegate()
     {
         var method = typeof(SoundComponent).GetMethod("Process", BindingFlags.Instance | BindingFlags.NonPublic);
-        if (method == null)
-            throw new InvalidOperationException("SoundFlow process method not found.");
-
-        return (SoundComponentProcessDelegate)method.CreateDelegate(typeof(SoundComponentProcessDelegate));
+        return method == null
+            ? throw new InvalidOperationException("SoundFlow process method not found.")
+            : method.CreateDelegate<SoundComponentProcessDelegate>();
     }
 }

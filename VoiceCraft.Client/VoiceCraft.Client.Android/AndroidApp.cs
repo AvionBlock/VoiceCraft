@@ -1,12 +1,10 @@
 using System;
-using Android.App;
 using Android.Media;
 using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using SoundFlow.Abstracts;
-using SoundFlow.Backends.MiniAudio;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -30,6 +28,20 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         base.OnCreate();
     }
 
+    protected override void Dispose(bool disposing)
+    {
+        try
+        {
+            if (App.ServiceProvider == null) return;
+            var serviceProvider = App.ServiceProvider;
+            serviceProvider.Dispose();
+        }
+        finally
+        {
+            base.Dispose(disposing);
+        }
+    }
+
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         return base.CustomizeAppBuilder(builder)
@@ -43,12 +55,12 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         LogService.Load();
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
 
-        var audioServiceName = global::Android.Content.Context.AudioService;
-        var audioManager = (AudioManager?)global::Android.App.Application.Context.GetSystemService(audioServiceName);
+        var audioManager = (AudioManager?)Context.GetSystemService(AudioService);
         if (audioManager == null)
-            throw new Exception($"Could not find {audioServiceName}. Cannot initialize audio service.");
+            throw new Exception($"Could not find {AudioService}. Cannot initialize audio service.");
 
-        App.ServiceCollection.AddSingleton<AudioEngine, MiniAudioEngine>();
+        App.ServiceCollection.AddSingleton<AudioEngine, AndroidMiniAudioEngine>(_ =>
+            new AndroidMiniAudioEngine(audioManager));
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
@@ -68,7 +80,7 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new LiteNetVoiceCraftClient(
                 x.GetRequiredService<IAudioEncoder>(),
-                () => x.GetRequiredService<IAudioDecoder>()));
+                x.GetRequiredService<IAudioDecoder>));
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.PostNotifications>();
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone>();
     }
