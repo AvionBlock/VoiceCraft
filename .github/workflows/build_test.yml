@@ -40,7 +40,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: [ x64, x86, arm64 ]
+        arch: [x64, x86, arm64]
       fail-fast: false
     defaults:
       run:
@@ -70,12 +70,12 @@ jobs:
         with:
           name: VoiceCraft.Client.Windows.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/win-${{ matrix.arch }}/publish/
-  
+
   VoiceCraft-Client-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, arm, arm64 ]
+        arch: [x64, arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -98,12 +98,12 @@ jobs:
         with:
           name: VoiceCraft.Client.Linux.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-${{ matrix.arch }}/publish/
-  
+
   VoiceCraft-Client-Android:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ arm64 ]
+        arch: [arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -170,12 +170,12 @@ jobs:
         with:
           name: VoiceCraft.Client.iOS.arm64
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
-  
+
   VoiceCraft-Client-MacOS:
     runs-on: macos-26
     strategy:
       matrix:
-        arch: [ x64, arm64 ]
+        arch: [x64, arm64]
       fail-fast: false
     defaults:
       run:
@@ -237,7 +237,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, x86, arm64 ]
+        arch: [x64, x86, arm64]
       fail-fast: false
     defaults:
       run:
@@ -260,12 +260,12 @@ jobs:
         with:
           name: VoiceCraft.Server.Windows.${{ matrix.arch }}
           path: ./VoiceCraft.Server/bin/Release/net10.0/win-${{ matrix.arch }}/publish
-  
+
   VoiceCraft-Server-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, arm, arm64 ]
+        arch: [x64, arm, arm64]
       fail-fast: false
     defaults:
       run:

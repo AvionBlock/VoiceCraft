@@ -28,6 +28,13 @@
       "Denoisers": "降噪器",
       "AutomaticGainControllers": "自動增益控制器",
       "EchoCancelers": "回聲消除器",
+      "PushToTalk": "按住說話",
+      "PlayPushToTalkCue": "播放按住說話提示音",
+      "CapturePreset": "錄音預設",
+      "CapturePresetOptions": {
+        "VoiceCommunication": "語音通訊",
+        "VoiceRecognition": "語音辨識"
+      },
       "MicrophoneTest": {
         "MicrophoneTest": "麥克風測試",
         "Test": "測試"
@@ -68,11 +75,9 @@
       "CapturePrompt": "按下按鍵或滑鼠按鈕",
       "SaveBinding": "儲存綁定",
       "CancelRebind": "取消",
-      "PlayPushToTalkCues": "播放按住說話提示音",
       "Actions": {
         "Mute": "靜音",
-        "Deafen": "拒聽",
-        "PushToTalk": "按住說話"
+        "Deafen": "拒聽"
       }
     },
     "Advanced": {

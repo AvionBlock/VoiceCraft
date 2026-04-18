@@ -81,7 +81,8 @@ public partial class InputSettingsViewModel(
                     Constants.SampleRate,
                     Constants.RecordingChannels,
                     Constants.FrameSize,
-                    InputSettingsData.InputDevice);
+                    InputSettingsData.InputDevice,
+                    InputSettingsData.InputCapturePreset);
                 _captureDevice.Start();
                 _captureDevice.OnAudioProcessed += Write;
                 IsRecording = true;

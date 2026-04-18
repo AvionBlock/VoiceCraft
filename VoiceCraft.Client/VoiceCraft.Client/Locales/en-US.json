@@ -28,6 +28,13 @@
       "Denoisers": "Denoisers",
       "AutomaticGainControllers": "Automatic Gain Controllers",
       "EchoCancelers": "Echo Cancelers",
+      "PushToTalk": "Push To Talk",
+      "PlayPushToTalkCue": "Play Push To Talk sounds",
+      "CapturePreset": "Capture Preset",
+      "CapturePresetOptions": {
+        "VoiceCommunication": "Voice Communication",
+        "VoiceRecognition": "Voice Recognition"
+      },
       "MicrophoneTest": {
         "MicrophoneTest": "Microphone Test",
         "Test": "Test"
@@ -68,11 +75,9 @@
       "CapturePrompt": "Press a key or mouse button",
       "SaveBinding": "Save Binding",
       "CancelRebind": "Cancel",
-      "PlayPushToTalkCues": "Play Push To Talk sounds",
       "Actions": {
         "Mute": "Mute",
-        "Deafen": "Deafen",
-        "PushToTalk": "Push To Talk"
+        "Deafen": "Deafen"
       }
     },
     "Advanced": {

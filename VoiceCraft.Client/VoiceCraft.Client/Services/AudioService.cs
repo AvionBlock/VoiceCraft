@@ -95,9 +95,15 @@ public class AudioService
         return devices;
     }
 
-    public AudioCaptureDevice InitializeCaptureDevice(int sampleRate, int channels, uint frameSize, string inputDevice)
+    public AudioCaptureDevice InitializeCaptureDevice(
+        int sampleRate,
+        int channels,
+        uint frameSize,
+        string inputDevice,
+        string inputCapturePreset)
     {
         _engine.UpdateAudioDevicesInfo();
+        var (aaudioInputPreset, openSlRecordingPreset) = ResolveInputCapturePreset(inputCapturePreset);
         var format = new AudioFormat()
         {
             SampleRate = sampleRate,
@@ -110,11 +116,11 @@ public class AudioService
             AAudio = new AAudioSettings()
             {
                 Usage = AAudioUsage.VoiceCommunication,
-                InputPreset = AAudioInputPreset.VoiceCommunication
+                InputPreset = aaudioInputPreset
             },
             OpenSL = new OpenSlSettings()
             {
-                RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
+                RecordingPreset = openSlRecordingPreset
             },
             CoreAudio = new CoreAudioSettings()
             {
@@ -127,6 +133,16 @@ public class AudioService
             device = _engine.CaptureDevices.FirstOrDefault(x => x.IsDefault);
 
         return _engine.InitializeCaptureDevice(device, format, config);
+    }
+
+    private static (AAudioInputPreset AAudioInputPreset, OpenSlRecordingPreset OpenSlRecordingPreset)
+        ResolveInputCapturePreset(string inputCapturePreset)
+    {
+        return inputCapturePreset switch
+        {
+            "VoiceRecognition" => (AAudioInputPreset.VoiceRecognition, OpenSlRecordingPreset.VoiceRecognition),
+            _ => (AAudioInputPreset.VoiceCommunication, OpenSlRecordingPreset.VoiceCommunication)
+        };
     }
 
     public AudioPlaybackDevice InitializePlaybackDevice(

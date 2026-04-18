@@ -255,7 +255,9 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
             {
                 Array.Clear(_buffer, 0, _buffer.Length);
                 var read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
-                if (read <= 0) return;
+                if (read <= 0)
+                    continue;
+
                 InvokeOnAudioProcessed(_buffer);
             }
         }

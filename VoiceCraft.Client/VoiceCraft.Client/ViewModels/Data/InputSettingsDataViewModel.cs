@@ -14,6 +14,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     private readonly SettingsService _settingsService;
 
     [ObservableProperty] private string _inputDevice;
+    [ObservableProperty] private string _inputCapturePreset;
     [ObservableProperty] private float _inputVolume;
     [ObservableProperty] private float _microphoneSensitivity;
     [ObservableProperty] private Guid _denoiser;
@@ -24,6 +25,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
     //Lists
     [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _inputDevices = [];
+    [ObservableProperty] private ObservableCollection<InputCapturePresetOption> _inputCapturePresets = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _denoisers = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _automaticGainControllers = [];
     [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _echoCancelers = [];
@@ -38,6 +40,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 
         _inputSettings.OnUpdated += Update;
         _inputDevice = _inputSettings.InputDevice;
+        _inputCapturePreset = _inputSettings.InputCapturePreset;
         _inputVolume = _inputSettings.InputVolume;
         _microphoneSensitivity = _inputSettings.MicrophoneSensitivity;
         _denoiser = _inputSettings.Denoiser;
@@ -59,12 +62,19 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     public void ReloadDevices()
     {
         InputDevices = [.._audioService.GetInputDevices()];
+        InputCapturePresets =
+        [
+            new InputCapturePresetOption("VoiceCommunication", "Settings.Input.CapturePresetOptions.VoiceCommunication"),
+            new InputCapturePresetOption("VoiceRecognition", "Settings.Input.CapturePresetOptions.VoiceRecognition")
+        ];
         Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
         AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
         EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
         
         if (InputDevices.All(outputDevice => outputDevice.Name != InputDevice))
             InputDevice = InputDevices.First(x => x.IsDefault).Name;
+        if (InputCapturePresets.All(x => x.Id != InputCapturePreset))
+            InputCapturePreset = "VoiceCommunication";
         if (Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
             Denoiser = Guid.Empty;
         if (AutomaticGainControllers.FirstOrDefault(x => x.Id == AutomaticGainController) == null)
@@ -91,6 +101,17 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         if (_updating) return;
         _updating = true;
         _inputSettings.InputVolume = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
+    partial void OnInputCapturePresetChanging(string value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.InputCapturePreset = value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
@@ -167,6 +188,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _updating = true;
 
         InputDevice = inputSettings.InputDevice;
+        InputCapturePreset = inputSettings.InputCapturePreset;
         InputVolume = inputSettings.InputVolume;
         MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
         Denoiser = inputSettings.Denoiser;
@@ -183,4 +205,10 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         if (!_disposed) return;
         throw new ObjectDisposedException(typeof(InputSettingsDataViewModel).ToString());
     }
+}
+
+public class InputCapturePresetOption(string id, string name)
+{
+    public string Id { get; } = id;
+    public string Name { get; } = name;
 }

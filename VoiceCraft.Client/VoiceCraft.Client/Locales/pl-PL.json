@@ -28,6 +28,13 @@
       "Denoisers": "Redukcja szumów",
       "AutomaticGainControllers": "Automatyczna regulacja wzmocnienia",
       "EchoCancelers": "Redukcja echa",
+      "PushToTalk": "Przytrzymaj, aby mówić",
+      "PlayPushToTalkCue": "Odtwarzaj dźwięki Push To Talk",
+      "CapturePreset": "Profil przechwytywania",
+      "CapturePresetOptions": {
+        "VoiceCommunication": "Komunikacja głosowa",
+        "VoiceRecognition": "Rozpoznawanie mowy"
+      },
       "MicrophoneTest": {
         "MicrophoneTest": "Test mikrofonu",
         "Test": "Test"
@@ -68,11 +75,9 @@
       "CapturePrompt": "Naciśnij klawisz lub przycisk myszy",
       "SaveBinding": "Zapisz przypisanie",
       "CancelRebind": "Anuluj",
-      "PlayPushToTalkCues": "Odtwarzaj dźwięki Push To Talk",
       "Actions": {
         "Mute": "Wycisz",
-        "Deafen": "Zagłusz",
-        "PushToTalk": "Przytrzymaj, aby mówić"
+        "Deafen": "Zagłusz"
       }
     },
     "Advanced": {

@@ -19,9 +19,9 @@ public class MainActivity : AvaloniaMainActivity
 {
     protected override void OnCreate(Bundle? app)
     {
-        OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
-        Platform.Init(this, app);
         base.OnCreate(app);
+        Platform.Init(this, app);
+        OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
     }
     
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
@@ -43,8 +43,15 @@ public class MainActivity : AvaloniaMainActivity
         public override void HandleOnBackPressed()
         {
             if (BackButtonBehavior()) return;
-            activity.FinishAndRemoveTask();
-            Process.KillProcess(Process.MyPid());
+            Enabled = false;
+            try
+            {
+                activity.OnBackPressedDispatcher.OnBackPressed();
+            }
+            finally
+            {
+                Enabled = true;
+            }
         }
     }
 }

@@ -38,7 +38,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: [ x64, x86, arm64 ]
+        arch: [x64, x86, arm64]
       fail-fast: false
     defaults:
       run:
@@ -49,7 +49,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.0.x"
-          
+
       - name: Install WorkLoads
         run: dotnet workload restore
 
@@ -68,12 +68,12 @@ jobs:
         with:
           name: VoiceCraft.Client.Windows.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/win-${{ matrix.arch }}/publish/
-          
+
   VoiceCraft-Client-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, arm, arm64 ]
+        arch: [x64, arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -96,12 +96,12 @@ jobs:
         with:
           name: VoiceCraft.Client.Linux.${{ matrix.arch }}
           path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-${{ matrix.arch }}/publish/
-          
+
   VoiceCraft-Client-Android:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ arm64 ]
+        arch: [arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -115,7 +115,7 @@ jobs:
 
       - name: Install WorkLoads
         run: dotnet workload restore
-        
+
       - name: Setup Keystore File
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
@@ -151,12 +151,12 @@ jobs:
         with:
           name: VoiceCraft.Client.iOS.arm64
           path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
-          
+
   VoiceCraft-Client-MacOS:
     runs-on: macos-26
     strategy:
       matrix:
-        arch: [ x64, arm64 ]
+        arch: [x64, arm64]
       fail-fast: false
     defaults:
       run:
@@ -173,10 +173,10 @@ jobs:
 
       - name: Restore ${{ matrix.arch }} Workloads
         run: dotnet restore -r osx-${{ matrix.arch }}
-        
+
       - name: Publish Build
         run: dotnet publish -c Release -r osx-${{ matrix.arch }} --no-restore -p:ValidateXcodeVersion=false
-        
+
       - name: Build VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
         run: |
           cd ./bin/Release/net10.0-macos/osx-${{ matrix.arch }}
@@ -201,7 +201,7 @@ jobs:
           cd ./bin/Release/net10.0-macos/osx-${{ matrix.arch }}
           PKG_PATH=$(ls ./publish/*.pkg | head -n 1)
           cp "$PKG_PATH" "VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg"
-          
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
@@ -218,7 +218,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, x86, arm64 ]
+        arch: [x64, x86, arm64]
       fail-fast: false
     defaults:
       run:
@@ -241,12 +241,12 @@ jobs:
         with:
           name: VoiceCraft.Server.Windows.${{ matrix.arch }}
           path: ./VoiceCraft.Server/bin/Release/net10.0/win-${{ matrix.arch }}/publish
-          
+
   VoiceCraft-Server-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, arm, arm64 ]
+        arch: [x64, arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -269,26 +269,29 @@ jobs:
         with:
           name: VoiceCraft.Server.Linux.${{ matrix.arch }}
           path: ./VoiceCraft.Server/bin/Release/net10.0/linux-${{ matrix.arch }}/publish
-          
+
   Publish-Draft:
     runs-on: ubuntu-latest
-    needs: ["VoiceCraft-Client-Windows", 
-            "VoiceCraft-Tests",
-            "VoiceCraft-Client-Linux", 
-            "VoiceCraft-Client-Android", 
-            "VoiceCraft-Client-iOS", 
-            "VoiceCraft-Client-MacOS", 
-            "VoiceCraft-Server-Windows", 
-            "VoiceCraft-Server-Linux"]
+    needs:
+      [
+        "VoiceCraft-Client-Windows",
+        "VoiceCraft-Tests",
+        "VoiceCraft-Client-Linux",
+        "VoiceCraft-Client-Android",
+        "VoiceCraft-Client-iOS",
+        "VoiceCraft-Client-MacOS",
+        "VoiceCraft-Server-Windows",
+        "VoiceCraft-Server-Linux",
+      ]
     steps:
       - uses: actions/checkout@v5
-        
+
       - name: Download Artifacts
         uses: actions/download-artifact@v8
         with:
           skip-decompress: true
           path: ./artifacts
-          
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:

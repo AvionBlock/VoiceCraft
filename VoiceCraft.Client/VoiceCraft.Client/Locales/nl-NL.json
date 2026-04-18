@@ -28,6 +28,13 @@
       "Denoisers": "Ruisonderdrukkers",
       "AutomaticGainControllers": "Automatische versterkingsregelaars",
       "EchoCancelers": "Echo-onderdrukkers",
+      "PushToTalk": "Ingedrukt houden om te praten",
+      "PlayPushToTalkCue": "Push-to-talk-geluiden afspelen",
+      "CapturePreset": "Opnameprofiel",
+      "CapturePresetOptions": {
+        "VoiceCommunication": "Spraakcommunicatie",
+        "VoiceRecognition": "Spraakherkenning"
+      },
       "MicrophoneTest": {
         "MicrophoneTest": "Microfoontest",
         "Test": "Test"
@@ -68,11 +75,9 @@
       "CapturePrompt": "Druk op een toets of muisknop",
       "SaveBinding": "Binding opslaan",
       "CancelRebind": "Annuleren",
-      "PlayPushToTalkCues": "Push-to-talk-geluiden afspelen",
       "Actions": {
         "Mute": "Dempen",
-        "Deafen": "Doof maken",
-        "PushToTalk": "Ingedrukt houden om te praten"
+        "Deafen": "Doof maken"
       }
     },
     "Advanced": {

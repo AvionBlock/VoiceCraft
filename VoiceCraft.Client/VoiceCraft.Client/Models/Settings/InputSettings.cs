@@ -6,6 +6,7 @@ namespace VoiceCraft.Client.Models.Settings;
 public class InputSettings : Setting<InputSettings>
 {
     private string _inputDevice = "Default";
+    private string _inputCapturePreset = "VoiceCommunication";
     private float _inputVolume = 1.0f;
     private float _microphoneSensitivity = 0.04f;
     
@@ -22,6 +23,16 @@ public class InputSettings : Setting<InputSettings>
         set
         {
             _inputDevice = value;
+            OnUpdated?.Invoke(this);
+        }
+    }
+
+    public string InputCapturePreset
+    {
+        get => _inputCapturePreset;
+        set
+        {
+            _inputCapturePreset = value;
             OnUpdated?.Invoke(this);
         }
     }

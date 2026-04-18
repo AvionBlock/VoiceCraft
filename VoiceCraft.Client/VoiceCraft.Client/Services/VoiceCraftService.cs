@@ -141,7 +141,7 @@ public class VoiceCraftService(
             client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
             client.Muted = _pttEnabled;
 
-            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
+            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice, inputSettings.InputCapturePreset);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
             _audioPreprocessor = InitializeAudioPreprocessor(inputSettings);
             _pttToneProvider = InitializeToneProvider(_audioPlayer);
@@ -325,10 +325,10 @@ public class VoiceCraftService(
         return toneProvider;
     }
 
-    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice)
+    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice, string inputCapturePreset)
     {
         var recorder = audioService.InitializeCaptureDevice(Constants.SampleRate, Constants.RecordingChannels,
-            Constants.FrameSize, inputDevice);
+            Constants.FrameSize, inputDevice, inputCapturePreset);
         recorder.OnAudioProcessed += Write;
         return recorder;
     }
