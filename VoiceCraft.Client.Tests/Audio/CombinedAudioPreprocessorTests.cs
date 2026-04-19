@@ -46,15 +46,16 @@ public class CombinedAudioPreprocessorTests
     {
         FakeAudioPreprocessor? gain = null;
         FakeAudioPreprocessor? denoiser = null;
-        using var preprocessor = new CombinedAudioPreprocessor(
+        var preprocessor = new CombinedAudioPreprocessor(
             new RegisteredAudioPreprocessor(Guid.NewGuid(), "gain", () => gain = new FakeAudioPreprocessor(), true, true, true),
             new RegisteredAudioPreprocessor(Guid.NewGuid(), "denoiser", () => denoiser = new FakeAudioPreprocessor(), true, true, true),
             null);
-
+        
+        preprocessor.Dispose();
         Assert.NotNull(gain);
         Assert.NotNull(denoiser);
-        Assert.Equal(1, gain!.DisposeCalls);
-        Assert.Equal(1, denoiser!.DisposeCalls);
+        Assert.Equal(1, gain.DisposeCalls);
+        Assert.Equal(1, denoiser.DisposeCalls);
         Assert.Throws<ObjectDisposedException>(() => preprocessor.Process([0]));
     }
 
