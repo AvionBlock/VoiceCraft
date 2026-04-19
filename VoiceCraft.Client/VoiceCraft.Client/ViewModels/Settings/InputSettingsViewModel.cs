@@ -105,6 +105,7 @@ public partial class InputSettingsViewModel(
 
     private void Write(Span<float> buffer, Capability _)
     {
+        if (!IsRecording) return;
         _audioPreprocessor?.Process(buffer);
 
         var floatCount = SampleVolume.Read(buffer, InputSettingsData.InputVolume);

@@ -254,22 +254,20 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
         while (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
         {
             Array.Clear(_buffer, 0, _buffer.Length);
-            var read = 0;
             try
             {
                 lock (_lock)
                 {
-                    read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
+                    var read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
+                    if (read <= 0)
+                        continue;
                 }
             }
             catch (Exception)
             {
                 //Do Nothing
             }
-
-            if (read <= 0)
-                continue;
-
+            
             InvokeOnAudioProcessed(_buffer);
         }
 
