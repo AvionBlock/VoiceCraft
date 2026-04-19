@@ -146,7 +146,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.Android.${{ matrix.arch }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/*.apk
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-${{ matrix.arch }}/publish/*.apk
 
   VoiceCraft-Client-iOS:
     runs-on: macos-26
