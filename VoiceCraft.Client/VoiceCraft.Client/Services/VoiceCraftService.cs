@@ -159,7 +159,7 @@ public class VoiceCraftService(
                 settingsService.ServerUserGuid,
                 localeSettings.Culture,
                 networkSettings.PositioningType);
-            _ = Task.Run(() => UpdateLogic(client));
+            _ = Task.Run(UpdateLogic);
             await result;
         }
         catch (Exception ex)
@@ -219,11 +219,14 @@ public class VoiceCraftService(
         return read;
     }
 
-    private static void UpdateLogic(VoiceCraftClient client)
+    private void UpdateLogic()
     {
         var startTime = DateTime.UtcNow;
         while (client.ConnectionState != VcConnectionState.Disconnected)
         {
+            if ((!_audioRecorder?.IsRunning ?? false) || (!_audioPlayer?.IsRunning ?? false))
+                throw new Exception("VoiceCraft.DisconnectReason.Error");
+            
             client.Update(); //Update all networking processes.
             var dist = DateTime.UtcNow - startTime;
             var delay = Constants.TickRate - dist.TotalMilliseconds;
