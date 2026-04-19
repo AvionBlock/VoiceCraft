@@ -11,9 +11,9 @@ public partial class ThemeSettingsDataViewModel : ObservableObject, IDisposable
     private readonly ThemeSettings _themeSettings;
     private readonly ThemesService _themesService;
     private bool _disposed;
-    [ObservableProperty] private Guid _selectedBackgroundImage;
+    [ObservableProperty] public partial Guid SelectedBackgroundImage { get; set; }
+    [ObservableProperty] public partial Guid SelectedTheme { get; set; }
 
-    [ObservableProperty] private Guid _selectedTheme;
     private bool _updating;
 
     public ThemeSettingsDataViewModel(SettingsService settingsService, ThemesService themesService)
@@ -22,8 +22,8 @@ public partial class ThemeSettingsDataViewModel : ObservableObject, IDisposable
         _settingsService = settingsService;
         _themesService = themesService;
         _themeSettings.OnUpdated += Update;
-        _selectedTheme = _themeSettings.SelectedTheme;
-        _selectedBackgroundImage = _themeSettings.SelectedBackgroundImage;
+        SelectedTheme = _themeSettings.SelectedTheme;
+        SelectedBackgroundImage = _themeSettings.SelectedBackgroundImage;
     }
 
     public void Dispose()

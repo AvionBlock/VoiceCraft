@@ -6,24 +6,22 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class HotKeySettings : Setting<HotKeySettings>
 {
-    private Dictionary<string, string> _bindings = new();
-
     public Dictionary<string, string> Bindings
     {
-        get => _bindings;
+        get;
         set
         {
-            _bindings = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = new();
 
     public override event Action<HotKeySettings>? OnUpdated;
 
     public override object Clone()
     {
         var clone = (HotKeySettings)MemberwiseClone();
-        clone.Bindings = new Dictionary<string, string>(_bindings, StringComparer.Ordinal);
+        clone.Bindings = new Dictionary<string, string>(Bindings, StringComparer.Ordinal);
         clone.OnUpdated = null;
         return clone;
     }

@@ -83,7 +83,7 @@ public class EventHandlerSystem : IDisposable
         }
     }
 
-    private void SendMcApi<T>(McApiServer server, McApiNetPeer peer, Func<T> packetFactory, Action<T> configure)
+    private static void SendMcApi<T>(McApiServer server, McApiNetPeer peer, Func<T> packetFactory, Action<T> configure)
         where T : class, IMcApiPacket
     {
         var packet = PacketPool<T>.GetPacket(packetFactory);

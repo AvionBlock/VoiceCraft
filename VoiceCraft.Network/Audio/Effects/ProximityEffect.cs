@@ -14,15 +14,15 @@ namespace VoiceCraft.Network.Audio.Effects
     public class ProximityEffect : IAudioEffect, IVisible
     {
         private readonly Dictionary<VoiceCraftEntity, SampleLerpVolume> _lerpSampleVolumes = new();
-        private float _wetDry = 1.0f;
 
         public static int SampleRate => Constants.SampleRate;
-        
+
         public float WetDry
         {
-            get => _wetDry;
-            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
-        }
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
+
         public int MinRange { get; set; }
         public int MaxRange { get; set; }
 

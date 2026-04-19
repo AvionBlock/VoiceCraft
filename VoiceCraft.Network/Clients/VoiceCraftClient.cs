@@ -24,13 +24,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
     private readonly IAudioEncoder _audioEncoder;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
-    private float _inputVolume;
-    private float _outputVolume;
-    private float _microphoneSensitivity;
     private ushort _sendTimestamp;
-    private bool _serverDeafened;
-    private bool _serverMuted;
-    private bool _speakingState;
 
     public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
     public VoiceCraftWorld World { get; } = new();
@@ -40,52 +34,52 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public float InputVolume
     {
-        get => _inputVolume;
-        set => _inputVolume = Math.Clamp(value, 0, 2);
+        get;
+        set => field = Math.Clamp(value, 0, 2);
     }
 
     public float OutputVolume
     {
-        get => _outputVolume;
-        set => _outputVolume = Math.Clamp(value, 0, 2);
+        get;
+        set => field = Math.Clamp(value, 0, 2);
     }
-    
+
     public float MicrophoneSensitivity
     {
-        get => _microphoneSensitivity;
-        set => _microphoneSensitivity = Math.Clamp(value, 0, 1);
+        get;
+        set => field = Math.Clamp(value, 0, 1);
     }
 
     public bool SpeakingState
     {
-        get => _speakingState;
+        get;
         private set
         {
-            if (_speakingState == value) return;
-            _speakingState = value;
+            if (field == value) return;
+            field = value;
             OnSpeakingUpdated?.Invoke(value);
         }
     }
 
     public bool ServerMuted
     {
-        get => _serverMuted;
+        get;
         private set
         {
-            if (_serverMuted == value) return;
-            _serverMuted = value;
-            OnServerMuteUpdated?.Invoke(_serverMuted);
+            if (field == value) return;
+            field = value;
+            OnServerMuteUpdated?.Invoke(field);
         }
     }
 
     public bool ServerDeafened
     {
-        get => _serverDeafened;
+        get;
         private set
         {
-            if (_serverDeafened == value) return;
-            _serverDeafened = value;
-            OnServerDeafenUpdated?.Invoke(_serverDeafened);
+            if (field == value) return;
+            field = value;
+            OnServerDeafenUpdated?.Invoke(field);
         }
     }
 

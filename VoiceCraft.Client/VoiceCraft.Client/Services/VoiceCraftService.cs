@@ -25,9 +25,6 @@ public class VoiceCraftService(
     private McWssServer? _mcWssServer;
     private bool _pttEnabled;
     private bool _pttCue;
-    private bool _pushToTalk;
-    private string _title = string.Empty;
-    private string _description = string.Empty;
 
     //Audio
     private AudioPlaybackDevice? _audioPlayer;
@@ -56,37 +53,37 @@ public class VoiceCraftService(
 
     public bool PushToTalk
     {
-        get => _pushToTalk;
+        get;
         set
         {
-            if (!_pttEnabled || _pushToTalk == value) return;
-            _pushToTalk = value;
+            if (!_pttEnabled || field == value) return;
+            field = value;
             client.Muted = !value;
-            
-            if(_pttCue)
+
+            if (_pttCue)
                 _pttToneProvider?.Play(TimeSpan.FromMilliseconds(80), value ? 880f : 620f);
         }
     }
 
     public string Title
     {
-        get => _title;
+        get;
         private set
         {
-            _title = value;
+            field = value;
             OnUpdateTitle?.Invoke(value);
         }
-    }
+    } = string.Empty;
 
     public string Description
     {
-        get => _description;
+        get;
         private set
         {
-            _description = value;
+            field = value;
             OnUpdateDescription?.Invoke(value);
         }
-    }
+    } = string.Empty;
 
     //Events
     public event Action? OnConnected;
@@ -141,7 +138,7 @@ public class VoiceCraftService(
             client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
             client.Muted = _pttEnabled;
 
-            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice, inputSettings.InputCapturePreset);
+            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice, inputSettings.HardwarePreprocessorsEnabled);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
             _audioPreprocessor = InitializeAudioPreprocessor(inputSettings);
             _pttToneProvider = InitializeToneProvider(_audioPlayer);
@@ -325,10 +322,10 @@ public class VoiceCraftService(
         return toneProvider;
     }
 
-    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice, string inputCapturePreset)
+    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice, bool hardwarePreprocessorsEnabled)
     {
         var recorder = audioService.InitializeCaptureDevice(Constants.SampleRate, Constants.RecordingChannels,
-            Constants.FrameSize, inputDevice, inputCapturePreset);
+            Constants.FrameSize, inputDevice, hardwarePreprocessorsEnabled);
         recorder.OnAudioProcessed += Write;
         return recorder;
     }

@@ -15,30 +15,31 @@ public partial class GeneralSettingsViewModel
 {
     private readonly NavigationService _navigationService;
 
-    [ObservableProperty] private ObservableCollection<KeyValuePair<string, string>> _locales = [];
+    [ObservableProperty] public partial ObservableCollection<KeyValuePair<string, string>> Locales { get; set; } = [];
 
     //Language Settings
-    [ObservableProperty] private LocaleSettingsDataViewModel _localeSettingsData;
+    [ObservableProperty] public partial LocaleSettingsDataViewModel LocaleSettingsData { get; set; }
 
     //Notification Settings
-    [ObservableProperty] private NotificationSettingsDataViewModel _notificationSettingsData;
+    [ObservableProperty] public partial NotificationSettingsDataViewModel NotificationSettingsData { get; set; }
 
     //Server Settings
-    [ObservableProperty] private ServersSettingsViewModel _serversSettings;
+    [ObservableProperty] public partial ServersSettingsViewModel ServersSettings { get; set; }
 
     public GeneralSettingsViewModel(NavigationService navigationService, SettingsService settingsService)
     {
         foreach (var locale in Localizer.Languages)
-            _locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
+            Locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
         _navigationService = navigationService;
-        _localeSettingsData = new LocaleSettingsDataViewModel(settingsService);
-        _notificationSettingsData = new NotificationSettingsDataViewModel(settingsService);
-        _serversSettings = new ServersSettingsViewModel(settingsService);
+        LocaleSettingsData = new LocaleSettingsDataViewModel(settingsService);
+        NotificationSettingsData = new NotificationSettingsDataViewModel(settingsService);
+        ServersSettings = new ServersSettingsViewModel(settingsService);
     }
 
     public void Dispose()
     {
         NotificationSettingsData.Dispose();
+        LocaleSettingsData.Dispose();
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);
     }

@@ -11,9 +11,10 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
 
     public readonly Server Server;
     private bool _disposed;
-    [ObservableProperty] private string _ip;
-    [ObservableProperty] private string _name;
-    [ObservableProperty] private ushort _port;
+    [ObservableProperty] public partial string Ip { get; set; }
+    [ObservableProperty] public partial string Name { get; set; }
+    [ObservableProperty] public partial ushort Port { get; set; }
+
     private bool _updating;
 
     public ServerDataViewModel(Server server, SettingsService settingsService)
@@ -21,9 +22,9 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
         Server = server;
         _settingsService = settingsService;
         Server.OnUpdated += Update;
-        _name = Server.Name;
-        _ip = Server.Ip;
-        _port = Server.Port;
+        Name = Server.Name;
+        Ip = Server.Ip;
+        Port = Server.Port;
     }
 
     public void Dispose()

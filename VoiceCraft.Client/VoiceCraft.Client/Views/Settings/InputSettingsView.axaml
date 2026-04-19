@@ -43,17 +43,6 @@
                               SelectedValue="{Binding InputSettingsData.InputDevice}"
                               DisplayMemberBinding="{Binding DisplayName}"
                               SelectedValueBinding="{Binding Name}"/>
-                    
-                    <TextBlock HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               FontSize="15"
-                               Text="{locale:Localize Settings.Input.CapturePreset}" />
-
-                    <ComboBox HorizontalAlignment="Stretch"
-                              ItemsSource="{Binding InputSettingsData.InputCapturePresets}"
-                              DisplayMemberBinding="{locale:Localize {Binding Name}}"
-                              SelectedValue="{Binding InputSettingsData.InputCapturePreset}"
-                              SelectedValueBinding="{Binding Id}" />
 
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">
@@ -113,6 +102,11 @@
                               DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}" />
+                    
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding InputSettingsData.HardwarePreprocessorsEnabled}">
+                        <TextBlock Text="{locale:Localize Settings.Input.HardwarePreprocessors}" />
+                    </ToggleButton>
                     
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding InputSettingsData.PushToTalkEnabled}">

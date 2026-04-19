@@ -12,11 +12,15 @@ public partial class AppearanceSettingsViewModel(
     ThemesService themesService,
     SettingsService settingsService) : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private ObservableCollection<RegisteredBackgroundImage> _backgroundImages =
+    [ObservableProperty]
+    public partial ObservableCollection<RegisteredBackgroundImage> BackgroundImages { get; set; } =
         new(themesService.RegisteredBackgroundImages);
 
-    [ObservableProperty] private ObservableCollection<RegisteredTheme> _themes = new(themesService.RegisteredThemes);
-    [ObservableProperty] private ThemeSettingsDataViewModel _themeSettingsData = new(settingsService, themesService);
+    [ObservableProperty]
+    public partial ObservableCollection<RegisteredTheme> Themes { get; set; } = new(themesService.RegisteredThemes);
+
+    [ObservableProperty]
+    public partial ThemeSettingsDataViewModel ThemeSettingsData { get; set; } = new(settingsService, themesService);
 
     public void Dispose()
     {

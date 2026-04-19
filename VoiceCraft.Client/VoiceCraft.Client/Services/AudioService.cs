@@ -90,7 +90,7 @@ public class AudioService
 
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
-        
+
         devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
         return devices;
     }
@@ -100,10 +100,9 @@ public class AudioService
         int channels,
         uint frameSize,
         string inputDevice,
-        string inputCapturePreset)
+        bool hardwarePreprocessorsEnabled)
     {
         _engine.UpdateAudioDevicesInfo();
-        var (aaudioInputPreset, openSlRecordingPreset) = ResolveInputCapturePreset(inputCapturePreset);
         var format = new AudioFormat()
         {
             SampleRate = sampleRate,
@@ -116,11 +115,15 @@ public class AudioService
             AAudio = new AAudioSettings()
             {
                 Usage = AAudioUsage.VoiceCommunication,
-                InputPreset = aaudioInputPreset
+                InputPreset = hardwarePreprocessorsEnabled
+                    ? AAudioInputPreset.VoiceCommunication
+                    : AAudioInputPreset.Default
             },
             OpenSL = new OpenSlSettings()
             {
-                RecordingPreset = openSlRecordingPreset
+                RecordingPreset = hardwarePreprocessorsEnabled
+                ? OpenSlRecordingPreset.VoiceCommunication
+                : OpenSlRecordingPreset.Default
             },
             CoreAudio = new CoreAudioSettings()
             {
@@ -133,16 +136,6 @@ public class AudioService
             device = _engine.CaptureDevices.FirstOrDefault(x => x.IsDefault);
 
         return _engine.InitializeCaptureDevice(device, format, config);
-    }
-
-    private static (AAudioInputPreset AAudioInputPreset, OpenSlRecordingPreset OpenSlRecordingPreset)
-        ResolveInputCapturePreset(string inputCapturePreset)
-    {
-        return inputCapturePreset switch
-        {
-            "VoiceRecognition" => (AAudioInputPreset.VoiceRecognition, OpenSlRecordingPreset.VoiceRecognition),
-            _ => (AAudioInputPreset.VoiceCommunication, OpenSlRecordingPreset.VoiceCommunication)
-        };
     }
 
     public AudioPlaybackDevice InitializePlaybackDevice(

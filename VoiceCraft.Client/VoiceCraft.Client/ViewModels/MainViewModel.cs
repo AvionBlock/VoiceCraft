@@ -8,8 +8,8 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    [ObservableProperty] private Bitmap? _backgroundImage;
-    [ObservableProperty] private object? _content;
+    [ObservableProperty] public partial Bitmap? BackgroundImage { get; set; }
+    [ObservableProperty] public partial object? Content { get; set; }
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
@@ -40,7 +40,7 @@ public partial class MainViewModel : ObservableObject
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();
-        
+
         var voiceCraftService = backgroundService.GetService<VoiceCraftService>();
         if (voiceCraftService == null) return;
         navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));

@@ -14,16 +14,18 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
     private readonly HotKeySettingsDataViewModel _hotKeySettingsData;
     private string? _rebindActionId;
 
-    [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<HotKeyActionDataViewModel> _hotKeys;
-    [ObservableProperty] private bool _isRebinding;
-    [ObservableProperty] private string _rebindingTitle = string.Empty;
-    [ObservableProperty] private string _rebindingPreview = string.Empty;
+    [ObservableProperty]
+    public partial System.Collections.ObjectModel.ObservableCollection<HotKeyActionDataViewModel> HotKeys { get; set; }
+
+    [ObservableProperty] public partial bool IsRebinding { get; set; }
+    [ObservableProperty] public partial string RebindingTitle { get; set; } = string.Empty;
+    [ObservableProperty] public partial string RebindingPreview { get; set; } = string.Empty;
 
     public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService)
     {
         _navigationService = navigationService;
         _hotKeySettingsData = new HotKeySettingsDataViewModel(hotKeyService);
-        _hotKeys = _hotKeySettingsData.HotKeys;
+        HotKeys = _hotKeySettingsData.HotKeys;
     }
 
     public void Dispose()
@@ -68,7 +70,8 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void ConfirmRebind()
     {
-        if (!IsRebinding || string.IsNullOrWhiteSpace(RebindingPreview) || string.IsNullOrWhiteSpace(_rebindActionId)) return;
+        if (!IsRebinding || string.IsNullOrWhiteSpace(RebindingPreview) ||
+            string.IsNullOrWhiteSpace(_rebindActionId)) return;
         var action = HotKeys.FirstOrDefault(x => x.Action.Id == _rebindActionId)?.Action;
         if (action == null) return;
         _hotKeySettingsData.SetBinding(action, HotKeyService.NormalizeKeyCombo(RebindingPreview.Replace(" + ", "\0")));

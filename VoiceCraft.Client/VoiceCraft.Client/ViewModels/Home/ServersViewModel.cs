@@ -13,16 +13,15 @@ public partial class ServersViewModel(
     SettingsService settings)
     : ViewModelBase, IDisposable
 {
-    [ObservableProperty] private ServerDataViewModel? _selectedServer;
-
-    [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settings);
+    [ObservableProperty] public partial ServerDataViewModel? SelectedServer { get; set; }
+    [ObservableProperty] public partial ServersSettingsViewModel ServersSettings { get; set; } = new(settings);
 
     public void Dispose()
     {
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);
     }
-    
+
     private void OpenServer(ServerDataViewModel? server)
     {
         if (server == null) return;

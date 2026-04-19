@@ -6,28 +6,25 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class ThemeSettings : Setting<ThemeSettings>
 {
-    private Guid _selectedBackgroundImage = Constants.DockNightGuid;
-    private Guid _selectedTheme = Constants.DarkThemeGuid;
-
     public Guid SelectedBackgroundImage
     {
-        get => _selectedBackgroundImage;
+        get;
         set
         {
-            _selectedBackgroundImage = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Constants.DockNightGuid;
 
     public Guid SelectedTheme
     {
-        get => _selectedTheme;
+        get;
         set
         {
-            _selectedTheme = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Constants.DarkThemeGuid;
 
     public override event Action<ThemeSettings>? OnUpdated;
 

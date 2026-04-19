@@ -20,13 +20,13 @@ public partial class SelectedServerViewModel(
     : ViewModelBase, IDisposable
 {
     private CancellationTokenSource? _cts;
-    [ObservableProperty] private string _connectedClients = string.Empty;
-    [ObservableProperty] private string _latency = string.Empty;
-    [ObservableProperty] private string _motd = string.Empty;
-    [ObservableProperty] private string _positioningType = string.Empty;
-    [ObservableProperty] private ServerDataViewModel? _selectedServer;
-    [ObservableProperty] private ServersSettingsViewModel _serversSettings = new(settingsService);
-    [ObservableProperty] private string _version = string.Empty;
+    [ObservableProperty] public partial string ConnectedClients { get; set; } = string.Empty;
+    [ObservableProperty] public partial string Latency { get; set; } = string.Empty;
+    [ObservableProperty] public partial string Motd { get; set; } = string.Empty;
+    [ObservableProperty] public partial string PositioningType { get; set; } = string.Empty;
+    [ObservableProperty] public partial ServerDataViewModel? SelectedServer { get; set; }
+    [ObservableProperty] public partial ServersSettingsViewModel ServersSettings { get; set; } = new(settingsService);
+    [ObservableProperty] public partial string Version { get; set; } = string.Empty;
 
     public void Dispose()
     {

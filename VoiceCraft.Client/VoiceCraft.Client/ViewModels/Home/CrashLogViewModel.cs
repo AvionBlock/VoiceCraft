@@ -13,7 +13,7 @@ namespace VoiceCraft.Client.ViewModels.Home;
 
 public partial class CrashLogViewModel(NotificationService notificationService) : ViewModelBase
 {
-    [ObservableProperty] private ObservableCollection<KeyValuePair<DateTime, string>> _crashLogs = [];
+    [ObservableProperty] public partial ObservableCollection<KeyValuePair<DateTime, string>> CrashLogs { get; set; } = [];
 
     [RelayCommand]
     private async Task CopyLogs()

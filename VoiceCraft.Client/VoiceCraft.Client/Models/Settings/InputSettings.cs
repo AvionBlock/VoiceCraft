@@ -5,111 +5,99 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class InputSettings : Setting<InputSettings>
 {
-    private string _inputDevice = "Default";
-    private string _inputCapturePreset = "VoiceCommunication";
-    private float _inputVolume = 1.0f;
-    private float _microphoneSensitivity = 0.04f;
-    
-    private Guid _automaticGainController = Guid.Empty;
-    private Guid _denoiser = Guid.Empty;
-    private Guid _echoCanceler = Guid.Empty;
-    
-    private bool _pushToTalkEnabled;
-    private bool _pushToTalkCue = true;
-
     public string InputDevice
     {
-        get => _inputDevice;
+        get;
         set
         {
-            _inputDevice = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
-
-    public string InputCapturePreset
-    {
-        get => _inputCapturePreset;
-        set
-        {
-            _inputCapturePreset = value;
-            OnUpdated?.Invoke(this);
-        }
-    }
+    } = "Default";
 
     public float InputVolume
     {
-        get => _inputVolume;
+        get;
         set
         {
-            if(value is > 2 or < 0)
+            if (value is > 2 or < 0)
                 throw new ArgumentException("Settings.Input.Validation.InputVolume");
-            _inputVolume = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = 1.0f;
 
     public float MicrophoneSensitivity
     {
-        get => _microphoneSensitivity;
+        get;
         set
         {
             if (value is > 1 or < 0)
                 throw new ArgumentException("Settings.Input.Validation.MicrophonesSensitivity");
-            _microphoneSensitivity = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
-    
+    } = 0.04f;
+
     public Guid AutomaticGainController
     {
-        get => _automaticGainController;
+        get;
         set
         {
-            _automaticGainController = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Guid.Empty;
 
     public Guid Denoiser
     {
-        get => _denoiser;
+        get;
         set
         {
-            _denoiser = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Guid.Empty;
 
     public Guid EchoCanceler
     {
-        get => _echoCanceler;
+        get;
         set
         {
-            _echoCanceler = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Guid.Empty;
+
+    public bool HardwarePreprocessorsEnabled
+    {
+        get;
+        set
+        {
+            field = value;
+            OnUpdated?.Invoke(this);
+        }
+    } = true;
 
     public bool PushToTalkEnabled
     {
-        get => _pushToTalkEnabled;
+        get;
         set
         {
-            _pushToTalkEnabled = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
     }
 
     public bool PushToTalkCue
     {
-        get => _pushToTalkCue;
+        get;
         set
         {
-            _pushToTalkCue = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = true;
 
     public override event Action<InputSettings>? OnUpdated;
 

@@ -6,17 +6,15 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class UserSettings : Setting<UserSettings>
 {
-    private Dictionary<Guid, UserSetting> _users = new();
-
     public Dictionary<Guid, UserSetting> Users
     {
-        get => _users;
+        get;
         set
         {
-            _users = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = new();
 
     public override event Action<UserSettings>? OnUpdated;
 
@@ -24,7 +22,7 @@ public class UserSettings : Setting<UserSettings>
     {
         var clone = (UserSettings)MemberwiseClone();
         clone.Users = new Dictionary<Guid, UserSetting>();
-        foreach (var user in _users)
+        foreach (var user in Users)
         {
             var clonedEntity = (UserSetting)user.Value.Clone();
             clone.Users.TryAdd(user.Key, clonedEntity);

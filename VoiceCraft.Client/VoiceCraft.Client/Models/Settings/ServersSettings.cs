@@ -7,15 +7,14 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class ServersSettings : Setting<ServersSettings>
 {
-    private bool _hideServerAddresses;
     private List<Server> _servers = [];
 
     public bool HideServerAddresses
     {
-        get => _hideServerAddresses;
+        get;
         set
         {
-            _hideServerAddresses = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
     }
@@ -73,46 +72,42 @@ public class Server : Setting<Server>
 {
     public const int NameLimit = 12;
     public const int IpLimit = 30;
-    private string _ip = string.Empty;
-
-    private string _name = string.Empty;
-    private ushort _port = 9050;
 
     public string Name
     {
-        get => _name;
+        get;
         set
         {
             if (value.Length > NameLimit)
                 throw new ArgumentException($"Settings.Servers.Validation.NameLimit:{NameLimit}");
-            _name = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = string.Empty;
 
     public string Ip
     {
-        get => _ip;
+        get;
         set
         {
             if (value.Length > IpLimit)
                 throw new ArgumentException($"Settings.Servers.Validation.IpLimit:{IpLimit}");
-            _ip = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = string.Empty;
 
     public ushort Port
     {
-        get => _port;
+        get;
         set
         {
             if (value < 1)
                 throw new ArgumentException("Settings.Servers.Validation.Port");
-            _port = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = 9050;
 
     public override event Action<Server>? OnUpdated;
 

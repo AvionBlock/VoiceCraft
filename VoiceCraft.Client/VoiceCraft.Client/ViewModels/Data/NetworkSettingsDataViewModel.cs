@@ -11,10 +11,10 @@ public partial class NetworkSettingsDataViewModel : ObservableObject, IDisposabl
     private readonly NetworkSettings _networkSettings;
     private readonly SettingsService _settingsService;
     private bool _disposed;
-    [ObservableProperty] private ushort _mcWssHostPort;
-    [ObservableProperty] private string _mcWssListenIp;
+    [ObservableProperty] public partial ushort McWssHostPort { get; set; }
+    [ObservableProperty] public partial string McWssListenIp { get; set; }
+    [ObservableProperty] public partial PositioningType PositioningType { get; set; }
 
-    [ObservableProperty] private PositioningType _positioningType;
     private bool _updating;
 
     public NetworkSettingsDataViewModel(SettingsService settingsService)
@@ -22,9 +22,9 @@ public partial class NetworkSettingsDataViewModel : ObservableObject, IDisposabl
         _networkSettings = settingsService.NetworkSettings;
         _settingsService = settingsService;
         _networkSettings.OnUpdated += Update;
-        _positioningType = _networkSettings.PositioningType;
-        _mcWssListenIp = _networkSettings.McWssListenIp;
-        _mcWssHostPort = _networkSettings.McWssHostPort;
+        PositioningType = _networkSettings.PositioningType;
+        McWssListenIp = _networkSettings.McWssListenIp;
+        McWssHostPort = _networkSettings.McWssHostPort;
     }
 
     public void Dispose()

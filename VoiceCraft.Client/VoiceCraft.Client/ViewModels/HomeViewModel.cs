@@ -9,24 +9,25 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class HomeViewModel : ViewModelBase
 {
-    [ObservableProperty] private ViewModelBase _content;
-
-    [ObservableProperty] private ObservableCollection<ListItemTemplate> _items = [];
-
-    [ObservableProperty] private ListItemTemplate? _selectedListItem;
-    [ObservableProperty] private string _title;
+    [ObservableProperty] public partial ViewModelBase Content { get; set; }
+    [ObservableProperty] public partial ObservableCollection<ListItemTemplate> Items { get; set; }
+    [ObservableProperty] public partial ListItemTemplate? SelectedListItem { get; set; }
+    [ObservableProperty] public partial string Title { get; set; }
 
     public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits,
         CrashLogViewModel crashLog)
     {
-        _items.Add(new ListItemTemplate("Servers.Title", servers, "HomeRegular"));
-        _items.Add(new ListItemTemplate("Settings.Title", settings, "SettingsRegular"));
-        _items.Add(new ListItemTemplate("Credits.Title", credits, "InformationRegular"));
-        _items.Add(new ListItemTemplate("CrashLogs.Title", crashLog, "NotebookErrorRegular"));
+        Items =
+        [
+            new ListItemTemplate("Servers.Title", servers, "HomeRegular"),
+            new ListItemTemplate("Settings.Title", settings, "SettingsRegular"),
+            new ListItemTemplate("Credits.Title", credits, "InformationRegular"),
+            new ListItemTemplate("CrashLogs.Title", crashLog, "NotebookErrorRegular")
+        ];
 
-        SelectedListItem = _items[0];
-        _content = _items[0].Content;
-        _title = _items[0].Title;
+        SelectedListItem = Items[0];
+        Content = Items[0].Content;
+        Title = Items[0].Title;
     }
 
     partial void OnSelectedListItemChanged(ListItemTemplate? value)

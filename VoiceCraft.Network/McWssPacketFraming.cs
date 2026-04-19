@@ -24,14 +24,15 @@ public static class McWssPacketFraming
 
         ValidatePacketLength(packet);
         var frameLength = GetFrameLength(packet);
-        if (builder.Length > 0 && builder.Length + frameLength > maxLength)
-            return false;
-
-        if (builder.Length == 0 && !allowOversizedFirstFrame && frameLength > maxLength)
-            return false;
-
-        AppendFrame(builder, packet);
-        return true;
+        switch (builder.Length)
+        {
+            case > 0 when builder.Length + frameLength > maxLength:
+            case 0 when !allowOversizedFirstFrame && frameLength > maxLength:
+                return false;
+            default:
+                AppendFrame(builder, packet);
+                return true;
+        }
     }
 
     public static List<string> Unpack(string data)

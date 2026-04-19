@@ -22,17 +22,16 @@ public partial class VoiceViewModel(
     : ViewModelBase, IDisposable
 {
     private VoiceCraftService? _service;
-    [ObservableProperty] private ObservableCollection<EntityDataViewModel> _entityViewModels = [];
-    [ObservableProperty] private bool _isDeafened;
-    [ObservableProperty] private bool _isMuted;
-    [ObservableProperty] private bool _isServerDeafened;
-    [ObservableProperty] private bool _isServerMuted;
-    [ObservableProperty] private bool _isSpeaking;
-    [ObservableProperty] private EntityDataViewModel? _selectedEntity;
-    [ObservableProperty] private bool _showModal;
-    [ObservableProperty] private string _statusDescriptionText = string.Empty;
-
-    [ObservableProperty] private string _statusTitleText = string.Empty;
+    [ObservableProperty] public partial ObservableCollection<EntityDataViewModel> EntityViewModels { get; set; } = [];
+    [ObservableProperty] public partial bool IsDeafened { get; set; }
+    [ObservableProperty] public partial bool IsMuted { get; set; }
+    [ObservableProperty] public partial bool IsServerDeafened { get; set; }
+    [ObservableProperty] public partial bool IsServerMuted { get; set; }
+    [ObservableProperty] public partial bool IsSpeaking { get; set; }
+    [ObservableProperty] public partial EntityDataViewModel? SelectedEntity { get; set; }
+    [ObservableProperty] public partial bool ShowModal { get; set; }
+    [ObservableProperty] public partial string StatusDescriptionText { get; set; } = string.Empty;
+    [ObservableProperty] public partial string StatusTitleText { get; set; } = string.Empty;
     public override bool DisableBackButton { get; protected set; } = true;
 
     public void Dispose()
@@ -71,7 +70,7 @@ public partial class VoiceViewModel(
         _service.Muted = !_service.Muted;
         IsMuted = _service.Muted;
     }
-    
+
     [RelayCommand]
     private void ToggleDeafen()
     {

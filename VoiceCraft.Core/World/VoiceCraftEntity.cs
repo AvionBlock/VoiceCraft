@@ -9,18 +9,7 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftEntity(int id)
     {
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities = new();
-        private float _caveFactor;
-        private bool _deafened;
-        private ushort _effectBitmask = ushort.MaxValue;
-        private ushort _listenBitmask = ushort.MaxValue;
         private float _loudness;
-        private float _muffleFactor;
-        private bool _muted;
-        private string _name = "New Entity";
-        private Vector3 _position;
-        private Vector2 _rotation;
-        private ushort _talkBitmask = ushort.MaxValue;
-        private string _worldId = string.Empty;
 
         //Properties
         public int Id { get; } = id;
@@ -116,124 +105,124 @@ namespace VoiceCraft.Core.World
 
         public string WorldId
         {
-            get => _worldId;
+            get;
             set
             {
-                if (_worldId == value) return;
+                if (field == value) return;
                 if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException();
-                _worldId = value;
-                OnWorldIdUpdated?.Invoke(_worldId, this);
+                field = value;
+                OnWorldIdUpdated?.Invoke(field, this);
             }
-        }
+        } = string.Empty;
 
         public string Name
         {
-            get => _name;
+            get;
             set
             {
-                if (_name == value) return;
+                if (field == value) return;
                 if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException();
-                _name = value;
-                OnNameUpdated?.Invoke(_name, this);
+                field = value;
+                OnNameUpdated?.Invoke(field, this);
             }
-        }
+        } = "New Entity";
 
         public bool Muted
         {
-            get => _muted;
+            get;
             set
             {
-                if (_muted == value) return;
-                _muted = value;
-                OnMuteUpdated?.Invoke(_muted, this);
+                if (field == value) return;
+                field = value;
+                OnMuteUpdated?.Invoke(field, this);
             }
         }
 
         public bool Deafened
         {
-            get => _deafened;
+            get;
             set
             {
-                if (_deafened == value) return;
-                _deafened = value;
-                OnDeafenUpdated?.Invoke(_deafened, this);
+                if (field == value) return;
+                field = value;
+                OnDeafenUpdated?.Invoke(field, this);
             }
         }
 
         public ushort TalkBitmask
         {
-            get => _talkBitmask;
+            get;
             set
             {
-                if (_talkBitmask == value) return;
-                _talkBitmask = value;
-                OnTalkBitmaskUpdated?.Invoke(_talkBitmask, this);
+                if (field == value) return;
+                field = value;
+                OnTalkBitmaskUpdated?.Invoke(field, this);
             }
-        }
+        } = ushort.MaxValue;
 
         public ushort ListenBitmask
         {
-            get => _listenBitmask;
+            get;
             set
             {
-                if (_listenBitmask == value) return;
-                _listenBitmask = value;
-                OnListenBitmaskUpdated?.Invoke(_listenBitmask, this);
+                if (field == value) return;
+                field = value;
+                OnListenBitmaskUpdated?.Invoke(field, this);
             }
-        }
+        } = ushort.MaxValue;
 
         public ushort EffectBitmask
         {
-            get => _effectBitmask;
+            get;
             set
             {
-                if (_effectBitmask == value) return;
-                _effectBitmask = value;
-                OnEffectBitmaskUpdated?.Invoke(_effectBitmask, this);
+                if (field == value) return;
+                field = value;
+                OnEffectBitmaskUpdated?.Invoke(field, this);
             }
-        }
+        } = ushort.MaxValue;
 
         public Vector3 Position
         {
-            get => _position;
+            get;
             set
             {
-                if (_position == value) return;
-                _position = value;
-                OnPositionUpdated?.Invoke(_position, this);
+                if (field == value) return;
+                field = value;
+                OnPositionUpdated?.Invoke(field, this);
             }
         }
 
         public Vector2 Rotation
         {
-            get => _rotation;
+            get;
             set
             {
-                if (_rotation == value) return;
-                _rotation = value;
-                OnRotationUpdated?.Invoke(_rotation, this);
+                if (field == value) return;
+                field = value;
+                OnRotationUpdated?.Invoke(field, this);
             }
         }
 
         public float CaveFactor
         {
-            get => _caveFactor;
+            get;
             set
             {
-                if (Math.Abs(_caveFactor - value) < Constants.FloatingPointTolerance) return;
-                _caveFactor = Math.Clamp(value, 0f, 1f);
-                OnCaveFactorUpdated?.Invoke(_caveFactor, this);
+                if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
+                field = Math.Clamp(value, 0f, 1f);
+                OnCaveFactorUpdated?.Invoke(field, this);
             }
         }
 
         public float MuffleFactor
         {
-            get => _muffleFactor;
+            get;
             set
             {
-                if (Math.Abs(_muffleFactor - value) < Constants.FloatingPointTolerance) return;
-                _muffleFactor = Math.Clamp(value, 0f, 1f);
-                OnMuffleFactorUpdated?.Invoke(_muffleFactor, this);
+                if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
+                field = Math.Clamp(value, 0f, 1f);
+                OnMuffleFactorUpdated?.Invoke(field, this);
             }
         }
 

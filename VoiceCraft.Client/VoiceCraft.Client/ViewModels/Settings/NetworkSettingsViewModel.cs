@@ -13,8 +13,11 @@ public partial class NetworkSettingsViewModel(
     : ViewModelBase, IDisposable
 {
     //Network Settings
-    [ObservableProperty] private NetworkSettingsDataViewModel _networkSettingsData = new(settingsService);
-    [ObservableProperty] private PositioningType[] _positioningTypes = Enum.GetValues<PositioningType>();
+    [ObservableProperty]
+    public partial NetworkSettingsDataViewModel NetworkSettingsData { get; set; } = new(settingsService);
+
+    [ObservableProperty]
+    public partial PositioningType[] PositioningTypes { get; set; } = Enum.GetValues<PositioningType>();
 
     public void Dispose()
     {

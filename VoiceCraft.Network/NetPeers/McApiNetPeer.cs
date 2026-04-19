@@ -13,7 +13,7 @@ public abstract class McApiNetPeer
     
     public struct QueuedPacket(string data, string token)
     {
-        public string Data = data;
-        public string Token = token;
+        public readonly string Data = data;
+        public readonly string Token = token;
     }
 }

@@ -225,12 +225,12 @@ public class ServerPropertiesStructure
 
 public class RuntimeOptions
 {
-    public bool ExitOnInvalidProperties { get; set; }
-    public string? Language { get; set; }
-    public string[] TransportMode { get; set; } = [];
-    public string? TransportHost { get; set; }
-    public int? TransportPort { get; set; }
-    public string? ServerKey { get; set; }
+    public bool ExitOnInvalidProperties { get; init; }
+    public string? Language { get; init; }
+    public string[] TransportMode { get; init; } = [];
+    public string? TransportHost { get; init; }
+    public int? TransportPort { get; init; }
+    public string? ServerKey { get; init; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

@@ -12,7 +12,6 @@ namespace VoiceCraft.Core.Locales
         private static IBaseLocalizer _baseLocalizer = new EmptyBaseLocalizer();
 
         //Private set language
-        private string _language = "";
         public static Localizer Instance { get; } = new();
 
         public static IBaseLocalizer BaseLocalizer
@@ -28,13 +27,13 @@ namespace VoiceCraft.Core.Locales
 
         public string Language
         {
-            get => _language;
+            get;
             set
             {
                 value = _baseLocalizer.Reload(value);
-                Instance.SetField(ref _language, value);
+                Instance.SetField(ref field, value);
             }
-        }
+        } = "";
 
         public static ObservableCollection<string> Languages => _baseLocalizer.Languages;
         public event PropertyChangedEventHandler? PropertyChanged;

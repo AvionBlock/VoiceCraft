@@ -4,5 +4,5 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class ErrorViewModel : ViewModelBase
 {
-    [ObservableProperty] private string _errorMessage = string.Empty;
+    [ObservableProperty] public partial string ErrorMessage { get; set; } = string.Empty;
 }
