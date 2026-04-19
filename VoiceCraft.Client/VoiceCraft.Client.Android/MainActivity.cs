@@ -1,7 +1,6 @@
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using AndroidX.Activity;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
@@ -21,7 +20,6 @@ public class MainActivity : AvaloniaMainActivity
     {
         base.OnCreate(app);
         Platform.Init(this, app);
-        OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(this));
     }
     
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
@@ -31,27 +29,18 @@ public class MainActivity : AvaloniaMainActivity
         base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    public override void OnBackPressed()
+    {
+        if (BackButtonBehavior()) return;
+        #pragma warning disable
+        base.OnBackPressed();
+        #pragma warning restore
+    }
+
     private static bool BackButtonBehavior()
     {
         if (App.ServiceProvider == null) return false;
         var navigationService = App.ServiceProvider.GetService<NavigationService>();
         return navigationService?.Back(true) != null;
-    }
-
-    private class BackPressedCallback(MainActivity activity, bool enabled = true) : OnBackPressedCallback(enabled)
-    {
-        public override void HandleOnBackPressed()
-        {
-            if (BackButtonBehavior()) return;
-            Enabled = false;
-            try
-            {
-                activity.OnBackPressedDispatcher.OnBackPressed();
-            }
-            finally
-            {
-                Enabled = true;
-            }
-        }
     }
 }
