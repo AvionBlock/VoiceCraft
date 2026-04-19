@@ -51,8 +51,6 @@ public class CombinedAudioPreprocessorTests
             new RegisteredAudioPreprocessor(Guid.NewGuid(), "denoiser", () => denoiser = new FakeAudioPreprocessor(), true, true, true),
             null);
 
-        preprocessor.Dispose();
-
         Assert.NotNull(gain);
         Assert.NotNull(denoiser);
         Assert.Equal(1, gain!.DisposeCalls);

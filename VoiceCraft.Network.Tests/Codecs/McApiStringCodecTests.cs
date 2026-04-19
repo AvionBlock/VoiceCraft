@@ -80,7 +80,7 @@ public class McApiStringCodecTests
         var roundTripped = JsonSerializer.Deserialize(json, McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
 
         Assert.NotNull(roundTripped);
-        Assert.Single(roundTripped!.Packets);
+        Assert.Single(roundTripped.Packets);
         Assert.Equal(encoded, roundTripped.Packets[0]);
         Assert.Equal(bytes, McApiStringCodec.Decode(roundTripped.Packets[0]));
     }

@@ -10,7 +10,7 @@ public class VoiceCraftEntityTests
     public void Name_TooLong_Throws()
     {
         var entity = new VoiceCraftEntity(1);
-        var tooLong = new string('a', VoiceCraft.Core.Constants.MaxStringLength + 1);
+        var tooLong = new string('a', Constants.MaxStringLength + 1);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => entity.Name = tooLong);
     }
@@ -19,7 +19,7 @@ public class VoiceCraftEntityTests
     public void WorldId_TooLong_Throws()
     {
         var entity = new VoiceCraftEntity(1);
-        var tooLong = new string('a', VoiceCraft.Core.Constants.MaxStringLength + 1);
+        var tooLong = new string('a', Constants.MaxStringLength + 1);
 
         Assert.Throws<ArgumentOutOfRangeException>(() => entity.WorldId = tooLong);
     }

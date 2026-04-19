@@ -53,7 +53,7 @@ public class SettingsServiceTests
 
         var saved = JsonSerializer.Deserialize(storage.StoredBytes, SettingsStructureGenerationContext.Default.SettingsStructure);
         Assert.NotNull(saved);
-        Assert.Equal("Mic-2", saved!.InputSettings.InputDevice);
+        Assert.Equal("Mic-2", saved.InputSettings.InputDevice);
         Assert.Equal("Speaker-2", saved.OutputSettings.OutputDevice);
         Assert.Equal(Constants.LightThemeGuid, saved.ThemeSettings.SelectedTheme);
     }

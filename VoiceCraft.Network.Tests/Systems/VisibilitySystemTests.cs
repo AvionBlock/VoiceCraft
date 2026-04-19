@@ -2,7 +2,6 @@ using LiteNetLib.Utils;
 using Xunit;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Audio.Effects;
 using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Systems;

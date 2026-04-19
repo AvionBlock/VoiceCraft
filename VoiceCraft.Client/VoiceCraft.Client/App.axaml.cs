@@ -57,7 +57,7 @@ public class App : Application
                     };
                     break;
                 case IActivityApplicationLifetime activityLifetime:
-                    activityLifetime.MainViewFactory = () => new MainView()
+                    activityLifetime.MainViewFactory = () => new MainView
                     {
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
