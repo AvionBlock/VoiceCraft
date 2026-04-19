@@ -5,11 +5,13 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Media;
+using Android.OS;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio.Devices;
 using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
+using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.Android.Audio;
 
@@ -166,6 +168,8 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
     private readonly Lock _lock = new();
     private readonly AudioRecord _nativeRecorder;
     private readonly float[] _buffer;
+    private readonly short[] _pcm16Buffer;
+    private readonly bool _readPcm16;
 
     public AndroidAudioCaptureDevice(
         AudioManager audioManager,
@@ -199,13 +203,15 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
         var periods = deviceConfig?.Periods > 0 ? deviceConfig.Periods : 3;
         var bufferSize = periodFrames * format.Channels;
         _buffer = new float[bufferSize];
+        _readPcm16 = IsGoogleDevice();
+        _pcm16Buffer = _readPcm16 ? new short[bufferSize] : [];
 
         _nativeRecorder = new AudioRecord(
             source,
             format.SampleRate,
             channelMask,
-            Encoding.PcmFloat,
-            (int)(bufferSize * sizeof(float) * periods));
+            _readPcm16 ? Encoding.Pcm16bit : Encoding.PcmFloat,
+            (int)(bufferSize * (_readPcm16 ? sizeof(short) : sizeof(float)) * periods));
         var device = audioManager.GetDevices(GetDevicesTargets.Inputs)
             ?.FirstOrDefault(device => device.Id == deviceInfo?.Id);
         _nativeRecorder.SetPreferredDevice(device);
@@ -254,24 +260,43 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
         while (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
         {
             Array.Clear(_buffer, 0, _buffer.Length);
+            var read = 0;
             try
             {
                 lock (_lock)
                 {
-                    var read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
-                    if (read <= 0)
-                        continue;
+                    if (_readPcm16)
+                    {
+                        read = _nativeRecorder.Read(_pcm16Buffer, 0, _pcm16Buffer.Length, 0);
+                        if (read > 0)
+                            Sample16ToFloat.Read(_pcm16Buffer.AsSpan(0, read), _buffer.AsSpan(0, read));
+                    }
+                    else
+                    {
+                        read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
+                    }
                 }
             }
             catch (Exception)
             {
                 //Do Nothing
             }
+
+            if (read <= 0)
+                continue;
             
             InvokeOnAudioProcessed(_buffer);
         }
 
         Stop();
+    }
+
+    private static bool IsGoogleDevice()
+    {
+        var manufacturer = Build.Manufacturer ?? string.Empty;
+        var brand = Build.Brand ?? string.Empty;
+        return manufacturer.Equals("Google", StringComparison.OrdinalIgnoreCase) ||
+               brand.Equals("google", StringComparison.OrdinalIgnoreCase);
     }
 }
 

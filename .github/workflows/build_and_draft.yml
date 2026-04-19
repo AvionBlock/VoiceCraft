@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rid: [android-arm64]
+        arch: [arm64]
       fail-fast: false
     defaults:
       run:
@@ -120,13 +120,13 @@ jobs:
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
       - name: Publish Build
-        run: dotnet publish -c Release -p:RuntimeIdentifier=${{ matrix.rid }} -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
+        run: dotnet publish -c Release -r android-${{ matrix.arch }} -p:AndroidKeyStore=true -p:AndroidSigningKeyStore=./android.keystore -p:AndroidSigningKeyAlias=${{ secrets.ALIAS }} -p:AndroidSigningKeyPass=${{ secrets.KEYSTORE_PASSWORD }} -p:AndroidSigningStorePass=${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: VoiceCraft.Client.Android.${{ matrix.rid }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/${{ matrix.rid }}/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
+          name: VoiceCraft.Client.Android.${{ matrix.arch }}
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/*.apk
 
   VoiceCraft-Client-iOS:
     runs-on: macos-26
