@@ -42,7 +42,7 @@ public class AndroidMiniAudioEngine : AudioEngine
         if (config != null && config is not MiniAudioDeviceConfig)
             throw new ArgumentException($"config must be of type {typeof(MiniAudioDeviceConfig)}");
         config ??= new MiniAudioDeviceConfig();
-        
+
         var device = new AndroidAudioPlaybackDevice(_audioManager, this, deviceInfo, format, config);
         _activeDevices.Add(device);
         device.OnDisposed += OnDeviceDisposing;
@@ -57,7 +57,7 @@ public class AndroidMiniAudioEngine : AudioEngine
         if (config != null && config is not MiniAudioDeviceConfig)
             throw new ArgumentException($"config must be of type {typeof(MiniAudioDeviceConfig)}");
         config ??= new MiniAudioDeviceConfig();
-        
+
         var device = new AndroidAudioCaptureDevice(_audioManager, this, deviceInfo, format, config);
         _activeDevices.Add(device);
         device.OnDisposed += OnDeviceDisposing;
@@ -151,7 +151,7 @@ public class AndroidMiniAudioEngine : AudioEngine
             CaptureDevices = [];
         }
     }
-    
+
     private void OnDeviceDisposing(object? sender, EventArgs e)
     {
         if (sender is AudioDevice device)
@@ -231,7 +231,9 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
             if (IsDisposed || !IsRunning)
                 return;
 
-            _nativeRecorder.Stop();
+            if (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
+                _nativeRecorder.Stop();
+
             IsRunning = false;
         }
     }
@@ -251,16 +253,27 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
     {
         while (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
         {
-            lock (_lock)
+            Array.Clear(_buffer, 0, _buffer.Length);
+            var read = 0;
+            try
             {
-                Array.Clear(_buffer, 0, _buffer.Length);
-                var read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
-                if (read <= 0)
-                    continue;
-
-                InvokeOnAudioProcessed(_buffer);
+                lock (_lock)
+                {
+                    read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
+                }
             }
+            catch (Exception)
+            {
+                //Do Nothing
+            }
+
+            if (read <= 0)
+                continue;
+
+            InvokeOnAudioProcessed(_buffer);
         }
+
+        Stop();
     }
 }
 
@@ -367,9 +380,13 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             if (IsDisposed || !IsRunning)
                 return;
 
-            _nativePlayer.Pause();
-            _nativePlayer.Flush();
-            _nativePlayer.Stop();
+            if (_nativePlayer is { PlayState: PlayState.Playing, State: AudioTrackState.Initialized })
+            {
+                _nativePlayer.Pause();
+                _nativePlayer.Flush();
+                _nativePlayer.Stop();
+            }
+
             IsRunning = false;
         }
     }
@@ -389,18 +406,26 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
     {
         while (_nativePlayer is { PlayState: PlayState.Playing, State: AudioTrackState.Initialized })
         {
-            lock (_lock)
+            Array.Clear(_buffer, 0, _buffer.Length);
+            // Process the audio graph
+            var soloed = Engine.GetSoloedComponent();
+            if (soloed != null)
+                ProcessComponent(soloed, _buffer, Format.Channels);
+            else
+                ProcessComponent(MasterMixer, _buffer, Format.Channels);
+
+            try
             {
-                Array.Clear(_buffer, 0, _buffer.Length);
-                // Process the audio graph
-                var soloed = Engine.GetSoloedComponent();
-                if (soloed != null)
-                    ProcessComponent(soloed, _buffer, Format.Channels);
-                else
-                    ProcessComponent(MasterMixer, _buffer, Format.Channels);
-                _nativePlayer.Write(_buffer, 0, _buffer.Length, WriteMode.Blocking);
+                lock (_lock)
+                    _nativePlayer.Write(_buffer, 0, _buffer.Length, WriteMode.Blocking);
+            }
+            catch (Exception)
+            {
+                //Do Nothing
             }
         }
+
+        Stop();
     }
 
     private static SoundComponentProcessDelegate BuildProcessDelegate()

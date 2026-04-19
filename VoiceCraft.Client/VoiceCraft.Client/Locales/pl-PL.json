@@ -28,13 +28,9 @@
       "Denoisers": "Redukcja szumów",
       "AutomaticGainControllers": "Automatyczna regulacja wzmocnienia",
       "EchoCancelers": "Redukcja echa",
+      "HardwarePreprocessors": null,
       "PushToTalk": "Przytrzymaj, aby mówić",
       "PlayPushToTalkCue": "Odtwarzaj dźwięki Push To Talk",
-      "CapturePreset": "Profil przechwytywania",
-      "CapturePresetOptions": {
-        "VoiceCommunication": "Komunikacja głosowa",
-        "VoiceRecognition": "Rozpoznawanie mowy"
-      },
       "MicrophoneTest": {
         "MicrophoneTest": "Test mikrofonu",
         "Test": "Test"

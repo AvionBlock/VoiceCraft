@@ -28,13 +28,9 @@
       "Denoisers": "降噪器",
       "AutomaticGainControllers": "自動增益控制器",
       "EchoCancelers": "回聲消除器",
+      "HardwarePreprocessors": null,
       "PushToTalk": "按住說話",
       "PlayPushToTalkCue": "播放按住說話提示音",
-      "CapturePreset": "錄音預設",
-      "CapturePresetOptions": {
-        "VoiceCommunication": "語音通訊",
-        "VoiceRecognition": "語音辨識"
-      },
       "MicrophoneTest": {
         "MicrophoneTest": "麥克風測試",
         "Test": "測試"

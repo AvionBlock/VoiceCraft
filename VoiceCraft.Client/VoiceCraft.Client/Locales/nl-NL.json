@@ -28,13 +28,9 @@
       "Denoisers": "Ruisonderdrukkers",
       "AutomaticGainControllers": "Automatische versterkingsregelaars",
       "EchoCancelers": "Echo-onderdrukkers",
+      "HardwarePreprocessors": null,
       "PushToTalk": "Ingedrukt houden om te praten",
       "PlayPushToTalkCue": "Push-to-talk-geluiden afspelen",
-      "CapturePreset": "Opnameprofiel",
-      "CapturePresetOptions": {
-        "VoiceCommunication": "Spraakcommunicatie",
-        "VoiceRecognition": "Spraakherkenning"
-      },
       "MicrophoneTest": {
         "MicrophoneTest": "Microfoontest",
         "Test": "Test"

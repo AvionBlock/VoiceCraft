@@ -28,13 +28,9 @@
       "Denoisers": "Denoisers",
       "AutomaticGainControllers": "Automatic Gain Controllers",
       "EchoCancelers": "Echo Cancelers",
+      "HardwarePreprocessors": "Hardware Preprocessors",
       "PushToTalk": "Push To Talk",
       "PlayPushToTalkCue": "Play Push To Talk sounds",
-      "CapturePreset": "Capture Preset",
-      "CapturePresetOptions": {
-        "VoiceCommunication": "Voice Communication",
-        "VoiceRecognition": "Voice Recognition"
-      },
       "MicrophoneTest": {
         "MicrophoneTest": "Microphone Test",
         "Test": "Test"

@@ -28,13 +28,9 @@
       "Denoisers": "Шумоподавители",
       "AutomaticGainControllers": "Автоматическая регулировка усиления",
       "EchoCancelers": "Подавление эха",
+      "HardwarePreprocessors": null,
       "PushToTalk": "Удерживай, чтобы говорить",
       "PlayPushToTalkCue": "Проигрывать звуки Push To Talk",
-      "CapturePreset": "Профиль захвата",
-      "CapturePresetOptions": {
-        "VoiceCommunication": "Голосовая связь",
-        "VoiceRecognition": "Распознавание голоса"
-      },
       "MicrophoneTest": {
         "MicrophoneTest": "Проверка микрофона",
         "Test": "Тест"

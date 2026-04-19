@@ -29,12 +29,8 @@
       "AutomaticGainControllers": "Automatische Verstärkungsregelung",
       "EchoCancelers": "Echo-Unterdrückung",
       "PushToTalk": "Zum Sprechen gedrückt halten",
+      "HardwarePreprocessors": null,
       "PlayPushToTalkCue": "Push-to-Talk-Sounds abspielen",
-      "CapturePreset": "Aufnahmeprofil",
-      "CapturePresetOptions": {
-        "VoiceCommunication": "Sprachkommunikation",
-        "VoiceRecognition": "Spracherkennung"
-      },
       "MicrophoneTest": {
         "MicrophoneTest": "Mikrofontest",
         "Test": "Test"
