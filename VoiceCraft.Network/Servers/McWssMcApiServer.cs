@@ -251,7 +251,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 try
                 {
                     _reader.Clear();
-                    _reader.SetSource(McApiStringCodec.Decode(packet.Data));
+                    _reader.SetSource(McApiStringCodec.Decode(packet.StringData));
                     ProcessPacket(_reader, mcApiPacket =>
                     {
                         mcWssNetPeer.LastUpdate = DateTime.UtcNow;
@@ -284,7 +284,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         if (!netPeer.OutgoingQueue.TryDequeue(out var outboundPacket)) return false;
         McWssPacketFraming.TryAppendFrame(
             stringBuilder,
-            outboundPacket.Data,
+            outboundPacket.StringData,
             (int)Config.MaxStringLengthPerCommand,
             allowOversizedFirstFrame: true);
 
@@ -293,7 +293,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         {
             if (McWssPacketFraming.TryAppendFrame(
                     stringBuilder,
-                    outboundPacket.Data,
+                    outboundPacket.StringData,
                     (int)Config.MaxStringLengthPerCommand,
                     allowOversizedFirstFrame: false))
                 continue;
@@ -327,8 +327,10 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         if (_mcApiPeers.Count >= Config.MaxClients)
             socket.Close(); //Full.
 
-        var netPeer = new McWssMcApiNetPeer(socket);
-        netPeer.Tag = this;
+        var netPeer = new McWssMcApiNetPeer(socket)
+        {
+            Tag = this
+        };
         _mcApiPeers.TryAdd(socket, netPeer);
     }
 

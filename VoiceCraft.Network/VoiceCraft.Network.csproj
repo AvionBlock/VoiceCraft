@@ -15,8 +15,4 @@
         <PackageReference Include="LiteNetLib"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Packets\" />
-    </ItemGroup>
-
 </Project>
