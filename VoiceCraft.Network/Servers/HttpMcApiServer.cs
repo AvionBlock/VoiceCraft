@@ -323,11 +323,6 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             await context.Response.OutputStream.WriteAsync(buffer);
             context.Response.OutputStream.Close();
         }
-        catch (JsonException)
-        {
-            context.Response.StatusCode = 400;
-            context.Response.Close();
-        }
         catch
         {
             context.Response.StatusCode = 500;
