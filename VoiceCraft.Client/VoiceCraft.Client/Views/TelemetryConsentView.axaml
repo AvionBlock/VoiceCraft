@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="520"
+             d:DesignHeight="360"
+             x:Class="VoiceCraft.Client.Views.TelemetryConsentView"
+             x:DataType="vm:TelemetryConsentViewModel">
+    <Border MaxWidth="520"
+            Padding="24"
+            CornerRadius="18"
+            Background="{DynamicResource BackgroundBrush}"
+            Classes="card">
+        <StackPanel Spacing="14">
+            <TextBlock FontSize="24"
+                       FontWeight="Bold"
+                       Text="{locale:Localize TelemetryConsent.Title}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="{locale:Localize TelemetryConsent.Description}" />
+            <TextBlock FontWeight="SemiBold"
+                       Text="{locale:Localize TelemetryConsent.CollectsTitle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="{locale:Localize TelemetryConsent.CollectsBody}" />
+            <TextBlock FontWeight="SemiBold"
+                       Text="{locale:Localize TelemetryConsent.NotCollectedTitle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="{locale:Localize TelemetryConsent.NotCollectedBody}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="{locale:Localize TelemetryConsent.DumpBody}" />
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="10"
+                  Margin="0,8,0,0">
+                <Button Grid.Column="0"
+                        Height="42"
+                        Command="{Binding DeclineCommand}">
+                    <TextBlock Text="{locale:Localize TelemetryConsent.Decline}" />
+                </Button>
+                <Button Grid.Column="1"
+                        Height="42"
+                        Command="{Binding AcceptCommand}">
+                    <TextBlock Text="{locale:Localize TelemetryConsent.Accept}" />
+                </Button>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -23,6 +23,9 @@ public partial class GeneralSettingsViewModel
     //Notification Settings
     [ObservableProperty] public partial NotificationSettingsDataViewModel NotificationSettingsData { get; set; }
 
+    //Telemetry Settings
+    [ObservableProperty] public partial TelemetrySettingsDataViewModel TelemetrySettingsData { get; set; }
+
     //Server Settings
     [ObservableProperty] public partial ServersSettingsViewModel ServersSettings { get; set; }
 
@@ -32,6 +35,7 @@ public partial class GeneralSettingsViewModel
             Locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
         _navigationService = navigationService;
         LocaleSettingsData = new LocaleSettingsDataViewModel(settingsService);
+        TelemetrySettingsData = new TelemetrySettingsDataViewModel(settingsService);
         NotificationSettingsData = new NotificationSettingsDataViewModel(settingsService);
         ServersSettings = new ServersSettingsViewModel(settingsService);
     }
@@ -39,6 +43,7 @@ public partial class GeneralSettingsViewModel
     public void Dispose()
     {
         NotificationSettingsData.Dispose();
+        TelemetrySettingsData.Dispose();
         LocaleSettingsData.Dispose();
         ServersSettings.Dispose();
         GC.SuppressFinalize(this);

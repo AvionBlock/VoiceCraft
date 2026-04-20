@@ -131,6 +131,7 @@ public class App : Application
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
+        ServiceCollection.AddTransient<TelemetryConsentViewModel>();
 
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
@@ -154,6 +155,7 @@ public class App : Application
 
         //Views
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, TelemetryConsentView>(typeof(TelemetryConsentView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
@@ -269,7 +271,8 @@ public class App : Application
 
         var settingsService = serviceProvider.GetRequiredService<SettingsService>();
         ClientTelemetry.SetTelemetryToken(settingsService.TelemetryToken);
-        _ = ClientTelemetry.ReportStartupAsync(settingsService, 3);
+        if (settingsService.TelemetrySettings.Enabled && settingsService.TelemetrySettings.ConsentShown)
+            _ = ClientTelemetry.ReportStartupAsync(settingsService, 3);
     }
 }
 

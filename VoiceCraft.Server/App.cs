@@ -46,8 +46,12 @@ public static class App
             //Properties
             properties.Load(runtimeOptions.ExitOnInvalidProperties);
             properties.ApplyRuntimeOverrides(runtimeOptions);
+            ServerTelemetry.SetEnabled(properties.TelemetryEnabled);
             ServerTelemetry.SetTelemetryToken(properties.TelemetryToken);
             TelemetryTransport.FailureLogger = message => AnsiConsole.MarkupLine($"[yellow]{message.EscapeMarkup()}[/]");
+            AnsiConsole.MarkupLine(properties.TelemetryEnabled
+                ? "[grey]Telemetry is enabled. VoiceCraft sends anonymous startup, heartbeat, and crash diagnostics. Set \"TelemetryEnabled\": false in config/ServerProperties.json to disable it.[/]"
+                : "[grey]Telemetry is disabled in config/ServerProperties.json.[/]");
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;

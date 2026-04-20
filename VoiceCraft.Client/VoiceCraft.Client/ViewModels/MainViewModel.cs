@@ -10,6 +10,8 @@ public partial class MainViewModel : ObservableObject
 {
     [ObservableProperty] public partial Bitmap? BackgroundImage { get; set; }
     [ObservableProperty] public partial object? Content { get; set; }
+    [ObservableProperty] public partial object? ModalContent { get; set; }
+    [ObservableProperty] public partial bool HasModal { get; set; }
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
@@ -29,6 +31,11 @@ public partial class MainViewModel : ObservableObject
             Content = viewModel;
             discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
         };
+        navigationService.OnModalViewModelChanged += viewModel =>
+        {
+            ModalContent = viewModel;
+            HasModal = viewModel != null;
+        };
         //Initialize Themes
         var themeSettings = settingsService.ThemeSettings;
         themesService.SwitchTheme(themeSettings.SelectedTheme);
@@ -42,7 +49,10 @@ public partial class MainViewModel : ObservableObject
         navigationService.NavigateTo<HomeViewModel>();
 
         var voiceCraftService = backgroundService.GetService<VoiceCraftService>();
-        if (voiceCraftService == null) return;
-        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));
+        if (voiceCraftService != null)
+            navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));
+
+        if (!settingsService.TelemetrySettings.ConsentShown)
+            navigationService.PushModal<TelemetryConsentViewModel>();
     }
 }

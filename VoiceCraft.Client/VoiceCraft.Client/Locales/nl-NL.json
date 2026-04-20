@@ -13,7 +13,8 @@
       "Language": "Taal",
       "NotificationDismiss": "Melding sluiten (ms)",
       "DisableNotifications": "Meldingen uitschakelen",
-      "HideServerAddresses": "Serveradressen verbergen"
+      "HideServerAddresses": "Serveradressen verbergen",
+      "EnableTelemetry": "Anonieme telemetrie inschakelen"
     },
     "Appearance": {
       "Title": "Uiterlijk",
@@ -80,10 +81,15 @@
       "Title": "Geavanceerde instellingen",
       "TriggerGc": "Garbagecollector uitvoeren",
       "Crash": "Testcrash",
+      "ResetAllSettings": "Alle instellingen resetten",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "Garbage Collection uitgevoerd. Vrijgemaakt geheugen: {0}mb."
+        },
+        "Reset": {
+          "Badge": "Instellingen",
+          "Done": "Alle instellingen zijn teruggezet naar de standaardwaarden. Start de client opnieuw om taal en thema volledig toe te passen."
         }
       }
     },
@@ -124,7 +130,18 @@
       "Empty": "Geen crashlogboeken om te kopieren."
     }
   },
-  "AddServer": {
+  "TelemetryConsent": {
+    "Title": "Help VoiceCraft verbeteren",
+    "Description": "VoiceCraft kan anonieme telemetrie verzenden zodat we crashes beter begrijpen en de stabiliteit op alle platforms kunnen verbeteren.",
+    "CollectsTitle": "Wat we verzamelen",
+    "CollectsBody": "App-versie, platform, OS- en runtime-informatie, architectuur, landinstelling, CPU- en geheugengegevens, plus anonieme opstart- en heartbeat-diagnostiek.",
+    "NotCollectedTitle": "Wat we niet automatisch verzamelen",
+    "NotCollectedBody": "We uploaden niet automatisch je serverlijst, tokens, configuratiewaarden of chat-/inhoudsgegevens.",
+    "DumpBody": "Crashdumps worden alleen geüpload als je zelf expliciet op de dump-linkknop in de crashlogs drukt.",
+    "Accept": "Accepteren",
+    "Decline": "Weigeren"
+  },
+    "AddServer": {
     "Title": "Server toevoegen",
     "Name": "Naam",
     "IP": "IP",

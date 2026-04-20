@@ -13,7 +13,8 @@
       "Language": "Sprache",
       "NotificationDismiss": "Benachrichtigung ausblenden (ms)",
       "DisableNotifications": "Benachrichtigungen deaktivieren",
-      "HideServerAddresses": "Serveradressen ausblenden"
+      "HideServerAddresses": "Serveradressen ausblenden",
+      "EnableTelemetry": "Anonyme Telemetrie aktivieren"
     },
     "Appearance": {
       "Title": "Darstellung",
@@ -80,10 +81,15 @@
       "Title": "Erweiterte Einstellungen",
       "TriggerGc": "Garbage Collector auslösen",
       "Crash": "Testabsturz",
+      "ResetAllSettings": "Alle Einstellungen zurücksetzen",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "Garbage Collection ausgelöst. Freigegebener Speicher: {0}mb."
+        },
+        "Reset": {
+          "Badge": "Einstellungen",
+          "Done": "Alle Einstellungen wurden auf Standardwerte zurückgesetzt. Starte den Client neu, damit Sprache und Design vollständig übernommen werden."
         }
       }
     },
@@ -124,7 +130,18 @@
       "Empty": "Keine Absturzprotokolle zum Kopieren vorhanden."
     }
   },
-  "AddServer": {
+  "TelemetryConsent": {
+    "Title": "VoiceCraft verbessern",
+    "Description": "VoiceCraft kann anonyme Telemetrie senden, damit wir Abstürze besser verstehen und die Stabilität auf allen Plattformen verbessern können.",
+    "CollectsTitle": "Was wir erfassen",
+    "CollectsBody": "App-Version, Plattform, Betriebssystem- und Runtime-Informationen, Architektur, Gebietsschema, CPU- und Speicherinformationen sowie anonyme Start- und Heartbeat-Diagnosen.",
+    "NotCollectedTitle": "Was wir nicht automatisch erfassen",
+    "NotCollectedBody": "Wir laden deine Serverliste, Tokens, Konfigurationswerte oder Chat- und Inhaltsdaten nicht automatisch hoch.",
+    "DumpBody": "Absturz-Dumps werden nur hochgeladen, wenn du im Absturzprotokoll ausdrücklich auf die Dump-Link-Schaltfläche klickst.",
+    "Accept": "Akzeptieren",
+    "Decline": "Ablehnen"
+  },
+    "AddServer": {
     "Title": "Server hinzufügen",
     "Name": "Name",
     "IP": "IP",

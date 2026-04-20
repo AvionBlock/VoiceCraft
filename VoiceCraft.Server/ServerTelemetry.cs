@@ -12,7 +12,13 @@ public static class ServerTelemetry
     private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromMinutes(1);
     private static readonly object Sync = new();
     private static readonly Stopwatch Uptime = Stopwatch.StartNew();
+    private static bool _enabled = true;
     private static string? _telemetryToken;
+
+    public static void SetEnabled(bool enabled)
+    {
+        _enabled = enabled;
+    }
 
     public static void SetTelemetryToken(string telemetryToken)
     {
@@ -39,6 +45,9 @@ public static class ServerTelemetry
 
     private static Task ReportTelemetryAsync(ServerTelemetrySnapshot snapshot, string tag)
     {
+        if (!_enabled)
+            return Task.CompletedTask;
+
         var payload = new TelemetryEventRequest
         {
             Fingerprint = GetFingerprint(),
@@ -62,6 +71,9 @@ public static class ServerTelemetry
 
     public static Task<TelemetryDumpResponse?> ReportCrashAsync(Exception exception)
     {
+        if (!_enabled)
+            return Task.FromResult<TelemetryDumpResponse?>(null);
+
         var payload = new TelemetryDumpRequest
         {
             Role = "server",

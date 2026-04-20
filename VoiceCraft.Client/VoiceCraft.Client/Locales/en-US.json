@@ -13,7 +13,8 @@
       "Language": "Language",
       "NotificationDismiss": "Notification Dismiss(ms)",
       "DisableNotifications": "Disable Notifications",
-      "HideServerAddresses": "Hide Server Addresses"
+      "HideServerAddresses": "Hide Server Addresses",
+      "EnableTelemetry": "Enable Anonymous Telemetry"
     },
     "Appearance": {
       "Title": "Appearance",
@@ -80,10 +81,15 @@
       "Title": "Advanced Settings",
       "TriggerGc": "Trigger Garbage Collector",
       "Crash": "Test Crash",
+      "ResetAllSettings": "Reset All Settings",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "Garbage Collection Triggered. Memory Cleared: {0}mb."
+        },
+        "Reset": {
+          "Badge": "Settings",
+          "Done": "All settings were reset to defaults. Restart the client to fully apply theme and language changes."
         }
       }
     },
@@ -124,7 +130,18 @@
       "Empty": "No crash logs to copy."
     }
   },
-  
+  "TelemetryConsent": {
+    "Title": "Help Improve VoiceCraft",
+    "Description": "VoiceCraft can send anonymous telemetry so we can understand crashes and improve stability across platforms.",
+    "CollectsTitle": "What we collect",
+    "CollectsBody": "App version, platform, OS and runtime info, architecture, locale, CPU and memory info, plus anonymous startup and heartbeat diagnostics.",
+    "NotCollectedTitle": "What we do not collect automatically",
+    "NotCollectedBody": "We do not automatically upload your server list, tokens, config values, or chat/content data.",
+    "DumpBody": "Crash dumps are only uploaded when you explicitly press the dump link button in crash logs.",
+    "Accept": "Accept",
+    "Decline": "Decline"
+  },
+
   "AddServer": {
     "Title": "Add Server",
     "Name": "Name",

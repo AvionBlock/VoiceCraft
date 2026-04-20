@@ -13,7 +13,8 @@
       "Language": "Język",
       "NotificationDismiss": "Zamykanie powiadomienia (ms)",
       "DisableNotifications": "Wyłącz powiadomienia",
-      "HideServerAddresses": "Ukryj adresy serwerów"
+      "HideServerAddresses": "Ukryj adresy serwerów",
+      "EnableTelemetry": "Włącz anonimową telemetrię"
     },
     "Appearance": {
       "Title": "Wygląd",
@@ -80,10 +81,15 @@
       "Title": "Ustawienia zaawansowane",
       "TriggerGc": "Uruchom garbage collector",
       "Crash": "Test awarii",
+      "ResetAllSettings": "Zresetuj wszystkie ustawienia",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "Uruchomiono garbage collection. Zwolniona pamięć: {0}mb."
+        },
+        "Reset": {
+          "Badge": "Ustawienia",
+          "Done": "Wszystkie ustawienia zostały przywrócone do domyślnych. Uruchom klienta ponownie, aby w pełni zastosować język i motyw."
         }
       }
     },
@@ -124,7 +130,18 @@
       "Empty": "Brak logów awarii do skopiowania."
     }
   },
-  "AddServer": {
+  "TelemetryConsent": {
+    "Title": "Pomóż ulepszyć VoiceCraft",
+    "Description": "VoiceCraft może wysyłać anonimową telemetrię, abyśmy mogli lepiej rozumieć awarie i poprawiać stabilność na wszystkich platformach.",
+    "CollectsTitle": "Co zbieramy",
+    "CollectsBody": "Wersję aplikacji, platformę, informacje o systemie operacyjnym i runtime, architekturę, ustawienia regionalne, dane o CPU i pamięci oraz anonimowe dane diagnostyczne dotyczące uruchomienia i heartbeat.",
+    "NotCollectedTitle": "Czego nie zbieramy automatycznie",
+    "NotCollectedBody": "Nie przesyłamy automatycznie listy serwerów, tokenów, wartości konfiguracji ani danych czatu lub treści.",
+    "DumpBody": "Zrzuty awarii są wysyłane tylko wtedy, gdy samodzielnie naciśniesz przycisk linku do zrzutu w logach awarii.",
+    "Accept": "Akceptuj",
+    "Decline": "Odrzuć"
+  },
+    "AddServer": {
     "Title": "Dodaj serwer",
     "Name": "Nazwa",
     "IP": "IP",

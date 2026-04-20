@@ -25,6 +25,7 @@ public class SettingsService
     public Guid UserGuid => _settings.UserGuid;
     public Guid ServerUserGuid => _settings.ServerUserGuid;
     public string TelemetryToken => _settings.TelemetryToken;
+    public TelemetrySettings TelemetrySettings => _settings.TelemetrySettings;
     public InputSettings InputSettings => _settings.InputSettings;
     public OutputSettings OutputSettings => _settings.OutputSettings;
     public LocaleSettings LocaleSettings => _settings.LocaleSettings;
@@ -38,6 +39,12 @@ public class SettingsService
     public async Task SaveImmediate()
     {
         Debug.WriteLine("Saving immediately. Only use this function if necessary!");
+        await SaveSettingsAsync();
+    }
+
+    public async Task ResetToDefaultsAsync()
+    {
+        _settings = new SettingsStructure();
         await SaveSettingsAsync();
     }
 
@@ -71,6 +78,7 @@ public class SettingsService
         loadedSettings.InputSettings.OnLoading();
         loadedSettings.OutputSettings.OnLoading();
         loadedSettings.LocaleSettings.OnLoading();
+        loadedSettings.TelemetrySettings.OnLoading();
         loadedSettings.NotificationSettings.OnLoading();
         loadedSettings.ServersSettings.OnLoading();
         loadedSettings.ThemeSettings.OnLoading();
@@ -86,6 +94,7 @@ public class SettingsService
         InputSettings.OnSaving();
         OutputSettings.OnSaving();
         LocaleSettings.OnSaving();
+        TelemetrySettings.OnSaving();
         NotificationSettings.OnSaving();
         ServersSettings.OnSaving();
         ThemeSettings.OnSaving();
@@ -126,6 +135,7 @@ public class SettingsStructure
     public Guid UserGuid { get; set; } = Guid.NewGuid();
     public Guid ServerUserGuid { get; set; } = Guid.NewGuid();
     public string TelemetryToken { get; set; } = Guid.NewGuid().ToString("N");
+    public TelemetrySettings TelemetrySettings { get; set; } = new();
     public InputSettings InputSettings { get; set; } = new();
     public OutputSettings OutputSettings { get; set; } = new();
     public LocaleSettings LocaleSettings { get; set; } = new();

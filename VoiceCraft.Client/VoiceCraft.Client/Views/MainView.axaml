@@ -10,6 +10,12 @@
     <Panel Background="{DynamicResource ApplicationBackgroundBrush}">
         <Image Classes="background" Source="{Binding BackgroundImage}" Stretch="UniformToFill" />
         <TransitioningContentControl Content="{Binding Content}" />
+        <Border Background="#A0000000"
+                IsVisible="{Binding HasModal}">
+            <TransitioningContentControl HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Content="{Binding ModalContent}" />
+        </Border>
         <msg:MessageHost Position="{ OnFormFactor Default=BottomLeft, Mobile=TopCenter }" />
         <msg:MessageHost HostId="Dialog" Position="CenterCenter" />
     </Panel>
