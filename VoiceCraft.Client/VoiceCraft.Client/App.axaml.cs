@@ -22,6 +22,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.Telemetry;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
 namespace VoiceCraft.Client;
@@ -42,6 +43,7 @@ public class App : Application
         {
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
+            ConfigureTelemetry(serviceProvider);
 
             switch (ApplicationLifetime)
             {
@@ -50,6 +52,7 @@ public class App : Application
                     {
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
+                    serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(desktop.MainWindow);
 
                     desktop.MainWindow.Closing += (__, ___) =>
                     {
@@ -57,16 +60,23 @@ public class App : Application
                     };
                     break;
                 case IActivityApplicationLifetime activityLifetime:
-                    activityLifetime.MainViewFactory = () => new MainView
+                    activityLifetime.MainViewFactory = () =>
                     {
-                        DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                        var mainView = new MainView
+                        {
+                            DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                        };
+                        RegisterClipboardWhenAttached(serviceProvider, mainView);
+                        return mainView;
                     };
                     break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
-                    singleViewPlatform.MainView = new MainView
+                    var singleView = new MainView
                     {
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
+                    RegisterClipboardWhenAttached(serviceProvider, singleView);
+                    singleViewPlatform.MainView = singleView;
                     break;
             }
 
@@ -111,6 +121,7 @@ public class App : Application
         ServiceCollection.AddSingleton<NavigationService>(x =>
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<NotificationService>();
+        ServiceCollection.AddSingleton<ClipboardService>();
         ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
             x.GetRequiredService<NotificationService>(),
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
@@ -242,4 +253,23 @@ public class App : Application
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
     }
+
+    private static void RegisterClipboardWhenAttached(IServiceProvider serviceProvider, Control control)
+    {
+        control.AttachedToVisualTree += (_, _) =>
+        {
+            if (TopLevel.GetTopLevel(control) is { } topLevel)
+                serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
+        };
+    }
+
+    private static void ConfigureTelemetry(IServiceProvider serviceProvider)
+    {
+        TelemetryTransport.FailureLogger = LogService.LogInfo;
+
+        var settingsService = serviceProvider.GetRequiredService<SettingsService>();
+        ClientTelemetry.SetTelemetryToken(settingsService.TelemetryToken);
+        _ = ClientTelemetry.ReportStartupAsync(settingsService, 3);
+    }
 }
+

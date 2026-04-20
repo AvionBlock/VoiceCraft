@@ -111,10 +111,16 @@
   },
   "CrashLogs": {
     "Title": "Crash Logs",
+    "Action": {
+      "DumpLink": "Dump Link"
+    },
     "Notification": {
       "Badge": "CrashLogs",
       "Cleared": "Successfully cleared all logs.",
       "Copied": "Crash logs copied to clipboard.",
+      "DumpCopied": "Crash dump link copied to clipboard.",
+      "DumpUploadFailed": "Failed to upload the crash dump.",
+      "DumpUnavailable": "No uploaded dump link is available for this crash log.",
       "Empty": "No crash logs to copy."
     }
   },

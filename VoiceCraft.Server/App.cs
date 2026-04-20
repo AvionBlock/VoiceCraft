@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
+using VoiceCraft.Core.Telemetry;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Server.Systems;
@@ -45,6 +46,8 @@ public static class App
             //Properties
             properties.Load(runtimeOptions.ExitOnInvalidProperties);
             properties.ApplyRuntimeOverrides(runtimeOptions);
+            ServerTelemetry.SetTelemetryToken(properties.TelemetryToken);
+            TelemetryTransport.FailureLogger = message => AnsiConsole.MarkupLine($"[yellow]{message.EscapeMarkup()}[/]");
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
@@ -110,9 +113,15 @@ public static class App
             AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
             AnsiConsole.MarkupLine("\0\0\0"); //This is here for docker images to detect server is running.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
+            await ServerTelemetry.ReportStartupAsync(CreateTelemetrySnapshot(
+                liteNetServer,
+                httpMcApiServer,
+                tcpMcApiServer,
+                mcWssMcApiServer));
 
             StartCommandTask();
             var startTime = DateTime.UtcNow;
+            var lastTelemetryAt = DateTime.UtcNow;
             while (!Cts.IsCancellationRequested)
                 try
                 {
@@ -123,6 +132,15 @@ public static class App
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
+                    if (DateTime.UtcNow - lastTelemetryAt >= ServerTelemetry.GetHeartbeatInterval())
+                    {
+                        lastTelemetryAt = DateTime.UtcNow;
+                        await ServerTelemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
+                            liteNetServer,
+                            httpMcApiServer,
+                            tcpMcApiServer,
+                            mcWssMcApiServer));
+                    }
 
                     var dist = DateTime.UtcNow - startTime;
                     var delay = Constants.TickRate - dist.TotalMilliseconds;
@@ -306,5 +324,24 @@ public static class App
                 if (Cts.IsCancellationRequested || _shuttingDown) return;
             }
         });
+    }
+
+    private static ServerTelemetrySnapshot CreateTelemetrySnapshot(
+        LiteNetVoiceCraftServer liteNetServer,
+        HttpMcApiServer httpMcApiServer,
+        TcpMcApiServer tcpMcApiServer,
+        McWssMcApiServer mcWssMcApiServer)
+    {
+            return new ServerTelemetrySnapshot
+        {
+            Version = VoiceCraftServer.Version.ToString(),
+            Language = Localizer.Instance.Language,
+            PositioningType = liteNetServer.Config.PositioningType.ToString(),
+            EnableVisibilityDisplay = liteNetServer.Config.EnableVisibilityDisplay,
+            McHttpEnabled = httpMcApiServer.Config.Enabled,
+            McTcpEnabled = tcpMcApiServer.Config.Enabled,
+            McWssEnabled = mcWssMcApiServer.Config.Enabled,
+            ConnectedClients = liteNetServer.ConnectedPeers
+        };
     }
 }

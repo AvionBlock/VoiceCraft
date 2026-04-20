@@ -6,14 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.ApplicationModel.DataTransfer;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Diagnostics;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
-public partial class CrashLogViewModel(NotificationService notificationService) : ViewModelBase
+public partial class CrashLogViewModel(
+    NotificationService notificationService,
+    ClipboardService clipboardService) : ViewModelBase
 {
-    [ObservableProperty] public partial ObservableCollection<KeyValuePair<DateTime, string>> CrashLogs { get; set; } = [];
+    [ObservableProperty] public partial ObservableCollection<KeyValuePair<DateTime, CrashLogRecord>> CrashLogs { get; set; } = [];
 
     [RelayCommand]
     private async Task CopyLogs()
@@ -32,14 +34,54 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
             foreach (var crashLog in CrashLogs.OrderByDescending(x => x.Key))
             {
                 _ = text.AppendLine($"[{crashLog.Key:O}]");
-                _ = text.AppendLine(crashLog.Value);
+                _ = text.AppendLine(crashLog.Value.Message);
+                if (!string.IsNullOrWhiteSpace(crashLog.Value.DumpUrl))
+                    _ = text.AppendLine($"Dump: {crashLog.Value.DumpUrl}");
                 _ = text.AppendLine();
             }
 
-            await Clipboard.Default.SetTextAsync(text.ToString().Trim());
+            await clipboardService.SetTextAsync(text.ToString().Trim());
             notificationService.SendSuccessNotification(
                 "CrashLogs.Notification.Badge",
                 "CrashLogs.Notification.Copied");
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification(
+                "CrashLogs.Notification.Badge",
+                ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    private async Task CopyDumpLink(KeyValuePair<DateTime, CrashLogRecord>? crashLog)
+    {
+        try
+        {
+            if (crashLog is null)
+            {
+                notificationService.SendNotification(
+                    "CrashLogs.Notification.Badge",
+                    "CrashLogs.Notification.DumpUnavailable");
+                return;
+            }
+
+            var dumpUrl = crashLog.Value.Value.DumpUrl;
+            if (string.IsNullOrWhiteSpace(dumpUrl))
+                dumpUrl = await LogService.UploadCrashDumpAsync(crashLog.Value.Key);
+
+            if (string.IsNullOrWhiteSpace(dumpUrl))
+            {
+                notificationService.SendNotification(
+                    "CrashLogs.Notification.Badge",
+                    "CrashLogs.Notification.DumpUploadFailed");
+                return;
+            }
+
+            await clipboardService.SetTextAsync(dumpUrl);
+            notificationService.SendSuccessNotification(
+                "CrashLogs.Notification.Badge",
+                "CrashLogs.Notification.DumpCopied");
         }
         catch (Exception ex)
         {
@@ -70,6 +112,6 @@ public partial class CrashLogViewModel(NotificationService notificationService) 
 
     public override void OnAppearing(object? data = null)
     {
-        CrashLogs = new ObservableCollection<KeyValuePair<DateTime, string>>(LogService.CrashLogs);
+        CrashLogs = new ObservableCollection<KeyValuePair<DateTime, CrashLogRecord>>(LogService.CrashLogs);
     }
 }

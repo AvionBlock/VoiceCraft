@@ -111,10 +111,16 @@
   },
   "CrashLogs": {
     "Title": "當機記錄",
+    "Action": {
+      "DumpLink": "傾印連結"
+    },
     "Notification": {
       "Badge": "當機記錄",
       "Cleared": "已成功清除所有記錄。",
       "Copied": "當機記錄已複製到剪貼簿。",
+      "DumpCopied": "當機傾印連結已複製到剪貼簿。",
+      "DumpUploadFailed": "上傳當機傾印失敗。",
+      "DumpUnavailable": "這筆當機記錄目前還沒有可用的已上傳傾印連結。",
       "Empty": "沒有可複製的當機記錄。"
     }
   },

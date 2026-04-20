@@ -20,6 +20,7 @@ public class ServerProperties
     public McWssMcApiServer.McWssMcApiConfig McWssConfig => _properties.McWssConfig;
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig => _properties.McHttpConfig;
     public TcpMcApiServer.McTcpConfig McTcpConfig => _properties.McTcpConfig;
+    public string TelemetryToken => _properties.TelemetryToken;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
     public void Load(bool throwOnInvalidProperties)
@@ -216,6 +217,7 @@ public class ServerPropertiesStructure
                 ProximityMuffleEffectGenerationContext.Default.ProximityMuffleEffect));
     }
 
+    public string TelemetryToken { get; set; } = Guid.NewGuid().ToString("N");
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssMcApiServer.McWssMcApiConfig McWssConfig { get; set; } = new();
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();

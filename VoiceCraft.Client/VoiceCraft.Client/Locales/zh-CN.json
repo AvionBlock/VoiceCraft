@@ -111,10 +111,16 @@
   },
   "CrashLogs": {
     "Title": "崩溃日志",
+    "Action": {
+      "DumpLink": "转储链接"
+    },
     "Notification": {
       "Badge": "崩溃日志",
       "Cleared": "已成功清除所有日志。",
       "Copied": "崩溃日志已复制到剪贴板。",
+      "DumpCopied": "崩溃转储链接已复制到剪贴板。",
+      "DumpUploadFailed": "上传崩溃转储失败。",
+      "DumpUnavailable": "此崩溃日志暂时还没有可用的已上传转储链接。",
       "Empty": "没有可复制的崩溃日志。"
     }
   },

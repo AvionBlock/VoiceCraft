@@ -111,10 +111,16 @@
   },
   "CrashLogs": {
     "Title": "Crashlogboeken",
+    "Action": {
+      "DumpLink": "Dumplink"
+    },
     "Notification": {
       "Badge": "Crashlogboeken",
       "Cleared": "Alle logboeken zijn succesvol gewist.",
       "Copied": "Crashlogboeken zijn naar het klembord gekopieerd.",
+      "DumpCopied": "Crashdumplink is naar het klembord gekopieerd.",
+      "DumpUploadFailed": "Het uploaden van de crashdump is mislukt.",
+      "DumpUnavailable": "Er is nog geen geuploade dumplink beschikbaar voor dit crashlogboek.",
       "Empty": "Geen crashlogboeken om te kopieren."
     }
   },

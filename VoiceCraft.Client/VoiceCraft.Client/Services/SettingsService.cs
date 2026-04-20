@@ -24,6 +24,7 @@ public class SettingsService
     // ReSharper disable once InconsistentNaming
     public Guid UserGuid => _settings.UserGuid;
     public Guid ServerUserGuid => _settings.ServerUserGuid;
+    public string TelemetryToken => _settings.TelemetryToken;
     public InputSettings InputSettings => _settings.InputSettings;
     public OutputSettings OutputSettings => _settings.OutputSettings;
     public LocaleSettings LocaleSettings => _settings.LocaleSettings;
@@ -124,6 +125,7 @@ public class SettingsStructure
 {
     public Guid UserGuid { get; set; } = Guid.NewGuid();
     public Guid ServerUserGuid { get; set; } = Guid.NewGuid();
+    public string TelemetryToken { get; set; } = Guid.NewGuid().ToString("N");
     public InputSettings InputSettings { get; set; } = new();
     public OutputSettings OutputSettings { get; set; } = new();
     public LocaleSettings LocaleSettings { get; set; } = new();

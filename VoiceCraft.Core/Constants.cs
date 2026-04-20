@@ -40,6 +40,7 @@ namespace VoiceCraft.Core
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
         public const string ExceptionLogsFile = "ExceptionLogs.json";
+        public const string TelemetryBaseUrl = "https://vc-api.avion.team";
 
         //RPC
         public const string ApplicationId = "1364434932968984669";

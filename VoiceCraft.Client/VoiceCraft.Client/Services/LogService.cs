@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Diagnostics;
 
 namespace VoiceCraft.Client.Services;
 
@@ -20,7 +21,7 @@ public static class LogService
     public static IEnumerable<KeyValuePair<DateTime, string>> ExceptionLogs =>
         _exceptionLogs.ExceptionLogs.OrderByDescending(d => d.Key);
 
-    public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs =>
+    public static IEnumerable<KeyValuePair<DateTime, CrashLogRecord>> CrashLogs =>
         _exceptionLogs.CrashLogs.OrderByDescending(d => d.Key);
 
     public static void Log(Exception exception)
@@ -31,11 +32,22 @@ public static class LogService
         _ = SaveAsync();
     }
 
+    public static void LogInfo(string message)
+    {
+        Console.WriteLine(message);
+        _exceptionLogs.ExceptionLogs.TryAdd(DateTime.UtcNow, $"[INFO] {message}");
+        TrimExceptionLogs();
+        _ = SaveAsync();
+    }
+
     public static void LogCrash(Exception exception)
     {
         if (exception is TaskCanceledException) return; //Ignore this shit.
         Console.WriteLine(exception);
-        _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
+        _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, new CrashLogRecord
+        {
+            Message = exception.ToString()
+        });
         TrimCrashLogs();
         SaveLogs();
     }
@@ -48,13 +60,15 @@ public static class LogService
                 return;
 
             var result = NativeStorageService?.Load(Constants.ExceptionLogsFile);
-            var loadedLogs =
-                JsonSerializer.Deserialize<ExceptionLogsStructure>(result,
-                    CrashLogGenerationContext.Default.ExceptionLogsStructure);
-            if (loadedLogs == null) return;
-            _exceptionLogs = loadedLogs;
-            TrimExceptionLogs();
-            TrimCrashLogs();
+            if (result == null)
+                return;
+
+            if (TryLoadCurrent(result) || TryLoadLegacy(result))
+            {
+                TrimExceptionLogs();
+                TrimCrashLogs();
+                return;
+            }
         }
         catch (JsonException ex)
         {
@@ -92,6 +106,55 @@ public static class LogService
         }
     }
 
+    private static bool TryLoadCurrent(byte[] result)
+    {
+        var loadedLogs = JsonSerializer.Deserialize(
+            result,
+            CrashLogGenerationContext.Default.ExceptionLogsStructure);
+        if (loadedLogs == null)
+            return false;
+
+        _exceptionLogs = loadedLogs;
+        return true;
+    }
+
+    private static bool TryLoadLegacy(byte[] result)
+    {
+        var loadedLogs = JsonSerializer.Deserialize(
+            result,
+            CrashLogGenerationContext.Default.LegacyExceptionLogsStructure);
+        if (loadedLogs == null)
+            return false;
+
+        _exceptionLogs = new ExceptionLogsStructure
+        {
+            ExceptionLogs = loadedLogs.ExceptionLogs,
+            CrashLogs = new ConcurrentDictionary<DateTime, CrashLogRecord>(
+                loadedLogs.CrashLogs.ToDictionary(
+                    x => x.Key,
+                    x => new CrashLogRecord { Message = x.Value }))
+        };
+        return true;
+    }
+
+    public static async Task<string?> UploadCrashDumpAsync(DateTime timestamp)
+    {
+        if (!_exceptionLogs.CrashLogs.TryGetValue(timestamp, out var crashLog))
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(crashLog.DumpUrl))
+            return crashLog.DumpUrl;
+
+        var dumpResponse = await ClientTelemetry.ReportCrashAsync(crashLog.Message);
+        var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
+        if (string.IsNullOrWhiteSpace(dumpUrl))
+            return null;
+
+        crashLog.DumpUrl = dumpUrl;
+        SaveLogs();
+        return dumpUrl;
+    }
+
     private static async Task SaveAsync()
     {
         _queueWrite = true;
@@ -119,10 +182,17 @@ public static class LogService
 
 public class ExceptionLogsStructure
 {
+    public ConcurrentDictionary<DateTime, CrashLogRecord> CrashLogs { get; set; } = new();
+    public ConcurrentDictionary<DateTime, string> ExceptionLogs { get; set; } = new();
+}
+
+public class LegacyExceptionLogsStructure
+{
     public ConcurrentDictionary<DateTime, string> CrashLogs { get; set; } = new();
     public ConcurrentDictionary<DateTime, string> ExceptionLogs { get; set; } = new();
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(ExceptionLogsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
+[JsonSerializable(typeof(LegacyExceptionLogsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
 public partial class CrashLogGenerationContext : JsonSerializerContext;

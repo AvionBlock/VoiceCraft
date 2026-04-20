@@ -111,10 +111,16 @@
   },
   "CrashLogs": {
     "Title": "Absturzprotokolle",
+    "Action": {
+      "DumpLink": "Dump-Link"
+    },
     "Notification": {
       "Badge": "Absturzprotokolle",
       "Cleared": "Alle Protokolle wurden erfolgreich gelöscht.",
       "Copied": "Absturzprotokolle wurden in die Zwischenablage kopiert.",
+      "DumpCopied": "Link zum Absturz-Dump wurde in die Zwischenablage kopiert.",
+      "DumpUploadFailed": "Der Absturz-Dump konnte nicht hochgeladen werden.",
+      "DumpUnavailable": "Für dieses Absturzprotokoll ist noch kein Dump-Link verfügbar.",
       "Empty": "Keine Absturzprotokolle zum Kopieren vorhanden."
     }
   },

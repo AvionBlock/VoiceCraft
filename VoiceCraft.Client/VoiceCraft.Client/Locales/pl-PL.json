@@ -111,10 +111,16 @@
   },
   "CrashLogs": {
     "Title": "Logi awarii",
+    "Action": {
+      "DumpLink": "Link do zrzutu"
+    },
     "Notification": {
       "Badge": "Logi awarii",
       "Cleared": "Pomyślnie wyczyszczono wszystkie logi.",
       "Copied": "Logi awarii skopiowano do schowka.",
+      "DumpCopied": "Link do zrzutu awarii został skopiowany do schowka.",
+      "DumpUploadFailed": "Nie udało się przesłać zrzutu awarii.",
+      "DumpUnavailable": "Dla tego logu awarii nie ma jeszcze linku do przesłanego zrzutu.",
       "Empty": "Brak logów awarii do skopiowania."
     }
   },
