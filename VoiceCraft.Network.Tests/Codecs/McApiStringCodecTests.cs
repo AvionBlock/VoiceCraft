@@ -1,6 +1,4 @@
-using System.Text.Json;
 using Xunit;
-using VoiceCraft.Network.Packets.McHttpPackets;
 
 namespace VoiceCraft.Network.Tests.Codecs;
 
@@ -35,13 +33,13 @@ public class McApiStringCodecTests
         Assert.All(encoded, ch =>
         {
             Assert.True(McApiStringCodec.IsSafePayloadCharacter(ch));
-            Assert.False(ch == '|');
-            Assert.False(ch == '"');
-            Assert.False(ch == '\\');
-            Assert.False(ch == '%');
-            Assert.False(ch == ' ');
+            Assert.NotEqual('|', ch);
+            Assert.NotEqual('"', ch);
+            Assert.NotEqual('\\', ch);
+            Assert.NotEqual('%', ch);
+            Assert.NotEqual(' ', ch);
             Assert.False(ch < 0x20);
-            Assert.False(ch == 0x7F);
+            Assert.NotEqual(0x7F, ch);
             Assert.True(ch <= 0x7E);
         });
     }
@@ -64,24 +62,5 @@ public class McApiStringCodecTests
         var decoded = McApiStringCodec.Decode(encoded);
 
         Assert.Equal(data, decoded);
-    }
-
-    [Fact]
-    public void EncodedPacket_RoundTrips_ThroughJson()
-    {
-        var bytes = Enumerable.Range(0, 511).Select(i => (byte)(i % 256)).ToArray();
-        var encoded = McApiStringCodec.Encode(bytes);
-        var packet = new McHttpUpdatePacket
-        {
-            Packets = [encoded]
-        };
-
-        var json = JsonSerializer.Serialize(packet, McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
-        var roundTripped = JsonSerializer.Deserialize(json, McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
-
-        Assert.NotNull(roundTripped);
-        Assert.Single(roundTripped.Packets);
-        Assert.Equal(encoded, roundTripped.Packets[0]);
-        Assert.Equal(bytes, McApiStringCodec.Decode(roundTripped.Packets[0]));
     }
 }

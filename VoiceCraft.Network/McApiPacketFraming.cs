@@ -4,7 +4,7 @@ using System.Text;
 
 namespace VoiceCraft.Network;
 
-public static class McWssPacketFraming
+public static class McApiPacketFraming
 {
     private const int HeaderSize = 2;
     private static readonly int MaxPacketLength = McApiStringCodec.AlphabetSize * McApiStringCodec.AlphabetSize - 1;

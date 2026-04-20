@@ -303,8 +303,9 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             List<string> packets;
             try
             {
-                var stringData = Encoding.UTF8.GetString(data);
-                packets = McWssPacketFraming.Unpack(stringData);
+                await context.Request.InputStream.ReadExactlyAsync(data, 0, size);
+                var stringData = Encoding.UTF8.GetString(data.AsSpan(0, size));
+                packets = McApiPacketFraming.Unpack(stringData);
             }
             finally
             {
@@ -316,7 +317,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             packets.Clear();
             SendPacketsLogic(netPeer, packets);
             
-            var buffer = Encoding.UTF8.GetBytes(McWssPacketFraming.Pack(packets));
+            var buffer = Encoding.UTF8.GetBytes(McApiPacketFraming.Pack(packets));
             context.Response.StatusCode = 200;
             context.Response.ContentLength64 = buffer.Length;
             await context.Response.OutputStream.WriteAsync(buffer);

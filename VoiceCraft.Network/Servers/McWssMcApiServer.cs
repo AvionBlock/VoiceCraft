@@ -232,7 +232,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         try
         {
             if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
-            var packets = McWssPacketFraming.Unpack(data);
+            var packets = McApiPacketFraming.Unpack(data);
 
             foreach (var packet in packets)
                 peer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(packet, string.Empty));
@@ -282,7 +282,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         var stringBuilder = new StringBuilder();
         if (!netPeer.OutgoingQueue.TryDequeue(out var outboundPacket)) return false;
-        McWssPacketFraming.TryAppendFrame(
+        McApiPacketFraming.TryAppendFrame(
             stringBuilder,
             outboundPacket.StringData,
             (int)Config.MaxStringLengthPerCommand,
@@ -291,7 +291,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         var deferredPackets = new List<McApiNetPeer.QueuedPacket>();
         while (netPeer.OutgoingQueue.TryDequeue(out outboundPacket))
         {
-            if (McWssPacketFraming.TryAppendFrame(
+            if (McApiPacketFraming.TryAppendFrame(
                     stringBuilder,
                     outboundPacket.StringData,
                     (int)Config.MaxStringLengthPerCommand,
