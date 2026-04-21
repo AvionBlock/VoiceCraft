@@ -127,7 +127,7 @@ public static class LogService
 
     private static async Task AttachDumpUrlAsync(DateTime timestamp, Exception exception)
     {
-        var telemetry = Program.ServiceProvider.GetService<ServerTelemetry>();
+        var telemetry = Program.ServiceProvider.GetService<ServerTelemetryService>();
         if (telemetry == null)
             return;
 

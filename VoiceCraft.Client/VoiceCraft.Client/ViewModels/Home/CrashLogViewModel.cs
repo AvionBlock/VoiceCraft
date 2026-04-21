@@ -17,6 +17,22 @@ public partial class CrashLogViewModel(
 {
     [ObservableProperty] public partial ObservableCollection<KeyValuePair<DateTime, CrashLogRecord>> CrashLogs { get; set; } = [];
 
+    private static async Task<string?> UploadCrashLog(DateTime timeStamp)
+    {
+        if (!LogService.TryGetCrashLog(timeStamp, out var crashLog)) return null;
+        if (!string.IsNullOrWhiteSpace(crashLog.DumpUrl))
+            return crashLog.DumpUrl;
+        
+        var dumpResponse = await ClientTelemetryService.ReportCrashAsync(crashLog.Message);
+        var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
+        if (string.IsNullOrWhiteSpace(dumpUrl))
+            return null;
+
+        crashLog.DumpUrl = dumpUrl;
+        LogService.UpdateCrashLog(timeStamp, crashLog);
+        return dumpUrl;
+    }
+
     [RelayCommand]
     private async Task CopyLogs()
     {
@@ -66,10 +82,7 @@ public partial class CrashLogViewModel(
                 return;
             }
 
-            var dumpUrl = crashLog.Value.Value.DumpUrl;
-            if (string.IsNullOrWhiteSpace(dumpUrl))
-                dumpUrl = await LogService.UploadCrashDumpAsync(crashLog.Value.Key);
-
+            var dumpUrl = await UploadCrashLog(crashLog.Value.Key);
             if (string.IsNullOrWhiteSpace(dumpUrl))
             {
                 notificationService.SendNotification(

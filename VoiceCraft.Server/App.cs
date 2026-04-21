@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.Telemetry;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Server.Systems;
@@ -36,7 +35,7 @@ public static class App
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
-        var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetry>();
+        var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetryService>();
 
         try
         {
@@ -47,11 +46,9 @@ public static class App
             //Properties
             properties.Load(runtimeOptions.ExitOnInvalidProperties);
             properties.ApplyRuntimeOverrides(runtimeOptions);
-            telemetry.Configure(properties.TelemetryEnabled, properties.TelemetryToken);
-            TelemetryTransport.FailureLogger = message => AnsiConsole.MarkupLine($"[yellow]{message.EscapeMarkup()}[/]");
             AnsiConsole.MarkupLine(properties.TelemetryEnabled
-                ? "[grey]Telemetry is enabled. VoiceCraft sends anonymous startup, heartbeat, and crash diagnostics. Set \"TelemetryEnabled\": false in config/ServerProperties.json to disable it.[/]"
-                : "[grey]Telemetry is disabled in config/ServerProperties.json.[/]");
+                ? "[aqua]Telemetry is enabled. VoiceCraft sends anonymous startup, heartbeat, and crash diagnostics. Set \"TelemetryEnabled\": false in config/ServerProperties.json to disable it.[/]"
+                : "[aqua]Telemetry is disabled in config/ServerProperties.json.[/]");
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
@@ -126,6 +123,7 @@ public static class App
             StartCommandTask();
             var startTime = DateTime.UtcNow;
             var lastTelemetryAt = DateTime.UtcNow;
+            Task? telemetryReportTask = null;
             while (!Cts.IsCancellationRequested)
                 try
                 {
@@ -136,14 +134,18 @@ public static class App
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
-                    if (DateTime.UtcNow - lastTelemetryAt >= telemetry.GetHeartbeatInterval())
+                    if (properties.TelemetryEnabled &&
+                        DateTime.UtcNow - lastTelemetryAt >= ServerTelemetryService.HeartbeatInterval)
                     {
-                        lastTelemetryAt = DateTime.UtcNow;
-                        await telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
-                            liteNetServer,
-                            httpMcApiServer,
-                            tcpMcApiServer,
-                            mcWssMcApiServer));
+                        if (telemetryReportTask == null || telemetryReportTask.IsCompleted)
+                        {
+                            lastTelemetryAt = DateTime.UtcNow;
+                            telemetryReportTask = telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
+                                liteNetServer,
+                                httpMcApiServer,
+                                tcpMcApiServer,
+                                mcWssMcApiServer));
+                        }
                     }
 
                     var dist = DateTime.UtcNow - startTime;
@@ -201,7 +203,7 @@ public static class App
             throw new Exception(Localizer.Get("VoiceCraftServer.Exceptions.Failed"));
         }
     }
-    
+
     private static void StartServer(McWssMcApiServer server)
     {
         if (!server.Config.Enabled) return;
@@ -336,7 +338,7 @@ public static class App
         TcpMcApiServer tcpMcApiServer,
         McWssMcApiServer mcWssMcApiServer)
     {
-            return new ServerTelemetrySnapshot
+        return new ServerTelemetrySnapshot
         {
             Version = VoiceCraftServer.Version.ToString(),
             Language = Localizer.Instance.Language,

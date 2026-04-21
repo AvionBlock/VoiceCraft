@@ -7,18 +7,12 @@ using VoiceCraft.Core.Telemetry;
 
 namespace VoiceCraft.Server;
 
-public sealed class ServerTelemetry
+public sealed class ServerTelemetryService(ServerProperties properties)
 {
-    private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromMinutes(1);
     private static readonly Stopwatch Uptime = Stopwatch.StartNew();
-    private bool _enabled = true;
-    private string? _telemetryToken;
-
-    public void Configure(bool enabled, string telemetryToken)
-    {
-        _enabled = enabled;
-        _telemetryToken = telemetryToken;
-    }
+    public static TimeSpan HeartbeatInterval { get; } = TimeSpan.FromMinutes(1);
+    private bool IsEnabled => properties.TelemetryEnabled;
+    private string TelemetryToken => properties.TelemetryToken;
 
     public Task ReportStartupAsync(ServerTelemetrySnapshot snapshot)
     {
@@ -30,15 +24,10 @@ public sealed class ServerTelemetry
         return ReportTelemetryAsync(snapshot, "heartbeat");
     }
 
-    public TimeSpan GetHeartbeatInterval()
+    public async Task<TelemetryDumpResponse?> ReportCrashAsync(Exception exception)
     {
-        return HeartbeatInterval;
-    }
-
-    public Task<TelemetryDumpResponse?> ReportCrashAsync(Exception exception)
-    {
-        if (!_enabled)
-            return Task.FromResult<TelemetryDumpResponse?>(null);
+        if (!IsEnabled)
+            return null;
 
         var payload = new TelemetryDumpRequest
         {
@@ -55,13 +44,21 @@ public sealed class ServerTelemetry
             }
         };
 
-        return TelemetryTransport.SendDumpAsync(payload);
+        try
+        {
+            return await TelemetryTransport.SendDumpAsync(payload);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+            return null;
+        }
     }
 
-    private Task ReportTelemetryAsync(ServerTelemetrySnapshot snapshot, string tag)
+    private async Task ReportTelemetryAsync(ServerTelemetrySnapshot snapshot, string tag)
     {
-        if (!_enabled)
-            return Task.CompletedTask;
+        if (!IsEnabled)
+            return;
 
         var payload = new TelemetryEventRequest
         {
@@ -81,14 +78,21 @@ public sealed class ServerTelemetry
             Timestamp = DateTime.UtcNow.ToString("O")
         };
 
-        return TelemetryTransport.SendTelemetryAsync(payload);
+        try
+        {
+            await TelemetryTransport.SendTelemetryAsync(payload);
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
     }
 
     private string GetFingerprint()
     {
-        return string.IsNullOrWhiteSpace(_telemetryToken)
+        return string.IsNullOrWhiteSpace(TelemetryToken)
             ? Guid.NewGuid().ToString("N")
-            : _telemetryToken;
+            : TelemetryToken;
     }
 
     private static TelemetryAppInfo BuildAppInfo(string? version = null)
@@ -182,10 +186,9 @@ public sealed class ServerTelemetry
             return "Windows";
         if (OperatingSystem.IsLinux())
             return "Linux";
-        if (OperatingSystem.IsMacOS())
-            return "macOS";
-
-        return RuntimeInformation.OSDescription;
+        return OperatingSystem.IsMacOS()
+            ? "macOS"
+            : RuntimeInformation.OSDescription;
     }
 }
 

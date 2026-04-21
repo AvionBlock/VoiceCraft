@@ -22,7 +22,6 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.Locales;
-using VoiceCraft.Core.Telemetry;
 using Styles = VoiceCraft.Client.Themes.Dark.Styles;
 
 namespace VoiceCraft.Client;
@@ -43,7 +42,6 @@ public class App : Application
         {
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
-            ConfigureTelemetry(serviceProvider);
 
             switch (ApplicationLifetime)
             {
@@ -122,7 +120,7 @@ public class App : Application
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<NotificationService>();
         ServiceCollection.AddSingleton<ClipboardService>();
-        ServiceCollection.AddSingleton<ClientTelemetry>();
+        ServiceCollection.AddSingleton<ClientTelemetryService>();
         ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
             x.GetRequiredService<NotificationService>(),
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
@@ -255,6 +253,7 @@ public class App : Application
     {
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
+        _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
     }
 
     private static void RegisterClipboardWhenAttached(IServiceProvider serviceProvider, Control control)
@@ -264,15 +263,6 @@ public class App : Application
             if (TopLevel.GetTopLevel(control) is { } topLevel)
                 serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
         };
-    }
-
-    private static void ConfigureTelemetry(IServiceProvider serviceProvider)
-    {
-        TelemetryTransport.FailureLogger = LogService.LogInfo;
-
-        var clientTelemetry = serviceProvider.GetRequiredService<ClientTelemetry>();
-        if (clientTelemetry.IsEnabled)
-            _ = clientTelemetry.ReportStartupAsync(3);
     }
 }
 

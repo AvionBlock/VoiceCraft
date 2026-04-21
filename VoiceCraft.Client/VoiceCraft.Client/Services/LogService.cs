@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Diagnostics;
 
@@ -25,34 +25,6 @@ public static class LogService
     public static IEnumerable<KeyValuePair<DateTime, CrashLogRecord>> CrashLogs =>
         _exceptionLogs.CrashLogs.OrderByDescending(d => d.Key);
 
-    public static void Log(Exception exception)
-    {
-        Console.WriteLine(exception);
-        _exceptionLogs.ExceptionLogs.TryAdd(DateTime.UtcNow, exception.ToString());
-        TrimExceptionLogs();
-        _ = SaveAsync();
-    }
-
-    public static void LogInfo(string message)
-    {
-        Console.WriteLine(message);
-        _exceptionLogs.ExceptionLogs.TryAdd(DateTime.UtcNow, $"[INFO] {message}");
-        TrimExceptionLogs();
-        _ = SaveAsync();
-    }
-
-    public static void LogCrash(Exception exception)
-    {
-        if (exception is TaskCanceledException) return; //Ignore this shit.
-        Console.WriteLine(exception);
-        _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, new CrashLogRecord
-        {
-            Message = exception.ToString()
-        });
-        TrimCrashLogs();
-        SaveLogs();
-    }
-
     public static void Load()
     {
         try
@@ -64,23 +36,46 @@ public static class LogService
             if (result == null)
                 return;
 
-            if (TryLoadCurrent(result) || TryLoadLegacy(result))
-            {
-                TrimExceptionLogs();
-                TrimCrashLogs();
-                return;
-            }
+            if (!TryLoadCurrent(result) && !TryLoadLegacy(result)) return;
+            TrimExceptionLogs();
+            TrimCrashLogs();
         }
         catch (JsonException ex)
         {
             Log(ex); //Log it, Don't care what we log.
         }
     }
-
-    public static void ClearCrashLogs()
+    
+    public static void LogCrash(Exception exception)
     {
-        _exceptionLogs.CrashLogs.Clear();
-        _ = SaveAsync(); //Since we don't to a save immediate, we need to call the save.
+        if (exception is TaskCanceledException) return; //Ignore this shit.
+        Console.WriteLine(exception);
+        _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, new CrashLogRecord
+        {
+            Message = exception.ToString()
+        });
+        TrimCrashLogs();
+        SaveLogs();
+    }
+    
+    public static void Log(Exception exception)
+    {
+        Console.WriteLine(exception);
+        _exceptionLogs.ExceptionLogs.TryAdd(DateTime.UtcNow, exception.ToString());
+        TrimExceptionLogs();
+        _ = SaveAsync();
+    }
+    
+    public static bool TryGetLog(DateTime timeStamp, [NotNullWhen(true)] out string? log)
+    {
+        return _exceptionLogs.ExceptionLogs.TryGetValue(timeStamp, out log);
+    }
+
+    public static void UpdateLog(DateTime timeStamp, string log)
+    {
+        if (!_exceptionLogs.ExceptionLogs.ContainsKey(timeStamp)) return;
+        _exceptionLogs.ExceptionLogs[timeStamp] = log;
+        _ = SaveAsync();
     }
 
     public static void ClearExceptionLogs()
@@ -89,21 +84,39 @@ public static class LogService
         _ = SaveAsync();
     }
 
-    private static void TrimExceptionLogs()
+    public static bool TryGetCrashLog(DateTime timeStamp, [NotNullWhen(true)] out CrashLogRecord? crashLog)
     {
-        foreach (var log in _exceptionLogs.ExceptionLogs.OrderBy(d => d.Key))
-        {
-            if (_exceptionLogs.CrashLogs.Count <= Limit) return;
-            _exceptionLogs.ExceptionLogs.TryRemove(log.Key, out _);
-        }
+        return _exceptionLogs.CrashLogs.TryGetValue(timeStamp, out crashLog);
+    }
+    
+    public static void UpdateCrashLog(DateTime timeStamp, CrashLogRecord crashLog)
+    {
+        if (!_exceptionLogs.CrashLogs.ContainsKey(timeStamp)) return;
+        _exceptionLogs.CrashLogs[timeStamp] = crashLog;
+        _ = SaveAsync();
     }
 
+    public static void ClearCrashLogs()
+    {
+        _exceptionLogs.CrashLogs.Clear();
+        _ = SaveAsync(); //Since we don't to a save immediate, we need to call the save.
+    }
+    
     private static void TrimCrashLogs()
     {
         foreach (var log in _exceptionLogs.CrashLogs.OrderBy(d => d.Key))
         {
             if (_exceptionLogs.CrashLogs.Count <= Limit) return;
             _exceptionLogs.CrashLogs.TryRemove(log.Key, out _);
+        }
+    }
+
+    private static void TrimExceptionLogs()
+    {
+        foreach (var log in _exceptionLogs.ExceptionLogs.OrderBy(d => d.Key))
+        {
+            if (_exceptionLogs.CrashLogs.Count <= Limit) return;
+            _exceptionLogs.ExceptionLogs.TryRemove(log.Key, out _);
         }
     }
 
@@ -136,28 +149,6 @@ public static class LogService
                     x => new CrashLogRecord { Message = x.Value }))
         };
         return true;
-    }
-
-    public static async Task<string?> UploadCrashDumpAsync(DateTime timestamp)
-    {
-        if (!_exceptionLogs.CrashLogs.TryGetValue(timestamp, out var crashLog))
-            return null;
-
-        if (!string.IsNullOrWhiteSpace(crashLog.DumpUrl))
-            return crashLog.DumpUrl;
-
-        var telemetry = App.ServiceProvider?.GetService<ClientTelemetry>();
-        if (telemetry == null)
-            return null;
-
-        var dumpResponse = await telemetry.ReportCrashAsync(crashLog.Message);
-        var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
-        if (string.IsNullOrWhiteSpace(dumpUrl))
-            return null;
-
-        crashLog.DumpUrl = dumpUrl;
-        SaveLogs();
-        return dumpUrl;
     }
 
     private static async Task SaveAsync()

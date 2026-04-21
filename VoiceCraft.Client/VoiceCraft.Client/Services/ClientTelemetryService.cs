@@ -10,20 +10,46 @@ using VoiceCraft.Core.Telemetry;
 
 namespace VoiceCraft.Client.Services;
 
-public sealed class ClientTelemetry(SettingsService settingsService)
+public sealed class ClientTelemetryService(SettingsService settingsService)
 {
     private const int MaxCrashLogLength = 250_000;
+    private bool IsEnabled =>
+        settingsService.TelemetrySettings is { Enabled: true, ConsentShown: true };
 
-    public bool IsEnabled =>
-        settingsService.TelemetrySettings.Enabled &&
-        settingsService.TelemetrySettings.ConsentShown;
-
-    public Task ReportStartupAsync()
+    public async Task ReportStartupAsync()
     {
-        return ReportStartupAsync(1);
+        await ReportStartupAsync(3);
     }
 
-    public async Task ReportStartupAsync(int attempts)
+    public static async Task<TelemetryDumpResponse?> ReportCrashAsync(string crashText, string? title = null)
+    {
+        var trimmedCrashText = TrimCrashText(crashText, out var wasTrimmed);
+        var payload = new TelemetryDumpRequest
+        {
+            Role = "client",
+            Category = "crash",
+            Title = string.IsNullOrWhiteSpace(title) ? "CrashLog" : title,
+            App = BuildAppInfo(),
+            Device = BuildDeviceInfo(),
+            Payload = new Dictionary<string, string>
+            {
+                ["crash_log"] = trimmedCrashText,
+                ["truncated"] = wasTrimmed.ToString()
+            }
+        };
+
+        try
+        {
+            return await TelemetryTransport.SendDumpAsync(payload);
+        }
+        catch(Exception ex)
+        {
+            LogService.Log(ex);
+            return null;
+        }
+    }
+
+    private async Task ReportStartupAsync(int attempts)
     {
         if (!IsEnabled)
             return;
@@ -46,37 +72,17 @@ public sealed class ClientTelemetry(SettingsService settingsService)
         var retries = Math.Max(1, attempts);
         for (var attempt = 0; attempt < retries; attempt++)
         {
-            if (await TelemetryTransport.SendTelemetryAsync(payload))
-                return;
-
-            if (attempt < retries - 1)
-                await Task.Delay(1500);
-        }
-    }
-
-    public Task<TelemetryDumpResponse?> ReportCrashAsync(Exception exception)
-    {
-        return ReportCrashAsync(exception.ToString(), exception.GetType().Name);
-    }
-
-    public Task<TelemetryDumpResponse?> ReportCrashAsync(string crashText, string? title = null)
-    {
-        var trimmedCrashText = TrimCrashText(crashText, out var wasTrimmed);
-        var payload = new TelemetryDumpRequest
-        {
-            Role = "client",
-            Category = "crash",
-            Title = string.IsNullOrWhiteSpace(title) ? "CrashLog" : title,
-            App = BuildAppInfo(),
-            Device = BuildDeviceInfo(),
-            Payload = new Dictionary<string, string>
+            try
             {
-                ["crash_log"] = trimmedCrashText,
-                ["truncated"] = wasTrimmed.ToString()
+                await TelemetryTransport.SendTelemetryAsync(payload);
             }
-        };
-
-        return TelemetryTransport.SendDumpAsync(payload);
+            catch(Exception ex)
+            {
+                LogService.Log(ex);
+                if (attempt < retries - 1)
+                    await Task.Delay(1500);
+            }
+        }
     }
 
     private static TelemetryAppInfo BuildAppInfo()
@@ -116,10 +122,9 @@ public sealed class ClientTelemetry(SettingsService settingsService)
     private static string ResolveVersion()
     {
         var version = Assembly.GetEntryAssembly()?.GetName().Version;
-        if (version != null)
-            return $"{version.Major}.{version.Minor}.{version.Build}";
-
-        return $"{Constants.Major}.{Constants.Minor}.{Constants.Patch}";
+        return version != null
+            ? $"{version.Major}.{version.Minor}.{version.Build}"
+            : $"{Constants.Major}.{Constants.Minor}.{Constants.Patch}";
     }
 
     private static string ResolveBuild()
@@ -169,10 +174,9 @@ public sealed class ClientTelemetry(SettingsService settingsService)
             return IsWindows11(Environment.OSVersion.Version) ? "Windows 11" : "Windows";
         if (OperatingSystem.IsLinux())
             return "Linux";
-        if (OperatingSystem.IsBrowser())
-            return "Browser";
-
-        return RuntimeInformation.OSDescription;
+        return OperatingSystem.IsBrowser()
+            ? "Browser"
+            : RuntimeInformation.OSDescription;
     }
 
     private static string GetOsVersion(IDeviceInfo? deviceInfo)
@@ -188,19 +192,16 @@ public sealed class ClientTelemetry(SettingsService settingsService)
         if (OperatingSystem.IsWindows())
             return GetPlatformName(deviceInfo);
 
-        if (deviceInfo != null)
-        {
-            var version = NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version);
-            if (!string.IsNullOrWhiteSpace(version))
-                return version;
-        }
-
-        return Environment.OSVersion.VersionString;
+        if (deviceInfo == null) return Environment.OSVersion.VersionString;
+        var version = NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version);
+        return !string.IsNullOrWhiteSpace(version)
+            ? version
+            : Environment.OSVersion.VersionString;
     }
 
     private static string GetOsBuild(IDeviceInfo? deviceInfo)
     {
-        return deviceInfo is { Version: not null } && deviceInfo.Version != default
+        return deviceInfo is not null
             ? deviceInfo.Version.ToString()
             : Environment.OSVersion.Version.ToString();
     }
@@ -210,23 +211,22 @@ public sealed class ClientTelemetry(SettingsService settingsService)
         if (deviceInfo?.Platform == DevicePlatform.WinUI)
             return $"{GetPlatformName(deviceInfo)} build {GetOsBuild(deviceInfo)}";
         if (deviceInfo?.Platform == DevicePlatform.Android)
-            return $"Android {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)} (API level {deviceInfo.Version.Major})";
+            return
+                $"Android {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)} (API level {deviceInfo.Version.Major})";
         if (deviceInfo?.Platform == DevicePlatform.iOS)
             return $"iOS {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
         if (deviceInfo?.Platform == DevicePlatform.macOS)
             return $"macOS {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
-        if (OperatingSystem.IsWindows())
-            return $"{GetPlatformName(deviceInfo)} build {Environment.OSVersion.Version}";
-
-        return RuntimeInformation.OSDescription;
+        return OperatingSystem.IsWindows()
+            ? $"{GetPlatformName(deviceInfo)} build {Environment.OSVersion.Version}"
+            : RuntimeInformation.OSDescription;
     }
 
     private static string NormalizeVersionString(string? versionString, Version version)
     {
-        if (!string.IsNullOrWhiteSpace(versionString))
-            return versionString;
-
-        return version != default ? version.ToString() : string.Empty;
+        return !string.IsNullOrWhiteSpace(versionString)
+            ? versionString
+            : version.ToString();
     }
 
     private static string? NormalizeValue(string? value)
@@ -236,7 +236,7 @@ public sealed class ClientTelemetry(SettingsService settingsService)
 
     private static bool IsWindows11(Version version)
     {
-        return version.Major >= 10 && version.Build >= 22000;
+        return version is { Major: >= 10, Build: >= 22000 };
     }
 
     private static string TrimCrashText(string crashText, out bool wasTrimmed)
