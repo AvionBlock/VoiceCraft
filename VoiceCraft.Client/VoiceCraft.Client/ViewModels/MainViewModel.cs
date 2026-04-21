@@ -2,6 +2,7 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.ViewModels.Modals;
 using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;

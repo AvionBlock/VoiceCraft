@@ -43,4 +43,11 @@
         <EmbeddedResource Include="Locales\zh-CN.json"/>
         <EmbeddedResource Include="Locales\zh-TW.json"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\Modals\TelemetryConsentView.axaml.cs">
+        <DependentUpon>TelemetryConsentView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>

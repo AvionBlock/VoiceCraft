@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace VoiceCraft.Client.Views;
+namespace VoiceCraft.Client.Views.Modals;
 
 public partial class TelemetryConsentView : UserControl
 {

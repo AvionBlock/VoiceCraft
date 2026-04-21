@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.ViewModels;
+namespace VoiceCraft.Client.ViewModels.Modals;
 
 public partial class TelemetryConsentViewModel(
     NavigationService navigationService,

@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VoiceCraft.Client.Views.Home.CrashLogView"
-             x:Name="Root"
              xmlns:locale="clr-namespace:VoiceCraft.Client.Locales"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
              x:DataType="vm:CrashLogViewModel">
@@ -21,7 +20,8 @@
                 <DataTemplate>
                     <Grid RowDefinitions="Auto, Auto, Auto"
                           ColumnDefinitions="*, Auto">
-                        <TextBlock Grid.ColumnSpan="2"
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="16"
@@ -30,7 +30,7 @@
                                    Margin="0,0,0,10" />
 
                         <TextBlock Grid.Row="1"
-                                   Grid.ColumnSpan="2"
+                                   Grid.Column="0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    FontSize="13"
@@ -39,6 +39,7 @@
                         <!-- Only show a small amount of text, to not annihilate mobile rendering. -->
 
                         <TextBlock Grid.Row="2"
+                                   Grid.Column="0"
                                    VerticalAlignment="Center"
                                    Margin="0,10,0,0"
                                    Text="{Binding Value.DumpUrl}"
@@ -46,12 +47,11 @@
 
                         <Button Grid.Row="2"
                                 Grid.Column="1"
-                                MinWidth="132"
                                 Height="40"
                                 Margin="10,10,0,0"
                                 Padding="12,0"
                                 CornerRadius="20"
-                                Command="{Binding DataContext.CopyDumpLinkCommand, ElementName=Root}"
+                                Command="{Binding $parent[UserControl].((vm:CrashLogViewModel)DataContext).CopyDumpLinkCommand}"
                                 CommandParameter="{Binding}">
                             <TextBlock VerticalAlignment="Center"
                                        Text="{locale:Localize CrashLogs.Action.DumpLink}" />
@@ -79,4 +79,3 @@
         </StackPanel>
     </Panel>
 </UserControl>
-
