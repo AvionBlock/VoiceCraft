@@ -92,7 +92,7 @@ public sealed class ClientTelemetry(SettingsService settingsService)
 
     private static TelemetryDeviceInfo BuildDeviceInfo()
     {
-        var deviceInfo = DeviceInfo.Current;
+        var deviceInfo = TryGetDeviceInfo();
         var totalAvailableBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
         long? memoryMb = totalAvailableBytes > 0 ? totalAvailableBytes / (1024 * 1024) : null;
 
@@ -102,8 +102,8 @@ public sealed class ClientTelemetry(SettingsService settingsService)
             OsVersion = GetOsVersion(deviceInfo),
             OsBuild = GetOsBuild(deviceInfo),
             OsDescription = GetOsDescription(deviceInfo),
-            Vendor = NormalizeValue(deviceInfo.Manufacturer),
-            Model = NormalizeValue(deviceInfo.Model),
+            Vendor = NormalizeValue(deviceInfo?.Manufacturer),
+            Model = NormalizeValue(deviceInfo?.Model),
             Architecture = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant(),
             ProcessArchitecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
             Runtime = RuntimeInformation.FrameworkDescription,
@@ -140,16 +140,33 @@ public sealed class ClientTelemetry(SettingsService settingsService)
 #endif
     }
 
-    private static string GetPlatformName(IDeviceInfo deviceInfo)
+    private static IDeviceInfo? TryGetDeviceInfo()
     {
-        if (deviceInfo.Platform == DevicePlatform.WinUI)
+        if (!(OperatingSystem.IsAndroid() || OperatingSystem.IsIOS() || OperatingSystem.IsMacOS()))
+            return null;
+
+        try
+        {
+            return DeviceInfo.Current;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string GetPlatformName(IDeviceInfo? deviceInfo)
+    {
+        if (deviceInfo?.Platform == DevicePlatform.WinUI)
             return IsWindows11(deviceInfo.Version) ? "Windows 11" : "Windows";
-        if (deviceInfo.Platform == DevicePlatform.Android)
+        if (deviceInfo?.Platform == DevicePlatform.Android)
             return "Android";
-        if (deviceInfo.Platform == DevicePlatform.iOS)
+        if (deviceInfo?.Platform == DevicePlatform.iOS)
             return "iOS";
-        if (deviceInfo.Platform == DevicePlatform.macOS)
+        if (deviceInfo?.Platform == DevicePlatform.macOS)
             return "macOS";
+        if (OperatingSystem.IsWindows())
+            return IsWindows11(Environment.OSVersion.Version) ? "Windows 11" : "Windows";
         if (OperatingSystem.IsLinux())
             return "Linux";
         if (OperatingSystem.IsBrowser())
@@ -158,38 +175,48 @@ public sealed class ClientTelemetry(SettingsService settingsService)
         return RuntimeInformation.OSDescription;
     }
 
-    private static string GetOsVersion(IDeviceInfo deviceInfo)
+    private static string GetOsVersion(IDeviceInfo? deviceInfo)
     {
-        if (deviceInfo.Platform == DevicePlatform.WinUI)
+        if (deviceInfo?.Platform == DevicePlatform.WinUI)
             return GetPlatformName(deviceInfo);
-        if (deviceInfo.Platform == DevicePlatform.Android)
+        if (deviceInfo?.Platform == DevicePlatform.Android)
             return $"Android {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
-        if (deviceInfo.Platform == DevicePlatform.iOS)
+        if (deviceInfo?.Platform == DevicePlatform.iOS)
             return $"iOS {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
-        if (deviceInfo.Platform == DevicePlatform.macOS)
+        if (deviceInfo?.Platform == DevicePlatform.macOS)
             return $"macOS {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
+        if (OperatingSystem.IsWindows())
+            return GetPlatformName(deviceInfo);
 
-        var version = NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version);
-        return string.IsNullOrWhiteSpace(version) ? Environment.OSVersion.VersionString : version;
+        if (deviceInfo != null)
+        {
+            var version = NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version);
+            if (!string.IsNullOrWhiteSpace(version))
+                return version;
+        }
+
+        return Environment.OSVersion.VersionString;
     }
 
-    private static string GetOsBuild(IDeviceInfo deviceInfo)
+    private static string GetOsBuild(IDeviceInfo? deviceInfo)
     {
-        return deviceInfo.Version != default
+        return deviceInfo is { Version: not null } && deviceInfo.Version != default
             ? deviceInfo.Version.ToString()
             : Environment.OSVersion.Version.ToString();
     }
 
-    private static string GetOsDescription(IDeviceInfo deviceInfo)
+    private static string GetOsDescription(IDeviceInfo? deviceInfo)
     {
-        if (deviceInfo.Platform == DevicePlatform.WinUI)
+        if (deviceInfo?.Platform == DevicePlatform.WinUI)
             return $"{GetPlatformName(deviceInfo)} build {GetOsBuild(deviceInfo)}";
-        if (deviceInfo.Platform == DevicePlatform.Android)
+        if (deviceInfo?.Platform == DevicePlatform.Android)
             return $"Android {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)} (API level {deviceInfo.Version.Major})";
-        if (deviceInfo.Platform == DevicePlatform.iOS)
+        if (deviceInfo?.Platform == DevicePlatform.iOS)
             return $"iOS {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
-        if (deviceInfo.Platform == DevicePlatform.macOS)
+        if (deviceInfo?.Platform == DevicePlatform.macOS)
             return $"macOS {NormalizeVersionString(deviceInfo.VersionString, deviceInfo.Version)}";
+        if (OperatingSystem.IsWindows())
+            return $"{GetPlatformName(deviceInfo)} build {Environment.OSVersion.Version}";
 
         return RuntimeInformation.OSDescription;
     }
