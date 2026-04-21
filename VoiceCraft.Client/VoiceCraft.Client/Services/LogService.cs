@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Diagnostics;
 
@@ -145,7 +146,11 @@ public static class LogService
         if (!string.IsNullOrWhiteSpace(crashLog.DumpUrl))
             return crashLog.DumpUrl;
 
-        var dumpResponse = await ClientTelemetry.ReportCrashAsync(crashLog.Message);
+        var telemetry = App.ServiceProvider?.GetService<ClientTelemetry>();
+        if (telemetry == null)
+            return null;
+
+        var dumpResponse = await telemetry.ReportCrashAsync(crashLog.Message);
         var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
         if (string.IsNullOrWhiteSpace(dumpUrl))
             return null;

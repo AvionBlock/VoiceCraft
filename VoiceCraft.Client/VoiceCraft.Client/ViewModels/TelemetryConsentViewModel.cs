@@ -6,7 +6,8 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class TelemetryConsentViewModel(
     NavigationService navigationService,
-    SettingsService settingsService) : ViewModelBase
+    SettingsService settingsService,
+    ClientTelemetry clientTelemetry) : ViewModelBase
 {
     public override bool DisableBackButton { get; protected set; } = true;
 
@@ -16,7 +17,7 @@ public partial class TelemetryConsentViewModel(
         settingsService.TelemetrySettings.Enabled = true;
         settingsService.TelemetrySettings.ConsentShown = true;
         await settingsService.SaveImmediate();
-        _ = ClientTelemetry.ReportStartupAsync(settingsService, 3);
+        _ = clientTelemetry.ReportStartupAsync(3);
         navigationService.PopModal();
     }
 

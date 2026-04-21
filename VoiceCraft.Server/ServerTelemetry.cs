@@ -7,43 +7,58 @@ using VoiceCraft.Core.Telemetry;
 
 namespace VoiceCraft.Server;
 
-public static class ServerTelemetry
+public sealed class ServerTelemetry
 {
     private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromMinutes(1);
-    private static readonly object Sync = new();
     private static readonly Stopwatch Uptime = Stopwatch.StartNew();
-    private static bool _enabled = true;
-    private static string? _telemetryToken;
+    private bool _enabled = true;
+    private string? _telemetryToken;
 
-    public static void SetEnabled(bool enabled)
+    public void Configure(bool enabled, string telemetryToken)
     {
         _enabled = enabled;
+        _telemetryToken = telemetryToken;
     }
 
-    public static void SetTelemetryToken(string telemetryToken)
-    {
-        lock (Sync)
-        {
-            _telemetryToken = telemetryToken;
-        }
-    }
-
-    public static Task ReportStartupAsync(ServerTelemetrySnapshot snapshot)
+    public Task ReportStartupAsync(ServerTelemetrySnapshot snapshot)
     {
         return ReportTelemetryAsync(snapshot, "startup");
     }
 
-    public static Task ReportHeartbeatAsync(ServerTelemetrySnapshot snapshot)
+    public Task ReportHeartbeatAsync(ServerTelemetrySnapshot snapshot)
     {
         return ReportTelemetryAsync(snapshot, "heartbeat");
     }
 
-    public static TimeSpan GetHeartbeatInterval()
+    public TimeSpan GetHeartbeatInterval()
     {
         return HeartbeatInterval;
     }
 
-    private static Task ReportTelemetryAsync(ServerTelemetrySnapshot snapshot, string tag)
+    public Task<TelemetryDumpResponse?> ReportCrashAsync(Exception exception)
+    {
+        if (!_enabled)
+            return Task.FromResult<TelemetryDumpResponse?>(null);
+
+        var payload = new TelemetryDumpRequest
+        {
+            Role = "server",
+            Category = "crash",
+            Title = exception.GetType().Name,
+            App = BuildAppInfo(),
+            Device = BuildDeviceInfo(),
+            Server = BuildServerInfo(),
+            Payload = new Dictionary<string, string>
+            {
+                ["crash_log"] = exception.ToString(),
+                ["uptime_sec"] = ((long)Uptime.Elapsed.TotalSeconds).ToString(CultureInfo.InvariantCulture)
+            }
+        };
+
+        return TelemetryTransport.SendDumpAsync(payload);
+    }
+
+    private Task ReportTelemetryAsync(ServerTelemetrySnapshot snapshot, string tag)
     {
         if (!_enabled)
             return Task.CompletedTask;
@@ -69,37 +84,11 @@ public static class ServerTelemetry
         return TelemetryTransport.SendTelemetryAsync(payload);
     }
 
-    public static Task<TelemetryDumpResponse?> ReportCrashAsync(Exception exception)
+    private string GetFingerprint()
     {
-        if (!_enabled)
-            return Task.FromResult<TelemetryDumpResponse?>(null);
-
-        var payload = new TelemetryDumpRequest
-        {
-            Role = "server",
-            Category = "crash",
-            Title = exception.GetType().Name,
-            App = BuildAppInfo(),
-            Device = BuildDeviceInfo(),
-            Server = BuildServerInfo(),
-            Payload = new Dictionary<string, string>
-            {
-                ["crash_log"] = exception.ToString(),
-                ["uptime_sec"] = ((long)Uptime.Elapsed.TotalSeconds).ToString(CultureInfo.InvariantCulture)
-            }
-        };
-
-        return TelemetryTransport.SendDumpAsync(payload);
-    }
-
-    private static string GetFingerprint()
-    {
-        lock (Sync)
-        {
-            return string.IsNullOrWhiteSpace(_telemetryToken)
-                ? Guid.NewGuid().ToString("N")
-                : _telemetryToken;
-        }
+        return string.IsNullOrWhiteSpace(_telemetryToken)
+            ? Guid.NewGuid().ToString("N")
+            : _telemetryToken;
     }
 
     private static TelemetryAppInfo BuildAppInfo(string? version = null)
@@ -152,14 +141,14 @@ public static class ServerTelemetry
 
     private static TelemetryServerInfo BuildServerInfo()
     {
+        var totalAvailableBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+
         return new TelemetryServerInfo
         {
             Platform = GetPlatformName(),
             Architecture = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant(),
             CpuCores = Environment.ProcessorCount,
-            MemoryMb = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes > 0
-                ? GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024 * 1024)
-                : null,
+            MemoryMb = totalAvailableBytes > 0 ? totalAvailableBytes / (1024 * 1024) : null,
             UptimeSec = (long)Uptime.Elapsed.TotalSeconds
         };
     }

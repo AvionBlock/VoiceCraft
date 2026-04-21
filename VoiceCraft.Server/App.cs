@@ -36,6 +36,7 @@ public static class App
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
+        var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetry>();
 
         try
         {
@@ -46,8 +47,7 @@ public static class App
             //Properties
             properties.Load(runtimeOptions.ExitOnInvalidProperties);
             properties.ApplyRuntimeOverrides(runtimeOptions);
-            ServerTelemetry.SetEnabled(properties.TelemetryEnabled);
-            ServerTelemetry.SetTelemetryToken(properties.TelemetryToken);
+            telemetry.Configure(properties.TelemetryEnabled, properties.TelemetryToken);
             TelemetryTransport.FailureLogger = message => AnsiConsole.MarkupLine($"[yellow]{message.EscapeMarkup()}[/]");
             AnsiConsole.MarkupLine(properties.TelemetryEnabled
                 ? "[grey]Telemetry is enabled. VoiceCraft sends anonymous startup, heartbeat, and crash diagnostics. Set \"TelemetryEnabled\": false in config/ServerProperties.json to disable it.[/]"
@@ -117,7 +117,7 @@ public static class App
             AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
             AnsiConsole.MarkupLine("\0\0\0"); //This is here for docker images to detect server is running.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
-            await ServerTelemetry.ReportStartupAsync(CreateTelemetrySnapshot(
+            await telemetry.ReportStartupAsync(CreateTelemetrySnapshot(
                 liteNetServer,
                 httpMcApiServer,
                 tcpMcApiServer,
@@ -136,10 +136,10 @@ public static class App
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
-                    if (DateTime.UtcNow - lastTelemetryAt >= ServerTelemetry.GetHeartbeatInterval())
+                    if (DateTime.UtcNow - lastTelemetryAt >= telemetry.GetHeartbeatInterval())
                     {
                         lastTelemetryAt = DateTime.UtcNow;
-                        await ServerTelemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
+                        await telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
                             liteNetServer,
                             httpMcApiServer,
                             tcpMcApiServer,

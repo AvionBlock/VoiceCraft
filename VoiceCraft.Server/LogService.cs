@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Diagnostics;
 
@@ -126,7 +127,11 @@ public static class LogService
 
     private static async Task AttachDumpUrlAsync(DateTime timestamp, Exception exception)
     {
-        var dumpResponse = await ServerTelemetry.ReportCrashAsync(exception);
+        var telemetry = Program.ServiceProvider.GetService<ServerTelemetry>();
+        if (telemetry == null)
+            return;
+
+        var dumpResponse = await telemetry.ReportCrashAsync(exception);
         var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
         if (string.IsNullOrWhiteSpace(dumpUrl))
             return;

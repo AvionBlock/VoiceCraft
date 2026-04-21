@@ -62,6 +62,7 @@ public static class Program
 
         //Other
         serviceCollection.AddSingleton<ServerProperties>();
+        serviceCollection.AddSingleton<ServerTelemetry>();
         serviceCollection.AddSingleton<VoiceCraftWorld>();
         return serviceCollection.BuildServiceProvider();
     }

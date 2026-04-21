@@ -122,6 +122,7 @@ public class App : Application
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<NotificationService>();
         ServiceCollection.AddSingleton<ClipboardService>();
+        ServiceCollection.AddSingleton<ClientTelemetry>();
         ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
             x.GetRequiredService<NotificationService>(),
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
@@ -269,10 +270,9 @@ public class App : Application
     {
         TelemetryTransport.FailureLogger = LogService.LogInfo;
 
-        var settingsService = serviceProvider.GetRequiredService<SettingsService>();
-        ClientTelemetry.SetTelemetryToken(settingsService.TelemetryToken);
-        if (settingsService.TelemetrySettings.Enabled && settingsService.TelemetrySettings.ConsentShown)
-            _ = ClientTelemetry.ReportStartupAsync(settingsService, 3);
+        var clientTelemetry = serviceProvider.GetRequiredService<ClientTelemetry>();
+        if (clientTelemetry.IsEnabled)
+            _ = clientTelemetry.ReportStartupAsync(3);
     }
 }
 
