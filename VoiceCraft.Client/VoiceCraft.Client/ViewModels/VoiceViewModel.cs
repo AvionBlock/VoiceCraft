@@ -52,7 +52,7 @@ public partial class VoiceViewModel(
         GC.SuppressFinalize(this);
     }
 
-    partial void OnSelectedEntityChanging(EntityDataViewModel? value)
+    partial void OnSelectedEntityChanged(EntityDataViewModel? value)
     {
         if (value == null) return;
         navigationService.PushModal<EntityDataSettingsViewModel>(new EntityDataSettingsNavigationData(value));
