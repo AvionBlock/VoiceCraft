@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
+using VoiceCraft.Client.ViewModels.Modals;
 using VoiceCraft.Network;
 using VoiceCraft.Network.World;
 
@@ -29,7 +30,6 @@ public partial class VoiceViewModel(
     [ObservableProperty] public partial bool IsServerMuted { get; set; }
     [ObservableProperty] public partial bool IsSpeaking { get; set; }
     [ObservableProperty] public partial EntityDataViewModel? SelectedEntity { get; set; }
-    [ObservableProperty] public partial bool ShowModal { get; set; }
     [ObservableProperty] public partial string StatusDescriptionText { get; set; } = string.Empty;
     [ObservableProperty] public partial string StatusTitleText { get; set; } = string.Empty;
     public override bool DisableBackButton { get; protected set; } = true;
@@ -52,15 +52,14 @@ public partial class VoiceViewModel(
         GC.SuppressFinalize(this);
     }
 
-    partial void OnSelectedEntityChanged(EntityDataViewModel? value)
+    partial void OnSelectedEntityChanging(EntityDataViewModel? value)
     {
-        if (value == null)
+        if (value == null) return;
+        navigationService.PushModal<EntityDataSettingsViewModel>(new EntityDataSettingsNavigationData(value));
+        Task.Run(() =>
         {
-            ShowModal = false;
-            return;
-        }
-
-        ShowModal = true;
+            SelectedEntity = null; //This bug is annoying.
+        });
     }
 
     [RelayCommand]

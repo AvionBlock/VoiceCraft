@@ -10,12 +10,4 @@ public partial class VoiceView : UserControl
     {
         InitializeComponent();
     }
-    
-    private void ModalBackgroundOnPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        var viewModel = (VoiceViewModel?)DataContext;
-        if (viewModel == null) return;
-        if (sender is not Border border || (border.Child?.IsPointerOver ?? false)) return;
-        viewModel.SelectedEntity = null;
-    }
 }

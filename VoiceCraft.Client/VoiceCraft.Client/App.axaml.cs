@@ -132,7 +132,11 @@ public class App : Application
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
+
+        //Modals
         ServiceCollection.AddTransient<TelemetryConsentViewModel>();
+        ServiceCollection.AddTransient<EntityDataSettingsViewModel>();
+        ServiceCollection.AddTransient<HotKeyCaptureViewModel>();
 
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
@@ -157,6 +161,8 @@ public class App : Application
         //Views
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
         ServiceCollection.AddKeyedTransient<Control, TelemetryConsentView>(typeof(TelemetryConsentView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, EntityDataSettingsView>(typeof(EntityDataSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HotKeyCaptureView>(typeof(HotKeyCaptureView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
@@ -267,4 +273,3 @@ public class App : Application
         };
     }
 }
-

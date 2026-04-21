@@ -1,20 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Settings"
              xmlns:data="clr-namespace:VoiceCraft.Client.ViewModels.Data"
              xmlns:locale="using:VoiceCraft.Client.Locales"
-             mc:Ignorable="d"
-             d:DesignWidth="800"
-             d:DesignHeight="450"
-             x:Name="Root"
              x:DataType="vm:HotKeySettingsViewModel"
-             x:Class="VoiceCraft.Client.Views.Settings.HotKeySettingsView"
-             KeyDown="HotKeyCapture_OnKeyDown"
-             KeyUp="HotKeyCapture_OnKeyUp"
-             PointerPressed="HotKeyCapture_OnPointerPressed"
-             PointerReleased="HotKeyCapture_OnPointerReleased">
+             x:Class="VoiceCraft.Client.Views.Settings.HotKeySettingsView">
     <Grid RowDefinitions="Auto, *">
         <Grid Grid.Row="0"
               Margin="0,0,0,0"
@@ -66,62 +56,5 @@
                 </ItemsControl>
             </Border>
         </ScrollViewer>
-        <Border Grid.Row="1"
-                IsVisible="{Binding IsRebinding}"
-                Background="#AA000000"
-                Classes.ShowModal="{Binding IsRebinding}"
-                Classes.HideModal="{Binding !IsRebinding}">
-            <Border HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="420"
-                    Padding="20"
-                    Classes="card">
-                <StackPanel Spacing="12">
-                    <TextBlock HorizontalAlignment="Center"
-                               FontSize="20"
-                               FontWeight="Bold"
-                               Text="{Binding RebindingTitle}" />
-                    <TextBlock HorizontalAlignment="Center"
-                               Opacity="0.85"
-                               Text="{locale:Localize Settings.HotKey.CapturePrompt}" />
-                    <Border Classes="card"
-                            Padding="10">
-                        <TextBlock VerticalAlignment="Center"
-                                   HorizontalAlignment="Center"
-                                   Text="{Binding RebindingPreview}" />
-                    </Border>
-                    <StackPanel Orientation="Vertical"
-                                Spacing="10">
-                        <Button VerticalAlignment="Center"
-                                HorizontalAlignment="Stretch"
-                                Command="{Binding ConfirmRebindCommand}">
-                            <TextBlock Text="{locale:Localize Settings.HotKey.SaveBinding}" />
-                        </Button>
-                        <Button VerticalAlignment="Center"
-                                HorizontalAlignment="Stretch"
-                                Command="{Binding CancelRebindCommand}">
-                            <TextBlock Text="{locale:Localize Settings.HotKey.CancelRebind}" />
-                        </Button>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-            
-            <Border.Transitions>
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
-                </Transitions>
-            </Border.Transitions>
-            <Border.Styles>
-                <Style Selector="Border.ShowModal">
-                    <Setter Property="Opacity" Value="1" />
-                </Style>
-            </Border.Styles>
-            <Border.Styles>
-                <Style Selector="Border.HideModal">
-                    <Setter Property="Opacity" Value="0" />
-                </Style>
-            </Border.Styles>
-        </Border>
     </Grid>
-
 </UserControl>

@@ -9,6 +9,7 @@ namespace VoiceCraft.Client.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private readonly NavigationService _navigationService;
     [ObservableProperty] public partial Bitmap? BackgroundImage { get; set; }
     [ObservableProperty] public partial object? Content { get; set; }
     [ObservableProperty] public partial object? ModalContent { get; set; }
@@ -21,6 +22,8 @@ public partial class MainViewModel : ObservableObject
         HotKeyService hotKeyService,
         IBackgroundService backgroundService)
     {
+        _navigationService = navigationService;
+        
         themesService.OnBackgroundImageChanged += backgroundImage =>
         {
             BackgroundImage = backgroundImage?.BackgroundImageBitmap;
@@ -55,5 +58,10 @@ public partial class MainViewModel : ObservableObject
 
         if (!settingsService.TelemetrySettings.ConsentShown)
             navigationService.PushModal<TelemetryConsentViewModel>();
+    }
+
+    public void PopModal()
+    {
+        _navigationService.PopModal(true);
     }
 }

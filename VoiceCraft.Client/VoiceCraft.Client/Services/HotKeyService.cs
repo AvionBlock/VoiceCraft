@@ -188,8 +188,7 @@ public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
     public override void Press()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if(service == null) return;
-        service.Muted = !service.Muted;
+        service?.Muted = !service.Muted;
     }
 }
 
@@ -202,8 +201,7 @@ public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
     public override void Press()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if(service == null) return;
-        service.Deafened = !service.Deafened;
+        service?.Deafened = !service.Deafened;
     }
 }
 
@@ -216,14 +214,12 @@ public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyActi
     public override void Press()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if (service == null) return;
-        service.PushToTalk = true;
+        service?.PushToTalk = true;
     }
 
     public override void Release()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if (service == null) return;
-        service.PushToTalk = false;
+        service?.PushToTalk = false;
     }
 }
