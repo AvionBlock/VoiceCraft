@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace VoiceCraft.Core.Telemetry;
 
-public static class TelemetryTransport
+public class TelemetryTransport
 {
-    private static readonly HttpClient HttpClient = new()
+    private readonly HttpClient _httpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(15)
     };
 
-    public static async Task SendTelemetryAsync(TelemetryEventRequest payload,
+    public async Task SendTelemetryAsync(TelemetryEventRequest payload,
         CancellationToken cancellationToken = default)
     {
         var uri = BuildUri("/v1/telemetry");
@@ -22,7 +22,7 @@ public static class TelemetryTransport
         try
         {
             using var content = JsonContent.Create(payload, TelemetryJsonContext.Default.TelemetryEventRequest);
-            using var response = await HttpClient.PostAsync(uri, content, cancellationToken);
+            using var response = await _httpClient.PostAsync(uri, content, cancellationToken);
             if (response.IsSuccessStatusCode) return;
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             exception = new Exception(
@@ -36,7 +36,7 @@ public static class TelemetryTransport
         throw exception;
     }
 
-    public static async Task<TelemetryDumpResponse?> SendDumpAsync(TelemetryDumpRequest payload,
+    public async Task<TelemetryDumpResponse?> SendDumpAsync(TelemetryDumpRequest payload,
         CancellationToken cancellationToken = default)
     {
         var uri = BuildUri("/v1/dumps");
@@ -44,7 +44,7 @@ public static class TelemetryTransport
         try
         {
             using var content = JsonContent.Create(payload, TelemetryJsonContext.Default.TelemetryDumpRequest);
-            using var response = await HttpClient.PostAsync(uri, content, cancellationToken);
+            using var response = await _httpClient.PostAsync(uri, content, cancellationToken);
             if (response.IsSuccessStatusCode)
                 return await response.Content.ReadFromJsonAsync(
                     TelemetryJsonContext.Default.TelemetryDumpResponse,

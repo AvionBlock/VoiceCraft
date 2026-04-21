@@ -9,7 +9,8 @@ namespace VoiceCraft.Server;
 
 public sealed class ServerTelemetryService(ServerProperties properties)
 {
-    private static readonly Stopwatch Uptime = Stopwatch.StartNew();
+    private readonly Stopwatch _uptime = Stopwatch.StartNew();
+    private readonly TelemetryTransport _transport = new();
     public static TimeSpan HeartbeatInterval { get; } = TimeSpan.FromMinutes(1);
     private bool IsEnabled => properties.TelemetryEnabled;
     private string TelemetryToken => properties.TelemetryToken;
@@ -40,13 +41,13 @@ public sealed class ServerTelemetryService(ServerProperties properties)
             Payload = new Dictionary<string, string>
             {
                 ["crash_log"] = exception.ToString(),
-                ["uptime_sec"] = ((long)Uptime.Elapsed.TotalSeconds).ToString(CultureInfo.InvariantCulture)
+                ["uptime_sec"] = ((long)_uptime.Elapsed.TotalSeconds).ToString(CultureInfo.InvariantCulture)
             }
         };
 
         try
         {
-            return await TelemetryTransport.SendDumpAsync(payload);
+            return await _transport.SendDumpAsync(payload);
         }
         catch (Exception ex)
         {
@@ -80,7 +81,7 @@ public sealed class ServerTelemetryService(ServerProperties properties)
 
         try
         {
-            await TelemetryTransport.SendTelemetryAsync(payload);
+            await _transport.SendTelemetryAsync(payload);
         }
         catch (Exception ex)
         {
@@ -126,7 +127,7 @@ public sealed class ServerTelemetryService(ServerProperties properties)
         };
     }
 
-    private static TelemetryServerInfo BuildServerInfo(ServerTelemetrySnapshot? snapshot)
+    private TelemetryServerInfo BuildServerInfo(ServerTelemetrySnapshot? snapshot)
     {
         var totalAvailableBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
         long? memoryMb = totalAvailableBytes > 0 ? totalAvailableBytes / (1024 * 1024) : null;
@@ -138,12 +139,12 @@ public sealed class ServerTelemetryService(ServerProperties properties)
             Locale = snapshot?.Language,
             CpuCores = Environment.ProcessorCount,
             MemoryMb = memoryMb,
-            UptimeSec = (long)Uptime.Elapsed.TotalSeconds,
+            UptimeSec = (long)_uptime.Elapsed.TotalSeconds,
             ConnectedClients = snapshot?.ConnectedClients
         };
     }
 
-    private static TelemetryServerInfo BuildServerInfo()
+    private TelemetryServerInfo BuildServerInfo()
     {
         var totalAvailableBytes = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
 
@@ -153,7 +154,7 @@ public sealed class ServerTelemetryService(ServerProperties properties)
             Architecture = RuntimeInformation.OSArchitecture.ToString().ToLowerInvariant(),
             CpuCores = Environment.ProcessorCount,
             MemoryMb = totalAvailableBytes > 0 ? totalAvailableBytes / (1024 * 1024) : null,
-            UptimeSec = (long)Uptime.Elapsed.TotalSeconds
+            UptimeSec = (long)_uptime.Elapsed.TotalSeconds
         };
     }
 

@@ -13,6 +13,7 @@ namespace VoiceCraft.Client.Services;
 public sealed class ClientTelemetryService(SettingsService settingsService)
 {
     private const int MaxCrashLogLength = 250_000;
+    private readonly TelemetryTransport _transport = new();
     private bool IsEnabled =>
         settingsService.TelemetrySettings is { Enabled: true, ConsentShown: true };
 
@@ -21,7 +22,7 @@ public sealed class ClientTelemetryService(SettingsService settingsService)
         await ReportStartupAsync(3);
     }
 
-    public static async Task<TelemetryDumpResponse?> ReportCrashAsync(string crashText, string? title = null)
+    public async Task<TelemetryDumpResponse?> ReportCrashAsync(string crashText, string? title = null)
     {
         var trimmedCrashText = TrimCrashText(crashText, out var wasTrimmed);
         var payload = new TelemetryDumpRequest
@@ -40,7 +41,7 @@ public sealed class ClientTelemetryService(SettingsService settingsService)
 
         try
         {
-            return await TelemetryTransport.SendDumpAsync(payload);
+            return await _transport.SendDumpAsync(payload);
         }
         catch(Exception ex)
         {
@@ -74,7 +75,7 @@ public sealed class ClientTelemetryService(SettingsService settingsService)
         {
             try
             {
-                await TelemetryTransport.SendTelemetryAsync(payload);
+                await _transport.SendTelemetryAsync(payload);
             }
             catch(Exception ex)
             {

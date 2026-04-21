@@ -13,17 +13,18 @@ namespace VoiceCraft.Client.ViewModels.Home;
 
 public partial class CrashLogViewModel(
     NotificationService notificationService,
+    ClientTelemetryService clientTelemetryService,
     ClipboardService clipboardService) : ViewModelBase
 {
     [ObservableProperty] public partial ObservableCollection<KeyValuePair<DateTime, CrashLogRecord>> CrashLogs { get; set; } = [];
 
-    private static async Task<string?> UploadCrashLog(DateTime timeStamp)
+    private async Task<string?> UploadCrashLog(DateTime timeStamp)
     {
         if (!LogService.TryGetCrashLog(timeStamp, out var crashLog)) return null;
         if (!string.IsNullOrWhiteSpace(crashLog.DumpUrl))
             return crashLog.DumpUrl;
         
-        var dumpResponse = await ClientTelemetryService.ReportCrashAsync(crashLog.Message);
+        var dumpResponse = await clientTelemetryService.ReportCrashAsync(crashLog.Message);
         var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
         if (string.IsNullOrWhiteSpace(dumpUrl))
             return null;
