@@ -34,7 +34,7 @@ public class ServerProperties
             AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
             ParseAudioEffects();
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"ServerProperties.Success")}[/]");
             return;
         }
 
@@ -108,7 +108,7 @@ public class ServerProperties
             File.WriteAllText(filePath,
                 JsonSerializer.Serialize(properties,
                     ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Generating.Success")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"ServerProperties.Generating.Success:{path}")}[/]");
         }
         catch (Exception ex)
         {
