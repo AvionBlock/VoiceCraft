@@ -19,7 +19,7 @@
             <TextBlock HorizontalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{Binding RebindingTitle}" />
+                       Text="{locale:Localize {Binding $parent[UserControl].((vm:HotKeyCaptureViewModel)DataContext).RebindingTitle }}" />
             <TextBlock HorizontalAlignment="Center"
                        Opacity="0.85"
                        Text="{locale:Localize Settings.HotKey.CapturePrompt}" />

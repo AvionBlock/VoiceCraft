@@ -182,7 +182,7 @@ public sealed class HotKeyBinding(HotKeyAction action, string keyCombo)
 public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 {
     public override string Id => "Mute";
-    public override string Title => "Mute";
+    public override string Title => "Settings.HotKey.Actions.Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
 
     public override void Press()
@@ -195,7 +195,7 @@ public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
 {
     public override string Id => "Deafen";
-    public override string Title => "Deafen";
+    public override string Title => "Settings.HotKey.Actions.Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
 
     public override void Press()
@@ -208,7 +208,7 @@ public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
 public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyAction
 {
     public override string Id => "PushToTalk";
-    public override string Title => "PushToTalk";
+    public override string Title => "Settings.HotKey.Actions.PushToTalk";
     public override string DefaultKeyCombo => "LeftControl";
 
     public override void Press()

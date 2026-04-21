@@ -7,7 +7,6 @@
     <Border MaxWidth="520"
             VerticalAlignment="Center"
             Padding="15"
-            Background="{DynamicResource BackgroundBrush}"
             Classes="card">
         <ScrollViewer>
             <StackPanel Spacing="14">

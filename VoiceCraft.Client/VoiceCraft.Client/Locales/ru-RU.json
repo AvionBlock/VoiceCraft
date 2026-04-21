@@ -74,7 +74,8 @@
       "CancelRebind": "Отмена",
       "Actions": {
         "Mute": "Выключить микрофон",
-        "Deafen": "Оглушить"
+        "Deafen": "Оглушить",
+        "PushToTalk": "Удерживай, чтобы говорить"
       }
     },
     "Advanced": {

@@ -74,7 +74,8 @@
       "CancelRebind": "Cancel",
       "Actions": {
         "Mute": "Mute",
-        "Deafen": "Deafen"
+        "Deafen": "Deafen",
+        "PushToTalk": "Push To Talk"
       }
     },
     "Advanced": {

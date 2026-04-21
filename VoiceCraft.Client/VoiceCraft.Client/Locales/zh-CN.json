@@ -74,7 +74,8 @@
       "CancelRebind": "取消",
       "Actions": {
         "Mute": "静音",
-        "Deafen": "拒听"
+        "Deafen": "拒听",
+        "PushToTalk": "按住说话"
       }
     },
     "Advanced": {

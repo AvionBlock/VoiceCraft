@@ -7,11 +7,5 @@ public partial class HotKeyActionDataViewModel(HotKeyAction hotKeyAction, string
 {
     public HotKeyAction Action { get; } = hotKeyAction;
     [ObservableProperty] public partial string Keybind { get; set; } = keybind.Replace("\0", " + ");
-
-    [ObservableProperty]
-    public partial string Title { get; set; } = hotKeyAction.Title switch
-    {
-        "PushToTalk" => "Settings.Input.PushToTalk",
-        _ => $"Settings.HotKey.Actions.{hotKeyAction.Title}"
-    };
+    [ObservableProperty] public partial string Title { get; set; } = hotKeyAction.Title;
 }
