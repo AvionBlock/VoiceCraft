@@ -1,6 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Input;
-using VoiceCraft.Client.ViewModels;
 
 namespace VoiceCraft.Client.Views;
 

@@ -5,31 +5,28 @@ namespace VoiceCraft.Core.Diagnostics;
 
 public class CrashLogRecord : INotifyPropertyChanged
 {
-    private string _message = string.Empty;
-    private string? _dumpUrl;
-
     public string Message
     {
-        get => _message;
+        get;
         set
         {
-            if (_message == value)
+            if (field == value)
                 return;
 
-            _message = value;
+            field = value;
             OnPropertyChanged();
         }
-    }
+    } = string.Empty;
 
     public string? DumpUrl
     {
-        get => _dumpUrl;
+        get;
         set
         {
-            if (_dumpUrl == value)
+            if (field == value)
                 return;
 
-            _dumpUrl = value;
+            field = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasDumpUrl));
         }

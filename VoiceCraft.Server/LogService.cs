@@ -51,12 +51,9 @@ public static class LogService
                 return;
 
             var result = File.ReadAllText(fileDirectory);
-            if (TryLoadCurrent(result) || TryLoadLegacy(result))
-            {
-                TrimExceptionLogs();
-                TrimCrashLogs();
-                return;
-            }
+            if (!TryLoadCurrent(result) && !TryLoadLegacy(result)) return;
+            TrimExceptionLogs();
+            TrimCrashLogs();
         }
         catch (JsonException ex)
         {
