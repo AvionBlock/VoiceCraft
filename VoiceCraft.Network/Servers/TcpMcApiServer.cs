@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,6 +35,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     private readonly ConcurrentDictionary<TcpClient, TcpMcApiNetPeer> _mcApiPeers = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
+    private readonly byte[] _headerBuffer = new byte[FrameHeaderSize];
     private TcpListener? _listener;
     private CancellationTokenSource? _listenerCancellationTokenSource;
 
@@ -118,7 +120,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (netPeer is not TcpMcApiNetPeer tcpNetPeer)
                     return;
 
-                tcpNetPeer.OutgoingRawQueue.Enqueue(_writer.CopyData());
+                tcpNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -145,7 +147,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 foreach (var netPeer in netPeers)
                 {
                     if (excludes.Contains(netPeer.Value)) continue;
-                    netPeer.Value.OutgoingRawQueue.Enqueue(encodedPacket);
+                    netPeer.Value.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
                 }
             }
         }
@@ -209,7 +211,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                tcpNetPeer.OutgoingRawQueue.Enqueue(_writer.CopyData());
+                tcpNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -238,17 +240,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 _ = HandleClientAsync(client, cancellationToken);
             }
         }
-        catch (OperationCanceledException)
+        catch
         {
-            // Do Nothing
-        }
-        catch (ObjectDisposedException)
-        {
-            // Do Nothing
-        }
-        catch (SocketException)
-        {
-            // Do Nothing
+            //Do Nothing
         }
     }
 
@@ -276,17 +270,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 await WriteFrameAsync(stream, response, cancellationToken);
             }
         }
-        catch (OperationCanceledException)
+        catch
         {
-            // Do Nothing
-        }
-        catch (IOException)
-        {
-            // Do Nothing
-        }
-        catch (ObjectDisposedException)
-        {
-            // Do Nothing
+            //Do Nothing
         }
         finally
         {
@@ -332,19 +318,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
 
     private void UpdatePeer(TcpClient client, TcpMcApiNetPeer tcpNetPeer)
     {
-        ProcessIncomingPackets(tcpNetPeer);
-        CompletePendingResponse(tcpNetPeer);
-
-        if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
-        if (_mcApiPeers.TryRemove(client, out _))
-            Disconnect(tcpNetPeer, true);
-    }
-
-    private void ProcessIncomingPackets(TcpMcApiNetPeer tcpNetPeer)
-    {
         lock (_reader)
         {
-            while (tcpNetPeer.IncomingRawQueue.TryDequeue(out var packet))
+            while (tcpNetPeer.IncomingQueue.TryDequeue(out var packet))
                 try
                 {
                     var packetToken = packet.Token;
@@ -363,18 +339,23 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                     // Do Nothing
                 }
         }
+
+        SendPacketsLogic(tcpNetPeer);
+        if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
+        if (_mcApiPeers.TryRemove(client, out _))
+            Disconnect(tcpNetPeer, true);
     }
 
-    private static void CompletePendingResponse(TcpMcApiNetPeer netPeer)
+    private static void SendPacketsLogic(TcpMcApiNetPeer netPeer)
     {
         if (!netPeer.HasPendingResponse()) return;
 
         var packets = new List<byte[]>();
-        while (netPeer.OutgoingRawQueue.TryDequeue(out var packet))
+        while (netPeer.OutgoingQueue.TryDequeue(out var packet))
         {
             try
             {
-                packets.Add(packet);
+                packets.Add(packet.Data);
             }
             catch
             {
@@ -391,7 +372,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         {
             try
             {
-                tcpNetPeer.IncomingRawQueue.Enqueue(new TcpMcApiNetPeer.QueuedRawPacket(data, token));
+                tcpNetPeer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, token));
             }
             catch
             {
@@ -400,16 +381,16 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         }
     }
 
-    private static async Task<byte[]?> ReadFrameAsync(NetworkStream stream, CancellationToken cancellationToken)
+    private async Task<byte[]?> ReadFrameAsync(NetworkStream stream, CancellationToken cancellationToken)
     {
-        var headerBuffer = new byte[FrameHeaderSize];
-        if (!await ReadExactAsync(stream, headerBuffer, cancellationToken))
+        Array.Clear(_headerBuffer, 0, _headerBuffer.Length);
+        if (!await ReadExactAsync(stream, _headerBuffer, cancellationToken))
             return null;
 
-        var magic = BinaryPrimitives.ReadInt32BigEndian(headerBuffer.AsSpan(0, 4));
-        var version = BinaryPrimitives.ReadUInt16BigEndian(headerBuffer.AsSpan(4, 2));
-        var kind = BinaryPrimitives.ReadUInt16BigEndian(headerBuffer.AsSpan(6, 2));
-        var payloadLength = BinaryPrimitives.ReadInt32BigEndian(headerBuffer.AsSpan(8, 4));
+        var magic = BinaryPrimitives.ReadInt32BigEndian(_headerBuffer.AsSpan(0, 4));
+        var version = BinaryPrimitives.ReadUInt16BigEndian(_headerBuffer.AsSpan(4, 2));
+        var kind = BinaryPrimitives.ReadUInt16BigEndian(_headerBuffer.AsSpan(6, 2));
+        var payloadLength = BinaryPrimitives.ReadInt32BigEndian(_headerBuffer.AsSpan(8, 4));
 
         if (magic != FrameMagic || version != FrameVersion || kind != RequestKind)
             return null;
@@ -423,20 +404,28 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         return payloadBuffer;
     }
 
-    private static async Task WriteFrameAsync(NetworkStream stream, byte[] payloadBuffer, CancellationToken cancellationToken)
+    private static async Task WriteFrameAsync(NetworkStream stream, byte[] payloadBuffer,
+        CancellationToken cancellationToken)
     {
         if (payloadBuffer.Length > MaxFramePayloadLength)
             throw new InvalidOperationException("McTcp response payload exceeds the maximum frame size.");
 
-        var frameBuffer = new byte[FrameHeaderSize + payloadBuffer.Length];
-        BinaryPrimitives.WriteInt32BigEndian(frameBuffer.AsSpan(0, 4), FrameMagic);
-        BinaryPrimitives.WriteUInt16BigEndian(frameBuffer.AsSpan(4, 2), FrameVersion);
-        BinaryPrimitives.WriteUInt16BigEndian(frameBuffer.AsSpan(6, 2), ResponseKind);
-        BinaryPrimitives.WriteInt32BigEndian(frameBuffer.AsSpan(8, 4), payloadBuffer.Length);
-        payloadBuffer.CopyTo(frameBuffer.AsSpan(FrameHeaderSize));
+        var frameBuffer = ArrayPool<byte>.Shared.Rent(FrameHeaderSize + payloadBuffer.Length);
+        try
+        {
+            BinaryPrimitives.WriteInt32BigEndian(frameBuffer.AsSpan(0, 4), FrameMagic);
+            BinaryPrimitives.WriteUInt16BigEndian(frameBuffer.AsSpan(4, 2), FrameVersion);
+            BinaryPrimitives.WriteUInt16BigEndian(frameBuffer.AsSpan(6, 2), ResponseKind);
+            BinaryPrimitives.WriteInt32BigEndian(frameBuffer.AsSpan(8, 4), payloadBuffer.Length);
+            payloadBuffer.CopyTo(frameBuffer.AsSpan(FrameHeaderSize));
 
-        await stream.WriteAsync(frameBuffer, cancellationToken);
-        await stream.FlushAsync(cancellationToken);
+            await stream.WriteAsync(frameBuffer.AsMemory(0, FrameHeaderSize + payloadBuffer.Length), cancellationToken);
+            await stream.FlushAsync(cancellationToken);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(frameBuffer);
+        }
     }
 
     private static bool TryReadPayload(byte[] payload, out string token, out List<byte[]> packets)
@@ -447,7 +436,8 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
             return false;
 
         var offset = 0;
-        if (!TryReadInt32(payload, ref offset, out var tokenLength) || tokenLength < 0 || payload.Length - offset < tokenLength)
+        if (!TryReadInt32(payload, ref offset, out var tokenLength) || tokenLength < 0 ||
+            payload.Length - offset < tokenLength)
             return false;
 
         token = tokenLength == 0 ? string.Empty : Encoding.UTF8.GetString(payload, offset, tokenLength);
@@ -514,13 +504,13 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         offset += 4;
     }
 
-    private static async ValueTask<bool> ReadExactAsync(NetworkStream stream, byte[] buffer,
+    private static async ValueTask<bool> ReadExactAsync(NetworkStream stream, Memory<byte> buffer,
         CancellationToken cancellationToken)
     {
         var offset = 0;
         while (offset < buffer.Length)
         {
-            var read = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset), cancellationToken);
+            var read = await stream.ReadAsync(buffer[offset..], cancellationToken);
             if (read == 0)
                 return false;
             offset += read;
@@ -549,13 +539,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         {
             client.Close();
         }
-        catch (SocketException)
+        catch
         {
-            // Do Nothing
-        }
-        catch (ObjectDisposedException)
-        {
-            // Do Nothing
+            //Do Nothing
         }
     }
 

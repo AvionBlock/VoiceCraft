@@ -87,11 +87,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             if (_httpServer.IsListening)
                 _httpServer.Stop();
         }
-        catch (ObjectDisposedException)
-        {
-            //Do Nothing
-        }
-        catch (HttpListenerException)
+        catch
         {
             //Do Nothing
         }
@@ -100,7 +96,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         {
             _httpServer.Close();
         }
-        catch (ObjectDisposedException)
+        catch
         {
             //Do Nothing
         }
@@ -260,11 +256,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 await HandleRequest(context);
             }
         }
-        catch (ObjectDisposedException)
-        {
-            //Do Nothing
-        }
-        catch (HttpListenerException)
+        catch
         {
             //Do Nothing
         }
