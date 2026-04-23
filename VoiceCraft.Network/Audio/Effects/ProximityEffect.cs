@@ -23,8 +23,8 @@ namespace VoiceCraft.Network.Audio.Effects
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
 
-        public int MinRange { get; set; }
-        public int MaxRange { get; set; }
+        public float MinRange { get; set; }
+        public float MaxRange { get; set; }
 
         public EffectType EffectType => EffectType.Proximity;
 
@@ -62,8 +62,8 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public void Deserialize(NetDataReader reader)
         {
-            MinRange = reader.GetInt();
-            MaxRange = reader.GetInt();
+            MinRange = reader.GetFloat();
+            MaxRange = reader.GetFloat();
             WetDry = reader.GetFloat();
         }
 
