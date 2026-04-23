@@ -296,7 +296,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
             _mcWssWriter.Put((ushort)outboundPacket.Data.Length);
             _mcWssWriter.Put(outboundPacket.Data);
 
-            while (_mcWssWriter.Length < Config.MaxStringLengthPerCommand &&
+            while (_mcWssWriter.Length < Config.MaxByteLengthPerCommand &&
                    netPeer.OutgoingQueue.TryDequeue(out outboundPacket))
             {
                 _mcWssWriter.Put((ushort)outboundPacket.Data.Length);
@@ -314,7 +314,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         var packet =
             new McWssCommandRequest(
-                $"{Config.DataTunnelCommand} {Config.MaxStringLengthPerCommand} \"{packetData}\"");
+                $"{Config.DataTunnelCommand} {Config.MaxByteLengthPerCommand} \"{packetData}\"");
         socket.Send(JsonSerializer.Serialize(packet, McWssCommandRequestGenerationContext.Default.McWssCommandRequest));
     }
 
@@ -373,8 +373,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         public uint MaxClients { get; set; } = 1;
         public uint MaxTimeoutMs { get; set; } = 10000;
         public string DataTunnelCommand { get; set; } = "voicecraft:data_tunnel";
-        public uint CommandsPerTick { get; set; } = 5;
-        public uint MaxStringLengthPerCommand { get; set; } = 1000;
+        public uint CommandsPerTick { get; set; } = 3;
+        public uint MaxByteLengthPerCommand { get; set; } = 300;
         public HashSet<McApiPacketType> DisabledPacketTypes { get; set; } = [];
     }
 }
