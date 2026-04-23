@@ -287,8 +287,8 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 context.Response.Close();
                 return;
             }
-            
-            var size = (int)context.Request.InputStream.Length;
+
+            var size = (int)context.Request.ContentLength64;
             var data = ArrayPool<byte>.Shared.Rent(size);
             var packets = new List<byte[]>();
             try
@@ -304,8 +304,8 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                     {
                         var packetSize = _httpReader.GetUShort();
                         if(packetSize <= 0) continue;
-                        var packet = new byte[size];
-                        _httpReader.GetBytes(packet, size);
+                        var packet = new byte[packetSize];
+                        _httpReader.GetBytes(packet, packetSize);
                         packets.Add(packet);
                     }
                 }
