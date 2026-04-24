@@ -62,7 +62,11 @@
     },
     "Network": {
       "Title": "Netwerkinstellingen",
-      "PositioningType": "Positioneringstype",
+      "PositioningType": {
+        "Title": "Positioneringstype",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS-luister-IP-adres",
       "McWssHostPort": "MCWSS-hostpoort"
     },
@@ -239,7 +243,8 @@
       "TanhSoft": "Zachte Tanh-clipper"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - Standaard"
+      "Default": "Standaard",
+      "DefaultDevice": "{0} - Standaard"
     }
   },
   "ThemesService": {

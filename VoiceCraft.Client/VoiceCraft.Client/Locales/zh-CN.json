@@ -62,7 +62,11 @@
     },
     "Network": {
       "Title": "网络设置",
-      "PositioningType": "定位类型",
+      "PositioningType": {
+        "Title": "定位类型",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS 监听 IP 地址",
       "McWssHostPort": "MCWSS 主机端口"
     },
@@ -239,7 +243,8 @@
       "TanhSoft": "Tanh 软限幅器"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - 默认"
+      "Default": "默认",
+      "DefaultDevice": "{0} - 默认"
     }
   },
   "ThemesService": {

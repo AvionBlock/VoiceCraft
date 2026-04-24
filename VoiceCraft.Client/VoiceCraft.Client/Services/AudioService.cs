@@ -62,14 +62,15 @@ public class AudioService
             {
                 defaultDevice = new AudioDeviceInfo(
                     "Default",
-                    Localizer.Get($"AudioService.AudioDeviceInfo.Default:{device.Name}"),
+                    Localizer.Get($"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}"),
                     true);
             }
 
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
 
-        devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
+        devices.Insert(0,
+            defaultDevice ?? new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
         return devices;
     }
 
@@ -84,14 +85,15 @@ public class AudioService
             {
                 defaultDevice = new AudioDeviceInfo(
                     "Default",
-                    Localizer.Get($"AudioService.AudioDeviceInfo.Default:{device.Name}"),
+                    Localizer.Get($"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}"),
                     true);
             }
 
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
 
-        devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
+        devices.Insert(0,
+            defaultDevice ?? new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
         return devices;
     }
 
@@ -122,8 +124,8 @@ public class AudioService
             OpenSL = new OpenSlSettings()
             {
                 RecordingPreset = hardwarePreprocessorsEnabled
-                ? OpenSlRecordingPreset.VoiceCommunication
-                : OpenSlRecordingPreset.Default
+                    ? OpenSlRecordingPreset.VoiceCommunication
+                    : OpenSlRecordingPreset.Default
             },
             CoreAudio = new CoreAudioSettings()
             {

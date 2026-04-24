@@ -62,7 +62,11 @@
     },
     "Network": {
       "Title": "網路設定",
-      "PositioningType": "定位類型",
+      "PositioningType": {
+        "Title": "定位類型",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS 監聽 IP 位址",
       "McWssHostPort": "MCWSS 主機連接埠"
     },
@@ -142,7 +146,7 @@
     "Accept": "接受",
     "Decline": "拒絕"
   },
-    "AddServer": {
+  "AddServer": {
     "Title": "新增伺服器",
     "Name": "名稱",
     "IP": "IP",
@@ -239,7 +243,8 @@
       "TanhSoft": "Tanh 軟限幅器"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - 預設"
+      "Default": "預設",
+      "DefaultDevice": "{0} - 預設"
     }
   },
   "ThemesService": {

@@ -62,7 +62,11 @@
     },
     "Network": {
       "Title": "Сетевые настройки",
-      "PositioningType": "Тип позиционирования",
+      "PositioningType": {
+        "Title": "Тип позиционирования",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "IP-адрес прослушивания MCWSS",
       "McWssHostPort": "Порт хоста MCWSS"
     },
@@ -239,7 +243,8 @@
       "TanhSoft": "Мягкий клиппер Tanh"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - По умолчанию"
+      "Default": "По умолчанию",
+      "DefaultDevice": "{0} - По умолчанию"
     }
   },
   "ThemesService": {

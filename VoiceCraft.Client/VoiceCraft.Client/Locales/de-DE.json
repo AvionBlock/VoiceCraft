@@ -62,7 +62,11 @@
     },
     "Network": {
       "Title": "Netzwerkeinstellungen",
-      "PositioningType": "Positionierungstyp",
+      "PositioningType": {
+        "Title": "Positionierungstyp",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS Listening-IP-Adresse",
       "McWssHostPort": "MCWSS-Host-Port"
     },
@@ -239,7 +243,8 @@
       "TanhSoft": "Weicher Tanh-Clipper"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - Standard"
+      "Default": "Standard",
+      "DefaultDevice": "{0} - Standard"
     }
   },
   "ThemesService": {
