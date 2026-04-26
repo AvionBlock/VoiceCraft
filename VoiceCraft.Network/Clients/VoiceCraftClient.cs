@@ -35,19 +35,19 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public float InputVolume
     {
         get;
-        set => field = Math.Clamp(value, 0, 2);
+        set => field = ClampFinite(value, 0, 2);
     }
 
     public float OutputVolume
     {
         get;
-        set => field = Math.Clamp(value, 0, 2);
+        set => field = ClampFinite(value, 0, 2);
     }
 
     public float MicrophoneSensitivity
     {
         get;
-        set => field = Math.Clamp(value, 0, 1);
+        set => field = ClampFinite(value, 0, 1);
     }
 
     public bool SpeakingState
@@ -335,9 +335,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         var packetType = (VcPacketType)reader.GetByte();
         switch (packetType)
         {
-            case VcPacketType.InfoRequest:
-            case VcPacketType.LoginRequest:
-            case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
                 ProcessUnconnectedPacket(reader, onParsed, () => new VcInfoResponsePacket());
                 break;
@@ -802,5 +799,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         {
             PacketPool<T>.Return(packet);
         }
+    }
+
+    private static float ClampFinite(float value, float min, float max)
+    {
+        return float.IsFinite(value) ? Math.Clamp(value, min, max) : min;
     }
 }

@@ -115,7 +115,7 @@ public static class LogService
     {
         foreach (var log in _exceptionLogs.ExceptionLogs.OrderBy(d => d.Key))
         {
-            if (_exceptionLogs.CrashLogs.Count <= Limit) return;
+            if (_exceptionLogs.ExceptionLogs.Count <= Limit) return;
             _exceptionLogs.ExceptionLogs.TryRemove(log.Key, out _);
         }
     }

@@ -58,6 +58,22 @@ public class SettingsServiceTests
         Assert.Equal(Constants.LightThemeGuid, saved.ThemeSettings.SelectedTheme);
     }
 
+    [Fact]
+    public void Constructor_WhenPersistedSettingsAreInvalid_FallsBackToDefaults()
+    {
+        InitializeLocalizer();
+        var storage = new FakeStorageService
+        {
+            ExistsResult = true,
+            StoredBytes = Encoding.UTF8.GetBytes("{")
+        };
+
+        var service = new SettingsService(storage);
+
+        Assert.Equal("Default", service.InputSettings.InputDevice);
+        Assert.NotEqual(Guid.Empty, service.UserGuid);
+    }
+
     private static void InitializeLocalizer()
     {
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");

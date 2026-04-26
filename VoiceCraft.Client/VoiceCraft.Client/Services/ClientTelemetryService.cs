@@ -24,6 +24,9 @@ public sealed class ClientTelemetryService(SettingsService settingsService)
 
     public async Task<TelemetryDumpResponse?> ReportCrashAsync(string crashText, string? title = null)
     {
+        if (!IsEnabled)
+            return null;
+
         var trimmedCrashText = TrimCrashText(crashText, out var wasTrimmed);
         var payload = new TelemetryDumpRequest
         {

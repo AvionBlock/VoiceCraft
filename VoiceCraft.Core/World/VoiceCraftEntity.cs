@@ -187,6 +187,7 @@ namespace VoiceCraft.Core.World
             get;
             set
             {
+                value = Sanitize(value);
                 if (field == value) return;
                 field = value;
                 OnPositionUpdated?.Invoke(field, this);
@@ -198,6 +199,7 @@ namespace VoiceCraft.Core.World
             get;
             set
             {
+                value = Sanitize(value);
                 if (field == value) return;
                 field = value;
                 OnRotationUpdated?.Invoke(field, this);
@@ -209,8 +211,9 @@ namespace VoiceCraft.Core.World
             get;
             set
             {
+                value = ClampFinite(value, 0f, 1f);
                 if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
-                field = Math.Clamp(value, 0f, 1f);
+                field = value;
                 OnCaveFactorUpdated?.Invoke(field, this);
             }
         }
@@ -220,12 +223,38 @@ namespace VoiceCraft.Core.World
             get;
             set
             {
+                value = ClampFinite(value, 0f, 1f);
                 if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
-                field = Math.Clamp(value, 0f, 1f);
+                field = value;
                 OnMuffleFactorUpdated?.Invoke(field, this);
             }
         }
 
         #endregion
+
+        private static Vector3 Sanitize(Vector3 value)
+        {
+            return new Vector3(
+                Sanitize(value.X),
+                Sanitize(value.Y),
+                Sanitize(value.Z));
+        }
+
+        private static Vector2 Sanitize(Vector2 value)
+        {
+            return new Vector2(
+                Sanitize(value.X),
+                Sanitize(value.Y));
+        }
+
+        private static float Sanitize(float value)
+        {
+            return float.IsFinite(value) ? value : 0f;
+        }
+
+        private static float ClampFinite(float value, float min, float max)
+        {
+            return float.IsFinite(value) ? Math.Clamp(value, min, max) : min;
+        }
     }
 }

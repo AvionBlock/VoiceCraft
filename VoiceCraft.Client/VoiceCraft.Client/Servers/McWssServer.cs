@@ -75,7 +75,10 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
     private void OnClientConnected(IWebSocketConnection socket)
     {
         if (_peerConnection != null)
+        {
             socket.Close(); //Full.
+            return;
+        }
 
         _customEventTriggered = false;
         _peerConnection = socket;

@@ -37,6 +37,22 @@ public class VoiceCraftEntityTests
     }
 
     [Fact]
+    public void NonFiniteSpatialValues_AreSanitized()
+    {
+        var entity = new VoiceCraftEntity(1);
+
+        entity.Position = new Vector3(float.NaN, float.PositiveInfinity, 3);
+        entity.Rotation = new Vector2(float.NegativeInfinity, 5);
+        entity.CaveFactor = float.NaN;
+        entity.MuffleFactor = float.PositiveInfinity;
+
+        Assert.Equal(new Vector3(0, 0, 3), entity.Position);
+        Assert.Equal(new Vector2(0, 5), entity.Rotation);
+        Assert.Equal(0.0f, entity.CaveFactor, 3);
+        Assert.Equal(0.0f, entity.MuffleFactor, 3);
+    }
+
+    [Fact]
     public void AddVisibleEntity_IgnoresSelfAndDuplicates()
     {
         var entity = new VoiceCraftEntity(1);

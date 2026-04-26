@@ -9,6 +9,7 @@ namespace VoiceCraft.Core.Locales
 {
     public sealed class Localizer : INotifyPropertyChanged, INotifyPropertyChanging
     {
+        private static readonly object SyncRoot = new();
         private static IBaseLocalizer _baseLocalizer = new EmptyBaseLocalizer();
 
         //Private set language
@@ -16,12 +17,21 @@ namespace VoiceCraft.Core.Locales
 
         public static IBaseLocalizer BaseLocalizer
         {
-            get => _baseLocalizer;
+            get
+            {
+                lock (SyncRoot)
+                {
+                    return _baseLocalizer;
+                }
+            }
             set
             {
-                if (value == _baseLocalizer) return;
-                _baseLocalizer = value;
-                Instance.Language = Instance.Language;
+                lock (SyncRoot)
+                {
+                    if (value == _baseLocalizer) return;
+                    _baseLocalizer = value;
+                    Instance.Language = Instance.Language;
+                }
             }
         }
 
@@ -30,12 +40,24 @@ namespace VoiceCraft.Core.Locales
             get;
             set
             {
-                value = _baseLocalizer.Reload(value);
-                Instance.SetField(ref field, value);
+                lock (SyncRoot)
+                {
+                    value = _baseLocalizer.Reload(value);
+                    Instance.SetField(ref field, value);
+                }
             }
         } = "";
 
-        public static ObservableCollection<string> Languages => _baseLocalizer.Languages;
+        public static ObservableCollection<string> Languages
+        {
+            get
+            {
+                lock (SyncRoot)
+                {
+                    return _baseLocalizer.Languages;
+                }
+            }
+        }
         public event PropertyChangedEventHandler? PropertyChanged;
 
         //Property Changed Events
@@ -44,7 +66,10 @@ namespace VoiceCraft.Core.Locales
 
         public static string Get(string key)
         {
-            return _baseLocalizer.Get(key);
+            lock (SyncRoot)
+            {
+                return _baseLocalizer.Get(key);
+            }
         }
 
         private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

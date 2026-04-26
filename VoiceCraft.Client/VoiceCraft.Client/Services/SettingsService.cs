@@ -67,26 +67,33 @@ public class SettingsService
 
     private void Load()
     {
-        if (!_storageService.Exists(Constants.SettingsFile)) return;
+        try
+        {
+            if (!_storageService.Exists(Constants.SettingsFile)) return;
 
-        var result = _storageService.Load(Constants.SettingsFile);
-        var loadedSettings =
-            JsonSerializer.Deserialize<SettingsStructure>(result,
-                SettingsStructureGenerationContext.Default.SettingsStructure);
-        if (loadedSettings == null) return;
+            var result = _storageService.Load(Constants.SettingsFile);
+            var loadedSettings =
+                JsonSerializer.Deserialize<SettingsStructure>(result,
+                    SettingsStructureGenerationContext.Default.SettingsStructure);
+            if (loadedSettings == null) return;
 
-        loadedSettings.InputSettings.OnLoading();
-        loadedSettings.OutputSettings.OnLoading();
-        loadedSettings.LocaleSettings.OnLoading();
-        loadedSettings.TelemetrySettings.OnLoading();
-        loadedSettings.NotificationSettings.OnLoading();
-        loadedSettings.ServersSettings.OnLoading();
-        loadedSettings.ThemeSettings.OnLoading();
-        loadedSettings.NetworkSettings.OnLoading();
-        loadedSettings.UserSettings.OnLoading();
-        loadedSettings.HotKeySettings.OnLoading();
+            loadedSettings.InputSettings.OnLoading();
+            loadedSettings.OutputSettings.OnLoading();
+            loadedSettings.LocaleSettings.OnLoading();
+            loadedSettings.TelemetrySettings.OnLoading();
+            loadedSettings.NotificationSettings.OnLoading();
+            loadedSettings.ServersSettings.OnLoading();
+            loadedSettings.ThemeSettings.OnLoading();
+            loadedSettings.NetworkSettings.OnLoading();
+            loadedSettings.UserSettings.OnLoading();
+            loadedSettings.HotKeySettings.OnLoading();
 
-        _settings = loadedSettings;
+            _settings = loadedSettings;
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+        }
     }
 
     private async Task SaveSettingsAsync()
