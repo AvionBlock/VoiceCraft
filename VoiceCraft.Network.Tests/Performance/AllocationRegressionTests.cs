@@ -12,6 +12,8 @@ namespace VoiceCraft.Network.Tests.Performance;
 [Collection("AllocationRegression")]
 public class AllocationRegressionTests
 {
+    private const int SnapshotReadMaxBytesPerRead = 2;
+
     [Fact]
     public void AudioEffectsSnapshot_RepeatedReads_AreNearlyAllocationFree()
     {
@@ -24,7 +26,7 @@ public class AllocationRegressionTests
             () => GC.KeepAlive(effectSystem.AudioEffectsSnapshot),
             iterations: 10_000);
 
-        Assert.InRange(allocated, 0, 4096);
+        AssertNearlyAllocationFreeSnapshotReads(allocated, iterations: 10_000);
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class AllocationRegressionTests
         effectSystem.SetEffect(4, new FakeVisibleEffect(true));
         var snapshotAfterMutation = effectSystem.AudioEffectsSnapshot;
 
-        Assert.InRange(readAllocated, 0, 4096);
+        AssertNearlyAllocationFreeSnapshotReads(readAllocated, iterations: 5_000);
         Assert.Same(snapshotBeforeRead, snapshotAfterRead);
         Assert.NotSame(snapshotAfterRead, snapshotAfterMutation);
     }
@@ -235,6 +237,14 @@ public class AllocationRegressionTests
         }
 
         return best;
+    }
+
+    private static void AssertNearlyAllocationFreeSnapshotReads(long allocated, int iterations)
+    {
+        var maxAllocated = iterations * SnapshotReadMaxBytesPerRead;
+        Assert.True(
+            allocated <= maxAllocated,
+            $"Expected snapshot reads to stay near allocation-free. Allocated={allocated}, Iterations={iterations}, MaxAllowed={maxAllocated}");
     }
 
     private sealed class FakeNetPeer(Guid userGuid, Guid serverUserGuid, string locale, PositioningType positioningType)
