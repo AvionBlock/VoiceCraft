@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -328,6 +327,15 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
 
     private void UpdatePeer(TcpClient client, TcpMcApiNetPeer tcpNetPeer)
     {
+        ProcessPackets(tcpNetPeer);
+        SendPacketsLogic(tcpNetPeer);
+        if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
+        if (_mcApiPeers.TryRemove(client, out _))
+            Disconnect(tcpNetPeer, true);
+    }
+
+    private void ProcessPackets(TcpMcApiNetPeer tcpNetPeer)
+    {
         lock (_reader)
         {
             while (tcpNetPeer.IncomingQueue.TryDequeue(out var packet))
@@ -349,11 +357,6 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                     // Do Nothing
                 }
         }
-
-        SendPacketsLogic(tcpNetPeer);
-        if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
-        if (_mcApiPeers.TryRemove(client, out _))
-            Disconnect(tcpNetPeer, true);
     }
 
     private static void SendPacketsLogic(TcpMcApiNetPeer netPeer)
@@ -411,13 +414,11 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
             return null;
 
         var payloadBuffer = ArrayPool<byte>.Shared.Rent(payloadLength);
-        if (!await ReadExactAsync(stream, payloadBuffer.AsMemory(0, payloadLength), cancellationToken))
-        {
-            ArrayPool<byte>.Shared.Return(payloadBuffer);
-            return null;
-        }
+        if (await ReadExactAsync(stream, payloadBuffer.AsMemory(0, payloadLength), cancellationToken))
+            return new RentedFramePayload(payloadBuffer, payloadLength);
+        ArrayPool<byte>.Shared.Return(payloadBuffer);
+        return null;
 
-        return new RentedFramePayload(payloadBuffer, payloadLength);
     }
 
     private static async Task WriteFrameAsync(

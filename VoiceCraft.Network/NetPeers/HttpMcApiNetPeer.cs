@@ -1,16 +1,14 @@
 using System;
-using System.Net;
 
 namespace VoiceCraft.Network.NetPeers;
 
-public class HttpMcApiNetPeer(IPAddress ipAddress) : McApiNetPeer
+public class HttpMcApiNetPeer : McApiNetPeer
 {
     private McApiConnectionState _connectionState;
-    private string _lookupToken = string.Empty;
     private string _sessionToken = string.Empty;
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
-    public IPAddress IpAddress { get; } = ipAddress;
-    public string LookupToken => _lookupToken;
+    public string LookupToken { get; private set; } = string.Empty;
+
     public override McApiConnectionState ConnectionState => _connectionState;
     public override string SessionToken => _sessionToken;
 
@@ -26,6 +24,6 @@ public class HttpMcApiNetPeer(IPAddress ipAddress) : McApiNetPeer
 
     public void SetLookupToken(string token)
     {
-        _lookupToken = token;
+        LookupToken = token;
     }
 }

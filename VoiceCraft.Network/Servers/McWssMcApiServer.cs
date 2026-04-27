@@ -256,6 +256,22 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     private void UpdatePeer(IWebSocketConnection connection, McWssMcApiNetPeer mcWssNetPeer)
     {
+        ProcessPackets(mcWssNetPeer);
+        
+        for (var i = 0; i < Config.CommandsPerTick; i++)
+            if (!SendPacketsLogic(connection, mcWssNetPeer))
+                SendPacketCommand(connection, string.Empty);
+
+        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
+        Disconnect(mcWssNetPeer);
+        //Double the amount of time. We remove the peer.
+        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
+        if (_mcApiPeers.TryRemove(connection, out _))
+            connection.Close();
+    }
+
+    private void ProcessPackets(McWssMcApiNetPeer mcWssNetPeer)
+    {
         lock (_reader)
         {
             while (mcWssNetPeer.IncomingQueue.TryDequeue(out var packet))
@@ -276,17 +292,6 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                     //Do Nothing
                 }
         }
-
-        for (var i = 0; i < Config.CommandsPerTick; i++)
-            if (!SendPacketsLogic(connection, mcWssNetPeer))
-                SendPacketCommand(connection, string.Empty);
-
-        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
-        Disconnect(mcWssNetPeer);
-        //Double the amount of time. We remove the peer.
-        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
-        if (_mcApiPeers.TryRemove(connection, out _))
-            connection.Close();
     }
 
     private bool SendPacketsLogic(IWebSocketConnection socket, McApiNetPeer netPeer)

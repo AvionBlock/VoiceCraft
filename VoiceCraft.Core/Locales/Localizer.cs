@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Locales
 {
     public sealed class Localizer : INotifyPropertyChanged, INotifyPropertyChanging
     {
-        private static readonly object SyncRoot = new();
+        private static readonly Lock Lock = new();
         private static IBaseLocalizer _baseLocalizer = new EmptyBaseLocalizer();
 
         //Private set language
@@ -19,14 +20,14 @@ namespace VoiceCraft.Core.Locales
         {
             get
             {
-                lock (SyncRoot)
+                lock (Lock)
                 {
                     return _baseLocalizer;
                 }
             }
             set
             {
-                lock (SyncRoot)
+                lock (Lock)
                 {
                     if (value == _baseLocalizer) return;
                     _baseLocalizer = value;
@@ -40,7 +41,7 @@ namespace VoiceCraft.Core.Locales
             get;
             set
             {
-                lock (SyncRoot)
+                lock (Lock)
                 {
                     value = _baseLocalizer.Reload(value);
                     Instance.SetField(ref field, value);
@@ -52,7 +53,7 @@ namespace VoiceCraft.Core.Locales
         {
             get
             {
-                lock (SyncRoot)
+                lock (Lock)
                 {
                     return _baseLocalizer.Languages;
                 }
@@ -66,7 +67,7 @@ namespace VoiceCraft.Core.Locales
 
         public static string Get(string key)
         {
-            lock (SyncRoot)
+            lock (Lock)
             {
                 return _baseLocalizer.Get(key);
             }
