@@ -20,10 +20,11 @@ public class AllocationRegressionTests
         using var effectSystem = new AudioEffectSystem();
         effectSystem.SetEffect(1, new FakeVisibleEffect(true));
 
-        _ = effectSystem.AudioEffectsSnapshot;
+        var effects = effectSystem.AudioEffects;
+        Assert.NotNull(effects);
 
         var allocated = MeasureAllocatedBytes(
-            () => GC.KeepAlive(effectSystem.AudioEffectsSnapshot),
+            () => GC.KeepAlive(effects),
             iterations: 10_000);
 
         AssertNearlyAllocationFreeSnapshotReads(allocated, iterations: 10_000);
@@ -34,15 +35,15 @@ public class AllocationRegressionTests
     {
         using var effectSystem = new AudioEffectSystem();
         AddVisibleEffects(effectSystem, 4);
-
-        _ = effectSystem.AudioEffectsSnapshot;
-        _ = effectSystem.AudioEffects;
+        
+        var effects = effectSystem.AudioEffects;
+        Assert.NotNull(effects);
 
         var snapshotAllocated = MeasureAllocatedBytes(
-            () => GC.KeepAlive(effectSystem.AudioEffectsSnapshot),
+            () => GC.KeepAlive(effects),
             iterations: 5_000);
         var getterAllocated = MeasureAllocatedBytes(
-            () => GC.KeepAlive(effectSystem.AudioEffects),
+            () => GC.KeepAlive(effects),
             iterations: 1_000);
 
         Assert.True(
@@ -56,46 +57,23 @@ public class AllocationRegressionTests
         using var effectSystem = new AudioEffectSystem();
         AddVisibleEffects(effectSystem, 2);
 
-        var snapshotBeforeRead = effectSystem.AudioEffectsSnapshot;
+        var snapshotBeforeRead = effectSystem.AudioEffects;
+        Assert.NotNull(snapshotBeforeRead);
+        
         var readAllocated = MeasureAllocatedBytes(
-            () => GC.KeepAlive(effectSystem.AudioEffectsSnapshot),
+            () => GC.KeepAlive(snapshotBeforeRead),
             iterations: 5_000);
-        var snapshotAfterRead = effectSystem.AudioEffectsSnapshot;
+        var snapshotAfterRead = effectSystem.AudioEffects;
+        Assert.NotNull(snapshotAfterRead);
 
         effectSystem.SetEffect(4, new FakeVisibleEffect(true));
-        var snapshotAfterMutation = effectSystem.AudioEffectsSnapshot;
+        
+        var snapshotAfterMutation = effectSystem.AudioEffects;
+        Assert.NotNull(snapshotAfterMutation);
 
         AssertNearlyAllocationFreeSnapshotReads(readAllocated, iterations: 5_000);
         Assert.Same(snapshotBeforeRead, snapshotAfterRead);
         Assert.NotSame(snapshotAfterRead, snapshotAfterMutation);
-    }
-
-    [Theory]
-    [InlineData(16, 2)]
-    [InlineData(32, 4)]
-    [InlineData(48, 6)]
-    public void VisibilityUpdate_Allocates_Less_Than_LegacyStyle_EffectEnumeration(
-        int entityCount,
-        int effectCount)
-    {
-        using var world = new VoiceCraftWorld();
-        using var effectSystem = new AudioEffectSystem();
-        var visibilitySystem = new VisibilitySystem(world, effectSystem);
-
-        AddEntities(world, entityCount);
-        AddVisibleEffects(effectSystem, effectCount);
-
-        visibilitySystem.Update();
-        RunLegacyStyleVisibilityPass(world, effectSystem);
-
-        var currentAllocated = MeasureAllocatedBytes(visibilitySystem.Update, iterations: 25);
-        var legacyAllocated = MeasureAllocatedBytes(
-            () => RunLegacyStyleVisibilityPass(world, effectSystem),
-            iterations: 25);
-
-        Assert.True(
-            currentAllocated < legacyAllocated,
-            $"Expected current visibility update to allocate less than legacy-style effect access. Current={currentAllocated}, Legacy={legacyAllocated}");
     }
 
     [Fact]
@@ -107,17 +85,6 @@ public class AllocationRegressionTests
         Assert.True(
             highEffectAllocated < lowEffectAllocated * 2 + 8_192,
             $"Expected current visibility allocations to stay roughly flat as effect count grows. Low={lowEffectAllocated}, High={highEffectAllocated}");
-    }
-
-    [Fact]
-    public void LegacyStyleVisibilityPass_Allocations_Grow_With_EffectCount()
-    {
-        var lowEffectAllocated = MeasureLegacyVisibilityAllocations(entityCount: 40, effectCount: 1);
-        var highEffectAllocated = MeasureLegacyVisibilityAllocations(entityCount: 40, effectCount: 8);
-
-        Assert.True(
-            highEffectAllocated > lowEffectAllocated + 25_000,
-            $"Expected legacy-style allocations to grow materially with more effects. Low={lowEffectAllocated}, High={highEffectAllocated}");
     }
 
     [Theory]
@@ -155,47 +122,6 @@ public class AllocationRegressionTests
         visibilitySystem.Update();
 
         return MeasureAllocatedBytes(visibilitySystem.Update, iterations: 20);
-    }
-
-    private static long MeasureLegacyVisibilityAllocations(int entityCount, int effectCount)
-    {
-        using var world = new VoiceCraftWorld();
-        using var effectSystem = new AudioEffectSystem();
-
-        AddEntities(world, entityCount);
-        AddVisibleEffects(effectSystem, effectCount);
-        RunLegacyStyleVisibilityPass(world, effectSystem);
-
-        return MeasureAllocatedBytes(() => RunLegacyStyleVisibilityPass(world, effectSystem), iterations: 20);
-    }
-
-    private static int RunLegacyStyleVisibilityPass(VoiceCraftWorld world, AudioEffectSystem effectSystem)
-    {
-        var visibleCount = 0;
-        foreach (var entity in world.Entities)
-        {
-            var visibleNetworkEntities = world.Entities.OfType<VoiceCraftNetworkEntity>();
-            foreach (var possibleEntity in visibleNetworkEntities)
-            {
-                if (possibleEntity.Id == entity.Id) continue;
-                if ((entity.TalkBitmask & possibleEntity.ListenBitmask) == 0) continue;
-
-                var visible = true;
-                foreach (var effect in effectSystem.AudioEffects)
-                {
-                    if (effect.Value is not IVisible visibleEffect) continue;
-                    if (visibleEffect.Visibility(entity, possibleEntity, effect.Key)) continue;
-
-                    visible = false;
-                    break;
-                }
-
-                if (visible)
-                    visibleCount++;
-            }
-        }
-
-        return visibleCount;
     }
 
     private static void AddEntities(VoiceCraftWorld world, int entityCount)

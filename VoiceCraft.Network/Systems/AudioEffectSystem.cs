@@ -18,18 +18,9 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private volatile KeyValuePair<ushort, IAudioEffect>[] _audioEffectsSnapshot = [];
+    private volatile ImmutableSortedDictionary<ushort, IAudioEffect>? _audioEffectsSnapshot;
     private readonly Lock _lock = new();
-
-    public IImmutableDictionary<ushort, IAudioEffect> AudioEffects
-    {
-        get
-        {
-            return _audioEffectsSnapshot.ToImmutableSortedDictionary();
-        }
-    }
-
-    public IReadOnlyList<KeyValuePair<ushort, IAudioEffect>> AudioEffectsSnapshot => _audioEffectsSnapshot;
+    public IImmutableDictionary<ushort, IAudioEffect>? AudioEffects => _audioEffectsSnapshot;
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
     {
@@ -63,7 +54,7 @@ public class AudioEffectSystem : IDisposable
             {
                 case null when _audioEffects.Remove(bitmask, out var audioEffect):
                     audioEffect.Dispose();
-                    _audioEffectsSnapshot = _audioEffects.ToArray();
+                    _audioEffectsSnapshot = _audioEffects.ToImmutableSortedDictionary();
                     OnEffectSet?.Invoke(bitmask, null);
                     return;
                 case null:
@@ -73,7 +64,7 @@ public class AudioEffectSystem : IDisposable
             if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && !ReferenceEquals(oldEffect, effect))
                 oldEffect.Dispose();
             _audioEffects[bitmask] = effect;
-            _audioEffectsSnapshot = _audioEffects.ToArray();
+            _audioEffectsSnapshot = _audioEffects.ToImmutableSortedDictionary();
             OnEffectSet?.Invoke(bitmask, effect);
         }
     }
@@ -92,7 +83,7 @@ public class AudioEffectSystem : IDisposable
         {
             var effects = _audioEffects.ToArray(); //Copy the effects.
             _audioEffects.Clear();
-            _audioEffectsSnapshot = [];
+            _audioEffectsSnapshot = null;
             foreach (var effect in effects)
             {
                 effect.Value.Dispose();
@@ -163,7 +154,9 @@ public class AudioEffectSystem : IDisposable
 
     private void ProcessEntityEffects(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
     {
-        foreach (var effect in _audioEffectsSnapshot)
+        var snapshot = _audioEffectsSnapshot;
+        if (snapshot == null) return;
+        foreach (var effect in snapshot)
             effect.Value.Process(from, to, effect.Key, buffer);
     }
 
