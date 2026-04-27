@@ -15,17 +15,18 @@ public static class App
     private static readonly CancellationTokenSource Cts = new();
     private static string? _bufferedCommand;
 
-    public static async Task Start(bool exitOnInvalidProperties, string? language = null)
+    public static async Task Start(RuntimeOptions runtimeOptions)
     {
-        var languageOverriden = !string.IsNullOrWhiteSpace(language);
+        var languageOverriden = !string.IsNullOrWhiteSpace(runtimeOptions.Language);
         //Set language if overriden.
         if (languageOverriden)
-            Localizer.Instance.Language = language ?? "en-US";
+            Localizer.Instance.Language = runtimeOptions.Language ?? "en-US";
 
         //Servers
         var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
         var mcWssMcApiServer = Program.ServiceProvider.GetRequiredService<McWssMcApiServer>();
         var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
+        var tcpMcApiServer = Program.ServiceProvider.GetRequiredService<TcpMcApiServer>();
         //Systems
         var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
         var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
@@ -34,6 +35,7 @@ public static class App
         var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
         //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
+        var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetryService>();
 
         try
         {
@@ -42,7 +44,11 @@ public static class App
             AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
-            properties.Load(exitOnInvalidProperties);
+            properties.Load(runtimeOptions.ExitOnInvalidProperties);
+            properties.ApplyRuntimeOverrides(runtimeOptions);
+            AnsiConsole.MarkupLine(properties.TelemetryEnabled
+                ? "[aqua]Telemetry is enabled. VoiceCraft sends anonymous startup, heartbeat, and crash diagnostics. Set \"TelemetryEnabled\": false in config/ServerProperties.json to disable it.[/]"
+                : "[aqua]Telemetry is disabled in config/ServerProperties.json.[/]");
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
@@ -57,10 +63,12 @@ public static class App
             liteNetServer.Config = properties.VoiceCraftConfig;
             mcWssMcApiServer.Config = properties.McWssConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
+            tcpMcApiServer.Config = properties.McTcpConfig;
 
             //Server Startup
             StartServer(liteNetServer);
             StartServer(httpMcApiServer);
+            StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
 
             //Server Started
@@ -78,6 +86,12 @@ public static class App
                 $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
                 httpMcApiServer.Config.Enabled ? httpMcApiServer.Config.Hostname : "[red]-[/]",
                 $"[{(httpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
+            serverSetupTable.AddRow(
+                $"[{(tcpMcApiServer.Config.Enabled ? "green" : "red")}]McTcp[/]",
+                tcpMcApiServer.Config.Enabled
+                    ? $"{tcpMcApiServer.Config.Hostname}:{tcpMcApiServer.Config.Port}"
+                    : "[red]-[/]",
+                $"[{(tcpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP[/]");
             serverSetupTable.AddRow(
                 $"[{(mcWssMcApiServer.Config.Enabled ? "green" : "red")}]McWss[/]",
                 mcWssMcApiServer.Config.Enabled ? mcWssMcApiServer.Config.Hostname : "[red]-[/]",
@@ -100,18 +114,39 @@ public static class App
             AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
             AnsiConsole.MarkupLine("\0\0\0"); //This is here for docker images to detect server is running.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
+            await telemetry.ReportStartupAsync(CreateTelemetrySnapshot(
+                liteNetServer,
+                httpMcApiServer,
+                tcpMcApiServer,
+                mcWssMcApiServer));
 
             StartCommandTask();
             var startTime = DateTime.UtcNow;
+            var lastTelemetryAt = DateTime.UtcNow;
+            Task? telemetryReportTask = null;
             while (!Cts.IsCancellationRequested)
                 try
                 {
                     liteNetServer.Update();
                     httpMcApiServer.Update();
+                    tcpMcApiServer.Update();
                     mcWssMcApiServer.Update();
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
                     await FlushCommand(rootCommand);
+                    if (properties.TelemetryEnabled &&
+                        DateTime.UtcNow - lastTelemetryAt >= ServerTelemetryService.HeartbeatInterval)
+                    {
+                        if (telemetryReportTask == null || telemetryReportTask.IsCompleted)
+                        {
+                            lastTelemetryAt = DateTime.UtcNow;
+                            telemetryReportTask = telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
+                                liteNetServer,
+                                httpMcApiServer,
+                                tcpMcApiServer,
+                                mcWssMcApiServer));
+                        }
+                    }
 
                     var dist = DateTime.UtcNow - startTime;
                     var delay = Constants.TickRate - dist.TotalMilliseconds;
@@ -126,6 +161,7 @@ public static class App
 
             StopServer(liteNetServer);
             StopServer(httpMcApiServer);
+            StopServer(tcpMcApiServer);
             StopServer(mcWssMcApiServer);
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("Shutdown.Success")}[/]");
         }
@@ -167,7 +203,7 @@ public static class App
             throw new Exception(Localizer.Get("VoiceCraftServer.Exceptions.Failed"));
         }
     }
-    
+
     private static void StartServer(McWssMcApiServer server)
     {
         if (!server.Config.Enabled) return;
@@ -200,6 +236,23 @@ public static class App
         }
     }
 
+    private static void StartServer(TcpMcApiServer server)
+    {
+        if (!server.Config.Enabled) return;
+        try
+        {
+            AnsiConsole.WriteLine(Localizer.Get("McTcpServer.Starting"));
+            server.Start();
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Success")}[/]");
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+            LogService.Log(ex);
+            throw new Exception(Localizer.Get("McTcpServer.Exceptions.Failed"));
+        }
+    }
+
     private static void StopServer(LiteNetVoiceCraftServer server)
     {
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
@@ -221,6 +274,14 @@ public static class App
         AnsiConsole.WriteLine(Localizer.Get("McHttpServer.Stopping"));
         server.Stop();
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("McHttpServer.Stopped")}[/]");
+    }
+
+    private static void StopServer(TcpMcApiServer server)
+    {
+        if (!server.Config.Enabled) return;
+        AnsiConsole.WriteLine(Localizer.Get("McTcpServer.Stopping"));
+        server.Stop();
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Stopped")}[/]");
     }
 
     private static async Task FlushCommand(RootCommand rootCommand)
@@ -269,5 +330,24 @@ public static class App
                 if (Cts.IsCancellationRequested || _shuttingDown) return;
             }
         });
+    }
+
+    private static ServerTelemetrySnapshot CreateTelemetrySnapshot(
+        LiteNetVoiceCraftServer liteNetServer,
+        HttpMcApiServer httpMcApiServer,
+        TcpMcApiServer tcpMcApiServer,
+        McWssMcApiServer mcWssMcApiServer)
+    {
+        return new ServerTelemetrySnapshot
+        {
+            Version = VoiceCraftServer.Version.ToString(),
+            Language = Localizer.Instance.Language,
+            PositioningType = liteNetServer.Config.PositioningType.ToString(),
+            EnableVisibilityDisplay = liteNetServer.Config.EnableVisibilityDisplay,
+            McHttpEnabled = httpMcApiServer.Config.Enabled,
+            McTcpEnabled = tcpMcApiServer.Config.Enabled,
+            McWssEnabled = mcWssMcApiServer.Config.Enabled,
+            ConnectedClients = liteNetServer.ConnectedPeers
+        };
     }
 }

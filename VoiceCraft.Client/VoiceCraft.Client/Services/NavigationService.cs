@@ -8,9 +8,11 @@ namespace VoiceCraft.Client.Services;
 
 public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel, uint historyMaxSize = 100)
 {
-    private readonly Lock _lockObject = new();
+    private readonly Lock _lock = new();
     private ViewModelBase? _currentViewModel;
+    private ViewModelBase? _currentModalViewModel;
     private List<ViewModelBase> _history = [];
+    private List<ViewModelBase> _modalStack = [];
     private int _historyIndex = -1;
 
     // ReSharper disable once MemberCanBePrivate.Global
@@ -18,7 +20,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
     {
         get
         {
-            lock (_lockObject)
+            lock (_lock)
             {
                 return _history.Count > 0 && _historyIndex < _history.Count - 1;
             }
@@ -30,7 +32,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
     {
         get
         {
-            lock (_lockObject)
+            lock (_lock)
             {
                 return _historyIndex > 0;
             }
@@ -38,6 +40,7 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
     }
 
     public event Action<ViewModelBase>? OnViewModelChanged;
+    public event Action<ViewModelBase?>? OnModalViewModelChanged;
 
     private void Push(ViewModelBase item)
     {
@@ -58,6 +61,12 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
         if (_history.ElementAt(0) is IDisposable disposable)
             disposable.Dispose(); //Moving off the stack. We dispose it if it implemented IDisposable.
         _history.RemoveAt(0);
+        _historyIndex = _history.Count - 1;
+    }
+
+    private void PushModal(ViewModelBase item)
+    {
+        _modalStack.Add(item);
     }
 
     private void SetCurrentViewModel(ViewModelBase viewModel, object? data = null)
@@ -69,10 +78,31 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
         OnViewModelChanged?.Invoke(viewModel);
     }
 
+    private void SetCurrentModalViewModel(ViewModelBase? viewModel, object? data = null)
+    {
+        if (viewModel == _currentModalViewModel) return;
+        _currentModalViewModel?.OnDisappearing();
+        _currentModalViewModel = viewModel;
+        _currentModalViewModel?.OnAppearing(data);
+        OnModalViewModelChanged?.Invoke(viewModel);
+    }
+
+    private void ClearModalStack()
+    {
+        if (_currentModalViewModel != null)
+            SetCurrentModalViewModel(null);
+
+        foreach (var modal in _modalStack)
+            if (modal is IDisposable disposable)
+                disposable.Dispose();
+
+        _modalStack.Clear();
+    }
+
     // ReSharper disable once MemberCanBePrivate.Global
     public ViewModelBase? Go(int offset = 0, bool checkBackButton = false)
     {
-        lock (_lockObject)
+        lock (_lock)
         {
             if (checkBackButton && (_currentViewModel?.DisableBackButton ?? false))
                 return _currentViewModel;
@@ -93,6 +123,12 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
 
     public ViewModelBase? Back(bool checkBackButton = false)
     {
+        lock (_lock)
+        {
+            if (_currentModalViewModel != null)
+                return PopModal(checkBackButton);
+        }
+
         return HasPrev ? Go(-1, checkBackButton) : null;
     }
 
@@ -103,11 +139,44 @@ public sealed class NavigationService(Func<Type, ViewModelBase> createViewModel,
 
     public void NavigateTo<T>(object? data = null) where T : ViewModelBase
     {
-        lock (_lockObject)
+        lock (_lock)
         {
+            ClearModalStack();
             var viewModel = InstantiateViewModel<T>();
             SetCurrentViewModel(viewModel, data);
             Push(viewModel);
+        }
+    }
+
+    public void PushModal<T>(object? data = null) where T : ViewModelBase
+    {
+        lock (_lock)
+        {
+            var viewModel = InstantiateViewModel<T>();
+            PushModal(viewModel);
+            SetCurrentModalViewModel(viewModel, data);
+        }
+    }
+
+    public ViewModelBase? PopModal(bool checkBackButton = false)
+    {
+        lock (_lock)
+        {
+            if (_currentModalViewModel == null)
+                return null;
+
+            if (checkBackButton && _currentModalViewModel.DisableBackButton)
+                return _currentModalViewModel;
+
+            var currentModal = _currentModalViewModel;
+            _modalStack.Remove(currentModal);
+            var nextModal = _modalStack.LastOrDefault();
+            SetCurrentModalViewModel(nextModal);
+
+            if (currentModal is IDisposable disposable)
+                disposable.Dispose();
+
+            return nextModal;
         }
     }
 

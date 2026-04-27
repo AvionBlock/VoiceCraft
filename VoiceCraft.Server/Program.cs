@@ -33,7 +33,11 @@ public static class Program
         //Servers
         serviceCollection.AddSingleton<LiteNetVoiceCraftServer>();
         serviceCollection.AddSingleton<HttpMcApiServer>();
+        serviceCollection.AddSingleton<TcpMcApiServer>();
         serviceCollection.AddSingleton<McWssMcApiServer>();
+        serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<HttpMcApiServer>());
+        serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<TcpMcApiServer>());
+        serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<McWssMcApiServer>());
 
         //Systems
         serviceCollection.AddSingleton<EventHandlerSystem>();
@@ -58,6 +62,7 @@ public static class Program
 
         //Other
         serviceCollection.AddSingleton<ServerProperties>();
+        serviceCollection.AddSingleton<ServerTelemetryService>();
         serviceCollection.AddSingleton<VoiceCraftWorld>();
         return serviceCollection.BuildServiceProvider();
     }

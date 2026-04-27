@@ -3,11 +3,42 @@ on:
   workflow_dispatch:
 
 jobs:
+  VoiceCraft-Tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-26]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ startsWith(matrix.os, 'macos') && '10.0.x' || '10.0.x' }}
+
+      - name: Restore Core Tests
+        run: dotnet restore ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj
+
+      - name: Restore Client Tests
+        run: dotnet restore ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj
+
+      - name: Restore Network Tests
+        run: dotnet restore ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj
+
+      - name: Run Core Tests
+        run: dotnet test ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj -c Release --no-restore
+
+      - name: Run Client Tests
+        run: dotnet test ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj -c Release --no-restore
+
+      - name: Run Network Tests
+        run: dotnet test ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj -c Release --no-restore
+
   VoiceCraft-Client-Windows:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: [ x64, x86, arm64 ]
+        arch: [x64, x86, arm64]
       fail-fast: false
     defaults:
       run:
@@ -17,25 +48,32 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
-          
+          dotnet-version: "10.0.x"
+
       - name: Install WorkLoads
         run: dotnet workload restore
 
       - name: Publish Build
         run: dotnet publish -c Release -r win-${{ matrix.arch }} -p:PublishSingleFile=true
 
+      - name: Download VC++ Redistributable
+        shell: pwsh
+        run: |
+          $uri = "https://aka.ms/vc14/vc_redist.${{ matrix.arch }}.exe"
+          $outFile = "./bin/Release/net10.0-windows/win-${{ matrix.arch }}/publish/vc_redist.${{ matrix.arch }}.exe"
+          Invoke-WebRequest -Uri $uri -OutFile $outFile
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.Windows.${{ matrix.arch }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net9.0-windows/win-${{ matrix.arch }}/publish/
-          
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/win-${{ matrix.arch }}/publish/
+
   VoiceCraft-Client-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, arm, arm64 ]
+        arch: [x64, arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -45,7 +83,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Install WorkLoads
         run: dotnet workload restore
@@ -57,13 +95,13 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.Linux.${{ matrix.arch }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net9.0/linux-${{ matrix.arch }}/publish/
-          
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-${{ matrix.arch }}/publish/
+
   VoiceCraft-Client-Android:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ arm, arm64 ]
+        arch: [arm64]
       fail-fast: false
     defaults:
       run:
@@ -73,11 +111,11 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Install WorkLoads
         run: dotnet workload restore
-        
+
       - name: Setup Keystore File
         run: echo -n "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode >> android.keystore
 
@@ -88,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.Android.${{ matrix.arch }}
-          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net9.0-android/android-${{ matrix.arch }}/publish/com.AvionBlock.VoiceCraft.Client-Signed.apk
+          path: ./VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-${{ matrix.arch }}/publish/*.apk
 
   VoiceCraft-Client-iOS:
     runs-on: macos-26
@@ -100,7 +138,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.312"
+          dotnet-version: "10.0.x"
 
       - name: Install WorkLoads
         run: dotnet workload restore
@@ -112,13 +150,13 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.iOS.arm64
-          path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net9.0-ios/ios-arm64/publish/*.ipa
-          
+          path: ./VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
+
   VoiceCraft-Client-MacOS:
     runs-on: macos-26
     strategy:
       matrix:
-        arch: [ x64, arm64 ]
+        arch: [x64, arm64]
       fail-fast: false
     defaults:
       run:
@@ -128,20 +166,20 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.312"
+          dotnet-version: "10.0.x"
 
       - name: Install WorkLoads
         run: dotnet workload restore
 
       - name: Restore ${{ matrix.arch }} Workloads
         run: dotnet restore -r osx-${{ matrix.arch }}
-        
+
       - name: Publish Build
         run: dotnet publish -c Release -r osx-${{ matrix.arch }} --no-restore -p:ValidateXcodeVersion=false
-        
+
       - name: Build VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
         run: |
-          cd ./bin/Release/net9.0-macos/osx-${{ matrix.arch }}
+          cd ./bin/Release/net10.0-macos/osx-${{ matrix.arch }}
           APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -print -quit)
           if [ -z "$APP_BUNDLE" ]; then
             echo "No .app bundle found"
@@ -160,27 +198,27 @@ jobs:
 
       - name: Normalize VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg name
         run: |
-          cd ./bin/Release/net9.0-macos/osx-${{ matrix.arch }}
+          cd ./bin/Release/net10.0-macos/osx-${{ matrix.arch }}
           PKG_PATH=$(ls ./publish/*.pkg | head -n 1)
           cp "$PKG_PATH" "VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg"
-          
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
-          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net9.0-macos/osx-${{ matrix.arch }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
+          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-${{ matrix.arch }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
-          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net9.0-macos/osx-${{ matrix.arch }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
+          path: ./VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-${{ matrix.arch }}/VoiceCraft.Client.MacOS.${{ matrix.arch }}.pkg
 
   VoiceCraft-Server-Windows:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, x86, arm64 ]
+        arch: [x64, x86, arm64]
       fail-fast: false
     defaults:
       run:
@@ -190,7 +228,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Install WorkLoads
         run: dotnet workload restore
@@ -202,13 +240,13 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Server.Windows.${{ matrix.arch }}
-          path: ./VoiceCraft.Server/bin/Release/net9.0/win-${{ matrix.arch }}/publish
-          
+          path: ./VoiceCraft.Server/bin/Release/net10.0/win-${{ matrix.arch }}/publish
+
   VoiceCraft-Server-Linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ x64, arm, arm64 ]
+        arch: [x64, arm, arm64]
       fail-fast: false
     defaults:
       run:
@@ -218,7 +256,7 @@ jobs:
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Install WorkLoads
         run: dotnet workload restore
@@ -230,26 +268,30 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: VoiceCraft.Server.Linux.${{ matrix.arch }}
-          path: ./VoiceCraft.Server/bin/Release/net9.0/linux-${{ matrix.arch }}/publish
-          
+          path: ./VoiceCraft.Server/bin/Release/net10.0/linux-${{ matrix.arch }}/publish
+
   Publish-Draft:
     runs-on: ubuntu-latest
-    needs: ["VoiceCraft-Client-Windows", 
-            "VoiceCraft-Client-Linux", 
-            "VoiceCraft-Client-Android", 
-            "VoiceCraft-Client-iOS", 
-            "VoiceCraft-Client-MacOS", 
-            "VoiceCraft-Server-Windows", 
-            "VoiceCraft-Server-Linux"]
+    needs:
+      [
+        "VoiceCraft-Client-Windows",
+        "VoiceCraft-Tests",
+        "VoiceCraft-Client-Linux",
+        "VoiceCraft-Client-Android",
+        "VoiceCraft-Client-iOS",
+        "VoiceCraft-Client-MacOS",
+        "VoiceCraft-Server-Windows",
+        "VoiceCraft-Server-Linux",
+      ]
     steps:
       - uses: actions/checkout@v5
-        
+
       - name: Download Artifacts
         uses: actions/download-artifact@v8
         with:
           skip-decompress: true
           path: ./artifacts
-          
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v2
         with:

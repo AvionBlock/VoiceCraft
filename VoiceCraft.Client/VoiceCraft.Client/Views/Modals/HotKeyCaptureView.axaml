@@ -1,0 +1,47 @@
+<UserControl x:Class="VoiceCraft.Client.Views.Modals.HotKeyCaptureView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Modals"
+             x:DataType="vm:HotKeyCaptureViewModel">
+    <Border Classes="card"
+            MaxWidth="420"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            Padding="15"
+            Focusable="True"
+            KeyDown="HotKeyCapture_OnKeyDown"
+            KeyUp="HotKeyCapture_OnKeyUp"
+            PointerPressed="HotKeyCapture_OnPointerPressed"
+            PointerReleased="HotKeyCapture_OnPointerReleased"
+            AttachedToVisualTree="Visual_OnAttachedToVisualTree">
+        <StackPanel Spacing="12">
+            <TextBlock HorizontalAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Text="{locale:Localize {Binding $parent[UserControl].((vm:HotKeyCaptureViewModel)DataContext).RebindingTitle }}" />
+            <TextBlock HorizontalAlignment="Center"
+                       Opacity="0.85"
+                       Text="{locale:Localize Settings.HotKey.CapturePrompt}" />
+            <Border Classes="card"
+                    Padding="10">
+                <TextBlock VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Text="{Binding RebindingPreview}" />
+            </Border>
+            <StackPanel Orientation="Vertical"
+                        Spacing="10">
+                <Button VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ConfirmRebindCommand}">
+                    <TextBlock Text="{locale:Localize Settings.HotKey.SaveBinding}" />
+                </Button>
+                <Button VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding CancelRebindCommand}">
+                    <TextBlock Text="{locale:Localize Settings.HotKey.CancelRebind}" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

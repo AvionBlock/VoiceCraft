@@ -3,40 +3,62 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Core.Locales
 {
     public sealed class Localizer : INotifyPropertyChanged, INotifyPropertyChanging
     {
+        private static readonly Lock Lock = new();
         private static IBaseLocalizer _baseLocalizer = new EmptyBaseLocalizer();
 
         //Private set language
-        private string _language = "";
         public static Localizer Instance { get; } = new();
 
         public static IBaseLocalizer BaseLocalizer
         {
-            get => _baseLocalizer;
+            get
+            {
+                lock (Lock)
+                {
+                    return _baseLocalizer;
+                }
+            }
             set
             {
-                if (value == _baseLocalizer) return;
-                _baseLocalizer = value;
-                Instance.Language = Instance.Language;
+                lock (Lock)
+                {
+                    if (value == _baseLocalizer) return;
+                    _baseLocalizer = value;
+                    Instance.Language = Instance.Language;
+                }
             }
         }
 
         public string Language
         {
-            get => _language;
+            get;
             set
             {
-                value = _baseLocalizer.Reload(value);
-                Instance.SetField(ref _language, value);
+                lock (Lock)
+                {
+                    value = _baseLocalizer.Reload(value);
+                    Instance.SetField(ref field, value);
+                }
+            }
+        } = "";
+
+        public static ObservableCollection<string> Languages
+        {
+            get
+            {
+                lock (Lock)
+                {
+                    return _baseLocalizer.Languages;
+                }
             }
         }
-
-        public static ObservableCollection<string> Languages => _baseLocalizer.Languages;
         public event PropertyChangedEventHandler? PropertyChanged;
 
         //Property Changed Events
@@ -45,7 +67,10 @@ namespace VoiceCraft.Core.Locales
 
         public static string Get(string key)
         {
-            return _baseLocalizer.Get(key);
+            lock (Lock)
+            {
+                return _baseLocalizer.Get(key);
+            }
         }
 
         private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

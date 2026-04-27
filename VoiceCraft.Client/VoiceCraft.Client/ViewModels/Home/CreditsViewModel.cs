@@ -15,17 +15,14 @@ public partial class CreditsViewModel : ViewModelBase
 {
     //private readonly Bitmap? _defaultIcon = LoadImage("avares://VoiceCraft.Client/Assets/Contributors/vc.png");
 
-    [ObservableProperty] private string _appVersion = string.Empty;
-
-    [ObservableProperty] private string _codec = string.Empty;
-
-    [ObservableProperty] private ObservableCollection<ContributorDataViewModel> _contributors;
-
-    [ObservableProperty] private string _version = string.Empty;
+    [ObservableProperty] public partial string AppVersion { get; set; } = string.Empty;
+    [ObservableProperty] public partial string Codec { get; set; } = string.Empty;
+    [ObservableProperty] public partial ObservableCollection<ContributorDataViewModel> Contributors { get; set; }
+    [ObservableProperty] public partial string Version { get; set; } = string.Empty;
 
     public CreditsViewModel()
     {
-        _contributors =
+        Contributors =
         [
             new ContributorDataViewModel(
                 "SineVector241",
@@ -60,6 +57,26 @@ public partial class CreditsViewModel : ViewModelBase
             Localizer.Get(
                 $"Credits.AppVersion:{Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "N.A."}");
         Version = Localizer.Get($"Credits.Version:{VoiceCraftClient.Version.ToString()}");
-        Codec = Localizer.Get($"Credits.Codec:{OpusInfo.Version()}");
+        Codec = Localizer.Get($"Credits.Codec:{GetCodecVersion()}");
+    }
+
+    private static string GetCodecVersion()
+    {
+        try
+        {
+            return OpusInfo.Version();
+        }
+        catch (DllNotFoundException)
+        {
+            return "N.A.";
+        }
+        catch (BadImageFormatException)
+        {
+            return "N.A.";
+        }
+        catch (TypeInitializationException)
+        {
+            return "N.A.";
+        }
     }
 }

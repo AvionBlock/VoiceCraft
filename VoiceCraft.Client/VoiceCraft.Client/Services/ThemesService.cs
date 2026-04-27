@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -23,8 +22,10 @@ public class ThemesService
     public ThemesService(IEnumerable<RegisteredTheme> registeredThemes,
         IEnumerable<RegisteredBackgroundImage> registeredBackgroundImages)
     {
-        _registeredThemes.TryAdd(Guid.Empty, new RegisteredTheme(Guid.Empty, "Default", ThemeVariant.Default, [], []));
-        _registeredBackgroundImages.TryAdd(Guid.Empty, new RegisteredBackgroundImage(Guid.Empty, "None", string.Empty));
+        _registeredThemes.TryAdd(Guid.Empty,
+            new RegisteredTheme(Guid.Empty, "ThemesService.Themes.Default", ThemeVariant.Default, [], []));
+        _registeredBackgroundImages.TryAdd(Guid.Empty,
+            new RegisteredBackgroundImage(Guid.Empty, "ThemesService.BackgroundImages.None", string.Empty));
 
         foreach (var registeredTheme in registeredThemes) _registeredThemes.TryAdd(registeredTheme.Id, registeredTheme);
 
@@ -84,22 +85,6 @@ public class ThemesService
         _currentBackgroundImage = backgroundImage;
         OnBackgroundImageChanged?.Invoke(_currentBackgroundImage);
     }
-
-    /// <summary>
-    ///     Get Brush from resource <paramref name="key" />. Returns <paramref name="fallback" /> if key has not been found OR
-    ///     returns a default color if <paramref name="fallback" /> has not been defined.
-    /// </summary>
-    /// <param name="key">Key for TryGetResource</param>
-    /// <param name="fallback">Fallback for when the resource cannot be found. Can be null</param>
-    /// <returns>An IBrush with the value of <paramref name="key" /> or <paramref name="fallback" /> or the default color.</returns>
-    public static IBrush GetBrushResource(string key, IBrush? fallback = null)
-    {
-        return Application.Current is not null &&
-               Application.Current.TryGetResource(key, Application.Current.ActualThemeVariant, out var val) &&
-               val is not null
-            ? (IBrush)val
-            : fallback ?? new SolidColorBrush(new Color());
-    }
 }
 
 public class RegisteredTheme(
@@ -123,23 +108,18 @@ public class RegisteredBackgroundImage(Guid id, string name, string path)
     public string Path { get; } = path;
     public Bitmap? BackgroundImageBitmap { get; private set; }
 
-    public Bitmap LoadBitmap()
+    public void LoadBitmap()
     {
         UnloadBitmap();
         if (File.Exists(Path))
         {
-            using (var fileStream = File.OpenRead(Path))
-            {
-                BackgroundImageBitmap = new Bitmap(fileStream);
-            }
-
-            return BackgroundImageBitmap;
+            using var fileStream = File.OpenRead(Path);
+            BackgroundImageBitmap = new Bitmap(fileStream);
         }
 
-        if (AssetLoader.Exists(new Uri(Path)))
-            return BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
+        if (!AssetLoader.Exists(new Uri(Path))) throw new FileNotFoundException("Could not find image file.", Path);
+        BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
 
-        throw new FileNotFoundException("Could not find image file.", Path);
     }
 
     public void UnloadBitmap()

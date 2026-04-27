@@ -5,28 +5,25 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class NotificationSettings : Setting<NotificationSettings>
 {
-    private bool _disableNotifications;
-    private ushort _dismissDelayMs = 2000;
-
     public bool DisableNotifications
     {
-        get => _disableNotifications;
+        get;
         set
         {
-            _disableNotifications = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
     }
 
     public ushort DismissDelayMs
     {
-        get => _dismissDelayMs;
+        get;
         set
         {
-            _dismissDelayMs = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = 2000;
 
     public override event Action<NotificationSettings>? OnUpdated;
 

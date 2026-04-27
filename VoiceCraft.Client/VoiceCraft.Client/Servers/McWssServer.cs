@@ -31,23 +31,16 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
     {
         Stop();
 
-        try
-        {
-            _customEventTriggered = false;
-            _wsServer = new WebSocketServer($"ws://{ip}:{port}");
+        _customEventTriggered = false;
+        _wsServer = new WebSocketServer($"ws://{ip}:{port}");
 
-            _wsServer.Start(socket =>
-            {
-                socket.OnOpen = () => OnClientConnected(socket);
-                socket.OnClose = () => OnClientDisconnected(socket);
-                socket.OnMessage = message => OnMessageReceived(socket, message);
-            });
-            IsStarted = true;
-        }
-        catch (Exception ex)
+        _wsServer.Start(socket =>
         {
-            throw new Exception("McWssServer.Exceptions.Failed", ex);
-        }
+            socket.OnOpen = () => OnClientConnected(socket);
+            socket.OnClose = () => OnClientDisconnected(socket);
+            socket.OnMessage = message => OnMessageReceived(socket, message);
+        });
+        IsStarted = true;
     }
 
     public void Stop()
@@ -82,7 +75,10 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
     private void OnClientConnected(IWebSocketConnection socket)
     {
         if (_peerConnection != null)
+        {
             socket.Close(); //Full.
+            return;
+        }
 
         _customEventTriggered = false;
         _peerConnection = socket;

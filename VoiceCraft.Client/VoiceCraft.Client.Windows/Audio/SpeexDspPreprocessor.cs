@@ -84,7 +84,7 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
         var filterLength = 100 * sampleRate / 1000;
         
         _preprocessor = new SpeexDSPPreprocessor(frameSize, sampleRate);
-        _echoCanceler = new SpeexDSPEchoCanceler(frameSize, filterLength, 1, nbSpeakers);
+        _echoCanceler = new SpeexDSPEchoCanceler(frameSize, filterLength, 1, nbSpeakers, use_static: false);
         _captureBuffer = new SampleBufferProvider<short>(filterLength * nbSpeakers);
         _captureBufferFrame = new short[frameSize * nbSpeakers];
         DenoiserEnabled = true;

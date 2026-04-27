@@ -36,11 +36,13 @@
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="15"
-                               Text="{locale:Localize Settings.Network.PositioningType}" />
+                               Text="{locale:Localize Settings.Network.PositioningType.Title}" />
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding PositioningTypes}"
-                              SelectedValue="{Binding NetworkSettingsData.PositioningType}" />
+                              DisplayMemberBinding="{locale:Localize {Binding Title}}"
+                              SelectedValue="{Binding NetworkSettingsData.PositioningType}"
+                              SelectedValueBinding="{Binding Value}" />
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"

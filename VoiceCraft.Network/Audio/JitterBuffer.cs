@@ -45,7 +45,7 @@ public class JitterBuffer(TimeSpan maxDropOutTime)
 
         packet = Last;
         _data.RemoveLast();
-        _currentSeqId = (ushort)checked(packet.SequenceId + 1);
+        _currentSeqId = (ushort)(packet.SequenceId + 1);
         return true;
     }
 

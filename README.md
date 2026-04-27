@@ -54,7 +54,7 @@ audio effects, audio simulations, authentication, and more!
 | Device      | x64 | x86 | arm32 | arm64 | Supported Audio Backends         |
 |-------------|-----|-----|-------|-------|:---------------------------------|
 | Linux       | ✅   | ❌   | ✅     | ✅     | PulseAudio, JACK, ALSA           |
-| Android     | ❎   | ❎   | ✅     | ✅     | AAudio, OpenSL                   |
+| Android     | ❎   | ❎   | ❌     | ✅     | AAudio, OpenSL                   |
 | Windows     | ✅   | ✅   | ❌     | ✅     | WinMM, WASAPI, DirectSound, JACK |
 | iOS         | ❌   | ❌   | ✅     | ✅     | Core Audio                       |
 | MacOS       | ✅   | ❌   | ❌     | ✅     | Core Audio, JACK                 |

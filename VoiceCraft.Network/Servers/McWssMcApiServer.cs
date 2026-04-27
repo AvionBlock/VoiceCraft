@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Fleck;
@@ -22,6 +21,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 {
     private McWssMcApiConfig _config = new();
     private readonly ConcurrentDictionary<IWebSocketConnection, McWssMcApiNetPeer> _mcApiPeers = new();
+    private readonly NetDataWriter _mcWssWriter = new();
+    private readonly NetDataReader _mcWssReader = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private WebSocketServer? _wsServer;
@@ -66,11 +67,24 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     public override void Stop()
     {
-        if (_wsServer == null) return;
+        if (_wsServer == null)
+        {
+            _mcApiPeers.Clear();
+            return;
+        }
+
         _wsServer.Dispose();
-        foreach (var client in _mcApiPeers)
+        foreach (var client in _mcApiPeers.ToArray())
             try
             {
+                if (client.Value.ConnectionState == McApiConnectionState.Connected)
+                {
+                    var sessionToken = client.Value.SessionToken;
+                    client.Value.SetConnectionState(McApiConnectionState.Disconnected);
+                    client.Value.SetSessionToken(string.Empty);
+                    OnPeerDisconnected?.Invoke(client.Value, sessionToken);
+                }
+
                 client.Key.Close();
             }
             catch
@@ -78,6 +92,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 //Do Nothing
             }
 
+        _mcApiPeers.Clear();
         _wsServer = null;
     }
 
@@ -95,8 +110,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -112,18 +126,18 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         {
             lock (_writer)
             {
-                var netPeers = _mcApiPeers.Where(x => x.Value.ConnectionState == McApiConnectionState.Connected);
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 _writer.Put(packet);
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                foreach (var netPeer in netPeers)
+                var data = _writer.CopyData();
+                foreach (var netPeer in _mcApiPeers.Values)
                 {
-                    if (excludes.Contains(netPeer.Value)) continue;
-                    netPeer.Value.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                    if (netPeer.ConnectionState != McApiConnectionState.Connected || excludes.Contains(netPeer))
+                        continue;
+                    netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, string.Empty));
                 }
             }
         }
@@ -159,8 +173,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(netPeer));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -208,8 +221,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                mcWssNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                mcWssNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -232,10 +244,23 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         try
         {
             if (!_mcApiPeers.TryGetValue(socket, out var peer) || string.IsNullOrWhiteSpace(data)) return;
-            var packets = data.Split("|");
+            var packedPackets = Z85.GetBytesWithPadding(data);
+            lock (_mcWssReader)
+            {
+                _mcWssReader.Clear();
+                _mcWssReader.SetSource(packedPackets);
+                while (!_mcWssReader.EndOfData)
+                {
+                    var packetSize = _mcWssReader.GetUShort();
+                    if (packetSize <= 0) continue;
+                    if (_mcWssReader.AvailableBytes < packetSize)
+                        return;
 
-            foreach (var packet in packets)
-                peer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(packet, string.Empty));
+                    var packet = new byte[packetSize];
+                    _mcWssReader.GetBytes(packet, packetSize);
+                    peer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(packet, string.Empty));
+                }
+            }
         }
         catch
         {
@@ -245,13 +270,29 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     private void UpdatePeer(IWebSocketConnection connection, McWssMcApiNetPeer mcWssNetPeer)
     {
+        ProcessPackets(mcWssNetPeer);
+        
+        for (var i = 0; i < Config.CommandsPerTick; i++)
+            if (!SendPacketsLogic(connection, mcWssNetPeer))
+                SendPacketCommand(connection, string.Empty);
+
+        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
+        Disconnect(mcWssNetPeer);
+        //Double the amount of time. We remove the peer.
+        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
+        if (_mcApiPeers.TryRemove(connection, out _))
+            connection.Close();
+    }
+
+    private void ProcessPackets(McWssMcApiNetPeer mcWssNetPeer)
+    {
         lock (_reader)
         {
             while (mcWssNetPeer.IncomingQueue.TryDequeue(out var packet))
                 try
                 {
                     _reader.Clear();
-                    _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
+                    _reader.SetSource(packet.Data);
                     ProcessPacket(_reader, mcApiPacket =>
                     {
                         mcWssNetPeer.LastUpdate = DateTime.UtcNow;
@@ -265,29 +306,30 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                     //Do Nothing
                 }
         }
-
-        for (var i = 0; i < Config.CommandsPerTick; i++)
-            if (!SendPacketsLogic(connection, mcWssNetPeer))
-                SendPacketCommand(connection, string.Empty);
-
-        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
-        Disconnect(mcWssNetPeer);
-        //Double the amount of time. We remove the peer.
-        if (DateTime.UtcNow - mcWssNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
-        if (_mcApiPeers.TryRemove(connection, out _))
-            connection.Close();
     }
 
     private bool SendPacketsLogic(IWebSocketConnection socket, McApiNetPeer netPeer)
     {
-        var stringBuilder = new StringBuilder();
         if (!netPeer.OutgoingQueue.TryDequeue(out var outboundPacket)) return false;
-        stringBuilder.Append(outboundPacket.Data);
-        while (netPeer.OutgoingQueue.TryDequeue(out outboundPacket) &&
-               stringBuilder.Length < Config.MaxStringLengthPerCommand)
-            stringBuilder.Append($"|{outboundPacket.Data}");
+        string data;
+        lock (_mcWssWriter)
+        {
+            _mcWssWriter.Reset();
+            _mcWssWriter.Put((ushort)outboundPacket.Data.Length);
+            _mcWssWriter.Put(outboundPacket.Data);
 
-        SendPacketCommand(socket, stringBuilder.ToString());
+            while (netPeer.OutgoingQueue.TryPeek(out var nextPacket) &&
+                   _mcWssWriter.Length + sizeof(ushort) + nextPacket.Data.Length <= Config.MaxByteLengthPerCommand &&
+                   netPeer.OutgoingQueue.TryDequeue(out outboundPacket))
+            {
+                _mcWssWriter.Put((ushort)outboundPacket.Data.Length);
+                _mcWssWriter.Put(outboundPacket.Data);
+            }
+
+            data = Z85.GetStringWithPadding(_mcWssWriter.AsReadOnlySpan());
+        }
+
+        SendPacketCommand(socket, data);
         return true;
     }
 
@@ -295,7 +337,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     {
         var packet =
             new McWssCommandRequest(
-                $"{Config.DataTunnelCommand} {Config.MaxStringLengthPerCommand} \"{packetData}\"");
+                $"{Config.DataTunnelCommand} {Config.MaxByteLengthPerCommand} \"{packetData}\"");
         socket.Send(JsonSerializer.Serialize(packet, McWssCommandRequestGenerationContext.Default.McWssCommandRequest));
     }
 
@@ -304,9 +346,15 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private void OnClientConnected(IWebSocketConnection socket)
     {
         if (_mcApiPeers.Count >= Config.MaxClients)
+        {
             socket.Close(); //Full.
+            return;
+        }
 
-        var netPeer = new McWssMcApiNetPeer(socket);
+        var netPeer = new McWssMcApiNetPeer(socket)
+        {
+            Tag = this
+        };
         _mcApiPeers.TryAdd(socket, netPeer);
     }
 
@@ -351,8 +399,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         public uint MaxClients { get; set; } = 1;
         public uint MaxTimeoutMs { get; set; } = 10000;
         public string DataTunnelCommand { get; set; } = "voicecraft:data_tunnel";
-        public uint CommandsPerTick { get; set; } = 5;
-        public uint MaxStringLengthPerCommand { get; set; } = 1000;
+        public uint CommandsPerTick { get; set; } = 3;
+        public uint MaxByteLengthPerCommand { get; set; } = 300;
         public HashSet<McApiPacketType> DisabledPacketTypes { get; set; } = [];
     }
 }

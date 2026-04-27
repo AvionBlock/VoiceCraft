@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,15 +13,16 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
     private readonly OutputSettings _outputSettings;
     private readonly SettingsService _settingsService;
 
-    [ObservableProperty] private string _outputDevice;
-    [ObservableProperty] private float _outputVolume;
-    [ObservableProperty] private Guid _audioClipper;
+    [ObservableProperty] public partial string OutputDevice { get; set; }
+    [ObservableProperty] public partial float OutputVolume { get; set; }
+    [ObservableProperty] public partial Guid AudioClipper { get; set; }
+
     private bool _disposed;
     private bool _updating;
 
     //Lists
-    [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _outputDevices = [];
-    [ObservableProperty] private ObservableCollection<RegisteredAudioClipper> _audioClippers = [];
+    [ObservableProperty] public partial ObservableCollection<AudioDeviceInfo> OutputDevices { get; set; } = [];
+    [ObservableProperty] public partial ObservableCollection<RegisteredAudioClipper> AudioClippers { get; set; } = [];
 
     public OutputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
@@ -31,9 +31,9 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
         _settingsService = settingsService;
 
         _outputSettings.OnUpdated += Update;
-        _outputDevice = _outputSettings.OutputDevice;
-        _outputVolume = _outputSettings.OutputVolume;
-        _audioClipper = _outputSettings.AudioClipper;
+        OutputDevice = _outputSettings.OutputDevice;
+        OutputVolume = _outputSettings.OutputVolume;
+        AudioClipper = _outputSettings.AudioClipper;
     }
 
     public void Dispose()

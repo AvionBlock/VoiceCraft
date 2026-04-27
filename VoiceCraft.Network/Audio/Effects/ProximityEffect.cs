@@ -14,17 +14,17 @@ namespace VoiceCraft.Network.Audio.Effects
     public class ProximityEffect : IAudioEffect, IVisible
     {
         private readonly Dictionary<VoiceCraftEntity, SampleLerpVolume> _lerpSampleVolumes = new();
-        private float _wetDry = 1.0f;
 
         public static int SampleRate => Constants.SampleRate;
-        
+
         public float WetDry
         {
-            get => _wetDry;
-            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
-        }
-        public int MinRange { get; set; }
-        public int MaxRange { get; set; }
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
+
+        public float MinRange { get; set; }
+        public float MaxRange { get; set; }
 
         public EffectType EffectType => EffectType.Proximity;
 
@@ -62,8 +62,8 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public void Deserialize(NetDataReader reader)
         {
-            MinRange = reader.GetInt();
-            MaxRange = reader.GetInt();
+            MinRange = reader.GetFloat();
+            MaxRange = reader.GetFloat();
             WetDry = reader.GetFloat();
         }
 

@@ -15,8 +15,6 @@ namespace VoiceCraft.Network.Audio.Effects
         private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines = new();
 
         private float _delay;
-        private float _wetDry = 1.0f;
-        private float _range;
 
         public ProximityEchoEffect()
         {
@@ -24,12 +22,12 @@ namespace VoiceCraft.Network.Audio.Effects
         }
 
         public static int SampleRate => Constants.SampleRate;
-        
+
         public float WetDry
         {
-            get => _wetDry;
-            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
-        }
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
 
         public float Delay
         {
@@ -39,8 +37,8 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public float Range
         {
-            get => _range;
-            set => _range = Math.Max(value, 0.0f);
+            get;
+            set => field = Math.Max(value, 0.0f);
         }
 
         public EffectType EffectType => EffectType.ProximityEcho;

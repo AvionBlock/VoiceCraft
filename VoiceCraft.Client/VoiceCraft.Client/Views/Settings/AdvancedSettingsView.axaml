@@ -42,6 +42,11 @@
                             Command="{Binding CrashCommand}">
                         <TextBlock Text="{locale:Localize Settings.Advanced.Crash}" />
                     </Button>
+
+                    <Button HorizontalAlignment="Stretch"
+                            Command="{Binding ResetAllSettingsCommand}">
+                        <TextBlock Text="{locale:Localize Settings.Advanced.ResetAllSettings}" />
+                    </Button>
                 </StackPanel>
             </Border>
         </ScrollViewer>

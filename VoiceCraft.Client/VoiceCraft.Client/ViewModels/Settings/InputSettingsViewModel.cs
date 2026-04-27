@@ -14,34 +14,25 @@ using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
-public partial class InputSettingsViewModel : ViewModelBase, IDisposable
+public partial class InputSettingsViewModel(
+    NavigationService navigationService,
+    AudioService audioService,
+    NotificationService notificationService,
+    PermissionsService permissionsService,
+    SettingsService settingsService)
+    : ViewModelBase, IDisposable
 {
-    private readonly AudioService _audioService;
-    private readonly NavigationService _navigationService;
-    private readonly NotificationService _notificationService;
-    private readonly PermissionsService _permissionsService;
     private readonly Lock _lock = new();
 
-    [ObservableProperty] private InputSettingsDataViewModel _inputSettingsData;
-    [ObservableProperty] private bool _isRecording;
-    [ObservableProperty] private float _microphoneValue;
-    [ObservableProperty] private bool _detectingVoiceActivity;
+    [ObservableProperty]
+    public partial InputSettingsDataViewModel InputSettingsData { get; set; } = new(settingsService, audioService);
+
+    [ObservableProperty] public partial bool IsRecording { get; set; }
+    [ObservableProperty] public partial float MicrophoneValue { get; set; }
+    [ObservableProperty] public partial bool DetectingVoiceActivity { get; set; }
+
     private AudioCaptureDevice? _captureDevice;
     private CombinedAudioPreprocessor? _audioPreprocessor;
-
-    public InputSettingsViewModel(
-        NavigationService navigationService,
-        AudioService audioService,
-        NotificationService notificationService,
-        PermissionsService permissionsService,
-        SettingsService settingsService)
-    {
-        _navigationService = navigationService;
-        _audioService = audioService;
-        _notificationService = notificationService;
-        _permissionsService = permissionsService;
-        _inputSettingsData = new InputSettingsDataViewModel(settingsService, audioService);
-    }
 
     public void Dispose()
     {
@@ -62,7 +53,7 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     private void Cancel()
     {
         if (DisableBackButton) return;
-        _navigationService.Back();
+        navigationService.Back();
     }
 
     public override void OnAppearing(object? data = null)
@@ -81,19 +72,21 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            if (await _permissionsService.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
+            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
+                PermissionStatus.Granted)
                 throw new PermissionException("Settings.Input.Permissions.MicrophoneNotGranted");
 
             lock (_lock)
             {
-                var denoiser = _audioService.GetAudioPreprocessor(InputSettingsData.Denoiser);
-                var gainController = _audioService.GetAudioPreprocessor(InputSettingsData.AutomaticGainController);
+                var denoiser = audioService.GetAudioPreprocessor(InputSettingsData.Denoiser);
+                var gainController = audioService.GetAudioPreprocessor(InputSettingsData.AutomaticGainController);
                 _audioPreprocessor = new CombinedAudioPreprocessor(gainController, denoiser, null);
-                _captureDevice = _audioService.InitializeCaptureDevice(
+                _captureDevice = audioService.InitializeCaptureDevice(
                     Constants.SampleRate,
                     Constants.RecordingChannels,
                     Constants.FrameSize,
-                    InputSettingsData.InputDevice);
+                    InputSettingsData.InputDevice,
+                    InputSettingsData.HardwarePreprocessorsEnabled);
                 _captureDevice.Start();
                 _captureDevice.OnAudioProcessed += Write;
                 IsRecording = true;
@@ -103,8 +96,8 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
         {
             CloseRecorder();
             // ReSharper disable once InconsistentlySynchronizedField
-            _notificationService.SendErrorNotification(
-                "Settings.Input.Notification.Badge", 
+            notificationService.SendErrorNotification(
+                "Settings.Input.Notification.Badge",
                 ex.Message);
         }
     }
@@ -112,6 +105,7 @@ public partial class InputSettingsViewModel : ViewModelBase, IDisposable
 
     private void Write(Span<float> buffer, Capability _)
     {
+        if (!IsRecording) return;
         _audioPreprocessor?.Process(buffer);
 
         var floatCount = SampleVolume.Read(buffer, InputSettingsData.InputVolume);

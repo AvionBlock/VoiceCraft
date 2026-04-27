@@ -6,10 +6,10 @@ namespace VoiceCraft.Client.Browser;
 
 public class NativeHotKeyService : HotKeyService
 {
-    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions) : base(registeredHotKeyActions)
+    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) : base(registeredHotKeyActions, settingsService)
     {
     }
-
+    
     public override void Initialize()
     {
     }

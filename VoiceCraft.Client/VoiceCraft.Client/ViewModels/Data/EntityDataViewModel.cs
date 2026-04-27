@@ -14,20 +14,21 @@ public partial class EntityDataViewModel : ObservableObject
     private readonly UserSettings _userSettings;
 
     //Entity Display.
-    [ObservableProperty] private string _displayName;
-    [ObservableProperty] private bool _isDeafened;
-    [ObservableProperty] private bool _isMuted;
-    [ObservableProperty] private bool _isServerDeafened;
-    [ObservableProperty] private bool _isServerMuted;
-    [ObservableProperty] private bool _isSpeaking;
-    [ObservableProperty] private bool _isVisible;
-    [ObservableProperty] private bool _userMuted;
+    [ObservableProperty] public partial string DisplayName { get; set; }
+    [ObservableProperty] public partial bool IsDeafened { get; set; }
+    [ObservableProperty] public partial bool IsMuted { get; set; }
+    [ObservableProperty] public partial bool IsServerDeafened { get; set; }
+    [ObservableProperty] public partial bool IsServerMuted { get; set; }
+    [ObservableProperty] public partial bool IsSpeaking { get; set; }
+    [ObservableProperty] public partial bool IsVisible { get; set; }
+    [ObservableProperty] public partial bool UserMuted { get; set; }
+
     private bool _userMutedUpdating;
     private bool _userVolumeUpdating;
 
     //User Settings
     [ObservableProperty] private float _volume;
-    
+
     public VoiceCraftClientEntity Entity { get; }
 
     public EntityDataViewModel(VoiceCraftClientEntity entity, SettingsService settingsService)
@@ -39,8 +40,8 @@ public partial class EntityDataViewModel : ObservableObject
         if (entity is VoiceCraftClientNetworkEntity networkEntity)
         {
             _entityUserId = networkEntity.UserGuid;
-            _isServerMuted = networkEntity.ServerMuted;
-            _isServerDeafened = networkEntity.ServerDeafened;
+            IsServerMuted = networkEntity.ServerMuted;
+            IsServerDeafened = networkEntity.ServerDeafened;
             if (_userSettings.Users.TryGetValue((Guid)_entityUserId, out var entitySetting))
             {
                 entity.Volume = entitySetting.Volume;
@@ -51,13 +52,13 @@ public partial class EntityDataViewModel : ObservableObject
             networkEntity.OnServerDeafenUpdated += (value, _) => IsServerDeafened = value;
         }
 
-        _displayName = entity.Name;
-        _isMuted = entity.Muted;
-        _isDeafened = entity.Deafened;
-        _isVisible = entity.IsVisible;
-        _isSpeaking = entity.IsSpeaking;
+        DisplayName = entity.Name;
+        IsMuted = entity.Muted;
+        IsDeafened = entity.Deafened;
+        IsVisible = entity.IsVisible;
+        IsSpeaking = entity.IsSpeaking;
         _volume = entity.Volume;
-        _userMuted = entity.UserMuted;
+        UserMuted = entity.UserMuted;
 
         entity.OnNameUpdated += (value, _) => DisplayName = value;
         entity.OnMuteUpdated += (value, _) => IsMuted = value;

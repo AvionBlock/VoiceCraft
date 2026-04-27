@@ -24,13 +24,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
     private readonly IAudioEncoder _audioEncoder;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
-    private float _inputVolume;
-    private float _outputVolume;
-    private float _microphoneSensitivity;
     private ushort _sendTimestamp;
-    private bool _serverDeafened;
-    private bool _serverMuted;
-    private bool _speakingState;
 
     public static Version Version { get; } = new(Constants.Major, Constants.Minor, Constants.Patch);
     public VoiceCraftWorld World { get; } = new();
@@ -40,52 +34,52 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public float InputVolume
     {
-        get => _inputVolume;
-        set => _inputVolume = Math.Clamp(value, 0, 2);
+        get;
+        set => field = ClampFinite(value, 0, 2);
     }
 
     public float OutputVolume
     {
-        get => _outputVolume;
-        set => _outputVolume = Math.Clamp(value, 0, 2);
+        get;
+        set => field = ClampFinite(value, 0, 2);
     }
-    
+
     public float MicrophoneSensitivity
     {
-        get => _microphoneSensitivity;
-        set => _microphoneSensitivity = Math.Clamp(value, 0, 1);
+        get;
+        set => field = ClampFinite(value, 0, 1);
     }
 
     public bool SpeakingState
     {
-        get => _speakingState;
+        get;
         private set
         {
-            if (_speakingState == value) return;
-            _speakingState = value;
+            if (field == value) return;
+            field = value;
             OnSpeakingUpdated?.Invoke(value);
         }
     }
 
     public bool ServerMuted
     {
-        get => _serverMuted;
+        get;
         private set
         {
-            if (_serverMuted == value) return;
-            _serverMuted = value;
-            OnServerMuteUpdated?.Invoke(_serverMuted);
+            if (field == value) return;
+            field = value;
+            OnServerMuteUpdated?.Invoke(field);
         }
     }
 
     public bool ServerDeafened
     {
-        get => _serverDeafened;
+        get;
         private set
         {
-            if (_serverDeafened == value) return;
-            _serverDeafened = value;
-            OnServerDeafenUpdated?.Invoke(_serverDeafened);
+            if (field == value) return;
+            field = value;
+            OnServerDeafenUpdated?.Invoke(field);
         }
     }
 
@@ -341,9 +335,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         var packetType = (VcPacketType)reader.GetByte();
         switch (packetType)
         {
-            case VcPacketType.InfoRequest:
-            case VcPacketType.LoginRequest:
-            case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
                 ProcessUnconnectedPacket(reader, onParsed, () => new VcInfoResponsePacket());
                 break;
@@ -608,6 +599,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityCreatedPacket(VcOnEntityCreatedPacket packet)
     {
+        if (World.ContainsEntity(packet.Id)) return;
+
         var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke())
         {
             Name = packet.Name,
@@ -619,6 +612,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnNetworkEntityCreatedPacket(VcOnNetworkEntityCreatedPacket packet)
     {
+        if (World.ContainsEntity(packet.Id)) return;
+
         var entity =
             new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid)
             {
@@ -633,28 +628,26 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityDestroyedPacket(VcOnEntityDestroyedPacket packet)
     {
+        if (!World.ContainsEntity(packet.Id)) return;
         World.DestroyEntity(packet.Id);
     }
 
     private void HandleOnEntityNameUpdatedPacket(VcOnEntityNameUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Name = packet.Value;
+        entity?.Name = packet.Value;
     }
 
     private void HandleOnEntityMuteUpdatedPacket(VcOnEntityMuteUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Muted = packet.Value;
+        entity?.Muted = packet.Value;
     }
 
     private void HandleOnEntityDeafenUpdatedPacket(VcOnEntityDeafenUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Deafened = packet.Value;
+        entity?.Deafened = packet.Value;
     }
 
     private void HandleOnEntityServerMuteUpdatedPacket(VcOnEntityServerMuteUpdatedPacket packet)
@@ -674,50 +667,43 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void HandleOnEntityTalkBitmaskUpdatedPacket(VcOnEntityTalkBitmaskUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.TalkBitmask = packet.Value;
+        entity?.TalkBitmask = packet.Value;
     }
 
     private void HandleOnEntityListenBitmaskUpdatedPacket(VcOnEntityListenBitmaskUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.ListenBitmask = packet.Value;
+        entity?.ListenBitmask = packet.Value;
     }
 
     private void HandleOnEntityEffectBitmaskUpdatedPacket(VcOnEntityEffectBitmaskUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.EffectBitmask = packet.Value;
+        entity?.EffectBitmask = packet.Value;
     }
 
     private void HandleOnEntityPositionUpdatedPacket(VcOnEntityPositionUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Position = packet.Value;
+        entity?.Position = packet.Value;
     }
 
     private void HandleOnEntityRotationUpdatedPacket(VcOnEntityRotationUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Rotation = packet.Value;
+        entity?.Rotation = packet.Value;
     }
 
     private void HandleOnEntityCaveFactorUpdatedPacket(VcOnEntityCaveFactorUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.CaveFactor = packet.Value;
+        entity?.CaveFactor = packet.Value;
     }
 
     private void HandleOnEntityMuffleFactorUpdatedPacket(VcOnEntityMuffleFactorUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.MuffleFactor = packet.Value;
+        entity?.MuffleFactor = packet.Value;
     }
 
     private void HandleOnEntityAudioReceivedPacket(VcOnEntityAudioReceivedPacket packet)
@@ -808,5 +794,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         {
             PacketPool<T>.Return(packet);
         }
+    }
+
+    private static float ClampFinite(float value, float min, float max)
+    {
+        return float.IsFinite(value) ? Math.Clamp(value, min, max) : min;
     }
 }

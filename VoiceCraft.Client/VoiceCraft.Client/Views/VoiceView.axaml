@@ -103,7 +103,8 @@
             <ToggleButton CornerRadius="50"
                           Width="50"
                           Height="50"
-                          IsChecked="{Binding IsMuted}">
+                          IsChecked="{Binding IsMuted}"
+                          Command="{Binding ToggleMuteCommand}">
                 <Panel>
                     <PathIcon Data="{StaticResource MicOnRegular}"
                               Classes.IsSpeaking="{Binding IsSpeaking}">
@@ -138,7 +139,8 @@
             <ToggleButton CornerRadius="50"
                           Width="50"
                           Height="50"
-                          IsChecked="{Binding IsDeafened}">
+                          IsChecked="{Binding IsDeafened}"
+                          Command="{Binding ToggleDeafenCommand}">
                 <Panel>
                     <PathIcon Data="{StaticResource SpeakerRegular}">
                         <PathIcon.IsVisible>
@@ -172,57 +174,5 @@
                 <PathIcon Data="{StaticResource CallEndRegular}" />
             </Button>
         </StackPanel>
-
-        <Border Grid.Row="1"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Stretch"
-                Background="{DynamicResource BackgroundBrush}"
-                PointerPressed="ModalBackgroundOnPointerPressed"
-                Classes.ShowModal="{Binding ShowModal}"
-                Classes.HideModal="{Binding !ShowModal}">
-            <Border Classes="card"
-                    MaxWidth="500"
-                    VerticalAlignment="Center"
-                    Padding="15"
-                    Margin="10">
-                <StackPanel>
-                    <TextBlock HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               FontSize="15"
-                               Text="{Binding SelectedEntity.DisplayName, FallbackValue='N.A.'}" />
-                    <Grid ColumnDefinitions="Auto, Auto">
-                        <TextBlock Grid.Column="0" VerticalAlignment="Center"
-                                   Text="{locale:Localize Voice.Modal.Volume}" />
-                        <TextBlock Grid.Column="1" VerticalAlignment="Center"
-                                   Text="{Binding SelectedEntity.Volume, StringFormat='{} {0:P0}', FallbackValue='N.A.'}" />
-                    </Grid>
-                    <Slider Maximum="2.0"
-                            Minimum="0.0"
-                            Value="{Binding SelectedEntity.Volume, FallbackValue=0}" />
-                    <ToggleButton HorizontalAlignment="Stretch"
-                                  IsChecked="{Binding SelectedEntity.UserMuted, FallbackValue=False}">
-                        <TextBlock Text="{locale:Localize Voice.Modal.Muted}" />
-                    </ToggleButton>
-                </StackPanel>
-            </Border>
-
-            <Border.Transitions>
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
-                </Transitions>
-            </Border.Transitions>
-            <Border.Styles>
-                <Style Selector="Border.ShowModal">
-                    <Setter Property="IsHitTestVisible" Value="True" />
-                    <Setter Property="Opacity" Value="1" />
-                </Style>
-            </Border.Styles>
-            <Border.Styles>
-                <Style Selector="Border.HideModal">
-                    <Setter Property="IsHitTestVisible" Value="False" />
-                    <Setter Property="Opacity" Value="0" />
-                </Style>
-            </Border.Styles>
-        </Border>
     </Grid>
 </UserControl>

@@ -13,18 +13,26 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     private readonly InputSettings _inputSettings;
     private readonly SettingsService _settingsService;
 
-    [ObservableProperty] private string _inputDevice;
-    [ObservableProperty] private float _inputVolume;
-    [ObservableProperty] private float _microphoneSensitivity;
-    [ObservableProperty] private Guid _denoiser;
-    [ObservableProperty] private Guid _automaticGainController;
-    [ObservableProperty] private Guid _echoCanceler;
+    [ObservableProperty] public partial string InputDevice { get; set; }
+    [ObservableProperty] public partial float InputVolume { get; set; }
+    [ObservableProperty] public partial float MicrophoneSensitivity { get; set; }
+    [ObservableProperty] public partial Guid Denoiser { get; set; }
+    [ObservableProperty] public partial Guid AutomaticGainController { get; set; }
+    [ObservableProperty] public partial Guid EchoCanceler { get; set; }
+    [ObservableProperty] public partial bool HardwarePreprocessorsEnabled { get; set; }
+    [ObservableProperty] public partial bool PushToTalkEnabled { get; set; }
+    [ObservableProperty] public partial bool PushToTalkCue { get; set; }
 
     //Lists
-    [ObservableProperty] private ObservableCollection<AudioDeviceInfo> _inputDevices = [];
-    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _denoisers = [];
-    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _automaticGainControllers = [];
-    [ObservableProperty] private ObservableCollection<RegisteredAudioPreprocessor> _echoCancelers = [];
+    [ObservableProperty] public partial ObservableCollection<AudioDeviceInfo> InputDevices { get; set; } = [];
+    [ObservableProperty] public partial ObservableCollection<RegisteredAudioPreprocessor> Denoisers { get; set; } = [];
+
+    [ObservableProperty]
+    public partial ObservableCollection<RegisteredAudioPreprocessor> AutomaticGainControllers { get; set; } = [];
+
+    [ObservableProperty]
+    public partial ObservableCollection<RegisteredAudioPreprocessor> EchoCancelers { get; set; } = [];
+
     private bool _disposed;
     private bool _updating;
 
@@ -35,12 +43,15 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _settingsService = settingsService;
 
         _inputSettings.OnUpdated += Update;
-        _inputDevice = _inputSettings.InputDevice;
-        _inputVolume = _inputSettings.InputVolume;
-        _microphoneSensitivity = _inputSettings.MicrophoneSensitivity;
-        _denoiser = _inputSettings.Denoiser;
-        _automaticGainController = _inputSettings.AutomaticGainController;
-        _echoCanceler = _inputSettings.EchoCanceler;
+        InputDevice = _inputSettings.InputDevice;
+        InputVolume = _inputSettings.InputVolume;
+        MicrophoneSensitivity = _inputSettings.MicrophoneSensitivity;
+        Denoiser = _inputSettings.Denoiser;
+        AutomaticGainController = _inputSettings.AutomaticGainController;
+        EchoCanceler = _inputSettings.EchoCanceler;
+        HardwarePreprocessorsEnabled = _inputSettings.HardwarePreprocessorsEnabled;
+        PushToTalkEnabled = _inputSettings.PushToTalkEnabled;
+        PushToTalkCue = _inputSettings.PushToTalkCue;
     }
 
     public void Dispose()
@@ -58,7 +69,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         Denoisers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.DenoiserSupported)];
         AutomaticGainControllers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.GainControllerSupported)];
         EchoCancelers = [.._audioService.RegisteredAudioPreprocessors.Where(x => x.EchoCancelerSupported)];
-        
+
         if (InputDevices.All(outputDevice => outputDevice.Name != InputDevice))
             InputDevice = InputDevices.First(x => x.IsDefault).Name;
         if (Denoisers.FirstOrDefault(x => x.Id == Denoiser) == null)
@@ -135,6 +146,39 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         _updating = false;
     }
 
+    partial void OnHardwarePreprocessorsEnabledChanging(bool value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.HardwarePreprocessorsEnabled = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
+    partial void OnPushToTalkEnabledChanging(bool value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.PushToTalkEnabled = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
+    partial void OnPushToTalkCueChanging(bool value)
+    {
+        ThrowIfDisposed();
+
+        if (_updating) return;
+        _updating = true;
+        _inputSettings.PushToTalkCue = value;
+        _ = _settingsService.SaveAsync();
+        _updating = false;
+    }
+
     private void Update(InputSettings inputSettings)
     {
         if (_updating) return;
@@ -146,6 +190,9 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
         Denoiser = inputSettings.Denoiser;
         AutomaticGainController = inputSettings.AutomaticGainController;
         EchoCanceler = inputSettings.EchoCanceler;
+        HardwarePreprocessorsEnabled = inputSettings.HardwarePreprocessorsEnabled;
+        PushToTalkEnabled = inputSettings.PushToTalkEnabled;
+        PushToTalkCue = inputSettings.PushToTalkCue;
 
         _updating = false;
     }

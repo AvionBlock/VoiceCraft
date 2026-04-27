@@ -13,7 +13,8 @@
       "Language": "Язык",
       "NotificationDismiss": "Скрытие уведомления (мс)",
       "DisableNotifications": "Отключить уведомления",
-      "HideServerAddresses": "Скрывать адреса серверов"
+      "HideServerAddresses": "Скрывать адреса серверов",
+      "EnableTelemetry": "Включить анонимную телеметрию"
     },
     "Appearance": {
       "Title": "Внешний вид",
@@ -28,6 +29,9 @@
       "Denoisers": "Шумоподавители",
       "AutomaticGainControllers": "Автоматическая регулировка усиления",
       "EchoCancelers": "Подавление эха",
+      "HardwarePreprocessors": null,
+      "PushToTalk": "Удерживай, чтобы говорить",
+      "PlayPushToTalkCue": "Проигрывать звуки Push To Talk",
       "MicrophoneTest": {
         "MicrophoneTest": "Проверка микрофона",
         "Test": "Тест"
@@ -58,25 +62,39 @@
     },
     "Network": {
       "Title": "Сетевые настройки",
-      "PositioningType": "Тип позиционирования",
+      "PositioningType": {
+        "Title": "Тип позиционирования",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "IP-адрес прослушивания MCWSS",
       "McWssHostPort": "Порт хоста MCWSS"
     },
     "HotKey": {
       "Title": "Горячие клавиши",
+      "Rebind": "Переназначить",
+      "CapturePrompt": "Нажми клавишу или кнопку мыши",
+      "SaveBinding": "Сохранить",
+      "CancelRebind": "Отмена",
       "Actions": {
         "Mute": "Выключить микрофон",
-        "Deafen": "Оглушить"
+        "Deafen": "Оглушить",
+        "PushToTalk": "Удерживай, чтобы говорить"
       }
     },
     "Advanced": {
       "Title": "Расширенные настройки",
       "TriggerGc": "Запустить сборщик мусора",
       "Crash": "Тестовый сбой",
+      "ResetAllSettings": "Сбросить все настройки",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "Сборка мусора запущена. Очищено памяти: {0}mb."
+        },
+        "Reset": {
+          "Badge": "Настройки",
+          "Done": "Все настройки сброшены к значениям по умолчанию. Перезапустите клиент, чтобы тема и язык применились полностью."
         }
       }
     },
@@ -104,12 +122,29 @@
   },
   "CrashLogs": {
     "Title": "Журналы сбоев",
+    "Action": {
+      "DumpLink": "Ссылка на дамп"
+    },
     "Notification": {
       "Badge": "Журналы сбоев",
       "Cleared": "Все журналы успешно очищены.",
       "Copied": "Журналы сбоев скопированы в буфер обмена.",
+      "DumpCopied": "Ссылка на дамп сбоя скопирована в буфер обмена.",
+      "DumpUploadFailed": "Не удалось загрузить дамп сбоя.",
+      "DumpUnavailable": "Для этого журнала сбоя ещё нет ссылки на загруженный дамп.",
       "Empty": "Нет журналов сбоев для копирования."
     }
+  },
+  "TelemetryConsent": {
+    "Title": "Помогите улучшить VoiceCraft",
+    "Description": "VoiceCraft может отправлять анонимную телеметрию, чтобы мы лучше понимали падения и улучшали стабильность на всех платформах.",
+    "CollectsTitle": "Что мы собираем",
+    "CollectsBody": "Версию приложения, платформу, информацию об ОС и рантайме, архитектуру, локаль, данные о CPU и памяти, а также анонимные события запуска и heartbeat.",
+    "NotCollectedTitle": "Что мы не собираем автоматически",
+    "NotCollectedBody": "Мы не загружаем автоматически ваш список серверов, токены, значения конфигов или содержимое чатов и данных.",
+    "DumpBody": "Краш-дампы загружаются только когда вы сами нажимаете кнопку ссылки на дамп в журнале сбоев.",
+    "Accept": "Принять",
+    "Decline": "Отклонить"
   },
   "AddServer": {
     "Title": "Добавить сервер",
@@ -190,8 +225,7 @@
     "Notification": {
       "Badge": "McWss",
       "Connected": "Подключение McWss установлено: {0}",
-      "Disconnected": "Подключение McWss разорвано!",
-      "Failed": "Не удалось запустить сервер McWss! Проверьте, не занят ли порт другим процессом!"
+      "Disconnected": "Подключение McWss разорвано!"
     }
   },
   "PermissionsService": {
@@ -209,7 +243,8 @@
       "TanhSoft": "Мягкий клиппер Tanh"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - По умолчанию"
+      "Default": "По умолчанию",
+      "DefaultDevice": "{0} - По умолчанию"
     }
   },
   "ThemesService": {

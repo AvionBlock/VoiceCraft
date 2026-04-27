@@ -1,0 +1,35 @@
+<UserControl x:Class="VoiceCraft.Client.Views.Modals.EntityDataSettingsView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:locale="using:VoiceCraft.Client.Locales"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Modals"
+             x:DataType="vm:EntityDataSettingsViewModel">
+    <Border Classes="card"
+            MaxWidth="500"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            Padding="15"
+            Margin="10">
+        <ScrollViewer>
+            <StackPanel>
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Top"
+                           FontSize="15"
+                           Text="{Binding Entity.DisplayName, FallbackValue='N.A.'}" />
+                <Grid ColumnDefinitions="Auto, Auto">
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                               Text="{locale:Localize Voice.Modal.Volume}" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                               Text="{Binding Entity.Volume, StringFormat='{} {0:P0}', FallbackValue='N.A.'}" />
+                </Grid>
+                <Slider Maximum="2.0"
+                        Minimum="0.0"
+                        Value="{Binding Entity.Volume, FallbackValue=0}" />
+                <ToggleButton HorizontalAlignment="Stretch"
+                              IsChecked="{Binding Entity.UserMuted, FallbackValue=False}">
+                    <TextBlock Text="{locale:Localize Voice.Modal.Muted}" />
+                </ToggleButton>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

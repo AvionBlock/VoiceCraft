@@ -9,9 +9,9 @@ public partial class NotificationSettingsDataViewModel : ObservableObject, IDisp
 {
     private readonly NotificationSettings _notificationSettings;
     private readonly SettingsService _settingsService;
-    [ObservableProperty] private bool _disableNotifications;
+    [ObservableProperty] public partial bool DisableNotifications { get; set; }
+    [ObservableProperty] public partial ushort DismissDelayMs { get; set; }
 
-    [ObservableProperty] private ushort _dismissDelayMs;
     private bool _disposed;
     private bool _updating;
 
@@ -20,8 +20,8 @@ public partial class NotificationSettingsDataViewModel : ObservableObject, IDisp
         _notificationSettings = settingsService.NotificationSettings;
         _settingsService = settingsService;
         _notificationSettings.OnUpdated += Update;
-        _dismissDelayMs = _notificationSettings.DismissDelayMs;
-        _disableNotifications = _notificationSettings.DisableNotifications;
+        DismissDelayMs = _notificationSettings.DismissDelayMs;
+        DisableNotifications = _notificationSettings.DisableNotifications;
     }
 
     public void Dispose()

@@ -4,12 +4,9 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Android;
 
-public class NativeHotKeyService : HotKeyService
+public class NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService)
+    : HotKeyService(registeredHotKeyActions, settingsService)
 {
-    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions) : base(registeredHotKeyActions)
-    {
-    }
-
     public override void Initialize()
     {
     }

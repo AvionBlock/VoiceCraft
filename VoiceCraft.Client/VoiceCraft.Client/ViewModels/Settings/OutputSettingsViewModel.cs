@@ -20,8 +20,9 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
     private readonly NotificationService _notificationService;
     private readonly Lock _lock = new();
 
-    [ObservableProperty] private OutputSettingsDataViewModel _outputSettingsData;
-    [ObservableProperty] private bool _isPlaying;
+    [ObservableProperty] public partial OutputSettingsDataViewModel OutputSettingsData { get; set; }
+    [ObservableProperty] public partial bool IsPlaying { get; set; }
+
     private AudioPlaybackDevice? _playbackDevice;
     private IAudioClipper? _audioClipper;
 
@@ -34,7 +35,7 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
         _navigationService = navigationService;
         _audioService = audioService;
         _notificationService = notificationService;
-        _outputSettingsData = new OutputSettingsDataViewModel(settingsService, _audioService);
+        OutputSettingsData = new OutputSettingsDataViewModel(settingsService, _audioService);
     }
 
     public void Dispose()
@@ -99,7 +100,7 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
                 var callbackComponent = new CallbackProvider(_playbackDevice.Engine, _playbackDevice.Format, Read);
                 callbackComponent.ConnectInput(new Oscillator(_playbackDevice.Engine, _playbackDevice.Format));
                 _playbackDevice.MasterMixer.AddComponent(callbackComponent);
-                
+
                 _playbackDevice.Start();
                 IsPlaying = true;
             }

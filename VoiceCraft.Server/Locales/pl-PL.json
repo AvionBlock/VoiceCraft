@@ -71,6 +71,15 @@
       "Failed": "Nie udalo sie uruchomic serwera McHttp! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
     }
   },
+  "McTcpServer": {
+    "Starting": "Uruchamianie serwera McTcp...",
+    "Success": "Serwer McTcp uruchomiono pomyslnie!",
+    "Stopping": "Zatrzymywanie serwera McTcp...",
+    "Stopped": "Serwer McTcp zostal pomyslnie zatrzymany!",
+    "Exceptions": {
+      "Failed": "Nie udalo sie uruchomic serwera McTcp! Sprawdz, czy inny proces nie korzysta z tego samego portu!"
+    }
+  },
   "Tables": {
     "ServerSetup": {
       "Server": "Serwer",

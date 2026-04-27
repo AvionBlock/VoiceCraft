@@ -13,13 +13,11 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         private readonly Dictionary<VoiceCraftEntity, BiQuadFilter> _biquadFilters = new();
 
-        private float _wetDry = 1.0f;
-
         public float WetDry
         {
-            get => _wetDry;
-            set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
-        }
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
 
         public static int SampleRate => Constants.SampleRate;
 

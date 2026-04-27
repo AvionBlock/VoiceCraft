@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
@@ -13,10 +13,6 @@
     <ItemGroup>
         <PackageReference Include="Fleck" />
         <PackageReference Include="LiteNetLib"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Packets\" />
     </ItemGroup>
 
 </Project>

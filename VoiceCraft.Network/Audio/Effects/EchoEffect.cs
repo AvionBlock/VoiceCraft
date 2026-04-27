@@ -14,8 +14,6 @@ public class EchoEffect : IAudioEffect
     private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines = new();
 
     private float _delay;
-    private float _wetDry = 1.0f;
-    private float _feedback = 0.5f;
 
     public EchoEffect()
     {
@@ -24,9 +22,9 @@ public class EchoEffect : IAudioEffect
 
     public float WetDry
     {
-        get => _wetDry;
-        set => _wetDry = Math.Clamp(value, 0.0f, 1.0f);
-    }
+        get;
+        set => field = Math.Clamp(value, 0.0f, 1.0f);
+    } = 1.0f;
 
     public static int SampleRate => Constants.SampleRate;
 
@@ -38,9 +36,9 @@ public class EchoEffect : IAudioEffect
 
     public float Feedback
     {
-        get => _feedback;
-        set => _feedback = Math.Clamp(value, 0.0f, 1.0f);
-    }
+        get;
+        set => field = Math.Clamp(value, 0.0f, 1.0f);
+    } = 0.5f;
 
     public EffectType EffectType => EffectType.Echo;
 

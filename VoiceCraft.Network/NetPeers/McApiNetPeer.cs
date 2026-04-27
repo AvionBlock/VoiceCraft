@@ -11,9 +11,9 @@ public abstract class McApiNetPeer
     public abstract string SessionToken { get; }
     public object? Tag { get; set; }
     
-    public struct QueuedPacket(string data, string token)
+    public struct QueuedPacket(byte[] data, string token)
     {
-        public string Data = data;
-        public string Token = token;
+        public readonly byte[] Data = data;
+        public readonly string Token = token;
     }
 }

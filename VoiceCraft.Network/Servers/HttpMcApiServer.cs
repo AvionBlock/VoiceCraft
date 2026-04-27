@@ -1,10 +1,10 @@
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using LiteNetLib.Utils;
@@ -13,7 +13,6 @@ using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;
-using VoiceCraft.Network.Packets.McHttpPackets;
 using VoiceCraft.Network.Systems;
 
 namespace VoiceCraft.Network.Servers;
@@ -21,8 +20,13 @@ namespace VoiceCraft.Network.Servers;
 public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
     : McApiServer(world, audioEffectSystem)
 {
+    private const int MaxRequestLength = 1_000_000;
+
     private HttpMcApiConfig _config = new();
-    private readonly ConcurrentDictionary<IPAddress, HttpMcApiNetPeer> _mcApiPeers = new();
+    private readonly ConcurrentDictionary<string, HttpMcApiNetPeer> _mcApiPeers = new();
+    private readonly ConcurrentQueue<PendingHttpRequest> _pendingRequests = new();
+    private readonly NetDataReader _httpReader = new();
+    private readonly NetDataWriter _httpWriter = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private HttpListener? _httpServer;
@@ -75,22 +79,25 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     public override void Update()
     {
         if (_httpServer == null) return;
+        ProcessPendingRequests();
         foreach (var peer in _mcApiPeers) UpdatePeer(peer.Key, peer.Value);
     }
 
     public override void Stop()
     {
-        if (_httpServer == null) return;
+        if (_httpServer == null)
+        {
+            CompletePendingRequests(new OperationCanceledException("McHttp server stopped."));
+            _mcApiPeers.Clear();
+            return;
+        }
+
         try
         {
             if (_httpServer.IsListening)
                 _httpServer.Stop();
         }
-        catch (ObjectDisposedException)
-        {
-            //Do Nothing
-        }
-        catch (HttpListenerException)
+        catch
         {
             //Do Nothing
         }
@@ -99,12 +106,14 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         {
             _httpServer.Close();
         }
-        catch (ObjectDisposedException)
+        catch
         {
             //Do Nothing
         }
 
         _httpServer = null;
+        CompletePendingRequests(new OperationCanceledException("McHttp server stopped."));
+        _mcApiPeers.Clear();
     }
 
     public override void SendPacket<T>(McApiNetPeer netPeer, T packet)
@@ -121,8 +130,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -138,18 +146,18 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         {
             lock (_writer)
             {
-                var netPeers = _mcApiPeers.Where(x => x.Value.ConnectionState == McApiConnectionState.Connected);
                 _writer.Reset();
                 _writer.Put((byte)packet.PacketType);
                 _writer.Put(packet);
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                foreach (var netPeer in netPeers)
+                var data = _writer.CopyData();
+                foreach (var netPeer in _mcApiPeers.Values)
                 {
-                    if (excludes.Contains(netPeer.Value)) continue;
-                    netPeer.Value.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                    if (netPeer.ConnectionState != McApiConnectionState.Connected || excludes.Contains(netPeer))
+                        continue;
+                    netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, string.Empty));
                 }
             }
         }
@@ -172,7 +180,8 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             OnPeerDisconnected?.Invoke(httpNetPeer, sessionToken);
             if (force)
             {
-                _mcApiPeers.TryRemove(httpNetPeer.IpAddress, out _); //Remove Immediately.
+                if (!string.IsNullOrEmpty(httpNetPeer.LookupToken))
+                    _mcApiPeers.TryRemove(httpNetPeer.LookupToken, out _); //Remove Immediately.
                 return;
             }
 
@@ -184,8 +193,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(netPeer));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -199,11 +207,15 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         if (data is not HttpMcApiNetPeer httpNetPeer) return;
         try
         {
+            var previousLookupToken = httpNetPeer.LookupToken;
             if (httpNetPeer.ConnectionState != McApiConnectionState.Connected)
             {
                 httpNetPeer.SetSessionToken(Guid.NewGuid().ToString());
                 httpNetPeer.SetConnectionState(McApiConnectionState.Connected);
             }
+
+            httpNetPeer.SetLookupToken(httpNetPeer.SessionToken);
+            TrackPeer(httpNetPeer, previousLookupToken);
 
             SendPacket(httpNetPeer,
                 PacketPool<McApiAcceptResponsePacket>.GetPacket(() => new McApiAcceptResponsePacket())
@@ -233,8 +245,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = Z85.GetStringWithPadding(_writer.AsReadOnlySpan());
-                httpNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
+                httpNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
             }
         }
         finally
@@ -259,14 +270,10 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             while (listener.IsListening)
             {
                 var context = await listener.GetContextAsync();
-                await HandleRequest(context);
+                _ = HandleRequest(context);
             }
         }
-        catch (ObjectDisposedException)
-        {
-            //Do Nothing
-        }
-        catch (HttpListenerException)
+        catch
         {
             //Do Nothing
         }
@@ -283,68 +290,118 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 return;
             }
 
-            if (context.Request.ContentLength64 >= 1e+6) //Do not accept anything higher than a mb.
+            switch (context.Request.ContentLength64)
             {
-                context.Response.StatusCode = 413;
-                context.Response.Close();
-                return;
+                case < 0:
+                    context.Response.StatusCode = 411;
+                    context.Response.Close();
+                    return;
+                //Do not accept anything higher than a mb.
+                case > MaxRequestLength:
+                    context.Response.StatusCode = 413;
+                    context.Response.Close();
+                    return;
             }
 
-            var token = context.Request.Headers.Get("Authorization")?.Remove(0, 7);
-            if (string.IsNullOrWhiteSpace(token))
+            var size = (int)context.Request.ContentLength64;
+            var data = ArrayPool<byte>.Shared.Rent(size);
+            var packets = new List<byte[]>();
+            try
+            {
+                await context.Request.InputStream.ReadExactlyAsync(data, 0, size);
+                var stringData = Encoding.UTF8.GetString(data.AsSpan(0, size));
+                if (!TryReadPackedPackets(stringData, packets))
+                {
+                    context.Response.StatusCode = 400;
+                    context.Response.Close();
+                    return;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
+
+            var isLoginOnlyRequest = ContainsOnlyLoginRequests(packets);
+            var hasBearerToken = TryGetBearerToken(context.Request.Headers.Get("Authorization"), out var token);
+            if (!isLoginOnlyRequest && !hasBearerToken)
             {
                 context.Response.StatusCode = 401;
                 context.Response.Close();
                 return;
             }
 
-            var packet = await JsonSerializer.DeserializeAsync<McHttpUpdatePacket>(context.Request.InputStream,
-                McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
-            if (packet == null)
+            var netPeer = ResolvePeer(token, isLoginOnlyRequest);
+            if (netPeer == null)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = 401;
                 context.Response.Close();
                 return;
             }
 
-            var netPeer = GetOrCreatePeer(context.Request.RemoteEndPoint.Address);
-            ReceivePacketsLogic(netPeer, packet.Packets, token);
-            packet.Packets.Clear();
-            SendPacketsLogic(netPeer, packet.Packets);
+            var pendingRequest = new PendingHttpRequest(netPeer, packets, token);
+            _pendingRequests.Enqueue(pendingRequest);
+            packets = await pendingRequest.CompletionSource.Task;
+            
+            string encoded;
+            lock (_httpWriter)
+            {
+                _httpWriter.Reset();
+                foreach (var packet in packets)
+                {
+                    _httpWriter.Put((ushort)packet.Length);
+                    _httpWriter.Put(packet);
+                }
+                encoded = Z85.GetStringWithPadding(_httpWriter.AsReadOnlySpan());
+            }
 
-            var responseData =
-                JsonSerializer.Serialize(packet, McHttpUpdatePacketGenerationContext.Default.McHttpUpdatePacket);
-            var buffer = Encoding.UTF8.GetBytes(responseData);
-            context.Response.StatusCode = 200;
-            context.Response.ContentLength64 = buffer.Length;
-            await context.Response.OutputStream.WriteAsync(buffer);
-            context.Response.OutputStream.Close();
-        }
-        catch (JsonException)
-        {
-            context.Response.StatusCode = 400;
-            context.Response.Close();
+            var bufferSize = Encoding.UTF8.GetMaxByteCount(encoded.Length); //Zero alloc. GetByteCount allocates a char[].
+            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize); //Use Pooling.
+            try
+            {
+                var encodedBytes = Encoding.UTF8.GetBytes(encoded, buffer);
+                context.Response.StatusCode = 200;
+                context.Response.ContentLength64 = encodedBytes;
+                await context.Response.OutputStream.WriteAsync(buffer.AsMemory(0, encodedBytes));
+                context.Response.OutputStream.Close();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
         catch
         {
-            context.Response.StatusCode = 500;
-            context.Response.Close();
+            try
+            {
+                context.Response.StatusCode = 500;
+                context.Response.Close();
+            }
+            catch
+            {
+                //Do Nothing
+            }
         }
     }
 
-    private HttpMcApiNetPeer GetOrCreatePeer(IPAddress ipAddress)
+    private HttpMcApiNetPeer? ResolvePeer(string token, bool isLoginOnlyRequest)
     {
-        return _mcApiPeers.GetOrAdd(ipAddress, _ =>
+        if (isLoginOnlyRequest)
         {
-            var httpNetPeer = new HttpMcApiNetPeer(ipAddress);
-            return httpNetPeer;
-        });
+            return new HttpMcApiNetPeer()
+            {
+                Tag = this
+            };
+        }
+
+        return _mcApiPeers.GetValueOrDefault(token);
     }
 
-    private static void ReceivePacketsLogic(HttpMcApiNetPeer httpNetPeer, List<string> packets, string token)
+    private static void ReceivePacketsLogic(HttpMcApiNetPeer httpNetPeer, IEnumerable<byte[]> packets, string token)
     {
-        foreach (var data in packets.Where(data => data.Length > 0))
+        foreach (var data in packets)
         {
+            if (data.Length == 0) continue;
             try
             {
                 httpNetPeer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, token));
@@ -356,7 +413,55 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
     }
 
-    private static void SendPacketsLogic(HttpMcApiNetPeer netPeer, List<string> packets)
+    private void ProcessPendingRequests()
+    {
+        while (_pendingRequests.TryDequeue(out var pendingRequest))
+            try
+            {
+                ProcessPackets(pendingRequest.NetPeer, pendingRequest.Packets, pendingRequest.Token);
+                pendingRequest.Packets.Clear();
+                SendPacketsLogic(pendingRequest.NetPeer, pendingRequest.Packets);
+                pendingRequest.CompletionSource.TrySetResult(pendingRequest.Packets);
+            }
+            catch (Exception ex)
+            {
+                pendingRequest.CompletionSource.TrySetException(ex);
+            }
+    }
+
+    private void CompletePendingRequests(Exception exception)
+    {
+        while (_pendingRequests.TryDequeue(out var pendingRequest))
+            pendingRequest.CompletionSource.TrySetException(exception);
+    }
+
+    private void ProcessPackets(HttpMcApiNetPeer httpNetPeer, List<byte[]> packets, string token)
+    {
+        ReceivePacketsLogic(httpNetPeer, packets, token);
+        lock (_reader)
+        {
+            while (httpNetPeer.IncomingQueue.TryDequeue(out var packet))
+                try
+                {
+                    var packetToken = packet.Token;
+                    _reader.Clear();
+                    _reader.SetSource(packet.Data);
+                    ProcessPacket(_reader, mcApiPacket =>
+                    {
+                        httpNetPeer.LastUpdate = DateTime.UtcNow;
+                        if (!AuthorizePacket(mcApiPacket, httpNetPeer, packetToken) ||
+                            Config.DisabledPacketTypes.Contains(mcApiPacket.PacketType)) return;
+                        ExecutePacket(mcApiPacket, httpNetPeer);
+                    });
+                }
+                catch
+                {
+                    //Do Nothing
+                }
+        }
+    }
+
+    private static void SendPacketsLogic(HttpMcApiNetPeer netPeer, List<byte[]> packets)
     {
         while (netPeer.OutgoingQueue.TryDequeue(out var packet))
         {
@@ -371,7 +476,66 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
     }
 
-    private void UpdatePeer(IPAddress ipAddress, HttpMcApiNetPeer httpNetPeer)
+    private static bool ContainsOnlyLoginRequests(IEnumerable<byte[]> packets)
+    {
+        var hasPackets = false;
+        foreach (var packet in packets)
+        {
+            if (!IsLoginRequestPacket(packet))
+                return false;
+
+            hasPackets = true;
+        }
+
+        return hasPackets;
+    }
+
+    private static bool IsLoginRequestPacket(byte[] packet)
+    {
+        return packet.Length > 0 && (McApiPacketType)packet[0] == McApiPacketType.LoginRequest;
+    }
+
+    private bool TryReadPackedPackets(string stringData, List<byte[]> packets)
+    {
+        try
+        {
+            var packedPackets = Z85.GetBytesWithPadding(stringData);
+            lock (_httpReader)
+            {
+                _httpReader.Clear();
+                _httpReader.SetSource(packedPackets);
+                while (!_httpReader.EndOfData)
+                {
+                    var packetSize = _httpReader.GetUShort();
+                    if (packetSize <= 0) continue;
+                    if (_httpReader.AvailableBytes < packetSize)
+                        return false;
+
+                    var packet = new byte[packetSize];
+                    _httpReader.GetBytes(packet, packetSize);
+                    packets.Add(packet);
+                }
+            }
+
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    private void UpdatePeer(string lookupToken, HttpMcApiNetPeer httpNetPeer)
+    {
+        ProcessPackets(httpNetPeer);
+        if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
+        Disconnect(httpNetPeer);
+        //Double the amount of time. We remove the peer.
+        if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
+        _mcApiPeers.TryRemove(lookupToken, out _);
+    }
+    
+    private void ProcessPackets(HttpMcApiNetPeer httpNetPeer)
     {
         lock (_reader)
         {
@@ -380,7 +544,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 {
                     var packetToken = packet.Token;
                     _reader.Clear();
-                    _reader.SetSource(Z85.GetBytesWithPadding(packet.Data));
+                    _reader.SetSource(packet.Data);
                     ProcessPacket(_reader, mcApiPacket =>
                     {
                         httpNetPeer.LastUpdate = DateTime.UtcNow;
@@ -394,12 +558,15 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                     //Do Nothing
                 }
         }
-        
-        if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
-        Disconnect(httpNetPeer);
-        //Double the amount of time. We remove the peer.
-        if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
-        _mcApiPeers.TryRemove(ipAddress, out _);
+    }
+
+    private void TrackPeer(HttpMcApiNetPeer httpNetPeer, string? previousLookupToken = null)
+    {
+        if (!string.IsNullOrEmpty(previousLookupToken) && previousLookupToken != httpNetPeer.LookupToken)
+            _mcApiPeers.TryRemove(previousLookupToken, out _);
+
+        if (!string.IsNullOrEmpty(httpNetPeer.LookupToken))
+            _mcApiPeers[httpNetPeer.LookupToken] = httpNetPeer;
     }
 
     private static string BuildListenerPrefix(string configuredHostname)
@@ -425,6 +592,28 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
 
         return $"{Uri.UriSchemeHttp}://{host}:{port}/";
+    }
+
+    private static bool TryGetBearerToken(string? authorizationHeader, out string token)
+    {
+        const string bearerPrefix = "Bearer ";
+
+        token = string.Empty;
+        if (string.IsNullOrWhiteSpace(authorizationHeader) ||
+            !authorizationHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        token = authorizationHeader[bearerPrefix.Length..].Trim();
+        return !string.IsNullOrWhiteSpace(token);
+    }
+
+    private sealed class PendingHttpRequest(HttpMcApiNetPeer netPeer, List<byte[]> packets, string token)
+    {
+        public HttpMcApiNetPeer NetPeer { get; } = netPeer;
+        public List<byte[]> Packets { get; } = packets;
+        public string Token { get; } = token;
+        public TaskCompletionSource<List<byte[]>> CompletionSource { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public class HttpMcApiConfig

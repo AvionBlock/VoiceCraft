@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
 
@@ -6,7 +7,8 @@ namespace VoiceCraft.Client.ViewModels.Settings;
 
 public partial class AdvancedSettingsViewModel(
     NavigationService navigationService,
-    NotificationService notificationService) : ViewModelBase
+    NotificationService notificationService,
+    SettingsService settingsService) : ViewModelBase
 {
     [RelayCommand]
     private void TriggerGc()
@@ -31,6 +33,24 @@ public partial class AdvancedSettingsViewModel(
     private static void Crash()
     {
         throw new Exception("Task failed successfully.");
+    }
+
+    [RelayCommand]
+    private async Task ResetAllSettings()
+    {
+        try
+        {
+            await settingsService.ResetToDefaultsAsync();
+            notificationService.SendSuccessNotification(
+                "Settings.Advanced.Notification.Reset.Badge",
+                "Settings.Advanced.Notification.Reset.Done");
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification(
+                "Settings.Advanced.Notification.Reset.Badge",
+                ex.Message);
+        }
     }
 
     [RelayCommand]

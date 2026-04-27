@@ -95,7 +95,7 @@ public class CombinedAudioPreprocessor : IAudioPreprocessor
     {
         if (_gainController != null && denoiser.Id == _gainController.Value.Key)
         {
-            _gainController.Value.Value.GainControllerEnabled = true;
+            _gainController.Value.Value.DenoiserEnabled = true;
             return;
         }
 

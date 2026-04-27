@@ -36,6 +36,8 @@ namespace VoiceCraft.Network
             33, 34, 35, 79, 0, 80, 0, 0
         ];
 
+        private static readonly bool[] ValidDecodingTable = BuildValidDecodingTable();
+
         /// <summary>
         ///     Encodes a byte array into a Z85 string with padding.
         /// </summary>
@@ -70,7 +72,9 @@ namespace VoiceCraft.Network
         /// <exception cref="ArgumentException"> Thrown when the input length is not a multiple of 4</exception>
         public static string GetString(ReadOnlySpan<byte> data)
         {
-            var stringBuilder = new StringBuilder();
+            if (data.Length % 4 != 0) throw new ArgumentException("Input length must be a multiple of 4.", nameof(data));
+
+            var stringBuilder = new StringBuilder(data.Length / 4 * 5);
             var encodedChars = new char[5];
 
             for (var i = 0; i < data.Length; i += 4)
@@ -141,11 +145,11 @@ namespace VoiceCraft.Network
             for (var i = 0; i < data.Length; i += 5)
             {
                 uint value = 0;
-                value = value * Base85 + DecodingTable[data[i] - 32];
-                value = value * Base85 + DecodingTable[data[i + 1] - 32];
-                value = value * Base85 + DecodingTable[data[i + 2] - 32];
-                value = value * Base85 + DecodingTable[data[i + 3] - 32];
-                value = value * Base85 + DecodingTable[data[i + 4] - 32];
+                value = value * Base85 + Decode(data[i]);
+                value = value * Base85 + Decode(data[i + 1]);
+                value = value * Base85 + Decode(data[i + 2]);
+                value = value * Base85 + Decode(data[i + 3]);
+                value = value * Base85 + Decode(data[i + 4]);
 
                 output[outputIndex] = (byte)(value >> 24);
                 output[outputIndex + 1] = (byte)(value >> 16);
@@ -155,6 +159,23 @@ namespace VoiceCraft.Network
             }
 
             return output;
+        }
+
+        private static uint Decode(char value)
+        {
+            var index = value - 32;
+            if ((uint)index >= DecodingTable.Length || !ValidDecodingTable[index])
+                throw new ArgumentException($"Invalid Z85 character '{value}'.", nameof(value));
+
+            return DecodingTable[index];
+        }
+
+        private static bool[] BuildValidDecodingTable()
+        {
+            var table = new bool[DecodingTable.Length];
+            foreach (var value in EncodingTable)
+                table[value - 32] = true;
+            return table;
         }
     }
 }

@@ -63,6 +63,11 @@
                                   IsChecked="{Binding NotificationSettingsData.DisableNotifications}">
                         <TextBlock Text="{locale:Localize Settings.General.DisableNotifications}" />
                     </ToggleButton>
+
+                    <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding TelemetrySettingsData.Enabled}">
+                        <TextBlock Text="{locale:Localize Settings.General.EnableTelemetry}" />
+                    </ToggleButton>
                 </StackPanel>
             </Border>
         </ScrollViewer>
