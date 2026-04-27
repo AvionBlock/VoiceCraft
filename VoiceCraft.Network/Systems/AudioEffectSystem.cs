@@ -18,9 +18,10 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private volatile ImmutableSortedDictionary<ushort, IAudioEffect>? _audioEffectsSnapshot;
+    private volatile ImmutableSortedDictionary<ushort, IAudioEffect> _audioEffectsSnapshot =
+        ImmutableSortedDictionary<ushort, IAudioEffect>.Empty;
     private readonly Lock _lock = new();
-    public IImmutableDictionary<ushort, IAudioEffect>? AudioEffects => _audioEffectsSnapshot;
+    public IImmutableDictionary<ushort, IAudioEffect> AudioEffects => _audioEffectsSnapshot;
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
     {
@@ -83,7 +84,7 @@ public class AudioEffectSystem : IDisposable
         {
             var effects = _audioEffects.ToArray(); //Copy the effects.
             _audioEffects.Clear();
-            _audioEffectsSnapshot = null;
+            _audioEffectsSnapshot = ImmutableSortedDictionary<ushort, IAudioEffect>.Empty;
             foreach (var effect in effects)
             {
                 effect.Value.Dispose();
@@ -155,7 +156,6 @@ public class AudioEffectSystem : IDisposable
     private void ProcessEntityEffects(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
     {
         var snapshot = _audioEffectsSnapshot;
-        if (snapshot == null) return;
         foreach (var effect in snapshot)
             effect.Value.Process(from, to, effect.Key, buffer);
     }

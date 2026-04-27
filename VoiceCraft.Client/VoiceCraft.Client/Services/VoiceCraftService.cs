@@ -23,6 +23,7 @@ public class VoiceCraftService(
     NotificationService notificationService)
 {
     private McWssServer? _mcWssServer;
+    private int _disconnecting;
     private bool _pttEnabled;
     private bool _pttCue;
 
@@ -100,6 +101,9 @@ public class VoiceCraftService(
 
     public async Task ConnectAsync(string ip, int port)
     {
+        if (client.ConnectionState != VcConnectionState.Disconnected) return;
+        _disconnecting = 0;
+
         try
         {
             client.OnConnected += ClientOnConnected;
@@ -149,7 +153,7 @@ public class VoiceCraftService(
             if (!_audioRecorder.IsRunning)
                 throw new Exception("VoiceCraft.DisconnectReason.Error");
             _audioPlayer.Start();
-            if (!_audioRecorder.IsRunning)
+            if (!_audioPlayer.IsRunning)
                 throw new Exception("VoiceCraft.DisconnectReason.Error");
             _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
 
@@ -159,7 +163,7 @@ public class VoiceCraftService(
                 settingsService.ServerUserGuid,
                 localeSettings.Culture,
                 networkSettings.PositioningType);
-            _ = Task.Run(UpdateLogic);
+            _ = Task.Run(UpdateLogicAsync);
             await result;
         }
         catch (Exception ex)
@@ -171,6 +175,8 @@ public class VoiceCraftService(
 
     public async Task DisconnectAsync(string? reason = null)
     {
+        if (Interlocked.Exchange(ref _disconnecting, 1) == 1) return;
+
         await StopClientAsync(client, reason);
 
         if (_audioRecorder != null)
@@ -219,20 +225,29 @@ public class VoiceCraftService(
         return read;
     }
 
-    private void UpdateLogic()
+    private async Task UpdateLogicAsync()
     {
-        var startTime = DateTime.UtcNow;
-        while (client.ConnectionState != VcConnectionState.Disconnected)
+        try
         {
-            if ((!_audioRecorder?.IsRunning ?? false) || (!_audioPlayer?.IsRunning ?? false))
-                throw new Exception("VoiceCraft.DisconnectReason.Error");
-            
-            client.Update(); //Update all networking processes.
-            var dist = DateTime.UtcNow - startTime;
-            var delay = Constants.TickRate - dist.TotalMilliseconds;
-            if (delay > 0)
-                Thread.Sleep((int)delay);
-            startTime = DateTime.UtcNow;
+            var startTime = DateTime.UtcNow;
+            while (client.ConnectionState != VcConnectionState.Disconnected)
+            {
+                if ((_audioRecorder != null && !_audioRecorder.IsRunning) ||
+                    (_audioPlayer != null && !_audioPlayer.IsRunning))
+                    throw new Exception("VoiceCraft.DisconnectReason.Error");
+
+                client.Update(); //Update all networking processes.
+                var dist = DateTime.UtcNow - startTime;
+                var delay = Constants.TickRate - dist.TotalMilliseconds;
+                if (delay > 0)
+                    await Task.Delay((int)delay);
+                startTime = DateTime.UtcNow;
+            }
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+            await DisconnectAsync(ex.Message);
         }
     }
 

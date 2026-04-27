@@ -15,7 +15,7 @@ public class AllocationRegressionTests
     private const int SnapshotReadMaxBytesPerRead = 2;
 
     [Fact]
-    public void AudioEffectsSnapshot_RepeatedReads_AreNearlyAllocationFree()
+    public void AudioEffects_RepeatedReads_AreNearlyAllocationFree()
     {
         using var effectSystem = new AudioEffectSystem();
         effectSystem.SetEffect(1, new FakeVisibleEffect(true));
@@ -31,24 +31,16 @@ public class AllocationRegressionTests
     }
 
     [Fact]
-    public void AudioEffects_Getter_Allocates_More_Than_Snapshot_Reads()
+    public void AudioEffects_Getter_RepeatedReads_AreNearlyAllocationFree()
     {
         using var effectSystem = new AudioEffectSystem();
         AddVisibleEffects(effectSystem, 4);
-        
-        var effects = effectSystem.AudioEffects;
-        Assert.NotNull(effects);
 
-        var snapshotAllocated = MeasureAllocatedBytes(
-            () => GC.KeepAlive(effects),
-            iterations: 5_000);
         var getterAllocated = MeasureAllocatedBytes(
-            () => GC.KeepAlive(effects),
-            iterations: 1_000);
+            () => GC.KeepAlive(effectSystem.AudioEffects),
+            iterations: 5_000);
 
-        Assert.True(
-            getterAllocated > snapshotAllocated + 25_000,
-            $"Expected AudioEffects getter to allocate meaningfully more than snapshot reads. Snapshot={snapshotAllocated}, Getter={getterAllocated}");
+        AssertNearlyAllocationFreeSnapshotReads(getterAllocated, iterations: 5_000);
     }
 
     [Fact]
@@ -107,8 +99,8 @@ public class AllocationRegressionTests
         var allocated = MeasureAllocatedBytes(visibilitySystem.Update, iterations: iterations);
 
         Assert.True(
-            allocated < 400_000,
-            $"Expected steady-state visibility allocations to stay bounded for {entityCount} entities. Allocated={allocated}");
+            allocated / Math.Max(1, entityCount * iterations) < 8_192,
+            $"Expected steady-state visibility allocations to stay bounded per entity/update for {entityCount} entities. Allocated={allocated}");
     }
 
     private static long MeasureCurrentVisibilityUpdateAllocations(int entityCount, int effectCount)

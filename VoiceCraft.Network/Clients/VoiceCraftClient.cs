@@ -599,6 +599,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityCreatedPacket(VcOnEntityCreatedPacket packet)
     {
+        if (World.GetEntity(packet.Id) != null) return;
+
         var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke())
         {
             Name = packet.Name,
@@ -610,6 +612,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnNetworkEntityCreatedPacket(VcOnNetworkEntityCreatedPacket packet)
     {
+        if (World.GetEntity(packet.Id) != null) return;
+
         var entity =
             new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid)
             {
@@ -624,6 +628,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityDestroyedPacket(VcOnEntityDestroyedPacket packet)
     {
+        if (World.GetEntity(packet.Id) == null) return;
         World.DestroyEntity(packet.Id);
     }
 

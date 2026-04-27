@@ -16,7 +16,6 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
         var entities = world.Entities.ToArray();
         var visibleNetworkEntities = entities.OfType<VoiceCraftNetworkEntity>().ToArray();
         var audioEffects = audioEffectSystem.AudioEffects;
-        if(audioEffects == null) return;
 
         Parallel.ForEach(entities,
             entity => UpdateVisibleNetworkEntities(entity, visibleNetworkEntities, audioEffects));
