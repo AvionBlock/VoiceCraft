@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\VoiceCraft.Core\VoiceCraft.Core.csproj" />
+    <ProjectReference Include="..\..\VoiceCraft.Network\VoiceCraft.Network.csproj" />
+    <ProjectReference Include="..\..\VoiceCraft.Server\VoiceCraft.Server.csproj" />
+  </ItemGroup>
+</Project>
