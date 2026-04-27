@@ -820,3 +820,4 @@ $RECYCLE.BIN/
 !.vscode/launch.json
 !.vscode/extensions.json
 .temp/
+config/CrashLogs.json

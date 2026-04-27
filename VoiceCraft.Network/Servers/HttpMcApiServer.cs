@@ -24,6 +24,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
 
     private HttpMcApiConfig _config = new();
     private readonly ConcurrentDictionary<string, HttpMcApiNetPeer> _mcApiPeers = new();
+    private readonly ConcurrentQueue<PendingHttpRequest> _pendingRequests = new();
     private readonly NetDataReader _httpReader = new();
     private readonly NetDataWriter _httpWriter = new();
     private readonly NetDataReader _reader = new();
@@ -78,6 +79,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     public override void Update()
     {
         if (_httpServer == null) return;
+        ProcessPendingRequests();
         foreach (var peer in _mcApiPeers) UpdatePeer(peer.Key, peer.Value);
     }
 
@@ -321,9 +323,9 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             }
 
             var netPeer = GetOrCreatePeer(context.Request.RemoteEndPoint.Address, token);
-            ProcessPackets(netPeer, packets, token);
-            packets.Clear();
-            SendPacketsLogic(netPeer, packets);
+            var pendingRequest = new PendingHttpRequest(netPeer, packets, token);
+            _pendingRequests.Enqueue(pendingRequest);
+            packets = await pendingRequest.CompletionSource.Task;
 
             byte[] buffer;
             lock (_httpWriter)
@@ -375,6 +377,22 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 //Do Nothing
             }
         }
+    }
+
+    private void ProcessPendingRequests()
+    {
+        while (_pendingRequests.TryDequeue(out var pendingRequest))
+            try
+            {
+                ProcessPackets(pendingRequest.NetPeer, pendingRequest.Packets, pendingRequest.Token);
+                pendingRequest.Packets.Clear();
+                SendPacketsLogic(pendingRequest.NetPeer, pendingRequest.Packets);
+                pendingRequest.CompletionSource.TrySetResult(pendingRequest.Packets);
+            }
+            catch (Exception ex)
+            {
+                pendingRequest.CompletionSource.TrySetException(ex);
+            }
     }
 
     private void ProcessPackets(HttpMcApiNetPeer httpNetPeer, List<byte[]> packets, string token)
@@ -502,6 +520,15 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
 
         token = authorizationHeader[bearerPrefix.Length..].Trim();
         return !string.IsNullOrWhiteSpace(token);
+    }
+
+    private sealed class PendingHttpRequest(HttpMcApiNetPeer netPeer, List<byte[]> packets, string token)
+    {
+        public HttpMcApiNetPeer NetPeer { get; } = netPeer;
+        public List<byte[]> Packets { get; } = packets;
+        public string Token { get; } = token;
+        public TaskCompletionSource<List<byte[]>> CompletionSource { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public class HttpMcApiConfig
