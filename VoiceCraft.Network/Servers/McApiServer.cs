@@ -333,6 +333,8 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
                 CaveFactor = packet.CaveFactor,
                 MuffleFactor = packet.MuffleFactor
             };
+
+            world.AddEntity(entity);
             SendPacket(netPeer, PacketPool<McApiCreateEntityResponsePacket>
                 .GetPacket(() => new McApiCreateEntityResponsePacket())
                 .Set(packet.RequestId, McApiCreateEntityResponsePacket.ResponseCodes.Ok, entity.Id));

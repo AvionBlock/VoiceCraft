@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,8 +15,6 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
 
     public TcpClient Client { get; } = client;
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
-    public ConcurrentQueue<QueuedRawPacket> IncomingRawQueue { get; } = new();
-    public ConcurrentQueue<byte[]> OutgoingRawQueue { get; } = new();
     public override McApiConnectionState ConnectionState => _connectionState;
     public override string SessionToken => _sessionToken;
 
@@ -70,11 +67,5 @@ public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
         }
 
         pendingResponse?.TrySetCanceled();
-    }
-
-    public readonly struct QueuedRawPacket(byte[] data, string token)
-    {
-        public byte[] Data { get; } = data;
-        public string Token { get; } = token;
     }
 }

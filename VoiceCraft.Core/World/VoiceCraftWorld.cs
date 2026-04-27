@@ -44,6 +44,11 @@ namespace VoiceCraft.Core.World
             return entity;
         }
 
+        public bool ContainsEntity(int id)
+        {
+            return _entities.ContainsKey(id);
+        }
+
         public int GetNextId()
         {
             while (_entities.ContainsKey(_nextEntityId))

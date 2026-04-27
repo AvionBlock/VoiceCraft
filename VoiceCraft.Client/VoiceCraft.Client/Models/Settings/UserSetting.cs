@@ -5,25 +5,22 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class UserSetting : Setting<UserSetting>
 {
-    private bool _userMuted;
-    private float _volume = 1f;
-
     public float Volume
     {
-        get => _volume;
+        get;
         set
         {
-            _volume = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = 1f;
 
     public bool UserMuted
     {
-        get => _userMuted;
+        get;
         set
         {
-            _userMuted = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
     }

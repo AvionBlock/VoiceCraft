@@ -1,15 +1,19 @@
-﻿using Avalonia.Media.Imaging;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Client.ViewModels.Modals;
 using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    [ObservableProperty] private Bitmap? _backgroundImage;
-    [ObservableProperty] private object? _content;
+    private readonly NavigationService _navigationService;
+    [ObservableProperty] public partial Bitmap? BackgroundImage { get; set; }
+    [ObservableProperty] public partial object? Content { get; set; }
+    [ObservableProperty] public partial object? ModalContent { get; set; }
+    [ObservableProperty] public partial bool HasModal { get; set; }
 
     public MainViewModel(NavigationService navigationService,
         ThemesService themesService,
@@ -18,6 +22,8 @@ public partial class MainViewModel : ObservableObject
         HotKeyService hotKeyService,
         IBackgroundService backgroundService)
     {
+        _navigationService = navigationService;
+        
         themesService.OnBackgroundImageChanged += backgroundImage =>
         {
             BackgroundImage = backgroundImage?.BackgroundImageBitmap;
@@ -28,6 +34,11 @@ public partial class MainViewModel : ObservableObject
         {
             Content = viewModel;
             discordRpcService.SetState($"In page {viewModel.GetType().Name.Replace("ViewModel", "")}");
+        };
+        navigationService.OnModalViewModelChanged += viewModel =>
+        {
+            ModalContent = viewModel;
+            HasModal = viewModel != null;
         };
         //Initialize Themes
         var themeSettings = settingsService.ThemeSettings;
@@ -40,9 +51,17 @@ public partial class MainViewModel : ObservableObject
 
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();
-        
+
         var voiceCraftService = backgroundService.GetService<VoiceCraftService>();
-        if (voiceCraftService == null) return;
-        navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));
+        if (voiceCraftService != null)
+            navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));
+
+        if (!settingsService.TelemetrySettings.ConsentShown)
+            navigationService.PushModal<TelemetryConsentViewModel>();
+    }
+
+    public void PopModal()
+    {
+        _navigationService.PopModal(true);
     }
 }

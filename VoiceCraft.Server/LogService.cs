@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Diagnostics;
 
 namespace VoiceCraft.Server;
 
@@ -17,7 +19,7 @@ public static class LogService
     public static IEnumerable<KeyValuePair<DateTime, string>> ExceptionLogs =>
         _exceptionLogs.ExceptionLogs.OrderByDescending(d => d.Key);
 
-    public static IEnumerable<KeyValuePair<DateTime, string>> CrashLogs =>
+    public static IEnumerable<KeyValuePair<DateTime, CrashLogRecord>> CrashLogs =>
         _exceptionLogs.CrashLogs.OrderByDescending(d => d.Key);
 
     public static void Log(Exception exception)
@@ -30,9 +32,14 @@ public static class LogService
     public static void LogCrash(Exception exception)
     {
         Console.WriteLine(exception);
-        _exceptionLogs.CrashLogs.TryAdd(DateTime.UtcNow, exception.ToString());
+        var timestamp = DateTime.UtcNow;
+        _exceptionLogs.CrashLogs.TryAdd(timestamp, new CrashLogRecord
+        {
+            Message = exception.ToString()
+        });
         TrimCrashLogs();
         SaveLogs();
+        _ = AttachDumpUrlAsync(timestamp, exception);
     }
 
     public static void Load()
@@ -44,11 +51,7 @@ public static class LogService
                 return;
 
             var result = File.ReadAllText(fileDirectory);
-            var loadedLogs =
-                JsonSerializer.Deserialize<ExceptionLogsStructure>(result,
-                    CrashLogGenerationContext.Default.ExceptionLogsStructure);
-            if (loadedLogs == null) return;
-            _exceptionLogs = loadedLogs;
+            if (!TryLoadCurrent(result) && !TryLoadLegacy(result)) return;
             TrimExceptionLogs();
             TrimCrashLogs();
         }
@@ -74,7 +77,7 @@ public static class LogService
     {
         foreach (var log in _exceptionLogs.ExceptionLogs.OrderBy(d => d.Key))
         {
-            if (_exceptionLogs.CrashLogs.Count <= Limit) return;
+            if (_exceptionLogs.ExceptionLogs.Count <= Limit) return;
             _exceptionLogs.ExceptionLogs.TryRemove(log.Key, out _);
         }
     }
@@ -86,6 +89,55 @@ public static class LogService
             if (_exceptionLogs.CrashLogs.Count <= Limit) return;
             _exceptionLogs.CrashLogs.TryRemove(log.Key, out _);
         }
+    }
+
+    private static bool TryLoadCurrent(string result)
+    {
+        var loadedLogs = JsonSerializer.Deserialize(
+            result,
+            CrashLogGenerationContext.Default.ExceptionLogsStructure);
+        if (loadedLogs == null)
+            return false;
+
+        _exceptionLogs = loadedLogs;
+        return true;
+    }
+
+    private static bool TryLoadLegacy(string result)
+    {
+        var loadedLogs = JsonSerializer.Deserialize(
+            result,
+            CrashLogGenerationContext.Default.LegacyExceptionLogsStructure);
+        if (loadedLogs == null)
+            return false;
+
+        _exceptionLogs = new ExceptionLogsStructure
+        {
+            ExceptionLogs = loadedLogs.ExceptionLogs,
+            CrashLogs = new ConcurrentDictionary<DateTime, CrashLogRecord>(
+                loadedLogs.CrashLogs.ToDictionary(
+                    x => x.Key,
+                    x => new CrashLogRecord { Message = x.Value }))
+        };
+        return true;
+    }
+
+    private static async Task AttachDumpUrlAsync(DateTime timestamp, Exception exception)
+    {
+        var telemetry = Program.ServiceProvider.GetService<ServerTelemetryService>();
+        if (telemetry == null)
+            return;
+
+        var dumpResponse = await telemetry.ReportCrashAsync(exception);
+        var dumpUrl = dumpResponse?.ViewUrl ?? dumpResponse?.Url;
+        if (string.IsNullOrWhiteSpace(dumpUrl))
+            return;
+
+        if (!_exceptionLogs.CrashLogs.TryGetValue(timestamp, out var crashLog))
+            return;
+
+        crashLog.DumpUrl = dumpUrl;
+        SaveLogs();
     }
 
     private static async Task SaveAsync()
@@ -118,10 +170,17 @@ public static class LogService
 
 public class ExceptionLogsStructure
 {
+    public ConcurrentDictionary<DateTime, CrashLogRecord> CrashLogs { get; set; } = new();
+    public ConcurrentDictionary<DateTime, string> ExceptionLogs { get; set; } = new();
+}
+
+public class LegacyExceptionLogsStructure
+{
     public ConcurrentDictionary<DateTime, string> CrashLogs { get; set; } = new();
     public ConcurrentDictionary<DateTime, string> ExceptionLogs { get; set; } = new();
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(ExceptionLogsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
+[JsonSerializable(typeof(LegacyExceptionLogsStructure), GenerationMode = JsonSourceGenerationMode.Metadata)]
 public partial class CrashLogGenerationContext : JsonSerializerContext;

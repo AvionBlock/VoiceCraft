@@ -1,19 +1,24 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Media;
+using Android.OS;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio.Devices;
 using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
+using VoiceCraft.Core.Audio;
 
 namespace VoiceCraft.Client.Android.Audio;
 
 public class AndroidMiniAudioEngine : AudioEngine
 {
     private readonly AudioManager _audioManager;
+    private readonly List<AudioDevice> _activeDevices = [];
 
     public AndroidMiniAudioEngine(AudioManager audioManager)
     {
@@ -23,22 +28,42 @@ public class AndroidMiniAudioEngine : AudioEngine
 
     protected override void CleanupBackend()
     {
+        foreach (var device in _activeDevices.ToList())
+        {
+            device.Dispose();
+        }
+
+        _activeDevices.Clear();
     }
 
     public override AudioPlaybackDevice InitializePlaybackDevice(
-        SoundFlow.Structs.DeviceInfo? deviceInfo, 
+        SoundFlow.Structs.DeviceInfo? deviceInfo,
         SoundFlow.Structs.AudioFormat format,
         DeviceConfig? config = null)
     {
-        throw new System.NotImplementedException();
+        if (config != null && config is not MiniAudioDeviceConfig)
+            throw new ArgumentException($"config must be of type {typeof(MiniAudioDeviceConfig)}");
+        config ??= new MiniAudioDeviceConfig();
+
+        var device = new AndroidAudioPlaybackDevice(_audioManager, this, deviceInfo, format, config);
+        _activeDevices.Add(device);
+        device.OnDisposed += OnDeviceDisposing;
+        return device;
     }
 
     public override AudioCaptureDevice InitializeCaptureDevice(
-        SoundFlow.Structs.DeviceInfo? deviceInfo, 
+        SoundFlow.Structs.DeviceInfo? deviceInfo,
         SoundFlow.Structs.AudioFormat format,
         DeviceConfig? config = null)
     {
-        throw new System.NotImplementedException();
+        if (config != null && config is not MiniAudioDeviceConfig)
+            throw new ArgumentException($"config must be of type {typeof(MiniAudioDeviceConfig)}");
+        config ??= new MiniAudioDeviceConfig();
+
+        var device = new AndroidAudioCaptureDevice(_audioManager, this, deviceInfo, format, config);
+        _activeDevices.Add(device);
+        device.OnDisposed += OnDeviceDisposing;
+        return device;
     }
 
     public override FullDuplexDevice InitializeFullDuplexDevice(
@@ -72,7 +97,7 @@ public class AndroidMiniAudioEngine : AudioEngine
     }
 
     public override AudioCaptureDevice SwitchDevice(
-        AudioCaptureDevice oldDevice, 
+        AudioCaptureDevice oldDevice,
         SoundFlow.Structs.DeviceInfo newDeviceInfo,
         DeviceConfig? config = null)
     {
@@ -89,7 +114,7 @@ public class AndroidMiniAudioEngine : AudioEngine
     public override FullDuplexDevice SwitchDevice(
         FullDuplexDevice oldDevice,
         SoundFlow.Structs.DeviceInfo? newPlaybackInfo,
-        SoundFlow.Structs.DeviceInfo? newCaptureInfo, 
+        SoundFlow.Structs.DeviceInfo? newCaptureInfo,
         DeviceConfig? config = null)
     {
         throw new NotSupportedException("Full duplex mode is not supported by the Android audio engine.");
@@ -128,6 +153,14 @@ public class AndroidMiniAudioEngine : AudioEngine
             CaptureDevices = [];
         }
     }
+
+    private void OnDeviceDisposing(object? sender, EventArgs e)
+    {
+        if (sender is AudioDevice device)
+        {
+            _activeDevices.Remove(device);
+        }
+    }
 }
 
 internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
@@ -135,6 +168,8 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
     private readonly Lock _lock = new();
     private readonly AudioRecord _nativeRecorder;
     private readonly float[] _buffer;
+    private readonly short[] _pcm16Buffer;
+    private readonly bool _readPcm16;
 
     public AndroidAudioCaptureDevice(
         AudioManager audioManager,
@@ -168,13 +203,15 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
         var periods = deviceConfig?.Periods > 0 ? deviceConfig.Periods : 3;
         var bufferSize = periodFrames * format.Channels;
         _buffer = new float[bufferSize];
+        _readPcm16 = IsGoogleDevice();
+        _pcm16Buffer = _readPcm16 ? new short[bufferSize] : [];
 
         _nativeRecorder = new AudioRecord(
             source,
             format.SampleRate,
             channelMask,
-            Encoding.PcmFloat,
-            (int)(bufferSize * sizeof(float) * periods));
+            _readPcm16 ? Encoding.Pcm16bit : Encoding.PcmFloat,
+            (int)(bufferSize * (_readPcm16 ? sizeof(short) : sizeof(float)) * periods));
         var device = audioManager.GetDevices(GetDevicesTargets.Inputs)
             ?.FirstOrDefault(device => device.Id == deviceInfo?.Id);
         _nativeRecorder.SetPreferredDevice(device);
@@ -200,7 +237,9 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
             if (IsDisposed || !IsRunning)
                 return;
 
-            _nativeRecorder.Stop();
+            if (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
+                _nativeRecorder.Stop();
+
             IsRunning = false;
         }
     }
@@ -220,23 +259,58 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
     {
         while (_nativeRecorder is { RecordingState: RecordState.Recording, State: State.Initialized })
         {
-            lock (_lock)
+            Array.Clear(_buffer, 0, _buffer.Length);
+            var read = 0;
+            try
             {
-                Array.Clear(_buffer, 0, _buffer.Length);
-                var read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
-                if (read <= 0) return;
-                InvokeOnAudioProcessed(_buffer);
+                lock (_lock)
+                {
+                    if (_readPcm16)
+                    {
+                        read = _nativeRecorder.Read(_pcm16Buffer, 0, _pcm16Buffer.Length, 0);
+                        if (read > 0)
+                            Sample16ToFloat.Read(_pcm16Buffer.AsSpan(0, read), _buffer.AsSpan(0, read));
+                    }
+                    else
+                    {
+                        read = _nativeRecorder.Read(_buffer, 0, _buffer.Length, 0);
+                    }
+                }
             }
+            catch (Exception)
+            {
+                //Do Nothing
+            }
+
+            if (read <= 0)
+                continue;
+            
+            InvokeOnAudioProcessed(_buffer);
         }
+
+        Stop();
+    }
+
+    private static bool IsGoogleDevice()
+    {
+        var manufacturer = Build.Manufacturer ?? string.Empty;
+        var brand = Build.Brand ?? string.Empty;
+        return manufacturer.Equals("Google", StringComparison.OrdinalIgnoreCase) ||
+               brand.Equals("google", StringComparison.OrdinalIgnoreCase);
     }
 }
 
 internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
 {
+    private delegate void SoundComponentProcessDelegate(SoundComponent component, Span<float> outputBuffer,
+        int channels);
+
+    private static readonly SoundComponentProcessDelegate ProcessComponent = BuildProcessDelegate();
+
     private readonly Lock _lock = new();
     private readonly AudioTrack _nativePlayer;
     private readonly float[] _buffer;
-    
+
     public AndroidAudioPlaybackDevice(
         AudioManager audioManager,
         AudioEngine engine,
@@ -246,7 +320,7 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
     {
         Capability = Capability.Playback;
         Info = deviceInfo;
-        
+
         var deviceConfig = config as MiniAudioDeviceConfig;
         var periodFrames = deviceConfig?.PeriodSizeInFrames switch
         {
@@ -262,9 +336,9 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             AAudioUsage.Notification => AudioUsageKind.Notification,
             AAudioUsage.NotificationRingtone => AudioUsageKind.NotificationRingtone,
             AAudioUsage.NotificationEvent => AudioUsageKind.NotificationEvent,
-            AAudioUsage.AssistanceAccessibility =>  AudioUsageKind.AssistanceAccessibility,
-            AAudioUsage.AssistanceNavigationGuidance =>  AudioUsageKind.AssistanceNavigationGuidance,
-            AAudioUsage.AssistanceSonification =>  AudioUsageKind.AssistanceSonification,
+            AAudioUsage.AssistanceAccessibility => AudioUsageKind.AssistanceAccessibility,
+            AAudioUsage.AssistanceNavigationGuidance => AudioUsageKind.AssistanceNavigationGuidance,
+            AAudioUsage.AssistanceSonification => AudioUsageKind.AssistanceSonification,
             AAudioUsage.Game => AudioUsageKind.Game,
             _ => AudioUsageKind.Unknown
         };
@@ -303,12 +377,12 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             .SetTransferMode(AudioTrackMode.Stream)
             .Build();
         _nativePlayer.SetVolume(1.0f);
-        
+
         var device = audioManager.GetDevices(GetDevicesTargets.Outputs)
             ?.FirstOrDefault(device => device.Id == deviceInfo?.Id);
         _nativePlayer.SetPreferredDevice(device);
     }
-    
+
     public override void Start()
     {
         lock (_lock)
@@ -329,7 +403,13 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             if (IsDisposed || !IsRunning)
                 return;
 
-            _nativePlayer.Stop();
+            if (_nativePlayer is { PlayState: PlayState.Playing, State: AudioTrackState.Initialized })
+            {
+                _nativePlayer.Pause();
+                _nativePlayer.Flush();
+                _nativePlayer.Stop();
+            }
+
             IsRunning = false;
         }
     }
@@ -344,21 +424,38 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             IsDisposed = true;
         }
     }
-    
+
     private void PlaybackLogic()
     {
         while (_nativePlayer is { PlayState: PlayState.Playing, State: AudioTrackState.Initialized })
         {
-            lock (_lock)
+            Array.Clear(_buffer, 0, _buffer.Length);
+            // Process the audio graph
+            var soloed = Engine.GetSoloedComponent();
+            if (soloed != null)
+                ProcessComponent(soloed, _buffer, Format.Channels);
+            else
+                ProcessComponent(MasterMixer, _buffer, Format.Channels);
+
+            try
             {
-                Array.Clear(_buffer, 0, _buffer.Length);
-                // Process the audio graph
-                var soloed = Engine.GetSoloedComponent();
-                if (soloed != null)
-                    soloed.Process(_buffer, Format.Channels);
-                else
-                    MasterMixer.Process(_buffer, Format.Channels);
+                lock (_lock)
+                    _nativePlayer.Write(_buffer, 0, _buffer.Length, WriteMode.Blocking);
+            }
+            catch (Exception)
+            {
+                //Do Nothing
             }
         }
+
+        Stop();
+    }
+
+    private static SoundComponentProcessDelegate BuildProcessDelegate()
+    {
+        var method = typeof(SoundComponent).GetMethod("Process", BindingFlags.Instance | BindingFlags.NonPublic);
+        return method == null
+            ? throw new InvalidOperationException("SoundFlow process method not found.")
+            : method.CreateDelegate<SoundComponentProcessDelegate>();
     }
 }

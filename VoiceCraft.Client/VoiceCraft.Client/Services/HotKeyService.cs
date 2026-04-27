@@ -182,48 +182,44 @@ public sealed class HotKeyBinding(HotKeyAction action, string keyCombo)
 public class MuteAction(IBackgroundService backgroundService) : HotKeyAction
 {
     public override string Id => "Mute";
-    public override string Title => "Mute";
+    public override string Title => "Settings.HotKey.Actions.Mute";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0M";
 
     public override void Press()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if(service == null) return;
-        service.Muted = !service.Muted;
+        service?.Muted = !service.Muted;
     }
 }
 
 public class DeafenAction(IBackgroundService backgroundService) : HotKeyAction
 {
     public override string Id => "Deafen";
-    public override string Title => "Deafen";
+    public override string Title => "Settings.HotKey.Actions.Deafen";
     public override string DefaultKeyCombo => "LeftControl\0LeftShift\0D";
 
     public override void Press()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if(service == null) return;
-        service.Deafened = !service.Deafened;
+        service?.Deafened = !service.Deafened;
     }
 }
 
 public class PushToTalkAction(IBackgroundService backgroundService) : HotKeyAction
 {
     public override string Id => "PushToTalk";
-    public override string Title => "PushToTalk";
+    public override string Title => "Settings.HotKey.Actions.PushToTalk";
     public override string DefaultKeyCombo => "LeftControl";
 
     public override void Press()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if (service == null) return;
-        service.PushToTalk = true;
+        service?.PushToTalk = true;
     }
 
     public override void Release()
     {
         var service = backgroundService.GetService<VoiceCraftService>();
-        if (service == null) return;
-        service.PushToTalk = false;
+        service?.PushToTalk = false;
     }
 }

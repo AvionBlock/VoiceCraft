@@ -62,14 +62,15 @@ public class AudioService
             {
                 defaultDevice = new AudioDeviceInfo(
                     "Default",
-                    Localizer.Get($"AudioService.AudioDeviceInfo.Default:{device.Name}"),
+                    Localizer.Get($"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}"),
                     true);
             }
 
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
 
-        devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
+        devices.Insert(0,
+            defaultDevice ?? new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
         return devices;
     }
 
@@ -84,18 +85,24 @@ public class AudioService
             {
                 defaultDevice = new AudioDeviceInfo(
                     "Default",
-                    Localizer.Get($"AudioService.AudioDeviceInfo.Default:{device.Name}"),
+                    Localizer.Get($"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}"),
                     true);
             }
 
             devices.Add(new AudioDeviceInfo(device.Name, device.Name, false));
         }
-        
-        devices.Insert(0, defaultDevice ?? new AudioDeviceInfo("Default", "Default", true));
+
+        devices.Insert(0,
+            defaultDevice ?? new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
         return devices;
     }
 
-    public AudioCaptureDevice InitializeCaptureDevice(int sampleRate, int channels, uint frameSize, string inputDevice)
+    public AudioCaptureDevice InitializeCaptureDevice(
+        int sampleRate,
+        int channels,
+        uint frameSize,
+        string inputDevice,
+        bool hardwarePreprocessorsEnabled)
     {
         _engine.UpdateAudioDevicesInfo();
         var format = new AudioFormat()
@@ -110,11 +117,15 @@ public class AudioService
             AAudio = new AAudioSettings()
             {
                 Usage = AAudioUsage.VoiceCommunication,
-                InputPreset = AAudioInputPreset.VoiceCommunication
+                InputPreset = hardwarePreprocessorsEnabled
+                    ? AAudioInputPreset.VoiceCommunication
+                    : AAudioInputPreset.Default
             },
             OpenSL = new OpenSlSettings()
             {
-                RecordingPreset = OpenSlRecordingPreset.VoiceCommunication
+                RecordingPreset = hardwarePreprocessorsEnabled
+                    ? OpenSlRecordingPreset.VoiceCommunication
+                    : OpenSlRecordingPreset.Default
             },
             CoreAudio = new CoreAudioSettings()
             {

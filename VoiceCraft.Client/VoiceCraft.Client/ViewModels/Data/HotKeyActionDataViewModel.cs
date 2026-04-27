@@ -6,6 +6,6 @@ namespace VoiceCraft.Client.ViewModels.Data;
 public partial class HotKeyActionDataViewModel(HotKeyAction hotKeyAction, string keybind) : ObservableObject
 {
     public HotKeyAction Action { get; } = hotKeyAction;
-    [ObservableProperty] private string _keybind = keybind.Replace("\0", " + ");
-    [ObservableProperty] private string _title = $"Settings.HotKey.Actions.{hotKeyAction.Title}";
+    [ObservableProperty] public partial string Keybind { get; set; } = keybind.Replace("\0", " + ");
+    [ObservableProperty] public partial string Title { get; set; } = hotKeyAction.Title;
 }

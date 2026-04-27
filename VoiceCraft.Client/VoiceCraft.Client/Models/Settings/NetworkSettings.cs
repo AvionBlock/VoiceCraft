@@ -6,39 +6,35 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class NetworkSettings : Setting<NetworkSettings>
 {
-    private ushort _mcWssHostPort = 8080;
-    private string _mcWssListenIp = "127.0.0.1";
-    private PositioningType _positioningType = PositioningType.Server;
-
     public PositioningType PositioningType
     {
-        get => _positioningType;
+        get;
         set
         {
-            _positioningType = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = PositioningType.Server;
 
     public string McWssListenIp
     {
-        get => _mcWssListenIp;
+        get;
         set
         {
-            _mcWssListenIp = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = "127.0.0.1";
 
     public ushort McWssHostPort
     {
-        get => _mcWssHostPort;
+        get;
         set
         {
-            _mcWssHostPort = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = 8080;
 
     public override event Action<NetworkSettings>? OnUpdated;
 

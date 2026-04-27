@@ -13,7 +13,8 @@
       "Language": "語言",
       "NotificationDismiss": "通知消失時間(毫秒)",
       "DisableNotifications": "停用通知",
-      "HideServerAddresses": "隱藏伺服器地址"
+      "HideServerAddresses": "隱藏伺服器地址",
+      "EnableTelemetry": "啟用匿名遙測"
     },
     "Appearance": {
       "Title": "外觀",
@@ -28,6 +29,9 @@
       "Denoisers": "降噪器",
       "AutomaticGainControllers": "自動增益控制器",
       "EchoCancelers": "回聲消除器",
+      "HardwarePreprocessors": null,
+      "PushToTalk": "按住說話",
+      "PlayPushToTalkCue": "播放按住說話提示音",
       "MicrophoneTest": {
         "MicrophoneTest": "麥克風測試",
         "Test": "測試"
@@ -58,7 +62,11 @@
     },
     "Network": {
       "Title": "網路設定",
-      "PositioningType": "定位類型",
+      "PositioningType": {
+        "Title": "定位類型",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS 監聽 IP 位址",
       "McWssHostPort": "MCWSS 主機連接埠"
     },
@@ -68,7 +76,6 @@
       "CapturePrompt": "按下按鍵或滑鼠按鈕",
       "SaveBinding": "儲存綁定",
       "CancelRebind": "取消",
-      "PlayPushToTalkCues": "播放按住說話提示音",
       "Actions": {
         "Mute": "靜音",
         "Deafen": "拒聽",
@@ -79,10 +86,15 @@
       "Title": "進階設定",
       "TriggerGc": "觸發垃圾回收",
       "Crash": "測試當機",
+      "ResetAllSettings": "重設所有設定",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "已觸發垃圾回收。清理的記憶體: {0}mb。"
+        },
+        "Reset": {
+          "Badge": "設定",
+          "Done": "所有設定已重設為預設值。請重新啟動客戶端，以完整套用語言與主題變更。"
         }
       }
     },
@@ -110,12 +122,29 @@
   },
   "CrashLogs": {
     "Title": "當機記錄",
+    "Action": {
+      "DumpLink": "傾印連結"
+    },
     "Notification": {
       "Badge": "當機記錄",
       "Cleared": "已成功清除所有記錄。",
       "Copied": "當機記錄已複製到剪貼簿。",
+      "DumpCopied": "當機傾印連結已複製到剪貼簿。",
+      "DumpUploadFailed": "上傳當機傾印失敗。",
+      "DumpUnavailable": "這筆當機記錄目前還沒有可用的已上傳傾印連結。",
       "Empty": "沒有可複製的當機記錄。"
     }
+  },
+  "TelemetryConsent": {
+    "Title": "協助改進 VoiceCraft",
+    "Description": "VoiceCraft 可以傳送匿名遙測，讓我們更了解當機情況並提升所有平台上的穩定性。",
+    "CollectsTitle": "我們會收集什麼",
+    "CollectsBody": "應用程式版本、平台、作業系統與執行階段資訊、架構、地區設定、CPU 與記憶體資訊，以及匿名的啟動與 heartbeat 診斷資料。",
+    "NotCollectedTitle": "我們不會自動收集什麼",
+    "NotCollectedBody": "我們不會自動上傳你的伺服器清單、權杖、設定值或聊天與內容資料。",
+    "DumpBody": "只有當你在當機記錄中明確按下傾印連結按鈕時，當機傾印才會上傳。",
+    "Accept": "接受",
+    "Decline": "拒絕"
   },
   "AddServer": {
     "Title": "新增伺服器",
@@ -214,7 +243,8 @@
       "TanhSoft": "Tanh 軟限幅器"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - 預設"
+      "Default": "預設",
+      "DefaultDevice": "{0} - 預設"
     }
   },
   "ThemesService": {

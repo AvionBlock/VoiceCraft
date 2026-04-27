@@ -6,41 +6,37 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class OutputSettings : Setting<OutputSettings>
 {
-    private string _outputDevice = "Default";
-    private float _outputVolume = 1.0f;
-    private Guid _audioClipper = Constants.TanhSoftAudioClipperGuid; //Set as default on initialize.
-
     public string OutputDevice
     {
-        get => _outputDevice;
+        get;
         set
         {
-            _outputDevice = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = "Default";
 
     public float OutputVolume
     {
-        get => _outputVolume;
+        get;
         set
         {
             if (value is > 2 or < 0)
                 throw new ArgumentException("Settings.Input.Validation.OutputVolume");
-            _outputVolume = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = 1.0f;
 
     public Guid AudioClipper
     {
-        get => _audioClipper;
+        get;
         set
         {
-            _audioClipper = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Constants.TanhSoftAudioClipperGuid;
 
     public override event Action<OutputSettings>? OnUpdated;
 

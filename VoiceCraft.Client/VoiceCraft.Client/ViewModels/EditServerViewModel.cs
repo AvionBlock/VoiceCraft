@@ -15,9 +15,9 @@ public partial class EditServerViewModel(
 {
     private bool _updatingPort;
 
-    [ObservableProperty] private Server _editableServer = new();
-    [ObservableProperty] private decimal? _editableServerPort = 9050;
-    [ObservableProperty] private Server _server = new();
+    [ObservableProperty] public partial Server EditableServer { get; set; } = new();
+    [ObservableProperty] public partial decimal? EditableServerPort { get; set; } = 9050;
+    [ObservableProperty] public partial Server Server { get; set; } = new();
 
     public override void OnAppearing(object? data = null)
     {

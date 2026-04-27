@@ -20,6 +20,8 @@ public class ServerProperties
     public McWssMcApiServer.McWssMcApiConfig McWssConfig => _properties.McWssConfig;
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig => _properties.McHttpConfig;
     public TcpMcApiServer.McTcpConfig McTcpConfig => _properties.McTcpConfig;
+    public bool TelemetryEnabled => _properties.TelemetryEnabled;
+    public string TelemetryToken => _properties.TelemetryToken;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
     public void Load(bool throwOnInvalidProperties)
@@ -32,7 +34,7 @@ public class ServerProperties
             AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
             _properties = CreateConfigFile();
             ParseAudioEffects();
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"ServerProperties.Success")}[/]");
             return;
         }
 
@@ -106,7 +108,7 @@ public class ServerProperties
             File.WriteAllText(filePath,
                 JsonSerializer.Serialize(properties,
                     ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure));
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Generating.Success")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"ServerProperties.Generating.Success:{path}")}[/]");
         }
         catch (Exception ex)
         {
@@ -216,6 +218,8 @@ public class ServerPropertiesStructure
                 ProximityMuffleEffectGenerationContext.Default.ProximityMuffleEffect));
     }
 
+    public bool TelemetryEnabled { get; set; } = true;
+    public string TelemetryToken { get; set; } = Guid.NewGuid().ToString("N");
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
     public McWssMcApiServer.McWssMcApiConfig McWssConfig { get; set; } = new();
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
@@ -225,12 +229,12 @@ public class ServerPropertiesStructure
 
 public class RuntimeOptions
 {
-    public bool ExitOnInvalidProperties { get; set; }
-    public string? Language { get; set; }
-    public string[] TransportMode { get; set; } = [];
-    public string? TransportHost { get; set; }
-    public int? TransportPort { get; set; }
-    public string? ServerKey { get; set; }
+    public bool ExitOnInvalidProperties { get; init; }
+    public string? Language { get; init; }
+    public string[] TransportMode { get; init; } = [];
+    public string? TransportHost { get; init; }
+    public int? TransportPort { get; init; }
+    public string? ServerKey { get; init; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

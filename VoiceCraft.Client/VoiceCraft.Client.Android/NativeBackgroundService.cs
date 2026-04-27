@@ -58,7 +58,7 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
     public void Dispose()
     {
         var context = Application.Context;
-        var intent = new Intent(context, typeof(NativeBackgroundService));
+        var intent = new Intent(context, typeof(AndroidBackgroundService));
         context.StopService(intent);
         GC.SuppressFinalize(this);
     }

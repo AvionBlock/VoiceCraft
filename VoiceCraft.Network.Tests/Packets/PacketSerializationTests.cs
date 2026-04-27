@@ -82,7 +82,7 @@ public class PacketSerializationTests
     {
         var userGuid = Guid.NewGuid();
         var packet = new VcOnNetworkEntityCreatedPacket()
-            .Set(42, "Alpha", true, false, userGuid, true, false);
+            .Set(42, "Alpha", true, false, userGuid, true);
 
         var clone = RoundTrip(packet, () => new VcOnNetworkEntityCreatedPacket());
 

@@ -7,9 +7,6 @@ namespace VoiceCraft.Network.World
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
-        private bool _serverDeafened;
-        private bool _serverMuted;
-
         public VoiceCraftNetworkEntity(
             VoiceCraftNetPeer netPeer,
             int id) : base(id)
@@ -32,23 +29,23 @@ namespace VoiceCraft.Network.World
 
         public bool ServerMuted
         {
-            get => _serverMuted;
+            get;
             set
             {
-                if (_serverMuted == value) return;
-                _serverMuted = value;
-                OnServerMuteUpdated?.Invoke(_serverMuted, this);
+                if (field == value) return;
+                field = value;
+                OnServerMuteUpdated?.Invoke(field, this);
             }
         }
 
         public bool ServerDeafened
         {
-            get => _serverDeafened;
+            get;
             set
             {
-                if (_serverDeafened == value) return;
-                _serverDeafened = value;
-                OnServerDeafenUpdated?.Invoke(_serverDeafened, this);
+                if (field == value) return;
+                field = value;
+                OnServerDeafenUpdated?.Invoke(field, this);
             }
         }
 

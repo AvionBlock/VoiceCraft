@@ -104,13 +104,18 @@
                               SelectedValueBinding="{Binding Id}" />
                     
                     <ToggleButton HorizontalAlignment="Stretch"
+                                  IsChecked="{Binding InputSettingsData.HardwarePreprocessorsEnabled}">
+                        <TextBlock Text="{locale:Localize Settings.Input.HardwarePreprocessors}" />
+                    </ToggleButton>
+                    
+                    <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding InputSettingsData.PushToTalkEnabled}">
-                        <TextBlock Text="{locale:Localize Settings.Input.PushToTalkEnabled}" />
+                        <TextBlock Text="{locale:Localize Settings.Input.PushToTalk}" />
                     </ToggleButton>
                     
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding InputSettingsData.PushToTalkCue}">
-                        <TextBlock Text="{locale:Localize Settings.Input.PushToTalkCue}" />
+                        <TextBlock Text="{locale:Localize Settings.Input.PlayPushToTalkCue}" />
                     </ToggleButton>
 
                     <StackPanel>

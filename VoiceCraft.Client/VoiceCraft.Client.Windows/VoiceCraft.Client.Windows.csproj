@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net9.0-windows</TargetFramework>
+        <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
+        One for Windows with net10.0-windows TFM, one for MacOS with net10.0-macos and one with net10.0 TFM for Linux.-->
+        <TargetFramework>net10.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <TrimMode>link</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
@@ -14,6 +16,8 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Desktop"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
+        <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" />
         <PackageReference Include="SharpHook"/>
         <PackageReference Include="SpeexDSPSharp"/>
     </ItemGroup>

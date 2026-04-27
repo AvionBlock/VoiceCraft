@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using System.Numerics;
 using Xunit;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network;
 using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;

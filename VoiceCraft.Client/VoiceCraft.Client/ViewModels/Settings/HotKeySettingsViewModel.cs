@@ -1,10 +1,10 @@
 using System;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using VoiceCraft.Client.Models;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
-using VoiceCraft.Core.Locales;
+using VoiceCraft.Client.ViewModels.Modals;
 
 namespace VoiceCraft.Client.ViewModels.Settings;
 
@@ -12,18 +12,15 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
 {
     private readonly NavigationService _navigationService;
     private readonly HotKeySettingsDataViewModel _hotKeySettingsData;
-    private string? _rebindActionId;
 
-    [ObservableProperty] private System.Collections.ObjectModel.ObservableCollection<HotKeyActionDataViewModel> _hotKeys;
-    [ObservableProperty] private bool _isRebinding;
-    [ObservableProperty] private string _rebindingTitle = string.Empty;
-    [ObservableProperty] private string _rebindingPreview = string.Empty;
+    [ObservableProperty]
+    public partial System.Collections.ObjectModel.ObservableCollection<HotKeyActionDataViewModel> HotKeys { get; set; }
 
     public HotKeySettingsViewModel(NavigationService navigationService, HotKeyService hotKeyService)
     {
         _navigationService = navigationService;
         _hotKeySettingsData = new HotKeySettingsDataViewModel(hotKeyService);
-        _hotKeys = _hotKeySettingsData.HotKeys;
+        HotKeys = _hotKeySettingsData.HotKeys;
     }
 
     public void Dispose()
@@ -42,47 +39,6 @@ public partial class HotKeySettingsViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void StartRebind(HotKeyActionDataViewModel hotKey)
     {
-        if (IsRebinding) return;
-        _rebindActionId = hotKey.Action.Id;
-        IsRebinding = true;
-        DisableBackButton = true;
-        RebindingTitle = Localizer.Get(hotKey.Title);
-        RebindingPreview = hotKey.Keybind;
-    }
-
-    [RelayCommand]
-    private void UpdateBindingPreview(string? text)
-    {
-        if (!IsRebinding || string.IsNullOrWhiteSpace(text)) return;
-        var keys = text.Split(" + ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        RebindingPreview = HotKeyService.NormalizeKeyCombo(keys).Replace("\0", " + ");
-    }
-
-    [RelayCommand]
-    private void ClearBindingPreview()
-    {
-        if (!IsRebinding) return;
-        RebindingPreview = string.Empty;
-    }
-
-    [RelayCommand]
-    private void ConfirmRebind()
-    {
-        if (!IsRebinding || string.IsNullOrWhiteSpace(RebindingPreview) || string.IsNullOrWhiteSpace(_rebindActionId)) return;
-        var action = HotKeys.FirstOrDefault(x => x.Action.Id == _rebindActionId)?.Action;
-        if (action == null) return;
-        _hotKeySettingsData.SetBinding(action, HotKeyService.NormalizeKeyCombo(RebindingPreview.Replace(" + ", "\0")));
-        HotKeys = _hotKeySettingsData.HotKeys;
-        CancelRebind();
-    }
-
-    [RelayCommand]
-    private void CancelRebind()
-    {
-        _rebindActionId = null;
-        IsRebinding = false;
-        DisableBackButton = false;
-        RebindingTitle = string.Empty;
-        RebindingPreview = string.Empty;
+        _navigationService.PushModal<HotKeyCaptureViewModel>(new HotKeyCaptureNavigationData(hotKey));
     }
 }

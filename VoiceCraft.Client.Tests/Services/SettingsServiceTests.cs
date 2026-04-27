@@ -53,9 +53,25 @@ public class SettingsServiceTests
 
         var saved = JsonSerializer.Deserialize(storage.StoredBytes, SettingsStructureGenerationContext.Default.SettingsStructure);
         Assert.NotNull(saved);
-        Assert.Equal("Mic-2", saved!.InputSettings.InputDevice);
+        Assert.Equal("Mic-2", saved.InputSettings.InputDevice);
         Assert.Equal("Speaker-2", saved.OutputSettings.OutputDevice);
         Assert.Equal(Constants.LightThemeGuid, saved.ThemeSettings.SelectedTheme);
+    }
+
+    [Fact]
+    public void Constructor_WhenPersistedSettingsAreInvalid_FallsBackToDefaults()
+    {
+        InitializeLocalizer();
+        var storage = new FakeStorageService
+        {
+            ExistsResult = true,
+            StoredBytes = Encoding.UTF8.GetBytes("{")
+        };
+
+        var service = new SettingsService(storage);
+
+        Assert.Equal("Default", service.InputSettings.InputDevice);
+        Assert.NotEqual(Guid.Empty, service.UserGuid);
     }
 
     private static void InitializeLocalizer()

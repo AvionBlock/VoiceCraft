@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
@@ -13,8 +14,15 @@ public partial class NetworkSettingsViewModel(
     : ViewModelBase, IDisposable
 {
     //Network Settings
-    [ObservableProperty] private NetworkSettingsDataViewModel _networkSettingsData = new(settingsService);
-    [ObservableProperty] private PositioningType[] _positioningTypes = Enum.GetValues<PositioningType>();
+    [ObservableProperty]
+    public partial NetworkSettingsDataViewModel NetworkSettingsData { get; set; } = new(settingsService);
+
+    [ObservableProperty]
+    public partial ObservableCollection<PositioningTypeValue> PositioningTypes { get; set; } =
+    [
+        new("Settings.Network.PositioningType.Server", PositioningType.Server),
+        new("Settings.Network.PositioningType.Client", PositioningType.Client)
+    ];
 
     public void Dispose()
     {
@@ -28,4 +36,6 @@ public partial class NetworkSettingsViewModel(
         if (DisableBackButton) return;
         navigationService.Back();
     }
+
+    public record PositioningTypeValue(string Title, PositioningType Value);
 }

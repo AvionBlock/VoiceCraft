@@ -73,21 +73,16 @@ public class EventHandlerSystem : IDisposable
             }
     }
 
-    private void BroadcastMcApi<T>(Func<T> packetFactory, Action<T> configure) where T : class, IMcApiPacket
+    private void BroadcastMcApi<T>(T packet) where T : class, IMcApiPacket
     {
         foreach (var mcApiServer in _mcApiServers)
         {
-            var packet = PacketPool<T>.GetPacket(packetFactory);
-            configure(packet);
             mcApiServer.Broadcast(packet);
         }
     }
 
-    private void SendMcApi<T>(McApiServer server, McApiNetPeer peer, Func<T> packetFactory, Action<T> configure)
-        where T : class, IMcApiPacket
+    private static void SendMcApi<T>(McApiServer server, McApiNetPeer peer, T packet) where T : class, IMcApiPacket
     {
-        var packet = PacketPool<T>.GetPacket(packetFactory);
-        configure(packet);
         server.SendPacket(peer, packet);
     }
 
@@ -99,7 +94,8 @@ public class EventHandlerSystem : IDisposable
         {
             _liteNetServer.Broadcast(PacketPool<VcOnEffectUpdatedPacket>.GetPacket(() => new VcOnEffectUpdatedPacket())
                 .Set(bitmask, effect));
-            BroadcastMcApi(() => new McApiOnEffectUpdatedPacket(), packet => packet.Set(bitmask, effect));
+            BroadcastMcApi(PacketPool<McApiOnEffectUpdatedPacket>.GetPacket(() =>
+                new McApiOnEffectUpdatedPacket()).Set(bitmask, effect));
         });
     }
 
@@ -158,10 +154,12 @@ public class EventHandlerSystem : IDisposable
                         VcDeliveryMethod.Reliable, networkEntity.NetPeer);
                 }
 
-                BroadcastMcApi(() => new McApiOnNetworkEntityCreatedPacket(), packet => packet.Set(networkEntity));
+                BroadcastMcApi(PacketPool<McApiOnNetworkEntityCreatedPacket>
+                    .GetPacket(() => new McApiOnNetworkEntityCreatedPacket()).Set(networkEntity));
 
                 //Send Effects
-                foreach (var effect in _audioEffectSystem.AudioEffects)
+                var audioEffects = _audioEffectSystem.AudioEffects;
+                foreach (var effect in audioEffects)
                     _liteNetServer.SendPacket(networkEntity.NetPeer,
                         PacketPool<VcOnEffectUpdatedPacket>.GetPacket(() => new VcOnEffectUpdatedPacket())
                             .Set(effect.Key, effect.Value));
@@ -191,7 +189,8 @@ public class EventHandlerSystem : IDisposable
             {
                 _liteNetServer.Broadcast(PacketPool<VcOnEntityCreatedPacket>
                     .GetPacket(() => new VcOnEntityCreatedPacket()).Set(newEntity));
-                BroadcastMcApi(() => new McApiOnEntityCreatedPacket(), packet => packet.Set(newEntity));
+                BroadcastMcApi(PacketPool<McApiOnEntityCreatedPacket>.GetPacket(() => new McApiOnEntityCreatedPacket())
+                    .Set(newEntity));
             }
         });
     }
@@ -233,7 +232,8 @@ public class EventHandlerSystem : IDisposable
             }
 
             _liteNetServer.Broadcast(entityDestroyedPacket);
-            BroadcastMcApi(() => new McApiOnEntityDestroyedPacket(), packet => packet.Set(entity.Id));
+            BroadcastMcApi(PacketPool<McApiOnEntityDestroyedPacket>.GetPacket(() => new McApiOnEntityDestroyedPacket())
+                .Set(entity.Id));
         });
     }
 
@@ -244,17 +244,19 @@ public class EventHandlerSystem : IDisposable
             if (peer.Tag is not McApiServer server) return;
 
             //Send Effects
-            foreach (var effect in _audioEffectSystem.AudioEffects)
-                SendMcApi(server, peer, () => new McApiOnEffectUpdatedPacket(),
-                    packet => packet.Set(effect.Key, effect.Value));
+            var audioEffects = _audioEffectSystem.AudioEffects;
+            foreach (var effect in audioEffects)
+                SendMcApi(server, peer, PacketPool<McApiOnEffectUpdatedPacket>.GetPacket(() =>
+                    new McApiOnEffectUpdatedPacket()).Set(effect.Key, effect.Value));
 
             //Send other entities.
             foreach (var entity in _world.Entities)
                 if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
-                    SendMcApi(server, peer, () => new McApiOnNetworkEntityCreatedPacket(),
-                        packet => packet.Set(otherNetworkEntity));
+                    SendMcApi(server, peer, PacketPool<McApiOnNetworkEntityCreatedPacket>
+                        .GetPacket(() => new McApiOnNetworkEntityCreatedPacket()).Set(otherNetworkEntity));
                 else
-                    SendMcApi(server, peer, () => new McApiOnEntityCreatedPacket(), packet => packet.Set(entity));
+                    SendMcApi(server, peer, PacketPool<McApiOnEntityCreatedPacket>.GetPacket(() =>
+                        new McApiOnEntityCreatedPacket()).Set(entity));
 
             AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Events.McApi.Client.Connected:{token}")}[/]");
         });
@@ -299,7 +301,8 @@ public class EventHandlerSystem : IDisposable
                 PacketPool<VcOnEntityServerMuteUpdatedPacket>.GetPacket(() => new VcOnEntityServerMuteUpdatedPacket())
                     .Set(entity.Id, muted),
                 VcDeliveryMethod.Reliable, entity.NetPeer);
-            BroadcastMcApi(() => new McApiOnEntityServerMuteUpdatedPacket(), packet => packet.Set(entity.Id, muted));
+            BroadcastMcApi(PacketPool<McApiOnEntityServerMuteUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityServerMuteUpdatedPacket()).Set(entity.Id, muted));
         });
     }
 
@@ -314,8 +317,8 @@ public class EventHandlerSystem : IDisposable
                 PacketPool<VcOnEntityServerDeafenUpdatedPacket>
                     .GetPacket(() => new VcOnEntityServerDeafenUpdatedPacket()).Set(entity.Id, deafened),
                 VcDeliveryMethod.Reliable, entity.NetPeer);
-            BroadcastMcApi(() => new McApiOnEntityServerDeafenUpdatedPacket(),
-                packet => packet.Set(entity.Id, deafened));
+            BroadcastMcApi(PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityServerDeafenUpdatedPacket()).Set(entity.Id, deafened));
         });
     }
 
@@ -323,7 +326,8 @@ public class EventHandlerSystem : IDisposable
     {
         _tasks.Enqueue(() =>
         {
-            BroadcastMcApi(() => new McApiOnEntityWorldIdUpdatedPacket(), packet => packet.Set(entity.Id, worldId));
+            BroadcastMcApi(PacketPool<McApiOnEntityWorldIdUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityWorldIdUpdatedPacket()).Set(entity.Id, worldId));
         });
     }
 
@@ -346,7 +350,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.Broadcast(packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityNameUpdatedPacket(), _ => packet.Set(entity.Id, name));
+            BroadcastMcApi(PacketPool<McApiOnEntityNameUpdatedPacket>
+                .GetPacket(() => new McApiOnEntityNameUpdatedPacket()).Set(entity.Id, name));
         });
     }
 
@@ -361,7 +366,8 @@ public class EventHandlerSystem : IDisposable
             else
                 _liteNetServer.Broadcast(packet);
 
-            BroadcastMcApi(() => new McApiOnEntityMuteUpdatedPacket(), _ => packet.Set(entity.Id, mute));
+            BroadcastMcApi(PacketPool<McApiOnEntityMuteUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityMuteUpdatedPacket()).Set(entity.Id, mute));
         });
     }
 
@@ -376,7 +382,8 @@ public class EventHandlerSystem : IDisposable
             else
                 _liteNetServer.Broadcast(packet);
 
-            BroadcastMcApi(() => new McApiOnEntityDeafenUpdatedPacket(), _ => packet.Set(entity.Id, deafen));
+            BroadcastMcApi(PacketPool<McApiOnEntityDeafenUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityDeafenUpdatedPacket()).Set(entity.Id, deafen));
         });
     }
 
@@ -398,7 +405,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.Broadcast(packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityTalkBitmaskUpdatedPacket(), _ => packet.Set(entity.Id, bitmask));
+            BroadcastMcApi(PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityTalkBitmaskUpdatedPacket()).Set(entity.Id, bitmask));
         });
     }
 
@@ -420,7 +428,9 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.Broadcast(packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityListenBitmaskUpdatedPacket(), _ => packet.Set(entity.Id, bitmask));
+            BroadcastMcApi(
+                PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.GetPacket(() =>
+                    new McApiOnEntityListenBitmaskUpdatedPacket()).Set(entity.Id, bitmask));
         });
     }
 
@@ -442,7 +452,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.Broadcast(packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityEffectBitmaskUpdatedPacket(), _ => packet.Set(entity.Id, bitmask));
+            BroadcastMcApi(PacketPool<McApiOnEntityEffectBitmaskUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityEffectBitmaskUpdatedPacket()).Set(entity.Id, bitmask));
         });
     }
 
@@ -464,7 +475,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityPositionUpdatedPacket(), packet => packet.Set(entity.Id, position));
+            BroadcastMcApi(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityPositionUpdatedPacket()).Set(entity.Id, position));
         });
     }
 
@@ -485,7 +497,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityRotationUpdatedPacket(), packet => packet.Set(entity.Id, rotation));
+            BroadcastMcApi(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityRotationUpdatedPacket()).Set(entity.Id, rotation));
         });
     }
 
@@ -505,8 +518,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityCaveFactorUpdatedPacket(),
-                packet => packet.Set(entity.Id, caveFactor));
+            BroadcastMcApi(PacketPool<McApiOnEntityCaveFactorUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityCaveFactorUpdatedPacket()).Set(entity.Id, caveFactor));
         });
     }
 
@@ -527,8 +540,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityMuffleFactorUpdatedPacket(),
-                packet => packet.Set(entity.Id, muffleFactor));
+            BroadcastMcApi(PacketPool<McApiOnEntityMuffleFactorUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityMuffleFactorUpdatedPacket()).Set(entity.Id, muffleFactor));
         });
     }
 
@@ -566,8 +579,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.SendPacket(networkEntity.NetPeer, muffleFactorPacket);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityVisibilityUpdatedPacket(),
-                packet => packet.Set(entity.Id, addedEntity.Id, true));
+            BroadcastMcApi(PacketPool<McApiOnEntityVisibilityUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityVisibilityUpdatedPacket()).Set(entity.Id, addedEntity.Id, true));
         });
     }
 
@@ -585,8 +598,8 @@ public class EventHandlerSystem : IDisposable
                 }
             }
 
-            BroadcastMcApi(() => new McApiOnEntityVisibilityUpdatedPacket(),
-                packet => packet.Set(entity.Id, removedEntity.Id));
+            BroadcastMcApi(PacketPool<McApiOnEntityVisibilityUpdatedPacket>.GetPacket(() =>
+                new McApiOnEntityVisibilityUpdatedPacket()).Set(entity.Id, removedEntity.Id));
         });
     }
 
@@ -604,8 +617,8 @@ public class EventHandlerSystem : IDisposable
                 _liteNetServer.SendPacket(visibleEntity.NetPeer, packet, VcDeliveryMethod.Unreliable);
             }
 
-            BroadcastMcApi(() => new McApiOnEntityAudioReceivedPacket(),
-                packet => packet.Set(entity.Id, timestamp, frameLoudness));
+            BroadcastMcApi(PacketPool<McApiOnEntityAudioReceivedPacket>.GetPacket(() =>
+                new McApiOnEntityAudioReceivedPacket()).Set(entity.Id, timestamp, frameLoudness));
         });
     }
 

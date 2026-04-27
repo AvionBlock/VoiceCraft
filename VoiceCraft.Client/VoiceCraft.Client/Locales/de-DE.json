@@ -13,7 +13,8 @@
       "Language": "Sprache",
       "NotificationDismiss": "Benachrichtigung ausblenden (ms)",
       "DisableNotifications": "Benachrichtigungen deaktivieren",
-      "HideServerAddresses": "Serveradressen ausblenden"
+      "HideServerAddresses": "Serveradressen ausblenden",
+      "EnableTelemetry": "Anonyme Telemetrie aktivieren"
     },
     "Appearance": {
       "Title": "Darstellung",
@@ -28,6 +29,9 @@
       "Denoisers": "Rauschunterdrückung",
       "AutomaticGainControllers": "Automatische Verstärkungsregelung",
       "EchoCancelers": "Echo-Unterdrückung",
+      "PushToTalk": "Zum Sprechen gedrückt halten",
+      "HardwarePreprocessors": null,
+      "PlayPushToTalkCue": "Push-to-Talk-Sounds abspielen",
       "MicrophoneTest": {
         "MicrophoneTest": "Mikrofontest",
         "Test": "Test"
@@ -58,7 +62,11 @@
     },
     "Network": {
       "Title": "Netzwerkeinstellungen",
-      "PositioningType": "Positionierungstyp",
+      "PositioningType": {
+        "Title": "Positionierungstyp",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS Listening-IP-Adresse",
       "McWssHostPort": "MCWSS-Host-Port"
     },
@@ -68,7 +76,6 @@
       "CapturePrompt": "Taste oder Maustaste drücken",
       "SaveBinding": "Belegung speichern",
       "CancelRebind": "Abbrechen",
-      "PlayPushToTalkCues": "Push-to-Talk-Sounds abspielen",
       "Actions": {
         "Mute": "Stummschalten",
         "Deafen": "Taub schalten",
@@ -79,10 +86,15 @@
       "Title": "Erweiterte Einstellungen",
       "TriggerGc": "Garbage Collector auslösen",
       "Crash": "Testabsturz",
+      "ResetAllSettings": "Alle Einstellungen zurücksetzen",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "Garbage Collection ausgelöst. Freigegebener Speicher: {0}mb."
+        },
+        "Reset": {
+          "Badge": "Einstellungen",
+          "Done": "Alle Einstellungen wurden auf Standardwerte zurückgesetzt. Starte den Client neu, damit Sprache und Design vollständig übernommen werden."
         }
       }
     },
@@ -110,14 +122,31 @@
   },
   "CrashLogs": {
     "Title": "Absturzprotokolle",
+    "Action": {
+      "DumpLink": "Dump-Link"
+    },
     "Notification": {
       "Badge": "Absturzprotokolle",
       "Cleared": "Alle Protokolle wurden erfolgreich gelöscht.",
       "Copied": "Absturzprotokolle wurden in die Zwischenablage kopiert.",
+      "DumpCopied": "Link zum Absturz-Dump wurde in die Zwischenablage kopiert.",
+      "DumpUploadFailed": "Der Absturz-Dump konnte nicht hochgeladen werden.",
+      "DumpUnavailable": "Für dieses Absturzprotokoll ist noch kein Dump-Link verfügbar.",
       "Empty": "Keine Absturzprotokolle zum Kopieren vorhanden."
     }
   },
-  "AddServer": {
+  "TelemetryConsent": {
+    "Title": "VoiceCraft verbessern",
+    "Description": "VoiceCraft kann anonyme Telemetrie senden, damit wir Abstürze besser verstehen und die Stabilität auf allen Plattformen verbessern können.",
+    "CollectsTitle": "Was wir erfassen",
+    "CollectsBody": "App-Version, Plattform, Betriebssystem- und Runtime-Informationen, Architektur, Gebietsschema, CPU- und Speicherinformationen sowie anonyme Start- und Heartbeat-Diagnosen.",
+    "NotCollectedTitle": "Was wir nicht automatisch erfassen",
+    "NotCollectedBody": "Wir laden deine Serverliste, Tokens, Konfigurationswerte oder Chat- und Inhaltsdaten nicht automatisch hoch.",
+    "DumpBody": "Absturz-Dumps werden nur hochgeladen, wenn du im Absturzprotokoll ausdrücklich auf die Dump-Link-Schaltfläche klickst.",
+    "Accept": "Akzeptieren",
+    "Decline": "Ablehnen"
+  },
+    "AddServer": {
     "Title": "Server hinzufügen",
     "Name": "Name",
     "IP": "IP",
@@ -214,7 +243,8 @@
       "TanhSoft": "Weicher Tanh-Clipper"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - Standard"
+      "Default": "Standard",
+      "DefaultDevice": "{0} - Standard"
     }
   },
   "ThemesService": {

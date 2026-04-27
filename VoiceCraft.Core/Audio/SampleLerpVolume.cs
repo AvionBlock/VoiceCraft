@@ -6,23 +6,23 @@ namespace VoiceCraft.Core.Audio
     {
         public float TargetVolume
         {
-            get => _targetVolume;
+            get;
             set
             {
-                if (Math.Abs(_targetVolume - value) < Constants.FloatingPointTolerance)
+                if (Math.Abs(field - value) < Constants.FloatingPointTolerance)
                     return; //Return since it's the same target volume, and we don't want to reset the counter.
-                _previousVolume = _targetVolume;
-                _targetVolume = value;
+                _previousVolume = field;
+                field = value;
                 _fadeSamplesPosition = 0; //Reset position since we have a new target.
             }
-        }
+        } = 1;
 
         public TimeSpan FadeDuration
         {
-            get => _fadeDuration;
+            get;
             set
             {
-                _fadeDuration = value;
+                field = value;
                 var newSamples = (int)(value.TotalMilliseconds * _sampleRate / 1000);
                 if (newSamples < _fadeSamplesPosition) //Make sure we don't overshoot the target when lerping.
                 {
@@ -33,9 +33,7 @@ namespace VoiceCraft.Core.Audio
             }
         }
 
-        private int _sampleRate;
-        private TimeSpan _fadeDuration;
-        private float _targetVolume = 1;
+        private readonly int _sampleRate;
         private float _previousVolume;
         private float _fadeSamplesDuration;
         private float _fadeSamplesPosition;

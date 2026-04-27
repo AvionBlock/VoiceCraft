@@ -5,8 +5,8 @@ namespace VoiceCraft.Core
     public static class Constants
     {
         public const int Major = 1; //These need to be the same on both client and server!
-        public const int Minor = 5; //These need to be the same on both client and server!
-        public const int Patch = 1; //This does not need to be the same on client and server.
+        public const int Minor = 6; //These need to be the same on both client and server!
+        public const int Patch = 0; //This does not need to be the same on client and server.
 
         //Tick
         public const int TickRate = 50;
@@ -40,6 +40,7 @@ namespace VoiceCraft.Core
         public const string ApplicationDirectory = "voicecraft";
         public const string SettingsFile = "Settings.json";
         public const string ExceptionLogsFile = "ExceptionLogs.json";
+        public const string TelemetryBaseUrl = "https://vc-api.avion.team";
 
         //RPC
         public const string ApplicationId = "1364434932968984669";

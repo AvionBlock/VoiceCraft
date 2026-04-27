@@ -24,10 +24,13 @@ public partial class InputSettingsViewModel(
 {
     private readonly Lock _lock = new();
 
-    [ObservableProperty] private InputSettingsDataViewModel _inputSettingsData = new(settingsService, audioService);
-    [ObservableProperty] private bool _isRecording;
-    [ObservableProperty] private float _microphoneValue;
-    [ObservableProperty] private bool _detectingVoiceActivity;
+    [ObservableProperty]
+    public partial InputSettingsDataViewModel InputSettingsData { get; set; } = new(settingsService, audioService);
+
+    [ObservableProperty] public partial bool IsRecording { get; set; }
+    [ObservableProperty] public partial float MicrophoneValue { get; set; }
+    [ObservableProperty] public partial bool DetectingVoiceActivity { get; set; }
+
     private AudioCaptureDevice? _captureDevice;
     private CombinedAudioPreprocessor? _audioPreprocessor;
 
@@ -69,7 +72,8 @@ public partial class InputSettingsViewModel(
     {
         try
         {
-            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() != PermissionStatus.Granted)
+            if (await permissionsService.CheckAndRequestPermission<Permissions.Microphone>() !=
+                PermissionStatus.Granted)
                 throw new PermissionException("Settings.Input.Permissions.MicrophoneNotGranted");
 
             lock (_lock)
@@ -81,7 +85,8 @@ public partial class InputSettingsViewModel(
                     Constants.SampleRate,
                     Constants.RecordingChannels,
                     Constants.FrameSize,
-                    InputSettingsData.InputDevice);
+                    InputSettingsData.InputDevice,
+                    InputSettingsData.HardwarePreprocessorsEnabled);
                 _captureDevice.Start();
                 _captureDevice.OnAudioProcessed += Write;
                 IsRecording = true;
@@ -92,7 +97,7 @@ public partial class InputSettingsViewModel(
             CloseRecorder();
             // ReSharper disable once InconsistentlySynchronizedField
             notificationService.SendErrorNotification(
-                "Settings.Input.Notification.Badge", 
+                "Settings.Input.Notification.Badge",
                 ex.Message);
         }
     }
@@ -100,6 +105,7 @@ public partial class InputSettingsViewModel(
 
     private void Write(Span<float> buffer, Capability _)
     {
+        if (!IsRecording) return;
         _audioPreprocessor?.Process(buffer);
 
         var floatCount = SampleVolume.Read(buffer, InputSettingsData.InputVolume);

@@ -17,10 +17,6 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         { PrefillSize = Constants.PrefillBufferSize };
 
     private DateTime _lastPacket = DateTime.MinValue;
-    private bool _speaking;
-    private bool _userMuted;
-    private bool _isVisible;
-    private float _volume = 1f;
 
     public VoiceCraftClientEntity(int id, IAudioDecoder decoder) : base(id)
     {
@@ -30,13 +26,13 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public bool IsVisible
     {
-        get => _isVisible;
+        get;
         set
         {
-            if (_isVisible == value) return;
-            _isVisible = value;
-            OnIsVisibleUpdated?.Invoke(_isVisible, this);
-            if (_isVisible) return;
+            if (field == value) return;
+            field = value;
+            OnIsVisibleUpdated?.Invoke(field, this);
+            if (field) return;
             Speaking = false;
             ClearBuffer();
         }
@@ -44,33 +40,33 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public float Volume
     {
-        get => _volume;
+        get;
         set
         {
-            if (Math.Abs(_volume - value) < Constants.FloatingPointTolerance) return;
-            _volume = value;
-            OnVolumeUpdated?.Invoke(_volume, this);
+            if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
+            field = value;
+            OnVolumeUpdated?.Invoke(field, this);
         }
-    }
+    } = 1f;
 
     public bool UserMuted
     {
-        get => _userMuted;
+        get;
         set
         {
-            if (_userMuted == value) return;
-            _userMuted = value;
-            OnUserMutedUpdated?.Invoke(_userMuted, this);
+            if (field == value) return;
+            field = value;
+            OnUserMutedUpdated?.Invoke(field, this);
         }
     }
 
     public bool Speaking
     {
-        get => _speaking;
+        get;
         set
         {
-            if (_speaking == value) return;
-            _speaking = value;
+            if (field == value) return;
+            field = value;
             if (value) OnStartedSpeaking?.Invoke(this);
             else OnStoppedSpeaking?.Invoke(this);
         }
@@ -84,7 +80,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public int Read(Span<float> buffer)
     {
-        if (_userMuted)
+        if (UserMuted)
         {
             Speaking = false;
             return 0;
@@ -180,7 +176,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 startTick += Constants.FrameSizeMs; //Step Forwards.
                 Array.Clear(readBuffer); //Clear Read Buffer.
                 var read = GetNextPacket(readBuffer);
-                if (read <= 0 || _userMuted) continue;
+                if (read <= 0 || UserMuted) continue;
                 _outputBuffer.Write(readBuffer.AsSpan(0, read));
             }
             catch

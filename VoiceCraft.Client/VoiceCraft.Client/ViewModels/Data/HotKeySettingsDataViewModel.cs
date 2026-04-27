@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.ViewModels.Data;

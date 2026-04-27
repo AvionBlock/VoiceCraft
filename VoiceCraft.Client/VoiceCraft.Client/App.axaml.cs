@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,10 +13,12 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
 using VoiceCraft.Client.ViewModels.Home;
+using VoiceCraft.Client.ViewModels.Modals;
 using VoiceCraft.Client.ViewModels.Settings;
 using VoiceCraft.Client.Views;
 using VoiceCraft.Client.Views.Error;
 using VoiceCraft.Client.Views.Home;
+using VoiceCraft.Client.Views.Modals;
 using VoiceCraft.Client.Views.Settings;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
@@ -42,10 +42,6 @@ public class App : Application
     {
         try
         {
-            // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-            // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-            DisableAvaloniaDataAnnotationValidation();
-
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
 
@@ -56,17 +52,31 @@ public class App : Application
                     {
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
+                    serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(desktop.MainWindow);
 
                     desktop.MainWindow.Closing += (__, ___) =>
                     {
                         _ = serviceProvider.GetRequiredService<SettingsService>().SaveImmediate();
                     };
                     break;
+                case IActivityApplicationLifetime activityLifetime:
+                    activityLifetime.MainViewFactory = () =>
+                    {
+                        var mainView = new MainView
+                        {
+                            DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                        };
+                        RegisterClipboardWhenAttached(serviceProvider, mainView);
+                        return mainView;
+                    };
+                    break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
-                    singleViewPlatform.MainView = new MainView
+                    var singleView = new MainView
                     {
                         DataContext = serviceProvider.GetRequiredService<MainViewModel>()
                     };
+                    RegisterClipboardWhenAttached(serviceProvider, singleView);
+                    singleViewPlatform.MainView = singleView;
                     break;
             }
 
@@ -80,6 +90,12 @@ public class App : Application
                     desktop.MainWindow = new ErrorMainWindow
                     {
                         Content = new ErrorView(),
+                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                    };
+                    break;
+                case IActivityApplicationLifetime activityLifetime:
+                    activityLifetime.MainViewFactory = () => new MainView()
+                    {
                         DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
                     };
                     break;
@@ -97,18 +113,6 @@ public class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static void DisableAvaloniaDataAnnotationValidation()
-    {
-#pragma warning disable IL2026
-        // Get an array of plugins to remove
-        var dataValidationPluginsToRemove =
-            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
-
-        // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
-#pragma warning restore IL2026
-    }
-
     private static ServiceProvider BuildServiceProvider()
     {
         //Service Registry
@@ -117,6 +121,8 @@ public class App : Application
         ServiceCollection.AddSingleton<NavigationService>(x =>
             new NavigationService(y => (ViewModelBase)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<NotificationService>();
+        ServiceCollection.AddSingleton<ClipboardService>();
+        ServiceCollection.AddSingleton<ClientTelemetryService>();
         ServiceCollection.AddSingleton<PermissionsService>(x => new PermissionsService(
             x.GetRequiredService<NotificationService>(),
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
@@ -126,6 +132,11 @@ public class App : Application
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
+
+        //Modals
+        ServiceCollection.AddTransient<TelemetryConsentViewModel>();
+        ServiceCollection.AddTransient<EntityDataSettingsViewModel>();
+        ServiceCollection.AddTransient<HotKeyCaptureViewModel>();
 
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
@@ -149,6 +160,9 @@ public class App : Application
 
         //Views
         ServiceCollection.AddKeyedTransient<Control, MainView>(typeof(MainView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, TelemetryConsentView>(typeof(TelemetryConsentView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, EntityDataSettingsView>(typeof(EntityDataSettingsView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HotKeyCaptureView>(typeof(HotKeyCaptureView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HomeView>(typeof(HomeView).FullName);
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
@@ -247,5 +261,15 @@ public class App : Application
     {
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
+        _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
+    }
+
+    private static void RegisterClipboardWhenAttached(IServiceProvider serviceProvider, Control control)
+    {
+        control.AttachedToVisualTree += (_, _) =>
+        {
+            if (TopLevel.GetTopLevel(control) is { } topLevel)
+                serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
+        };
     }
 }

@@ -8,19 +8,17 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class LocaleSettings : Setting<LocaleSettings>
 {
-    private string _culture = Localizer.Languages.Contains(CultureInfo.CurrentCulture.Name)
-        ? CultureInfo.CurrentCulture.Name
-        : Constants.DefaultLanguage;
-
     public string Culture
     {
-        get => _culture;
+        get;
         set
         {
-            _culture = value;
+            field = value;
             OnUpdated?.Invoke(this);
         }
-    }
+    } = Localizer.Languages.Contains(CultureInfo.CurrentCulture.Name)
+        ? CultureInfo.CurrentCulture.Name
+        : Constants.DefaultLanguage;
 
     public override event Action<LocaleSettings>? OnUpdated;
 

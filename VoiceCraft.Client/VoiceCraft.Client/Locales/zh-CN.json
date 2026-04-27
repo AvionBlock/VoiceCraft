@@ -13,7 +13,8 @@
       "Language": "语言",
       "NotificationDismiss": "通知消失时间(毫秒)",
       "DisableNotifications": "禁用通知",
-      "HideServerAddresses": "隐藏服务器地址"
+      "HideServerAddresses": "隐藏服务器地址",
+      "EnableTelemetry": "启用匿名遥测"
     },
     "Appearance": {
       "Title": "外观",
@@ -28,6 +29,9 @@
       "Denoisers": "降噪器",
       "AutomaticGainControllers": "自动增益控制器",
       "EchoCancelers": "回声消除器",
+      "HardwarePreprocessors": null,
+      "PushToTalk": "按住说话",
+      "PlayPushToTalkCue": "播放按住说话提示音",
       "MicrophoneTest": {
         "MicrophoneTest": "麦克风测试",
         "Test": "测试"
@@ -58,7 +62,11 @@
     },
     "Network": {
       "Title": "网络设置",
-      "PositioningType": "定位类型",
+      "PositioningType": {
+        "Title": "定位类型",
+        "Server": null,
+        "Client": null
+      },
       "McWssListenIp": "MCWSS 监听 IP 地址",
       "McWssHostPort": "MCWSS 主机端口"
     },
@@ -68,7 +76,6 @@
       "CapturePrompt": "按下按键或鼠标按钮",
       "SaveBinding": "保存绑定",
       "CancelRebind": "取消",
-      "PlayPushToTalkCues": "播放按住说话提示音",
       "Actions": {
         "Mute": "静音",
         "Deafen": "拒听",
@@ -79,10 +86,15 @@
       "Title": "高级设置",
       "TriggerGc": "触发垃圾回收",
       "Crash": "测试崩溃",
+      "ResetAllSettings": "重置所有设置",
       "Notification": {
         "GC": {
           "Badge": "GC",
           "Triggered": "已触发垃圾回收。清理的内存: {0}mb。"
+        },
+        "Reset": {
+          "Badge": "设置",
+          "Done": "所有设置已重置为默认值。请重新启动客户端以完整应用语言和主题更改。"
         }
       }
     },
@@ -110,14 +122,31 @@
   },
   "CrashLogs": {
     "Title": "崩溃日志",
+    "Action": {
+      "DumpLink": "转储链接"
+    },
     "Notification": {
       "Badge": "崩溃日志",
       "Cleared": "已成功清除所有日志。",
       "Copied": "崩溃日志已复制到剪贴板。",
+      "DumpCopied": "崩溃转储链接已复制到剪贴板。",
+      "DumpUploadFailed": "上传崩溃转储失败。",
+      "DumpUnavailable": "此崩溃日志暂时还没有可用的已上传转储链接。",
       "Empty": "没有可复制的崩溃日志。"
     }
   },
-  "AddServer": {
+  "TelemetryConsent": {
+    "Title": "帮助改进 VoiceCraft",
+    "Description": "VoiceCraft 可以发送匿名遥测，以便我们了解崩溃情况并提升所有平台上的稳定性。",
+    "CollectsTitle": "我们收集什么",
+    "CollectsBody": "应用版本、平台、操作系统和运行时信息、架构、区域设置、CPU 和内存信息，以及匿名的启动和心跳诊断数据。",
+    "NotCollectedTitle": "我们不会自动收集什么",
+    "NotCollectedBody": "我们不会自动上传你的服务器列表、令牌、配置值或聊天与内容数据。",
+    "DumpBody": "只有当你在崩溃日志中明确点击转储链接按钮时，崩溃转储才会被上传。",
+    "Accept": "接受",
+    "Decline": "拒绝"
+  },
+    "AddServer": {
     "Title": "添加服务器",
     "Name": "名称",
     "IP": "IP",
@@ -214,7 +243,8 @@
       "TanhSoft": "Tanh 软限幅器"
     },
     "AudioDeviceInfo": {
-      "Default": "{0} - 默认"
+      "Default": "默认",
+      "DefaultDevice": "{0} - 默认"
     }
   },
   "ThemesService": {

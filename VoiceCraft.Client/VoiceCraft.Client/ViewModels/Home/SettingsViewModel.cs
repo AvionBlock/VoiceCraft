@@ -8,32 +8,35 @@ namespace VoiceCraft.Client.ViewModels.Home;
 
 public partial class SettingsViewModel : ViewModelBase
 {
-    [ObservableProperty] private ObservableCollection<ListItemTemplate> _items = [];
-    [ObservableProperty] private ListItemTemplate? _selectedListItem;
+    [ObservableProperty] public partial ObservableCollection<ListItemTemplate> Items { get; set; }
+    [ObservableProperty] public partial ListItemTemplate? SelectedListItem { get; set; }
 
     public SettingsViewModel(NavigationService navigationService)
     {
-        _items.Add(new ListItemTemplate("Settings.General.Title",
-            () => { navigationService.NavigateTo<GeneralSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Appearance.Title",
-            () => { navigationService.NavigateTo<AppearanceSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Input.Title",
-            () => { navigationService.NavigateTo<InputSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Output.Title",
-            () => { navigationService.NavigateTo<OutputSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Network.Title",
-            () => { navigationService.NavigateTo<NetworkSettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.HotKey.Title",
-            () => { navigationService.NavigateTo<HotKeySettingsViewModel>(); }));
-        _items.Add(new ListItemTemplate("Settings.Advanced.Title",
-            () => { navigationService.NavigateTo<AdvancedSettingsViewModel>(); }));
+        Items =
+        [
+            new ListItemTemplate("Settings.General.Title",
+                () => { navigationService.NavigateTo<GeneralSettingsViewModel>(); }),
+            new ListItemTemplate("Settings.Appearance.Title",
+                () => { navigationService.NavigateTo<AppearanceSettingsViewModel>(); }),
+            new ListItemTemplate("Settings.Input.Title",
+                () => { navigationService.NavigateTo<InputSettingsViewModel>(); }),
+            new ListItemTemplate("Settings.Output.Title",
+                () => { navigationService.NavigateTo<OutputSettingsViewModel>(); }),
+            new ListItemTemplate("Settings.Network.Title",
+                () => { navigationService.NavigateTo<NetworkSettingsViewModel>(); }),
+            new ListItemTemplate("Settings.HotKey.Title",
+                () => { navigationService.NavigateTo<HotKeySettingsViewModel>(); }),
+            new ListItemTemplate("Settings.Advanced.Title",
+                () => { navigationService.NavigateTo<AdvancedSettingsViewModel>(); })
+        ];
     }
 
     partial void OnSelectedListItemChanged(ListItemTemplate? value)
     {
         if (value == null) return;
         value.OnClicked.Invoke();
-        _selectedListItem = null;
+        SelectedListItem = null;
     }
 }
 

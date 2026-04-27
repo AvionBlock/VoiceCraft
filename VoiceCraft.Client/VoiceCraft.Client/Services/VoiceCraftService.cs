@@ -23,11 +23,9 @@ public class VoiceCraftService(
     NotificationService notificationService)
 {
     private McWssServer? _mcWssServer;
+    private int _disconnecting;
     private bool _pttEnabled;
     private bool _pttCue;
-    private bool _pushToTalk;
-    private string _title = string.Empty;
-    private string _description = string.Empty;
 
     //Audio
     private AudioPlaybackDevice? _audioPlayer;
@@ -56,37 +54,37 @@ public class VoiceCraftService(
 
     public bool PushToTalk
     {
-        get => _pushToTalk;
+        get;
         set
         {
-            if (!_pttEnabled || _pushToTalk == value) return;
-            _pushToTalk = value;
+            if (!_pttEnabled || field == value) return;
+            field = value;
             client.Muted = !value;
-            
-            if(_pttCue)
+
+            if (_pttCue)
                 _pttToneProvider?.Play(TimeSpan.FromMilliseconds(80), value ? 880f : 620f);
         }
     }
 
     public string Title
     {
-        get => _title;
+        get;
         private set
         {
-            _title = value;
+            field = value;
             OnUpdateTitle?.Invoke(value);
         }
-    }
+    } = string.Empty;
 
     public string Description
     {
-        get => _description;
+        get;
         private set
         {
-            _description = value;
+            field = value;
             OnUpdateDescription?.Invoke(value);
         }
-    }
+    } = string.Empty;
 
     //Events
     public event Action? OnConnected;
@@ -103,6 +101,9 @@ public class VoiceCraftService(
 
     public async Task ConnectAsync(string ip, int port)
     {
+        if (client.ConnectionState != VcConnectionState.Disconnected) return;
+        _disconnecting = 0;
+
         try
         {
             client.OnConnected += ClientOnConnected;
@@ -141,7 +142,7 @@ public class VoiceCraftService(
             client.MicrophoneSensitivity = inputSettings.MicrophoneSensitivity;
             client.Muted = _pttEnabled;
 
-            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice);
+            _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice, inputSettings.HardwarePreprocessorsEnabled);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
             _audioPreprocessor = InitializeAudioPreprocessor(inputSettings);
             _pttToneProvider = InitializeToneProvider(_audioPlayer);
@@ -152,7 +153,7 @@ public class VoiceCraftService(
             if (!_audioRecorder.IsRunning)
                 throw new Exception("VoiceCraft.DisconnectReason.Error");
             _audioPlayer.Start();
-            if (!_audioRecorder.IsRunning)
+            if (!_audioPlayer.IsRunning)
                 throw new Exception("VoiceCraft.DisconnectReason.Error");
             _mcWssServer?.Start(networkSettings.McWssListenIp, networkSettings.McWssHostPort);
 
@@ -162,7 +163,7 @@ public class VoiceCraftService(
                 settingsService.ServerUserGuid,
                 localeSettings.Culture,
                 networkSettings.PositioningType);
-            _ = Task.Run(() => UpdateLogic(client));
+            _ = Task.Run(UpdateLogicAsync);
             await result;
         }
         catch (Exception ex)
@@ -174,6 +175,8 @@ public class VoiceCraftService(
 
     public async Task DisconnectAsync(string? reason = null)
     {
+        if (Interlocked.Exchange(ref _disconnecting, 1) == 1) return;
+
         await StopClientAsync(client, reason);
 
         if (_audioRecorder != null)
@@ -222,17 +225,29 @@ public class VoiceCraftService(
         return read;
     }
 
-    private static void UpdateLogic(VoiceCraftClient client)
+    private async Task UpdateLogicAsync()
     {
-        var startTime = DateTime.UtcNow;
-        while (client.ConnectionState != VcConnectionState.Disconnected)
+        try
         {
-            client.Update(); //Update all networking processes.
-            var dist = DateTime.UtcNow - startTime;
-            var delay = Constants.TickRate - dist.TotalMilliseconds;
-            if (delay > 0)
-                Thread.Sleep((int)delay);
-            startTime = DateTime.UtcNow;
+            var startTime = DateTime.UtcNow;
+            while (client.ConnectionState != VcConnectionState.Disconnected)
+            {
+                if (_audioRecorder is { IsRunning: false } ||
+                    _audioPlayer is { IsRunning: false })
+                    throw new Exception("VoiceCraft.DisconnectReason.Error");
+
+                client.Update(); //Update all networking processes.
+                var dist = DateTime.UtcNow - startTime;
+                var delay = Constants.TickRate - dist.TotalMilliseconds;
+                if (delay > 0)
+                    await Task.Delay((int)delay);
+                startTime = DateTime.UtcNow;
+            }
+        }
+        catch (Exception ex)
+        {
+            LogService.Log(ex);
+            await DisconnectAsync(ex.Message);
         }
     }
 
@@ -325,10 +340,10 @@ public class VoiceCraftService(
         return toneProvider;
     }
 
-    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice)
+    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice, bool hardwarePreprocessorsEnabled)
     {
         var recorder = audioService.InitializeCaptureDevice(Constants.SampleRate, Constants.RecordingChannels,
-            Constants.FrameSize, inputDevice);
+            Constants.FrameSize, inputDevice, hardwarePreprocessorsEnabled);
         recorder.OnAudioProcessed += Write;
         return recorder;
     }

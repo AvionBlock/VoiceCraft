@@ -13,10 +13,9 @@ public partial class AddServerViewModel(
 {
     private bool _updatingPort;
 
-    [ObservableProperty] private Server _server = new();
-    [ObservableProperty] private decimal? _serverPort = 9050;
-
-    [ObservableProperty] private ServersSettings _servers = settings.ServersSettings;
+    [ObservableProperty] public partial Server Server { get; set; } = new();
+    [ObservableProperty] public partial decimal? ServerPort { get; set; } = 9050;
+    [ObservableProperty] public partial ServersSettings Servers { get; set; } = settings.ServersSettings;
 
     partial void OnServerChanged(Server value)
     {

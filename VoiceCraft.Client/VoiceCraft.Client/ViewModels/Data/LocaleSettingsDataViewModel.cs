@@ -11,7 +11,8 @@ public partial class LocaleSettingsDataViewModel : ObservableObject, IDisposable
     private readonly LocaleSettings _localeSettings;
     private readonly SettingsService _settingsService;
 
-    [ObservableProperty] private string _culture;
+    [ObservableProperty] public partial string Culture { get; set; }
+
     private bool _disposed;
     private bool _updating;
 
@@ -20,7 +21,7 @@ public partial class LocaleSettingsDataViewModel : ObservableObject, IDisposable
         _localeSettings = settingsService.LocaleSettings;
         _settingsService = settingsService;
         _localeSettings.OnUpdated += Update;
-        _culture = _localeSettings.Culture;
+        Culture = _localeSettings.Culture;
     }
 
     public void Dispose()
