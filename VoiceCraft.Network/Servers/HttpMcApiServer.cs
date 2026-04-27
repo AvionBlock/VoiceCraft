@@ -394,10 +394,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             };
         }
 
-        if (_mcApiPeers.TryGetValue(token, out var trackedPeer))
-            return trackedPeer;
-
-        return null;
+        return _mcApiPeers.GetValueOrDefault(token);
     }
 
     private static void ReceivePacketsLogic(HttpMcApiNetPeer httpNetPeer, IEnumerable<byte[]> packets, string token)

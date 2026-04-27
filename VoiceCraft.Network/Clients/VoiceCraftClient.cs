@@ -599,7 +599,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityCreatedPacket(VcOnEntityCreatedPacket packet)
     {
-        if (World.GetEntity(packet.Id) != null) return;
+        if (World.ContainsEntity(packet.Id)) return;
 
         var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke())
         {
@@ -612,7 +612,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnNetworkEntityCreatedPacket(VcOnNetworkEntityCreatedPacket packet)
     {
-        if (World.GetEntity(packet.Id) != null) return;
+        if (World.ContainsEntity(packet.Id)) return;
 
         var entity =
             new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid)
@@ -628,29 +628,26 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityDestroyedPacket(VcOnEntityDestroyedPacket packet)
     {
-        if (World.GetEntity(packet.Id) == null) return;
+        if (!World.ContainsEntity(packet.Id)) return;
         World.DestroyEntity(packet.Id);
     }
 
     private void HandleOnEntityNameUpdatedPacket(VcOnEntityNameUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Name = packet.Value;
+        entity?.Name = packet.Value;
     }
 
     private void HandleOnEntityMuteUpdatedPacket(VcOnEntityMuteUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Muted = packet.Value;
+        entity?.Muted = packet.Value;
     }
 
     private void HandleOnEntityDeafenUpdatedPacket(VcOnEntityDeafenUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Deafened = packet.Value;
+        entity?.Deafened = packet.Value;
     }
 
     private void HandleOnEntityServerMuteUpdatedPacket(VcOnEntityServerMuteUpdatedPacket packet)
@@ -670,50 +667,43 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void HandleOnEntityTalkBitmaskUpdatedPacket(VcOnEntityTalkBitmaskUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.TalkBitmask = packet.Value;
+        entity?.TalkBitmask = packet.Value;
     }
 
     private void HandleOnEntityListenBitmaskUpdatedPacket(VcOnEntityListenBitmaskUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.ListenBitmask = packet.Value;
+        entity?.ListenBitmask = packet.Value;
     }
 
     private void HandleOnEntityEffectBitmaskUpdatedPacket(VcOnEntityEffectBitmaskUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.EffectBitmask = packet.Value;
+        entity?.EffectBitmask = packet.Value;
     }
 
     private void HandleOnEntityPositionUpdatedPacket(VcOnEntityPositionUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Position = packet.Value;
+        entity?.Position = packet.Value;
     }
 
     private void HandleOnEntityRotationUpdatedPacket(VcOnEntityRotationUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.Rotation = packet.Value;
+        entity?.Rotation = packet.Value;
     }
 
     private void HandleOnEntityCaveFactorUpdatedPacket(VcOnEntityCaveFactorUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.CaveFactor = packet.Value;
+        entity?.CaveFactor = packet.Value;
     }
 
     private void HandleOnEntityMuffleFactorUpdatedPacket(VcOnEntityMuffleFactorUpdatedPacket packet)
     {
         var entity = World.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.MuffleFactor = packet.Value;
+        entity?.MuffleFactor = packet.Value;
     }
 
     private void HandleOnEntityAudioReceivedPacket(VcOnEntityAudioReceivedPacket packet)

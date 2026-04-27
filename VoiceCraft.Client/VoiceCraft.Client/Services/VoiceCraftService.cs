@@ -232,8 +232,8 @@ public class VoiceCraftService(
             var startTime = DateTime.UtcNow;
             while (client.ConnectionState != VcConnectionState.Disconnected)
             {
-                if ((_audioRecorder != null && !_audioRecorder.IsRunning) ||
-                    (_audioPlayer != null && !_audioPlayer.IsRunning))
+                if (_audioRecorder is { IsRunning: false } ||
+                    _audioPlayer is { IsRunning: false })
                     throw new Exception("VoiceCraft.DisconnectReason.Error");
 
                 client.Update(); //Update all networking processes.

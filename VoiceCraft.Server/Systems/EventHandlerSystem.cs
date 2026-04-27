@@ -159,13 +159,10 @@ public class EventHandlerSystem : IDisposable
 
                 //Send Effects
                 var audioEffects = _audioEffectSystem.AudioEffects;
-                if (audioEffects != null)
-                {
-                    foreach (var effect in audioEffects)
-                        _liteNetServer.SendPacket(networkEntity.NetPeer,
-                            PacketPool<VcOnEffectUpdatedPacket>.GetPacket(() => new VcOnEffectUpdatedPacket())
-                                .Set(effect.Key, effect.Value));
-                }
+                foreach (var effect in audioEffects)
+                    _liteNetServer.SendPacket(networkEntity.NetPeer,
+                        PacketPool<VcOnEffectUpdatedPacket>.GetPacket(() => new VcOnEffectUpdatedPacket())
+                            .Set(effect.Key, effect.Value));
 
                 //Send other entities.
                 foreach (var entity in _world.Entities.Where(x => x != networkEntity))
@@ -248,12 +245,9 @@ public class EventHandlerSystem : IDisposable
 
             //Send Effects
             var audioEffects = _audioEffectSystem.AudioEffects;
-            if (audioEffects != null)
-            {
-                foreach (var effect in audioEffects)
-                    SendMcApi(server, peer, PacketPool<McApiOnEffectUpdatedPacket>.GetPacket(() =>
-                        new McApiOnEffectUpdatedPacket()).Set(effect.Key, effect.Value));
-            }
+            foreach (var effect in audioEffects)
+                SendMcApi(server, peer, PacketPool<McApiOnEffectUpdatedPacket>.GetPacket(() =>
+                    new McApiOnEffectUpdatedPacket()).Set(effect.Key, effect.Value));
 
             //Send other entities.
             foreach (var entity in _world.Entities)

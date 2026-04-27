@@ -1,5 +1,4 @@
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Network;
 using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
@@ -14,7 +13,7 @@ public class VoiceCraftClientTests
     {
         using var client = new TestVoiceCraftClient();
         var packet = new VcOnEntityCreatedPacket();
-        packet.Set(42, "First", false, false);
+        packet.Set(42, "First");
 
         client.Dispatch(packet);
         packet.Set(42, "Duplicate", true, true);

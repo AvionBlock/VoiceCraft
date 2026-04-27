@@ -1,5 +1,4 @@
 using Xunit;
-using VoiceCraft.Network;
 
 namespace VoiceCraft.Network.Tests;
 
@@ -15,6 +14,6 @@ public class Z85Tests
     [Fact]
     public void GetString_WithUnpaddedLength_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentException>(() => Z85.GetString(new byte[] { 1, 2, 3 }));
+        Assert.Throws<ArgumentException>(() => Z85.GetString([1, 2, 3]));
     }
 }
