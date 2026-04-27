@@ -67,11 +67,24 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     public override void Stop()
     {
-        if (_wsServer == null) return;
+        if (_wsServer == null)
+        {
+            _mcApiPeers.Clear();
+            return;
+        }
+
         _wsServer.Dispose();
-        foreach (var client in _mcApiPeers)
+        foreach (var client in _mcApiPeers.ToArray())
             try
             {
+                if (client.Value.ConnectionState == McApiConnectionState.Connected)
+                {
+                    var sessionToken = client.Value.SessionToken;
+                    client.Value.SetConnectionState(McApiConnectionState.Disconnected);
+                    client.Value.SetSessionToken(string.Empty);
+                    OnPeerDisconnected?.Invoke(client.Value, sessionToken);
+                }
+
                 client.Key.Close();
             }
             catch
@@ -79,6 +92,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 //Do Nothing
             }
 
+        _mcApiPeers.Clear();
         _wsServer = null;
     }
 
