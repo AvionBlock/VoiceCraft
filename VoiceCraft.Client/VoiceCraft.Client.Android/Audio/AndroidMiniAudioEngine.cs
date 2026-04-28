@@ -192,6 +192,7 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
             AAudioInputPreset.Camcorder => AudioSource.Camcorder,
             AAudioInputPreset.VoiceRecognition => AudioSource.VoiceRecognition,
             AAudioInputPreset.VoiceCommunication => AudioSource.VoiceCommunication,
+            AAudioInputPreset.Unprocessed => AudioSource.Unprocessed,
             _ => AudioSource.Default
         };
         var channelMask = Format.Channels switch

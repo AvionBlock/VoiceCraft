@@ -120,13 +120,13 @@ public class AudioService
                 Usage = AAudioUsage.VoiceCommunication,
                 InputPreset = hardwarePreprocessorsEnabled
                     ? AAudioInputPreset.VoiceCommunication
-                    : AAudioInputPreset.Default
+                    : AAudioInputPreset.Unprocessed
             },
             OpenSL = new OpenSlSettings()
             {
                 RecordingPreset = hardwarePreprocessorsEnabled
                     ? OpenSlRecordingPreset.VoiceCommunication
-                    : OpenSlRecordingPreset.Default
+                    : OpenSlRecordingPreset.VoiceUnprocessed
             },
             CoreAudio = new CoreAudioSettings()
             {
