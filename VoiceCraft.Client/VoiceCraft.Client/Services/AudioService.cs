@@ -9,7 +9,6 @@ using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 using VoiceCraft.Core.Interfaces;
-using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Services;
 
@@ -62,7 +61,7 @@ public class AudioService
             {
                 defaultDevice = new AudioDeviceInfo(
                     "Default",
-                    Localizer.Get($"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}"),
+                    $"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}",
                     true);
             }
 
@@ -70,7 +69,8 @@ public class AudioService
         }
 
         devices.Insert(0,
-            defaultDevice ?? new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
+            defaultDevice ??
+            new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
         return devices;
     }
 
@@ -85,7 +85,7 @@ public class AudioService
             {
                 defaultDevice = new AudioDeviceInfo(
                     "Default",
-                    Localizer.Get($"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}"),
+                    $"AudioService.AudioDeviceInfo.DefaultDevice:{device.Name}",
                     true);
             }
 
@@ -93,7 +93,8 @@ public class AudioService
         }
 
         devices.Insert(0,
-            defaultDevice ?? new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
+            defaultDevice ??
+            new AudioDeviceInfo("Default", "AudioService.AudioDeviceInfo.Default", true));
         return devices;
     }
 
