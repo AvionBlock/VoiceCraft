@@ -1,10 +1,13 @@
 using System;
 using Android.Media;
+using Android.OS;
 using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
 using SoundFlow.Abstracts;
+using SoundFlow.Backends.MiniAudio;
+using SoundFlow.Backends.MiniAudio.Enums;
 using VoiceCraft.Client.Android.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -60,8 +63,12 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         if (audioManager == null)
             throw new Exception($"Could not find {AudioService}. Cannot initialize audio service.");
 
-        App.ServiceCollection.AddSingleton<AudioEngine, AndroidMiniAudioEngine>(_ =>
-            new AndroidMiniAudioEngine(audioManager));
+        App.ServiceCollection.AddSingleton<AudioEngine>(_ =>
+        {
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                return new AndroidMiniAudioEngine(audioManager);
+            return new MiniAudioEngine([MiniAudioBackend.OpenSl]);
+        });
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
