@@ -7,7 +7,7 @@ public abstract class McApiNetPeer
     public ConcurrentQueue<QueuedPacket> IncomingQueue { get; } = new();
     public ConcurrentQueue<QueuedPacket> OutgoingQueue { get; } = new();
     
-    public abstract McApiConnectionState ConnectionState { get; }
+    public virtual McApiConnectionState ConnectionState { get; set; }
     public abstract string SessionToken { get; }
     public object? Tag { get; set; }
     

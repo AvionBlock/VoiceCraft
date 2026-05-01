@@ -48,7 +48,7 @@ internal static class Measurements
 
         Action action = mode switch
         {
-            ScenarioMode.CheckedOut => () => GC.KeepAlive(effectSystem.AudioEffectsSnapshot),
+            ScenarioMode.CheckedOut => () => GC.KeepAlive(effectSystem.AudioEffects),
             ScenarioMode.LegacySimulated => () => GC.KeepAlive(effectSystem.AudioEffects),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
@@ -252,7 +252,7 @@ internal static class Measurements
         {
             Array.Fill(buffer, 0.25f);
             foreach (var target in targets)
-                foreach (var effect in effectSystem.AudioEffectsSnapshot)
+                foreach (var effect in effectSystem.AudioEffects)
                     effect.Value.Process(source, target, effect.Key, buffer);
 
             GC.KeepAlive(buffer[0]);

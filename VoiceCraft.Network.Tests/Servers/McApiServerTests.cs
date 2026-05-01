@@ -18,8 +18,10 @@ public class McApiServerTests
         using var world = new VoiceCraftWorld();
         using var effectSystem = new AudioEffectSystem();
         var server = new TestMcApiServer(world, effectSystem);
-        var peer = new HttpMcApiNetPeer();
-        peer.SetConnectionState(McApiConnectionState.Connected);
+        var peer = new HttpMcApiNetPeer
+        {
+            ConnectionState = McApiConnectionState.Connected
+        };
         peer.SetSessionToken("session-token");
 
         var request = new McApiCreateEntityRequestPacket().Set(
