@@ -78,7 +78,7 @@ internal sealed class FakeProcessingEffect(int stride) : IAudioEffect
 internal sealed class FakeMcApiPeer(string sessionToken, McApiConnectionState connectionState = McApiConnectionState.Connected)
     : McApiNetPeer
 {
-    public override McApiConnectionState ConnectionState { get; } = connectionState;
+    public override McApiConnectionState ConnectionState { get; set; } = connectionState;
     public override string SessionToken { get; } = sessionToken;
 }
 
