@@ -77,15 +77,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         foreach (var client in _mcApiPeers.ToArray())
             try
             {
-                if (client.Value.ConnectionState == McApiConnectionState.Connected)
-                {
-                    var sessionToken = client.Value.SessionToken;
-                    client.Value.SetConnectionState(McApiConnectionState.Disconnected);
-                    client.Value.SetSessionToken(string.Empty);
-                    OnPeerDisconnected?.Invoke(client.Value, sessionToken);
-                }
-
-                client.Key.Close();
+                Disconnect(client.Value, true);
             }
             catch
             {
@@ -98,8 +90,8 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     public override void SendPacket<T>(McApiNetPeer netPeer, T packet)
     {
-        if (_wsServer == null || netPeer.ConnectionState != McApiConnectionState.Connected ||
-            Config.DisabledPacketTypes.Contains(packet.PacketType)) return;
+        if (_wsServer == null || Config.DisabledPacketTypes.Contains(packet.PacketType) ||
+            netPeer.ConnectionState == McApiConnectionState.Disconnected) return;
         try
         {
             lock (_writer)
@@ -135,6 +127,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
                 var data = _writer.CopyData();
                 foreach (var netPeer in _mcApiPeers.Values)
                 {
+                    //Broadcast to only connected clients.
                     if (netPeer.ConnectionState != McApiConnectionState.Connected || excludes.Contains(netPeer))
                         continue;
                     netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, string.Empty));
@@ -149,36 +142,29 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
     public override void Disconnect(McApiNetPeer netPeer, bool force = false)
     {
-        if (netPeer is not McWssMcApiNetPeer { ConnectionState: McApiConnectionState.Connected } mcWssNetPeer) return;
-        var logoutPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket(() => new McApiLogoutRequestPacket())
-            .Set(netPeer.SessionToken);
+        if (netPeer is not McWssMcApiNetPeer mcWssNetPeer) return;
+        if (netPeer.ConnectionState is McApiConnectionState.Disconnected or McApiConnectionState.Disconnecting) return;
+        var wasConnected = mcWssNetPeer.ConnectionState == McApiConnectionState.Connected;
+        mcWssNetPeer.ConnectionState = McApiConnectionState.Disconnecting;
+        var sessionToken = mcWssNetPeer.SessionToken;
         try
         {
-            var sessionToken = mcWssNetPeer.SessionToken;
-            mcWssNetPeer.SetConnectionState(McApiConnectionState.Disconnected);
-            mcWssNetPeer.SetSessionToken(string.Empty);
-            OnPeerDisconnected?.Invoke(mcWssNetPeer, sessionToken);
             if (force)
             {
                 _mcApiPeers.TryRemove(mcWssNetPeer.Connection, out _); //Remove Immediately.
-                mcWssNetPeer.Connection.Close(); //Close the connection.
+                mcWssNetPeer.Connection.Close();
                 return;
             }
 
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)logoutPacket.PacketType);
-                _writer.Put(logoutPacket);
-                if (_writer.Length > short.MaxValue)
-                    throw new ArgumentOutOfRangeException(nameof(netPeer));
-
-                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
-            }
+            SendPacket(netPeer, PacketPool<McApiLogoutRequestPacket>.GetPacket(() => new McApiLogoutRequestPacket())
+                .Set(netPeer.SessionToken));
         }
         finally
         {
-            PacketPool<McApiLogoutRequestPacket>.Return(logoutPacket);
+            mcWssNetPeer.SetSessionToken(string.Empty);
+            mcWssNetPeer.ConnectionState = McApiConnectionState.Disconnected;
+            if(wasConnected)
+                OnPeerDisconnected?.Invoke(mcWssNetPeer, sessionToken);
         }
     }
 
@@ -188,14 +174,13 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         try
         {
             if (mcWssNetPeer.ConnectionState != McApiConnectionState.Connected)
-            {
                 mcWssNetPeer.SetSessionToken(Guid.NewGuid().ToString());
-                mcWssNetPeer.SetConnectionState(McApiConnectionState.Connected);
-            }
 
             SendPacket(mcWssNetPeer,
                 PacketPool<McApiAcceptResponsePacket>.GetPacket(() => new McApiAcceptResponsePacket())
                     .Set(packet.RequestId, mcWssNetPeer.SessionToken));
+
+            mcWssNetPeer.ConnectionState = McApiConnectionState.Connected;
             OnPeerConnected?.Invoke(mcWssNetPeer, mcWssNetPeer.SessionToken);
         }
         catch
@@ -207,26 +192,15 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data)
     {
         if (data is not McWssMcApiNetPeer mcWssNetPeer) return;
-        var responsePacket = PacketPool<McApiDenyResponsePacket>.GetPacket(() => new McApiDenyResponsePacket())
-            .Set(packet.RequestId, reason);
         try
         {
-            mcWssNetPeer.SetSessionToken("");
-            mcWssNetPeer.SetConnectionState(McApiConnectionState.Disconnected);
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)responsePacket.PacketType);
-                _writer.Put(responsePacket);
-                if (_writer.Length > short.MaxValue)
-                    throw new ArgumentOutOfRangeException(nameof(packet));
-
-                mcWssNetPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(_writer.CopyData(), string.Empty));
-            }
+            SendPacket(mcWssNetPeer, PacketPool<McApiDenyResponsePacket>.GetPacket(() => new McApiDenyResponsePacket())
+                .Set(packet.RequestId, reason));
         }
         finally
         {
-            PacketPool<McApiDenyResponsePacket>.Return(responsePacket);
+            mcWssNetPeer.SetSessionToken(string.Empty);
+            mcWssNetPeer.ConnectionState = McApiConnectionState.Disconnected;
         }
     }
 
@@ -271,7 +245,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private void UpdatePeer(IWebSocketConnection connection, McWssMcApiNetPeer mcWssNetPeer)
     {
         ProcessPackets(mcWssNetPeer);
-        
+
         for (var i = 0; i < Config.CommandsPerTick; i++)
             if (!SendPacketsLogic(connection, mcWssNetPeer))
                 SendPacketCommand(connection, string.Empty);
@@ -361,11 +335,12 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private void OnClientDisconnected(IWebSocketConnection socket)
     {
         if (!_mcApiPeers.TryRemove(socket, out var mcApiPeer)) return;
-        if (mcApiPeer.ConnectionState != McApiConnectionState.Connected) return;
+        var wasConnected = mcApiPeer.ConnectionState != McApiConnectionState.Disconnected;
         var sessionToken = mcApiPeer.SessionToken;
-        mcApiPeer.SetConnectionState(McApiConnectionState.Disconnected);
         mcApiPeer.SetSessionToken(string.Empty);
-        OnPeerDisconnected?.Invoke(mcApiPeer, sessionToken);
+        mcApiPeer.ConnectionState = McApiConnectionState.Disconnected;
+        if(wasConnected)
+            OnPeerDisconnected?.Invoke(mcApiPeer, sessionToken);
     }
 
     private void OnMessageReceived(IWebSocketConnection socket, string message)

@@ -41,8 +41,8 @@
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding InputSettingsData.InputDevices}"
                               SelectedValue="{Binding InputSettingsData.InputDevice}"
-                              DisplayMemberBinding="{Binding DisplayName}"
-                              SelectedValueBinding="{Binding Name}"/>
+                              DisplayMemberBinding="{locale:Localize {Binding DisplayName}}"
+                              SelectedValueBinding="{Binding Name}" />
 
                     <StackPanel>
                         <Grid ColumnDefinitions="Auto, Auto">
@@ -102,17 +102,17 @@
                               DisplayMemberBinding="{locale:Localize {Binding Name}}"
                               SelectedValue="{Binding InputSettingsData.EchoCanceler}"
                               SelectedValueBinding="{Binding Id}" />
-                    
+
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding InputSettingsData.HardwarePreprocessorsEnabled}">
                         <TextBlock Text="{locale:Localize Settings.Input.HardwarePreprocessors}" />
                     </ToggleButton>
-                    
+
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding InputSettingsData.PushToTalkEnabled}">
                         <TextBlock Text="{locale:Localize Settings.Input.PushToTalk}" />
                     </ToggleButton>
-                    
+
                     <ToggleButton HorizontalAlignment="Stretch"
                                   IsChecked="{Binding InputSettingsData.PushToTalkCue}">
                         <TextBlock Text="{locale:Localize Settings.Input.PlayPushToTalkCue}" />

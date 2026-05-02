@@ -249,6 +249,8 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
             return;
         }
 
+        netPeer.ConnectionState = McApiConnectionState.Connecting;
+
         if (ConnectedPeers >= MaxClients)
         {
             RejectRequest(packet, "VcMcApi.DisconnectReason.ServerFull", netPeer);

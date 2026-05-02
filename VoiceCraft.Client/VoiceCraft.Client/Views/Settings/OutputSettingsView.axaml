@@ -41,7 +41,7 @@
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding OutputSettingsData.OutputDevices}"
                               SelectedValue="{Binding OutputSettingsData.OutputDevice}"
-                              DisplayMemberBinding="{Binding DisplayName}"
+                              DisplayMemberBinding="{locale:Localize {Binding DisplayName}}"
                               SelectedValueBinding="{Binding Name}"/>
                     
                     <StackPanel>
