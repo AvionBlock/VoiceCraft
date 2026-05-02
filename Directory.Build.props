@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <Version>1.6.0</Version>
-        <AndroidVersion>15</AndroidVersion>
+        <Version>1.6.1</Version>
+        <AndroidVersion>16</AndroidVersion>
     </PropertyGroup>
 </Project>
