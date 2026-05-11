@@ -18,10 +18,10 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private volatile ImmutableSortedDictionary<ushort, IAudioEffect> _audioEffectsSnapshot =
-        ImmutableSortedDictionary<ushort, IAudioEffect>.Empty;
+    private volatile ImmutableList<KeyValuePair<ushort, IAudioEffect>> _audioEffectsSnapshot =
+        ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
     private readonly Lock _lock = new();
-    public IImmutableDictionary<ushort, IAudioEffect> AudioEffects => _audioEffectsSnapshot;
+    public ImmutableList<KeyValuePair<ushort, IAudioEffect>> AudioEffects => _audioEffectsSnapshot;
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
     {
@@ -55,7 +55,7 @@ public class AudioEffectSystem : IDisposable
             {
                 case null when _audioEffects.Remove(bitmask, out var audioEffect):
                     audioEffect.Dispose();
-                    _audioEffectsSnapshot = _audioEffects.ToImmutableSortedDictionary();
+                    _audioEffectsSnapshot = _audioEffects.ToImmutableList();
                     OnEffectSet?.Invoke(bitmask, null);
                     return;
                 case null:
@@ -65,7 +65,7 @@ public class AudioEffectSystem : IDisposable
             if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && !ReferenceEquals(oldEffect, effect))
                 oldEffect.Dispose();
             _audioEffects[bitmask] = effect;
-            _audioEffectsSnapshot = _audioEffects.ToImmutableSortedDictionary();
+            _audioEffectsSnapshot = _audioEffects.ToImmutableList();
             OnEffectSet?.Invoke(bitmask, effect);
         }
     }
@@ -84,7 +84,7 @@ public class AudioEffectSystem : IDisposable
         {
             var effects = _audioEffects.ToArray(); //Copy the effects.
             _audioEffects.Clear();
-            _audioEffectsSnapshot = ImmutableSortedDictionary<ushort, IAudioEffect>.Empty;
+            _audioEffectsSnapshot = ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
             foreach (var effect in effects)
             {
                 effect.Value.Dispose();

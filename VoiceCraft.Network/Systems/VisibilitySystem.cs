@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private static void UpdateVisibleNetworkEntities(
         VoiceCraftEntity entity,
         VoiceCraftNetworkEntity[] visibleNetworkEntities,
-        IImmutableDictionary<ushort, IAudioEffect> audioEffects)
+        ImmutableList<KeyValuePair<ushort, IAudioEffect>> audioEffects)
     {
         //Remove dead network entities.
         entity.TrimDeadEntities();
@@ -45,7 +46,7 @@ public class VisibilitySystem(VoiceCraftWorld world, AudioEffectSystem audioEffe
     private static bool EntityVisibility(
         VoiceCraftEntity from,
         VoiceCraftNetworkEntity to,
-        IImmutableDictionary<ushort, IAudioEffect> audioEffects)
+        ImmutableList<KeyValuePair<ushort, IAudioEffect>> audioEffects)
     {
         if ((from.TalkBitmask & to.ListenBitmask) == 0) return false;
         foreach (var effect in audioEffects)
