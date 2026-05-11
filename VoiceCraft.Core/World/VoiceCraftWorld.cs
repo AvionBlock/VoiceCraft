@@ -1,16 +1,21 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 
 namespace VoiceCraft.Core.World
 {
     public class VoiceCraftWorld : IDisposable
     {
-        private readonly ConcurrentDictionary<int, VoiceCraftEntity> _entities = new();
+        private readonly Dictionary<int, VoiceCraftEntity> _entities = new();
+        private volatile ImmutableList<VoiceCraftEntity> _entitiesSnapshot =
+            ImmutableList<VoiceCraftEntity>.Empty;
+
+        private readonly Lock _lock = new();
         private int _nextEntityId;
 
-        public IEnumerable<VoiceCraftEntity> Entities => _entities.Values;
+        public ImmutableList<VoiceCraftEntity> Entities => _entitiesSnapshot;
 
         public void Dispose()
         {
@@ -22,8 +27,11 @@ namespace VoiceCraft.Core.World
 
         public void Reset()
         {
-            var entities = _entities.ToArray();
-            foreach (var entity in entities) entity.Value.Reset();
+            lock (_lock)
+            {
+                var entities = _entities.Values.ToArray(); //Copy Array
+                foreach (var entity in entities) entity.Reset();
+            }
         }
 
         public event Action<VoiceCraftEntity>? OnEntityCreated;
@@ -31,61 +39,86 @@ namespace VoiceCraft.Core.World
 
         public void AddEntity(VoiceCraftEntity entity)
         {
-            if (!_entities.TryAdd(entity.Id, entity))
-                throw new InvalidOperationException("Failed to add entity! An entity with the same id already exists!");
+            lock (_lock)
+            {
+                if (!_entities.TryAdd(entity.Id, entity))
+                    throw new InvalidOperationException(
+                        "Failed to add entity! An entity with the same id already exists!");
+                _entitiesSnapshot = [.._entities.Select(x => x.Value)];
 
-            entity.OnDestroyed += RemoveEntity;
-            OnEntityCreated?.Invoke(entity);
+                entity.OnDestroyed += RemoveEntity;
+                OnEntityCreated?.Invoke(entity);
+            }
         }
 
         public VoiceCraftEntity? GetEntity(int id)
         {
-            _entities.TryGetValue(id, out var entity);
-            return entity;
+            lock (_lock)
+            {
+                _entities.TryGetValue(id, out var entity);
+                return entity;
+            }
         }
 
         public bool ContainsEntity(int id)
         {
-            return _entities.ContainsKey(id);
+            lock (_lock)
+            {
+                return _entities.ContainsKey(id);
+            }
         }
 
         public int GetNextId()
         {
-            while (_entities.ContainsKey(_nextEntityId))
-                Interlocked.Increment(ref _nextEntityId);
-
-            return _nextEntityId;
+            lock (_lock)
+            {
+                while (_entities.ContainsKey(_nextEntityId))
+                    Interlocked.Increment(ref _nextEntityId);
+                return _nextEntityId;
+            }
         }
 
         public void DestroyEntity(int id)
         {
-            if (!_entities.Remove(id, out var entity))
-                throw new InvalidOperationException("Failed to destroy entity! Entity not found!");
-            entity.OnDestroyed -= RemoveEntity; //No need to listen anymore.
-            entity.Destroy();
-            OnEntityDestroyed?.Invoke(entity);
+            lock (_lock)
+            {
+                if (!_entities.Remove(id, out var entity))
+                    throw new InvalidOperationException("Failed to destroy entity! Entity not found!");
+                _entitiesSnapshot = [.._entities.Select(x => x.Value)];
+
+                entity.OnDestroyed -= RemoveEntity; //No need to listen anymore.
+                entity.Destroy();
+                OnEntityDestroyed?.Invoke(entity);
+            }
         }
 
         public void ClearEntities()
         {
-            //Copy Array.
-            var entities = _entities.ToArray();
-            _entities.Clear();
-            _nextEntityId = 0;
-
-            foreach (var entity in entities)
+            lock (_lock)
             {
-                entity.Value.OnDestroyed -= RemoveEntity; //Don't trigger the events!
-                entity.Value.Destroy();
-                OnEntityDestroyed?.Invoke(entity.Value);
+                //Copy Array.
+                var entities = _entities.ToArray();
+                _entities.Clear();
+                _entitiesSnapshot = ImmutableList<VoiceCraftEntity>.Empty;
+                _nextEntityId = 0;
+
+                foreach (var entity in entities)
+                {
+                    entity.Value.OnDestroyed -= RemoveEntity; //Don't trigger the events!
+                    entity.Value.Destroy();
+                    OnEntityDestroyed?.Invoke(entity.Value);
+                }
             }
         }
 
         private void RemoveEntity(VoiceCraftEntity entity)
         {
-            entity.OnDestroyed -= RemoveEntity;
-            if (_entities.TryRemove(entity.Id, out _))
-                OnEntityDestroyed?.Invoke(entity);
+            lock (_lock)
+            {
+                entity.OnDestroyed -= RemoveEntity;
+                if (_entities.Remove(entity.Id, out _))
+                    OnEntityDestroyed?.Invoke(entity);
+            }
         }
     }
 }

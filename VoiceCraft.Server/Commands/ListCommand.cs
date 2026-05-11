@@ -41,12 +41,14 @@ public class ListCommand : Command
                 .AddColumn(Localizer.Get("Tables.ListCommandEntities.Rotation"))
                 .AddColumn(Localizer.Get("Tables.ListCommandEntities.WorldId"));
 
-            var list = world.Entities;
+            IEnumerable<VoiceCraftEntity> entities;
             if (clientsOnly)
-                list = list.OfType<VoiceCraftNetworkEntity>();
+                entities = world.Entities.OfType<VoiceCraftNetworkEntity>();
+            else
+                entities = world.Entities;
 
             AnsiConsole.WriteLine(Localizer.Get($"Commands.List.Showing:{limit}"));
-            foreach (var entity in list)
+            foreach (var entity in entities)
             {
                 if (limit <= 0)
                     break;
