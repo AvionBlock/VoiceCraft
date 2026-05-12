@@ -28,6 +28,7 @@ public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVo
         Bitmask = reader.GetUShort();
         var effectType = (EffectType)reader.GetByte();
         Effect = IAudioEffect.FromReader(effectType, reader);
+        Effect?.Bitmask = Bitmask;
     }
 
     public VcOnEffectUpdatedPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)

@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
@@ -13,44 +11,32 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class ProximityEffect : IAudioEffect, IVisible
     {
-        private readonly Dictionary<VoiceCraftEntity, SampleLerpVolume> _lerpSampleVolumes = new();
-
         public static int SampleRate => Constants.SampleRate;
+        
+        public EffectType EffectType => EffectType.Proximity;
 
+        [JsonIgnore]
+        public ushort Bitmask { get; set; }
+        
+        public event Action? OnDisposed;
+
+        public float MinRange { get; set; }
+        public float MaxRange { get; set; }
+        
         public float WetDry
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
-
-        public float MinRange { get; set; }
-        public float MaxRange { get; set; }
-
-        public EffectType EffectType => EffectType.Proximity;
-
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
+        
+        public void Update(IAudioEffect audioEffect)
         {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((bitmask & effectBitmask) == 0) return; //Not enabled.
-
-            var range = MaxRange - MinRange;
-            if (range == 0) return; //Range is 0. Do not calculate division.
-            var distance = Vector3.Distance(from.Position, to.Position);
-            var factor = 1f - Math.Clamp((distance - MinRange) / range, 0f, 1f);
-            
-            var lerpVolumeSample = GetOrCreateLerpSampleVolume(from);
-            lerpVolumeSample.TargetVolume = factor;
-
-            for (var i = 0; i < buffer.Length; i += 2)
-            {
-                //Channel 1
-                var output = lerpVolumeSample.Transform(buffer[i]);
-                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
-                //Channel 2
-                output = lerpVolumeSample.Transform(buffer[i + 1]);
-                buffer[i + 1] = output * WetDry + buffer[i + 1] * (1.0f - WetDry);
-                lerpVolumeSample.Step();
-            }
+            if(audioEffect is not ProximityEffect proximityEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = proximityEffect.Bitmask;
+            MinRange = proximityEffect.MinRange;
+            MaxRange = proximityEffect.MaxRange;
+            WetDry = proximityEffect.WetDry;
         }
 
         public void Serialize(NetDataWriter writer)
@@ -67,16 +53,6 @@ namespace VoiceCraft.Network.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Reset()
-        {
-            //Nothing to reset
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
-
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
@@ -85,25 +61,16 @@ namespace VoiceCraft.Network.Audio.Effects
             return distance <= MaxRange;
         }
         
-        private SampleLerpVolume GetOrCreateLerpSampleVolume(VoiceCraftEntity entity)
+        public void Dispose()
         {
-            lock (_lerpSampleVolumes)
+            try
             {
-                if (_lerpSampleVolumes.TryGetValue(entity, out var lerpSampleVolume))
-                    return lerpSampleVolume;
-                lerpSampleVolume = new SampleLerpVolume(SampleRate, TimeSpan.FromMilliseconds(20));
-                _lerpSampleVolumes.TryAdd(entity, lerpSampleVolume);
-                entity.OnDestroyed += RemoveLerpSampleVolume;
-                return lerpSampleVolume;
+                OnDisposed?.Invoke();
             }
-        }
-        
-        private void RemoveLerpSampleVolume(VoiceCraftEntity entity)
-        {
-            lock (_lerpSampleVolumes)
+            finally
             {
-                _lerpSampleVolumes.Remove(entity);
-                entity.OnDestroyed -= RemoveLerpSampleVolume;
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
             }
         }
     }

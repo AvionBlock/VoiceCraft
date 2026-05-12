@@ -11,8 +11,16 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         public EffectType EffectType => EffectType.Visibility;
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
+        [JsonIgnore]
+        public ushort Bitmask { get; set; }
+        
+        public event Action? OnDisposed;
+        
+        public void Update(IAudioEffect audioEffect)
         {
+            if(audioEffect is not VisibilityEffect visibilityEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = visibilityEffect.Bitmask;
         }
 
         public void Serialize(NetDataWriter writer)
@@ -23,16 +31,6 @@ namespace VoiceCraft.Network.Audio.Effects
         {
         }
 
-        public void Reset()
-        {
-            //Nothing to reset
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
-
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
@@ -40,6 +38,19 @@ namespace VoiceCraft.Network.Audio.Effects
 
             return !string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) &&
                    from.WorldId == to.WorldId;
+        }
+        
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke();
+            }
+            finally
+            {
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
+            }
         }
     }
     

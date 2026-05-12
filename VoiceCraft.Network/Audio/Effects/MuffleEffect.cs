@@ -1,27 +1,35 @@
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio;
-using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects
 {
     public class MuffleEffect : IAudioEffect
     {
-        private readonly Dictionary<VoiceCraftEntity, BiQuadFilter> _biquadFilters = new();
+        public static int SampleRate => Constants.SampleRate;
 
+        public EffectType EffectType => EffectType.Muffle;
+        
+        [JsonIgnore]
+        public ushort Bitmask { get; set; }
+        
+        public event Action? OnDisposed;
+        
         public float WetDry
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
-
-        public static int SampleRate => Constants.SampleRate;
-
-        public EffectType EffectType => EffectType.Muffle;
+        
+        public void Update(IAudioEffect audioEffect)
+        {
+            if(audioEffect is not MuffleEffect muffleEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = muffleEffect.Bitmask;
+            WetDry = muffleEffect.WetDry;
+        }
 
         public void Serialize(NetDataWriter writer)
         {
@@ -32,55 +40,17 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             WetDry = reader.GetFloat();
         }
-
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
-        {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((bitmask & effectBitmask) == 0)
-                return;
-
-            var biQuadFilter = GetOrCreateBiQuadFilter(from);
-            biQuadFilter.SetLowPassFilter(SampleRate, 200, 1);
-
-            for (var i = 0; i < buffer.Length; i++)
-            {
-                var output = biQuadFilter.Transform(buffer[i]);
-                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
-            }
-        }
-
-        public void Reset()
-        {
-            lock (_biquadFilters)
-            {
-                _biquadFilters.Clear();
-            }
-        }
-
+        
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-        }
-
-        private BiQuadFilter GetOrCreateBiQuadFilter(VoiceCraftEntity entity)
-        {
-            lock (_biquadFilters)
+            try
             {
-                if (_biquadFilters.TryGetValue(entity, out var biQuadFilter))
-                    return biQuadFilter;
-                biQuadFilter = new BiQuadFilter();
-                _biquadFilters.TryAdd(entity, biQuadFilter);
-                entity.OnDestroyed += RemoveBiQuadFilter;
-                return biQuadFilter;
+                OnDisposed?.Invoke();
             }
-        }
-
-        private void RemoveBiQuadFilter(VoiceCraftEntity entity)
-        {
-            lock (_biquadFilters)
+            finally
             {
-                _biquadFilters.Remove(entity);
-                entity.OnDestroyed -= RemoveBiQuadFilter;
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
             }
         }
     }

@@ -1,16 +1,10 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Interfaces;
-using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.Systems;
 
@@ -18,9 +12,10 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
+
     private volatile ImmutableList<KeyValuePair<ushort, IAudioEffect>> _audioEffectsSnapshot =
         ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
-    private readonly Lock _lock = new();
+    
     public ImmutableList<KeyValuePair<ushort, IAudioEffect>> AudioEffects => _audioEffectsSnapshot;
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
@@ -63,8 +58,10 @@ public class AudioEffectSystem : IDisposable
             }
 
             if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && !ReferenceEquals(oldEffect, effect))
-                oldEffect.Dispose();
-            _audioEffects[bitmask] = effect;
+                oldEffect.Update(effect);
+            else
+                _audioEffects[bitmask] = effect;
+
             _audioEffectsSnapshot = _audioEffects.ToImmutableList();
             OnEffectSet?.Invoke(bitmask, effect);
         }
@@ -93,71 +90,9 @@ public class AudioEffectSystem : IDisposable
         }
     }
 
-    public int Read(Span<float> buffer, VoiceCraftClient client)
+    public virtual int Read(Span<float> buffer)
     {
-        var bufferLength = buffer.Length;
-        var outputBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
-        outputBuffer.AsSpan(0, bufferLength).Clear();
-        try
-        {
-            var read = 0;
-            Parallel.ForEach(client.World.Entities.OfType<VoiceCraftClientEntity>(), x =>
-            {
-                var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
-                var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
-                entitySpanBuffer.Clear();
-                try
-                {
-                    var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
-                    lock (_lock)
-                    {
-                        read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
-                        // ReSharper disable once AccessToModifiedClosure
-                        read = Math.Max(read, entityRead);
-                    }
-                }
-                finally
-                {
-                    ArrayPool<float>.Shared.Return(entityBuffer);
-                }
-            });
-
-            outputBuffer[..read].CopyTo(buffer);
-            return read;
-        }
-        finally
-        {
-            ArrayPool<float>.Shared.Return(outputBuffer);
-        }
-    }
-
-    private int ProcessEntityAudio(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
-    {
-        var monoCount = buffer.Length / 2;
-        var monoBuffer = ArrayPool<float>.Shared.Rent(monoCount);
-        var monoSpanBuffer = monoBuffer.AsSpan(0, monoCount);
-        monoSpanBuffer.Clear();
-
-        try
-        {
-            var read = from.Read(monoSpanBuffer);
-            if (read <= 0) read = monoCount; //Do a full read.
-            read = SampleMonoToStereo.Read(monoSpanBuffer[..read], buffer); //To Stereo
-            ProcessEntityEffects(buffer[..read], from, to); //Process Effects
-            read = SampleVolume.Read(buffer[..read], from.Volume); //Adjust the volume of the entity.
-            return read;
-        }
-        finally
-        {
-            ArrayPool<float>.Shared.Return(monoBuffer);
-        }
-    }
-
-    private void ProcessEntityEffects(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
-    {
-        var snapshot = _audioEffectsSnapshot;
-        foreach (var effect in snapshot)
-            effect.Value.Process(from, to, effect.Key, buffer);
+        throw new NotSupportedException();
     }
 
     public void Dispose()

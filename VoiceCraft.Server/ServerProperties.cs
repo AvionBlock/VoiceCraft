@@ -126,6 +126,7 @@ public class ServerProperties
             if (effect.Key == 0) continue;
             var audioEffect = IAudioEffect.FromJsonElement(effect.Value);
             if (audioEffect == null) continue;
+            audioEffect.Bitmask = effect.Key;
             DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
         }
     }

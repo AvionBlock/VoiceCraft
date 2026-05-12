@@ -1,7 +1,6 @@
 using System;
 using System.Text.Json;
 using LiteNetLib.Utils;
-using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio.Effects;
 
 namespace VoiceCraft.Network.Interfaces
@@ -9,10 +8,9 @@ namespace VoiceCraft.Network.Interfaces
     public interface IAudioEffect : INetSerializable, IDisposable
     {
         EffectType EffectType { get; }
-
-        void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer);
-
-        void Reset();
+        ushort Bitmask { get; set; }
+        event Action? OnDisposed;
+        void Update(IAudioEffect audioEffect);
 
         public static IAudioEffect? FromJsonElement(JsonElement element)
         {
@@ -29,28 +27,31 @@ namespace VoiceCraft.Network.Interfaces
                     break;
                 case EffectType.Proximity:
                     audioEffect =
-                        element.Deserialize<ProximityEffect>(ProximityEffectGenerationContext.Default.ProximityEffect);
+                        element.Deserialize<ProximityEffect>(
+                            ProximityEffectGenerationContext.Default.ProximityEffect);
                     break;
                 case EffectType.Directional:
                     audioEffect =
-                        element.Deserialize<DirectionalEffect>(DirectionalEffectGenerationContext.Default
-                            .DirectionalEffect);
+                        element.Deserialize<DirectionalEffect>(
+                            DirectionalEffectGenerationContext.Default.DirectionalEffect);
                     break;
                 case EffectType.ProximityEcho:
                     audioEffect =
-                        element.Deserialize<ProximityEchoEffect>(ProximityEchoEffectGenerationContext.Default
-                            .ProximityEchoEffect);
+                        element.Deserialize<ProximityEchoEffect>(
+                            ProximityEchoEffectGenerationContext.Default.ProximityEchoEffect);
                     break;
                 case EffectType.Echo:
-                    audioEffect = element.Deserialize<EchoEffect>(EchoEffectGenerationContext.Default.EchoEffect);
+                    audioEffect = element.Deserialize<EchoEffect>(
+                        EchoEffectGenerationContext.Default.EchoEffect);
                     break;
                 case EffectType.ProximityMuffle:
                     audioEffect =
-                        element.Deserialize<ProximityMuffleEffect>(ProximityMuffleEffectGenerationContext.Default
-                            .ProximityMuffleEffect);
+                        element.Deserialize<ProximityMuffleEffect>(
+                            ProximityMuffleEffectGenerationContext.Default.ProximityMuffleEffect);
                     break;
                 case EffectType.Muffle:
-                    audioEffect = element.Deserialize<MuffleEffect>(MuffleEffectGenerationContext.Default.MuffleEffect);
+                    audioEffect = element.Deserialize<MuffleEffect>(
+                        MuffleEffectGenerationContext.Default.MuffleEffect);
                     break;
                 case EffectType.None:
                 default:

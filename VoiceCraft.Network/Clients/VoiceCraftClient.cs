@@ -129,7 +129,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     public int Read(Span<float> buffer)
     {
-        return AudioEffectSystem.Read(buffer, this);
+        return AudioEffectSystem.Read(buffer);
     }
 
     public void Write(Span<float> buffer)
