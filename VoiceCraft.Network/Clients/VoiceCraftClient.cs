@@ -167,18 +167,16 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 buffer,
                 encodeBuffer.AsSpan(0, Constants.MaximumEncodedBytes),
                 Constants.FrameSize);
-            if (bytesEncoded <= 0)
+            switch (bytesEncoded)
             {
-                return;
+                case <= 0:
+                case > Constants.MaximumEncodedBytes:
+                    return;
+                default:
+                    SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
+                        .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
+                    break;
             }
-
-            if (bytesEncoded > Constants.MaximumEncodedBytes)
-            {
-                return;
-            }
-
-            SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
-                .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
         }
         finally
         {
@@ -338,6 +336,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.InfoResponse:
                 ProcessUnconnectedPacket(reader, onParsed, () => new VcInfoResponsePacket());
                 break;
+            case VcPacketType.InfoRequest:
+            case VcPacketType.LoginRequest:
+            case VcPacketType.LogoutRequest:
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
             case VcPacketType.SetNameRequest:
