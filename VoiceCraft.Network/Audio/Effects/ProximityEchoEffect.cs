@@ -1,7 +1,10 @@
 using System;
+using System.Numerics;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects
@@ -40,6 +43,9 @@ namespace VoiceCraft.Network.Audio.Effects
             Delay = 0.5f;
         }
         
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+            new ProximityEchoEffectProcessor(this, entity);
+        
         public void Update(IAudioEffect audioEffect)
         {
             if(audioEffect is not ProximityEchoEffect proximityEchoEffect)
@@ -73,6 +79,61 @@ namespace VoiceCraft.Network.Audio.Effects
             finally
             {
                 OnDisposed = null;
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+    
+    public class ProximityEchoEffectProcessor : IAudioEffectProcessor
+    {
+        private readonly ProximityEchoEffect _effect;
+        private readonly FractionalDelayLine _delayLine;
+        
+        public IAudioEffect Effect => _effect;
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
+
+        public ProximityEchoEffectProcessor(ProximityEchoEffect effect, VoiceCraftEntity entity)
+        {
+            _effect = effect;
+            Entity = entity;
+            _delayLine = new FractionalDelayLine(Constants.SampleRate, _effect.Delay, InterpolationMode.Nearest);
+            Effect.OnDisposed += _ => Dispose();
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & Effect.Bitmask) == 0) return;
+            
+            var factor = 0f;
+            if (_effect.Range != 0)
+            {
+                //The range at which the echo will take effect. Never set to 1.0 as it may cause infinite echo.
+                var range = Math.Clamp(Vector3.Distance(Entity.Position, to.Position) / _effect.Range, 0.0f, 0.9f);
+                factor = Math.Max(Entity.CaveFactor, to.CaveFactor) * range;
+            }
+            
+            _delayLine.Ensure(Constants.SampleRate, _effect.Delay);
+            var delay = Constants.SampleRate * _effect.Delay;
+            
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                var delayed = _delayLine.Read(delay) * factor;
+                var output = buffer[i] + delayed;
+                _delayLine.Write(output);
+                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+            }
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
                 GC.SuppressFinalize(this);
             }
         }

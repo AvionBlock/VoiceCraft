@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using LiteNetLib.Utils;
+using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio.Effects;
 
 namespace VoiceCraft.Network.Interfaces
@@ -11,6 +12,7 @@ namespace VoiceCraft.Network.Interfaces
         ushort Bitmask { get; set; }
         event Action<IAudioEffect>? OnDisposed;
         void Update(IAudioEffect audioEffect);
+        IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity);
 
         public static IAudioEffect? FromJsonElement(JsonElement element)
         {

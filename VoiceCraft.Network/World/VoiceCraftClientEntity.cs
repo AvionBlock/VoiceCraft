@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
@@ -156,6 +157,16 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         {
             _jitterBuffer.Reset();
             _decoder.Dispose();
+        }
+
+        lock (_audioLock)
+        {
+            var effects = _effectProcessors.ToArray();
+            _effectProcessors.Clear();
+            foreach (var effect in effects)
+            {
+                effect.Value.Dispose();
+            }
         }
 
         base.Destroy();

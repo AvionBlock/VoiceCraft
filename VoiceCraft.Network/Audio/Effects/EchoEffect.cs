@@ -2,6 +2,8 @@ using System;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects;
@@ -40,6 +42,9 @@ public class EchoEffect : IAudioEffect
         Delay = 0.5f;
     }
     
+    public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+        new EchoEffectProcessor(this, entity);
+    
     public void Update(IAudioEffect audioEffect)
     {
         if(audioEffect is not EchoEffect echoEffect)
@@ -77,6 +82,53 @@ public class EchoEffect : IAudioEffect
         }
     }
 }
+
+    public class EchoEffectProcessor : IAudioEffectProcessor
+    {
+        private readonly EchoEffect _effect;
+        private readonly FractionalDelayLine _delayLine;
+        
+        public IAudioEffect Effect => _effect;
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
+
+        public EchoEffectProcessor(EchoEffect effect, VoiceCraftEntity entity)
+        {
+            _effect = effect;
+            Entity = entity;
+            _delayLine = new FractionalDelayLine(Constants.SampleRate, _effect.Delay, InterpolationMode.Nearest);
+            Effect.OnDisposed += _ => Dispose();
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & Effect.Bitmask) == 0) return;
+            
+            _delayLine.Ensure(Constants.SampleRate, _effect.Delay);
+            var delay = Constants.SampleRate * _effect.Delay;
+            
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                var delayed = _delayLine.Read(delay);
+                var output = buffer[i] + delayed * _effect.Feedback;
+                _delayLine.Write(output);
+                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+            }
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(EchoEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]

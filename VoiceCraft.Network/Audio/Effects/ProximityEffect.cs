@@ -3,6 +3,7 @@ using System.Numerics;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
+using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
@@ -11,8 +12,6 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class ProximityEffect : IAudioEffect, IVisible
     {
-        public static int SampleRate => Constants.SampleRate;
-        
         public EffectType EffectType => EffectType.Proximity;
 
         [JsonIgnore]
@@ -28,6 +27,9 @@ namespace VoiceCraft.Network.Audio.Effects
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
+        
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+            new ProximityEffectProcessor(this, entity);
         
         public void Update(IAudioEffect audioEffect)
         {
@@ -70,6 +72,59 @@ namespace VoiceCraft.Network.Audio.Effects
             finally
             {
                 OnDisposed = null;
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+    
+    public class ProximityEffectProcessor : IAudioEffectProcessor
+    {
+        private readonly ProximityEffect _effect;
+        private readonly SampleLerpVolume _lerpVolume;
+        
+        public IAudioEffect Effect => _effect;
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
+
+        public ProximityEffectProcessor(ProximityEffect effect, VoiceCraftEntity entity)
+        {
+            _effect = effect;
+            Entity = entity;
+            _lerpVolume = new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20));
+            Effect.OnDisposed += _ => Dispose();
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & Effect.Bitmask) == 0) return;
+            
+            var range = _effect.MaxRange - _effect.MinRange;
+            if (range == 0) return; //Range is 0. Do not calculate division.
+            var distance = Vector3.Distance(Entity.Position, to.Position);
+            var factor = 1f - Math.Clamp((distance - _effect.MinRange) / range, 0f, 1f);
+            _lerpVolume.TargetVolume = factor;
+            
+            for (var i = 0; i < buffer.Length; i += 2)
+            {
+                //Channel 1
+                var output = _lerpVolume.Transform(buffer[i]);
+                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                //Channel 2
+                output = _lerpVolume.Transform(buffer[i + 1]);
+                buffer[i + 1] = output * _effect.WetDry + buffer[i + 1] * (1.0f - _effect.WetDry);
+                _lerpVolume.Step();
+            }
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
                 GC.SuppressFinalize(this);
             }
         }
