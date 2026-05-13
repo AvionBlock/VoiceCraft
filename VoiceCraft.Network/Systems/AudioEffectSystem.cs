@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Systems;
@@ -11,10 +12,11 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-
     private volatile ImmutableList<KeyValuePair<ushort, IAudioEffect>> _audioEffectsSnapshot =
         ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
     
+    private readonly Lock _lock = new();
+
     public ImmutableList<KeyValuePair<ushort, IAudioEffect>> AudioEffects => _audioEffectsSnapshot;
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
@@ -43,7 +45,7 @@ public class AudioEffectSystem : IDisposable
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
         if (bitmask == ushort.MinValue) return; //Setting a bitmask of 0 does literally nothing.
-        lock (_audioEffects)
+        lock (_lock)
         {
             switch (effect)
             {
@@ -56,11 +58,17 @@ public class AudioEffectSystem : IDisposable
                     return;
             }
 
-            if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && !ReferenceEquals(oldEffect, effect))
-                oldEffect.Update(effect);
-            else
-                _audioEffects[bitmask] = effect;
+            _audioEffects.TryGetValue(bitmask, out var oldEffect);
+            if (oldEffect?.EffectType == effect.EffectType)
+            {
+                oldEffect.Update(effect); //Update old effect with new effect parameters.
+                //Don't need to re-update the snapshot as there have been no effect stack changes.
+                OnEffectSet?.Invoke(bitmask, oldEffect);
+                return;
+            }
 
+            oldEffect?.Dispose(); //Dispose previous effect.
+            _audioEffects[bitmask] = effect;
             _audioEffectsSnapshot = _audioEffects.ToImmutableList();
             OnEffectSet?.Invoke(bitmask, effect);
         }
@@ -68,7 +76,7 @@ public class AudioEffectSystem : IDisposable
 
     public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
     {
-        lock (_audioEffects)
+        lock (_lock)
         {
             return _audioEffects.TryGetValue(bitmask, out effect);
         }
@@ -76,9 +84,10 @@ public class AudioEffectSystem : IDisposable
 
     public void ClearEffects()
     {
-        lock (_audioEffects)
+        lock (_lock)
         {
-            var effects = _audioEffects.ToArray(); //Copy the effects.
+            //Clone snapshot and clear everything.
+            var effects = _audioEffectsSnapshot.ToArray();
             _audioEffects.Clear();
             _audioEffectsSnapshot = ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
             foreach (var effect in effects)

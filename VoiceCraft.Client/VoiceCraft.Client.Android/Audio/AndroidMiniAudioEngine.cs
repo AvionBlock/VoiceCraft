@@ -127,29 +127,15 @@ public class AndroidMiniAudioEngine : AudioEngine
     private void UpdatePlaybackDevices()
     {
         var androidPlaybackDevices = _audioManager.GetDevices(GetDevicesTargets.Outputs);
-        if (androidPlaybackDevices != null)
-        {
-            PlaybackDevices = androidPlaybackDevices.Select(device => new SoundFlow.Structs.DeviceInfo()
-                { Name = $"{device.ProductName} - {device.Type}", Id = device.Id, IsDefault = false }).ToArray();
-        }
-        else
-        {
-            PlaybackDevices = [];
-        }
+        PlaybackDevices = androidPlaybackDevices?.Select(device => new SoundFlow.Structs.DeviceInfo()
+            { Name = $"{device.ProductName} - {device.Type}", Id = device.Id, IsDefault = false }).ToArray() ?? [];
     }
 
     private void UpdateCaptureDevices()
     {
         var androidCaptureDevices = _audioManager.GetDevices(GetDevicesTargets.Inputs);
-        if (androidCaptureDevices != null)
-        {
-            CaptureDevices = androidCaptureDevices.Select(device => new SoundFlow.Structs.DeviceInfo()
-                { Name = $"{device.ProductName} - {device.Type}", Id = device.Id, IsDefault = false }).ToArray();
-        }
-        else
-        {
-            CaptureDevices = [];
-        }
+        CaptureDevices = androidCaptureDevices?.Select(device => new SoundFlow.Structs.DeviceInfo()
+            { Name = $"{device.ProductName} - {device.Type}", Id = device.Id, IsDefault = false }).ToArray() ?? [];
     }
 
     private void OnDeviceDisposing(object? sender, EventArgs e)
@@ -222,6 +208,8 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
             _nativeRecorder.StartRecording();
             Task.Run(RecordingLogic);
             IsRunning = true;
+            
+            Engine.RaiseDeviceStarted(this);
         }
     }
 
@@ -236,6 +224,8 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
                 _nativeRecorder.Stop();
 
             IsRunning = false;
+            
+            Engine.RaiseDeviceStopped(this);
         }
     }
 
@@ -280,11 +270,6 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
 
 internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
 {
-    private delegate void SoundComponentProcessDelegate(SoundComponent component, Span<float> outputBuffer,
-        int channels);
-
-    private static readonly SoundComponentProcessDelegate ProcessComponent = BuildProcessDelegate();
-
     private readonly Lock _lock = new();
     private readonly AudioTrack _nativePlayer;
     private readonly float[] _buffer;
@@ -371,6 +356,8 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             _nativePlayer.Play();
             Task.Run(PlaybackLogic);
             IsRunning = true;
+            
+            Engine.RaiseDeviceStarted(this);
         }
     }
 
@@ -389,6 +376,8 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             }
 
             IsRunning = false;
+            
+            Engine.RaiseDeviceStopped(this);
         }
     }
 
@@ -411,14 +400,16 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
             // Process the audio graph
             var soloed = Engine.GetSoloedComponent();
             if (soloed != null)
-                ProcessComponent(soloed, _buffer, Format.Channels);
+                soloed.Process(_buffer.AsSpan(), Format.Channels);
             else
-                ProcessComponent(MasterMixer, _buffer, Format.Channels);
+                MasterMixer.Process(_buffer.AsSpan(), Format.Channels);
 
             try
             {
                 lock (_lock)
                     _nativePlayer.Write(_buffer, 0, _buffer.Length, WriteMode.Blocking);
+                
+                Engine.RaiseAudioFramesRendered(CachedRenderEventArgs);
             }
             catch (Exception)
             {
@@ -427,13 +418,5 @@ internal sealed class AndroidAudioPlaybackDevice : AudioPlaybackDevice
         }
 
         Stop();
-    }
-
-    private static SoundComponentProcessDelegate BuildProcessDelegate()
-    {
-        var method = typeof(SoundComponent).GetMethod("Process", BindingFlags.Instance | BindingFlags.NonPublic);
-        return method == null
-            ? throw new InvalidOperationException("SoundFlow process method not found.")
-            : method.CreateDelegate<SoundComponentProcessDelegate>();
     }
 }
