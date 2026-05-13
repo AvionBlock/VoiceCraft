@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
-using VoiceCraft.Core.Audio;
-using VoiceCraft.Core.World;
 using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Audio.Effects
@@ -18,7 +15,7 @@ namespace VoiceCraft.Network.Audio.Effects
         [JsonIgnore]
         public ushort Bitmask { get; set; }
         
-        public event Action? OnDisposed;
+        public event Action<IAudioEffect>? OnDisposed;
 
         public float WetDry
         {
@@ -48,7 +45,7 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             try
             {
-                OnDisposed?.Invoke();
+                OnDisposed?.Invoke(this);
             }
             finally
             {

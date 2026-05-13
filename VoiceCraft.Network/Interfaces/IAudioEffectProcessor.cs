@@ -3,8 +3,9 @@ using VoiceCraft.Core.World;
 
 namespace VoiceCraft.Network.Interfaces;
 
-public interface IAudioEffectProcessor<T> : IDisposable where T : IAudioEffect
+public interface IAudioEffectProcessor : IDisposable
 {
-    T AudioEffect { get; }
+    IAudioEffect Effect { get; }
+    event Action<IAudioEffectProcessor>? OnDisposed;
     void Process(VoiceCraftEntity to, Span<float> buffer);
 }

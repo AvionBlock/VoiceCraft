@@ -15,7 +15,7 @@ public class EchoEffect : IAudioEffect
     [JsonIgnore]
     public ushort Bitmask { get; set; }
     
-    public event Action? OnDisposed;
+    public event Action<IAudioEffect>? OnDisposed;
 
     public float Delay
     {
@@ -68,7 +68,7 @@ public class EchoEffect : IAudioEffect
     {
         try
         {
-            OnDisposed?.Invoke();
+            OnDisposed?.Invoke(this);
         }
         finally
         {

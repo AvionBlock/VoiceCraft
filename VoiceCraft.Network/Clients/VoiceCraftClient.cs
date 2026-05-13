@@ -589,12 +589,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEffectUpdatedPacket(VcOnEffectUpdatedPacket packet)
     {
-        if (packet.EffectType == EffectType.None)
-        {
-            AudioEffectSystem.SetEffect(packet.Bitmask, null);
-            return;
-        }
-
         AudioEffectSystem.SetEffect(packet.Bitmask, packet.Effect);
     }
 

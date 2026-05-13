@@ -14,7 +14,7 @@ namespace VoiceCraft.Network.Audio.Effects
         [JsonIgnore]
         public ushort Bitmask { get; set; }
         
-        public event Action? OnDisposed;
+        public event Action<IAudioEffect>? OnDisposed;
         
         public void Update(IAudioEffect audioEffect)
         {
@@ -44,7 +44,7 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             try
             {
-                OnDisposed?.Invoke();
+                OnDisposed?.Invoke(this);
             }
             finally
             {

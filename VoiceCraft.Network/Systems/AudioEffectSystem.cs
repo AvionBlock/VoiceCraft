@@ -12,9 +12,10 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
+
     private volatile ImmutableList<KeyValuePair<ushort, IAudioEffect>> _audioEffectsSnapshot =
         ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
-    
+
     private readonly Lock _lock = new();
 
     public ImmutableList<KeyValuePair<ushort, IAudioEffect>> AudioEffects => _audioEffectsSnapshot;
@@ -50,8 +51,9 @@ public class AudioEffectSystem : IDisposable
             switch (effect)
             {
                 case null when _audioEffects.Remove(bitmask, out var audioEffect):
-                    audioEffect.Dispose();
                     _audioEffectsSnapshot = _audioEffects.ToImmutableList();
+                    audioEffect.OnDisposed -= RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
+                    audioEffect.Dispose();
                     OnEffectSet?.Invoke(bitmask, null);
                     return;
                 case null:
@@ -67,10 +69,24 @@ public class AudioEffectSystem : IDisposable
                 return;
             }
 
-            oldEffect?.Dispose(); //Dispose previous effect.
+            effect.OnDisposed += RemoveEffect; //Subscribe to new effect.
             _audioEffects[bitmask] = effect;
             _audioEffectsSnapshot = _audioEffects.ToImmutableList();
+            oldEffect?.Dispose(); //Dispose old effect if it exists.
             OnEffectSet?.Invoke(bitmask, effect);
+        }
+
+        return;
+
+        void RemoveEffect(IAudioEffect audioEffect)
+        {
+            lock (_lock)
+            {
+                audioEffect.OnDisposed -= RemoveEffect;
+                if (_audioEffects.Remove(bitmask, out _))
+                    //Update Snapshot if successfully removed.
+                    _audioEffectsSnapshot = _audioEffects.ToImmutableList();
+            }
         }
     }
 

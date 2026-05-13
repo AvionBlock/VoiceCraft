@@ -9,7 +9,7 @@ namespace VoiceCraft.Network.Interfaces
     {
         EffectType EffectType { get; }
         ushort Bitmask { get; set; }
-        event Action? OnDisposed;
+        event Action<IAudioEffect>? OnDisposed;
         void Update(IAudioEffect audioEffect);
 
         public static IAudioEffect? FromJsonElement(JsonElement element)

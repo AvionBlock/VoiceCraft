@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio;
+using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.World;
 
@@ -12,17 +15,20 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 {
     private readonly IAudioDecoder _decoder;
     private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(100));
-
     private readonly SampleBufferProvider<float> _outputBuffer = new(Constants.OutputBufferSize)
         { PrefillSize = Constants.PrefillBufferSize };
-
     private DateTime _lastPacket = DateTime.MinValue;
+    private readonly Dictionary<ushort, IAudioEffectProcessor> _effectProcessors = new();
+
+    private readonly Lock _lock = new(); // For packet decoding.
+    private readonly Lock _audioLock = new(); // For reading, writing or changing effect processor stack.
 
     public VoiceCraftClientEntity(int id, IAudioDecoder decoder) : base(id)
     {
         _decoder = decoder;
         Task.Run(TaskLogicAsync);
     }
+    
 
     public bool IsVisible
     {
@@ -78,6 +84,39 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     public event Action<VoiceCraftClientEntity>? OnStartedSpeaking;
     public event Action<VoiceCraftClientEntity>? OnStoppedSpeaking;
 
+    public void SetEffectProcessor(ushort bitmask, IAudioEffectProcessor? processor)
+    {
+        lock (_audioLock)
+        {
+            switch (processor)
+            {
+                case null when _effectProcessors.Remove(bitmask, out var effectProcessor):
+                    effectProcessor.OnDisposed -= RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
+                    effectProcessor.Dispose();
+                    return;
+                case null:
+                    return;
+            }
+
+            if (!_effectProcessors.TryGetValue(bitmask, out var oldProcessor))
+                processor.OnDisposed += RemoveEffect; //Subscribe to effect dispose if it's a new effect.
+            _effectProcessors[bitmask] = processor;
+            
+            //Dispose old processor if it exists.
+            oldProcessor?.Dispose();
+        }
+        return;
+        
+        void RemoveEffect(IAudioEffectProcessor effectProcessor)
+        {
+            lock (_audioLock)
+            {
+                effectProcessor.OnDisposed -= RemoveEffect;
+                _effectProcessors.Remove(bitmask, out _);
+            }
+        }
+    }
+
     public int Read(Span<float> buffer)
     {
         var read = 0;
@@ -87,7 +126,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             return read;
         }
 
-        lock (_outputBuffer)
+        lock (_audioLock)
             read = _outputBuffer.Read(buffer);
         
         if (read <= 0)
@@ -102,7 +141,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public override void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
     {
-        lock (_jitterBuffer)
+        lock (_lock)
         {
             var packet = new JitterPacket(timestamp, buffer);
             _jitterBuffer.Add(packet);
@@ -113,8 +152,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public override void Destroy()
     {
-        lock (_decoder)
-        lock (_jitterBuffer)
+        lock(_lock)
         {
             _jitterBuffer.Reset();
             _decoder.Dispose();
@@ -131,8 +169,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     private void ClearBuffer()
     {
-        lock (_jitterBuffer)
-        lock (_outputBuffer)
+        lock (_lock)
         {
             _outputBuffer.Reset();
             _jitterBuffer.Reset(); //Also reset the jitter buffer.
@@ -144,7 +181,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         if (buffer.Length < Constants.FrameSize)
             return 0;
 
-        lock (_jitterBuffer)
+        lock (_lock)
         {
             try
             {
@@ -181,7 +218,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 Array.Clear(readBuffer); //Clear Read Buffer.
                 var read = GetNextPacket(readBuffer);
                 if (read <= 0 || UserMuted) continue;
-                lock (_outputBuffer)
+                lock (_audioLock)
                     _outputBuffer.Write(readBuffer.AsSpan(0, read));
             }
             catch
