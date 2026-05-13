@@ -107,12 +107,11 @@ namespace VoiceCraft.Network.Audio.Effects
             
             for (var i = 0; i < buffer.Length; i += 2)
             {
-                //Channel 1
-                var output = _lerpVolume.Transform(buffer[i]);
-                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
-                //Channel 2
-                output = _lerpVolume.Transform(buffer[i + 1]);
-                buffer[i + 1] = output * _effect.WetDry + buffer[i + 1] * (1.0f - _effect.WetDry);
+                for (var c = 0; c < 2 && c + i < buffer.Length; c++)
+                {
+                    var output = _lerpVolume.Transform(buffer[i]);
+                    buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                }
                 _lerpVolume.Step();
             }
         }

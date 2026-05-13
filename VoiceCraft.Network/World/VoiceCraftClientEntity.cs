@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,8 +17,11 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 {
     private readonly IAudioDecoder _decoder;
     private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(100));
-    private readonly SampleBufferProvider<float> _outputBuffer = new(Constants.OutputBufferSize)
-        { PrefillSize = Constants.PrefillBufferSize };
+
+    private readonly SampleBufferProvider<float> _outputBuffer =
+        new(Constants.OutputBufferSize * Constants.PlaybackChannels)
+            { PrefillSize = Constants.PrefillBufferSize * Constants.PlaybackChannels };
+
     private DateTime _lastPacket = DateTime.MinValue;
     private readonly Dictionary<ushort, IAudioEffectProcessor> _effectProcessors = new();
 
@@ -29,7 +33,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         _decoder = decoder;
         Task.Run(TaskLogicAsync);
     }
-    
+
 
     public bool IsVisible
     {
@@ -92,7 +96,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             switch (processor)
             {
                 case null when _effectProcessors.Remove(bitmask, out var effectProcessor):
-                    effectProcessor.OnDisposed -= RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
+                    effectProcessor.OnDisposed -=
+                        RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
                     effectProcessor.Dispose();
                     return;
                 case null:
@@ -102,12 +107,13 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             if (!_effectProcessors.TryGetValue(bitmask, out var oldProcessor))
                 processor.OnDisposed += RemoveEffect; //Subscribe to effect dispose if it's a new effect.
             _effectProcessors[bitmask] = processor;
-            
+
             //Dispose old processor if it exists.
             oldProcessor?.Dispose();
         }
+
         return;
-        
+
         void RemoveEffect(IAudioEffectProcessor effectProcessor)
         {
             lock (_audioLock)
@@ -115,6 +121,14 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 effectProcessor.OnDisposed -= RemoveEffect;
                 _effectProcessors.Remove(bitmask, out _);
             }
+        }
+    }
+
+    public bool TryGetEffectProcessor(ushort bitmask, [NotNullWhen(true)] out IAudioEffectProcessor? effect)
+    {
+        lock (_audioLock)
+        {
+            return _effectProcessors.TryGetValue(bitmask, out effect);
         }
     }
 
@@ -129,7 +143,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
         lock (_audioLock)
             read = _outputBuffer.Read(buffer);
-        
+
         if (read <= 0)
         {
             Speaking = false;
@@ -153,7 +167,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public override void Destroy()
     {
-        lock(_lock)
+        lock (_lock)
         {
             _jitterBuffer.Reset();
             _decoder.Dispose();
@@ -215,6 +229,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     {
         var startTick = Environment.TickCount;
         var readBuffer = new float[Constants.FrameSize];
+        var stereoBuffer = new float[Constants.FrameSize * Constants.PlaybackChannels];
         while (!Destroyed)
             try
             {
@@ -227,10 +242,13 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
                 startTick += Constants.FrameSizeMs; //Step Forwards.
                 Array.Clear(readBuffer); //Clear Read Buffer.
+                Array.Clear(stereoBuffer); //Clear Stereo Buffer.
+
                 var read = GetNextPacket(readBuffer);
+                read = SampleMonoToStereo.Read(readBuffer.AsSpan(0, read), stereoBuffer); //To Stereo
                 if (read <= 0 || UserMuted) continue;
                 lock (_audioLock)
-                    _outputBuffer.Write(readBuffer.AsSpan(0, read));
+                    _outputBuffer.Write(stereoBuffer.AsSpan(0, read));
             }
             catch
             {

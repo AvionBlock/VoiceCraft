@@ -1,10 +1,16 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using VoiceCraft.Core.Audio;
+using VoiceCraft.Core.World;
+using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Interfaces;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.Systems;
 
@@ -114,9 +120,42 @@ public class AudioEffectSystem : IDisposable
         }
     }
 
-    public virtual int Read(Span<float> buffer)
+    public int Read(VoiceCraftClient client, Span<float> buffer)
     {
-        throw new NotSupportedException();
+        var bufferLength = buffer.Length;
+        var outputBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
+        outputBuffer.AsSpan(0, bufferLength).Clear();
+        try
+        {
+            var read = 0;
+            Parallel.ForEach(client.World.Entities.OfType<VoiceCraftClientEntity>(), x =>
+            {
+                var entityBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
+                var entitySpanBuffer = entityBuffer.AsSpan(0, bufferLength);
+                entitySpanBuffer.Clear();
+                try
+                {
+                    var entityRead = ProcessEntityAudio(x, client, entitySpanBuffer);
+                    lock (_lock)
+                    {
+                        read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
+                        // ReSharper disable once AccessToModifiedClosure
+                        read = Math.Max(read, entityRead);
+                    }
+                }
+                finally
+                {
+                    ArrayPool<float>.Shared.Return(entityBuffer);
+                }
+            });
+
+            outputBuffer[..read].CopyTo(buffer);
+            return read;
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(outputBuffer);
+        }
     }
 
     public void Dispose()
@@ -130,5 +169,29 @@ public class AudioEffectSystem : IDisposable
         if (!disposing) return;
         ClearEffects();
         OnEffectSet = null;
+    }
+
+    private int ProcessEntityAudio(VoiceCraftClientEntity from, VoiceCraftEntity to, Span<float> buffer)
+    {
+        var read = from.Read(buffer);
+        if (read <= 0) read = buffer.Length; //Do a full read.
+        ProcessEntityEffects(from, to, buffer[..read]); //Process Effects
+        read = SampleVolume.Read(buffer[..read], from.Volume); //Adjust the volume of the entity.
+        return read;
+    }
+
+    private void ProcessEntityEffects(VoiceCraftClientEntity from, VoiceCraftEntity to, Span<float> buffer)
+    {
+        var snapshot = _audioEffectsSnapshot;
+        foreach (var effect in snapshot)
+        {
+            if (!from.TryGetEffectProcessor(effect.Key, out var processor))
+            {
+                processor = effect.Value.GetProcessor(from);
+                from.SetEffectProcessor(effect.Key, processor);
+            }
+
+            processor.Process(to, buffer);
+        }
     }
 }

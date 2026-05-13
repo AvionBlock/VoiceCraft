@@ -11,26 +11,25 @@ namespace VoiceCraft.Network.Audio.Effects
     public class DirectionalEffect : IAudioEffect
     {
         public static int SampleRate => Constants.SampleRate;
-        
+
         public EffectType EffectType => EffectType.Directional;
-        
-        [JsonIgnore]
-        public ushort Bitmask { get; set; }
-        
+
+        [JsonIgnore] public ushort Bitmask { get; set; }
+
         public event Action<IAudioEffect>? OnDisposed;
-        
+
         public float WetDry
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
-        
+
         public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
             new DirectionalEffectProcessor(this, entity);
 
         public void Update(IAudioEffect audioEffect)
         {
-            if(audioEffect is not DirectionalEffect directionalEffect)
+            if (audioEffect is not DirectionalEffect directionalEffect)
                 throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
             Bitmask = directionalEffect.Bitmask;
             WetDry = directionalEffect.WetDry;
@@ -59,12 +58,11 @@ namespace VoiceCraft.Network.Audio.Effects
             }
         }
     }
-    
+
     public class DirectionalEffectProcessor : IAudioEffectProcessor
     {
         private readonly DirectionalEffect _effect;
-        private readonly SampleLerpVolume _lerpVolume1;
-        private readonly SampleLerpVolume _lerpVolume2;
+        private readonly SampleLerpVolume[] _lerpVolume;
         public IAudioEffect Effect => _effect;
         public VoiceCraftEntity Entity { get; }
         public event Action<IAudioEffectProcessor>? OnDisposed;
@@ -73,8 +71,11 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             _effect = effect;
             Entity = entity;
-            _lerpVolume1 = new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20));
-            _lerpVolume2 = new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20));
+            _lerpVolume =
+            [
+                new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20)),
+                new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20))
+            ];
             Effect.OnDisposed += _ => Dispose();
         }
 
@@ -87,20 +88,18 @@ namespace VoiceCraft.Network.Audio.Effects
                               to.Rotation.Y * Math.PI / 180);
             var left = (float)Math.Max(0.5 - Math.Cos(rot) * 0.5, 0.2);
             var right = (float)Math.Max(0.5 + Math.Cos(rot) * 0.5, 0.2);
-            
-            _lerpVolume1.TargetVolume = left;
-            _lerpVolume2.TargetVolume = right;
 
-            for (var i = 0; i < buffer.Length; i += 2)
+            _lerpVolume[0].TargetVolume = left;
+            _lerpVolume[1].TargetVolume = right;
+            
+            for (var i = 0; i < buffer.Length; i++)
             {
-                var leftOutput = _lerpVolume1.Transform(buffer[i]);
-                var rightOutput = _lerpVolume2.Transform(buffer[i + 1]);
-                
-                buffer[i] = leftOutput * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
-                buffer[i + 1] = rightOutput * _effect.WetDry + buffer[i + 1] * (1.0f - _effect.WetDry);
-                
-                _lerpVolume1.Step();
-                _lerpVolume2.Step();
+                for (var c = 0; c < 2 && c + i < buffer.Length; c++)
+                {
+                    var output = _lerpVolume[c].Transform(buffer[i]);
+                    buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                    _lerpVolume[c].Step();
+                }
             }
         }
 
@@ -116,7 +115,7 @@ namespace VoiceCraft.Network.Audio.Effects
             }
         }
     }
-    
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(DirectionalEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
     public partial class DirectionalEffectGenerationContext : JsonSerializerContext;
