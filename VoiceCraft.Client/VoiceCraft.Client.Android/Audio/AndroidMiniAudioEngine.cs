@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Media;
@@ -174,7 +173,9 @@ internal sealed class AndroidAudioCaptureDevice : AudioCaptureDevice
             AAudioInputPreset.Camcorder => AudioSource.Camcorder,
             AAudioInputPreset.VoiceRecognition => AudioSource.VoiceRecognition,
             AAudioInputPreset.VoiceCommunication => AudioSource.VoiceCommunication,
+            #pragma warning disable
             AAudioInputPreset.Unprocessed => AudioSource.Unprocessed,
+            #pragma warning restore
             _ => AudioSource.Default
         };
         var channelMask = Format.Channels switch
