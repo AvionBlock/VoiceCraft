@@ -80,13 +80,16 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public int Read(Span<float> buffer)
     {
+        var read = 0;
         if (UserMuted)
         {
             Speaking = false;
-            return 0;
+            return read;
         }
 
-        var read = _outputBuffer.Read(buffer);
+        lock (_outputBuffer)
+            read = _outputBuffer.Read(buffer);
+        
         if (read <= 0)
         {
             Speaking = false;
@@ -129,6 +132,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     private void ClearBuffer()
     {
         lock (_jitterBuffer)
+        lock (_outputBuffer)
         {
             _outputBuffer.Reset();
             _jitterBuffer.Reset(); //Also reset the jitter buffer.
@@ -177,7 +181,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 Array.Clear(readBuffer); //Clear Read Buffer.
                 var read = GetNextPacket(readBuffer);
                 if (read <= 0 || UserMuted) continue;
-                _outputBuffer.Write(readBuffer.AsSpan(0, read));
+                lock (_outputBuffer)
+                    _outputBuffer.Write(readBuffer.AsSpan(0, read));
             }
             catch
             {
