@@ -11,7 +11,6 @@
         <InfoPlist>Info.plist</InfoPlist>
         <ApplicationVersion>$(Version)</ApplicationVersion>
         <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
-        <ValidateXcodeVersion>false</ValidateXcodeVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <TrimMode>link</TrimMode>
