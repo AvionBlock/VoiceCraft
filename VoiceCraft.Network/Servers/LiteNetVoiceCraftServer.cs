@@ -315,6 +315,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         public uint MaxClients { get; set; } = 100;
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public PositioningType PositioningType { get; set; } = PositioningType.Server;
+        public WebRtcVoiceCraftServer.WebRtcVoiceCraftConfig WebRtc { get; set; } = new();
 
         [JsonConverter(typeof(JsonBooleanConverter))]
         public bool EnableVisibilityDisplay { get; set; } = true;

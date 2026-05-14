@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -98,18 +97,17 @@ public partial class VoiceViewModel(
                 SetService(navigationData.VoiceCraftService);
                 break;
             case VoiceStartNavigationData startNavigationData:
-                backgroundService.StartServiceAsync<VoiceCraftService>((x, updateTitle, updateDescription) =>
+                backgroundService.StartServiceAsync<VoiceCraftService>(async (x, updateTitle, updateDescription) =>
                 {
                     SetService(x);
                     try
                     {
                         x.OnUpdateTitle += updateTitle;
                         x.OnUpdateDescription += updateDescription;
-                        x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port).GetAwaiter().GetResult();
-                        var sw = new SpinWait();
+                        await x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port);
                         while (x.ConnectionState == VcConnectionState.Connected)
                         {
-                            sw.SpinOnce();
+                            await Task.Delay(100);
                         }
                     }
                     finally

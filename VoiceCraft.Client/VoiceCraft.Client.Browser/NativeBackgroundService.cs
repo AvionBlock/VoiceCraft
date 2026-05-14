@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.MacOS;
+namespace VoiceCraft.Client.Browser;
 
-public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBackgroundService
+public sealed class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBackgroundService
 {
-    private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
-    private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
+    private static readonly ConcurrentDictionary<Type, BackgroundTask> Services = new();
 
     public Task StartServiceAsync<T>(Func<T, Action<string>, Action<string>, Task> startAction) where T : notnull
     {
@@ -17,7 +15,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
         if (Services.ContainsKey(backgroundType))
             throw new InvalidOperationException();
 
-        if (BackgroundFactory.Invoke(backgroundType) is not T instance)
+        if (backgroundFactory.Invoke(backgroundType) is not T instance)
             throw new Exception($"Background task of type {backgroundType} is not of type {backgroundType}");
 
         var backgroundTask = new BackgroundTask(instance);
@@ -48,9 +46,8 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
     public void Dispose()
     {
         foreach (var service in Services.Values)
-        {
             service.Dispose();
-        }
+
         GC.SuppressFinalize(this);
     }
 
@@ -60,7 +57,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
         Services.TryRemove(task.TaskInstance.GetType(), out _);
     }
 
-    private class BackgroundTask(object taskInstance) : IDisposable
+    private sealed class BackgroundTask(object taskInstance) : IDisposable
     {
         public event Action<BackgroundTask>? OnCompleted;
         public Task? RunningTask { get; private set; }
@@ -80,12 +77,6 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
                     OnCompleted?.Invoke(this);
                 }
             });
-
-            var sw = new SpinWait();
-            while (RunningTask.Status < TaskStatus.Running)
-            {
-                sw.SpinOnce();
-            }
         }
 
         public void Dispose()
@@ -97,7 +88,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
             }
             catch
             {
-                //Do Nothing
+                // Do nothing.
             }
 
             GC.SuppressFinalize(this);

@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Browser"/>
-        <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" />
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly"/>
     </ItemGroup>
 
     <ItemGroup>

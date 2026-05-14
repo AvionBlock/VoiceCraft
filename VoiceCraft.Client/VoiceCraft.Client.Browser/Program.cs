@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Client.Browser.Audio;
 using VoiceCraft.Client.Browser.Permissions;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.Browser;
 
@@ -23,6 +26,14 @@ internal sealed class Program
         
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
+        App.ServiceCollection.AddSingleton<IBackgroundService>(x => new NativeBackgroundService(x.GetRequiredService));
+        App.ServiceCollection.AddSingleton<IVoiceCraftAudioService, BrowserAudioService>();
+        App.ServiceCollection.AddTransient<IAudioEncoder, BrowserOpusAudioEncoder>();
+        App.ServiceCollection.AddTransient<IAudioDecoder, BrowserOpusAudioDecoder>();
+        App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
+            new WebRtcVoiceCraftClient(
+                x.GetRequiredService<IAudioEncoder>(),
+                x.GetRequiredService<IAudioDecoder>));
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 
         await BuildAvaloniaApp()
@@ -53,5 +64,6 @@ internal sealed class Program
         await JSHost.ImportAsync("audio.js", "/Exports/audio.js");
         await JSHost.ImportAsync("microphonePermission.js", "/Exports/microphonePermission.js");
         await JSHost.ImportAsync("storage.js", "/Exports/storage.js");
+        await JSHost.ImportAsync("webrtc.js", "/Exports/webrtc.js");
     }
 }

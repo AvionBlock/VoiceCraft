@@ -24,6 +24,7 @@ public static class App
 
         //Servers
         var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
+        var webRtcServer = Program.ServiceProvider.GetRequiredService<WebRtcVoiceCraftServer>();
         var mcWssMcApiServer = Program.ServiceProvider.GetRequiredService<McWssMcApiServer>();
         var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
         var tcpMcApiServer = Program.ServiceProvider.GetRequiredService<TcpMcApiServer>();
@@ -61,12 +62,14 @@ public static class App
 
             //Setup Servers
             liteNetServer.Config = properties.VoiceCraftConfig;
+            webRtcServer.VoiceCraftConfig = properties.VoiceCraftConfig;
             mcWssMcApiServer.Config = properties.McWssConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
             tcpMcApiServer.Config = properties.McTcpConfig;
 
             //Server Startup
             StartServer(liteNetServer);
+            StartServer(webRtcServer);
             StartServer(httpMcApiServer);
             StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
@@ -82,6 +85,10 @@ public static class App
                 "[green]VoiceCraft[/]",
                 liteNetServer.Config.Port.ToString(),
                 "[aqua]UDP[/]");
+            serverSetupTable.AddRow(
+                $"[{(webRtcServer.Config.Enabled ? "green" : "red")}]VoiceCraft WebRTC[/]",
+                webRtcServer.Config.Enabled ? webRtcServer.Config.SignalingUrl : "[red]-[/]",
+                $"[{(webRtcServer.Config.Enabled ? "aqua" : "red")}]WebRTC/WS signaling[/]");
             serverSetupTable.AddRow(
                 $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
                 httpMcApiServer.Config.Enabled ? httpMcApiServer.Config.Hostname : "[red]-[/]",
@@ -128,6 +135,7 @@ public static class App
                 try
                 {
                     liteNetServer.Update();
+                    webRtcServer.Update();
                     httpMcApiServer.Update();
                     tcpMcApiServer.Update();
                     mcWssMcApiServer.Update();
@@ -160,6 +168,7 @@ public static class App
                 }
 
             StopServer(liteNetServer);
+            StopServer(webRtcServer);
             StopServer(httpMcApiServer);
             StopServer(tcpMcApiServer);
             StopServer(mcWssMcApiServer);
@@ -175,6 +184,7 @@ public static class App
         finally
         {
             liteNetServer.Dispose();
+            webRtcServer.Dispose();
             Cts.Dispose();
         }
     }
@@ -195,6 +205,21 @@ public static class App
         try
         {
             AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Starting"));
+            server.Start();
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
+        }
+        catch
+        {
+            throw new Exception(Localizer.Get("VoiceCraftServer.Exceptions.Failed"));
+        }
+    }
+
+    private static void StartServer(WebRtcVoiceCraftServer server)
+    {
+        if (!server.Config.Enabled) return;
+        try
+        {
+            AnsiConsole.WriteLine("Starting VoiceCraft WebRTC server");
             server.Start();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
         }
@@ -256,6 +281,14 @@ public static class App
     private static void StopServer(LiteNetVoiceCraftServer server)
     {
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
+        server.Stop();
+        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopped"));
+    }
+
+    private static void StopServer(WebRtcVoiceCraftServer server)
+    {
+        if (!server.Config.Enabled) return;
+        AnsiConsole.WriteLine("Stopping VoiceCraft WebRTC server");
         server.Stop();
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopped"));
     }

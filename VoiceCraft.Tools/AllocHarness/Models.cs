@@ -18,6 +18,17 @@ internal sealed class FakeNetPeer(Guid userGuid, Guid serverUserGuid, string loc
 internal sealed class FakeVisibleEffect(bool result) : IAudioEffect, IVisible
 {
     public EffectType EffectType => EffectType.Visibility;
+    public ushort Bitmask { get; set; }
+    public event Action<IAudioEffect>? OnDisposed;
+
+    public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+        new FakeEffectProcessor(this, entity);
+
+    public void Update(IAudioEffect audioEffect)
+    {
+        if (audioEffect is FakeVisibleEffect visibleEffect)
+            Bitmask = visibleEffect.Bitmask;
+    }
 
     public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
     {
@@ -42,12 +53,25 @@ internal sealed class FakeVisibleEffect(bool result) : IAudioEffect, IVisible
 
     public void Dispose()
     {
+        OnDisposed?.Invoke(this);
+        OnDisposed = null;
     }
 }
 
 internal sealed class FakeProcessingEffect(int stride) : IAudioEffect
 {
     public EffectType EffectType => EffectType.Echo;
+    public ushort Bitmask { get; set; }
+    public event Action<IAudioEffect>? OnDisposed;
+
+    public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+        new FakeEffectProcessor(this, entity);
+
+    public void Update(IAudioEffect audioEffect)
+    {
+        if (audioEffect is FakeProcessingEffect processingEffect)
+            Bitmask = processingEffect.Bitmask;
+    }
 
     public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
     {
@@ -72,6 +96,27 @@ internal sealed class FakeProcessingEffect(int stride) : IAudioEffect
 
     public void Dispose()
     {
+        OnDisposed?.Invoke(this);
+        OnDisposed = null;
+    }
+}
+
+internal sealed class FakeEffectProcessor(IAudioEffect effect, VoiceCraftEntity entity) : IAudioEffectProcessor
+{
+    public IAudioEffect Effect { get; } = effect;
+    public VoiceCraftEntity Entity { get; } = entity;
+    public event Action<IAudioEffectProcessor>? OnDisposed;
+
+    public void Process(VoiceCraftEntity to, Span<float> buffer)
+    {
+        if (Effect is not FakeProcessingEffect processingEffect) return;
+        processingEffect.Process(Entity, to, Effect.Bitmask, buffer);
+    }
+
+    public void Dispose()
+    {
+        OnDisposed?.Invoke(this);
+        OnDisposed = null;
     }
 }
 

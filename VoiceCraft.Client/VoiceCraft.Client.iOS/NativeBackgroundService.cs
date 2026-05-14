@@ -17,7 +17,7 @@ public class NativeBackgroundService(
     private readonly IosBackgroundExecutionKeeper _backgroundKeeper = new();
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
-    public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
+    public async Task StartServiceAsync<T>(Func<T, Action<string>, Action<string>, Task> startAction) where T : notnull
     {
         await _semaphore.WaitAsync();
         try
@@ -108,13 +108,13 @@ public class NativeBackgroundService(
         public Task? RunningTask { get; private set; }
         public object TaskInstance { get; } = taskInstance;
 
-        public void Start(Action startAction, Action onComplete)
+        public void Start(Func<Task> startAction, Action onComplete)
         {
-            RunningTask = Task.Run(() =>
+            RunningTask = Task.Run(async () =>
             {
                 try
                 {
-                    startAction.Invoke();
+                    await startAction.Invoke();
                 }
                 finally
                 {

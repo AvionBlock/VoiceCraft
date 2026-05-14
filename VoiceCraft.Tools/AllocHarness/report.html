@@ -1,0 +1,1187 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AllocHarness Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <style>
+        body { background: #09111f; color: #e7eef8; }
+        .page-wrap { max-width: 1560px; }
+        .brand { color: #f8fbff; }
+        .brand small { color: #95a9c2; }
+        .surface, .run-card, .benchmark-card, .metric-card { background: #101a2d; border: 1px solid #22314d; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22); }
+        .toolbar { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(12px); background: rgba(9, 17, 31, 0.82); }
+        .table { --bs-table-bg: transparent; --bs-table-color: #e7eef8; --bs-table-border-color: #263650; }
+        .table thead th { color: #9eb4cf; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+        .subtle { color: #9eb4cf; }
+        .pill { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.8rem; background: #18243a; color: #d7e6f6; border: 1px solid #2b4060; }
+        .ratio-good { color: #78e08f; }
+        .ratio-warn { color: #ffb86b; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem; }
+        .summary-card { background: #121f34; border: 1px solid #253756; border-radius: 0.9rem; padding: 0.95rem 1rem; }
+        .summary-card .label { color: #8ea4bf; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .summary-card .value { color: #f8fbff; font-size: 1.35rem; font-weight: 700; }
+        .empty-state { display: none; }
+        .compare-panel { display: none; }
+        .compare-results { display: grid; gap: 1rem; }
+        .compare-table { display: grid; gap: 0; }
+        .compare-grid-head, .compare-run-row { display: grid; grid-template-columns: 72px minmax(260px, 1.4fr) minmax(280px, 1.5fr) repeat(6, minmax(110px, 0.85fr)); gap: 0.75rem; align-items: center; }
+        .compare-grid-head { color: #9eb4cf; font-size: 0.77rem; text-transform: uppercase; letter-spacing: 0.04em; padding-bottom: 0.75rem; }
+        .compare-row-group { border-top: 1px solid #263650; padding: 0.85rem 0; }
+        .compare-run-row { padding: 0.2rem 0; }
+        .compare-scenario-meta { color: #cfe0f2; }
+        .compare-run-meta { color: #d7e6f6; }
+        .compare-divider { margin-top: 0.55rem; border-top: 1px dashed #314665; }
+        .compare-run-chip { display: inline-block; padding: 0.18rem 0.5rem; border-radius: 999px; background: #16233a; border: 1px solid #2b4060; font-size: 0.74rem; color: #d7e6f6; margin-right: 0.35rem; }
+        .delta-better { color: #78e08f; font-weight: 700; }
+        .delta-worse { color: #ff7b72; font-weight: 700; }
+        .delta-flat { color: #c8d5e6; }
+        .run-card[hidden], .benchmark-card[hidden] { display: none !important; }
+        code { color: #a5d8ff; }
+        @media (max-width: 1320px) {
+            .compare-grid-head, .compare-run-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-report-version="4">
+    <main class="page-wrap container py-4 py-lg-5">
+        <section class="mb-4">
+            <h1 class="brand h3 mb-1">AllocHarness Report</h1>
+            <small>Append-only run log for allocation and timing measurements, with filters, history, and run-vs-run comparisons.</small>
+        </section>
+
+        <section class="surface toolbar rounded-4 p-3 p-lg-4 mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label subtle mb-1" for="filter-search">Search</label>
+                    <input id="filter-search" class="form-control bg-dark text-light border-secondary" type="search" placeholder="benchmark, commit, os, dotnet">
+                </div>
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label subtle mb-1" for="filter-benchmark">Benchmark</label>
+                    <select id="filter-benchmark" class="form-select bg-dark text-light border-secondary">
+                        <option value="">All benchmarks</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-xl-2">
+                    <label class="form-label subtle mb-1" for="filter-mode">Mode</label>
+                    <select id="filter-mode" class="form-select bg-dark text-light border-secondary">
+                        <option value="">All modes</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label class="form-label subtle mb-1" for="filter-commit">Commit</label>
+                    <select id="filter-commit" class="form-select bg-dark text-light border-secondary">
+                        <option value="">All commits</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-6 col-xl-2 d-flex gap-2">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" value="" id="filter-latest">
+                        <label class="form-check-label subtle" for="filter-latest">Latest run only</label>
+                    </div>
+                    <button id="filter-reset" class="btn btn-outline-light ms-auto mt-3 mt-md-4" type="button">Reset</button>
+                </div>
+            </div>
+            <div class="summary-grid mt-4">
+                <div class="summary-card">
+                    <div class="label">Visible Runs</div>
+                    <div id="summary-runs" class="value">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">Visible Benchmarks</div>
+                    <div id="summary-benchmarks" class="value">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">Unique Commits</div>
+                    <div id="summary-commits" class="value">0</div>
+                </div>
+                <div class="summary-card">
+                    <div class="label">Latest Visible Run</div>
+                    <div id="summary-latest" class="value fs-6">-</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="surface compare-panel rounded-4 p-3 p-lg-4 mb-4" id="compare-panel">
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-2 mb-3">
+                <div>
+                    <h2 class="h5 mb-1">VS Mode</h2>
+                    <div class="subtle">Choose two runs and optionally a benchmark. Below, each shared benchmark renders as its own comparison block.</div>
+                </div>
+            </div>
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label subtle mb-1" for="compare-left-run">Run A</label>
+                    <select id="compare-left-run" class="form-select bg-dark text-light border-secondary"></select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label subtle mb-1" for="compare-right-run">Run B</label>
+                    <select id="compare-right-run" class="form-select bg-dark text-light border-secondary"></select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label subtle mb-1" for="compare-benchmark">Benchmark</label>
+                    <select id="compare-benchmark" class="form-select bg-dark text-light border-secondary"></select>
+                </div>
+            </div>
+            <div id="compare-results" class="compare-results mt-4"></div>
+            <div id="compare-empty" class="subtle mt-3">Need at least two runs with shared benchmark scenarios to compare.</div>
+        </section>
+
+        <div id="report-entries">
+            <section class="run-card rounded-4 p-4 mb-4" data-run-id="2026-05-14T07:26:41.9428766+00:00" data-commit="b7174534 (feat/v1.7-part-1)" data-timestamp-label="2026-05-14 10:26:41 +03:00" data-search="b7174534 (feat/v1.7-part-1) 10.0.8 microsoft windows 10.0.26200">
+  <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-3">
+    <div>
+      <h2 class="h4 mb-1">Run <span class="subtle">2026-05-14 10:26:41 +03:00</span></h2>
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        <span class="pill">Commit: b7174534 (feat/v1.7-part-1)</span>
+        <span class="pill">.NET: 10.0.8</span>
+        <span class="pill">OS: Microsoft Windows 10.0.26200</span>
+        <span class="pill">Benchmarks: 12</span>
+      </div>
+    </div>
+  </div>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="audio-effect-process" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for applying audio effects across entities and audio buffers." data-measurement="Steady-state allocations and elapsed time across repeated audio effect processing passes." data-search="audio-effect-process measures allocations and timing for applying audio effects across entities and audio buffers. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated audio effect processing passes.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">audio-effect-process</h3>
+      <p class="subtle mb-2">Measures allocations and timing for applying audio effects across entities and audio buffers.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated audio effect processing passes.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Effects</th><th>Entities</th><th>Runs</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="4|8|2000" data-scenario-label="Effects=4, Entities=8, Runs=2000" data-mode-label="checked-out" data-samples="7" data-alloc-min="40" data-alloc-med="40" data-alloc-avg="4500.571" data-alloc-max="31264" data-bytes-per-op="0.02" data-time-med="29.08">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>8</td>
+          <td>2000</td>
+          <td>7</td>
+          <td>40</td>
+          <td>40</td>
+          <td>4,501</td>
+          <td>31,264</td>
+          <td>0</td>
+          <td>29.08</td>
+        </tr>
+        <tr data-scenario-key="8|32|1000" data-scenario-label="Effects=8, Entities=32, Runs=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="40" data-alloc-med="40" data-alloc-avg="40" data-alloc-max="40" data-bytes-per-op="0.04" data-time-med="82.919">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>32</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>40</td>
+          <td>40</td>
+          <td>40</td>
+          <td>40</td>
+          <td>0</td>
+          <td>82.919</td>
+        </tr>
+        <tr data-scenario-key="16|64|250" data-scenario-label="Effects=16, Entities=64, Runs=250" data-mode-label="checked-out" data-samples="7" data-alloc-min="40" data-alloc-med="40" data-alloc-avg="40" data-alloc-max="40" data-bytes-per-op="0.16" data-time-med="81.496">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>64</td>
+          <td>250</td>
+          <td>7</td>
+          <td>40</td>
+          <td>40</td>
+          <td>40</td>
+          <td>40</td>
+          <td>0</td>
+          <td>81.496</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="audio-effects" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for audio effect collection reads." data-measurement="Steady-state allocations and elapsed time across repeated effect collection reads after one warm-up run." data-search="audio-effects measures allocations and timing for audio effect collection reads. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated effect collection reads after one warm-up run.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">audio-effects</h3>
+      <p class="subtle mb-2">Measures allocations and timing for audio effect collection reads.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated effect collection reads after one warm-up run.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Effects</th><th>Reads</th><th>Unused</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="1|10000|0" data-scenario-label="Effects=1, Reads=10000, Unused=0" data-mode-label="checked-out" data-samples="7" data-alloc-min="376" data-alloc-med="376" data-alloc-avg="376" data-alloc-max="376" data-bytes-per-op="0.038" data-time-med="0.124">
+          <td>checked-out</td>
+          <td>1</td>
+          <td>10000</td>
+          <td>0</td>
+          <td>7</td>
+          <td>376</td>
+          <td>376</td>
+          <td>376</td>
+          <td>376</td>
+          <td>0</td>
+          <td>0.124</td>
+        </tr>
+        <tr data-scenario-key="4|10000|0" data-scenario-label="Effects=4, Reads=10000, Unused=0" data-mode-label="checked-out" data-samples="7" data-alloc-min="376" data-alloc-med="376" data-alloc-avg="376" data-alloc-max="376" data-bytes-per-op="0.038" data-time-med="0.1">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>10000</td>
+          <td>0</td>
+          <td>7</td>
+          <td>376</td>
+          <td>376</td>
+          <td>376</td>
+          <td>376</td>
+          <td>0</td>
+          <td>0.1</td>
+        </tr>
+        <tr data-scenario-key="8|10000|0" data-scenario-label="Effects=8, Reads=10000, Unused=0" data-mode-label="checked-out" data-samples="7" data-alloc-min="376" data-alloc-med="376" data-alloc-avg="376" data-alloc-max="376" data-bytes-per-op="0.038" data-time-med="0.135">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>10000</td>
+          <td>0</td>
+          <td>7</td>
+          <td>376</td>
+          <td>376</td>
+          <td>376</td>
+          <td>376</td>
+          <td>0</td>
+          <td>0.135</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="entity-create-sync" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for initial McApi peer sync of effects and entity snapshots." data-measurement="Steady-state allocations and elapsed time across repeated simulated peer-connect sync runs." data-search="entity-create-sync measures allocations and timing for initial mcapi peer sync of effects and entity snapshots. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated simulated peer-connect sync runs.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">entity-create-sync</h3>
+      <p class="subtle mb-2">Measures allocations and timing for initial McApi peer sync of effects and entity snapshots.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated simulated peer-connect sync runs.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Entities</th><th>Effects</th><th>Connects</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="16|4|500" data-scenario-label="Entities=16, Effects=4, Connects=500" data-mode-label="checked-out" data-samples="7" data-alloc-min="7427008" data-alloc-med="7532000" data-alloc-avg="7517001.143" data-alloc-max="7532000" data-bytes-per-op="15064" data-time-med="38.191">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>4</td>
+          <td>500</td>
+          <td>7</td>
+          <td>7,427,008</td>
+          <td>7,532,000</td>
+          <td>7,517,001</td>
+          <td>7,532,000</td>
+          <td>15,064</td>
+          <td>38.191</td>
+        </tr>
+        <tr data-scenario-key="64|8|250" data-scenario-label="Entities=64, Effects=8, Connects=250" data-mode-label="checked-out" data-samples="7" data-alloc-min="4536000" data-alloc-med="4536000" data-alloc-avg="4537769.143" data-alloc-max="4548384" data-bytes-per-op="18144" data-time-med="44.961">
+          <td>checked-out</td>
+          <td>64</td>
+          <td>8</td>
+          <td>250</td>
+          <td>7</td>
+          <td>4,536,000</td>
+          <td>4,536,000</td>
+          <td>4,537,769</td>
+          <td>4,548,384</td>
+          <td>18,144</td>
+          <td>44.961</td>
+        </tr>
+        <tr data-scenario-key="128|16|100" data-scenario-label="Entities=128, Effects=16, Connects=100" data-mode-label="checked-out" data-samples="7" data-alloc-min="2220000" data-alloc-med="2220000" data-alloc-avg="2220000" data-alloc-max="2220000" data-bytes-per-op="22200" data-time-med="32.71">
+          <td>checked-out</td>
+          <td>128</td>
+          <td>16</td>
+          <td>100</td>
+          <td>7</td>
+          <td>2,220,000</td>
+          <td>2,220,000</td>
+          <td>2,220,000</td>
+          <td>2,220,000</td>
+          <td>22,200</td>
+          <td>32.71</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="event-handler-burst" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for EventHandlerSystem task bursts drained through Update()." data-measurement="Steady-state allocations and elapsed time across repeated event-enqueue bursts and queue draining." data-search="event-handler-burst measures allocations and timing for eventhandlersystem task bursts drained through update(). checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated event-enqueue bursts and queue draining.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">event-handler-burst</h3>
+      <p class="subtle mb-2">Measures allocations and timing for EventHandlerSystem task bursts drained through Update().</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated event-enqueue bursts and queue draining.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>QueuedTasks</th><th>VisiblePeers</th><th>Bursts</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="32|8|500" data-scenario-label="QueuedTasks=32, VisiblePeers=8, Bursts=500" data-mode-label="checked-out" data-samples="7" data-alloc-min="4620712" data-alloc-med="4620712" data-alloc-avg="4620712" data-alloc-max="4620712" data-bytes-per-op="9241.424" data-time-med="50.14">
+          <td>checked-out</td>
+          <td>32</td>
+          <td>8</td>
+          <td>500</td>
+          <td>7</td>
+          <td>4,620,712</td>
+          <td>4,620,712</td>
+          <td>4,620,712</td>
+          <td>4,620,712</td>
+          <td>9,241</td>
+          <td>50.14</td>
+        </tr>
+        <tr data-scenario-key="64|32|250" data-scenario-label="QueuedTasks=64, VisiblePeers=32, Bursts=250" data-mode-label="checked-out" data-samples="7" data-alloc-min="7174712" data-alloc-med="7233016" data-alloc-avg="7387500.571" data-alloc-max="7686712" data-bytes-per-op="28932.064" data-time-med="86.99">
+          <td>checked-out</td>
+          <td>64</td>
+          <td>32</td>
+          <td>250</td>
+          <td>7</td>
+          <td>7,174,712</td>
+          <td>7,233,016</td>
+          <td>7,387,501</td>
+          <td>7,686,712</td>
+          <td>28,932</td>
+          <td>86.99</td>
+        </tr>
+        <tr data-scenario-key="128|64|100" data-scenario-label="QueuedTasks=128, VisiblePeers=64, Bursts=100" data-mode-label="checked-out" data-samples="7" data-alloc-min="9012496" data-alloc-med="9012496" data-alloc-avg="9013786.286" data-alloc-max="9016648" data-bytes-per-op="90124.96" data-time-med="48.326">
+          <td>checked-out</td>
+          <td>128</td>
+          <td>64</td>
+          <td>100</td>
+          <td>7</td>
+          <td>9,012,496</td>
+          <td>9,012,496</td>
+          <td>9,013,786</td>
+          <td>9,016,648</td>
+          <td>90,125</td>
+          <td>48.326</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="http-auth-path" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for HTTP bearer auth, packet decode, validation, and in-memory dispatch." data-measurement="Steady-state allocations and elapsed time across repeated HTTP auth-path request handling without sockets." data-search="http-auth-path measures allocations and timing for http bearer auth, packet decode, validation, and in-memory dispatch. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated http auth-path request handling without sockets.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">http-auth-path</h3>
+      <p class="subtle mb-2">Measures allocations and timing for HTTP bearer auth, packet decode, validation, and in-memory dispatch.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated HTTP auth-path request handling without sockets.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Packets</th><th>PacketBytes</th><th>Requests</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="1|32|5000" data-scenario-label="Packets=1, PacketBytes=32, Requests=5000" data-mode-label="checked-out" data-samples="7" data-alloc-min="1281296" data-alloc-med="1281296" data-alloc-avg="1281296" data-alloc-max="1281296" data-bytes-per-op="256.259" data-time-med="2.235">
+          <td>checked-out</td>
+          <td>1</td>
+          <td>32</td>
+          <td>5000</td>
+          <td>7</td>
+          <td>1,281,296</td>
+          <td>1,281,296</td>
+          <td>1,281,296</td>
+          <td>1,281,296</td>
+          <td>256</td>
+          <td>2.235</td>
+        </tr>
+        <tr data-scenario-key="4|64|2000" data-scenario-label="Packets=4, PacketBytes=64, Requests=2000" data-mode-label="checked-out" data-samples="7" data-alloc-min="1553296" data-alloc-med="1553296" data-alloc-avg="1553296" data-alloc-max="1553296" data-bytes-per-op="776.648" data-time-med="2.858">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>64</td>
+          <td>2000</td>
+          <td>7</td>
+          <td>1,553,296</td>
+          <td>1,553,296</td>
+          <td>1,553,296</td>
+          <td>1,553,296</td>
+          <td>777</td>
+          <td>2.858</td>
+        </tr>
+        <tr data-scenario-key="8|128|1000" data-scenario-label="Packets=8, PacketBytes=128, Requests=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="2505296" data-alloc-med="2505296" data-alloc-avg="2505296" data-alloc-max="2505296" data-bytes-per-op="2505.296" data-time-med="4.142">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>128</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>2,505,296</td>
+          <td>2,505,296</td>
+          <td>2,505,296</td>
+          <td>2,505,296</td>
+          <td>2,505</td>
+          <td>4.142</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="http-packed-packets" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for HTTP packed packet decode and encode." data-measurement="Steady-state allocations and elapsed time across repeated HTTP packed-packet decode/encode operations." data-search="http-packed-packets measures allocations and timing for http packed packet decode and encode. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated http packed-packet decode/encode operations.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">http-packed-packets</h3>
+      <p class="subtle mb-2">Measures allocations and timing for HTTP packed packet decode and encode.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated HTTP packed-packet decode/encode operations.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Packets</th><th>PacketBytes</th><th>Requests</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="4|64|1000" data-scenario-label="Packets=4, PacketBytes=64, Requests=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="1777296" data-alloc-med="1777296" data-alloc-avg="1777296" data-alloc-max="1777296" data-bytes-per-op="1777.296" data-time-med="3.153">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>64</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>1,777,296</td>
+          <td>1,777,296</td>
+          <td>1,777,296</td>
+          <td>1,777,296</td>
+          <td>1,777</td>
+          <td>3.153</td>
+        </tr>
+        <tr data-scenario-key="8|256|500" data-scenario-label="Packets=8, PacketBytes=256, Requests=500" data-mode-label="checked-out" data-samples="7" data-alloc-min="6149296" data-alloc-med="6149296" data-alloc-avg="6149296" data-alloc-max="6149296" data-bytes-per-op="12298.592" data-time-med="10.224">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>256</td>
+          <td>500</td>
+          <td>7</td>
+          <td>6,149,296</td>
+          <td>6,149,296</td>
+          <td>6,149,296</td>
+          <td>6,149,296</td>
+          <td>12,299</td>
+          <td>10.224</td>
+        </tr>
+        <tr data-scenario-key="16|512|250" data-scenario-label="Packets=16, PacketBytes=512, Requests=250" data-mode-label="checked-out" data-samples="7" data-alloc-min="12011296" data-alloc-med="12011296" data-alloc-avg="12011296" data-alloc-max="12011296" data-bytes-per-op="48045.184" data-time-med="13.41">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>512</td>
+          <td>250</td>
+          <td>7</td>
+          <td>12,011,296</td>
+          <td>12,011,296</td>
+          <td>12,011,296</td>
+          <td>12,011,296</td>
+          <td>48,045</td>
+          <td>13.41</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="jitter-buffer" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for JitterBuffer add and drain cycles." data-measurement="Steady-state allocations and elapsed time across repeated JitterBuffer fill/drain runs." data-search="jitter-buffer measures allocations and timing for jitterbuffer add and drain cycles. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated jitterbuffer fill/drain runs.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">jitter-buffer</h3>
+      <p class="subtle mb-2">Measures allocations and timing for JitterBuffer add and drain cycles.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated JitterBuffer fill/drain runs.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Packets</th><th>PacketBytes</th><th>Runs</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="128|160|100" data-scenario-label="Packets=128, PacketBytes=160, Runs=100" data-mode-label="checked-out" data-samples="7" data-alloc-min="618896" data-alloc-med="618896" data-alloc-avg="618896" data-alloc-max="618896" data-bytes-per-op="6188.96" data-time-med="2.36">
+          <td>checked-out</td>
+          <td>128</td>
+          <td>160</td>
+          <td>100</td>
+          <td>7</td>
+          <td>618,896</td>
+          <td>618,896</td>
+          <td>618,896</td>
+          <td>618,896</td>
+          <td>6,189</td>
+          <td>2.36</td>
+        </tr>
+        <tr data-scenario-key="512|160|50" data-scenario-label="Packets=512, PacketBytes=160, Runs=50" data-mode-label="checked-out" data-samples="7" data-alloc-min="1231696" data-alloc-med="1231696" data-alloc-avg="1231696" data-alloc-max="1231696" data-bytes-per-op="24633.92" data-time-med="4.98">
+          <td>checked-out</td>
+          <td>512</td>
+          <td>160</td>
+          <td>50</td>
+          <td>7</td>
+          <td>1,231,696</td>
+          <td>1,231,696</td>
+          <td>1,231,696</td>
+          <td>1,231,696</td>
+          <td>24,634</td>
+          <td>4.98</td>
+        </tr>
+        <tr data-scenario-key="1024|320|25" data-scenario-label="Packets=1024, PacketBytes=320, Runs=25" data-mode-label="checked-out" data-samples="7" data-alloc-min="1230896" data-alloc-med="1230896" data-alloc-avg="1230896" data-alloc-max="1230896" data-bytes-per-op="49235.84" data-time-med="4.551">
+          <td>checked-out</td>
+          <td>1024</td>
+          <td>320</td>
+          <td>25</td>
+          <td>7</td>
+          <td>1,230,896</td>
+          <td>1,230,896</td>
+          <td>1,230,896</td>
+          <td>1,230,896</td>
+          <td>49,236</td>
+          <td>4.551</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="mcapi-broadcast-fanout" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for McApi packet serialization and broadcast fanout across peers." data-measurement="Steady-state allocations and elapsed time across repeated McApi broadcast calls." data-search="mcapi-broadcast-fanout measures allocations and timing for mcapi packet serialization and broadcast fanout across peers. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated mcapi broadcast calls.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">mcapi-broadcast-fanout</h3>
+      <p class="subtle mb-2">Measures allocations and timing for McApi packet serialization and broadcast fanout across peers.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated McApi broadcast calls.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Peers</th><th>PacketBytes</th><th>Broadcasts</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="16|64|2000" data-scenario-label="Peers=16, PacketBytes=64, Broadcasts=2000" data-mode-label="checked-out" data-samples="7" data-alloc-min="337296" data-alloc-med="337296" data-alloc-avg="337522.286" data-alloc-max="338880" data-bytes-per-op="168.648" data-time-med="0.699">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>64</td>
+          <td>2000</td>
+          <td>7</td>
+          <td>337,296</td>
+          <td>337,296</td>
+          <td>337,522</td>
+          <td>338,880</td>
+          <td>169</td>
+          <td>0.699</td>
+        </tr>
+        <tr data-scenario-key="64|256|1000" data-scenario-label="Peers=64, PacketBytes=256, Broadcasts=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="361296" data-alloc-med="361296" data-alloc-avg="361296" data-alloc-max="361296" data-bytes-per-op="361.296" data-time-med="0.743">
+          <td>checked-out</td>
+          <td>64</td>
+          <td>256</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>361,296</td>
+          <td>361,296</td>
+          <td>361,296</td>
+          <td>361,296</td>
+          <td>361</td>
+          <td>0.743</td>
+        </tr>
+        <tr data-scenario-key="256|512|250" data-scenario-label="Peers=256, PacketBytes=512, Broadcasts=250" data-mode-label="checked-out" data-samples="7" data-alloc-min="155296" data-alloc-med="155296" data-alloc-avg="155296" data-alloc-max="155296" data-bytes-per-op="621.184" data-time-med="0.601">
+          <td>checked-out</td>
+          <td>256</td>
+          <td>512</td>
+          <td>250</td>
+          <td>7</td>
+          <td>155,296</td>
+          <td>155,296</td>
+          <td>155,296</td>
+          <td>155,296</td>
+          <td>621</td>
+          <td>0.601</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="tcp-frame-read" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for TCP frame read and payload parsing." data-measurement="Steady-state allocations and elapsed time across repeated TCP frame read/parse operations." data-search="tcp-frame-read measures allocations and timing for tcp frame read and payload parsing. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated tcp frame read/parse operations.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">tcp-frame-read</h3>
+      <p class="subtle mb-2">Measures allocations and timing for TCP frame read and payload parsing.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated TCP frame read/parse operations.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Packets</th><th>PacketBytes</th><th>Frames</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="4|64|1000" data-scenario-label="Packets=4, PacketBytes=64, Frames=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="473832" data-alloc-med="473832" data-alloc-avg="473908.571" data-alloc-max="474368" data-bytes-per-op="473.832" data-time-med="0.382">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>64</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>473,832</td>
+          <td>473,832</td>
+          <td>473,909</td>
+          <td>474,368</td>
+          <td>474</td>
+          <td>0.382</td>
+        </tr>
+        <tr data-scenario-key="8|256|1000" data-scenario-label="Packets=8, PacketBytes=256, Frames=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="2397416" data-alloc-med="2397416" data-alloc-avg="2397416" data-alloc-max="2397416" data-bytes-per-op="2397.416" data-time-med="0.623">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>256</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>2,397,416</td>
+          <td>2,397,416</td>
+          <td>2,397,416</td>
+          <td>2,397,416</td>
+          <td>2,397</td>
+          <td>0.623</td>
+        </tr>
+        <tr data-scenario-key="16|512|500" data-scenario-label="Packets=16, PacketBytes=512, Frames=500" data-mode-label="checked-out" data-samples="7" data-alloc-min="4413704" data-alloc-med="4413704" data-alloc-avg="4413704" data-alloc-max="4413704" data-bytes-per-op="8827.408" data-time-med="0.835">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>512</td>
+          <td>500</td>
+          <td>7</td>
+          <td>4,413,704</td>
+          <td>4,413,704</td>
+          <td>4,413,704</td>
+          <td>4,413,704</td>
+          <td>8,827</td>
+          <td>0.835</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="tcp-write-payload" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for TCP response frame formatting." data-measurement="Steady-state allocations and elapsed time across repeated TCP response frame writes into memory." data-search="tcp-write-payload measures allocations and timing for tcp response frame formatting. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated tcp response frame writes into memory.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">tcp-write-payload</h3>
+      <p class="subtle mb-2">Measures allocations and timing for TCP response frame formatting.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated TCP response frame writes into memory.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Packets</th><th>PacketBytes</th><th>Frames</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="4|64|1000" data-scenario-label="Packets=4, PacketBytes=64, Frames=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="89832" data-alloc-med="89832" data-alloc-avg="89985.143" data-alloc-max="90368" data-bytes-per-op="89.832" data-time-med="0.522">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>64</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>89,832</td>
+          <td>89,832</td>
+          <td>89,985</td>
+          <td>90,368</td>
+          <td>90</td>
+          <td>0.522</td>
+        </tr>
+        <tr data-scenario-key="8|256|1000" data-scenario-label="Packets=8, PacketBytes=256, Frames=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="93416" data-alloc-med="93416" data-alloc-avg="95181.714" data-alloc-max="97536" data-bytes-per-op="93.416" data-time-med="0.886">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>256</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>93,416</td>
+          <td>93,416</td>
+          <td>95,182</td>
+          <td>97,536</td>
+          <td>93</td>
+          <td>0.886</td>
+        </tr>
+        <tr data-scenario-key="16|512|500" data-scenario-label="Packets=16, PacketBytes=512, Frames=500" data-mode-label="checked-out" data-samples="7" data-alloc-min="61704" data-alloc-med="61704" data-alloc-avg="64048" data-alloc-max="78112" data-bytes-per-op="123.408" data-time-med="0.823">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>512</td>
+          <td>500</td>
+          <td>7</td>
+          <td>61,704</td>
+          <td>61,704</td>
+          <td>64,048</td>
+          <td>78,112</td>
+          <td>123</td>
+          <td>0.823</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="visibility" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for VisibilitySystem.Update()." data-measurement="Steady-state allocations and elapsed time across repeated update calls after one warm-up run." data-search="visibility measures allocations and timing for visibilitysystem.update(). checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated update calls after one warm-up run.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">visibility</h3>
+      <p class="subtle mb-2">Measures allocations and timing for VisibilitySystem.Update().</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated update calls after one warm-up run.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Entities</th><th>Effects</th><th>Updates</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="40|1|20" data-scenario-label="Entities=40, Effects=1, Updates=20" data-mode-label="checked-out" data-samples="7" data-alloc-min="198840" data-alloc-med="208000" data-alloc-avg="206737.143" data-alloc-max="208960" data-bytes-per-op="10400" data-time-med="3.074">
+          <td>checked-out</td>
+          <td>40</td>
+          <td>1</td>
+          <td>20</td>
+          <td>7</td>
+          <td>198,840</td>
+          <td>208,000</td>
+          <td>206,737</td>
+          <td>208,960</td>
+          <td>10,400</td>
+          <td>3.074</td>
+        </tr>
+        <tr data-scenario-key="40|8|20" data-scenario-label="Entities=40, Effects=8, Updates=20" data-mode-label="checked-out" data-samples="7" data-alloc-min="211592" data-alloc-med="220888" data-alloc-avg="218616" data-alloc-max="222088" data-bytes-per-op="11044.4" data-time-med="7.32">
+          <td>checked-out</td>
+          <td>40</td>
+          <td>8</td>
+          <td>20</td>
+          <td>7</td>
+          <td>211,592</td>
+          <td>220,888</td>
+          <td>218,616</td>
+          <td>222,088</td>
+          <td>11,044</td>
+          <td>7.32</td>
+        </tr>
+        <tr data-scenario-key="64|8|10" data-scenario-label="Entities=64, Effects=8, Updates=10" data-mode-label="checked-out" data-samples="7" data-alloc-min="137560" data-alloc-med="139392" data-alloc-avg="140505.143" data-alloc-max="143736" data-bytes-per-op="13939.2" data-time-med="9.925">
+          <td>checked-out</td>
+          <td>64</td>
+          <td>8</td>
+          <td>10</td>
+          <td>7</td>
+          <td>137,560</td>
+          <td>139,392</td>
+          <td>140,505</td>
+          <td>143,736</td>
+          <td>13,939</td>
+          <td>9.925</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+<article class="benchmark-card rounded-4 p-4 mb-4" data-benchmark-name="wss-data-tunnel" data-mode="checked-out" data-commit="b7174534 (feat/v1.7-part-1)" data-description="Measures allocations and timing for WSS data tunnel decode, packet slicing, and response encoding." data-measurement="Steady-state allocations and elapsed time across repeated WSS data-tunnel command handling." data-search="wss-data-tunnel measures allocations and timing for wss data tunnel decode, packet slicing, and response encoding. checked-out b7174534 (feat/v1.7-part-1) 2026-05-14 10:26:41 +03:00 steady-state allocations and elapsed time across repeated wss data-tunnel command handling.">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+    <div>
+      <h3 class="h5 mb-1">wss-data-tunnel</h3>
+      <p class="subtle mb-2">Measures allocations and timing for WSS data tunnel decode, packet slicing, and response encoding.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="pill">Mode: checked-out</span>
+        <span class="pill">Samples: 7</span>
+        <span class="pill">Measurement: Steady-state allocations and elapsed time across repeated WSS data-tunnel command handling.</span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive mb-3">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Mode</th><th>Packets</th><th>PacketBytes</th><th>Commands</th><th>Samples</th><th>Alloc min</th><th>Alloc med</th><th>Alloc avg</th><th>Alloc max</th><th>B/op med</th><th>Time med (ms)</th>
+      </tr></thead>
+      <tbody>
+        <tr data-scenario-key="4|64|1000" data-scenario-label="Packets=4, PacketBytes=64, Commands=1000" data-mode-label="checked-out" data-samples="7" data-alloc-min="1449632" data-alloc-med="1449632" data-alloc-avg="1449632" data-alloc-max="1449632" data-bytes-per-op="1449.632" data-time-med="4.423">
+          <td>checked-out</td>
+          <td>4</td>
+          <td>64</td>
+          <td>1000</td>
+          <td>7</td>
+          <td>1,449,632</td>
+          <td>1,449,632</td>
+          <td>1,449,632</td>
+          <td>1,449,632</td>
+          <td>1,450</td>
+          <td>4.423</td>
+        </tr>
+        <tr data-scenario-key="8|256|500" data-scenario-label="Packets=8, PacketBytes=256, Commands=500" data-mode-label="checked-out" data-samples="7" data-alloc-min="4861632" data-alloc-med="4861632" data-alloc-avg="4861632" data-alloc-max="4861632" data-bytes-per-op="9723.264" data-time-med="9.1">
+          <td>checked-out</td>
+          <td>8</td>
+          <td>256</td>
+          <td>500</td>
+          <td>7</td>
+          <td>4,861,632</td>
+          <td>4,861,632</td>
+          <td>4,861,632</td>
+          <td>4,861,632</td>
+          <td>9,723</td>
+          <td>9.1</td>
+        </tr>
+        <tr data-scenario-key="16|512|250" data-scenario-label="Packets=16, PacketBytes=512, Commands=250" data-mode-label="checked-out" data-samples="7" data-alloc-min="9443632" data-alloc-med="9443632" data-alloc-avg="9443636.571" data-alloc-max="9443664" data-bytes-per-op="37774.528" data-time-med="14.12">
+          <td>checked-out</td>
+          <td>16</td>
+          <td>512</td>
+          <td>250</td>
+          <td>7</td>
+          <td>9,443,632</td>
+          <td>9,443,632</td>
+          <td>9,443,637</td>
+          <td>9,443,664</td>
+          <td>37,775</td>
+          <td>14.12</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+</section>
+
+<!-- REPORT_ENTRIES -->
+        </div>
+
+        <section id="empty-state" class="surface rounded-4 p-4 text-center empty-state">
+            <div class="h5 mb-2">No results match the current filters.</div>
+            <div class="subtle">Try clearing the search, switching the commit filter, or disabling latest-only mode.</div>
+        </section>
+    </main>
+
+    <script>
+        (() => {
+            const runCards = Array.from(document.querySelectorAll('.run-card'));
+            const benchmarkCards = Array.from(document.querySelectorAll('.benchmark-card'));
+            const searchInput = document.getElementById('filter-search');
+            const benchmarkSelect = document.getElementById('filter-benchmark');
+            const modeSelect = document.getElementById('filter-mode');
+            const commitSelect = document.getElementById('filter-commit');
+            const latestCheckbox = document.getElementById('filter-latest');
+            const resetButton = document.getElementById('filter-reset');
+            const emptyState = document.getElementById('empty-state');
+            const comparePanel = document.getElementById('compare-panel');
+            const compareLeftRun = document.getElementById('compare-left-run');
+            const compareRightRun = document.getElementById('compare-right-run');
+            const compareBenchmark = document.getElementById('compare-benchmark');
+            const compareResults = document.getElementById('compare-results');
+            const compareEmpty = document.getElementById('compare-empty');
+            const summaryRuns = document.getElementById('summary-runs');
+            const summaryBenchmarks = document.getElementById('summary-benchmarks');
+            const summaryCommits = document.getElementById('summary-commits');
+            const summaryLatest = document.getElementById('summary-latest');
+
+            const uniqueSorted = values => Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
+
+            function appendOptions(select, values, allLabel) {
+                select.innerHTML = '';
+                const allOption = document.createElement('option');
+                allOption.value = '';
+                allOption.textContent = allLabel;
+                select.appendChild(allOption);
+
+                uniqueSorted(values).forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    select.appendChild(option);
+                });
+            }
+
+            appendOptions(benchmarkSelect, benchmarkCards.map(card => card.dataset.benchmarkName), 'All benchmarks');
+            appendOptions(modeSelect, benchmarkCards.map(card => card.dataset.mode), 'All modes');
+            appendOptions(commitSelect, runCards.map(card => card.dataset.commit), 'All commits');
+
+            const runOptions = runCards.map(card => ({
+                id: card.dataset.runId,
+                label: `${card.dataset.timestampLabel} | ${card.dataset.commit}`,
+            }));
+
+            compareLeftRun.innerHTML = runOptions.map(x => `<option value="${x.id}">${x.label}</option>`).join('');
+            compareRightRun.innerHTML = runOptions.map(x => `<option value="${x.id}">${x.label}</option>`).join('');
+            if (runOptions.length > 1) {
+                compareRightRun.selectedIndex = 1;
+            }
+            appendOptions(compareBenchmark, benchmarkCards.map(card => card.dataset.benchmarkName), 'All shared benchmarks');
+
+            function applyFilters() {
+                const search = searchInput.value.trim().toLowerCase();
+                const benchmark = benchmarkSelect.value;
+                const mode = modeSelect.value;
+                const commit = commitSelect.value;
+                const latestOnly = latestCheckbox.checked;
+                const latestRunId = runCards.length > 0 ? runCards[0].dataset.runId : '';
+
+                let visibleBenchmarkCount = 0;
+                let visibleRunCount = 0;
+                const visibleCommits = new Set();
+                let latestVisibleRun = '';
+
+                runCards.forEach(runCard => {
+                    const isLatestRun = !latestOnly || runCard.dataset.runId === latestRunId;
+                    const commitMatches = !commit || runCard.dataset.commit === commit;
+                    const runSearchText = runCard.dataset.search || '';
+
+                    let runHasVisibleBenchmarks = false;
+                    const nestedBenchmarks = Array.from(runCard.querySelectorAll('.benchmark-card'));
+                    nestedBenchmarks.forEach(card => {
+                        const benchmarkMatches = !benchmark || card.dataset.benchmarkName === benchmark;
+                        const modeMatches = !mode || card.dataset.mode === mode;
+                        const textMatches = !search || card.dataset.search.includes(search) || runSearchText.includes(search);
+                        const visible = isLatestRun && commitMatches && benchmarkMatches && modeMatches && textMatches;
+                        card.hidden = !visible;
+                        if (visible) {
+                            runHasVisibleBenchmarks = true;
+                            visibleBenchmarkCount++;
+                        }
+                    });
+
+                    runCard.hidden = !runHasVisibleBenchmarks;
+                    if (runHasVisibleBenchmarks) {
+                        visibleRunCount++;
+                        visibleCommits.add(runCard.dataset.commit);
+                        if (!latestVisibleRun) {
+                            latestVisibleRun = runCard.dataset.timestampLabel || '-';
+                        }
+                    }
+                });
+
+                summaryRuns.textContent = String(visibleRunCount);
+                summaryBenchmarks.textContent = String(visibleBenchmarkCount);
+                summaryCommits.textContent = String(visibleCommits.size);
+                summaryLatest.textContent = latestVisibleRun || '-';
+                emptyState.style.display = visibleBenchmarkCount === 0 ? 'block' : 'none';
+            }
+
+            function getRunCard(runId) {
+                return document.querySelector(`.run-card[data-run-id="${CSS.escape(runId)}"]`);
+            }
+
+            function getBenchmarkCard(runId, benchmarkName) {
+                return document.querySelector(`.run-card[data-run-id="${CSS.escape(runId)}"] .benchmark-card[data-benchmark-name="${CSS.escape(benchmarkName)}"]`);
+            }
+
+            function parseRows(runId, benchmarkName) {
+                return Array.from(document.querySelectorAll(`.run-card[data-run-id="${CSS.escape(runId)}"] .benchmark-card[data-benchmark-name="${CSS.escape(benchmarkName)}"] tbody tr[data-scenario-key]`)).map(row => ({
+                    key: row.dataset.scenarioKey,
+                    label: row.dataset.scenarioLabel,
+                    mode: row.dataset.modeLabel,
+                    samples: Number(row.dataset.samples || '0'),
+                    allocMin: Number(row.dataset.allocMin || '0'),
+                    allocMed: Number(row.dataset.allocMed || '0'),
+                    allocAvg: Number(row.dataset.allocAvg || '0'),
+                    allocMax: Number(row.dataset.allocMax || '0'),
+                    bytesPerOp: Number(row.dataset.bytesPerOp || '0'),
+                    timeMed: Number(row.dataset.timeMed || '0')
+                }));
+            }
+
+            function formatWhole(value) {
+                return Number(value).toLocaleString(undefined, { maximumFractionDigits: 0 });
+            }
+
+            function formatTime(value) {
+                return Number(value).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+            }
+
+            function getValueClass(leftValue, rightValue, side) {
+                if (leftValue === rightValue) {
+                    return 'delta-flat';
+                }
+
+                if (side === 'left') {
+                    return leftValue < rightValue ? 'delta-better' : 'delta-worse';
+                }
+
+                return rightValue < leftValue ? 'delta-better' : 'delta-worse';
+            }
+
+            function renderRunMetric(value, otherValue, formatter, side) {
+                const cssClass = getValueClass(side === 'left' ? value : otherValue, side === 'left' ? otherValue : value, side);
+                return `<div class="${cssClass}">${formatter(value)}</div>`;
+            }
+
+            function buildCompareBlock(runAId, runBId, benchmarkName) {
+                const runACard = getRunCard(runAId);
+                const runBCard = getRunCard(runBId);
+                const benchmarkACard = getBenchmarkCard(runAId, benchmarkName);
+                const benchmarkBCard = getBenchmarkCard(runBId, benchmarkName);
+                if (!runACard || !runBCard || !benchmarkACard || !benchmarkBCard) {
+                    return '';
+                }
+
+                const leftRows = parseRows(runAId, benchmarkName);
+                const rightRows = parseRows(runBId, benchmarkName);
+                const rightMap = new Map(rightRows.map(row => [row.key, row]));
+                const mergedRows = leftRows
+                    .filter(row => rightMap.has(row.key))
+                    .map(row => ({ left: row, right: rightMap.get(row.key) }));
+
+                if (mergedRows.length === 0) {
+                    return '';
+                }
+
+                const description = benchmarkACard.dataset.description || benchmarkName;
+                const measurement = benchmarkACard.dataset.measurement || '';
+                const mode = benchmarkACard.dataset.mode || '';
+                const runALabel = `${runACard.dataset.timestampLabel} | ${runACard.dataset.commit}`;
+                const runBLabel = `${runBCard.dataset.timestampLabel} | ${runBCard.dataset.commit}`;
+
+                const rowsHtml = mergedRows.map(pair => `
+                    <div class="compare-row-group">
+                        <div class="compare-run-row">
+                            <div><span class="compare-run-chip">A</span></div>
+                            <div class="compare-scenario-meta">
+                                <div class="fw-semibold">${pair.left.label}</div>
+                                <div class="subtle small">Mode: ${pair.left.mode} | Samples: ${pair.left.samples}</div>
+                            </div>
+                            <div class="compare-run-meta">${runALabel}</div>
+                            ${renderRunMetric(pair.left.allocMin, pair.right.allocMin, formatWhole, 'left')}
+                            ${renderRunMetric(pair.left.allocMed, pair.right.allocMed, formatWhole, 'left')}
+                            ${renderRunMetric(pair.left.allocAvg, pair.right.allocAvg, formatWhole, 'left')}
+                            ${renderRunMetric(pair.left.allocMax, pair.right.allocMax, formatWhole, 'left')}
+                            ${renderRunMetric(pair.left.bytesPerOp, pair.right.bytesPerOp, formatWhole, 'left')}
+                            ${renderRunMetric(pair.left.timeMed, pair.right.timeMed, formatTime, 'left')}
+                        </div>
+                        <div class="compare-run-row">
+                            <div><span class="compare-run-chip">B</span></div>
+                            <div class="compare-scenario-meta">
+                                <div class="fw-semibold">${pair.right.label}</div>
+                                <div class="subtle small">Mode: ${pair.right.mode} | Samples: ${pair.right.samples}</div>
+                            </div>
+                            <div class="compare-run-meta">${runBLabel}</div>
+                            ${renderRunMetric(pair.right.allocMin, pair.left.allocMin, formatWhole, 'right')}
+                            ${renderRunMetric(pair.right.allocMed, pair.left.allocMed, formatWhole, 'right')}
+                            ${renderRunMetric(pair.right.allocAvg, pair.left.allocAvg, formatWhole, 'right')}
+                            ${renderRunMetric(pair.right.allocMax, pair.left.allocMax, formatWhole, 'right')}
+                            ${renderRunMetric(pair.right.bytesPerOp, pair.left.bytesPerOp, formatWhole, 'right')}
+                            ${renderRunMetric(pair.right.timeMed, pair.left.timeMed, formatTime, 'right')}
+                        </div>
+                        <div class="compare-divider"></div>
+                    </div>`).join('');
+
+                return `
+                    <article class="benchmark-card rounded-4 p-4">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+                            <div>
+                                <h3 class="h5 mb-1">${benchmarkName}</h3>
+                                <p class="subtle mb-2">${description}</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="pill">Mode: ${mode}</span>
+                                    <span class="pill">Measurement: ${measurement}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="compare-grid-head">
+                            <div>Run</div>
+                            <div>Scenario</div>
+                            <div>Run Meta</div>
+                            <div>Alloc min</div>
+                            <div>Alloc med</div>
+                            <div>Alloc avg</div>
+                            <div>Alloc max</div>
+                            <div>B/op med</div>
+                            <div>Time med</div>
+                        </div>
+                        <div class="compare-table">${rowsHtml}</div>
+                    </article>`;
+            }
+
+            function renderCompare() {
+                const leftRunId = compareLeftRun.value;
+                const rightRunId = compareRightRun.value;
+                const benchmarkFilter = compareBenchmark.value;
+
+                comparePanel.style.display = runOptions.length > 1 ? 'block' : 'none';
+                if (!leftRunId || !rightRunId) {
+                    compareResults.innerHTML = '';
+                    compareEmpty.textContent = 'Need at least two runs with shared benchmark scenarios to compare.';
+                    return;
+                }
+
+                if (leftRunId === rightRunId) {
+                    compareResults.innerHTML = '';
+                    compareEmpty.textContent = 'Pick two different runs to compare.';
+                    return;
+                }
+
+                const leftNames = new Set(Array.from(document.querySelectorAll(`.run-card[data-run-id="${CSS.escape(leftRunId)}"] .benchmark-card`)).map(card => card.dataset.benchmarkName));
+                const rightNames = new Set(Array.from(document.querySelectorAll(`.run-card[data-run-id="${CSS.escape(rightRunId)}"] .benchmark-card`)).map(card => card.dataset.benchmarkName));
+                let sharedBenchmarkNames = Array.from(leftNames).filter(name => rightNames.has(name)).sort((a, b) => a.localeCompare(b));
+
+                if (benchmarkFilter) {
+                    sharedBenchmarkNames = sharedBenchmarkNames.filter(name => name === benchmarkFilter);
+                }
+
+                const blocks = sharedBenchmarkNames
+                    .map(name => buildCompareBlock(leftRunId, rightRunId, name))
+                    .filter(Boolean);
+
+                compareResults.innerHTML = blocks.join('');
+                compareEmpty.textContent = blocks.length > 0
+                    ? ''
+                    : benchmarkFilter
+                        ? 'These runs do not share matching scenarios for the selected benchmark.'
+                        : 'These runs do not share matching benchmark scenarios.';
+            }
+
+            [searchInput, benchmarkSelect, modeSelect, commitSelect, latestCheckbox].forEach(control => {
+                control.addEventListener('input', applyFilters);
+                control.addEventListener('change', applyFilters);
+            });
+
+            [compareLeftRun, compareRightRun, compareBenchmark].forEach(control => {
+                control.addEventListener('input', renderCompare);
+                control.addEventListener('change', renderCompare);
+            });
+
+            resetButton.addEventListener('click', () => {
+                searchInput.value = '';
+                benchmarkSelect.value = '';
+                modeSelect.value = '';
+                commitSelect.value = '';
+                latestCheckbox.checked = false;
+                applyFilters();
+            });
+
+            applyFilters();
+            renderCompare();
+        })();
+    </script>
+</body>
+</html>

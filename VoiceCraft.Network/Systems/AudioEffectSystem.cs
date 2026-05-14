@@ -66,6 +66,7 @@ public class AudioEffectSystem : IDisposable
                     return;
             }
 
+            effect.Bitmask = bitmask;
             _audioEffects.TryGetValue(bitmask, out var oldEffect);
             if (oldEffect?.EffectType == effect.EffectType)
             {

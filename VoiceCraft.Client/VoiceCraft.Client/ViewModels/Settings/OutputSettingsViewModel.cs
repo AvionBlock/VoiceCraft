@@ -2,8 +2,6 @@ using System;
 using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SoundFlow.Abstracts.Devices;
-using SoundFlow.Components;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
@@ -15,7 +13,7 @@ namespace VoiceCraft.Client.ViewModels.Settings;
 
 public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
 {
-    private readonly AudioService _audioService;
+    private readonly IVoiceCraftAudioService _audioService;
     private readonly NavigationService _navigationService;
     private readonly NotificationService _notificationService;
     private readonly Lock _lock = new();
@@ -23,12 +21,12 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
     [ObservableProperty] public partial OutputSettingsDataViewModel OutputSettingsData { get; set; }
     [ObservableProperty] public partial bool IsPlaying { get; set; }
 
-    private AudioPlaybackDevice? _playbackDevice;
+    private IAudioPlaybackSession? _playbackDevice;
     private IAudioClipper? _audioClipper;
 
     public OutputSettingsViewModel(
         NavigationService navigationService,
-        AudioService audioService,
+        IVoiceCraftAudioService audioService,
         NotificationService notificationService,
         SettingsService settingsService)
     {
@@ -91,15 +89,12 @@ public partial class OutputSettingsViewModel : ViewModelBase, IDisposable
             lock (_lock)
             {
                 _audioClipper = _audioService.GetAudioClipper(OutputSettingsData.AudioClipper)?.Instantiate();
-                _playbackDevice = _audioService.InitializePlaybackDevice(
+                _playbackDevice = _audioService.InitializeTonePlaybackSession(
                     Constants.SampleRate,
                     Constants.PlaybackChannels,
                     Constants.FrameSize,
-                    OutputSettingsData.OutputDevice);
-
-                var callbackComponent = new CallbackProvider(_playbackDevice.Engine, _playbackDevice.Format, Read);
-                callbackComponent.ConnectInput(new Oscillator(_playbackDevice.Engine, _playbackDevice.Format));
-                _playbackDevice.MasterMixer.AddComponent(callbackComponent);
+                    OutputSettingsData.OutputDevice,
+                    Read);
 
                 _playbackDevice.Start();
                 IsPlaying = true;

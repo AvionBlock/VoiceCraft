@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.ApplicationModel;
-using SoundFlow.Abstracts.Devices;
-using SoundFlow.Enums;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels.Data;
@@ -16,7 +14,7 @@ namespace VoiceCraft.Client.ViewModels.Settings;
 
 public partial class InputSettingsViewModel(
     NavigationService navigationService,
-    AudioService audioService,
+    IVoiceCraftAudioService audioService,
     NotificationService notificationService,
     PermissionsService permissionsService,
     SettingsService settingsService)
@@ -31,7 +29,7 @@ public partial class InputSettingsViewModel(
     [ObservableProperty] public partial float MicrophoneValue { get; set; }
     [ObservableProperty] public partial bool DetectingVoiceActivity { get; set; }
 
-    private AudioCaptureDevice? _captureDevice;
+    private IAudioCaptureSession? _captureDevice;
     private CombinedAudioPreprocessor? _audioPreprocessor;
 
     public void Dispose()
@@ -81,7 +79,7 @@ public partial class InputSettingsViewModel(
                 var denoiser = audioService.GetAudioPreprocessor(InputSettingsData.Denoiser);
                 var gainController = audioService.GetAudioPreprocessor(InputSettingsData.AutomaticGainController);
                 _audioPreprocessor = new CombinedAudioPreprocessor(gainController, denoiser, null);
-                _captureDevice = audioService.InitializeCaptureDevice(
+                _captureDevice = audioService.InitializeCaptureSession(
                     Constants.SampleRate,
                     Constants.RecordingChannels,
                     Constants.FrameSize,
@@ -103,7 +101,7 @@ public partial class InputSettingsViewModel(
     }
 
 
-    private void Write(Span<float> buffer, Capability _)
+    private void Write(Span<float> buffer)
     {
         if (!IsRecording) return;
         _audioPreprocessor?.Process(buffer);

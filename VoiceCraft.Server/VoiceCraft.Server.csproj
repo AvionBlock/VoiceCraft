@@ -16,6 +16,7 @@
     <ItemGroup>
         <PackageReference Include="Fleck"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+        <PackageReference Include="SIPSorcery"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
     </ItemGroup>

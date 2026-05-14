@@ -58,6 +58,8 @@ public class ServerProperties
             _properties.McTcpConfig.Port = options.TransportPort.Value;
             _properties.McHttpConfig.Hostname = SetUriPort(_properties.McHttpConfig.Hostname, options.TransportPort.Value);
             _properties.McWssConfig.Hostname = SetUriPort(_properties.McWssConfig.Hostname, options.TransportPort.Value);
+            _properties.VoiceCraftConfig.WebRtc.SignalingUrl =
+                SetUriPort(_properties.VoiceCraftConfig.WebRtc.SignalingUrl, options.TransportPort.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(options.TransportHost))
@@ -65,6 +67,8 @@ public class ServerProperties
             _properties.McTcpConfig.Hostname = options.TransportHost;
             _properties.McHttpConfig.Hostname = SetUriHost(_properties.McHttpConfig.Hostname, options.TransportHost);
             _properties.McWssConfig.Hostname = SetUriHost(_properties.McWssConfig.Hostname, options.TransportHost);
+            _properties.VoiceCraftConfig.WebRtc.SignalingUrl =
+                SetUriHost(_properties.VoiceCraftConfig.WebRtc.SignalingUrl, options.TransportHost);
         }
 
         if (options.TransportMode.Length > 0)
@@ -158,6 +162,7 @@ public class ServerProperties
         _properties.McHttpConfig.Enabled = false;
         _properties.McTcpConfig.Enabled = false;
         _properties.McWssConfig.Enabled = false;
+        _properties.VoiceCraftConfig.WebRtc.Enabled = false;
 
         foreach (var transportMode in ParseTransportModes(transportModes))
         {
@@ -175,9 +180,13 @@ public class ServerProperties
                 case "websockets":
                     _properties.McWssConfig.Enabled = true;
                     break;
+                case "webrtc":
+                case "rtc":
+                    _properties.VoiceCraftConfig.WebRtc.Enabled = true;
+                    break;
                 default:
                     throw new ArgumentException(
-                        $"Unsupported transport mode '{transportMode}'. Supported values are: http, tcp, wss.");
+                        $"Unsupported transport mode '{transportMode}'. Supported values are: http, tcp, wss, webrtc.");
             }
         }
     }
@@ -222,6 +231,18 @@ public class ServerPropertiesStructure
     public bool TelemetryEnabled { get; set; } = true;
     public string TelemetryToken { get; set; } = Guid.NewGuid().ToString("N");
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public WebRtcVoiceCraftServer.WebRtcVoiceCraftConfig? WebRtcConfig
+    {
+        get => null;
+        set
+        {
+            if (value != null)
+                VoiceCraftConfig.WebRtc = value;
+        }
+    }
+
     public McWssMcApiServer.McWssMcApiConfig McWssConfig { get; set; } = new();
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
     public TcpMcApiServer.McTcpConfig McTcpConfig { get; set; } = new();
