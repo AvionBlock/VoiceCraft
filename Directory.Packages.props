@@ -27,7 +27,7 @@
     <PackageVersion Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Maui.Essentials" Version="10.0.60" />
-    <PackageVersion Include="OpusSharp" Version="1.6.6" />
+    <PackageVersion Include="OpusSharp" Version="1.6.7" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
     <PackageVersion Include="Spectre.Console" Version="0.55.2" />
     <PackageVersion Include="SIPSorcery" Version="10.0.3" />
