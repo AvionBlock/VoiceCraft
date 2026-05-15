@@ -1,6 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using SoundFlow.Abstracts.Devices;
+using SoundFlow.Enums;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Core;
@@ -16,7 +18,7 @@ namespace VoiceCraft.Client.Services;
 
 public class VoiceCraftService(
     VoiceCraftClient client,
-    IVoiceCraftAudioService audioService,
+    AudioService audioService,
     SettingsService settingsService,
     NotificationService notificationService)
 {
@@ -26,9 +28,10 @@ public class VoiceCraftService(
     private bool _pttCue;
 
     //Audio
-    private IAudioPlaybackSession? _audioPlayer;
-    private IAudioCaptureSession? _audioRecorder;
+    private AudioPlaybackDevice? _audioPlayer;
+    private AudioCaptureDevice? _audioRecorder;
     private CombinedAudioPreprocessor? _audioPreprocessor;
+    private ToneProvider? _pttToneProvider;
     private IAudioClipper? _audioClipper;
 
     public VcConnectionState ConnectionState => client.ConnectionState;
@@ -59,7 +62,7 @@ public class VoiceCraftService(
             client.Muted = !value;
 
             if (_pttCue)
-                _audioPlayer?.PlayTone(TimeSpan.FromMilliseconds(80), value ? 880f : 620f);
+                _pttToneProvider?.Play(TimeSpan.FromMilliseconds(80), value ? 880f : 620f);
         }
     }
 
@@ -142,6 +145,7 @@ public class VoiceCraftService(
             _audioRecorder = InitializeAudioRecorder(inputSettings.InputDevice, inputSettings.HardwarePreprocessorsEnabled);
             _audioPlayer = InitializeAudioPlayer(outputSettings.OutputDevice);
             _audioPreprocessor = InitializeAudioPreprocessor(inputSettings);
+            _pttToneProvider = InitializeToneProvider(_audioPlayer);
             _audioClipper = audioService.GetAudioClipper(outputSettings.AudioClipper)?.Instantiate();
 
             //Start.
@@ -204,7 +208,7 @@ public class VoiceCraftService(
     }
 
     //Audio
-    private void Write(Span<float> buffer)
+    private void Write(Span<float> buffer, Capability _)
     {
         _audioPreprocessor?.Process(buffer);
         SampleVolume.Read(buffer, client.InputVolume);
@@ -233,7 +237,6 @@ public class VoiceCraftService(
                     throw new Exception("VoiceCraft.DisconnectReason.Error");
 
                 client.Update(); //Update all networking processes.
-                _audioPlayer?.Pump();
                 var dist = DateTime.UtcNow - startTime;
                 var delay = Constants.TickRate - dist.TotalMilliseconds;
                 if (delay > 0)
@@ -330,18 +333,28 @@ public class VoiceCraftService(
         return new CombinedAudioPreprocessor(gainController, denoiser, echoCanceler);
     }
 
-    private IAudioCaptureSession InitializeAudioRecorder(string inputDevice, bool hardwarePreprocessorsEnabled)
+    private static ToneProvider InitializeToneProvider(AudioPlaybackDevice playbackDevice)
     {
-        var recorder = audioService.InitializeCaptureSession(Constants.SampleRate, Constants.RecordingChannels,
+        var toneProvider = new ToneProvider(playbackDevice.Engine, playbackDevice.Format);
+        playbackDevice.MasterMixer.AddComponent(toneProvider);
+        return toneProvider;
+    }
+
+    private AudioCaptureDevice InitializeAudioRecorder(string inputDevice, bool hardwarePreprocessorsEnabled)
+    {
+        var recorder = audioService.InitializeCaptureDevice(Constants.SampleRate, Constants.RecordingChannels,
             Constants.FrameSize, inputDevice, hardwarePreprocessorsEnabled);
         recorder.OnAudioProcessed += Write;
         return recorder;
     }
 
-    private IAudioPlaybackSession InitializeAudioPlayer(string outputDevice)
+    private AudioPlaybackDevice InitializeAudioPlayer(string outputDevice)
     {
-        return audioService.InitializePlaybackSession(Constants.SampleRate, Constants.PlaybackChannels,
-            Constants.FrameSize, outputDevice, Read);
+        var player = audioService.InitializePlaybackDevice(Constants.SampleRate, Constants.PlaybackChannels,
+            Constants.FrameSize, outputDevice);
+        var callbackComponent = new CallbackProvider(player.Engine, player.Format, Read);
+        player.MasterMixer.AddComponent(callbackComponent);
+        return player;
     }
 
     private McWssServer InitializeMcWssServer(VoiceCraftClient vcClient)
@@ -385,7 +398,7 @@ public class VoiceCraftService(
         }
     }
 
-    private void StopAudioRecorder(IAudioCaptureSession recorder)
+    private void StopAudioRecorder(AudioCaptureDevice recorder)
     {
         try
         {
@@ -398,7 +411,7 @@ public class VoiceCraftService(
         }
     }
 
-    private static void StopAudioPlayer(IAudioPlaybackSession player)
+    private static void StopAudioPlayer(AudioPlaybackDevice player)
     {
         try
         {

@@ -48,7 +48,6 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
             if (_signalingServer != null)
                 throw new InvalidOperationException();
             _voiceCraftConfig = value;
-            _config = value.WebRtc;
         }
     }
 

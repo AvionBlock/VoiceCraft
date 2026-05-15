@@ -13,8 +13,10 @@ public class OpusAudioEncoder: IAudioEncoder
 
     public OpusAudioEncoder()
     {
+        var staticallyLinkedRuntime = OperatingSystem.IsBrowser() || OperatingSystem.IsIOS();
         _opusEncoder = new OpusEncoder(Constants.SampleRate, Constants.RecordingChannels,
-            OpusPredefinedValues.OPUS_APPLICATION_VOIP);
+            OpusPredefinedValues.OPUS_APPLICATION_VOIP,
+            staticallyLinkedRuntime);
 
         // On iOS, this CTL can return OPUS_BAD_ARG in some runtime/package combinations.
         // It's an optimization hint, so we safely skip it if unsupported.
@@ -43,7 +45,7 @@ public class OpusAudioEncoder: IAudioEncoder
     
     public void Dispose()
     {
-        Dispose(false);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
     

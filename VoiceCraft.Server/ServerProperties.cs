@@ -17,6 +17,7 @@ public class ServerProperties
     private Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig => _properties.DefaultAudioEffectsConfig;
 
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
+    public WebRtcVoiceCraftServer.WebRtcVoiceCraftConfig WebRtcConfig => _properties.WebRtcConfig;
     public McWssMcApiServer.McWssMcApiConfig McWssConfig => _properties.McWssConfig;
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig => _properties.McHttpConfig;
     public TcpMcApiServer.McTcpConfig McTcpConfig => _properties.McTcpConfig;
@@ -58,8 +59,8 @@ public class ServerProperties
             _properties.McTcpConfig.Port = options.TransportPort.Value;
             _properties.McHttpConfig.Hostname = SetUriPort(_properties.McHttpConfig.Hostname, options.TransportPort.Value);
             _properties.McWssConfig.Hostname = SetUriPort(_properties.McWssConfig.Hostname, options.TransportPort.Value);
-            _properties.VoiceCraftConfig.WebRtc.SignalingUrl =
-                SetUriPort(_properties.VoiceCraftConfig.WebRtc.SignalingUrl, options.TransportPort.Value);
+            _properties.WebRtcConfig.SignalingUrl =
+                SetUriPort(_properties.WebRtcConfig.SignalingUrl, options.TransportPort.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(options.TransportHost))
@@ -67,8 +68,8 @@ public class ServerProperties
             _properties.McTcpConfig.Hostname = options.TransportHost;
             _properties.McHttpConfig.Hostname = SetUriHost(_properties.McHttpConfig.Hostname, options.TransportHost);
             _properties.McWssConfig.Hostname = SetUriHost(_properties.McWssConfig.Hostname, options.TransportHost);
-            _properties.VoiceCraftConfig.WebRtc.SignalingUrl =
-                SetUriHost(_properties.VoiceCraftConfig.WebRtc.SignalingUrl, options.TransportHost);
+            _properties.WebRtcConfig.SignalingUrl =
+                SetUriHost(_properties.WebRtcConfig.SignalingUrl, options.TransportHost);
         }
 
         if (options.TransportMode.Length > 0)
@@ -162,7 +163,7 @@ public class ServerProperties
         _properties.McHttpConfig.Enabled = false;
         _properties.McTcpConfig.Enabled = false;
         _properties.McWssConfig.Enabled = false;
-        _properties.VoiceCraftConfig.WebRtc.Enabled = false;
+        _properties.WebRtcConfig.Enabled = false;
 
         foreach (var transportMode in ParseTransportModes(transportModes))
         {
@@ -182,7 +183,7 @@ public class ServerProperties
                     break;
                 case "webrtc":
                 case "rtc":
-                    _properties.VoiceCraftConfig.WebRtc.Enabled = true;
+                    _properties.WebRtcConfig.Enabled = true;
                     break;
                 default:
                     throw new ArgumentException(
@@ -231,18 +232,7 @@ public class ServerPropertiesStructure
     public bool TelemetryEnabled { get; set; } = true;
     public string TelemetryToken { get; set; } = Guid.NewGuid().ToString("N");
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig { get; set; } = new();
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public WebRtcVoiceCraftServer.WebRtcVoiceCraftConfig? WebRtcConfig
-    {
-        get => null;
-        set
-        {
-            if (value != null)
-                VoiceCraftConfig.WebRtc = value;
-        }
-    }
-
+    public WebRtcVoiceCraftServer.WebRtcVoiceCraftConfig WebRtcConfig { get; set; } = new();
     public McWssMcApiServer.McWssMcApiConfig McWssConfig { get; set; } = new();
     public HttpMcApiServer.HttpMcApiConfig McHttpConfig { get; set; } = new();
     public TcpMcApiServer.McTcpConfig McTcpConfig { get; set; } = new();

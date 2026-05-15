@@ -9,7 +9,7 @@ namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
 {
-    private readonly IVoiceCraftAudioService _audioService;
+    private readonly AudioService _audioService;
     private readonly InputSettings _inputSettings;
     private readonly SettingsService _settingsService;
 
@@ -36,7 +36,7 @@ public partial class InputSettingsDataViewModel : ObservableObject, IDisposable
     private bool _disposed;
     private bool _updating;
 
-    public InputSettingsDataViewModel(SettingsService settingsService, IVoiceCraftAudioService audioService)
+    public InputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
         _audioService = audioService;
         _inputSettings = settingsService.InputSettings;

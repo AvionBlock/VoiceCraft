@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
 using Microsoft.Extensions.DependencyInjection;
+using SoundFlow.Abstracts;
 using VoiceCraft.Client.Browser.Audio;
 using VoiceCraft.Client.Browser.Permissions;
 using VoiceCraft.Client.Services;
@@ -27,9 +28,7 @@ internal sealed class Program
         App.ServiceCollection.AddSingleton<StorageService>(nativeStorage);
         App.ServiceCollection.AddSingleton<HotKeyService, NativeHotKeyService>();
         App.ServiceCollection.AddSingleton<IBackgroundService>(x => new NativeBackgroundService(x.GetRequiredService));
-        App.ServiceCollection.AddSingleton<IVoiceCraftAudioService, BrowserAudioService>();
-        App.ServiceCollection.AddTransient<IAudioEncoder, BrowserOpusAudioEncoder>();
-        App.ServiceCollection.AddTransient<IAudioDecoder, BrowserOpusAudioDecoder>();
+        App.ServiceCollection.AddSingleton<AudioEngine, BrowserMiniAudioEngine>();
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new WebRtcVoiceCraftClient(
                 x.GetRequiredService<IAudioEncoder>(),

@@ -63,6 +63,7 @@ public static class App
             //Setup Servers
             liteNetServer.Config = properties.VoiceCraftConfig;
             webRtcServer.VoiceCraftConfig = properties.VoiceCraftConfig;
+            webRtcServer.Config = properties.WebRtcConfig;
             mcWssMcApiServer.Config = properties.McWssConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
             tcpMcApiServer.Config = properties.McTcpConfig;

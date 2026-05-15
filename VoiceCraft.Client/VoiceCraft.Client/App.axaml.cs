@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -244,8 +243,6 @@ public class App : Application
                 x.GetServices<RegisteredAudioPreprocessor>(),
                 x.GetServices<RegisteredAudioClipper>()
             ));
-        if (ServiceCollection.All(x => x.ServiceType != typeof(IVoiceCraftAudioService)))
-            ServiceCollection.AddSingleton<IVoiceCraftAudioService>(x => x.GetRequiredService<AudioService>());
         ServiceCollection.AddTransient<IAudioEncoder, OpusAudioEncoder>();
         ServiceCollection.AddTransient<IAudioDecoder, OpusAudioDecoder>();
         ServiceCollection.AddSingleton(new RegisteredAudioClipper(

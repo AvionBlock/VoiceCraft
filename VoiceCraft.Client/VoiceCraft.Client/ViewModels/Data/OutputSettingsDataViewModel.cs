@@ -9,7 +9,7 @@ namespace VoiceCraft.Client.ViewModels.Data;
 
 public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
 {
-    private readonly IVoiceCraftAudioService _audioService;
+    private readonly AudioService _audioService;
     private readonly OutputSettings _outputSettings;
     private readonly SettingsService _settingsService;
 
@@ -24,7 +24,7 @@ public partial class OutputSettingsDataViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial ObservableCollection<AudioDeviceInfo> OutputDevices { get; set; } = [];
     [ObservableProperty] public partial ObservableCollection<RegisteredAudioClipper> AudioClippers { get; set; } = [];
 
-    public OutputSettingsDataViewModel(SettingsService settingsService, IVoiceCraftAudioService audioService)
+    public OutputSettingsDataViewModel(SettingsService settingsService, AudioService audioService)
     {
         _outputSettings = settingsService.OutputSettings;
         _audioService = audioService;

@@ -8,59 +8,11 @@ using SoundFlow.Backends.MiniAudio.Devices;
 using SoundFlow.Backends.MiniAudio.Enums;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
-using VoiceCraft.Client.Audio;
 using VoiceCraft.Core.Interfaces;
 
 namespace VoiceCraft.Client.Services;
 
-public delegate void AudioCaptureFrameHandler(Span<float> buffer);
-
-public interface IVoiceCraftAudioService
-{
-    IEnumerable<RegisteredAudioPreprocessor> RegisteredAudioPreprocessors { get; }
-    IEnumerable<RegisteredAudioClipper> RegisteredAudioClippers { get; }
-    RegisteredAudioPreprocessor? GetAudioPreprocessor(Guid id);
-    RegisteredAudioClipper? GetAudioClipper(Guid id);
-    IEnumerable<AudioDeviceInfo> GetInputDevices();
-    IEnumerable<AudioDeviceInfo> GetOutputDevices();
-    IAudioCaptureSession InitializeCaptureSession(
-        int sampleRate,
-        int channels,
-        uint frameSize,
-        string inputDevice,
-        bool hardwarePreprocessorsEnabled);
-    IAudioPlaybackSession InitializePlaybackSession(
-        int sampleRate,
-        int channels,
-        uint frameSize,
-        string outputDevice,
-        Func<Span<float>, int> read);
-    IAudioPlaybackSession InitializeTonePlaybackSession(
-        int sampleRate,
-        int channels,
-        uint frameSize,
-        string outputDevice,
-        Func<Span<float>, int> read);
-}
-
-public interface IAudioCaptureSession : IDisposable
-{
-    bool IsRunning { get; }
-    event AudioCaptureFrameHandler? OnAudioProcessed;
-    void Start();
-    void Stop();
-}
-
-public interface IAudioPlaybackSession : IDisposable
-{
-    bool IsRunning { get; }
-    void Start();
-    void Stop();
-    void Pump();
-    void PlayTone(TimeSpan duration, float frequency);
-}
-
-public class AudioService : IVoiceCraftAudioService
+public class AudioService
 {
     private readonly AudioEngine _engine;
 
@@ -189,21 +141,6 @@ public class AudioService : IVoiceCraftAudioService
         return _engine.InitializeCaptureDevice(device, format, config);
     }
 
-    public IAudioCaptureSession InitializeCaptureSession(
-        int sampleRate,
-        int channels,
-        uint frameSize,
-        string inputDevice,
-        bool hardwarePreprocessorsEnabled)
-    {
-        return new SoundFlowCaptureSession(InitializeCaptureDevice(
-            sampleRate,
-            channels,
-            frameSize,
-            inputDevice,
-            hardwarePreprocessorsEnabled));
-    }
-
     public AudioPlaybackDevice InitializePlaybackDevice(
         int sampleRate,
         int channels,
@@ -240,95 +177,6 @@ public class AudioService : IVoiceCraftAudioService
             device = _engine.PlaybackDevices.FirstOrDefault(x => x.IsDefault);
 
         return _engine.InitializePlaybackDevice(device, format, config);
-    }
-
-    public IAudioPlaybackSession InitializePlaybackSession(
-        int sampleRate,
-        int channels,
-        uint frameSize,
-        string outputDevice,
-        Func<Span<float>, int> read)
-    {
-        var device = InitializePlaybackDevice(sampleRate, channels, frameSize, outputDevice);
-        var callbackComponent = new CallbackProvider(device.Engine, device.Format, read);
-        device.MasterMixer.AddComponent(callbackComponent);
-        return new SoundFlowPlaybackSession(device);
-    }
-
-    public IAudioPlaybackSession InitializeTonePlaybackSession(
-        int sampleRate,
-        int channels,
-        uint frameSize,
-        string outputDevice,
-        Func<Span<float>, int> read)
-    {
-        var device = InitializePlaybackDevice(sampleRate, channels, frameSize, outputDevice);
-        var callbackComponent = new CallbackProvider(device.Engine, device.Format, read);
-        callbackComponent.ConnectInput(new SoundFlow.Components.Oscillator(device.Engine, device.Format));
-        device.MasterMixer.AddComponent(callbackComponent);
-        return new SoundFlowPlaybackSession(device);
-    }
-
-    private sealed class SoundFlowCaptureSession(AudioCaptureDevice device) : IAudioCaptureSession
-    {
-        public bool IsRunning => device.IsRunning;
-        public event AudioCaptureFrameHandler? OnAudioProcessed;
-
-        public void Start()
-        {
-            device.OnAudioProcessed += DeviceOnAudioProcessed;
-            device.Start();
-        }
-
-        public void Stop()
-        {
-            device.OnAudioProcessed -= DeviceOnAudioProcessed;
-            device.Stop();
-        }
-
-        public void Dispose()
-        {
-            Stop();
-            device.Dispose();
-        }
-
-        private void DeviceOnAudioProcessed(Span<float> buffer, Capability _)
-        {
-            OnAudioProcessed?.Invoke(buffer);
-        }
-    }
-
-    private sealed class SoundFlowPlaybackSession(AudioPlaybackDevice device) : IAudioPlaybackSession
-    {
-        private readonly ToneProvider _toneProvider = new(device.Engine, device.Format);
-
-        public bool IsRunning => device.IsRunning;
-
-        public void Start()
-        {
-            device.MasterMixer.AddComponent(_toneProvider);
-            device.Start();
-        }
-
-        public void Stop()
-        {
-            device.Stop();
-        }
-
-        public void Pump()
-        {
-        }
-
-        public void PlayTone(TimeSpan duration, float frequency)
-        {
-            _toneProvider.Play(duration, frequency);
-        }
-
-        public void Dispose()
-        {
-            Stop();
-            device.Dispose();
-        }
     }
 
     private class EmptyRegisteredAudioPreprocessor()

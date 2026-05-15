@@ -5,7 +5,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Nullable>enable</Nullable>
         <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
-        <WasmBuildNative>true</WasmBuildNative>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,7 +16,4 @@
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <NativeFileReference Include="opus.a"/>
-    </ItemGroup>
 </Project>
