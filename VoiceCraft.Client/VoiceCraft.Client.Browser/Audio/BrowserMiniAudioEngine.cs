@@ -174,6 +174,7 @@ public sealed class BrowserMiniAudioEngine : AudioEngine
 
 internal sealed class BrowserAudioCaptureDevice : AudioCaptureDevice
 {
+    private const int DefaultFrameSize = 1024;
     private readonly Lock _lock = new();
     private readonly string _deviceId;
     private readonly float[] _buffer;
@@ -186,9 +187,9 @@ internal sealed class BrowserAudioCaptureDevice : AudioCaptureDevice
         Capability = Capability.Record;
         Info = deviceInfo;
         _deviceId = deviceInfo.IsDefault ? string.Empty : deviceInfo.Name;
-        _frameSize = config is MiniAudioDeviceConfig { PeriodSizeInFrames: > 0 } deviceConfig
+        _frameSize = BrowserAudioBuffer.NormalizeFrameSize(config is MiniAudioDeviceConfig { PeriodSizeInFrames: > 0 } deviceConfig
             ? (int)deviceConfig.PeriodSizeInFrames
-            : 960;
+            : DefaultFrameSize);
         _buffer = new float[Math.Max(1, format.Channels) * _frameSize];
     }
 
@@ -202,7 +203,7 @@ internal sealed class BrowserAudioCaptureDevice : AudioCaptureDevice
             JsAudio.StartCapture(Format.SampleRate, Format.Channels, _frameSize, _deviceId);
             IsRunning = true;
             _cts = new CancellationTokenSource();
-            _ = Task.Run(() => CaptureLoopAsync(_cts.Token));
+            _ = CaptureLoopAsync(_cts.Token);
             Engine.RaiseDeviceStarted(this);
         }
     }
@@ -267,6 +268,7 @@ internal sealed class BrowserAudioCaptureDevice : AudioCaptureDevice
 
 internal sealed class BrowserAudioPlaybackDevice : AudioPlaybackDevice
 {
+    private const int DefaultFrameSize = 1024;
     private readonly Lock _lock = new();
     private readonly string _deviceId;
     private readonly float[] _buffer;
@@ -279,9 +281,9 @@ internal sealed class BrowserAudioPlaybackDevice : AudioPlaybackDevice
         Capability = Capability.Playback;
         Info = deviceInfo;
         _deviceId = deviceInfo.IsDefault ? string.Empty : deviceInfo.Name;
-        _frameSize = config is MiniAudioDeviceConfig { PeriodSizeInFrames: > 0 } deviceConfig
+        _frameSize = BrowserAudioBuffer.NormalizeFrameSize(config is MiniAudioDeviceConfig { PeriodSizeInFrames: > 0 } deviceConfig
             ? (int)deviceConfig.PeriodSizeInFrames
-            : 960;
+            : DefaultFrameSize);
         _buffer = new float[Math.Max(1, format.Channels) * _frameSize];
     }
 
@@ -295,7 +297,7 @@ internal sealed class BrowserAudioPlaybackDevice : AudioPlaybackDevice
             JsAudio.StartPlayback(Format.SampleRate, Format.Channels, _frameSize, _deviceId);
             IsRunning = true;
             _cts = new CancellationTokenSource();
-            _ = Task.Run(() => PlaybackLoopAsync(_cts.Token));
+            _ = PlaybackLoopAsync(_cts.Token);
             Engine.RaiseDeviceStarted(this);
         }
     }
@@ -357,6 +359,27 @@ internal sealed class BrowserAudioPlaybackDevice : AudioPlaybackDevice
             LogService.Log(ex);
             Stop();
         }
+    }
+}
+
+internal static class BrowserAudioBuffer
+{
+    public static int NormalizeFrameSize(int frameSize)
+    {
+        var clamped = Math.Clamp(frameSize, 256, 16_384);
+        if (IsPowerOfTwo(clamped))
+            return clamped;
+
+        var value = 256;
+        while (value < clamped && value < 16_384)
+            value <<= 1;
+
+        return value;
+    }
+
+    private static bool IsPowerOfTwo(int value)
+    {
+        return value > 0 && (value & (value - 1)) == 0;
     }
 }
 

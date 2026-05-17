@@ -12,9 +12,10 @@ using VoiceCraft.Network.Packets.VcPackets.Response;
 
 namespace VoiceCraft.Client.Browser;
 
-public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecoder> decoderFactory)
-    : VoiceCraftClient(audioEncoder, decoderFactory)
+public class WebRtcVoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Func<IAudioDecoder> decoderFactory)
+    : VoiceCraftClient(audioEncoderFactory, decoderFactory)
 {
+    private static readonly SemaphoreSlim ConnectionLock = new(1, 1);
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
 
@@ -24,7 +25,7 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
 
     public override Task<ServerInfo> PingAsync(string ip, int port, CancellationToken token = default)
     {
-        return Task.FromException<ServerInfo>(new NotSupportedException("WebRTC ping is not implemented yet."));
+        return PingCoreAsync(ip, port, token);
     }
 
     public override async Task ConnectAsync(
@@ -39,6 +40,7 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
         ConnectionState = VcConnectionState.Connecting;
         Reset();
 
+        await ConnectionLock.WaitAsync();
         var requestId = Guid.NewGuid();
         try
         {
@@ -57,6 +59,10 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
         catch (Exception ex)
         {
             await DisconnectAsync(ex.Message);
+        }
+        finally
+        {
+            ConnectionLock.Release();
         }
     }
 
@@ -93,6 +99,32 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
         PacketPool<T>.Return(packet);
     }
 
+    private async Task<ServerInfo> PingCoreAsync(string ip, int port, CancellationToken token)
+    {
+        if (ConnectionState != VcConnectionState.Disconnected)
+            throw new InvalidOperationException("Cannot ping while a WebRTC connection is active.");
+
+        await ConnectionLock.WaitAsync(token);
+        try
+        {
+            await JsWebRtc.ConnectAsync(ToSignalingUrl(ip, port));
+            token.ThrowIfCancellationRequested();
+            var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket())
+                .Set(Environment.TickCount);
+            SendPacket(packet);
+            return await GetResponseAsync<VcInfoResponsePacket, ServerInfo>(
+                Guid.Empty,
+                response => new ServerInfo(response),
+                TimeSpan.FromSeconds(8),
+                token);
+        }
+        finally
+        {
+            JsWebRtc.Close();
+            ConnectionLock.Release();
+        }
+    }
+
     public override void SendPacket<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
     {
         try
@@ -124,7 +156,7 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
         Func<TPacket, TResult> selector,
         TimeSpan timeout,
         CancellationToken token = default)
-        where TPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
+        where TPacket : IVoiceCraftPacket
     {
         var startedAt = DateTime.UtcNow;
         while (DateTime.UtcNow - startedAt < timeout)
@@ -147,7 +179,7 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
     private (bool Found, TResult? Value) TryReadResponse<TPacket, TResult>(
         Guid requestId,
         Func<TPacket, TResult> selector)
-        where TPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
+        where TPacket : IVoiceCraftPacket
     {
         while (JsWebRtc.Receive() is { } data)
         {
@@ -159,7 +191,8 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
                 TResult? matchedValue = default;
                 ProcessPacket(_reader, packet =>
                 {
-                    if (packet is TPacket typedPacket && typedPacket.RequestId == requestId)
+                    if (packet is TPacket typedPacket &&
+                        (typedPacket is not IVoiceCraftRIdPacket rIdPacket || rIdPacket.RequestId == requestId))
                     {
                         matchedValue = selector(typedPacket);
                         found = true;

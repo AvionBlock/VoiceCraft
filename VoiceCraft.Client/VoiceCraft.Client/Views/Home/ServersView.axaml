@@ -12,7 +12,6 @@
     <Panel>
         <ListBox Background="Transparent"
                  ItemsSource="{Binding ServersSettings.Servers}"
-                 SelectedItem="{Binding SelectedServer}"
                  SelectionMode="Single">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
@@ -22,7 +21,8 @@
             </ListBox.Styles>
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type server:ServerDataViewModel}">
-                    <Grid RowDefinitions="Auto, Auto, Auto">
+                    <Grid RowDefinitions="Auto, Auto, Auto"
+                          Background="Transparent">
                         <TextBlock Grid.Row="0"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"

@@ -207,6 +207,30 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         }
     }
 
+    protected override void SendInfoResponsePacket(object? data, VcInfoResponsePacket packet)
+    {
+        if (data is not WebRtcSession { DataChannel: { } dataChannel })
+        {
+            PacketPool<VcInfoResponsePacket>.Return(packet);
+            return;
+        }
+
+        try
+        {
+            lock (_writer)
+            {
+                _writer.Reset();
+                _writer.Put((byte)packet.PacketType);
+                _writer.Put(packet);
+                dataChannel.send(_writer.CopyData());
+            }
+        }
+        finally
+        {
+            PacketPool<VcInfoResponsePacket>.Return(packet);
+        }
+    }
+
     protected override void RejectRequest(VcLoginRequestPacket packet, string reason, object? data)
     {
         if (data is not WebRtcSession session || session.DataChannel == null) return;
@@ -367,17 +391,17 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
 
     private void CloseSession(WebRtcSession session, string reason)
     {
-        if (_sessions.TryRemove(session.SignalingSocket, out _))
-        {
-            if (session.DataChannel != null)
-                _channels.TryRemove(session.DataChannel, out _);
+        if (!_sessions.TryRemove(session.SignalingSocket, out _))
+            return;
 
-            if (session.Peer != null)
-            {
-                session.Peer.SetConnectionState(VcConnectionState.Disconnected);
-                if (session.Peer.Tag is VoiceCraftNetworkEntity { Destroyed: false } entity)
-                    World.DestroyEntity(entity.Id);
-            }
+        if (session.DataChannel != null)
+            _channels.TryRemove(session.DataChannel, out _);
+
+        if (session.Peer != null)
+        {
+            session.Peer.SetConnectionState(VcConnectionState.Disconnected);
+            if (session.Peer.Tag is VoiceCraftNetworkEntity { Destroyed: false } entity)
+                World.DestroyEntity(entity.Id);
         }
 
         try

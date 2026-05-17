@@ -2,11 +2,21 @@ let peerConnection = null;
 let signalingSocket = null;
 let dataChannel = null;
 let incomingPackets = [];
+let pendingCandidates = [];
 let closeReason = null;
+
+async function addRemoteCandidateAsync(candidate) {
+    try {
+        await peerConnection.addIceCandidate(candidate);
+    } catch (error) {
+        console.warn("[VoiceCraft WebRTC] ICE candidate rejected", error);
+    }
+}
 
 export async function connectAsync(signalingUrl) {
     close();
     closeReason = null;
+    pendingCandidates = [];
 
     if (location.protocol === "https:" && signalingUrl.startsWith("ws://") && !signalingUrl.includes("127.0.0.1") && !signalingUrl.includes("localhost"))
         signalingUrl = "wss://" + signalingUrl.substring("ws://".length);
@@ -72,17 +82,24 @@ export async function connectAsync(signalingUrl) {
                     type: "answer",
                     sdp: message.sdp
                 });
+                for (const candidate of pendingCandidates)
+                    await addRemoteCandidateAsync(candidate);
+                pendingCandidates = [];
                 break;
             case 2:
             case "Candidate":
             case "candidate":
                 if (message.candidate) {
                     console.info("[VoiceCraft WebRTC] candidate received");
-                    await peerConnection.addIceCandidate({
+                    const candidate = {
                         candidate: message.candidate,
                         sdpMid: message.sdpMid ?? null,
                         sdpMLineIndex: message.sdpMLineIndex ?? 0
-                    });
+                    };
+                    if (peerConnection.remoteDescription)
+                        await addRemoteCandidateAsync(candidate);
+                    else
+                        pendingCandidates.push(candidate);
                 }
                 break;
         }
@@ -125,6 +142,7 @@ export function consumeCloseReason() {
 
 export function close() {
     incomingPackets = [];
+    pendingCandidates = [];
     closeReason = null;
 
     if (dataChannel) {

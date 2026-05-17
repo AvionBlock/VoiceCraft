@@ -53,7 +53,8 @@ public partial class SelectedServerViewModel(
         }
 
         _cts = new CancellationTokenSource();
-        Task.Run(() => PingerLogic(_cts.Token), _cts.Token);
+        _ = UpdateClientLoopAsync(_cts.Token);
+        _ = PingerLogic(_cts.Token);
     }
 
     public override void OnDisappearing()
@@ -110,42 +111,60 @@ public partial class SelectedServerViewModel(
 
     private async Task PingerLogic(CancellationToken token)
     {
-        _ = Task.Run(async () =>
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (SelectedServer != null)
+                    {
+                        var result = await client.PingAsync(SelectedServer.Ip, SelectedServer.Port, token);
+                        Latency = Localizer.Get(
+                            $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - result.Tick - Constants.TickRate, 0)}");
+                        Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{result.Motd}");
+                        PositioningType =
+                            Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{result.PositioningType}");
+                        ConnectedClients =
+                            Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{result.Clients}");
+                        Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
+                    }
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch
+                {
+                    Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
+                    Motd = "";
+                    PositioningType = "";
+                    ConnectedClients = "";
+                    Version = "";
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(4), token);
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // Expected while leaving the selected server view.
+        }
+    }
+
+    private async Task UpdateClientLoopAsync(CancellationToken token)
+    {
+        try
         {
             while (!token.IsCancellationRequested)
             {
                 client.Update();
                 await Task.Delay(Constants.TickRate, token);
             }
-        }, token);
-
-        while (!token.IsCancellationRequested)
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            try
-            {
-                if (SelectedServer != null)
-                {
-                    var result = await client.PingAsync(SelectedServer.Ip, SelectedServer.Port, token);
-                    Latency = Localizer.Get(
-                        $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - result.Tick - Constants.TickRate, 0)}");
-                    Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{result.Motd}");
-                    PositioningType =
-                        Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{result.PositioningType}");
-                    ConnectedClients =
-                        Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{result.Clients}");
-                    Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
-                }
-            }
-            catch
-            {
-                Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
-                Motd = "";
-                PositioningType = "";
-                ConnectedClients = "";
-                Version = "";
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(4), token);
+            // Expected while leaving the selected server view.
         }
     }
 }

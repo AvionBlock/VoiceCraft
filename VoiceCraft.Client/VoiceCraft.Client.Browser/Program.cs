@@ -31,7 +31,7 @@ internal sealed class Program
         App.ServiceCollection.AddSingleton<AudioEngine, BrowserMiniAudioEngine>();
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new WebRtcVoiceCraftClient(
-                x.GetRequiredService<IAudioEncoder>(),
+                () => x.GetRequiredService<IAudioEncoder>(),
                 x.GetRequiredService<IAudioDecoder>));
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 
