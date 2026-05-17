@@ -27,6 +27,7 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
     private readonly ConcurrentDictionary<RTCDataChannel, WebRtcSession> _channels = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
+    private readonly object _acceptLock = new();
     private WebSocketServer? _signalingServer;
 
     public WebRtcVoiceCraftConfig Config
@@ -175,28 +176,34 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
 
         try
         {
-            if (_sessions.Count >= MaxClients)
-                throw new InvalidOperationException("VoiceCraft.DisconnectReason.ServerFull");
+            lock (_acceptLock)
+            {
+                if (ConnectedPeers >= MaxClients)
+                    throw new InvalidOperationException("VoiceCraft.DisconnectReason.ServerFull");
 
-            var peer = new WebRtcVoiceCraftNetPeer(
-                session.DataChannel,
-                packet.UserGuid,
-                packet.ServerUserGuid,
-                packet.Locale,
-                packet.PositioningType);
-            session.Peer = peer;
-            peer.Tag = new VoiceCraftNetworkEntity(peer, World.GetNextId());
+                var peer = new WebRtcVoiceCraftNetPeer(
+                    session.DataChannel,
+                    packet.UserGuid,
+                    packet.ServerUserGuid,
+                    packet.Locale,
+                    packet.PositioningType);
+                session.Peer = peer;
+                peer.Tag = new VoiceCraftNetworkEntity(peer, World.GetNextId());
 
-            if (peer.Tag is not VoiceCraftNetworkEntity entity)
-                throw new InvalidOperationException("VoiceCraft.DisconnectReason.Error");
+                if (peer.Tag is not VoiceCraftNetworkEntity entity)
+                    throw new InvalidOperationException("VoiceCraft.DisconnectReason.Error");
 
-            World.AddEntity(entity);
-            SendPacket(peer,
-                PacketPool<VcAcceptResponsePacket>.GetPacket(() => new VcAcceptResponsePacket()).Set(packet.RequestId));
+                World.AddEntity(entity);
+                SendPacket(peer,
+                    PacketPool<VcAcceptResponsePacket>.GetPacket(() => new VcAcceptResponsePacket())
+                        .Set(packet.RequestId));
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            CloseSession(session, "VoiceCraft.DisconnectReason.Error");
+            RejectRequest(packet, string.IsNullOrWhiteSpace(ex.Message)
+                ? "VoiceCraft.DisconnectReason.Error"
+                : ex.Message, session);
         }
     }
 

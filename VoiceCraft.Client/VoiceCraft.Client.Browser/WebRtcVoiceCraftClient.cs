@@ -71,6 +71,9 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
                 ProcessPacket(_reader, ExecutePacket);
             }
         }
+
+        if (TryConsumeCloseReason(out var reason))
+            _ = DisconnectAsync(reason);
     }
 
     public override Task DisconnectAsync(string? reason = null)
@@ -127,9 +130,13 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
         while (DateTime.UtcNow - startedAt < timeout)
         {
             token.ThrowIfCancellationRequested();
+
             var result = TryReadResponse<TPacket, TResult>(requestId, selector);
             if (result.Found)
                 return result.Value!;
+
+            if (TryConsumeCloseReason(out var closeReason))
+                throw new InvalidOperationException(closeReason);
 
             await Task.Delay(1, token);
         }
@@ -157,6 +164,11 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
                         matchedValue = selector(typedPacket);
                         found = true;
                     }
+                    else if (packet is VcDenyResponsePacket denyResponsePacket &&
+                             denyResponsePacket.RequestId == requestId)
+                    {
+                        throw new InvalidOperationException(denyResponsePacket.Reason);
+                    }
                     else
                     {
                         ExecutePacket(packet);
@@ -169,6 +181,12 @@ public class WebRtcVoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecod
         }
 
         return (false, default);
+    }
+
+    private static bool TryConsumeCloseReason(out string reason)
+    {
+        reason = JsWebRtc.ConsumeCloseReason();
+        return !string.IsNullOrWhiteSpace(reason);
     }
 
     private static string ToSignalingUrl(string ip, int port)
@@ -191,6 +209,9 @@ internal static partial class JsWebRtc
 
     [JSImport("receive", "webrtc.js")]
     public static partial byte[]? Receive();
+
+    [JSImport("consumeCloseReason", "webrtc.js")]
+    public static partial string ConsumeCloseReason();
 
     [JSImport("close", "webrtc.js")]
     public static partial void Close();

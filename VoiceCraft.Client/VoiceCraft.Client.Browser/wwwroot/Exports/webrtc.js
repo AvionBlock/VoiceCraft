@@ -2,9 +2,11 @@ let peerConnection = null;
 let signalingSocket = null;
 let dataChannel = null;
 let incomingPackets = [];
+let closeReason = null;
 
 export async function connectAsync(signalingUrl) {
     close();
+    closeReason = null;
 
     if (location.protocol === "https:" && signalingUrl.startsWith("ws://") && !signalingUrl.includes("127.0.0.1") && !signalingUrl.includes("localhost"))
         signalingUrl = "wss://" + signalingUrl.substring("ws://".length);
@@ -16,10 +18,7 @@ export async function connectAsync(signalingUrl) {
             { urls: "stun:stun.l.google.com:19302" }
         ]
     });
-    dataChannel = peerConnection.createDataChannel("voicecraft", {
-        ordered: false,
-        maxRetransmits: 0
-    });
+    dataChannel = peerConnection.createDataChannel("voicecraft");
     dataChannel.binaryType = "arraybuffer";
 
     signalingSocket = new WebSocket(signalingUrl);
@@ -35,6 +34,9 @@ export async function connectAsync(signalingUrl) {
         };
         signalingSocket.onclose = event => {
             console.info("[VoiceCraft WebRTC] signaling closed", event.code, event.reason);
+            const reason = event.reason || "VoiceCraft.DisconnectReason.ConnectionClosed";
+            closeReason ??= reason;
+            reject(new Error(reason));
         };
     });
 
@@ -49,6 +51,9 @@ export async function connectAsync(signalingUrl) {
         };
         dataChannel.onclose = () => {
             console.info("[VoiceCraft WebRTC] data channel closed");
+            const reason = "VoiceCraft.DisconnectReason.ConnectionClosed";
+            closeReason ??= reason;
+            reject(new Error(reason));
         };
     });
 
@@ -86,7 +91,7 @@ export async function connectAsync(signalingUrl) {
     peerConnection.onicecandidate = event => {
         if (!event.candidate || signalingSocket.readyState !== WebSocket.OPEN) return;
         signalingSocket.send(JSON.stringify({
-            type: "candidate",
+            type: 2,
             candidate: event.candidate.candidate,
             sdpMid: event.candidate.sdpMid,
             sdpMLineIndex: event.candidate.sdpMLineIndex
@@ -97,7 +102,7 @@ export async function connectAsync(signalingUrl) {
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
     signalingSocket.send(JSON.stringify({
-        type: "offer",
+        type: 0,
         sdp: offer.sdp
     }));
     await dataChannelOpen;
@@ -112,20 +117,36 @@ export function receive() {
     return incomingPackets.shift() ?? null;
 }
 
+export function consumeCloseReason() {
+    const reason = closeReason;
+    closeReason = null;
+    return reason ?? "";
+}
+
 export function close() {
     incomingPackets = [];
+    closeReason = null;
 
     if (dataChannel) {
+        dataChannel.onopen = null;
+        dataChannel.onerror = null;
+        dataChannel.onmessage = null;
+        dataChannel.onclose = null;
         dataChannel.close();
         dataChannel = null;
     }
 
     if (peerConnection) {
+        peerConnection.onicecandidate = null;
         peerConnection.close();
         peerConnection = null;
     }
 
     if (signalingSocket) {
+        signalingSocket.onopen = null;
+        signalingSocket.onerror = null;
+        signalingSocket.onmessage = null;
+        signalingSocket.onclose = null;
         signalingSocket.close();
         signalingSocket = null;
     }
