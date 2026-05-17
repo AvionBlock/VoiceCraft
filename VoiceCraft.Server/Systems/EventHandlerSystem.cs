@@ -678,12 +678,7 @@ public class EventHandlerSystem : IDisposable
             }
 
             BroadcastMcApi(PacketPool<McApiOnEntityAudioReceivedPacket>.GetPacket(() =>
-                new McApiOnEntityAudioReceivedPacket()).Set(
-                entity.Id,
-                timestamp,
-                frameLoudness,
-                buffer.Length,
-                buffer));
+                new McApiOnEntityAudioReceivedPacket()).Set(entity.Id, timestamp, frameLoudness));
         });
     }
 
