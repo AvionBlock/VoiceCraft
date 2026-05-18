@@ -11,7 +11,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
     private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
-    public async Task StartServiceAsync<T>(Func<T, Action<string>, Action<string>, Task> startAction) where T : notnull
+    public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
         var backgroundType = typeof(T);
         if (Services.ContainsKey(backgroundType))
@@ -64,13 +64,13 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
         public Task? RunningTask { get; private set; }
         public object TaskInstance { get; } = taskInstance;
 
-        public async Task StartAsync(Func<Task> startAction)
+        public async Task StartAsync(Action startAction)
         {
-            RunningTask = Task.Run(async () =>
+            RunningTask = Task.Run(() =>
             {
                 try
                 {
-                    await startAction.Invoke();
+                    startAction.Invoke();
                 }
                 finally
                 {
