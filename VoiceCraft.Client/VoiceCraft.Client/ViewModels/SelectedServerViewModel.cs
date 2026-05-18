@@ -54,7 +54,7 @@ public partial class SelectedServerViewModel(
 
         _cts = new CancellationTokenSource();
         _ = UpdateClientLoopAsync(_cts.Token);
-        _ = PingerLogic(_cts.Token);
+        _ = PingerLogicAsync(_cts.Token);
     }
 
     public override void OnDisappearing()
@@ -109,7 +109,7 @@ public partial class SelectedServerViewModel(
         navigationService.Back();
     }
 
-    private async Task PingerLogic(CancellationToken token)
+    private async Task PingerLogicAsync(CancellationToken token)
     {
         try
         {
@@ -130,10 +130,7 @@ public partial class SelectedServerViewModel(
                         Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
                     }
                 }
-                catch (OperationCanceledException) when (token.IsCancellationRequested)
-                {
-                    return;
-                }
+                //We want it to reset even on canceled exceptions.
                 catch
                 {
                     Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
@@ -146,7 +143,8 @@ public partial class SelectedServerViewModel(
                 await Task.Delay(TimeSpan.FromSeconds(4), token);
             }
         }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        // We don't need the when's. It's an extra unnecessary check.
+        catch (OperationCanceledException)
         {
             // Expected while leaving the selected server view.
         }
@@ -162,7 +160,8 @@ public partial class SelectedServerViewModel(
                 await Task.Delay(Constants.TickRate, token);
             }
         }
-        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        // We don't need the when's. It's an extra unnecessary check.
+        catch (OperationCanceledException)
         {
             // Expected while leaving the selected server view.
         }

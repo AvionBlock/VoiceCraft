@@ -5,11 +5,11 @@ using VoiceCraft.Client.Services;
 
 namespace VoiceCraft.Client.Browser;
 
-public sealed class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBackgroundService
+public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBackgroundService
 {
     private static readonly ConcurrentDictionary<Type, BackgroundTask> Services = new();
 
-    public Task StartServiceAsync<T>(Func<T, Action<string>, Action<string>, Task> startAction) where T : notnull
+    public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
         var backgroundType = typeof(T);
         if (Services.ContainsKey(backgroundType))
@@ -23,7 +23,7 @@ public sealed class NativeBackgroundService(Func<Type, object> backgroundFactory
         try
         {
             Services.TryAdd(backgroundType, backgroundTask);
-            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }));
+            await backgroundTask.StartAsync(() => startAction.Invoke(instance, _ => { }, _ => { }));
         }
         catch
         {
@@ -32,8 +32,6 @@ public sealed class NativeBackgroundService(Func<Type, object> backgroundFactory
             backgroundTask.Dispose();
             throw;
         }
-
-        return Task.CompletedTask;
     }
 
     public T? GetService<T>() where T : notnull
@@ -57,19 +55,19 @@ public sealed class NativeBackgroundService(Func<Type, object> backgroundFactory
         Services.TryRemove(task.TaskInstance.GetType(), out _);
     }
 
-    private sealed class BackgroundTask(object taskInstance) : IDisposable
+    private class BackgroundTask(object taskInstance) : IDisposable
     {
         public event Action<BackgroundTask>? OnCompleted;
         public Task? RunningTask { get; private set; }
         public object TaskInstance { get; } = taskInstance;
 
-        public void Start(Func<Task> startAction)
+        public async Task StartAsync(Action startAction)
         {
-            RunningTask = Task.Run(async () =>
+            RunningTask = Task.Run(() =>
             {
                 try
                 {
-                    await startAction.Invoke();
+                    startAction.Invoke();
                 }
                 finally
                 {
@@ -77,6 +75,11 @@ public sealed class NativeBackgroundService(Func<Type, object> backgroundFactory
                     OnCompleted?.Invoke(this);
                 }
             });
+            
+            while (RunningTask.Status < TaskStatus.Running)
+            {
+                await Task.Delay(10);
+            }
         }
 
         public void Dispose()

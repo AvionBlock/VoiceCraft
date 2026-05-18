@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,13 +23,12 @@ public partial class VoiceViewModel(
     : ViewModelBase, IDisposable
 {
     private VoiceCraftService? _service;
-    [ObservableProperty] public partial ObservableCollection<EntityDataViewModel> EntityViewModels { get; set; } = [];
+    [ObservableProperty] public partial ObservableCollection<EntityDataViewModel> Entities { get; set; } = [];
     [ObservableProperty] public partial bool IsDeafened { get; set; }
     [ObservableProperty] public partial bool IsMuted { get; set; }
     [ObservableProperty] public partial bool IsServerDeafened { get; set; }
     [ObservableProperty] public partial bool IsServerMuted { get; set; }
     [ObservableProperty] public partial bool IsSpeaking { get; set; }
-    [ObservableProperty] public partial EntityDataViewModel? SelectedEntity { get; set; }
     [ObservableProperty] public partial string StatusDescriptionText { get; set; } = string.Empty;
     [ObservableProperty] public partial string StatusTitleText { get; set; } = string.Empty;
     public override bool DisableBackButton { get; protected set; } = true;
@@ -50,15 +50,12 @@ public partial class VoiceViewModel(
 
         GC.SuppressFinalize(this);
     }
-
-    partial void OnSelectedEntityChanged(EntityDataViewModel? value)
+    
+    [RelayCommand]
+    private void OpenEntity(EntityDataViewModel? entity)
     {
-        if (value == null) return;
-        navigationService.PushModal<EntityDataSettingsViewModel>(new EntityDataSettingsNavigationData(value));
-        Task.Run(() =>
-        {
-            SelectedEntity = null; //This bug is annoying.
-        });
+        if (entity == null) return;
+        navigationService.PushModal<EntityDataSettingsViewModel>(new EntityDataSettingsNavigationData(entity));
     }
 
     [RelayCommand]
@@ -97,17 +94,18 @@ public partial class VoiceViewModel(
                 SetService(navigationData.VoiceCraftService);
                 break;
             case VoiceStartNavigationData startNavigationData:
-                backgroundService.StartServiceAsync<VoiceCraftService>(async (x, updateTitle, updateDescription) =>
+                backgroundService.StartServiceAsync<VoiceCraftService>((x, updateTitle, updateDescription) =>
                 {
                     SetService(x);
                     try
                     {
                         x.OnUpdateTitle += updateTitle;
                         x.OnUpdateDescription += updateDescription;
-                        await x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port);
+                        x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port).GetAwaiter().GetResult();
+                        var sw = new SpinWait();
                         while (x.ConnectionState == VcConnectionState.Connected)
                         {
-                            await Task.Delay(100);
+                            sw.SpinOnce();
                         }
                     }
                     finally
@@ -214,16 +212,16 @@ public partial class VoiceViewModel(
 
     private void OnEntityAdded(VoiceCraftClientEntity entity)
     {
-        Dispatcher.UIThread.Invoke(() => { EntityViewModels.Add(new EntityDataViewModel(entity, settingsService)); });
+        Dispatcher.UIThread.Invoke(() => { Entities.Add(new EntityDataViewModel(entity, settingsService)); });
     }
 
     private void OnEntityRemoved(VoiceCraftClientEntity entity)
     {
         Dispatcher.UIThread.Invoke(() =>
         {
-            var viewModel = EntityViewModels.FirstOrDefault(x => x.Entity == entity);
+            var viewModel = Entities.FirstOrDefault(x => x.Entity == entity);
             if (viewModel == null) return;
-            EntityViewModels.Remove(viewModel);
+            Entities.Remove(viewModel);
         });
     }
 }
