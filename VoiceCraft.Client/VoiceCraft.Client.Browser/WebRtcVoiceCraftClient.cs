@@ -1,8 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib.Utils;
 using System.Runtime.InteropServices.JavaScript;
+using VoiceCraft.Client.Models.Settings;
+using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network;
 using VoiceCraft.Network.Clients;
@@ -12,7 +17,10 @@ using VoiceCraft.Network.Packets.VcPackets.Response;
 
 namespace VoiceCraft.Client.Browser;
 
-public class WebRtcVoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Func<IAudioDecoder> decoderFactory)
+public class WebRtcVoiceCraftClient(
+        Func<IAudioEncoder> audioEncoderFactory,
+        Func<IAudioDecoder> decoderFactory,
+        SettingsService settingsService)
     : VoiceCraftClient(audioEncoderFactory, decoderFactory)
 {
     private static readonly SemaphoreSlim ConnectionLock = new(1, 1);
@@ -44,7 +52,7 @@ public class WebRtcVoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Fun
         var requestId = Guid.NewGuid();
         try
         {
-            await JsWebRtc.ConnectAsync(ToSignalingUrl(ip, port));
+            await JsWebRtc.ConnectAsync(ToSignalingUrl(ip, port), GetIceServersJson());
             var packet = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket())
                 .Set(requestId, userGuid, serverUserGuid, locale, Version, positioningType);
             SendPacket(packet);
@@ -107,7 +115,7 @@ public class WebRtcVoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Fun
         await ConnectionLock.WaitAsync(token);
         try
         {
-            await JsWebRtc.ConnectAsync(ToSignalingUrl(ip, port));
+            await JsWebRtc.ConnectAsync(ToSignalingUrl(ip, port), GetIceServersJson());
             token.ThrowIfCancellationRequested();
             var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket())
                 .Set(Environment.TickCount);
@@ -222,6 +230,12 @@ public class WebRtcVoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Fun
         return !string.IsNullOrWhiteSpace(reason);
     }
 
+    private string GetIceServersJson()
+    {
+        return JsonSerializer.Serialize(settingsService.NetworkSettings.WebRtcIceServers,
+            WebRtcVoiceCraftClientJsonContext.Default.ListWebRtcIceServerSettings);
+    }
+
     private static string ToSignalingUrl(string ip, int port)
     {
         if (ip.StartsWith("ws://", StringComparison.OrdinalIgnoreCase) ||
@@ -235,7 +249,7 @@ public class WebRtcVoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Fun
 internal static partial class JsWebRtc
 {
     [JSImport("connectAsync", "webrtc.js")]
-    public static partial Task ConnectAsync(string signalingUrl);
+    public static partial Task ConnectAsync(string signalingUrl, string iceServersJson);
 
     [JSImport("send", "webrtc.js")]
     public static partial void Send(byte[] data);
@@ -249,3 +263,7 @@ internal static partial class JsWebRtc
     [JSImport("close", "webrtc.js")]
     public static partial void Close();
 }
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(List<WebRtcIceServerSettings>))]
+internal partial class WebRtcVoiceCraftClientJsonContext : JsonSerializerContext;

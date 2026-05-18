@@ -32,7 +32,8 @@ internal sealed class Program
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new WebRtcVoiceCraftClient(
                 () => x.GetRequiredService<IAudioEncoder>(),
-                x.GetRequiredService<IAudioDecoder>));
+                x.GetRequiredService<IAudioDecoder>,
+                x.GetRequiredService<SettingsService>()));
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone, Microphone>();
 
         await BuildAvaloniaApp()

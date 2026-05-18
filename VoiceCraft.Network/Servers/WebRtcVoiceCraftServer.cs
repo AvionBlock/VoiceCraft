@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Fleck;
 using LiteNetLib.Utils;
 using SIPSorcery.Net;
+using SIPSorcery.Sys;
 using VoiceCraft.Core;
 using VoiceCraft.Core.JsonConverters;
 using VoiceCraft.Core.World;
@@ -293,7 +295,7 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
             return;
         }
 
-        var peerConnection = new RTCPeerConnection();
+        var peerConnection = CreatePeerConnection();
         var session = new WebRtcSession(socket, peerConnection);
         if (!_sessions.TryAdd(socket, session))
         {
@@ -439,6 +441,43 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         socket.Send(JsonSerializer.Serialize(message, WebRtcSignalingJsonContext.Default.WebRtcSignalingMessage));
     }
 
+    private RTCPeerConnection CreatePeerConnection()
+    {
+        return new RTCPeerConnection(CreateRtcConfiguration(), 0, CreateRtcPortRange(), false);
+    }
+
+    private RTCConfiguration CreateRtcConfiguration()
+    {
+        var configuration = new RTCConfiguration
+        {
+            iceServers = (Config.IceServers ?? [])
+                .Where(x => !string.IsNullOrWhiteSpace(x.Urls))
+                .Select(x => new RTCIceServer
+                {
+                    urls = x.Urls,
+                    username = x.Username,
+                    credential = x.Credential
+                })
+                .ToList(),
+            X_GatherTimeoutMs = Config.IceGatherTimeoutMs
+        };
+
+        if (IPAddress.TryParse(Config.BindAddress, out var bindAddress))
+            configuration.X_BindAddress = bindAddress;
+
+        return configuration;
+    }
+
+    private PortRange? CreateRtcPortRange()
+    {
+        if (Config.PortRangeStart is not > 0 ||
+            Config.PortRangeEnd is not > 0 ||
+            Config.PortRangeEnd < Config.PortRangeStart)
+            return null;
+
+        return new PortRange(Config.PortRangeStart.Value, Config.PortRangeEnd.Value, false, null);
+    }
+
     private sealed class WebRtcSession(IWebSocketConnection signalingSocket, RTCPeerConnection peerConnection)
     {
         public IWebSocketConnection SignalingSocket { get; } = signalingSocket;
@@ -453,6 +492,21 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         public bool Enabled { get; set; }
 
         public string SignalingUrl { get; set; } = "ws://127.0.0.1:9052/";
+        public List<WebRtcIceServerConfig> IceServers { get; set; } =
+        [
+            new() { Urls = "stun:stun.l.google.com:19302" }
+        ];
+        public string? BindAddress { get; set; }
+        public int IceGatherTimeoutMs { get; set; } = 5000;
+        public int? PortRangeStart { get; set; }
+        public int? PortRangeEnd { get; set; }
+    }
+
+    public class WebRtcIceServerConfig
+    {
+        public string Urls { get; set; } = string.Empty;
+        public string? Username { get; set; }
+        public string? Credential { get; set; }
     }
 }
 

@@ -5,6 +5,41 @@ let incomingPackets = [];
 let pendingCandidates = [];
 let closeReason = null;
 
+function isDebugEnabled() {
+    try {
+        return globalThis.localStorage?.getItem("voicecraft.webrtc.debug") === "true";
+    } catch {
+        return false;
+    }
+}
+
+function debugLog(...args) {
+    if (isDebugEnabled())
+        console.info(...args);
+}
+
+function normalizeCandidate(candidate) {
+    if (!candidate)
+        return null;
+
+    return candidate.startsWith("candidate:") ? candidate : `candidate:${candidate}`;
+}
+
+function createTimeout(ms, reason) {
+    let timeoutId = null;
+    const promise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+            closeReason ??= reason;
+            reject(new Error(reason));
+        }, ms);
+    });
+
+    return {
+        promise,
+        clear: () => clearTimeout(timeoutId)
+    };
+}
+
 async function addRemoteCandidateAsync(candidate) {
     try {
         await peerConnection.addIceCandidate(candidate);
@@ -13,7 +48,29 @@ async function addRemoteCandidateAsync(candidate) {
     }
 }
 
-export async function connectAsync(signalingUrl) {
+function parseIceServers(iceServersJson) {
+    if (!iceServersJson)
+        return [];
+
+    try {
+        const iceServers = JSON.parse(iceServersJson);
+        if (!Array.isArray(iceServers))
+            return [];
+
+        return iceServers
+            .map(server => ({
+                urls: server.urls ?? server.Urls,
+                username: server.username ?? server.Username,
+                credential: server.credential ?? server.Credential
+            }))
+            .filter(server => server.urls);
+    } catch (error) {
+        console.warn("[VoiceCraft WebRTC] failed to parse ICE server config", error);
+        return [];
+    }
+}
+
+export async function connectAsync(signalingUrl, iceServersJson) {
     close();
     closeReason = null;
     pendingCandidates = [];
@@ -21,21 +78,25 @@ export async function connectAsync(signalingUrl) {
     if (location.protocol === "https:" && signalingUrl.startsWith("ws://") && !signalingUrl.includes("127.0.0.1") && !signalingUrl.includes("localhost"))
         signalingUrl = "wss://" + signalingUrl.substring("ws://".length);
 
-    console.info("[VoiceCraft WebRTC] connecting", signalingUrl);
+    debugLog("[VoiceCraft WebRTC] connecting", signalingUrl);
     peerConnection = new RTCPeerConnection({
-        iceServers: [
-            // TODO add config
-            { urls: "stun:stun.l.google.com:19302" }
-        ]
+        iceServers: parseIceServers(iceServersJson)
     });
     dataChannel = peerConnection.createDataChannel("voicecraft");
     dataChannel.binaryType = "arraybuffer";
+
+    peerConnection.oniceconnectionstatechange = () => {
+        debugLog("[VoiceCraft WebRTC] ice connection state", peerConnection.iceConnectionState);
+    };
+    peerConnection.onconnectionstatechange = () => {
+        debugLog("[VoiceCraft WebRTC] connection state", peerConnection.connectionState);
+    };
 
     signalingSocket = new WebSocket(signalingUrl);
 
     const signalingOpen = new Promise((resolve, reject) => {
         signalingSocket.onopen = () => {
-            console.info("[VoiceCraft WebRTC] signaling open");
+            debugLog("[VoiceCraft WebRTC] signaling open");
             resolve();
         };
         signalingSocket.onerror = event => {
@@ -43,7 +104,7 @@ export async function connectAsync(signalingUrl) {
             reject(event);
         };
         signalingSocket.onclose = event => {
-            console.info("[VoiceCraft WebRTC] signaling closed", event.code, event.reason);
+            debugLog("[VoiceCraft WebRTC] signaling closed", event.code, event.reason);
             const reason = event.reason || "VoiceCraft.DisconnectReason.ConnectionClosed";
             closeReason ??= reason;
             reject(new Error(reason));
@@ -52,7 +113,7 @@ export async function connectAsync(signalingUrl) {
 
     const dataChannelOpen = new Promise((resolve, reject) => {
         dataChannel.onopen = () => {
-            console.info("[VoiceCraft WebRTC] data channel open");
+            debugLog("[VoiceCraft WebRTC] data channel open");
             resolve();
         };
         dataChannel.onerror = event => {
@@ -60,7 +121,7 @@ export async function connectAsync(signalingUrl) {
             reject(event);
         };
         dataChannel.onclose = () => {
-            console.info("[VoiceCraft WebRTC] data channel closed");
+            debugLog("[VoiceCraft WebRTC] data channel closed");
             const reason = "VoiceCraft.DisconnectReason.ConnectionClosed";
             closeReason ??= reason;
             reject(new Error(reason));
@@ -77,7 +138,7 @@ export async function connectAsync(signalingUrl) {
             case 1:
             case "Answer":
             case "answer":
-                console.info("[VoiceCraft WebRTC] answer received");
+                debugLog("[VoiceCraft WebRTC] answer received");
                 await peerConnection.setRemoteDescription({
                     type: "answer",
                     sdp: message.sdp
@@ -90,10 +151,10 @@ export async function connectAsync(signalingUrl) {
             case "Candidate":
             case "candidate":
                 if (message.candidate) {
-                    console.info("[VoiceCraft WebRTC] candidate received");
+                    debugLog("[VoiceCraft WebRTC] candidate received");
                     const candidate = {
-                        candidate: message.candidate,
-                        sdpMid: message.sdpMid ?? null,
+                        candidate: normalizeCandidate(message.candidate),
+                        sdpMid: message.sdpMid ?? "0",
                         sdpMLineIndex: message.sdpMLineIndex ?? 0
                     };
                     if (peerConnection.remoteDescription)
@@ -122,7 +183,13 @@ export async function connectAsync(signalingUrl) {
         type: 0,
         sdp: offer.sdp
     }));
-    await dataChannelOpen;
+
+    const timeout = createTimeout(10000, "VoiceCraft.DisconnectReason.ConnectionTimeout");
+    try {
+        await Promise.race([dataChannelOpen, timeout.promise]);
+    } finally {
+        timeout.clear();
+    }
 }
 
 export function send(data) {

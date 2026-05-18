@@ -13,7 +13,7 @@ public class OpusAudioEncoder: IAudioEncoder
 
     public OpusAudioEncoder()
     {
-        var staticallyLinkedRuntime = OperatingSystem.IsBrowser() || OperatingSystem.IsIOS();
+        bool? staticallyLinkedRuntime = OperatingSystem.IsIOS() ? true : null;
         _opusEncoder = new OpusEncoder(Constants.SampleRate, Constants.RecordingChannels,
             OpusPredefinedValues.OPUS_APPLICATION_VOIP,
             staticallyLinkedRuntime);

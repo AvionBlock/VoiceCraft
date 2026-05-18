@@ -7,10 +7,11 @@ namespace VoiceCraft.Client.Audio;
 
 public class OpusAudioDecoder : IAudioDecoder
 {
+    private static readonly bool? StaticallyLinkedRuntime = OperatingSystem.IsIOS() ? true : null;
     private readonly OpusDecoder _opusDecoder = new(
         Constants.SampleRate,
         Constants.RecordingChannels,
-        OperatingSystem.IsBrowser() || OperatingSystem.IsIOS());
+        StaticallyLinkedRuntime);
     private bool _disposed;
 
     ~OpusAudioDecoder()
