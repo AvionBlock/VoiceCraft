@@ -192,7 +192,7 @@ public class EventHandlerSystem : IDisposable
                     PacketPool<VcSetServerDeafenRequestPacket>.GetPacket(() => new VcSetServerDeafenRequestPacket())
                         .Set(networkEntity.ServerDeafened));
                 BroadcastVoiceCraft(() => PacketPool<VcOnNetworkEntityCreatedPacket>
-                    .GetPacket(() => new VcOnNetworkEntityCreatedPacket()).Set(networkEntity),
+                        .GetPacket(() => new VcOnNetworkEntityCreatedPacket()).Set(networkEntity),
                     VcDeliveryMethod.Reliable,
                     networkEntity.NetPeer);
                 if (!EnableVisibilityDisplay)
@@ -292,17 +292,21 @@ public class EventHandlerSystem : IDisposable
             if (peer.Tag is not McApiServer server) return;
 
             //Send Effects
-            var audioEffects = _audioEffectSystem.AudioEffects;
-            foreach (var effect in audioEffects)
-                SendMcApi(server, peer, PacketPool<McApiOnEffectUpdatedPacket>.GetPacket(() =>
-                    new McApiOnEffectUpdatedPacket()).Set(effect.Key, effect.Value));
+            if (peer.SubscribedEvents.Contains(McApiEventType.OnEffectUpdated))
+            {
+                var audioEffects = _audioEffectSystem.AudioEffects;
+                foreach (var effect in audioEffects)
+                    SendMcApi(server, peer, PacketPool<McApiOnEffectUpdatedPacket>.GetPacket(() =>
+                        new McApiOnEffectUpdatedPacket()).Set(effect.Key, effect.Value));
+            }
 
             //Send other entities.
             foreach (var entity in _world.Entities)
-                if (entity is VoiceCraftNetworkEntity otherNetworkEntity)
+                if (entity is VoiceCraftNetworkEntity otherNetworkEntity &&
+                    peer.SubscribedEvents.Contains(McApiEventType.OnNetworkEntityCreated))
                     SendMcApi(server, peer, PacketPool<McApiOnNetworkEntityCreatedPacket>
                         .GetPacket(() => new McApiOnNetworkEntityCreatedPacket()).Set(otherNetworkEntity));
-                else
+                else if(peer.SubscribedEvents.Contains(McApiEventType.OnEntityCreated))
                     SendMcApi(server, peer, PacketPool<McApiOnEntityCreatedPacket>.GetPacket(() =>
                         new McApiOnEntityCreatedPacket()).Set(entity));
 
