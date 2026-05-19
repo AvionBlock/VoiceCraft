@@ -134,6 +134,8 @@ jobs:
       HOME: /Users/runner
       DOTNET_CLI_HOME: /Users/runner
       XDG_CONFIG_HOME: /Users/runner/.config
+      XCODE_APP: /Applications/Xcode.app
+      MD_APPLE_SDK_ROOT: /Applications/Xcode.app
     defaults:
       run:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.iOS
@@ -141,11 +143,23 @@ jobs:
       - uses: actions/checkout@v5
       - name: Select latest Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode.app
+          sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version
 
       - name: Prepare Apple SDK settings
-        run: mkdir -p "$HOME/Library/Preferences/maui" "$HOME/Library/Preferences/Xamarin" "$XDG_CONFIG_HOME"
+        run: |
+          mkdir -p "$HOME/Library/Preferences/maui" "$HOME/Library/Preferences/Xamarin" "$XDG_CONFIG_HOME"
+          cat > "$HOME/Library/Preferences/maui/Settings.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>AppleSdkRoot</key>
+            <string>$XCODE_APP</string>
+          </dict>
+          </plist>
+          PLIST
+          plutil -lint "$HOME/Library/Preferences/maui/Settings.plist"
 
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
@@ -156,7 +170,7 @@ jobs:
         run: dotnet workload restore
 
       - name: Publish Build (Unsigned IPA)
-        run: dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false
+        run: dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:XcodeLocation=$XCODE_APP
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v6
@@ -170,6 +184,8 @@ jobs:
       HOME: /Users/runner
       DOTNET_CLI_HOME: /Users/runner
       XDG_CONFIG_HOME: /Users/runner/.config
+      XCODE_APP: /Applications/Xcode.app
+      MD_APPLE_SDK_ROOT: /Applications/Xcode.app
     strategy:
       matrix:
         arch: [x64, arm64]
@@ -181,11 +197,23 @@ jobs:
       - uses: actions/checkout@v5
       - name: Select latest Xcode
         run: |
-          sudo xcode-select -s /Applications/Xcode.app
+          sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version
 
       - name: Prepare Apple SDK settings
-        run: mkdir -p "$HOME/Library/Preferences/maui" "$HOME/Library/Preferences/Xamarin" "$XDG_CONFIG_HOME"
+        run: |
+          mkdir -p "$HOME/Library/Preferences/maui" "$HOME/Library/Preferences/Xamarin" "$XDG_CONFIG_HOME"
+          cat > "$HOME/Library/Preferences/maui/Settings.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>AppleSdkRoot</key>
+            <string>$XCODE_APP</string>
+          </dict>
+          </plist>
+          PLIST
+          plutil -lint "$HOME/Library/Preferences/maui/Settings.plist"
 
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
@@ -196,10 +224,10 @@ jobs:
         run: dotnet workload restore
 
       - name: Restore ${{ matrix.arch }} Workloads
-        run: dotnet restore -r osx-${{ matrix.arch }}
+        run: dotnet restore -r osx-${{ matrix.arch }} -p:XcodeLocation=$XCODE_APP
 
       - name: Publish Build
-        run: dotnet publish -c Release -r osx-${{ matrix.arch }} --no-restore
+        run: dotnet publish -c Release -r osx-${{ matrix.arch }} --no-restore -p:XcodeLocation=$XCODE_APP
 
       - name: Build VoiceCraft.Client.MacOS.${{ matrix.arch }}.dmg
         run: |
