@@ -89,4 +89,33 @@ audio effects, audio simulations, authentication, and more!
 
 ### Server
 
+- [Certes](https://github.com/fszlin/certes)
 - [Spectre.Console](https://github.com/spectreconsole/spectre.console)
+- [OpenPort.Net](https://github.com/AvionBlock/OpenPort.Net)
+
+## Web Client Transport
+
+The browser client uses the WebRTC transport. The server WebRTC transport has two network surfaces:
+
+- Signaling: `WebRtcConfig.SignalingUrl`, usually `ws://host:port/` or `wss://host:port/`.
+- Data channel traffic: UDP ICE candidates constrained by `WebRtcConfig.PortRangeStart` and `WebRtcConfig.PortRangeEnd`.
+- Optional ICE servers: `WebRtcConfig.IceServers` and browser `NetworkSettings.WebRtcIceServers`. These are empty by
+  default include public STUN servers. TURN servers usually require provider credentials and can be added here.
+- Optional NAT port mapping: `WebRtcConfig.PortMapping.Enabled` uses OpenPort.Net to open the signaling TCP port and
+  UDP range through UPnP IGD, NAT-PMP or PCP, then adds the mapped public UDP candidates to WebRTC.
+
+For public or containerized servers, open the signaling TCP port and the configured UDP range. When the signaling URL uses
+`wss://`, VoiceCraft loads the PFX certificate from `WebRtcConfig.Tls.CertificatePath`.
+
+By default, `WebRtcConfig.Tls.CertificateMode` is `lets-encrypt`. VoiceCraft requests the certificate through ACME
+HTTP-01 using the public DNS name from `WebRtcConfig.Tls.Acme.Domains` or `WebRtcConfig.SignalingUrl`. This requires the
+domain to resolve to the server and TCP/80 to be reachable while the certificate is issued. If
+`Tls.Acme.AutoMapHttpChallengePort` is enabled, VoiceCraft also tries to open TCP/80 through OpenPort.Net temporarily.
+
+For local/private deployments, set `CertificateMode` to `self-signed`. VoiceCraft will create a self-signed PFX when the
+file is missing, but browsers only trust it after the certificate or CA is trusted by the user or operating system. To
+provide your own PFX, set `CertificateMode` to `existing`.
+
+Default STUN servers include Google's common public STUN endpoints and Cloudflare STUN. Public TURN is not hard-coded
+because open TURN relays require credentials to avoid abuse. For TURN fallback, use your own coturn instance or a provider
+such as Metered/Open Relay, Cloudflare Realtime TURN, or Twilio Network Traversal Service.

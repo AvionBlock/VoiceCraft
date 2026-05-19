@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Security.Authentication;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -30,6 +32,8 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
     private readonly object _acceptLock = new();
+    private IReadOnlyDictionary<int, WebRtcExternalIceCandidateMapping> _externalIceCandidateMappings =
+        new Dictionary<int, WebRtcExternalIceCandidateMapping>();
     private WebSocketServer? _signalingServer;
 
     public WebRtcVoiceCraftConfig Config
@@ -54,6 +58,17 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         }
     }
 
+    public IReadOnlyCollection<WebRtcExternalIceCandidateMapping> ExternalIceCandidateMappings
+    {
+        get => _externalIceCandidateMappings.Values.ToArray();
+        set => _externalIceCandidateMappings = (value ?? [])
+            .Where(x => x.InternalPort is >= 1 and <= 65535 &&
+                        x.ExternalPort is >= 1 and <= 65535 &&
+                        !string.IsNullOrWhiteSpace(x.ExternalAddress))
+            .GroupBy(x => x.InternalPort)
+            .ToDictionary(x => x.Key, x => x.First());
+    }
+
     public override PositioningType PositioningType => _voiceCraftConfig.PositioningType;
     public override string Motd => _voiceCraftConfig.Motd;
     public override uint MaxClients => _voiceCraftConfig.MaxClients;
@@ -64,7 +79,7 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         Stop();
         if (!Config.Enabled) return;
 
-        _signalingServer = new WebSocketServer(_config.SignalingUrl);
+        _signalingServer = CreateSignalingServer();
         _signalingServer.Start(socket =>
         {
             socket.OnClose = () => OnSignalingClosed(socket);
@@ -307,13 +322,12 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         peerConnection.onicecandidate += candidate =>
         {
             if (candidate == null) return;
-            SendSignaling(socket, new WebRtcSignalingMessage
+            SendIceCandidate(socket, candidate.candidate, candidate.sdpMid, candidate.sdpMLineIndex);
+            foreach (var mappedCandidate in GetMappedIceCandidates(candidate.candidate))
             {
-                Type = WebRtcSignalingMessageType.Candidate,
-                Candidate = candidate.candidate,
-                SdpMid = candidate.sdpMid,
-                SdpMLineIndex = candidate.sdpMLineIndex
-            });
+                AddLocalMappedIceCandidate(peerConnection, mappedCandidate.Mapping);
+                SendIceCandidate(socket, mappedCandidate.Candidate, candidate.sdpMid, candidate.sdpMLineIndex);
+            }
         };
         peerConnection.ondatachannel += dataChannel => ConfigureDataChannel(session, dataChannel);
         peerConnection.onconnectionstatechange += state =>
@@ -441,9 +455,35 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         socket.Send(JsonSerializer.Serialize(message, WebRtcSignalingJsonContext.Default.WebRtcSignalingMessage));
     }
 
+    private static void SendIceCandidate(
+        IWebSocketConnection socket,
+        string candidate,
+        string? sdpMid,
+        ushort? sdpMLineIndex)
+    {
+        SendSignaling(socket, new WebRtcSignalingMessage
+        {
+            Type = WebRtcSignalingMessageType.Candidate,
+            Candidate = candidate,
+            SdpMid = sdpMid,
+            SdpMLineIndex = sdpMLineIndex
+        });
+    }
+
     private RTCPeerConnection CreatePeerConnection()
     {
         return new RTCPeerConnection(CreateRtcConfiguration(), 0, CreateRtcPortRange(), false);
+    }
+
+    private WebSocketServer CreateSignalingServer()
+    {
+        var server = new WebSocketServer(_config.SignalingUrl);
+        if (!IsSecureSignalingUrl(_config.SignalingUrl))
+            return server;
+
+        server.Certificate = WebRtcSignalingCertificateProvider.LoadOrCreate(_config.SignalingUrl, _config.Tls ?? new());
+        server.EnabledSslProtocols = SslProtocols.None;
+        return server;
     }
 
     private RTCConfiguration CreateRtcConfiguration()
@@ -470,13 +510,70 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
 
     private PortRange? CreateRtcPortRange()
     {
-        if (Config.PortRangeStart is not > 0 ||
-            Config.PortRangeEnd is not > 0 ||
-            Config.PortRangeEnd < Config.PortRangeStart)
+        if (Config.PortRangeStart == null && Config.PortRangeEnd == null)
             return null;
+
+        if (Config.PortRangeStart is not >= 1 or > 65535 ||
+            Config.PortRangeEnd is not >= 1 or > 65535 ||
+            Config.PortRangeEnd < Config.PortRangeStart)
+            throw new InvalidOperationException(
+                "WebRTC PortRangeStart and PortRangeEnd must be valid ports, and PortRangeEnd must be greater than or equal to PortRangeStart.");
 
         return new PortRange(Config.PortRangeStart.Value, Config.PortRangeEnd.Value, false, null);
     }
+
+    private static bool IsSecureSignalingUrl(string signalingUrl) =>
+        Uri.TryCreate(signalingUrl, UriKind.Absolute, out var uri) &&
+        string.Equals(uri.Scheme, "wss", StringComparison.OrdinalIgnoreCase);
+
+    private static void AddLocalMappedIceCandidate(
+        RTCPeerConnection peerConnection,
+        WebRtcExternalIceCandidateMapping mapping)
+    {
+        try
+        {
+            if (IPAddress.TryParse(mapping.ExternalAddress, out var address))
+            {
+                peerConnection.addLocalIceCandidate(new RTCIceCandidate(
+                    RTCIceProtocol.udp,
+                    address,
+                    (ushort)mapping.ExternalPort,
+                    RTCIceCandidateType.host));
+            }
+        }
+        catch
+        {
+            // The mapped candidate is still sent to the browser; the local socket can receive the mapped traffic.
+        }
+    }
+
+    private IEnumerable<MappedIceCandidate> GetMappedIceCandidates(string candidate)
+    {
+        if (_externalIceCandidateMappings.Count == 0 ||
+            string.IsNullOrWhiteSpace(candidate))
+            yield break;
+
+        var parts = candidate.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 8 ||
+            !string.Equals(parts[2], "udp", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(parts[6], "typ", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(parts[7], "host", StringComparison.OrdinalIgnoreCase) ||
+            !int.TryParse(parts[5], NumberStyles.None, CultureInfo.InvariantCulture, out var internalPort) ||
+            !_externalIceCandidateMappings.TryGetValue(internalPort, out var mapping))
+            yield break;
+
+        if (string.Equals(parts[4], mapping.ExternalAddress, StringComparison.OrdinalIgnoreCase) &&
+            internalPort == mapping.ExternalPort)
+            yield break;
+
+        parts[4] = mapping.ExternalAddress;
+        parts[5] = mapping.ExternalPort.ToString(CultureInfo.InvariantCulture);
+        yield return new MappedIceCandidate(string.Join(' ', parts), mapping);
+    }
+
+    private readonly record struct MappedIceCandidate(
+        string Candidate,
+        WebRtcExternalIceCandidateMapping Mapping);
 
     private sealed class WebRtcSession(IWebSocketConnection signalingSocket, RTCPeerConnection peerConnection)
     {
@@ -494,12 +591,17 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         public string SignalingUrl { get; set; } = "ws://127.0.0.1:9052/";
         public List<WebRtcIceServerConfig> IceServers { get; set; } =
         [
-            new() { Urls = "stun:stun.l.google.com:19302" }
+            new() { Urls = "stun:stun.l.google.com:19302" },
+            new() { Urls = "stun:stun1.l.google.com:19302" },
+            new() { Urls = "stun:stun2.l.google.com:19302" },
+            new() { Urls = "stun:stun.cloudflare.com:3478" }
         ];
         public string? BindAddress { get; set; }
         public int IceGatherTimeoutMs { get; set; } = 5000;
-        public int? PortRangeStart { get; set; }
-        public int? PortRangeEnd { get; set; }
+        public int? PortRangeStart { get; set; } = 9053;
+        public int? PortRangeEnd { get; set; } = 9062;
+        public WebRtcTlsConfig Tls { get; set; } = new();
+        public WebRtcPortMappingConfig PortMapping { get; set; } = new();
     }
 
     public class WebRtcIceServerConfig
@@ -507,6 +609,58 @@ public class WebRtcVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(wo
         public string Urls { get; set; } = string.Empty;
         public string? Username { get; set; }
         public string? Credential { get; set; }
+    }
+
+    public class WebRtcTlsConfig
+    {
+        public string CertificateMode { get; set; } = WebRtcCertificateModes.LetsEncrypt;
+        public bool AutoGenerateCertificate { get; set; } = true;
+        public string CertificatePath { get; set; } = "config/webrtc-signaling.pfx";
+        public string? CertificatePassword { get; set; }
+        public string? SubjectName { get; set; }
+        public List<string> SubjectAlternativeNames { get; set; } = [];
+        public int CertificateLifetimeDays { get; set; } = 3650;
+        public WebRtcAcmeConfig Acme { get; set; } = new();
+    }
+
+    public class WebRtcAcmeConfig
+    {
+        public string DirectoryUrl { get; set; } = "https://acme-v02.api.letsencrypt.org/directory";
+        public string StagingDirectoryUrl { get; set; } = "https://acme-staging-v02.api.letsencrypt.org/directory";
+        public bool UseStaging { get; set; }
+        public string? Email { get; set; }
+        public List<string> Domains { get; set; } = [];
+        public string AccountKeyPath { get; set; } = "config/acme-account.key";
+        public int HttpChallengePort { get; set; } = 80;
+        public string HttpChallengeBindAddress { get; set; } = "0.0.0.0";
+        public bool AutoMapHttpChallengePort { get; set; } = true;
+        public int ValidationTimeoutSeconds { get; set; } = 120;
+        public int RenewBeforeDays { get; set; } = 30;
+    }
+
+    public static class WebRtcCertificateModes
+    {
+        public const string LetsEncrypt = "lets-encrypt";
+        public const string SelfSigned = "self-signed";
+        public const string Existing = "existing";
+    }
+
+    public class WebRtcPortMappingConfig
+    {
+        public bool Enabled { get; set; }
+        public bool MapSignalingPort { get; set; } = true;
+        public bool MapUdpPortRange { get; set; } = true;
+        public bool FailOnFailure { get; set; }
+        public string? PublicAddress { get; set; }
+        public int LifetimeMinutes { get; set; } = 60;
+        public int TimeoutMs { get; set; } = 5000;
+    }
+
+    public class WebRtcExternalIceCandidateMapping
+    {
+        public int InternalPort { get; set; }
+        public string ExternalAddress { get; set; } = string.Empty;
+        public int ExternalPort { get; set; }
     }
 }
 

@@ -47,7 +47,10 @@ public class NetworkSettings : Setting<NetworkSettings>
         }
     } =
     [
-        new() { Urls = "stun:stun.l.google.com:19302" }
+        new() { Urls = "stun:stun.l.google.com:19302" },
+        new() { Urls = "stun:stun1.l.google.com:19302" },
+        new() { Urls = "stun:stun2.l.google.com:19302" },
+        new() { Urls = "stun:stun.cloudflare.com:3478" }
     ];
 
     public override event Action<NetworkSettings>? OnUpdated;

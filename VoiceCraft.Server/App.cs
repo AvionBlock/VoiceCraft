@@ -5,6 +5,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
+using VoiceCraft.Server.Services;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
@@ -37,11 +38,14 @@ public static class App
         //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
         var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetryService>();
+        var webRtcCertificateService = Program.ServiceProvider.GetRequiredService<WebRtcCertificateService>();
+        var webRtcPortMappingService = Program.ServiceProvider.GetRequiredService<WebRtcPortMappingService>();
 
         try
         {
             //Startup.
             AnsiConsole.Write(new FigletText("VoiceCraft").Color(Color.Aqua));
+            AnsiConsole.MarkupLine($"[aqua]Version: {VoiceCraftServer.Version}[/]");
             AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
@@ -70,6 +74,9 @@ public static class App
 
             //Server Startup
             StartServer(liteNetServer);
+            await webRtcCertificateService.EnsureCertificateAsync(webRtcServer.Config, Cts.Token);
+            await webRtcPortMappingService.OpenAsync(webRtcServer.Config, Cts.Token);
+            webRtcServer.ExternalIceCandidateMappings = webRtcPortMappingService.ExternalIceCandidateMappings;
             StartServer(webRtcServer);
             StartServer(httpMcApiServer);
             StartServer(tcpMcApiServer);
@@ -170,6 +177,7 @@ public static class App
 
             StopServer(liteNetServer);
             StopServer(webRtcServer);
+            await webRtcPortMappingService.DisposeAsync();
             StopServer(httpMcApiServer);
             StopServer(tcpMcApiServer);
             StopServer(mcWssMcApiServer);
@@ -186,6 +194,7 @@ public static class App
         {
             liteNetServer.Dispose();
             webRtcServer.Dispose();
+            webRtcPortMappingService.Dispose();
             Cts.Dispose();
         }
     }

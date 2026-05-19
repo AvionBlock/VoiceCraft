@@ -8,6 +8,7 @@ using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Server.Commands;
 using VoiceCraft.Server.Locales;
+using VoiceCraft.Server.Services;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
@@ -64,6 +65,8 @@ public static class Program
         //Other
         serviceCollection.AddSingleton<ServerProperties>();
         serviceCollection.AddSingleton<ServerTelemetryService>();
+        serviceCollection.AddSingleton<WebRtcCertificateService>();
+        serviceCollection.AddSingleton<WebRtcPortMappingService>();
         serviceCollection.AddSingleton<VoiceCraftWorld>();
         return serviceCollection.BuildServiceProvider();
     }
