@@ -34,9 +34,7 @@ public class McApiServerTests
             listenBitmask: 5,
             effectBitmask: 7,
             position: new Vector3(1, 2, 3),
-            rotation: new Vector2(4, 5),
-            caveFactor: 0.25f,
-            muffleFactor: 0.5f);
+            rotation: new Vector2(4, 5));
 
         server.Dispatch(request, peer);
 
@@ -53,8 +51,6 @@ public class McApiServerTests
         Assert.Equal((ushort)7, entity.EffectBitmask);
         Assert.Equal(new Vector3(1, 2, 3), entity.Position);
         Assert.Equal(new Vector2(4, 5), entity.Rotation);
-        Assert.Equal(0.25f, entity.CaveFactor);
-        Assert.Equal(0.5f, entity.MuffleFactor);
     }
 
     private sealed class TestMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)

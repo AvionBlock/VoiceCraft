@@ -25,31 +25,18 @@ public class VoiceCraftEntityTests
     }
 
     [Fact]
-    public void CaveFactor_And_MuffleFactor_AreClamped()
-    {
-        var entity = new VoiceCraftEntity(1);
-
-        entity.CaveFactor = 2.0f;
-        entity.MuffleFactor = -1.0f;
-
-        Assert.Equal(1.0f, entity.CaveFactor, 3);
-        Assert.Equal(0.0f, entity.MuffleFactor, 3);
-    }
-
-    [Fact]
-    public void NonFiniteSpatialValues_AreSanitized()
+    public void NonFiniteSpatialValues_AreStored()
     {
         var entity = new VoiceCraftEntity(1);
 
         entity.Position = new Vector3(float.NaN, float.PositiveInfinity, 3);
         entity.Rotation = new Vector2(float.NegativeInfinity, 5);
-        entity.CaveFactor = float.NaN;
-        entity.MuffleFactor = float.PositiveInfinity;
 
-        Assert.Equal(new Vector3(0, 0, 3), entity.Position);
-        Assert.Equal(new Vector2(0, 5), entity.Rotation);
-        Assert.Equal(0.0f, entity.CaveFactor, 3);
-        Assert.Equal(0.0f, entity.MuffleFactor, 3);
+        Assert.True(float.IsNaN(entity.Position.X));
+        Assert.True(float.IsPositiveInfinity(entity.Position.Y));
+        Assert.Equal(3, entity.Position.Z);
+        Assert.True(float.IsNegativeInfinity(entity.Rotation.X));
+        Assert.Equal(5, entity.Rotation.Y);
     }
 
     [Fact]
