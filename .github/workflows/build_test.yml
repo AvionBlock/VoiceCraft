@@ -154,14 +154,14 @@ jobs:
       HOME: /Users/runner
       DOTNET_CLI_HOME: /Users/runner
       XDG_CONFIG_HOME: /Users/runner/.config
-      XCODE_APP: /Applications/Xcode.app
-      MD_APPLE_SDK_ROOT: /Applications/Xcode.app
+      XCODE_APP: /Applications/Xcode_26.5.app
+      MD_APPLE_SDK_ROOT: /Applications/Xcode_26.5.app
     defaults:
       run:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.iOS
     steps:
       - uses: actions/checkout@v5
-      - name: Select latest Xcode
+      - name: Select Xcode 26.5
         run: |
           sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version
@@ -204,8 +204,8 @@ jobs:
       HOME: /Users/runner
       DOTNET_CLI_HOME: /Users/runner
       XDG_CONFIG_HOME: /Users/runner/.config
-      XCODE_APP: /Applications/Xcode.app
-      MD_APPLE_SDK_ROOT: /Applications/Xcode.app
+      XCODE_APP: /Applications/Xcode_26.5.app
+      MD_APPLE_SDK_ROOT: /Applications/Xcode_26.5.app
     strategy:
       matrix:
         arch: [x64, arm64]
@@ -215,7 +215,7 @@ jobs:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.MacOS
     steps:
       - uses: actions/checkout@v5
-      - name: Select latest Xcode
+      - name: Select Xcode 26.5
         run: |
           sudo xcode-select -s "$XCODE_APP"
           xcodebuild -version

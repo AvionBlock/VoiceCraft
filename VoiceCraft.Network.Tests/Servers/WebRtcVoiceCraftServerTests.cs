@@ -37,7 +37,7 @@ public class WebRtcVoiceCraftServerTests
             using var certificate = X509CertificateLoader.LoadPkcs12FromFile(
                 certificatePath,
                 string.Empty,
-                X509KeyStorageFlags.EphemeralKeySet,
+                X509KeyStorageFlags.DefaultKeySet,
                 Pkcs12LoaderLimits.Defaults);
             Assert.True(certificate.HasPrivateKey);
         }

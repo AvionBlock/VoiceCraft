@@ -42,7 +42,7 @@ internal static class WebRtcSignalingCertificateProvider
         return X509CertificateLoader.LoadPkcs12FromFile(
             certificatePath,
             password ?? string.Empty,
-            X509KeyStorageFlags.EphemeralKeySet | X509KeyStorageFlags.Exportable,
+            X509KeyStorageFlags.Exportable,
             Pkcs12LoaderLimits.Defaults);
     }
 
@@ -80,7 +80,7 @@ internal static class WebRtcSignalingCertificateProvider
         return X509CertificateLoader.LoadPkcs12(
             certificate.Export(X509ContentType.Pkcs12, GetPassword(config)),
             GetPassword(config),
-            X509KeyStorageFlags.EphemeralKeySet | X509KeyStorageFlags.Exportable,
+            X509KeyStorageFlags.Exportable,
             Pkcs12LoaderLimits.Defaults);
     }
 
