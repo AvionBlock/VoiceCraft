@@ -2,7 +2,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) : IMcApiPacket
+public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) : IMcApiEventPacket
 {
     public McApiOnEntityVisibilityUpdatedPacket() : this(0, 0, false)
     {
@@ -13,6 +13,7 @@ public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) :
     public bool Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityVisibilityUpdated;
+    public McApiEventType EventType => McApiEventType.OnEntityVisibilityUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

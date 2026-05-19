@@ -69,6 +69,7 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
     }
 
     public override McApiPacketType PacketType => McApiPacketType.OnNetworkEntityCreated;
+    public override McApiEventType EventType => McApiEventType.OnNetworkEntityCreated;
 
     public Guid UserGuid { get; private set; }
     public Guid ServerUserGuid { get; private set; }

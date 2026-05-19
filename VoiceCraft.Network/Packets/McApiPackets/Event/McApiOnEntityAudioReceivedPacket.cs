@@ -3,7 +3,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness) : IMcApiPacket
+public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness) : IMcApiEventPacket
 {
     public McApiOnEntityAudioReceivedPacket() : this(0, 0, 0.0f)
     {
@@ -14,6 +14,7 @@ public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float lo
     public float FrameLoudness { get; private set; } = loudness;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityAudioReceived;
+    public McApiEventType EventType => McApiEventType.OnEntityAudioReceived;
 
     public void Serialize(NetDataWriter writer)
     {

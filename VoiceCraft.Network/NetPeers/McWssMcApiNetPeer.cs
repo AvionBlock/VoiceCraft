@@ -9,7 +9,7 @@ public class McWssMcApiNetPeer(IWebSocketConnection connection) : McApiNetPeer
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
     public IWebSocketConnection Connection { get; } = connection;
     public override string SessionToken => _sessionToken;
-    
+
     public void SetSessionToken(string token)
     {
         _sessionToken = token;

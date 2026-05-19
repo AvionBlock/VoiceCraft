@@ -69,9 +69,9 @@ public class McApiServerTests
         public override event Action<McApiNetPeer, string>? OnPeerConnected;
         public override event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
-        public void Dispatch(IMcApiPacket packet, object? data)
+        public void Dispatch(IMcApiPacket packet, McApiNetPeer netPeer)
         {
-            ExecutePacket(packet, data);
+            ExecutePacket(packet, netPeer);
         }
 
         public override void Start()
@@ -99,14 +99,14 @@ public class McApiServerTests
         {
         }
 
-        protected override void AcceptRequest(McApiLoginRequestPacket packet, object? data)
+        protected override void AcceptRequest(McApiLoginRequestPacket packet, McApiNetPeer netPeer)
         {
-            OnPeerConnected?.Invoke((McApiNetPeer)data!, string.Empty);
+            OnPeerConnected?.Invoke(netPeer, string.Empty);
         }
 
-        protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data)
+        protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, McApiNetPeer netPeer)
         {
-            OnPeerDisconnected?.Invoke((McApiNetPeer)data!, reason);
+            OnPeerDisconnected?.Invoke(netPeer, reason);
         }
     }
 }

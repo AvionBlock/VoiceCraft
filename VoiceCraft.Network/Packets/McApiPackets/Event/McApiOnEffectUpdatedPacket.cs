@@ -3,7 +3,7 @@ using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IMcApiPacket
+public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IMcApiEventPacket
 {
     public McApiOnEffectUpdatedPacket() : this(0, null)
     {
@@ -14,6 +14,7 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
     public IAudioEffect? Effect { get; private set; } = effect;
 
     public McApiPacketType PacketType => McApiPacketType.OnEffectUpdated;
+    public McApiEventType EventType => McApiEventType.OnEffectUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

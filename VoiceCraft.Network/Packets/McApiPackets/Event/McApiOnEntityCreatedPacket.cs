@@ -21,7 +21,7 @@ public class McApiOnEntityCreatedPacket(
     Vector2 rotation,
     float caveFactor,
     float muffleFactor)
-    : IMcApiPacket
+    : IMcApiEventPacket
 {
     public McApiOnEntityCreatedPacket() : this(
         0,
@@ -63,6 +63,7 @@ public class McApiOnEntityCreatedPacket(
     public float MuffleFactor { get; private set; } = muffleFactor;
 
     public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
+    public virtual McApiEventType EventType => McApiEventType.OnEntityCreated;
 
     public virtual void Serialize(NetDataWriter writer)
     {

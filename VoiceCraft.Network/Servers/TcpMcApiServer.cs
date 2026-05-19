@@ -14,6 +14,7 @@ using LiteNetLib.Utils;
 using VoiceCraft.Core.JsonConverters;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
+using VoiceCraft.Network.Packets.McApiPackets;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;
 using VoiceCraft.Network.Systems;
@@ -105,8 +106,11 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
 
     public override void SendPacket<T>(McApiNetPeer netPeer, T packet)
     {
-        if (_listener == null || Config.DisabledPacketTypes.Contains(packet.PacketType) ||
-            netPeer.ConnectionState == McApiConnectionState.Disconnected) return;
+        if (_listener == null ||
+            Config.DisabledPacketTypes.Contains(packet.PacketType) ||
+            netPeer.ConnectionState == McApiConnectionState.Disconnected ||
+            (packet is IMcApiEventPacket eventPacket &&
+             !netPeer.SubscribedEvents.Contains(eventPacket.EventType))) return;
         try
         {
             lock (_writer)
@@ -134,6 +138,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         if (_listener == null || Config.DisabledPacketTypes.Contains(packet.PacketType)) return;
         try
         {
+            byte[] data;
             lock (_writer)
             {
                 _writer.Reset();
@@ -142,14 +147,18 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 if (_writer.Length > short.MaxValue)
                     throw new ArgumentOutOfRangeException(nameof(packet));
 
-                var encodedPacket = _writer.CopyData();
-                foreach (var netPeer in _mcApiPeers.Values)
-                {
-                    //Broadcast to only connected clients.
-                    if (netPeer.ConnectionState != McApiConnectionState.Connected || excludes.Contains(netPeer))
-                        continue;
-                    netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(encodedPacket, string.Empty));
-                }
+                data = _writer.CopyData();
+            }
+
+            foreach (var netPeer in _mcApiPeers.Values)
+            {
+                //Broadcast to only connected and subscribed clients.
+                if (netPeer.ConnectionState != McApiConnectionState.Connected ||
+                    excludes.Contains(netPeer) ||
+                    (packet is IMcApiEventPacket eventPacket &&
+                     !netPeer.SubscribedEvents.Contains(eventPacket.EventType)))
+                    continue;
+                netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, string.Empty));
             }
         }
         finally
@@ -173,9 +182,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         CloseClient(tcpNetPeer.Client);
     }
 
-    protected override void AcceptRequest(McApiLoginRequestPacket packet, object? data)
+    protected override void AcceptRequest(McApiLoginRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not TcpMcApiNetPeer tcpNetPeer) return;
+        if (netPeer is not TcpMcApiNetPeer tcpNetPeer) return;
         try
         {
             if (tcpNetPeer.ConnectionState != McApiConnectionState.Connected)
@@ -184,7 +193,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
             SendPacket(tcpNetPeer,
                 PacketPool<McApiAcceptResponsePacket>.GetPacket(() => new McApiAcceptResponsePacket())
                     .Set(packet.RequestId, tcpNetPeer.SessionToken));
-            
+
             tcpNetPeer.ConnectionState = McApiConnectionState.Connected;
             OnPeerConnected?.Invoke(tcpNetPeer, tcpNetPeer.SessionToken);
         }
@@ -194,9 +203,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         }
     }
 
-    protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data)
+    protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, McApiNetPeer netPeer)
     {
-        if (data is not TcpMcApiNetPeer tcpNetPeer) return;
+        if (netPeer is not TcpMcApiNetPeer tcpNetPeer) return;
         try
         {
             SendPacket(tcpNetPeer, PacketPool<McApiDenyResponsePacket>.GetPacket(() => new McApiDenyResponsePacket())

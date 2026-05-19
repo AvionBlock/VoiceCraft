@@ -253,11 +253,11 @@ internal sealed class FakeMcApiServer(VoiceCraftWorld world, VoiceCraft.Network.
         OnPeerDisconnected?.Invoke(netPeer, netPeer.SessionToken);
     }
 
-    protected override void AcceptRequest(VoiceCraft.Network.Packets.McApiPackets.Request.McApiLoginRequestPacket packet, object? data)
+    protected override void AcceptRequest(VoiceCraft.Network.Packets.McApiPackets.Request.McApiLoginRequestPacket packet, McApiNetPeer netPeer)
     {
     }
 
-    protected override void RejectRequest(VoiceCraft.Network.Packets.McApiPackets.Request.McApiLoginRequestPacket packet, string reason, object? data)
+    protected override void RejectRequest(VoiceCraft.Network.Packets.McApiPackets.Request.McApiLoginRequestPacket packet, string reason, McApiNetPeer netPeer)
     {
     }
 }

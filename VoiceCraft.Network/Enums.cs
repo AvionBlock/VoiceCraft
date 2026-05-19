@@ -156,3 +156,28 @@ public enum McApiPacketType : byte
     OnEntityMuffleFactorUpdated,
     OnEntityAudioReceived
 }
+
+public enum McApiEventType : byte
+{
+    //Events
+    OnEffectUpdated,
+    OnEntityCreated,
+    OnNetworkEntityCreated,
+    OnEntityDestroyed,
+    OnEntityVisibilityUpdated,
+    OnEntityWorldIdUpdated,
+    OnEntityNameUpdated,
+    OnEntityMuteUpdated,
+    OnEntityDeafenUpdated,
+    OnEntityServerMuteUpdated,
+    OnEntityServerDeafenUpdated,
+    OnEntityTalkBitmaskUpdated,
+    OnEntityListenBitmaskUpdated,
+    OnEntityEffectBitmaskUpdated,
+    OnEntityPositionUpdated,
+    OnEntityRotationUpdated,
+    OnEntityCaveFactorUpdated,
+    OnEntityMuffleFactorUpdated,
+    OnEntityAudioReceived,
+    OnEntityAudioDataReceived
+}
