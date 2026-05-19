@@ -19,7 +19,7 @@ public class McApiOnEntityCreatedPacket(
     ushort effectBitmask,
     Vector3 position,
     Vector2 rotation)
-    : IMcApiPacket
+    : IMcApiEventPacket
 {
     public McApiOnEntityCreatedPacket() : this(
         0,
@@ -57,6 +57,7 @@ public class McApiOnEntityCreatedPacket(
     public Vector2 Rotation { get; private set; } = rotation;
 
     public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
+    public virtual McApiEventType EventType => McApiEventType.OnEntityCreated;
 
     public virtual void Serialize(NetDataWriter writer)
     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
@@ -41,9 +42,9 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         GC.SuppressFinalize(this);
     }
 
-    protected abstract void AcceptRequest(McApiLoginRequestPacket packet, object? data);
+    protected abstract void AcceptRequest(McApiLoginRequestPacket packet, McApiNetPeer netPeer);
 
-    protected abstract void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data);
+    protected abstract void RejectRequest(McApiLoginRequestPacket packet, string reason, McApiNetPeer netPeer);
 
     protected static void ProcessPacket(NetDataReader reader, Action<IMcApiPacket> onParsed)
     {
@@ -138,69 +139,69 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
 
-    protected void ExecutePacket(IMcApiPacket packet, object? data)
+    protected void ExecutePacket(IMcApiPacket packet, McApiNetPeer netPeer)
     {
         switch (packet)
         {
             case McApiLoginRequestPacket loginRequestPacket:
-                HandleLoginRequestPacket(loginRequestPacket, data);
+                HandleLoginRequestPacket(loginRequestPacket, netPeer);
                 break;
             case McApiLogoutRequestPacket logoutRequestPacket:
-                HandleLogoutRequestPacket(logoutRequestPacket, data);
+                HandleLogoutRequestPacket(logoutRequestPacket, netPeer);
                 break;
             case McApiPingRequestPacket pingRequestPacket:
-                HandlePingRequestPacket(pingRequestPacket, data);
+                HandlePingRequestPacket(pingRequestPacket, netPeer);
                 break;
             case McApiResetRequestPacket resetRequestPacket:
-                HandleResetRequestPacket(resetRequestPacket, data);
+                HandleResetRequestPacket(resetRequestPacket, netPeer);
                 break;
             case McApiSetEffectRequestPacket setEffectRequestPacket:
-                HandleSetEffectRequestPacket(setEffectRequestPacket, data);
+                HandleSetEffectRequestPacket(setEffectRequestPacket, netPeer);
                 break;
             case McApiClearEffectsRequestPacket clearEffectsRequestPacket:
-                HandleClearEffectsRequestPacket(clearEffectsRequestPacket, data);
+                HandleClearEffectsRequestPacket(clearEffectsRequestPacket, netPeer);
                 break;
             case McApiCreateEntityRequestPacket createEntityRequestPacket:
-                HandleCreateEntityRequestPacket(createEntityRequestPacket, data);
+                HandleCreateEntityRequestPacket(createEntityRequestPacket, netPeer);
                 break;
             case McApiDestroyEntityRequestPacket destroyEntityRequestPacket:
-                HandleDestroyEntityRequestPacket(destroyEntityRequestPacket, data);
+                HandleDestroyEntityRequestPacket(destroyEntityRequestPacket, netPeer);
                 break;
             case McApiEntityAudioRequestPacket entityAudioRequestPacket:
-                HandleEntityAudioRequestPacket(entityAudioRequestPacket, data);
+                HandleEntityAudioRequestPacket(entityAudioRequestPacket, netPeer);
                 break;
             case McApiSetEntityTitleRequestPacket setEntityTitleRequestPacket:
-                HandleSetEntityTitleRequestPacket(setEntityTitleRequestPacket, data);
+                HandleSetEntityTitleRequestPacket(setEntityTitleRequestPacket, netPeer);
                 break;
             case McApiSetEntityDescriptionRequestPacket setEntityDescriptionRequestPacket:
-                HandleSetEntityDescriptionRequestPacket(setEntityDescriptionRequestPacket, data);
+                HandleSetEntityDescriptionRequestPacket(setEntityDescriptionRequestPacket, netPeer);
                 break;
             case McApiSetEntityWorldIdRequestPacket setEntityWorldIdRequestPacket:
-                HandleSetEntityWorldIdRequestPacket(setEntityWorldIdRequestPacket, data);
+                HandleSetEntityWorldIdRequestPacket(setEntityWorldIdRequestPacket, netPeer);
                 break;
             case McApiSetEntityNameRequestPacket setEntityNameRequestPacket:
-                HandleSetEntityNameRequestPacket(setEntityNameRequestPacket, data);
+                HandleSetEntityNameRequestPacket(setEntityNameRequestPacket, netPeer);
                 break;
             case McApiSetEntityMuteRequestPacket setEntityMuteRequestPacket:
-                HandleSetEntityMuteRequestPacket(setEntityMuteRequestPacket, data);
+                HandleSetEntityMuteRequestPacket(setEntityMuteRequestPacket, netPeer);
                 break;
             case McApiSetEntityDeafenRequestPacket setEntityDeafenRequestPacket:
-                HandleSetEntityDeafenRequestPacket(setEntityDeafenRequestPacket, data);
+                HandleSetEntityDeafenRequestPacket(setEntityDeafenRequestPacket, netPeer);
                 break;
             case McApiSetEntityTalkBitmaskRequestPacket setEntityTalkBitmaskRequestPacket:
-                HandleSetEntityTalkBitmaskRequestPacket(setEntityTalkBitmaskRequestPacket, data);
+                HandleSetEntityTalkBitmaskRequestPacket(setEntityTalkBitmaskRequestPacket, netPeer);
                 break;
             case McApiSetEntityListenBitmaskRequestPacket setEntityListenBitmaskRequestPacket:
-                HandleSetEntityListenBitmaskRequestPacket(setEntityListenBitmaskRequestPacket, data);
+                HandleSetEntityListenBitmaskRequestPacket(setEntityListenBitmaskRequestPacket, netPeer);
                 break;
             case McApiSetEntityEffectBitmaskRequestPacket setEntityEffectBitmaskRequestPacket:
-                HandleSetEntityEffectBitmaskRequestPacket(setEntityEffectBitmaskRequestPacket, data);
+                HandleSetEntityEffectBitmaskRequestPacket(setEntityEffectBitmaskRequestPacket, netPeer);
                 break;
             case McApiSetEntityPositionRequestPacket setEntityPositionRequestPacket:
-                HandleSetEntityPositionRequestPacket(setEntityPositionRequestPacket, data);
+                HandleSetEntityPositionRequestPacket(setEntityPositionRequestPacket, netPeer);
                 break;
             case McApiSetEntityRotationRequestPacket setEntityRotationRequestPacket:
-                HandleSetEntityRotationRequestPacket(setEntityRotationRequestPacket, data);
+                HandleSetEntityRotationRequestPacket(setEntityRotationRequestPacket, netPeer);
                 break;
         }
     }
@@ -226,12 +227,17 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         Disposed = true;
     }
 
-    private void HandleLoginRequestPacket(McApiLoginRequestPacket packet, object? data)
+    private void HandleLoginRequestPacket(McApiLoginRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer netPeer) return;
         if (netPeer.ConnectionState == McApiConnectionState.Connected)
         {
-            AcceptRequest(packet, data);
+            AcceptRequest(packet, netPeer);
+            //Sync Event Subscriptions
+            netPeer.SubscribedEvents.Clear();
+            foreach (var @event in packet.SubscribeEvents)
+            {
+                netPeer.SubscribedEvents.Add(@event);
+            }
             return;
         }
 
@@ -255,25 +261,29 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
             return;
         }
 
-        AcceptRequest(packet, data);
+        AcceptRequest(packet, netPeer);
+        //Sync Event Subscriptions
+        netPeer.SubscribedEvents.Clear();
+        foreach (var @event in packet.SubscribeEvents)
+        {
+            netPeer.SubscribedEvents.Add(@event);
+        }
     }
 
-    private void HandleLogoutRequestPacket(McApiLogoutRequestPacket packet, object? data)
+    private void HandleLogoutRequestPacket(McApiLogoutRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer netPeer) return;
         if (packet.Token != netPeer.SessionToken) return;
         Disconnect(netPeer, true);
     }
 
-    private void HandlePingRequestPacket(McApiPingRequestPacket _, object? data)
+    private void HandlePingRequestPacket(McApiPingRequestPacket _, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer netPeer) return;
         SendPacket(netPeer, PacketPool<McApiPingResponsePacket>.GetPacket(() => new McApiPingResponsePacket()).Set());
     }
 
-    private void HandleResetRequestPacket(McApiResetRequestPacket packet, object? data)
+    private void HandleResetRequestPacket(McApiResetRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected } netPeer) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         try
         {
             world.Reset();
@@ -289,21 +299,21 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
 
-    private void HandleSetEffectRequestPacket(McApiSetEffectRequestPacket packet, object? data)
+    private void HandleSetEffectRequestPacket(McApiSetEffectRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         audioEffectSystem.SetEffect(packet.Bitmask, packet.Effect);
     }
 
-    private void HandleClearEffectsRequestPacket(McApiClearEffectsRequestPacket _, object? data)
+    private void HandleClearEffectsRequestPacket(McApiClearEffectsRequestPacket _, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         audioEffectSystem.ClearEffects();
     }
 
-    private void HandleCreateEntityRequestPacket(McApiCreateEntityRequestPacket packet, object? data)
+    private void HandleCreateEntityRequestPacket(McApiCreateEntityRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected } netPeer) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         try
         {
             var entityId = world.GetNextId();
@@ -334,9 +344,9 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
 
-    private void HandleDestroyEntityRequestPacket(McApiDestroyEntityRequestPacket packet, object? data)
+    private void HandleDestroyEntityRequestPacket(McApiDestroyEntityRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected } netPeer) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         try
         {
             world.DestroyEntity(packet.Id);
@@ -352,49 +362,50 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
 
-    private void HandleEntityAudioRequestPacket(McApiEntityAudioRequestPacket packet, object? data)
+    private void HandleEntityAudioRequestPacket(McApiEntityAudioRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity) return;
         entity.ReceiveAudio(packet.Buffer, packet.Timestamp, packet.FrameLoudness);
     }
 
-    private void HandleSetEntityTitleRequestPacket(McApiSetEntityTitleRequestPacket packet, object? data)
+    private void HandleSetEntityTitleRequestPacket(McApiSetEntityTitleRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is not VoiceCraftNetworkEntity networkEntity) return;
         networkEntity.SetTitle(packet.Value);
     }
 
-    private void HandleSetEntityDescriptionRequestPacket(McApiSetEntityDescriptionRequestPacket packet, object? data)
+    private void HandleSetEntityDescriptionRequestPacket(McApiSetEntityDescriptionRequestPacket packet,
+        McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is not VoiceCraftNetworkEntity networkEntity) return;
         networkEntity.SetDescription(packet.Value);
     }
 
-    private void HandleSetEntityWorldIdRequestPacket(McApiSetEntityWorldIdRequestPacket packet, object? data)
+    private void HandleSetEntityWorldIdRequestPacket(McApiSetEntityWorldIdRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
         entity.WorldId = packet.Value;
     }
 
-    private void HandleSetEntityNameRequestPacket(McApiSetEntityNameRequestPacket packet, object? data)
+    private void HandleSetEntityNameRequestPacket(McApiSetEntityNameRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
         entity.Name = packet.Value;
     }
 
-    private void HandleSetEntityMuteRequestPacket(McApiSetEntityMuteRequestPacket packet, object? data)
+    private void HandleSetEntityMuteRequestPacket(McApiSetEntityMuteRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity == null) return;
         switch (entity)
@@ -408,9 +419,9 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
 
-    private void HandleSetEntityDeafenRequestPacket(McApiSetEntityDeafenRequestPacket packet, object? data)
+    private void HandleSetEntityDeafenRequestPacket(McApiSetEntityDeafenRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity == null) return;
         switch (entity)
@@ -424,43 +435,41 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
     }
 
-    private void HandleSetEntityTalkBitmaskRequestPacket(McApiSetEntityTalkBitmaskRequestPacket packet, object? data)
+    private void HandleSetEntityTalkBitmaskRequestPacket(McApiSetEntityTalkBitmaskRequestPacket packet,
+        McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.TalkBitmask = packet.Value;
+        entity?.TalkBitmask = packet.Value;
     }
 
     private void HandleSetEntityListenBitmaskRequestPacket(McApiSetEntityListenBitmaskRequestPacket packet,
-        object? data)
+        McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.ListenBitmask = packet.Value;
+        entity?.ListenBitmask = packet.Value;
     }
 
     private void HandleSetEntityEffectBitmaskRequestPacket(McApiSetEntityEffectBitmaskRequestPacket packet,
-        object? data)
+        McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
-        if (entity == null) return;
-        entity.EffectBitmask = packet.Value;
+        entity?.EffectBitmask = packet.Value;
     }
 
-    private void HandleSetEntityPositionRequestPacket(McApiSetEntityPositionRequestPacket packet, object? data)
+    private void HandleSetEntityPositionRequestPacket(McApiSetEntityPositionRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
         entity.Position = packet.Value;
     }
 
-    private void HandleSetEntityRotationRequestPacket(McApiSetEntityRotationRequestPacket packet, object? data)
+    private void HandleSetEntityRotationRequestPacket(McApiSetEntityRotationRequestPacket packet, McApiNetPeer netPeer)
     {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
         entity.Rotation = packet.Value;
