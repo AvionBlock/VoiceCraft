@@ -91,6 +91,8 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
                 ProcessPacket(reader, onParsed, () => new VcSetMuffleFactorRequest());
                 break;
             case VcPacketType.InfoRequest:
+                ProcessPacket(reader, onParsed, () => new VcInfoRequestPacket());
+                break;
             case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
             case VcPacketType.AcceptResponse:
@@ -235,10 +237,20 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
 
     private void HandleInfoRequestPacket(VcInfoRequestPacket packet, object? data)
     {
-        if (data is not IPEndPoint endPoint) return;
         var responsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket())
             .Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
-        SendUnconnectedPacket(endPoint, responsePacket);
+        SendInfoResponsePacket(data, responsePacket);
+    }
+
+    protected virtual void SendInfoResponsePacket(object? data, VcInfoResponsePacket packet)
+    {
+        if (data is IPEndPoint endPoint)
+        {
+            SendUnconnectedPacket(endPoint, packet);
+            return;
+        }
+
+        PacketPool<VcInfoResponsePacket>.Return(packet);
     }
 
     private void HandleLoginRequestPacket(VcLoginRequestPacket packet, object? data)

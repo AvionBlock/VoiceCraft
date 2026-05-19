@@ -1,0 +1,60 @@
+name: Deploy Web Client
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - VoiceCraft.Client/**
+      - VoiceCraft.Core/**
+      - VoiceCraft.Network/**
+      - Directory.Packages.props
+      - .github/workflows/pages.yml
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore workloads
+        run: dotnet workload restore VoiceCraft.sln
+
+      - name: Build browser client
+        run: dotnet build VoiceCraft.Client/VoiceCraft.Client.Browser/VoiceCraft.Client.Browser.csproj -c Debug
+
+      - name: Compose static site
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path artifacts/browser/wwwroot -Force
+          Copy-Item VoiceCraft.Client/VoiceCraft.Client.Browser/wwwroot/* artifacts/browser/wwwroot -Recurse -Force
+          Copy-Item VoiceCraft.Client/VoiceCraft.Client.Browser/bin/Debug/net10.0-browser/wwwroot/* artifacts/browser/wwwroot -Recurse -Force
+
+      - name: Keep GitHub Pages from ignoring framework files
+        run: New-Item -ItemType File -Path artifacts/browser/wwwroot/.nojekyll -Force
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: artifacts/browser/wwwroot
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

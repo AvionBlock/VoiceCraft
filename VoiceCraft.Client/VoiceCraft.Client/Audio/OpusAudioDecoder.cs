@@ -7,7 +7,11 @@ namespace VoiceCraft.Client.Audio;
 
 public class OpusAudioDecoder : IAudioDecoder
 {
-    private readonly OpusDecoder _opusDecoder = new(Constants.SampleRate, Constants.RecordingChannels);
+    private static readonly bool? StaticallyLinkedRuntime = OperatingSystem.IsIOS() ? true : null;
+    private readonly OpusDecoder _opusDecoder = new(
+        Constants.SampleRate,
+        Constants.RecordingChannels,
+        StaticallyLinkedRuntime);
     private bool _disposed;
 
     ~OpusAudioDecoder()
@@ -23,7 +27,7 @@ public class OpusAudioDecoder : IAudioDecoder
     
     public void Dispose()
     {
-        Dispose(false);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
     

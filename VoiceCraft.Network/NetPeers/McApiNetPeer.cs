@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace VoiceCraft.Network.NetPeers;
 
@@ -6,6 +7,7 @@ public abstract class McApiNetPeer
 {
     public ConcurrentQueue<QueuedPacket> IncomingQueue { get; } = new();
     public ConcurrentQueue<QueuedPacket> OutgoingQueue { get; } = new();
+    public HashSet<McApiEventType> SubscribedEvents { get; } = [];
     
     public virtual McApiConnectionState ConnectionState { get; set; }
     public abstract string SessionToken { get; }

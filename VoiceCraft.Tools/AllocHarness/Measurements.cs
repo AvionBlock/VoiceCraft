@@ -12,6 +12,7 @@ using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
+using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Network.World;
 using VoiceCraft.Server.Systems;
@@ -162,8 +163,10 @@ internal static class Measurements
         using var world = new VoiceCraftWorld();
         using var effectSystem = new AudioEffectSystem();
         using var liteNetServer = new FakeLiteNetVoiceCraftServer(world);
+        using var webRtcServer = new WebRtcVoiceCraftServer(world);
         using var mcApiServer = new FakeMcApiServer(world, effectSystem);
-        using var eventHandlerSystem = new EventHandlerSystem(liteNetServer, [mcApiServer], effectSystem, world);
+        using var eventHandlerSystem =
+            new EventHandlerSystem(liteNetServer, webRtcServer, [mcApiServer], effectSystem, world);
 
         var sourceEntity = new VoiceCraftEntity(1);
         world.AddEntity(sourceEntity);
@@ -202,8 +205,10 @@ internal static class Measurements
         using var world = new VoiceCraftWorld();
         using var effectSystem = new AudioEffectSystem();
         using var liteNetServer = new FakeLiteNetVoiceCraftServer(world);
+        using var webRtcServer = new WebRtcVoiceCraftServer(world);
         using var mcApiServer = new FakeMcApiServer(world, effectSystem);
-        using var eventHandlerSystem = new EventHandlerSystem(liteNetServer, [mcApiServer], effectSystem, world);
+        using var eventHandlerSystem =
+            new EventHandlerSystem(liteNetServer, webRtcServer, [mcApiServer], effectSystem, world);
 
         for (var i = 0; i < scenario.P1; i++)
             world.AddEntity(CreateEntityForSync(i));
@@ -247,16 +252,27 @@ internal static class Measurements
             effectSystem.SetEffect((ushort)(1 << i), new FakeProcessingEffect((i % 4) + 1));
 
         var buffer = new float[960];
+        var processors = effectSystem.AudioEffects
+            .Select(effect => effect.Value.GetProcessor(source))
+            .ToArray();
 
-        return MeasureAction(() =>
+        try
         {
-            Array.Fill(buffer, 0.25f);
-            foreach (var target in targets)
-                foreach (var effect in effectSystem.AudioEffects)
-                    effect.Value.Process(source, target, effect.Key, buffer);
+            return MeasureAction(() =>
+            {
+                Array.Fill(buffer, 0.25f);
+                foreach (var target in targets)
+                    foreach (var processor in processors)
+                        processor.Process(target, buffer);
 
-            GC.KeepAlive(buffer[0]);
-        }, scenario.P3);
+                GC.KeepAlive(buffer[0]);
+            }, scenario.P3);
+        }
+        finally
+        {
+            foreach (var processor in processors)
+                processor.Dispose();
+        }
     }
 
     public static SampleResult MeasureJitterBufferSample(Scenario scenario, ScenarioMode mode)

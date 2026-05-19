@@ -1,6 +1,5 @@
 using System;
 using System.Buffers;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using AVFoundation;
@@ -8,7 +7,6 @@ using Foundation;
 using SoundFlow.Abstracts;
 using SoundFlow.Abstracts.Devices;
 using SoundFlow.Backends.MiniAudio.Devices;
-using SoundFlow.Components;
 using SoundFlow.Enums;
 using SoundFlow.Structs;
 using VoiceCraft.Core;
@@ -365,10 +363,6 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
 
 internal sealed class IosAudioPlaybackDevice : AudioPlaybackDevice
 {
-    private delegate void MixerProcessDelegate(Mixer mixer, Span<float> outputBuffer, int channels);
-
-    private static readonly MixerProcessDelegate ProcessMixer = BuildProcessDelegate();
-
     private AVAudioEngine? _engine;
     private AVAudioPlayerNode? _player;
     private AVAudioFormat? _playbackFormat;
@@ -465,7 +459,11 @@ internal sealed class IosAudioPlaybackDevice : AudioPlaybackDevice
         {
             var mixSpan = mixed.AsSpan(0, totalSamples);
             mixSpan.Clear();
-            ProcessMixer(MasterMixer, mixSpan, channels);
+            var soloed = Engine.GetSoloedComponent();
+            if (soloed != null)
+                soloed.Process(mixSpan, channels);
+            else
+                MasterMixer.Process(mixSpan, channels);
 
             using var pcmBuffer = new AVAudioPcmBuffer(_playbackFormat, (uint)frameCount);
             pcmBuffer.FrameLength = (uint)frameCount;
@@ -500,15 +498,6 @@ internal sealed class IosAudioPlaybackDevice : AudioPlaybackDevice
         {
             ArrayPool<float>.Shared.Return(mixed);
         }
-    }
-
-    private static MixerProcessDelegate BuildProcessDelegate()
-    {
-        var method = typeof(SoundComponent).GetMethod("Process", BindingFlags.Instance | BindingFlags.NonPublic);
-        if (method == null)
-            throw new InvalidOperationException("SoundFlow mixer process method not found.");
-
-        return (MixerProcessDelegate)method.CreateDelegate(typeof(MixerProcessDelegate));
     }
 
     private void CleanupGraph()

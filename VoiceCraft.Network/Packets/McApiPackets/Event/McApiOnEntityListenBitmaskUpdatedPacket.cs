@@ -2,7 +2,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IMcApiPacket
+public class McApiOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IMcApiEventPacket
 {
     public McApiOnEntityListenBitmaskUpdatedPacket() : this(0, 0)
     {
@@ -12,6 +12,7 @@ public class McApiOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IMc
     public ushort Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityListenBitmaskUpdated;
+    public McApiEventType EventType => McApiEventType.OnEntityListenBitmaskUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

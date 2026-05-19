@@ -22,7 +22,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     protected bool Disposed;
     //Audio
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
-    private readonly IAudioEncoder _audioEncoder;
+    private readonly Lazy<IAudioEncoder> _audioEncoder;
     private DateTime _lastAudioPeakTime = DateTime.MinValue;
     private ushort _sendTimestamp;
 
@@ -93,9 +93,14 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     public event Action<bool>? OnServerMuteUpdated;
     public event Action<bool>? OnServerDeafenUpdated;
 
-    protected VoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecoder> decoderFactory) : base(0)
+    protected VoiceCraftClient(IAudioEncoder audioEncoder, Func<IAudioDecoder> decoderFactory)
+        : this(() => audioEncoder, decoderFactory)
     {
-        _audioEncoder = audioEncoder;
+    }
+
+    protected VoiceCraftClient(Func<IAudioEncoder> audioEncoderFactory, Func<IAudioDecoder> decoderFactory) : base(0)
+    {
+        _audioEncoder = new Lazy<IAudioEncoder>(audioEncoderFactory);
         _audioDecoderFactory = decoderFactory;
 
         //Internal Listeners
@@ -163,7 +168,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         encodeBuffer.AsSpan().Clear();
         try
         {
-            var bytesEncoded = _audioEncoder.Encode(
+            var bytesEncoded = _audioEncoder.Value.Encode(
                 buffer,
                 encodeBuffer.AsSpan(0, Constants.MaximumEncodedBytes),
                 Constants.FrameSize);
@@ -494,7 +499,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (Disposed) return;
         if (disposing)
         {
-            _audioEncoder.Dispose();
+            if (_audioEncoder.IsValueCreated)
+                _audioEncoder.Value.Dispose();
             World.Dispose();
             AudioEffectSystem.Dispose();
 

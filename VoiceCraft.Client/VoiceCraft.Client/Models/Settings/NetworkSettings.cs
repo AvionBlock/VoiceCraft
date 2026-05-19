@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Network;
 
@@ -36,6 +37,22 @@ public class NetworkSettings : Setting<NetworkSettings>
         }
     } = 8080;
 
+    public List<WebRtcIceServerSettings> WebRtcIceServers
+    {
+        get;
+        set
+        {
+            field = value ?? [];
+            OnUpdated?.Invoke(this);
+        }
+    } =
+    [
+        new() { Urls = "stun:stun.l.google.com:19302" },
+        new() { Urls = "stun:stun1.l.google.com:19302" },
+        new() { Urls = "stun:stun2.l.google.com:19302" },
+        new() { Urls = "stun:stun.cloudflare.com:3478" }
+    ];
+
     public override event Action<NetworkSettings>? OnUpdated;
 
     public override object Clone()
@@ -44,4 +61,11 @@ public class NetworkSettings : Setting<NetworkSettings>
         clone.OnUpdated = null;
         return clone;
     }
+}
+
+public class WebRtcIceServerSettings
+{
+    public string Urls { get; set; } = string.Empty;
+    public string? Username { get; set; }
+    public string? Credential { get; set; }
 }

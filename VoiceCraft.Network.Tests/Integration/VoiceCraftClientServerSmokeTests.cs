@@ -142,9 +142,11 @@ public class VoiceCraftClientServerSmokeTests
     {
         using var world = new VoiceCraftWorld();
         using var server = CreateServer(world, out var port);
+        using var webRtcServer = new WebRtcVoiceCraftServer(world);
         using var audioEffectSystem = new AudioEffectSystem();
         using var eventHandlerSystem = new EventHandlerSystem(
             server,
+            webRtcServer,
             Array.Empty<McApiServer>(),
             audioEffectSystem,
             world);

@@ -5,19 +5,15 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Nullable>enable</Nullable>
         <WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
-        <WasmBuildNative>true</WasmBuildNative>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Browser"/>
-        <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" />
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Client\VoiceCraft.Client.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <NativeFileReference Include="opus.a"/>
-    </ItemGroup>
 </Project>

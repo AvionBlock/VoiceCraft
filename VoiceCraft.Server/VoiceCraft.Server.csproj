@@ -14,8 +14,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Certes"/>
         <PackageReference Include="Fleck"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+        <PackageReference Include="OpenPort.Net"/>
+        <PackageReference Include="SIPSorcery"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
     </ItemGroup>

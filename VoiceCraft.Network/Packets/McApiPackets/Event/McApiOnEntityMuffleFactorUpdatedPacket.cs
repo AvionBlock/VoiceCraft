@@ -2,7 +2,7 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityMuffleFactorUpdatedPacket(int id, float value) : IMcApiPacket
+public class McApiOnEntityMuffleFactorUpdatedPacket(int id, float value) : IMcApiEventPacket
 {
     public McApiOnEntityMuffleFactorUpdatedPacket() : this(0, 0.0f)
     {
@@ -12,6 +12,7 @@ public class McApiOnEntityMuffleFactorUpdatedPacket(int id, float value) : IMcAp
     public float Value { get; private set; } = value;
 
     public McApiPacketType PacketType => McApiPacketType.OnEntityMuffleFactorUpdated;
+    public McApiEventType EventType => McApiEventType.OnEntityMuffleFactorUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

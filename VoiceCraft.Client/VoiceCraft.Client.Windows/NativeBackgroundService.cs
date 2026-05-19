@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Client.Services;
 
@@ -11,7 +10,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
     private static ConcurrentDictionary<Type, BackgroundTask> Services { get; } = new();
     private Func<Type, object> BackgroundFactory { get; } = backgroundFactory;
 
-    public Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
+    public async Task StartServiceAsync<T>(Action<T, Action<string>, Action<string>> startAction) where T : notnull
     {
         var backgroundType = typeof(T);
         if (Services.ContainsKey(backgroundType))
@@ -25,7 +24,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
         try
         {
             Services.TryAdd(backgroundType, backgroundTask);
-            backgroundTask.Start(() => startAction.Invoke(instance, _ => { }, _ => { }));
+            await backgroundTask.StartAsync(() => startAction.Invoke(instance, _ => { }, _ => { }));
         }
         catch
         {
@@ -34,8 +33,6 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
             backgroundTask.Dispose();
             throw;
         }
-        
-        return Task.CompletedTask;
     }
 
     public T? GetService<T>() where T : notnull
@@ -66,7 +63,7 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
         public Task? RunningTask { get; private set; }
         public object TaskInstance { get; } = taskInstance;
 
-        public void Start(Action startAction)
+        public async Task StartAsync(Action startAction)
         {
             RunningTask = Task.Run(() =>
             {
@@ -81,10 +78,9 @@ public class NativeBackgroundService(Func<Type, object> backgroundFactory) : IBa
                 }
             });
 
-            var sw = new SpinWait();
             while (RunningTask.Status < TaskStatus.Running)
             {
-                sw.SpinOnce();
+                await Task.Delay(10);
             }
         }
 
