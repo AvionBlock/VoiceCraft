@@ -150,6 +150,10 @@ jobs:
 
   VoiceCraft-Client-iOS:
     runs-on: macos-26
+    env:
+      HOME: /Users/runner
+      DOTNET_CLI_HOME: /Users/runner
+      XDG_CONFIG_HOME: /Users/runner/.config
     defaults:
       run:
         working-directory: ./VoiceCraft.Client/VoiceCraft.Client.iOS
@@ -159,6 +163,9 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/Xcode.app
           xcodebuild -version
+
+      - name: Prepare Apple SDK settings
+        run: mkdir -p "$HOME/Library/Preferences/maui" "$HOME/Library/Preferences/Xamarin" "$XDG_CONFIG_HOME"
 
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
@@ -179,6 +186,10 @@ jobs:
 
   VoiceCraft-Client-MacOS:
     runs-on: macos-26
+    env:
+      HOME: /Users/runner
+      DOTNET_CLI_HOME: /Users/runner
+      XDG_CONFIG_HOME: /Users/runner/.config
     strategy:
       matrix:
         arch: [x64, arm64]
@@ -192,6 +203,9 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/Xcode.app
           xcodebuild -version
+
+      - name: Prepare Apple SDK settings
+        run: mkdir -p "$HOME/Library/Preferences/maui" "$HOME/Library/Preferences/Xamarin" "$XDG_CONFIG_HOME"
 
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v5
