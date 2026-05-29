@@ -1,5 +1,10 @@
 # VoiceCraft Proximity Chat
 
+> [!WARNING]
+> VoiceCraft is currently in the process of migrating to our private gitlab server due to privacy and safety reasons
+> that github/microsoft have currently been taking (including data leaks). The new project link is available here: 
+> https://gitlab.avion.team/voicecraft
+
 Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
 
 <p align="center">
