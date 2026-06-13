@@ -15,9 +15,7 @@ public class McApiCreateEntityRequestPacket(
     ushort listenBitmask,
     ushort effectBitmask,
     Vector3 position,
-    Vector2 rotation,
-    float caveFactor,
-    float muffleFactor)
+    Vector2 rotation)
     : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiCreateEntityRequestPacket() : this(
@@ -30,15 +28,13 @@ public class McApiCreateEntityRequestPacket(
         0,
         0,
         Vector3.Zero,
-        Vector2.Zero,
-        0.0f,
-        0.0f)
+        Vector2.Zero)
     {
     }
 
     public McApiCreateEntityRequestPacket(string requestId, VoiceCraftEntity entity) : this(requestId, entity.WorldId,
         entity.Name, entity.Muted, entity.Deafened, entity.TalkBitmask, entity.ListenBitmask, entity.EffectBitmask,
-        entity.Position, entity.Rotation, entity.CaveFactor, entity.MuffleFactor)
+        entity.Position, entity.Rotation)
     {
     }
 
@@ -51,8 +47,6 @@ public class McApiCreateEntityRequestPacket(
     public ushort EffectBitmask { get; private set; } = effectBitmask;
     public Vector3 Position { get; private set; } = position;
     public Vector2 Rotation { get; private set; } = rotation;
-    public float CaveFactor { get; private set; } = caveFactor;
-    public float MuffleFactor { get; private set; } = muffleFactor;
 
     public McApiPacketType PacketType => McApiPacketType.CreateEntityRequest;
 
@@ -71,8 +65,6 @@ public class McApiCreateEntityRequestPacket(
         writer.Put(Position.Z);
         writer.Put(Rotation.X);
         writer.Put(Rotation.Y);
-        writer.Put(CaveFactor);
-        writer.Put(MuffleFactor);
     }
 
     public void Deserialize(NetDataReader reader)
@@ -87,8 +79,6 @@ public class McApiCreateEntityRequestPacket(
         EffectBitmask = reader.GetUShort();
         Position = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         Rotation = new Vector2(reader.GetFloat(), reader.GetFloat());
-        CaveFactor = reader.GetFloat();
-        MuffleFactor = reader.GetFloat();
     }
 
     public string RequestId { get; private set; } = requestId;
@@ -103,9 +93,7 @@ public class McApiCreateEntityRequestPacket(
         ushort listenBitmask = 0,
         ushort effectBitmask = 0,
         Vector3 position = new(),
-        Vector2 rotation = new(),
-        float caveFactor = 0,
-        float muffleFactor = 0)
+        Vector2 rotation = new())
     {
         RequestId = requestId;
         WorldId = worldId;
@@ -117,8 +105,6 @@ public class McApiCreateEntityRequestPacket(
         EffectBitmask = effectBitmask;
         Position = position;
         Rotation = rotation;
-        CaveFactor = caveFactor;
-        MuffleFactor = muffleFactor;
         return this;
     }
 
@@ -134,8 +120,6 @@ public class McApiCreateEntityRequestPacket(
         EffectBitmask = entity.EffectBitmask;
         Position = entity.Position;
         Rotation = entity.Rotation;
-        CaveFactor = entity.CaveFactor;
-        MuffleFactor = entity.MuffleFactor;
         return this;
     }
 }

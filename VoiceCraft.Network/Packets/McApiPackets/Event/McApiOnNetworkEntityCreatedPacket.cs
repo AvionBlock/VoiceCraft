@@ -9,8 +9,8 @@ namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
 {
     public McApiOnNetworkEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, string.Empty, string.Empty, false,
-        false, 0, 0, 0, Vector3.Zero, Vector2.Zero, 0.0f, 0.0f, Guid.Empty, Guid.Empty, string.Empty,
-        PositioningType.Server, false, false)
+        false, 0, 0, 0, Vector3.Zero, Vector2.Zero, Guid.Empty, Guid.Empty, string.Empty, PositioningType.Server, false,
+        false)
     {
     }
 
@@ -27,8 +27,6 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ushort effectBitmask,
         Vector3 position,
         Vector2 rotation,
-        float caveFactor,
-        float muffleFactor,
         Guid userGuid,
         Guid serverUserGuid,
         string locale,
@@ -46,9 +44,7 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
             listenBitmask,
             effectBitmask,
             position,
-            rotation,
-            caveFactor,
-            muffleFactor)
+            rotation)
     {
         UserGuid = userGuid;
         ServerUserGuid = serverUserGuid;
@@ -112,8 +108,6 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ushort effectBitmask = 0,
         Vector3 position = new(),
         Vector2 rotation = new(),
-        float caveFactor = 0,
-        float muffleFactor = 0,
         Guid userGuid = new(),
         Guid serverUserGuid = new(),
         string locale = "",
@@ -122,7 +116,7 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         bool serverDeafened = false)
     {
         base.Set(id, loudness, lastSpoke, worldId, name, muted, deafened, talkBitmask, listenBitmask, effectBitmask,
-            position, rotation, caveFactor, muffleFactor);
+            position, rotation);
         UserGuid = userGuid;
         ServerUserGuid = serverUserGuid;
         Locale = locale;

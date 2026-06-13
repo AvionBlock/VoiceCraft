@@ -123,8 +123,6 @@ public class EventHandlerSystem : IDisposable
         newEntity.OnEffectBitmaskUpdated += OnEntityEffectBitmaskUpdated;
         newEntity.OnPositionUpdated += OnEntityPositionUpdated;
         newEntity.OnRotationUpdated += OnEntityRotationUpdated;
-        newEntity.OnCaveFactorUpdated += OnEntityCaveFactorUpdated;
-        newEntity.OnMuffleFactorUpdated += OnEntityMuffleFactorUpdated;
         newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
         newEntity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
         newEntity.OnAudioReceived += OnEntityAudioReceived;
@@ -214,8 +212,6 @@ public class EventHandlerSystem : IDisposable
         entity.OnEffectBitmaskUpdated -= OnEntityEffectBitmaskUpdated;
         entity.OnPositionUpdated -= OnEntityPositionUpdated;
         entity.OnRotationUpdated -= OnEntityRotationUpdated;
-        entity.OnCaveFactorUpdated -= OnEntityCaveFactorUpdated;
-        entity.OnMuffleFactorUpdated -= OnEntityMuffleFactorUpdated;
         entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
         entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
         entity.OnAudioReceived -= OnEntityAudioReceived;
@@ -502,49 +498,6 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityCaveFactorUpdated(float caveFactor, VoiceCraftEntity entity)
-    {
-        _tasks.Enqueue(() =>
-        {
-            if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
-                _liteNetServer.SendPacket(networkEntity.NetPeer,
-                    PacketPool<VcSetCaveFactorRequest>.GetPacket(() => new VcSetCaveFactorRequest()).Set(caveFactor));
-
-            foreach (var ve in entity.VisibleEntities)
-            {
-                if (ve is not VoiceCraftNetworkEntity visibleEntity) continue;
-                var packet = PacketPool<VcOnEntityCaveFactorUpdatedPacket>
-                    .GetPacket(() => new VcOnEntityCaveFactorUpdatedPacket()).Set(entity.Id, caveFactor);
-                _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
-            }
-
-            BroadcastMcApi(PacketPool<McApiOnEntityCaveFactorUpdatedPacket>.GetPacket(() =>
-                new McApiOnEntityCaveFactorUpdatedPacket()).Set(entity.Id, caveFactor));
-        });
-    }
-
-    private void OnEntityMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity entity)
-    {
-        _tasks.Enqueue(() =>
-        {
-            if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
-                _liteNetServer.SendPacket(networkEntity.NetPeer,
-                    PacketPool<VcSetMuffleFactorRequest>.GetPacket(() => new VcSetMuffleFactorRequest())
-                        .Set(muffleFactor));
-
-            foreach (var ve in entity.VisibleEntities)
-            {
-                if (ve is not VoiceCraftNetworkEntity visibleEntity) continue;
-                var packet = PacketPool<VcOnEntityMuffleFactorUpdatedPacket>
-                    .GetPacket(() => new VcOnEntityMuffleFactorUpdatedPacket()).Set(entity.Id, muffleFactor);
-                _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
-            }
-
-            BroadcastMcApi(PacketPool<McApiOnEntityMuffleFactorUpdatedPacket>.GetPacket(() =>
-                new McApiOnEntityMuffleFactorUpdatedPacket()).Set(entity.Id, muffleFactor));
-        });
-    }
-
     //Visible Entities
     private void OnEntityVisibleEntityAdded(VoiceCraftEntity addedEntity, VoiceCraftEntity entity)
     {
@@ -566,17 +519,9 @@ public class EventHandlerSystem : IDisposable
                 var rotationPacket = PacketPool<VcOnEntityRotationUpdatedPacket>
                     .GetPacket(() => new VcOnEntityRotationUpdatedPacket())
                     .Set(entity.Id, entity.Rotation);
-                var caveFactorPacket = PacketPool<VcOnEntityCaveFactorUpdatedPacket>
-                    .GetPacket(() => new VcOnEntityCaveFactorUpdatedPacket())
-                    .Set(entity.Id, entity.CaveFactor);
-                var muffleFactorPacket = PacketPool<VcOnEntityMuffleFactorUpdatedPacket>
-                    .GetPacket(() => new VcOnEntityMuffleFactorUpdatedPacket())
-                    .Set(entity.Id, entity.MuffleFactor);
 
                 _liteNetServer.SendPacket(networkEntity.NetPeer, positionPacket);
                 _liteNetServer.SendPacket(networkEntity.NetPeer, rotationPacket);
-                _liteNetServer.SendPacket(networkEntity.NetPeer, caveFactorPacket);
-                _liteNetServer.SendPacket(networkEntity.NetPeer, muffleFactorPacket);
             }
 
             BroadcastMcApi(PacketPool<McApiOnEntityVisibilityUpdatedPacket>.GetPacket(() =>

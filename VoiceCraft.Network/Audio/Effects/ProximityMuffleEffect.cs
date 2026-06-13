@@ -23,6 +23,12 @@ namespace VoiceCraft.Network.Audio.Effects
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
         
+        public float Factor
+        {
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 0.0f;
+        
         public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
             new ProximityMuffleEffectProcessor(this, entity);
         
@@ -32,16 +38,28 @@ namespace VoiceCraft.Network.Audio.Effects
                 throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
             Bitmask = proximityMuffleEffect.Bitmask;
             WetDry = proximityMuffleEffect.WetDry;
+            Factor = proximityMuffleEffect.Factor;
+        }
+        
+        public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string factorProperty = $"{nameof(ProximityMuffleEffect)}:Factor";
+            var propVal1 = e1.TryGetProperty(factorProperty, out var prop1);
+            var propVal2 = e2.TryGetProperty(factorProperty, out var prop2);
+            if (!propVal1 && !propVal2) return Factor;
+            return Math.Max(prop1 ?? 0f, prop2 ?? 0f);
         }
         
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(WetDry);
+            writer.Put(Factor);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             WetDry = reader.GetFloat();
+            Factor = reader.GetFloat();
         }
         
         public void Dispose()
@@ -80,7 +98,7 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
-            var factor = MathF.Max(Entity.MuffleFactor, to.MuffleFactor);
+            var factor = _effect.EvaluateFactorProperty(Entity, to);
             
             for (var i = 0; i < buffer.Length; i++)
             {

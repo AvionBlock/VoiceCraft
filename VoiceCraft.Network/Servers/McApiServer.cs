@@ -110,12 +110,6 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
             case McApiPacketType.SetEntityRotationRequest:
                 ProcessPacket(reader, onParsed, () => new McApiSetEntityRotationRequestPacket());
                 break;
-            case McApiPacketType.SetEntityCaveFactorRequest:
-                ProcessPacket(reader, onParsed, () => new McApiSetEntityCaveFactorRequestPacket());
-                break;
-            case McApiPacketType.SetEntityMuffleFactorRequest:
-                ProcessPacket(reader, onParsed, () => new McApiSetEntityMuffleFactorRequestPacket());
-                break;
             case McApiPacketType.AcceptResponse:
             case McApiPacketType.DenyResponse:
             case McApiPacketType.PingResponse:
@@ -138,8 +132,6 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
             case McApiPacketType.OnEntityEffectBitmaskUpdated:
             case McApiPacketType.OnEntityPositionUpdated:
             case McApiPacketType.OnEntityRotationUpdated:
-            case McApiPacketType.OnEntityCaveFactorUpdated:
-            case McApiPacketType.OnEntityMuffleFactorUpdated:
             case McApiPacketType.OnEntityAudioReceived:
             default:
                 return;
@@ -209,12 +201,6 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
                 break;
             case McApiSetEntityRotationRequestPacket setEntityRotationRequestPacket:
                 HandleSetEntityRotationRequestPacket(setEntityRotationRequestPacket, data);
-                break;
-            case McApiSetEntityCaveFactorRequestPacket setEntityCaveFactorRequestPacket:
-                HandleSetEntityCaveFactorRequestPacket(setEntityCaveFactorRequestPacket, data);
-                break;
-            case McApiSetEntityMuffleFactorRequestPacket setEntityMuffleFactorRequestPacket:
-                HandleSetEntityMuffleFactorRequestPacket(setEntityMuffleFactorRequestPacket, data);
                 break;
         }
     }
@@ -331,9 +317,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
                 ListenBitmask = packet.ListenBitmask,
                 EffectBitmask = packet.EffectBitmask,
                 Position = packet.Position,
-                Rotation = packet.Rotation,
-                CaveFactor = packet.CaveFactor,
-                MuffleFactor = packet.MuffleFactor
+                Rotation = packet.Rotation
             };
 
             world.AddEntity(entity);
@@ -480,22 +464,6 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
         entity.Rotation = packet.Value;
-    }
-
-    private void HandleSetEntityCaveFactorRequestPacket(McApiSetEntityCaveFactorRequestPacket packet, object? data)
-    {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
-        var entity = world.GetEntity(packet.Id);
-        if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
-        entity.CaveFactor = packet.Value;
-    }
-
-    private void HandleSetEntityMuffleFactorRequestPacket(McApiSetEntityMuffleFactorRequestPacket packet, object? data)
-    {
-        if (data is not McApiNetPeer { ConnectionState: McApiConnectionState.Connected }) return;
-        var entity = world.GetEntity(packet.Id);
-        if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
-        entity.MuffleFactor = packet.Value;
     }
 
     private static void ProcessPacket<T>(NetDataReader reader, Action<IMcApiPacket> onParsed, Func<T> packetFactory)

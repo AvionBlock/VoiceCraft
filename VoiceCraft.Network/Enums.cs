@@ -67,8 +67,6 @@ public enum VcPacketType : byte
     SetEffectBitmaskRequest,
     SetPositionRequest,
     SetRotationRequest,
-    SetCaveFactorRequest,
-    SetMuffleFactorRequest,
     SetTitleRequest,
     SetDescriptionRequest,
     SetEntityVisibilityRequest,
@@ -90,8 +88,6 @@ public enum VcPacketType : byte
     OnEntityEffectBitmaskUpdated,
     OnEntityPositionUpdated,
     OnEntityRotationUpdated,
-    OnEntityCaveFactorUpdated,
-    OnEntityMuffleFactorUpdated,
     OnEntityAudioReceived
 }
 
@@ -127,8 +123,6 @@ public enum McApiPacketType : byte
     SetEntityEffectBitmaskRequest,
     SetEntityPositionRequest,
     SetEntityRotationRequest,
-    SetEntityCaveFactorRequest,
-    SetEntityMuffleFactorRequest,
 
     //Responses
     ResetResponse,
@@ -152,7 +146,5 @@ public enum McApiPacketType : byte
     OnEntityEffectBitmaskUpdated,
     OnEntityPositionUpdated,
     OnEntityRotationUpdated,
-    OnEntityCaveFactorUpdated,
-    OnEntityMuffleFactorUpdated,
     OnEntityAudioReceived
 }

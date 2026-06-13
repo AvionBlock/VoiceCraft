@@ -69,8 +69,6 @@ namespace VoiceCraft.Network.World
         {
             //Doesn't remove the entity from the world.
             Name = "New Client";
-            CaveFactor = 0;
-            MuffleFactor = 0;
             WorldId = string.Empty;
             Position = Vector3.Zero;
             Rotation = Vector2.Zero;

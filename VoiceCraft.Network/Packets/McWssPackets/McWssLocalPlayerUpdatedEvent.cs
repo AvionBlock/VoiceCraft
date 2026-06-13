@@ -15,8 +15,6 @@ namespace VoiceCraft.Network.Packets.McWssPackets
             public string worldId { get; set; } = string.Empty;
             public Position position { get; set; }
             public Rotation rotation { get; set; }
-            public float caveFactor { get; set; }
-            public float mufflefactor { get; set; }
         }
 
         public struct Position

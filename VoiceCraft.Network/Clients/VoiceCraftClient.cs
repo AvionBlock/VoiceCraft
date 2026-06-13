@@ -105,8 +105,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         OnDeafenUpdated += OnClientDeafenUpdated;
         OnPositionUpdated += OnClientPositionUpdated;
         OnRotationUpdated += OnClientRotationUpdated;
-        OnCaveFactorUpdated += OnClientCaveFactorUpdated;
-        OnMuffleFactorUpdated += OnClientMuffleFactorUpdated;
     }
 
     ~VoiceCraftClient()
@@ -188,8 +186,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         //Doesn't remove the entity from the world.
         Name = "New Client";
-        CaveFactor = 0;
-        MuffleFactor = 0;
         WorldId = string.Empty;
         Position = Vector3.Zero;
         Rotation = Vector2.Zero;
@@ -252,12 +248,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.SetRotationRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
                 break;
-            case VcPacketType.SetCaveFactorRequest:
-                ProcessPacket(reader, onParsed, () => new VcSetCaveFactorRequest());
-                break;
-            case VcPacketType.SetMuffleFactorRequest:
-                ProcessPacket(reader, onParsed, () => new VcSetMuffleFactorRequest());
-                break;
             case VcPacketType.SetTitleRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetTitleRequestPacket());
                 break;
@@ -309,12 +299,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.OnEntityRotationUpdated:
                 ProcessPacket(reader, onParsed, () => new VcOnEntityRotationUpdatedPacket());
                 break;
-            case VcPacketType.OnEntityCaveFactorUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityCaveFactorUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityMuffleFactorUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityMuffleFactorUpdatedPacket());
-                break;
             case VcPacketType.OnEntityAudioReceived:
                 ProcessPacket(reader, onParsed, () => new VcOnEntityAudioReceivedPacket());
                 break;
@@ -353,8 +337,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.SetEffectBitmaskRequest:
             case VcPacketType.SetPositionRequest:
             case VcPacketType.SetRotationRequest:
-            case VcPacketType.SetCaveFactorRequest:
-            case VcPacketType.SetMuffleFactorRequest:
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
@@ -372,8 +354,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.OnEntityEffectBitmaskUpdated:
             case VcPacketType.OnEntityPositionUpdated:
             case VcPacketType.OnEntityRotationUpdated:
-            case VcPacketType.OnEntityCaveFactorUpdated:
-            case VcPacketType.OnEntityMuffleFactorUpdated:
             case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
@@ -410,12 +390,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case VcSetRotationRequestPacket setRotationRequestPacket:
                 HandleSetRotationBitmaskRequestPacket(setRotationRequestPacket);
-                break;
-            case VcSetCaveFactorRequest setCaveFactorRequestPacket:
-                HandleSetCaveFactorRequestPacket(setCaveFactorRequestPacket);
-                break;
-            case VcSetMuffleFactorRequest setMuffleFactorRequestPacket:
-                HandleSetMuffleFactorRequestPacket(setMuffleFactorRequestPacket);
                 break;
             case VcSetTitleRequestPacket setTitleRequestPacket:
                 HandleSetTitleRequestPacket(setTitleRequestPacket);
@@ -475,12 +449,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcOnEntityRotationUpdatedPacket onEntityRotationUpdatedPacket:
                 HandleOnEntityRotationUpdatedPacket(onEntityRotationUpdatedPacket);
                 break;
-            case VcOnEntityCaveFactorUpdatedPacket onEntityCaveFactorUpdatedPacket:
-                HandleOnEntityCaveFactorUpdatedPacket(onEntityCaveFactorUpdatedPacket);
-                break;
-            case VcOnEntityMuffleFactorUpdatedPacket onEntityMuffleFactorUpdatedPacket:
-                HandleOnEntityMuffleFactorUpdatedPacket(onEntityMuffleFactorUpdatedPacket);
-                break;
             case VcOnEntityAudioReceivedPacket onEntityAudioReceivedPacket:
                 HandleOnEntityAudioReceivedPacket(onEntityAudioReceivedPacket);
                 break;
@@ -506,8 +474,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             OnDeafenUpdated -= OnClientDeafenUpdated;
             OnPositionUpdated -= OnClientPositionUpdated;
             OnRotationUpdated -= OnClientRotationUpdated;
-            OnCaveFactorUpdated -= OnClientCaveFactorUpdated;
-            OnMuffleFactorUpdated -= OnClientMuffleFactorUpdated;
 
             OnSetTitle = null;
             OnSetDescription = null;
@@ -558,16 +524,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void HandleSetRotationBitmaskRequestPacket(VcSetRotationRequestPacket packet)
     {
         Rotation = packet.Value;
-    }
-
-    private void HandleSetCaveFactorRequestPacket(VcSetCaveFactorRequest packet)
-    {
-        CaveFactor = packet.Value;
-    }
-
-    private void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet)
-    {
-        MuffleFactor = packet.Value;
     }
 
     private void HandleSetTitleRequestPacket(VcSetTitleRequestPacket packet)
@@ -689,18 +645,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity?.Rotation = packet.Value;
     }
 
-    private void HandleOnEntityCaveFactorUpdatedPacket(VcOnEntityCaveFactorUpdatedPacket packet)
-    {
-        var entity = World.GetEntity(packet.Id);
-        entity?.CaveFactor = packet.Value;
-    }
-
-    private void HandleOnEntityMuffleFactorUpdatedPacket(VcOnEntityMuffleFactorUpdatedPacket packet)
-    {
-        var entity = World.GetEntity(packet.Id);
-        entity?.MuffleFactor = packet.Value;
-    }
-
     private void HandleOnEntityAudioReceivedPacket(VcOnEntityAudioReceivedPacket packet)
     {
         if (Deafened || ServerDeafened) return;
@@ -743,19 +687,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         if (PositioningType != PositioningType.Client) return;
         SendPacket(PacketPool<VcSetRotationRequestPacket>.GetPacket(() => new VcSetRotationRequestPacket())
             .Set(rotation));
-    }
-
-    private void OnClientCaveFactorUpdated(float caveFactor, VoiceCraftEntity _)
-    {
-        if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetCaveFactorRequest>.GetPacket(() => new VcSetCaveFactorRequest()).Set(caveFactor));
-    }
-
-    private void OnClientMuffleFactorUpdated(float muffleFactor, VoiceCraftEntity _)
-    {
-        if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetMuffleFactorRequest>.GetPacket(() => new VcSetMuffleFactorRequest())
-            .Set(muffleFactor));
     }
 
     private void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed, Func<T> packetFactory)

@@ -18,9 +18,7 @@ public class McApiOnEntityCreatedPacket(
     ushort listenBitmask,
     ushort effectBitmask,
     Vector3 position,
-    Vector2 rotation,
-    float caveFactor,
-    float muffleFactor)
+    Vector2 rotation)
     : IMcApiPacket
 {
     public McApiOnEntityCreatedPacket() : this(
@@ -35,15 +33,13 @@ public class McApiOnEntityCreatedPacket(
         0,
         0,
         Vector3.Zero,
-        Vector2.Zero,
-        0.0f,
-        0.0f)
+        Vector2.Zero)
     {
     }
 
     public McApiOnEntityCreatedPacket(VoiceCraftEntity entity) : this(entity.Id, entity.Loudness, entity.LastSpoke,
         entity.WorldId, entity.Name, entity.Muted, entity.Deafened, entity.TalkBitmask, entity.ListenBitmask,
-        entity.EffectBitmask, entity.Position, entity.Rotation, entity.CaveFactor, entity.MuffleFactor)
+        entity.EffectBitmask, entity.Position, entity.Rotation)
     {
     }
 
@@ -59,8 +55,6 @@ public class McApiOnEntityCreatedPacket(
     public ushort EffectBitmask { get; private set; } = effectBitmask;
     public Vector3 Position { get; private set; } = position;
     public Vector2 Rotation { get; private set; } = rotation;
-    public float CaveFactor { get; private set; } = caveFactor;
-    public float MuffleFactor { get; private set; } = muffleFactor;
 
     public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
 
@@ -81,8 +75,6 @@ public class McApiOnEntityCreatedPacket(
         writer.Put(Position.Z);
         writer.Put(Rotation.X);
         writer.Put(Rotation.Y);
-        writer.Put(CaveFactor);
-        writer.Put(MuffleFactor);
     }
 
     public virtual void Deserialize(NetDataReader reader)
@@ -99,8 +91,6 @@ public class McApiOnEntityCreatedPacket(
         EffectBitmask = reader.GetUShort();
         Position = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         Rotation = new Vector2(reader.GetFloat(), reader.GetFloat());
-        CaveFactor = reader.GetFloat();
-        MuffleFactor = reader.GetFloat();
     }
 
     public McApiOnEntityCreatedPacket Set(
@@ -115,9 +105,7 @@ public class McApiOnEntityCreatedPacket(
         ushort listenBitmask = 0,
         ushort effectBitmask = 0,
         Vector3 position = new(),
-        Vector2 rotation = new(),
-        float caveFactor = 0,
-        float muffleFactor = 0)
+        Vector2 rotation = new())
     {
         Id = id;
         Loudness = loudness;
@@ -131,8 +119,6 @@ public class McApiOnEntityCreatedPacket(
         EffectBitmask = effectBitmask;
         Position = position;
         Rotation = rotation;
-        CaveFactor = caveFactor;
-        MuffleFactor = muffleFactor;
         return this;
     }
 
@@ -150,8 +136,6 @@ public class McApiOnEntityCreatedPacket(
         EffectBitmask = entity.EffectBitmask;
         Position = entity.Position;
         Rotation = entity.Rotation;
-        CaveFactor = entity.CaveFactor;
-        MuffleFactor = entity.MuffleFactor;
         return this;
     }
 }

@@ -1,7 +1,8 @@
 using System;
+using System.Buffers;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Core;
@@ -23,10 +24,9 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
             { PrefillSize = Constants.PrefillBufferSize * Constants.PlaybackChannels };
 
     private DateTime _lastPacket = DateTime.MinValue;
-    private readonly Dictionary<ushort, IAudioEffectProcessor> _effectProcessors = new();
+    private readonly ConcurrentDictionary<ushort, IAudioEffectProcessor> _effectProcessors = new();
 
     private readonly Lock _lock = new(); // For packet decoding.
-    private readonly Lock _audioLock = new(); // For reading, writing or changing effect processor stack.
 
     public VoiceCraftClientEntity(int id, IAudioDecoder decoder) : base(id)
     {
@@ -91,45 +91,38 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public void SetEffectProcessor(ushort bitmask, IAudioEffectProcessor? processor)
     {
-        lock (_audioLock)
+        switch (processor)
         {
-            switch (processor)
-            {
-                case null when _effectProcessors.Remove(bitmask, out var effectProcessor):
-                    effectProcessor.OnDisposed -=
-                        RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
-                    effectProcessor.Dispose();
-                    return;
-                case null:
-                    return;
-            }
-
-            if (!_effectProcessors.TryGetValue(bitmask, out var oldProcessor))
-                processor.OnDisposed += RemoveEffect; //Subscribe to effect dispose if it's a new effect.
-            _effectProcessors[bitmask] = processor;
-
-            //Dispose old processor if it exists.
-            oldProcessor?.Dispose();
+            case null when _effectProcessors.Remove(bitmask, out var effectProcessor):
+                effectProcessor.OnDisposed -= RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
+                effectProcessor.Dispose();
+                return;
+            case null:
+                return;
         }
 
+        if (_effectProcessors.TryGetValue(bitmask, out var oldProcessor))
+        {
+            //Dispose old processor if it exists.
+            oldProcessor.OnDisposed -= RemoveEffect;
+            oldProcessor.Dispose();
+        }
+
+        //Set new processor.
+        _effectProcessors[bitmask] = processor;
+        processor.OnDisposed += RemoveEffect;
         return;
 
         void RemoveEffect(IAudioEffectProcessor effectProcessor)
         {
-            lock (_audioLock)
-            {
-                effectProcessor.OnDisposed -= RemoveEffect;
-                _effectProcessors.Remove(bitmask, out _);
-            }
+            effectProcessor.OnDisposed -= RemoveEffect;
+            _effectProcessors.Remove(bitmask, out _);
         }
     }
 
     public bool TryGetEffectProcessor(ushort bitmask, [NotNullWhen(true)] out IAudioEffectProcessor? effect)
     {
-        lock (_audioLock)
-        {
-            return _effectProcessors.TryGetValue(bitmask, out effect);
-        }
+        return _effectProcessors.TryGetValue(bitmask, out effect);
     }
 
     public int Read(Span<float> buffer)
@@ -138,49 +131,53 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         if (UserMuted)
         {
             Speaking = false;
+            buffer.Clear();
             return read;
         }
 
-        lock (_audioLock)
-            read = _outputBuffer.Read(buffer);
-
-        if (read <= 0)
+        var monoSize = buffer.Length / 2;
+        var monoBuffer = ArrayPool<float>.Shared.Rent(monoSize);
+        var monoSpanBuffer = monoBuffer.AsSpan(0, monoSize);
+        try
         {
-            Speaking = false;
-            return 0;
-        }
+            read = _outputBuffer.Read(monoSpanBuffer);
 
-        Speaking = true;
-        return read;
+            if (read <= 0)
+            {
+                Speaking = false;
+                return 0;
+            }
+
+            read = SampleMonoToStereo.Read(monoSpanBuffer, buffer);
+            Speaking = true;
+            return read;
+        }
+        finally
+        {
+            ArrayPool<float>.Shared.Return(monoBuffer);
+        }
     }
 
     public override void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
     {
-        lock (_lock)
-        {
-            var packet = new JitterPacket(timestamp, buffer);
-            _jitterBuffer.Add(packet);
-        }
-
+        var packet = new JitterPacket(timestamp, buffer);
+        _jitterBuffer.Add(packet);
         base.ReceiveAudio(buffer, timestamp, frameLoudness);
     }
 
     public override void Destroy()
     {
+        _jitterBuffer.Reset();
         lock (_lock)
         {
-            _jitterBuffer.Reset();
             _decoder.Dispose();
         }
 
-        lock (_audioLock)
+        var effects = _effectProcessors.ToArray();
+        _effectProcessors.Clear();
+        foreach (var effect in effects)
         {
-            var effects = _effectProcessors.ToArray();
-            _effectProcessors.Clear();
-            foreach (var effect in effects)
-            {
-                effect.Value.Dispose();
-            }
+            effect.Value.Dispose();
         }
 
         base.Destroy();
@@ -194,9 +191,9 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     private void ClearBuffer()
     {
+        _outputBuffer.Reset();
         lock (_lock)
         {
-            _outputBuffer.Reset();
             _jitterBuffer.Reset(); //Also reset the jitter buffer.
         }
     }
@@ -229,7 +226,6 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     {
         var startTick = Environment.TickCount;
         var readBuffer = new float[Constants.FrameSize];
-        var stereoBuffer = new float[Constants.FrameSize * Constants.PlaybackChannels];
         while (!Destroyed)
             try
             {
@@ -242,13 +238,10 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
                 startTick += Constants.FrameSizeMs; //Step Forwards.
                 Array.Clear(readBuffer); //Clear Read Buffer.
-                Array.Clear(stereoBuffer); //Clear Stereo Buffer.
 
                 var read = GetNextPacket(readBuffer);
-                read = SampleMonoToStereo.Read(readBuffer.AsSpan(0, read), stereoBuffer); //To Stereo
                 if (read <= 0 || UserMuted) continue;
-                lock (_audioLock)
-                    _outputBuffer.Write(stereoBuffer.AsSpan(0, read));
+                _outputBuffer.Write(readBuffer.AsSpan(0, read));
             }
             catch
             {
