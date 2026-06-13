@@ -53,7 +53,8 @@ public partial class SelectedServerViewModel(
         }
 
         _cts = new CancellationTokenSource();
-        Task.Run(() => PingerLogic(_cts.Token), _cts.Token);
+        _ = UpdateClientLoopAsync(_cts.Token);
+        _ = PingerLogicAsync(_cts.Token);
     }
 
     public override void OnDisappearing()
@@ -108,44 +109,61 @@ public partial class SelectedServerViewModel(
         navigationService.Back();
     }
 
-    private async Task PingerLogic(CancellationToken token)
+    private async Task PingerLogicAsync(CancellationToken token)
     {
-        _ = Task.Run(async () =>
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (SelectedServer != null)
+                    {
+                        var result = await client.PingAsync(SelectedServer.Ip, SelectedServer.Port, token);
+                        Latency = Localizer.Get(
+                            $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - result.Tick - Constants.TickRate, 0)}");
+                        Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{result.Motd}");
+                        PositioningType =
+                            Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{result.PositioningType}");
+                        ConnectedClients =
+                            Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{result.Clients}");
+                        Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
+                    }
+                }
+                //We want it to reset even on canceled exceptions.
+                catch
+                {
+                    Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
+                    Motd = "";
+                    PositioningType = "";
+                    ConnectedClients = "";
+                    Version = "";
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(4), token);
+            }
+        }
+        // We don't need the when's. It's an extra unnecessary check.
+        catch (OperationCanceledException)
+        {
+            // Expected while leaving the selected server view.
+        }
+    }
+
+    private async Task UpdateClientLoopAsync(CancellationToken token)
+    {
+        try
         {
             while (!token.IsCancellationRequested)
             {
                 client.Update();
                 await Task.Delay(Constants.TickRate, token);
             }
-        }, token);
-
-        while (!token.IsCancellationRequested)
+        }
+        // We don't need the when's. It's an extra unnecessary check.
+        catch (OperationCanceledException)
         {
-            try
-            {
-                if (SelectedServer != null)
-                {
-                    var result = await client.PingAsync(SelectedServer.Ip, SelectedServer.Port, token);
-                    Latency = Localizer.Get(
-                        $"SelectedServer.ServerInfo.Status.Latency:{Math.Max(Environment.TickCount - result.Tick - Constants.TickRate, 0)}");
-                    Motd = Localizer.Get($"SelectedServer.ServerInfo.Status.Motd:{result.Motd}");
-                    PositioningType =
-                        Localizer.Get($"SelectedServer.ServerInfo.Status.PositioningType:{result.PositioningType}");
-                    ConnectedClients =
-                        Localizer.Get($"SelectedServer.ServerInfo.Status.ConnectedClients:{result.Clients}");
-                    Version = Localizer.Get($"SelectedServer.ServerInfo.Status.Version:{result.Version}");
-                }
-            }
-            catch
-            {
-                Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
-                Motd = "";
-                PositioningType = "";
-                ConnectedClients = "";
-                Version = "";
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(4), token);
+            // Expected while leaving the selected server view.
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models;
@@ -14,7 +13,6 @@ public partial class ServersViewModel(
     SettingsService settings)
     : ViewModelBase, IDisposable
 {
-    [ObservableProperty] public partial ServerDataViewModel? SelectedServer { get; set; }
     [ObservableProperty] public partial ServersSettingsViewModel ServersSettings { get; set; } = new(settings);
 
     public void Dispose()
@@ -23,20 +21,17 @@ public partial class ServersViewModel(
         GC.SuppressFinalize(this);
     }
 
-    partial void OnSelectedServerChanged(ServerDataViewModel? value)
-    {
-        if (value == null) return;
-        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(value.Server));
-        Task.Run(() =>
-        {
-            SelectedServer = null; //This bug is annoying.
-        });
-    }
-
     [RelayCommand]
     private void AddServer()
     {
         navigationService.NavigateTo<AddServerViewModel>();
+    }
+
+    [RelayCommand]
+    private void OpenServer(ServerDataViewModel? server)
+    {
+        if (server == null) return;
+        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.Server));
     }
 
     [RelayCommand]

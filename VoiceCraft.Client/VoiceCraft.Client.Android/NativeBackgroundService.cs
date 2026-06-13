@@ -32,7 +32,7 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
             try
             {
                 await StartBackgroundService();
-                backgroundTask.Start(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
+                await backgroundTask.StartAsync(() => startAction.Invoke(instance, UpdateTitle, UpdateDescription));
             }
             catch
             {
@@ -109,7 +109,7 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
         public Task? RunningTask { get; private set; }
         public object TaskInstance { get; } = taskInstance;
 
-        public void Start(Action startAction)
+        public async Task StartAsync(Action startAction)
         {
             RunningTask = Task.Run(() =>
             {
@@ -124,10 +124,9 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
                 }
             });
 
-            var sw = new SpinWait();
             while (RunningTask.Status < TaskStatus.Running)
             {
-                sw.SpinOnce();
+                await Task.Delay(10);
             }
         }
 
