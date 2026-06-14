@@ -5,7 +5,7 @@
         <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
         <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
         <ApplicationTitle>VoiceCraft</ApplicationTitle>
-        <ApplicationId>com.avionblock.voicecraft.client</ApplicationId>
+        <ApplicationId>team.avion.voicecraft</ApplicationId>
         <ApplicationVersion>$(Version)</ApplicationVersion>
         <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
         <BuildIpa>true</BuildIpa>
