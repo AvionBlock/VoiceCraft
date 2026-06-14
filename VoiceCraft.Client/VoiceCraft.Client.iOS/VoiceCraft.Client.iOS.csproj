@@ -26,6 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <BundleResource Include="PrivacyInfo.xcprivacy" LogicalName="PrivacyInfo.xcprivacy" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia.iOS"/>
     </ItemGroup>
 
