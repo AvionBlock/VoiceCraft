@@ -81,26 +81,29 @@ namespace VoiceCraft.Core.World
             }
         }
 
-        public void SetProperty(string name, float? value)
+        public void SetProperty(string key, float? value)
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(name.Length, Constants.MaxStringLength, nameof(name));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(key.Length, Constants.MaxStringLength, nameof(key));
             if (value == null)
             {
-                if (_properties.TryRemove(name, out _))
-                    OnPropertyUpdated?.Invoke(name, null, this);
+                //Remove the property and raise the event.
+                if (_properties.TryRemove(key, out _))
+                    OnPropertyUpdated?.Invoke(key, null, this);
                 return;
             }
 
             //Check for the same value, if it's the same, then return.
-            if (_properties.TryGetValue(name, out var v) &&
+            if (_properties.TryGetValue(key, out var v) &&
                 Math.Abs(v - (float)value) < Constants.FloatingPointTolerance) return;
-            _properties[name] = (float)value;
-            OnPropertyUpdated?.Invoke(name, value, this);
+            
+            //Set the property and raise the event.
+            _properties[key] = (float)value;
+            OnPropertyUpdated?.Invoke(key, value, this);
         }
 
-        public bool TryGetProperty(string name, [NotNullWhen(true)] out float? value)
+        public bool TryGetProperty(string key, [NotNullWhen(true)] out float? value)
         {
-            if (_properties.TryGetValue(name, out var v))
+            if (_properties.TryGetValue(key, out var v))
             {
                 value = v;
                 return true;

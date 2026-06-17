@@ -20,6 +20,7 @@ namespace VoiceCraft.Network.Clients;
 public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 {
     protected bool Disposed;
+
     //Audio
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
     private readonly IAudioEncoder _audioEncoder;
@@ -147,9 +148,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
         var shouldDrop = ConnectionState != VcConnectionState.Connected ||
-            ServerMuted ||
-            Muted ||
-            (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs;
+                         ServerMuted ||
+                         Muted ||
+                         (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs;
         if (shouldDrop)
         {
             SpeakingState = false;
@@ -340,6 +341,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.SetEffectBitmaskRequest:
             case VcPacketType.SetPositionRequest:
             case VcPacketType.SetRotationRequest:
+            case VcPacketType.SetPropertyRequest:
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
@@ -357,6 +359,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.OnEntityEffectBitmaskUpdated:
             case VcPacketType.OnEntityPositionUpdated:
             case VcPacketType.OnEntityRotationUpdated:
+            case VcPacketType.OnEntityPropertyUpdated:
             case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
@@ -393,6 +396,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case VcSetRotationRequestPacket setRotationRequestPacket:
                 HandleSetRotationBitmaskRequestPacket(setRotationRequestPacket);
+                break;
+            case VcSetPropertyRequestPacket setPropertyRequestPacket:
+                HandleSetPropertyRequestPacket(setPropertyRequestPacket);
                 break;
             case VcSetTitleRequestPacket setTitleRequestPacket:
                 HandleSetTitleRequestPacket(setTitleRequestPacket);
@@ -451,6 +457,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case VcOnEntityRotationUpdatedPacket onEntityRotationUpdatedPacket:
                 HandleOnEntityRotationUpdatedPacket(onEntityRotationUpdatedPacket);
+                break;
+            case VcOnEntityPropertyUpdatedPacket onEntityPropertyUpdatedPacket:
+                HandleOnEntityPropertyUpdatedPacket(onEntityPropertyUpdatedPacket);
                 break;
             case VcOnEntityAudioReceivedPacket onEntityAudioReceivedPacket:
                 HandleOnEntityAudioReceivedPacket(onEntityAudioReceivedPacket);
@@ -527,6 +536,19 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void HandleSetRotationBitmaskRequestPacket(VcSetRotationRequestPacket packet)
     {
         Rotation = packet.Value;
+    }
+
+    private void HandleSetPropertyRequestPacket(VcSetPropertyRequestPacket packet)
+    {
+        switch (packet.Value)
+        {
+            case null:
+                SetProperty(packet.Key, null);
+                break;
+            case float value:
+                SetProperty(packet.Key, value);
+                break;
+        }
     }
 
     private void HandleSetTitleRequestPacket(VcSetTitleRequestPacket packet)
@@ -646,6 +668,22 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         var entity = World.GetEntity(packet.Id);
         entity?.Rotation = packet.Value;
+    }
+
+    private void HandleOnEntityPropertyUpdatedPacket(VcOnEntityPropertyUpdatedPacket packet)
+    {
+        VoiceCraftEntity? entity;
+        switch (packet.Value)
+        {
+            case null:
+                entity = World.GetEntity(packet.Id);
+                entity?.SetProperty(packet.Key, null);
+                break;
+            case float value:
+                entity = World.GetEntity(packet.Id);
+                entity?.SetProperty(packet.Key, value);
+                break;
+        }
     }
 
     private void HandleOnEntityAudioReceivedPacket(VcOnEntityAudioReceivedPacket packet)

@@ -84,6 +84,9 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetRotationRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
                 break;
+            case VcPacketType.SetPropertyRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetPropertyRequestPacket());
+                break;
             case VcPacketType.InfoRequest:
             case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
@@ -111,6 +114,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.OnEntityEffectBitmaskUpdated:
             case VcPacketType.OnEntityPositionUpdated:
             case VcPacketType.OnEntityRotationUpdated:
+            case VcPacketType.OnEntityPropertyUpdated:
             case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
@@ -142,6 +146,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetEffectBitmaskRequest:
             case VcPacketType.SetPositionRequest:
             case VcPacketType.SetRotationRequest:
+            case VcPacketType.SetPropertyRequest:
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
@@ -159,6 +164,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.OnEntityEffectBitmaskUpdated:
             case VcPacketType.OnEntityPositionUpdated:
             case VcPacketType.OnEntityRotationUpdated:
+            case VcPacketType.OnEntityPropertyUpdated:
             case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
@@ -197,6 +203,9 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
                 break;
             case VcSetRotationRequestPacket setRotationRequestPacket:
                 HandleSetRotationRequestPacket(setRotationRequestPacket, data);
+                break;
+            case VcSetPropertyRequestPacket setPropertyRequestPacket:
+                HandleSetPropertyRequestPacket(setPropertyRequestPacket, data);
                 break;
             default:
                 return;
@@ -320,6 +329,25 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             }) return;
         if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.Rotation = packet.Value;
+    }
+    
+    private static void HandleSetPropertyRequestPacket(VcSetPropertyRequestPacket packet, object? data)
+    {
+        if (data is not VoiceCraftNetPeer
+            {
+                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
+            }) return;
+        if (networkEntity.PositioningType != PositioningType.Client) return;
+        
+        switch (packet.Value)
+        {
+            case null:
+                networkEntity.SetProperty(packet.Key, null);
+                break;
+            case float v:
+                networkEntity.SetProperty(packet.Key, v);
+                break;
+        }
     }
 
     #endregion

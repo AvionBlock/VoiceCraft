@@ -40,6 +40,22 @@ public enum EffectType : byte
     Muffle
 }
 
+public enum PropertyType : byte
+{
+    Null,
+    Boolean,
+    SByte,
+    Byte,
+    Short,
+    UShort,
+    Int,
+    UInt,
+    Long,
+    ULong,
+    Float,
+    Double
+}
+
 public enum VcPacketType : byte
 {
     //Core
@@ -67,6 +83,7 @@ public enum VcPacketType : byte
     SetEffectBitmaskRequest,
     SetPositionRequest,
     SetRotationRequest,
+    SetPropertyRequest,
     SetTitleRequest,
     SetDescriptionRequest,
     SetEntityVisibilityRequest,
@@ -88,6 +105,7 @@ public enum VcPacketType : byte
     OnEntityEffectBitmaskUpdated,
     OnEntityPositionUpdated,
     OnEntityRotationUpdated,
+    OnEntityPropertyUpdated,
     OnEntityAudioReceived
 }
 

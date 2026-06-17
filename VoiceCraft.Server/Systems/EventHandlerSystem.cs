@@ -472,9 +472,8 @@ public class EventHandlerSystem : IDisposable
             foreach (var ve in entity.VisibleEntities)
             {
                 if (ve is not VoiceCraftNetworkEntity visibleEntity) continue;
-                var packet = PacketPool<VcOnEntityPositionUpdatedPacket>
-                    .GetPacket(() => new VcOnEntityPositionUpdatedPacket()).Set(entity.Id, position);
-                _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
+                _liteNetServer.SendPacket(visibleEntity.NetPeer, PacketPool<VcOnEntityPositionUpdatedPacket>
+                    .GetPacket(() => new VcOnEntityPositionUpdatedPacket()).Set(entity.Id, position));
             }
 
             BroadcastMcApi(PacketPool<McApiOnEntityPositionUpdatedPacket>.GetPacket(() =>
@@ -494,9 +493,8 @@ public class EventHandlerSystem : IDisposable
             foreach (var ve in entity.VisibleEntities)
             {
                 if (ve is not VoiceCraftNetworkEntity visibleEntity) continue;
-                var packet = PacketPool<VcOnEntityRotationUpdatedPacket>
-                    .GetPacket(() => new VcOnEntityRotationUpdatedPacket()).Set(entity.Id, rotation);
-                _liteNetServer.SendPacket(visibleEntity.NetPeer, packet);
+                _liteNetServer.SendPacket(visibleEntity.NetPeer, PacketPool<VcOnEntityRotationUpdatedPacket>
+                    .GetPacket(() => new VcOnEntityRotationUpdatedPacket()).Set(entity.Id, rotation));
             }
 
             BroadcastMcApi(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket(() =>
@@ -504,10 +502,25 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityPropertyUpdated(string name, float? value, VoiceCraftEntity entity)
+    private void OnEntityPropertyUpdated(string key, float? value, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {
+            var packet = PacketPool<VcOnEntityPropertyUpdatedPacket>
+                .GetPacket(() => new VcOnEntityPropertyUpdatedPacket()).Set(entity.Id, key, value);
+            if (entity is VoiceCraftNetworkEntity networkEntity)
+            {
+                _liteNetServer.SendPacket(networkEntity.NetPeer,
+                    PacketPool<VcSetPropertyRequestPacket>.GetPacket(() => new VcSetPropertyRequestPacket())
+                        .Set(key, value));
+                _liteNetServer.Broadcast(packet, VcDeliveryMethod.Reliable, networkEntity.NetPeer);
+            }
+            else
+            {
+                _liteNetServer.Broadcast(packet);
+            }
+
+            //TODO: Broadcast McApi
         });
     }
 
