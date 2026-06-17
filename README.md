@@ -67,7 +67,6 @@ VoiceCraft client protocol and Minecraft-facing transports such as McHttp, McWss
 | `VoiceCraft.Client/VoiceCraft.Client.MacOS` | macOS desktop launcher and platform packaging target. |
 | `VoiceCraft.Client/VoiceCraft.Client.Android` | Android mobile target. |
 | `VoiceCraft.Client/VoiceCraft.Client.iOS` | iOS mobile target. |
-| WIP `VoiceCraft.Client/VoiceCraft.Client.Browser` | Browser/WebAssembly client target. |
 | `VoiceCraft.Server` | Console server application, runtime configuration, localization, commands, and service wiring. |
 | `VoiceCraft.Network` | VoiceCraft and McApi packets, clients, servers, transports, entities, audio effects, jitter buffering, and world state. |
 | `VoiceCraft.Core` | Shared constants, models, audio abstractions, helpers, telemetry transport, and common runtime code. |
@@ -88,7 +87,6 @@ VoiceCraft client protocol and Minecraft-facing transports such as McHttp, McWss
 | Windows     | ✅   | ✅   | ❌     | ✅     | WinMM, WASAPI, DirectSound, JACK |
 | iOS         | ❌   | ❌   | ✅     | ✅     | Core Audio                       |
 | macOS       | ✅   | ❌   | ❌     | ✅     | Core Audio, JACK                 |
-| Web         | ❗   | ❗   | ❗     | ❗     | Web API                          |
 | Xbox        | ❌   | ❌   | ❌     | ❌     | N.A.                             |
 | PlayStation | ❌   | ❌   | ❌     | ❌     | N.A.                             |
 | Switch      | ❌   | ❌   | ❌     | ❌     | N.A.                             |

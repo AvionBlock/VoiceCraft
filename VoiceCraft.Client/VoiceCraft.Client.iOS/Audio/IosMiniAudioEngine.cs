@@ -147,7 +147,7 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
 
         ResetResampler(_tapFormat.SampleRate);
 
-        inputNode.InstallTapOnBus(0, _periodFrames, _tapFormat, OnInputBuffer);
+        inputNode.InstallTapOnBus(0, _periodFrames, null!, OnInputBuffer);
         _engine.Prepare();
 
         NSError? startError;
