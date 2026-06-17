@@ -68,7 +68,7 @@ namespace VoiceCraft.Network.Audio.Effects
             var propVal1 = e1.TryGetProperty(factorProperty, out var prop1);
             var propVal2 = e2.TryGetProperty(factorProperty, out var prop2);
             if (!propVal1 && !propVal2) return Factor;
-            return Math.Max(prop1 ?? 0f, prop2 ?? 0f);
+            return Math.Max(Math.Clamp(prop1 ?? 0f, 0f, 1f), Math.Clamp(prop2 ?? 0f, 0f, 1f));
         }
 
         public void Serialize(NetDataWriter writer)
