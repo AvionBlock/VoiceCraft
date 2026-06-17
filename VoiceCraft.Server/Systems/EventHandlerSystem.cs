@@ -123,6 +123,7 @@ public class EventHandlerSystem : IDisposable
         newEntity.OnEffectBitmaskUpdated += OnEntityEffectBitmaskUpdated;
         newEntity.OnPositionUpdated += OnEntityPositionUpdated;
         newEntity.OnRotationUpdated += OnEntityRotationUpdated;
+        newEntity.OnPropertyUpdated += OnEntityPropertyUpdated;
         newEntity.OnVisibleEntityAdded += OnEntityVisibleEntityAdded;
         newEntity.OnVisibleEntityRemoved += OnEntityVisibleEntityRemoved;
         newEntity.OnAudioReceived += OnEntityAudioReceived;
@@ -212,6 +213,7 @@ public class EventHandlerSystem : IDisposable
         entity.OnEffectBitmaskUpdated -= OnEntityEffectBitmaskUpdated;
         entity.OnPositionUpdated -= OnEntityPositionUpdated;
         entity.OnRotationUpdated -= OnEntityRotationUpdated;
+        entity.OnPropertyUpdated -= OnEntityPropertyUpdated;
         entity.OnVisibleEntityAdded -= OnEntityVisibleEntityAdded;
         entity.OnVisibleEntityRemoved -= OnEntityVisibleEntityRemoved;
         entity.OnAudioReceived -= OnEntityAudioReceived;
@@ -499,6 +501,13 @@ public class EventHandlerSystem : IDisposable
 
             BroadcastMcApi(PacketPool<McApiOnEntityRotationUpdatedPacket>.GetPacket(() =>
                 new McApiOnEntityRotationUpdatedPacket()).Set(entity.Id, rotation));
+        });
+    }
+
+    private void OnEntityPropertyUpdated(string name, float? value, VoiceCraftEntity entity)
+    {
+        _tasks.Enqueue(() =>
+        {
         });
     }
 

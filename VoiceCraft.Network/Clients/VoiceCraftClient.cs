@@ -196,6 +196,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         ServerDeafened = false;
         World.Reset();
         AudioEffectSystem.Reset();
+        //We clear both for the reset.
+        ClearProperties();
+        ClearVisibleEntities();
     }
 
     public void Dispose()

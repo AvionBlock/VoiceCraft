@@ -77,6 +77,8 @@ namespace VoiceCraft.Network.World
             ListenBitmask = ushort.MaxValue;
             ServerMuted = false;
             ServerDeafened = false;
+            //Only clear out properties. Visible entities are handled by the visibility system.
+            ClearProperties();
         }
 
         public override void Destroy()

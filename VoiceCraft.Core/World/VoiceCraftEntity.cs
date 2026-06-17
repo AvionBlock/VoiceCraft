@@ -68,6 +68,18 @@ namespace VoiceCraft.Core.World
             foreach (var key in keysToRemove)
                 _visibleEntities.Remove(key, out _);
         }
+        
+        public void ClearVisibleEntities()
+        {
+            //Copy Array.
+            var entities = _visibleEntities.ToArray();
+            _visibleEntities.Clear();
+            
+            foreach (var entity in entities)
+            {
+                OnVisibleEntityRemoved?.Invoke(entity.Value, this);
+            }
+        }
 
         public void SetProperty(string name, float? value)
         {
@@ -75,10 +87,13 @@ namespace VoiceCraft.Core.World
             if (value == null)
             {
                 if (_properties.TryRemove(name, out _))
-                    OnPropertyUpdated?.Invoke(name, value, this);
+                    OnPropertyUpdated?.Invoke(name, null, this);
                 return;
             }
-            
+
+            //Check for the same value, if it's the same, then return.
+            if (_properties.TryGetValue(name, out var v) &&
+                Math.Abs(v - (float)value) < Constants.FloatingPointTolerance) return;
             _properties[name] = (float)value;
             OnPropertyUpdated?.Invoke(name, value, this);
         }
@@ -95,6 +110,18 @@ namespace VoiceCraft.Core.World
             return false;
         }
 
+        public void ClearProperties()
+        {
+            //Copy Array.
+            var properties = _properties.ToArray();
+            _properties.Clear();
+            
+            foreach (var property in properties)
+            {
+                OnPropertyUpdated?.Invoke(property.Key, property.Value, this);
+            }
+        }
+
         public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
         {
             _loudness = frameLoudness;
@@ -107,6 +134,10 @@ namespace VoiceCraft.Core.World
             if (Destroyed) return;
             Destroyed = true;
             OnDestroyed?.Invoke(this);
+            
+            //Cleanup
+            ClearProperties();
+            ClearVisibleEntities();
 
             //Deregister all events.
             OnWorldIdUpdated = null;
