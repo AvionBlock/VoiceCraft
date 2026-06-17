@@ -105,8 +105,8 @@ public class EchoEffectProcessor : IAudioEffectProcessor
         if ((bitmask & Effect.Bitmask) == 0) return;
 
         //Cache Values
-        var dry = _effect.WetDry;
-        var wet = 1.0f - dry;
+        var wet = _effect.WetDry;
+        var dry = 1.0f - wet;
         var feedback = _effect.Feedback;
         var delay = _effect.Delay;
         _delayLine.Ensure(EchoEffect.SampleRate, delay);
@@ -117,7 +117,7 @@ public class EchoEffectProcessor : IAudioEffectProcessor
             var delayed = _delayLine.Read(delay);
             var output = buffer[i] + delayed * feedback;
             _delayLine.Write(output);
-            buffer[i] = output * dry + buffer[i] * wet;
+            buffer[i] = output * wet + buffer[i] * dry;
         }
     }
 

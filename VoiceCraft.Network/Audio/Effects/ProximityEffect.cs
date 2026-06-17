@@ -99,8 +99,8 @@ namespace VoiceCraft.Network.Audio.Effects
             if ((bitmask & Effect.Bitmask) == 0) return;
 
             //Cache Values
-            var dry = _effect.WetDry;
-            var wet = 1.0f - dry;
+            var wet = _effect.WetDry;
+            var dry = 1.0f - wet;
             var range = _effect.MaxRange - _effect.MinRange;
             if (range == 0) return; //Range is 0. Do not calculate division.
             var distance = Vector3.Distance(Entity.Position, to.Position);
@@ -110,7 +110,7 @@ namespace VoiceCraft.Network.Audio.Effects
             for (var i = 0; i < buffer.Length; i++)
             {
                 var output = _lerpVolume.Transform(buffer[i]);
-                buffer[i] = output * dry + buffer[i] * wet;
+                buffer[i] = output * wet + buffer[i] * dry;
                 _lerpVolume.Step();
             }
         }

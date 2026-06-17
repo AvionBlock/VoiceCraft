@@ -83,8 +83,8 @@ namespace VoiceCraft.Network.Audio.Effects
             if ((bitmask & Effect.Bitmask) == 0) return;
 
             //Cache Values
-            var dry = _effect.WetDry;
-            var wet = 1.0f - dry;
+            var wet = _effect.WetDry;
+            var dry = 1.0f - wet;
             var rot = (float)(Math.Atan2(to.Position.Z - Entity.Position.Z, to.Position.X - Entity.Position.X) -
                               to.Rotation.Y * Math.PI / 180);
             var left = (float)Math.Max(0.5 - Math.Cos(rot) * 0.5, 0.2);
@@ -98,7 +98,7 @@ namespace VoiceCraft.Network.Audio.Effects
                 for (var c = 0; c < 2; c++)
                 {
                     var output = _lerpVolume[c].Transform(buffer[i + c]);
-                    buffer[i + c] = output * dry + buffer[i + c] * wet;
+                    buffer[i + c] = output * wet + buffer[i + c] * dry;
                     _lerpVolume[c].Step();
                 }
             }

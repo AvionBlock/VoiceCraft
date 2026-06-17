@@ -132,8 +132,8 @@ namespace VoiceCraft.Network.Audio.Effects
             }
 
             //Cache Values
-            var dry = _effect.WetDry;
-            var wet = 1.0f - dry;
+            var wet = _effect.WetDry;
+            var dry = 1.0f - wet;
             var delay = _effect.Delay;
             _delayLine.Ensure(ProximityEchoEffect.SampleRate, delay);
             delay *= ProximityEchoEffect.SampleRate;
@@ -143,7 +143,7 @@ namespace VoiceCraft.Network.Audio.Effects
                 var delayed = _delayLine.Read(delay) * factor;
                 var output = buffer[i] + delayed;
                 _delayLine.Write(output);
-                buffer[i] = output * dry + buffer[i] * wet;
+                buffer[i] = output * wet + buffer[i] * dry;
             }
         }
 

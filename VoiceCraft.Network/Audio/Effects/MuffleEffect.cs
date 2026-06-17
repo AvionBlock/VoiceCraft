@@ -81,13 +81,13 @@ namespace VoiceCraft.Network.Audio.Effects
             if ((bitmask & Effect.Bitmask) == 0) return;
 
             //Cache Values
-            var dry = _effect.WetDry;
-            var wet = 1.0f - dry;
+            var wet = _effect.WetDry;
+            var dry = 1.0f - wet;
 
             for (var i = 0; i < buffer.Length; i++)
             {
                 var output = _biQuadFilter.Transform(buffer[i]);
-                buffer[i] = output * dry + buffer[i] * wet;
+                buffer[i] = output * wet + buffer[i] * dry;
             }
         }
 
