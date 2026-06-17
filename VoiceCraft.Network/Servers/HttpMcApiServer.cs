@@ -527,8 +527,15 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
 
         public string LoginToken { get; set; } = Guid.NewGuid().ToString();
         public string Hostname { get; set; } = "http://127.0.0.1:9050/";
+        public uint ExternalPort { get; set; }
+        public uint PortMappingLifetimeMinutes { get; set; } = 60;
+        public uint PortMappingTimeoutSeconds { get; set; } = 5;
         public uint MaxClients { get; set; } = 1;
         public uint MaxTimeoutMs { get; set; } = 10000;
+
+        [JsonConverter(typeof(JsonBooleanConverter))]
+        public bool AutoOpenPort { get; set; } = true;
+
         public HashSet<McApiPacketType> DisabledPacketTypes { get; set; } = [];
     }
 }

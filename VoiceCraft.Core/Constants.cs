@@ -45,7 +45,7 @@ namespace VoiceCraft.Core
         //RPC
         public const string ApplicationId = "1364434932968984669";
         public const string GithubButton = "VoiceCraft";
-        public const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
+        public const string GithubButtonUrl = "https://gitlab.avion.team/voicecraft/VoiceCraft";
         public const string LargeImageKey = "vc";
         public const string LargeImageText = "VoiceCraft";
 

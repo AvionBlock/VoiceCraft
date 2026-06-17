@@ -381,8 +381,15 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
 
         public string LoginToken { get; set; } = Guid.NewGuid().ToString();
         public string Hostname { get; set; } = "ws://127.0.0.1:9051/";
+        public uint ExternalPort { get; set; }
+        public uint PortMappingLifetimeMinutes { get; set; } = 60;
+        public uint PortMappingTimeoutSeconds { get; set; } = 5;
         public uint MaxClients { get; set; } = 1;
         public uint MaxTimeoutMs { get; set; } = 10000;
+
+        [JsonConverter(typeof(JsonBooleanConverter))]
+        public bool AutoOpenPort { get; set; } = true;
+
         public string DataTunnelCommand { get; set; } = "voicecraft:data_tunnel";
         public uint CommandsPerTick { get; set; } = 3;
         public uint MaxByteLengthPerCommand { get; set; } = 300;
