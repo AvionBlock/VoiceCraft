@@ -10,8 +10,6 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class DirectionalEffect : IAudioEffect
     {
-        public static int SampleRate => Constants.SampleRate;
-
         public EffectType EffectType => EffectType.Directional;
 
         [JsonIgnore] public ushort Bitmask { get; set; }
@@ -84,6 +82,9 @@ namespace VoiceCraft.Network.Audio.Effects
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
 
+            //Cache Values
+            var dry = _effect.WetDry;
+            var wet = 1.0f - dry;
             var rot = (float)(Math.Atan2(to.Position.Z - Entity.Position.Z, to.Position.X - Entity.Position.X) -
                               to.Rotation.Y * Math.PI / 180);
             var left = (float)Math.Max(0.5 - Math.Cos(rot) * 0.5, 0.2);
@@ -92,12 +93,12 @@ namespace VoiceCraft.Network.Audio.Effects
             _lerpVolume[0].TargetVolume = left;
             _lerpVolume[1].TargetVolume = right;
             
-            for (var i = 0; i < buffer.Length; i++)
+            for (var i = 0; i < buffer.Length; i += 2)
             {
-                for (var c = 0; c < 2 && c + i < buffer.Length; c++)
+                for (var c = 0; c < 2; c++)
                 {
-                    var output = _lerpVolume[c].Transform(buffer[i]);
-                    buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                    var output = _lerpVolume[c].Transform(buffer[i + c]);
+                    buffer[i + c] = output * dry + buffer[i + c] * wet;
                     _lerpVolume[c].Step();
                 }
             }

@@ -10,8 +10,6 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class MuffleEffect : IAudioEffect
     {
-        public static int SampleRate => Constants.SampleRate;
-
         public EffectType EffectType => EffectType.Muffle;
 
         [JsonIgnore] public ushort Bitmask { get; set; }
@@ -23,7 +21,7 @@ namespace VoiceCraft.Network.Audio.Effects
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
-        
+
         public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
             new MuffleEffectProcessor(this, entity);
 
@@ -63,7 +61,7 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         private readonly MuffleEffect _effect;
         private readonly BiQuadFilter _biQuadFilter;
-        
+
         public IAudioEffect Effect => _effect;
         public VoiceCraftEntity Entity { get; }
         public event Action<IAudioEffectProcessor>? OnDisposed;
@@ -81,11 +79,15 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
-            
+
+            //Cache Values
+            var dry = _effect.WetDry;
+            var wet = 1.0f - dry;
+
             for (var i = 0; i < buffer.Length; i++)
             {
                 var output = _biQuadFilter.Transform(buffer[i]);
-                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                buffer[i] = output * dry + buffer[i] * wet;
             }
         }
 

@@ -98,12 +98,16 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
+            
+            //Cache Values
+            var dry = _effect.WetDry;
+            var wet = 1.0f - dry;
             var factor = _effect.EvaluateFactorProperty(Entity, to);
             
             for (var i = 0; i < buffer.Length; i++)
             {
                 var output = _biQuadFilter.Transform(buffer[i]) * factor + buffer[i] * (1.0f - factor);
-                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                buffer[i] = output * dry + buffer[i] * wet;
             }
         }
 

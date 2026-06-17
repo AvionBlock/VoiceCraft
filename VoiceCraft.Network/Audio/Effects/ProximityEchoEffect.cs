@@ -131,15 +131,19 @@ namespace VoiceCraft.Network.Audio.Effects
                 factor = _effect.EvaluateFactorProperty(Entity, to) * range;
             }
 
-            _delayLine.Ensure(Constants.SampleRate, _effect.Delay);
-            var delay = Constants.SampleRate * _effect.Delay;
+            //Cache Values
+            var dry = _effect.WetDry;
+            var wet = 1.0f - dry;
+            var delay = _effect.Delay;
+            _delayLine.Ensure(ProximityEchoEffect.SampleRate, delay);
+            delay *= ProximityEchoEffect.SampleRate;
 
             for (var i = 0; i < buffer.Length; i++)
             {
                 var delayed = _delayLine.Read(delay) * factor;
                 var output = buffer[i] + delayed;
                 _delayLine.Write(output);
-                buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                buffer[i] = output * dry + buffer[i] * wet;
             }
         }
 

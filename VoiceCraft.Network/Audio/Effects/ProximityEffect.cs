@@ -14,26 +14,25 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         public EffectType EffectType => EffectType.Proximity;
 
-        [JsonIgnore]
-        public ushort Bitmask { get; set; }
-        
+        [JsonIgnore] public ushort Bitmask { get; set; }
+
         public event Action<IAudioEffect>? OnDisposed;
 
         public float MinRange { get; set; }
         public float MaxRange { get; set; }
-        
+
         public float WetDry
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
-        
+
         public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
             new ProximityEffectProcessor(this, entity);
-        
+
         public void Update(IAudioEffect audioEffect)
         {
-            if(audioEffect is not ProximityEffect proximityEffect)
+            if (audioEffect is not ProximityEffect proximityEffect)
                 throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
             Bitmask = proximityEffect.Bitmask;
             MinRange = proximityEffect.MinRange;
@@ -62,7 +61,7 @@ namespace VoiceCraft.Network.Audio.Effects
             var distance = Vector3.Distance(from.Position, to.Position);
             return distance <= MaxRange;
         }
-        
+
         public void Dispose()
         {
             try
@@ -76,12 +75,12 @@ namespace VoiceCraft.Network.Audio.Effects
             }
         }
     }
-    
+
     public class ProximityEffectProcessor : IAudioEffectProcessor
     {
         private readonly ProximityEffect _effect;
         private readonly SampleLerpVolume _lerpVolume;
-        
+
         public IAudioEffect Effect => _effect;
         public VoiceCraftEntity Entity { get; }
         public event Action<IAudioEffectProcessor>? OnDisposed;
@@ -98,20 +97,20 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
-            
+
+            //Cache Values
+            var dry = _effect.WetDry;
+            var wet = 1.0f - dry;
             var range = _effect.MaxRange - _effect.MinRange;
             if (range == 0) return; //Range is 0. Do not calculate division.
             var distance = Vector3.Distance(Entity.Position, to.Position);
             var factor = 1f - Math.Clamp((distance - _effect.MinRange) / range, 0f, 1f);
             _lerpVolume.TargetVolume = factor;
-            
-            for (var i = 0; i < buffer.Length; i += 2)
+
+            for (var i = 0; i < buffer.Length; i++)
             {
-                for (var c = 0; c < 2 && c + i < buffer.Length; c++)
-                {
-                    var output = _lerpVolume.Transform(buffer[i]);
-                    buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
-                }
+                var output = _lerpVolume.Transform(buffer[i]);
+                buffer[i] = output * dry + buffer[i] * wet;
                 _lerpVolume.Step();
             }
         }
@@ -128,7 +127,7 @@ namespace VoiceCraft.Network.Audio.Effects
             }
         }
     }
-    
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(ProximityEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
     public partial class ProximityEffectGenerationContext : JsonSerializerContext;
