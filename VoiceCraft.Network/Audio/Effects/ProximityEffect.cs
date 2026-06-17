@@ -19,6 +19,7 @@ namespace VoiceCraft.Network.Audio.Effects
         public event Action<IAudioEffect>? OnDisposed;
 
         public float MinRange { get; set; }
+
         public float MaxRange { get; set; }
 
         public float WetDry
@@ -38,6 +39,24 @@ namespace VoiceCraft.Network.Audio.Effects
             MinRange = proximityEffect.MinRange;
             MaxRange = proximityEffect.MaxRange;
             WetDry = proximityEffect.WetDry;
+        }
+        
+        public float EvaluateMinRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string minRangeProperty = $"{nameof(ProximityEffect)}:MinRange";
+            var propVal1 = e1.TryGetProperty(minRangeProperty, out var prop1);
+            var propVal2 = e2.TryGetProperty(minRangeProperty, out var prop2);
+            if (!propVal1 && !propVal2) return MinRange;
+            return Math.Min(prop1 ?? float.MaxValue, prop2 ?? float.MaxValue);
+        }
+        
+        public float EvaluateMaxRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string maxRangeProperty = $"{nameof(ProximityEffect)}:MaxRange";
+            var propVal1 = e1.TryGetProperty(maxRangeProperty, out var prop1);
+            var propVal2 = e2.TryGetProperty(maxRangeProperty, out var prop2);
+            if (!propVal1 && !propVal2) return MaxRange;
+            return Math.Min(prop1 ?? float.MinValue, prop2 ?? float.MinValue);
         }
 
         public void Serialize(NetDataWriter writer)
@@ -101,10 +120,12 @@ namespace VoiceCraft.Network.Audio.Effects
             //Cache Values
             var wet = _effect.WetDry;
             var dry = 1.0f - wet;
-            var range = _effect.MaxRange - _effect.MinRange;
+            var minRange = _effect.EvaluateMinRangeProperty(Entity, to);
+            var maxRange = _effect.EvaluateMaxRangeProperty(Entity, to);
+            var range = maxRange - minRange;
             if (range == 0) return; //Range is 0. Do not calculate division.
             var distance = Vector3.Distance(Entity.Position, to.Position);
-            var factor = 1f - Math.Clamp((distance - _effect.MinRange) / range, 0f, 1f);
+            var factor = 1f - Math.Clamp((distance - minRange) / range, 0f, 1f);
             _lerpVolume.TargetVolume = factor;
 
             for (var i = 0; i < buffer.Length; i++)
