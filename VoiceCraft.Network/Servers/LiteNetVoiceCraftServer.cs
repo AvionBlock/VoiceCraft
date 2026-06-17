@@ -312,9 +312,15 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     {
         public string Language { get; set; } = Constants.DefaultLanguage;
         public uint Port { get; set; } = 9050;
+        public uint ExternalPort { get; set; }
+        public uint PortMappingLifetimeMinutes { get; set; } = 60;
+        public uint PortMappingTimeoutSeconds { get; set; } = 5;
         public uint MaxClients { get; set; } = 100;
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public PositioningType PositioningType { get; set; } = PositioningType.Server;
+
+        [JsonConverter(typeof(JsonBooleanConverter))]
+        public bool AutoOpenPort { get; set; } = true;
 
         [JsonConverter(typeof(JsonBooleanConverter))]
         public bool EnableVisibilityDisplay { get; set; } = true;

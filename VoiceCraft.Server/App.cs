@@ -1,5 +1,8 @@
 using System.CommandLine;
+using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using OpenPort.Net;
+using OpenPort.Net.Models;
 using Spectre.Console;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
@@ -36,6 +39,7 @@ public static class App
         //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
         var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetryService>();
+        var portMappingLeases = new List<OpenPortLease>();
 
         try
         {
@@ -70,6 +74,12 @@ public static class App
             StartServer(httpMcApiServer);
             StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
+            await OpenConfiguredPortMappingsAsync(
+                portMappingLeases,
+                liteNetServer.Config,
+                httpMcApiServer.Config,
+                tcpMcApiServer.Config,
+                mcWssMcApiServer.Config);
 
             //Server Started
             //Table for Server Setup Display
@@ -160,6 +170,7 @@ public static class App
                 }
 
             StopServer(liteNetServer);
+            await ClosePortMappingsAsync(portMappingLeases);
             StopServer(httpMcApiServer);
             StopServer(tcpMcApiServer);
             StopServer(mcWssMcApiServer);
@@ -174,6 +185,7 @@ public static class App
         }
         finally
         {
+            await ClosePortMappingsAsync(portMappingLeases);
             liteNetServer.Dispose();
             Cts.Dispose();
         }
@@ -258,6 +270,172 @@ public static class App
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
         server.Stop();
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopped"));
+    }
+
+    private static async Task OpenConfiguredPortMappingsAsync(
+        List<OpenPortLease> leases,
+        LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig voiceCraftConfig,
+        HttpMcApiServer.HttpMcApiConfig httpConfig,
+        TcpMcApiServer.McTcpConfig tcpConfig,
+        McWssMcApiServer.McWssMcApiConfig wssConfig)
+    {
+        if (!voiceCraftConfig.AutoOpenPort)
+            return;
+
+        var opened = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var lifetime = TimeSpan.FromMinutes(Math.Max(1, voiceCraftConfig.PortMappingLifetimeMinutes));
+        var timeout = TimeSpan.FromSeconds(Math.Max(1, voiceCraftConfig.PortMappingTimeoutSeconds));
+        var voiceCraftPort = checked((int)voiceCraftConfig.Port);
+        var voiceCraftExternalPort = voiceCraftConfig.ExternalPort == 0
+            ? voiceCraftPort
+            : checked((int)voiceCraftConfig.ExternalPort);
+
+        await OpenPortMappingAsync(
+            leases,
+            opened,
+            "VoiceCraft",
+            PortProtocol.Udp,
+            voiceCraftPort,
+            voiceCraftExternalPort,
+            lifetime,
+            timeout);
+
+        if (httpConfig.Enabled &&
+            TryGetUriPortAndHost(httpConfig.Hostname, out var httpPort, out var httpHost) &&
+            ShouldOpenTransportPort(httpHost))
+            await OpenPortMappingAsync(
+                leases,
+                opened,
+                "McHttp",
+                PortProtocol.Tcp,
+                httpPort,
+                httpPort,
+                lifetime,
+                timeout);
+
+        if (tcpConfig.Enabled && ShouldOpenTransportPort(tcpConfig.Hostname))
+            await OpenPortMappingAsync(
+                leases,
+                opened,
+                "McTcp",
+                PortProtocol.Tcp,
+                tcpConfig.Port,
+                tcpConfig.Port,
+                lifetime,
+                timeout);
+
+        if (wssConfig.Enabled &&
+            TryGetUriPortAndHost(wssConfig.Hostname, out var wssPort, out var wssHost) &&
+            ShouldOpenTransportPort(wssHost))
+            await OpenPortMappingAsync(
+                leases,
+                opened,
+                "McWss",
+                PortProtocol.Tcp,
+                wssPort,
+                wssPort,
+                lifetime,
+                timeout);
+    }
+
+    private static async Task OpenPortMappingAsync(
+        List<OpenPortLease> leases,
+        HashSet<string> opened,
+        string name,
+        PortProtocol protocol,
+        int internalPort,
+        int externalPort,
+        TimeSpan lifetime,
+        TimeSpan timeout)
+    {
+        var key = $"{protocol}:{internalPort}";
+        if (!opened.Add(key))
+            return;
+
+        try
+        {
+            AnsiConsole.MarkupLine(
+                $"[yellow]Opening {name} {protocol} port {internalPort} through NAT port mapping...[/]");
+
+            var client = new OpenPortClient(new OpenPortOptions
+            {
+                Timeout = timeout
+            });
+
+            var lease = await client.OpenLeaseAsync(new PortMapping
+            {
+                InternalPort = internalPort,
+                ExternalPort = externalPort,
+                Protocol = protocol,
+                Description = $"{name} Server",
+                Lifetime = lifetime
+            });
+
+            var mappedPort = lease.Result.ExternalPort ?? lease.Mapping.ExternalPort;
+            var mappedAddress = lease.Result.ExternalAddress?.ToString() ?? "unknown address";
+            AnsiConsole.MarkupLine(
+                $"[green]{name} {protocol} port mapping opened via {lease.Result.Provider}: {mappedAddress}:{mappedPort}[/]");
+            leases.Add(lease);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine(
+                $"[yellow]{name} {protocol} port mapping was not opened: {ex.Message}[/]");
+            LogService.Log(ex);
+        }
+    }
+
+    private static async Task ClosePortMappingsAsync(List<OpenPortLease> leases)
+    {
+        if (leases.Count == 0)
+            return;
+
+        foreach (var lease in leases.AsEnumerable().Reverse())
+        {
+            try
+            {
+                AnsiConsole.MarkupLine("[yellow]Closing NAT port mapping...[/]");
+                await lease.DisposeAsync();
+                AnsiConsole.MarkupLine("[green]NAT port mapping closed.[/]");
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine(
+                    $"[yellow]NAT port mapping could not be closed cleanly: {ex.Message}[/]");
+                LogService.Log(ex);
+            }
+        }
+
+        leases.Clear();
+    }
+
+    private static bool TryGetUriPortAndHost(string configuredHostname, out int port, out string host)
+    {
+        port = 0;
+        host = string.Empty;
+        if (!Uri.TryCreate(configuredHostname, UriKind.Absolute, out var uri))
+            return false;
+
+        port = uri.IsDefaultPort ? GetDefaultPort(uri.Scheme) : uri.Port;
+        host = uri.Host;
+        return port is >= 1 and <= 65535;
+    }
+
+    private static int GetDefaultPort(string scheme)
+    {
+        return scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+               scheme.Equals("wss", StringComparison.OrdinalIgnoreCase)
+            ? 443
+            : 80;
+    }
+
+    private static bool ShouldOpenTransportPort(string host)
+    {
+        if (host is "*" or "+" or "0.0.0.0" or "::")
+            return true;
+        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+            return false;
+        return !IPAddress.TryParse(host, out var address) || !IPAddress.IsLoopback(address);
     }
 
     private static void StopServer(McWssMcApiServer server)

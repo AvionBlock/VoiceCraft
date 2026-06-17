@@ -17,6 +17,7 @@
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.6-preview.3.1" />
     <PackageVersion Include="Fleck" Version="1.2.0" />
     <PackageVersion Include="LiteNetLib" Version="2.1.4" />
+    <PackageVersion Include="OpenPort.Net" Version="1.0.0" />
     <PackageVersion Include="AvionBlock.Message.Avalonia" Version="1.2.0" />
     <PackageVersion Include="SharpHook" Version="7.1.2" />
     <PackageVersion Include="SoundFlow" Version="1.4.1" />
