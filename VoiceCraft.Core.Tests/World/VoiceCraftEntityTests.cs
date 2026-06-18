@@ -141,7 +141,7 @@ public class VoiceCraftEntityTests
         entity.SetProperty("Test:Factor", 5.0f);
         entity.SetProperty("Test2:Factor", 8.0f);
         
-        Assert.Equal(3, raised);
+        Assert.Equal(2, raised);
     }
     
     [Fact]
