@@ -10,7 +10,7 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftEntity(int id)
     {
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities = new();
-        private readonly ConcurrentDictionary<string, float> _properties = new();
+        private readonly ConcurrentDictionary<string, object> _properties = new();
         private float _loudness;
 
         //Properties
@@ -36,7 +36,7 @@ namespace VoiceCraft.Core.World
         public event Action<ushort, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<string, float?, VoiceCraftEntity>? OnPropertyUpdated;
+        public event Action<string, object?, VoiceCraftEntity>? OnPropertyUpdated;
 
         //Others
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
@@ -81,7 +81,7 @@ namespace VoiceCraft.Core.World
             }
         }
 
-        public void SetProperty(string key, float? value)
+        public void SetProperty<T>(string key, T? value)
         {
             ArgumentOutOfRangeException.ThrowIfGreaterThan(key.Length, Constants.MaxStringLength, nameof(key));
             if (value == null)
@@ -93,24 +93,39 @@ namespace VoiceCraft.Core.World
             }
 
             //Check for the same value, if it's the same, then return.
-            if (_properties.TryGetValue(key, out var v) &&
-                Math.Abs(v - (float)value) < Constants.FloatingPointTolerance) return;
+            if (!_properties.TryGetValue(key, out var currentValue) || currentValue is not T)
+            {
+                //Set the property and raise the event.
+                _properties[key] = value;
+                OnPropertyUpdated?.Invoke(key, value, this);
+                return;
+            }
+
+            switch (value)
+            {
+                case float floatValue:
+                    if(Math.Abs((float)currentValue - floatValue) < Constants.FloatingPointTolerance) return;
+                    break;
+                default:
+                    if (currentValue == (object)value) return;
+                    break;
+            }
             
             //Set the property and raise the event.
-            _properties[key] = (float)value;
+            _properties[key] = value;
             OnPropertyUpdated?.Invoke(key, value, this);
         }
 
-        public bool TryGetProperty(string key, [NotNullWhen(true)] out float? value)
+        public bool TryGetProperty<T>(string key, [NotNullWhen(true)] out T? value)
         {
-            if (_properties.TryGetValue(key, out var v))
+            if (!_properties.TryGetValue(key, out var currentValue) || currentValue is not T typeValue)
             {
-                value = v;
-                return true;
+                value = default;
+                return false;
             }
-
-            value = null;
-            return false;
+            
+            value = typeValue;
+            return true;
         }
 
         public void ClearProperties()

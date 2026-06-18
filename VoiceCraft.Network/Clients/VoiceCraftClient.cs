@@ -540,15 +540,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleSetPropertyRequestPacket(VcSetPropertyRequestPacket packet)
     {
-        switch (packet.Value)
-        {
-            case null:
-                SetProperty(packet.Key, null);
-                break;
-            case float value:
-                SetProperty(packet.Key, value);
-                break;
-        }
+        SetProperty(packet.Key, packet.Value);
     }
 
     private void HandleSetTitleRequestPacket(VcSetTitleRequestPacket packet)
@@ -672,18 +664,8 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
     private void HandleOnEntityPropertyUpdatedPacket(VcOnEntityPropertyUpdatedPacket packet)
     {
-        VoiceCraftEntity? entity;
-        switch (packet.Value)
-        {
-            case null:
-                entity = World.GetEntity(packet.Id);
-                entity?.SetProperty(packet.Key, null);
-                break;
-            case float value:
-                entity = World.GetEntity(packet.Id);
-                entity?.SetProperty(packet.Key, value);
-                break;
-        }
+        var entity = World.GetEntity(packet.Id);
+        entity?.SetProperty(packet.Key, packet.Value);
     }
 
     private void HandleOnEntityAudioReceivedPacket(VcOnEntityAudioReceivedPacket packet)

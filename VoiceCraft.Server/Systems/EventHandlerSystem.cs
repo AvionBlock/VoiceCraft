@@ -502,7 +502,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    private void OnEntityPropertyUpdated(string key, float? value, VoiceCraftEntity entity)
+    private void OnEntityPropertyUpdated(string key, object? value, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
         {

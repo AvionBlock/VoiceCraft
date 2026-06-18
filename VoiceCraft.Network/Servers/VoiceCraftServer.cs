@@ -339,15 +339,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             }) return;
         if (networkEntity.PositioningType != PositioningType.Client) return;
         
-        switch (packet.Value)
-        {
-            case null:
-                networkEntity.SetProperty(packet.Key, null);
-                break;
-            case float v:
-                networkEntity.SetProperty(packet.Key, v);
-                break;
-        }
+        networkEntity.SetProperty(packet.Key, packet.Value);
     }
 
     #endregion

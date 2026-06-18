@@ -65,10 +65,10 @@ namespace VoiceCraft.Network.Audio.Effects
         public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
             const string factorProperty = $"{nameof(ProximityEchoEffect)}:Factor";
-            var propVal1 = e1.TryGetProperty(factorProperty, out var prop1);
-            var propVal2 = e2.TryGetProperty(factorProperty, out var prop2);
+            var propVal1 = e1.TryGetProperty<float>(factorProperty, out var prop1);
+            var propVal2 = e2.TryGetProperty<float>(factorProperty, out var prop2);
             if (!propVal1 && !propVal2) return Factor;
-            return Math.Max(Math.Clamp(prop1 ?? 0f, 0f, 1f), Math.Clamp(prop2 ?? 0f, 0f, 1f));
+            return Math.Max(Math.Clamp(prop1, 0f, 1f), Math.Clamp(prop2, 0f, 1f));
         }
 
         public void Serialize(NetDataWriter writer)
