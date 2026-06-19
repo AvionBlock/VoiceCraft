@@ -2,16 +2,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityTalkBitmaskUpdatedPacket(int id, ushort value) : IVoiceCraftPacket
+public class VcOnEntityTalkBitmaskUpdatedPacket(int id, ushort value) : IVoiceCraftEventPacket
 {
     public VcOnEntityTalkBitmaskUpdatedPacket() : this(0, 0)
     {
     }
 
+    public EventType EventType => EventType.OnEntityTalkBitmaskUpdated;
     public int Id { get; private set; } = id;
     public ushort Value { get; private set; } = value;
-
-    public VcPacketType PacketType => VcPacketType.OnEntityTalkBitmaskUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

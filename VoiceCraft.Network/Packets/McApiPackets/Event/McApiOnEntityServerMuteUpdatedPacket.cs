@@ -7,11 +7,9 @@ public class McApiOnEntityServerMuteUpdatedPacket(int id, bool value) : IMcApiEv
     {
     }
 
+    public EventType EventType => EventType.OnEntityServerMuteUpdated;
     public int Id { get; private set; } = id;
     public bool Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityServerMuteUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityServerMuteUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

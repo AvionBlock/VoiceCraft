@@ -75,8 +75,8 @@ internal sealed class FakeProcessingEffect(int stride) : IAudioEffect
     }
 }
 
-internal sealed class FakeMcApiPeer(string sessionToken, McApiConnectionState connectionState = McApiConnectionState.Connected)
-    : McApiNetPeer
+internal sealed class FakeMcApiPeer(FakeMcApiServer? server, string sessionToken, McApiConnectionState connectionState = McApiConnectionState.Connected)
+    : McApiNetPeer(server)
 {
     public override McApiConnectionState ConnectionState { get; set; } = connectionState;
     public override string SessionToken { get; } = sessionToken;
@@ -139,13 +139,11 @@ internal sealed class FakeMcApiServer(VoiceCraftWorld world, VoiceCraft.Network.
 
     public void AddPeer(FakeMcApiPeer peer)
     {
-        peer.Tag = this;
         _peers.Add(peer);
     }
 
     public void RaisePeerConnected(FakeMcApiPeer peer, string token)
     {
-        peer.Tag = this;
         OnPeerConnected?.Invoke(peer, token);
     }
 

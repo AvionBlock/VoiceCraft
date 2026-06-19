@@ -5,7 +5,7 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class McApiLoginRequestPacket(string requestId, string token, Version version, McApiEventType[] subscribeEvents)
+public class McApiLoginRequestPacket(string requestId, string token, Version version, EventType[] subscribeEvents)
     : IMcApiPacket, IMcApiRIdPacket
 {
     public McApiLoginRequestPacket() : this(string.Empty, string.Empty, new Version(0, 0, 0), [])
@@ -14,7 +14,7 @@ public class McApiLoginRequestPacket(string requestId, string token, Version ver
 
     public string Token { get; private set; } = token;
     public Version Version { get; private set; } = version;
-    public McApiEventType[] SubscribeEvents { get; private set; } = subscribeEvents;
+    public EventType[] SubscribeEvents { get; private set; } = subscribeEvents;
 
     public McApiPacketType PacketType => McApiPacketType.LoginRequest;
 
@@ -46,10 +46,10 @@ public class McApiLoginRequestPacket(string requestId, string token, Version ver
 
         //Else, Do new subscribe method.
         var eventsLength = reader.GetInt();
-        var events = new List<McApiEventType>();
+        var events = new List<EventType>();
         for (var i = 0; i < eventsLength; i++)
         {
-            var @event = (McApiEventType)reader.GetByte();
+            var @event = (EventType)reader.GetByte();
             if (Enum.IsDefined(@event))
             {
                 events.Add(@event);
@@ -62,7 +62,7 @@ public class McApiLoginRequestPacket(string requestId, string token, Version ver
     public string RequestId { get; private set; } = requestId;
 
     public McApiLoginRequestPacket Set(string requestId = "", string token = "", Version? version = null,
-        McApiEventType[]? subscribeEvents = null)
+        EventType[]? subscribeEvents = null)
     {
         RequestId = requestId;
         Token = token;

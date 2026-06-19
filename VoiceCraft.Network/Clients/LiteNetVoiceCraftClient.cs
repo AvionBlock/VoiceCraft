@@ -70,7 +70,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
                 _writer.Put((byte)packet.PacketType);
                 _writer.Put(packet);
                 var peer = _netManager.Connect(ip, port, _writer);
-                _netPeer = new LiteNetVoiceCraftNetPeer(peer, userGuid, serverUserGuid, locale, positioningType);
+                _netPeer = new LiteNetVoiceCraftNetPeer(null, peer, userGuid, serverUserGuid, locale, positioningType);
             }
 
             _ = await GetResponseAsync<VcAcceptResponsePacket, Guid>(

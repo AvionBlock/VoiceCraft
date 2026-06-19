@@ -43,6 +43,7 @@ public class McApiOnEntityCreatedPacket(
     {
     }
 
+    public virtual EventType EventType => EventType.OnEntityCreated;
     public int Id { get; private set; } = id;
     public float Loudness { get; private set; } = loudness;
     public DateTime LastSpoke { get; private set; } = lastSpoke;
@@ -55,9 +56,6 @@ public class McApiOnEntityCreatedPacket(
     public ushort EffectBitmask { get; private set; } = effectBitmask;
     public Vector3 Position { get; private set; } = position;
     public Vector2 Rotation { get; private set; } = rotation;
-
-    public virtual McApiPacketType PacketType => McApiPacketType.OnEntityCreated;
-    public virtual McApiEventType EventType => McApiEventType.OnEntityCreated;
 
     public virtual void Serialize(NetDataWriter writer)
     {

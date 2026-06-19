@@ -2,16 +2,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityDeafenUpdatedPacket(int id, bool value) : IVoiceCraftPacket
+public class VcOnEntityDeafenUpdatedPacket(int id, bool value) : IVoiceCraftEventPacket
 {
     public VcOnEntityDeafenUpdatedPacket() : this(0, false)
     {
     }
 
+    public EventType EventType => EventType.OnEntityDeafenUpdated;
     public int Id { get; private set; } = id;
     public bool Value { get; private set; } = value;
-
-    public VcPacketType PacketType => VcPacketType.OnEntityDeafenUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

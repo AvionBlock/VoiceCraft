@@ -1,22 +1,25 @@
 using System;
 using LiteNetLib;
+using VoiceCraft.Network.Servers;
+using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.NetPeers;
 
 public class LiteNetVoiceCraftNetPeer(
+    VoiceCraftServer? server,
     NetPeer netPeer,
     Guid userGuid,
     Guid serverUserGuid,
     string locale,
-    PositioningType positioningType) : VoiceCraftNetPeer(userGuid, serverUserGuid, locale, positioningType)
+    PositioningType positioningType) : VoiceCraftNetPeer(server, userGuid, serverUserGuid, locale, positioningType)
 {
-    public NetPeer NetPeer => netPeer;
+    public NetPeer NetPeer { get; } = netPeer;
 
     public override VcConnectionState ConnectionState
     {
         get
         {
-            return netPeer.ConnectionState switch
+            return NetPeer.ConnectionState switch
             {
                 LiteNetLib.ConnectionState.Outgoing => VcConnectionState.Connecting,
                 LiteNetLib.ConnectionState.Connected => VcConnectionState.Connected,

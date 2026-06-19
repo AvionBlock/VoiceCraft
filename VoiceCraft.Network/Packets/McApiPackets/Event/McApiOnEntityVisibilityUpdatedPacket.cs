@@ -8,12 +8,10 @@ public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) :
     {
     }
 
+    public EventType EventType => EventType.OnEntityVisibilityUpdated;
     public int Id { get; private set; } = id;
     public int Id2 { get; private set; } = id2;
     public bool Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityVisibilityUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityVisibilityUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

@@ -9,12 +9,10 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
     {
     }
 
+    public EventType EventType => EventType.OnEffectUpdated;
     public ushort Bitmask { get; private set; } = bitmask;
     public EffectType EffectType { get; private set; } = effect?.EffectType ?? EffectType.None;
     public IAudioEffect? Effect { get; private set; } = effect;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEffectUpdated;
-    public McApiEventType EventType => McApiEventType.OnEffectUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

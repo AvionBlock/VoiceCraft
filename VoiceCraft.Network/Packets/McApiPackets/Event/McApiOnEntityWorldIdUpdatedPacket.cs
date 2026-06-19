@@ -9,11 +9,9 @@ public class McApiOnEntityWorldIdUpdatedPacket(int id, string value) : IMcApiEve
     {
     }
 
+    public EventType EventType => EventType.OnEntityWorldIdUpdated;
     public int Id { get; private set; } = id;
     public string Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityWorldIdUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityWorldIdUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

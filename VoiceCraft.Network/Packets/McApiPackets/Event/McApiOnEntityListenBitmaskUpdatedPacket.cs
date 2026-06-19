@@ -8,11 +8,9 @@ public class McApiOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IMc
     {
     }
 
+    public EventType EventType => EventType.OnEntityListenBitmaskUpdated;
     public int Id { get; private set; } = id;
     public ushort Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityListenBitmaskUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityListenBitmaskUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

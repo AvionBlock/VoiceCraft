@@ -2,15 +2,14 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityDestroyedPacket(int id) : IVoiceCraftPacket
+public class VcOnEntityDestroyedPacket(int id) : IVoiceCraftEventPacket
 {
     public VcOnEntityDestroyedPacket() : this(0)
     {
     }
 
+    public EventType EventType => EventType.OnEntityDestroyed;
     public int Id { get; private set; } = id;
-
-    public VcPacketType PacketType => VcPacketType.OnEntityDestroyed;
 
     public void Serialize(NetDataWriter writer)
     {

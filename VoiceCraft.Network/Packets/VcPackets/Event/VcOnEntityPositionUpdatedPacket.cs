@@ -3,16 +3,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityPositionUpdatedPacket(int id, Vector3 value) : IVoiceCraftPacket
+public class VcOnEntityPositionUpdatedPacket(int id, Vector3 value) : IVoiceCraftEventPacket
 {
     public VcOnEntityPositionUpdatedPacket() : this(0, Vector3.Zero)
     {
     }
 
+    public EventType EventType => EventType.OnEntityPositionUpdated;
     public int Id { get; private set; } = id;
     public Vector3 Value { get; private set; } = value;
-
-    public VcPacketType PacketType => VcPacketType.OnEntityPositionUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

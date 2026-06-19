@@ -2,6 +2,7 @@ using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
+using VoiceCraft.Network.Packets.VcPackets.Request;
 using Xunit;
 
 namespace VoiceCraft.Network.Tests.Clients;
@@ -12,11 +13,12 @@ public class VoiceCraftClientTests
     public void EntityCreated_WhenEntityAlreadyExists_IsIgnored()
     {
         using var client = new TestVoiceCraftClient();
-        var packet = new VcOnEntityCreatedPacket();
-        packet.Set(42, "First");
+        var eventPacket = new VcOnEntityCreatedPacket();
+        eventPacket.Set(42, "First");
+        var packet = new VcEventRequestPacket(eventPacket);
 
         client.Dispatch(packet);
-        packet.Set(42, "Duplicate", true, true);
+        eventPacket.Set(42, "Duplicate", true, true);
         client.Dispatch(packet);
 
         var entity = Assert.Single(client.World.Entities);
@@ -30,7 +32,9 @@ public class VoiceCraftClientTests
     {
         using var client = new TestVoiceCraftClient();
 
-        client.Dispatch(new VcOnEntityDestroyedPacket().Set(404));
+        var eventPacket = new VcOnEntityDestroyedPacket().Set(404);
+        var packet = new VcEventRequestPacket(eventPacket);
+        client.Dispatch(packet);
 
         Assert.Empty(client.World.Entities);
     }

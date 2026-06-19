@@ -9,12 +9,10 @@ public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float lo
     {
     }
 
+    public EventType EventType => EventType.OnEntityAudioReceived;
     public int Id { get; private set; } = id;
     public ushort Timestamp { get; private set; } = timestamp;
     public float FrameLoudness { get; private set; } = loudness;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityAudioReceived;
-    public McApiEventType EventType => McApiEventType.OnEntityAudioReceived;
 
     public void Serialize(NetDataWriter writer)
     {

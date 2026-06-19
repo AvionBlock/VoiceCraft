@@ -3,16 +3,16 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityNameUpdatedPacket(int id, string value) : IVoiceCraftPacket
+public class VcOnEntityNameUpdatedPacket(int id, string value) : IVoiceCraftEventPacket
 {
     public VcOnEntityNameUpdatedPacket() : this(0, string.Empty)
     {
     }
 
+    public EventType EventType => EventType.OnEntityNameUpdated;
     public int Id { get; private set; } = id;
     public string Value { get; private set; } = value;
 
-    public VcPacketType PacketType => VcPacketType.OnEntityNameUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

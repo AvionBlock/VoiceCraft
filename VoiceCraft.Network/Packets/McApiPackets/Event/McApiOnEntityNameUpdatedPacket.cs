@@ -9,11 +9,9 @@ public class McApiOnEntityNameUpdatedPacket(int id, string value) : IMcApiEventP
     {
     }
 
+    public EventType EventType => EventType.OnEntityNameUpdated;
     public int Id { get; private set; } = id;
     public string Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityNameUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityNameUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

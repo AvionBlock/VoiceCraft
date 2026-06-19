@@ -8,9 +8,7 @@ public class McApiOnEntityDeafenUpdatedPacket(int id, bool value) : IMcApiEventP
     {
     }
 
-    public McApiPacketType PacketType => McApiPacketType.OnEntityDeafenUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityDeafenUpdated;
-
+    public EventType EventType => EventType.OnEntityDeafenUpdated;
     public int Id { get; private set; } = id;
     public bool Value { get; private set; } = value;
 

@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
@@ -20,6 +20,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
     public abstract string LoginToken { get; }
     public abstract uint MaxClients { get; }
     public abstract int ConnectedPeers { get; }
+    public abstract ImmutableList<McApiNetPeer> Peers { get; }
 
     public abstract event Action<McApiNetPeer, string>? OnPeerConnected;
     public abstract event Action<McApiNetPeer, string>? OnPeerDisconnected;
@@ -111,29 +112,16 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
             case McApiPacketType.SetEntityRotationRequest:
                 ProcessPacket(reader, onParsed, () => new McApiSetEntityRotationRequestPacket());
                 break;
+            case McApiPacketType.SetEntityPropertyRequest:
+                ProcessPacket(reader, onParsed, () => new McApiSetEntityPropertyRequestPacket());
+                break;
             case McApiPacketType.AcceptResponse:
             case McApiPacketType.DenyResponse:
             case McApiPacketType.PingResponse:
+            case McApiPacketType.EventRequest:
             case McApiPacketType.ResetResponse:
             case McApiPacketType.CreateEntityResponse:
             case McApiPacketType.DestroyEntityResponse:
-            case McApiPacketType.OnEffectUpdated:
-            case McApiPacketType.OnEntityCreated:
-            case McApiPacketType.OnNetworkEntityCreated:
-            case McApiPacketType.OnEntityDestroyed:
-            case McApiPacketType.OnEntityVisibilityUpdated:
-            case McApiPacketType.OnEntityWorldIdUpdated:
-            case McApiPacketType.OnEntityNameUpdated:
-            case McApiPacketType.OnEntityMuteUpdated:
-            case McApiPacketType.OnEntityDeafenUpdated:
-            case McApiPacketType.OnEntityServerMuteUpdated:
-            case McApiPacketType.OnEntityServerDeafenUpdated:
-            case McApiPacketType.OnEntityTalkBitmaskUpdated:
-            case McApiPacketType.OnEntityListenBitmaskUpdated:
-            case McApiPacketType.OnEntityEffectBitmaskUpdated:
-            case McApiPacketType.OnEntityPositionUpdated:
-            case McApiPacketType.OnEntityRotationUpdated:
-            case McApiPacketType.OnEntityAudioReceived:
             default:
                 return;
         }
@@ -202,6 +190,9 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
                 break;
             case McApiSetEntityRotationRequestPacket setEntityRotationRequestPacket:
                 HandleSetEntityRotationRequestPacket(setEntityRotationRequestPacket, netPeer);
+                break;
+            case McApiSetEntityPropertyRequestPacket setEntityPropertyRequestPacket:
+                HandleSetEntityPropertyRequestPacket(setEntityPropertyRequestPacket, netPeer);
                 break;
         }
     }
@@ -473,6 +464,14 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         var entity = world.GetEntity(packet.Id);
         if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
         entity.Rotation = packet.Value;
+    }
+
+    private void HandleSetEntityPropertyRequestPacket(McApiSetEntityPropertyRequestPacket packet, McApiNetPeer netPeer)
+    {
+        if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
+        var entity = world.GetEntity(packet.Id);
+        if (entity is null or VoiceCraftNetworkEntity { PositioningType: PositioningType.Client }) return;
+        entity.SetProperty(packet.Key, packet.Value);
     }
 
     private static void ProcessPacket<T>(NetDataReader reader, Action<IMcApiPacket> onParsed, Func<T> packetFactory)

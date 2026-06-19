@@ -92,6 +92,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.InfoResponse:
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
+            case VcPacketType.EventRequest:
             case VcPacketType.SetServerMuteRequest:
             case VcPacketType.SetServerDeafenRequest:
             case VcPacketType.SetTalkBitmaskRequest:
@@ -100,22 +101,6 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
-            case VcPacketType.OnEffectUpdated:
-            case VcPacketType.OnEntityCreated:
-            case VcPacketType.OnNetworkEntityCreated:
-            case VcPacketType.OnEntityDestroyed:
-            case VcPacketType.OnEntityNameUpdated:
-            case VcPacketType.OnEntityMuteUpdated:
-            case VcPacketType.OnEntityDeafenUpdated:
-            case VcPacketType.OnEntityServerMuteUpdated:
-            case VcPacketType.OnEntityServerDeafenUpdated:
-            case VcPacketType.OnEntityTalkBitmaskUpdated:
-            case VcPacketType.OnEntityListenBitmaskUpdated:
-            case VcPacketType.OnEntityEffectBitmaskUpdated:
-            case VcPacketType.OnEntityPositionUpdated:
-            case VcPacketType.OnEntityRotationUpdated:
-            case VcPacketType.OnEntityPropertyUpdated:
-            case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
         }
@@ -134,6 +119,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.InfoResponse:
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
+            case VcPacketType.EventRequest:
             case VcPacketType.SetNameRequest:
             case VcPacketType.AudioRequest:
             case VcPacketType.SetMuteRequest:
@@ -150,22 +136,6 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
-            case VcPacketType.OnEffectUpdated:
-            case VcPacketType.OnEntityCreated:
-            case VcPacketType.OnNetworkEntityCreated:
-            case VcPacketType.OnEntityDestroyed:
-            case VcPacketType.OnEntityNameUpdated:
-            case VcPacketType.OnEntityMuteUpdated:
-            case VcPacketType.OnEntityDeafenUpdated:
-            case VcPacketType.OnEntityServerMuteUpdated:
-            case VcPacketType.OnEntityServerDeafenUpdated:
-            case VcPacketType.OnEntityTalkBitmaskUpdated:
-            case VcPacketType.OnEntityListenBitmaskUpdated:
-            case VcPacketType.OnEntityEffectBitmaskUpdated:
-            case VcPacketType.OnEntityPositionUpdated:
-            case VcPacketType.OnEntityRotationUpdated:
-            case VcPacketType.OnEntityPropertyUpdated:
-            case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
         }

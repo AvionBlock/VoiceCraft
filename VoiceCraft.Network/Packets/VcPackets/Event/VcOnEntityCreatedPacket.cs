@@ -5,7 +5,7 @@ using VoiceCraft.Core.World;
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
 public class VcOnEntityCreatedPacket(int id, string name, bool muted, bool deafened)
-    : IVoiceCraftPacket
+    : IVoiceCraftEventPacket
 {
     public VcOnEntityCreatedPacket() : this(0, string.Empty, false, false)
     {
@@ -15,12 +15,12 @@ public class VcOnEntityCreatedPacket(int id, string name, bool muted, bool deafe
     {
     }
 
+    public virtual EventType EventType => EventType.OnEntityCreated;
     public int Id { get; private set; } = id;
     public string Name { get; private set; } = name;
     public bool Muted { get; private set; } = muted;
     public bool Deafened { get; private set; } = deafened;
 
-    public virtual VcPacketType PacketType => VcPacketType.OnEntityCreated;
 
     public virtual void Serialize(NetDataWriter writer)
     {

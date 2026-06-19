@@ -8,11 +8,9 @@ public class McApiOnEntityServerDeafenUpdatedPacket(int id, bool value) : IMcApi
     {
     }
 
+    public EventType EventType => EventType.OnEntityServerDeafenUpdated;
     public int Id { get; private set; } = id;
     public bool Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityServerDeafenUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityServerDeafenUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

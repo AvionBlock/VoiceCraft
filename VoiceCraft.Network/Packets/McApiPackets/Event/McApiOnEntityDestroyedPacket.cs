@@ -8,10 +8,8 @@ public class McApiOnEntityDestroyedPacket(int id) : IMcApiEventPacket
     {
     }
 
+    public EventType EventType => EventType.OnEntityDestroyed;
     public int Id { get; private set; } = id;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityDestroyed;
-    public McApiEventType EventType => McApiEventType.OnEntityDestroyed;
 
     public void Serialize(NetDataWriter writer)
     {

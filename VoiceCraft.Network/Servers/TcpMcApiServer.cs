@@ -1,8 +1,9 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -14,7 +15,6 @@ using LiteNetLib.Utils;
 using VoiceCraft.Core.JsonConverters;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
-using VoiceCraft.Network.Packets.McApiPackets;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;
 using VoiceCraft.Network.Systems;
@@ -32,9 +32,11 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     private const ushort ResponseKind = 2;
 
     private McTcpConfig _config = new();
-    private readonly ConcurrentDictionary<TcpClient, TcpMcApiNetPeer> _mcApiPeers = new();
+    private volatile ImmutableList<McApiNetPeer> _peersSnapshot = ImmutableList<McApiNetPeer>.Empty;
+    private readonly Dictionary<TcpClient, TcpMcApiNetPeer> _mcApiPeers = new();
     private readonly NetDataReader _reader = new();
     private readonly NetDataWriter _writer = new();
+    private readonly Lock _lock = new();
     private TcpListener? _listener;
     private CancellationTokenSource? _listenerCancellationTokenSource;
 
@@ -53,64 +55,81 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
 
     public override string LoginToken => _config.LoginToken;
     public override uint MaxClients => _config.MaxClients;
-
-    public override int ConnectedPeers =>
-        _mcApiPeers.Count(x => x.Value.ConnectionState == McApiConnectionState.Connected);
+    public override int ConnectedPeers => Peers.Count(x => x.ConnectionState == McApiConnectionState.Connected);
+    public override ImmutableList<McApiNetPeer> Peers => _peersSnapshot;
 
     public override event Action<McApiNetPeer, string>? OnPeerConnected;
     public override event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
     public override void Start()
     {
-        Stop();
-        var ipAddress = ResolveBindAddress(_config.Hostname);
-        _listenerCancellationTokenSource = new CancellationTokenSource();
-        _listener = new TcpListener(ipAddress, _config.Port);
-        _listener.Server.NoDelay = true;
-        _listener.Start((int)_config.MaxClients);
+        lock (_lock)
+        {
+            Stop();
+            var ipAddress = ResolveBindAddress(_config.Hostname);
+            _listenerCancellationTokenSource = new CancellationTokenSource();
+            _listener = new TcpListener(ipAddress, _config.Port);
+            _listener.Server.NoDelay = true;
+            _listener.Start((int)_config.MaxClients);
+        }
+
         _ = ListenerLoopAsync(_listener, _listenerCancellationTokenSource.Token);
     }
 
     public override void Update()
     {
+        //Cache Snapshot
+        var snapshot = _peersSnapshot;
         if (_listener == null) return;
-        foreach (var peer in _mcApiPeers)
-            UpdatePeer(peer.Key, peer.Value);
+        foreach (var peer in snapshot.Cast<TcpMcApiNetPeer>()) UpdatePeer(peer);
     }
 
     public override void Stop()
     {
-        _listenerCancellationTokenSource?.Cancel();
-        _listenerCancellationTokenSource?.Dispose();
-        _listenerCancellationTokenSource = null;
-
-        if (_listener != null)
+        lock (_lock)
         {
+            var snapshot = _peersSnapshot;
+            _listenerCancellationTokenSource?.Cancel();
+            _listenerCancellationTokenSource?.Dispose();
+            _listenerCancellationTokenSource = null;
+
+            if (_listener == null)
+            {
+                ClearTcpPeers();
+                return;
+            }
+
             try
             {
                 _listener.Stop();
+                _listener.Dispose();
             }
-            catch (SocketException)
+            catch
             {
                 // Do Nothing
             }
 
+            ClearTcpPeers();
+            foreach (var peer in snapshot)
+                try
+                {
+                    Disconnect(peer, true);
+                }
+                catch
+                {
+                    //Do Nothing
+                }
+
             _listener = null;
         }
-
-        foreach (var peer in _mcApiPeers.Keys)
-            CloseClient(peer);
-
-        _mcApiPeers.Clear();
     }
 
     public override void SendPacket<T>(McApiNetPeer netPeer, T packet)
     {
         if (_listener == null ||
-            Config.DisabledPacketTypes.Contains(packet.PacketType) ||
+            netPeer.Server != this ||
             netPeer.ConnectionState == McApiConnectionState.Disconnected ||
-            (packet is IMcApiEventPacket eventPacket &&
-             !netPeer.SubscribedEvents.Contains(eventPacket.EventType))) return;
+            Config.DisabledPacketTypes.Contains(packet.PacketType)) return;
         try
         {
             lock (_writer)
@@ -136,6 +155,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     public override void Broadcast<T>(T packet, params McApiNetPeer?[] excludes)
     {
         if (_listener == null || Config.DisabledPacketTypes.Contains(packet.PacketType)) return;
+        var snapshot = _peersSnapshot;
         try
         {
             byte[] data;
@@ -150,14 +170,9 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 data = _writer.CopyData();
             }
 
-            foreach (var netPeer in _mcApiPeers.Values)
+            foreach (var netPeer in snapshot.Where(netPeer =>
+                         netPeer.ConnectionState == McApiConnectionState.Connected && !excludes.Contains(netPeer)))
             {
-                //Broadcast to only connected and subscribed clients.
-                if (netPeer.ConnectionState != McApiConnectionState.Connected ||
-                    excludes.Contains(netPeer) ||
-                    (packet is IMcApiEventPacket eventPacket &&
-                     !netPeer.SubscribedEvents.Contains(eventPacket.EventType)))
-                    continue;
                 netPeer.OutgoingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, string.Empty));
             }
         }
@@ -169,17 +184,45 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
 
     public override void Disconnect(McApiNetPeer netPeer, bool force = false)
     {
-        if (netPeer is not TcpMcApiNetPeer tcpNetPeer) return;
-        var sessionToken = tcpNetPeer.SessionToken;
-        var wasConnected = tcpNetPeer.ConnectionState == McApiConnectionState.Connected;
-        tcpNetPeer.SetSessionToken(string.Empty);
-        tcpNetPeer.ConnectionState = McApiConnectionState.Disconnected;
-        tcpNetPeer.CancelPendingResponse();
-        if (wasConnected)
-            OnPeerDisconnected?.Invoke(tcpNetPeer, sessionToken);
+        if (netPeer.Server != this || netPeer is not TcpMcApiNetPeer tcpNetPeer) return; //Not our client.
+        if (netPeer.ConnectionState is McApiConnectionState.Disconnected or McApiConnectionState.Disconnecting)
+        {
+            //Already disconnected or disconnecting, we can just force closure of the client.
+            //The original disconnection call or thread will raise the event.
+            if (!force) return;
+            TryRemoveTcpPeer(tcpNetPeer.Client, out _);
+            CloseClient(tcpNetPeer.Client);
+            tcpNetPeer.CancelPendingResponse(); //Cancel any responses, We are force closing.
+            return;
+        }
 
-        _mcApiPeers.TryRemove(tcpNetPeer.Client, out _);
-        CloseClient(tcpNetPeer.Client);
+        var wasConnected = tcpNetPeer.ConnectionState == McApiConnectionState.Connected;
+        tcpNetPeer.ConnectionState = McApiConnectionState.Disconnecting;
+        var sessionToken = tcpNetPeer.SessionToken;
+        try
+        {
+            if (force)
+            {
+                TryRemoveTcpPeer(tcpNetPeer.Client, out _);
+                CloseClient(tcpNetPeer.Client);
+                tcpNetPeer.CancelPendingResponse(); //Cancel any responses, We are force closing.
+                return;
+            }
+
+            SendPacket(netPeer, PacketPool<McApiLogoutRequestPacket>
+                .GetPacket(() => new McApiLogoutRequestPacket())
+                .Set(netPeer.SessionToken));
+            // We don't close the client forcefully,
+            // We keep the connection open in case of a re-connect without doing the TCP handshake.
+            // The TCP connection will close when it fully times out.
+        }
+        finally
+        {
+            tcpNetPeer.SetSessionToken(string.Empty);
+            tcpNetPeer.ConnectionState = McApiConnectionState.Disconnected;
+            if (wasConnected)
+                OnPeerDisconnected?.Invoke(tcpNetPeer, sessionToken);
+        }
     }
 
     protected override void AcceptRequest(McApiLoginRequestPacket packet, McApiNetPeer netPeer)
@@ -191,7 +234,8 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 tcpNetPeer.SetSessionToken(Guid.NewGuid().ToString());
 
             SendPacket(tcpNetPeer,
-                PacketPool<McApiAcceptResponsePacket>.GetPacket(() => new McApiAcceptResponsePacket())
+                PacketPool<McApiAcceptResponsePacket>
+                    .GetPacket(() => new McApiAcceptResponsePacket())
                     .Set(packet.RequestId, tcpNetPeer.SessionToken));
 
             tcpNetPeer.ConnectionState = McApiConnectionState.Connected;
@@ -208,7 +252,8 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         if (netPeer is not TcpMcApiNetPeer tcpNetPeer) return;
         try
         {
-            SendPacket(tcpNetPeer, PacketPool<McApiDenyResponsePacket>.GetPacket(() => new McApiDenyResponsePacket())
+            SendPacket(tcpNetPeer, PacketPool<McApiDenyResponsePacket>
+                .GetPacket(() => new McApiDenyResponsePacket())
                 .Set(packet.RequestId, reason));
         }
         finally
@@ -259,7 +304,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
                 var payload = framePayload.Value;
                 try
                 {
-                    if (!_mcApiPeers.TryGetValue(client, out var peer))
+                    if (!TryGetTcpPeer(client, out var peer))
                         break;
 
                     if (!TryReadPayload(payload.Buffer.AsSpan(0, payload.Length), out var token, out var packets))
@@ -287,49 +332,50 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         }
     }
 
-    private void OnClientConnected(TcpClient client)
+    private static void ReceivePacketsLogic(TcpMcApiNetPeer tcpNetPeer, IReadOnlyList<byte[]> packets, string token)
     {
-        if (_mcApiPeers.Count >= Config.MaxClients)
+        foreach (var data in packets)
         {
-            CloseClient(client);
-            return;
+            if (data.Length == 0) continue;
+            try
+            {
+                tcpNetPeer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, token));
+            }
+            catch
+            {
+                // Do Nothing
+            }
         }
-
-        client.NoDelay = true;
-        var netPeer = new TcpMcApiNetPeer(client)
-        {
-            Tag = this
-        };
-        _mcApiPeers.TryAdd(client, netPeer);
     }
 
-    private void OnClientDisconnected(TcpClient client)
+    private static void SendPacketsLogic(TcpMcApiNetPeer netPeer)
     {
-        if (!_mcApiPeers.TryRemove(client, out var mcApiPeer))
+        if (!netPeer.HasPendingResponse()) return;
+
+        var packets = new List<byte[]>();
+        while (netPeer.OutgoingQueue.TryDequeue(out var packet))
         {
-            CloseClient(client);
-            return;
+            try
+            {
+                packets.Add(packet.Data);
+            }
+            catch
+            {
+                // Do Nothing
+            }
         }
 
-        if (mcApiPeer.ConnectionState == McApiConnectionState.Connected)
-        {
-            var sessionToken = mcApiPeer.SessionToken;
-            mcApiPeer.ConnectionState = McApiConnectionState.Disconnected;
-            mcApiPeer.SetSessionToken(string.Empty);
-            mcApiPeer.CancelPendingResponse();
-            OnPeerDisconnected?.Invoke(mcApiPeer, sessionToken);
-        }
-
-        CloseClient(client);
+        netPeer.CompletePendingResponse(packets);
     }
 
-    private void UpdatePeer(TcpClient client, TcpMcApiNetPeer tcpNetPeer)
+    private void UpdatePeer(TcpMcApiNetPeer tcpNetPeer)
     {
         ProcessPackets(tcpNetPeer);
         SendPacketsLogic(tcpNetPeer);
         if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
-        if (_mcApiPeers.TryRemove(client, out _))
-            Disconnect(tcpNetPeer, true);
+        //Double the amount of time. We remove the peer.
+        if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
+        Disconnect(tcpNetPeer, true);
     }
 
     private void ProcessPackets(TcpMcApiNetPeer tcpNetPeer)
@@ -357,39 +403,74 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         }
     }
 
-    private static void SendPacketsLogic(TcpMcApiNetPeer netPeer)
+    private void OnClientConnected(TcpClient client)
     {
-        if (!netPeer.HasPendingResponse()) return;
-
-        var packets = new List<byte[]>();
-        while (netPeer.OutgoingQueue.TryDequeue(out var packet))
+        var count = _peersSnapshot.Count;
+        if (count >= Config.MaxClients)
         {
-            try
-            {
-                packets.Add(packet.Data);
-            }
-            catch
-            {
-                // Do Nothing
-            }
+            CloseClient(client); //Full
+            return;
         }
 
-        netPeer.CompletePendingResponse(packets);
+        client.NoDelay = true;
+        var netPeer = new TcpMcApiNetPeer(this, client);
+        if (!TryAddTcpPeer(client, netPeer))
+            CloseClient(client); //Error
     }
 
-    private static void ReceivePacketsLogic(TcpMcApiNetPeer tcpNetPeer, IReadOnlyList<byte[]> packets, string token)
+    private void OnClientDisconnected(TcpClient client)
     {
-        foreach (var data in packets)
+        if (!TryRemoveTcpPeer(client, out var mcApiPeer))
         {
-            if (data.Length == 0) continue;
-            try
-            {
-                tcpNetPeer.IncomingQueue.Enqueue(new McApiNetPeer.QueuedPacket(data, token));
-            }
-            catch
-            {
-                // Do Nothing
-            }
+            CloseClient(client);
+            return;
+        }
+
+        var wasConnected = mcApiPeer.ConnectionState != McApiConnectionState.Disconnected;
+        var sessionToken = mcApiPeer.SessionToken;
+        mcApiPeer.SetSessionToken(string.Empty);
+        mcApiPeer.ConnectionState = McApiConnectionState.Disconnected;
+        mcApiPeer.CancelPendingResponse();
+        if (wasConnected)
+            OnPeerDisconnected?.Invoke(mcApiPeer, sessionToken);
+
+        CloseClient(client);
+    }
+
+    private bool TryAddTcpPeer(TcpClient client, TcpMcApiNetPeer peer)
+    {
+        lock (_lock)
+        {
+            if (!_mcApiPeers.TryAdd(client, peer)) return false;
+            _peersSnapshot = [.._mcApiPeers.Values];
+            return true;
+        }
+    }
+
+    private bool TryRemoveTcpPeer(TcpClient client, [NotNullWhen(true)] out TcpMcApiNetPeer? peer)
+    {
+        lock (_lock)
+        {
+            if (!_mcApiPeers.Remove(client, out peer)) return false;
+            _peersSnapshot = [.._mcApiPeers.Values];
+            return true;
+        }
+    }
+
+    private bool TryGetTcpPeer(TcpClient client, [NotNullWhen(true)] out TcpMcApiNetPeer? peer)
+    {
+        lock (_lock)
+        {
+            return _mcApiPeers.TryGetValue(client, out peer);
+        }
+    }
+
+    private void ClearTcpPeers()
+    {
+        lock (_lock)
+        {
+            _mcApiPeers.Clear();
+            _peersSnapshot = ImmutableList<McApiNetPeer>.Empty;
         }
     }
 

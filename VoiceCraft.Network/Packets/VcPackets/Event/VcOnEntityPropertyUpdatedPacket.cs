@@ -2,19 +2,17 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) : IVoiceCraftPacket
+public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) : IVoiceCraftEventPacket
 {
     public VcOnEntityPropertyUpdatedPacket() : this(0, string.Empty, null)
     {
     }
 
+    public EventType EventType => EventType.OnEntityPropertyUpdated;
     public int Id { get; private set; } = id;
     public string Key { get; private set; } = string.Empty;
     public object? Value { get; private set; }
-
-    public VcPacketType PacketType => VcPacketType.OnEntityPropertyUpdated;
-
-    //NOTE: We currently only support floats but the packet supports other types for future plans.
+    
     public void Serialize(NetDataWriter writer)
     {
         writer.Put(Id);
@@ -70,8 +68,7 @@ public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) 
                 break;
         }
     }
-
-    //NOTE: We currently only support floats but the packet supports other types for future plans.
+    
     public void Deserialize(NetDataReader reader)
     {
         Id = reader.GetInt();

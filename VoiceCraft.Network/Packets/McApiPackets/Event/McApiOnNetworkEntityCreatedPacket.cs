@@ -64,9 +64,7 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ServerDeafened = entity.ServerDeafened;
     }
 
-    public override McApiPacketType PacketType => McApiPacketType.OnNetworkEntityCreated;
-    public override McApiEventType EventType => McApiEventType.OnNetworkEntityCreated;
-
+    public override EventType EventType => EventType.OnNetworkEntityCreated;
     public Guid UserGuid { get; private set; }
     public Guid ServerUserGuid { get; private set; }
     public string Locale { get; private set; }

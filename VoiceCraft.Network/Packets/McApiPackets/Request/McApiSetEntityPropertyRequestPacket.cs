@@ -1,22 +1,23 @@
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 
-namespace VoiceCraft.Network.Packets.VcPackets.Request;
+namespace VoiceCraft.Network.Packets.McApiPackets.Request;
 
-public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraftPacket
+public class McApiSetEntityPropertyRequestPacket(int id, string key, object? value) : IMcApiPacket
 {
-    public VcSetPropertyRequestPacket() : this(string.Empty, null)
+    public McApiSetEntityPropertyRequestPacket() : this(0, string.Empty, null)
     {
     }
 
+    public int Id { get; private set; } = id;
     public string Key { get; private set; } = key;
     public object? Value { get; private set; } = value;
 
-    public VcPacketType PacketType => VcPacketType.SetPropertyRequest;
-
-    //NOTE: We currently only support floats but the packet supports other types for future plans.
+    public McApiPacketType PacketType => McApiPacketType.SetEntityPropertyRequest;
+    
     public void Serialize(NetDataWriter writer)
     {
+        writer.Put(Id);
         writer.Put(Key, Constants.MaxStringLength);
         switch (Value)
         {
@@ -69,10 +70,10 @@ public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraft
                 break;
         }
     }
-
-    //NOTE: We currently only support floats but the packet supports other types for future plans.
+    
     public void Deserialize(NetDataReader reader)
     {
+        Id = reader.GetInt();
         Key = reader.GetString(Constants.MaxStringLength);
         var propertyType = (PropertyType)reader.GetByte();
         Value = propertyType switch
@@ -92,8 +93,9 @@ public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraft
         };
     }
 
-    public VcSetPropertyRequestPacket Set(string key = "", object? value = null)
+    public McApiSetEntityPropertyRequestPacket Set(int id = 0, string key = "", object? value = null)
     {
+        Id = id;
         Key = key;
         Value = value;
         return this;

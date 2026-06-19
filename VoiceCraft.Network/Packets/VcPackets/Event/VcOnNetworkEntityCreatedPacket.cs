@@ -26,8 +26,7 @@ public class VcOnNetworkEntityCreatedPacket : VcOnEntityCreatedPacket
         ServerDeafened = entity.ServerDeafened;
     }
 
-    public override VcPacketType PacketType => VcPacketType.OnNetworkEntityCreated;
-
+    public override EventType EventType => EventType.OnNetworkEntityCreated;
     public Guid UserGuid { get; private set; }
     public bool ServerMuted { get; private set; }
     public bool ServerDeafened { get; private set; }

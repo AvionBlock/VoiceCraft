@@ -83,26 +83,31 @@ public class PacketSerializationTests
         var userGuid = Guid.NewGuid();
         var packet = new VcOnNetworkEntityCreatedPacket()
             .Set(42, "Alpha", true, false, userGuid, true);
+        var packetEvent = new VcEventRequestPacket(packet);
+        var clone = RoundTrip(packetEvent, () => new VcEventRequestPacket(new VcOnNetworkEntityCreatedPacket()));
 
-        var clone = RoundTrip(packet, () => new VcOnNetworkEntityCreatedPacket());
-
-        Assert.Equal(42, clone.Id);
-        Assert.Equal("Alpha", clone.Name);
-        Assert.True(clone.Muted);
-        Assert.False(clone.Deafened);
-        Assert.Equal(userGuid, clone.UserGuid);
-        Assert.True(clone.ServerMuted);
-        Assert.False(clone.ServerDeafened);
+        var cloneEvent = clone.Event as VcOnNetworkEntityCreatedPacket;
+        
+        Assert.Equal(42, cloneEvent?.Id);
+        Assert.Equal("Alpha", cloneEvent?.Name);
+        Assert.True(cloneEvent?.Muted);
+        Assert.False(cloneEvent?.Deafened);
+        Assert.Equal(userGuid, cloneEvent?.UserGuid);
+        Assert.True(cloneEvent?.ServerMuted);
+        Assert.False(cloneEvent?.ServerDeafened);
     }
 
     [Fact]
     public void EntityDestroyedEvent_RoundTrips()
     {
         var packet = new VcOnEntityDestroyedPacket().Set(99);
+        var packetEvent = new VcEventRequestPacket(packet);
 
-        var clone = RoundTrip(packet, () => new VcOnEntityDestroyedPacket());
+        var clone = RoundTrip(packetEvent, () => new VcEventRequestPacket(new VcOnEntityDestroyedPacket()));
 
-        Assert.Equal(99, clone.Id);
+        var cloneEvent = clone.Event as VcOnEntityDestroyedPacket;
+        
+        Assert.Equal(99, cloneEvent?.Id);
     }
 
     private static T RoundTrip<T>(T packet, Func<T> factory) where T : class, IVoiceCraftPacket

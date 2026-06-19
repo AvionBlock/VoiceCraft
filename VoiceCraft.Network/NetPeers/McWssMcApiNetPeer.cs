@@ -1,9 +1,10 @@
 using System;
 using Fleck;
+using VoiceCraft.Network.Servers;
 
 namespace VoiceCraft.Network.NetPeers;
 
-public class McWssMcApiNetPeer(IWebSocketConnection connection) : McApiNetPeer
+public class McWssMcApiNetPeer(McWssMcApiServer? server, IWebSocketConnection connection) : McApiNetPeer(server)
 {
     private string _sessionToken = string.Empty;
     public DateTime LastUpdate { get; set; } = DateTime.UtcNow;

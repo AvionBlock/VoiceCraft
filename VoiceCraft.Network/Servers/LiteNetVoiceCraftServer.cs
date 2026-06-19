@@ -98,7 +98,9 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     public override void SendPacket<T>(VoiceCraftNetPeer vcNetPeer, T packet,
         VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
     {
-        if (!_netManager.IsRunning || vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
+        if (!_netManager.IsRunning ||
+            vcNetPeer.Server != this ||
+            vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
         var method = deliveryMethod switch
         {
             VcDeliveryMethod.Unreliable => DeliveryMethod.Unreliable,
@@ -151,7 +153,10 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
 
     public override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)
     {
-        if (vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
+        if (!_netManager.IsRunning ||
+            vcNetPeer.Server != this ||
+            vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
+
         var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket()).Set(reason);
         try
         {
@@ -205,7 +210,12 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     {
         if (data is not ConnectionRequest request) return;
         var peer = request.Accept();
-        var liteNetPeer = new LiteNetVoiceCraftNetPeer(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale,
+        var liteNetPeer = new LiteNetVoiceCraftNetPeer(
+            this,
+            peer,
+            packet.UserGuid,
+            packet.ServerUserGuid,
+            packet.Locale,
             packet.PositioningType);
         try
         {
@@ -215,8 +225,9 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             var entity = new VoiceCraftNetworkEntity(liteNetPeer, id);
             liteNetPeer.Tag = entity;
             World.AddEntity(entity);
-            SendPacket(liteNetPeer,
-                PacketPool<VcAcceptResponsePacket>.GetPacket(() => new VcAcceptResponsePacket()).Set(packet.RequestId));
+            SendPacket(liteNetPeer, PacketPool<VcAcceptResponsePacket>
+                .GetPacket(() => new VcAcceptResponsePacket())
+                .Set(packet.RequestId));
         }
         catch
         {

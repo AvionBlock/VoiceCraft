@@ -144,7 +144,7 @@ internal static class Measurements
         using var effectSystem = new AudioEffectSystem();
         var server = new FakeMcApiServer(world, effectSystem);
         for (var i = 0; i < scenario.P1; i++)
-            server.AddPeer(new FakeMcApiPeer($"peer-{i}"));
+            server.AddPeer(new FakeMcApiPeer(server, $"peer-{i}"));
 
         return MeasureAction(() =>
         {

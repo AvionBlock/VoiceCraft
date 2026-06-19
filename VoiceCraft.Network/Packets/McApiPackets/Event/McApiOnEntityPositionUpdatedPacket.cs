@@ -9,11 +9,9 @@ public class McApiOnEntityPositionUpdatedPacket(int id, Vector3 value) : IMcApiE
     {
     }
 
+    public EventType EventType => EventType.OnEntityPositionUpdated;
     public int Id { get; private set; } = id;
     public Vector3 Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityPositionUpdated;
-    public McApiEventType EventType => McApiEventType.OnEntityPositionUpdated;
 
     public void Serialize(NetDataWriter writer)
     {

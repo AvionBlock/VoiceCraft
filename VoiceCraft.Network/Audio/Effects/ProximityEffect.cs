@@ -77,8 +77,9 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.
+            var maxRange = EvaluateMaxRangeProperty(from, to);
             var distance = Vector3.Distance(from.Position, to.Position);
-            return distance <= MaxRange;
+            return distance <= maxRange;
         }
 
         public void Dispose()

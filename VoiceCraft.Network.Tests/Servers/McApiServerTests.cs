@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Numerics;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
@@ -18,7 +19,7 @@ public class McApiServerTests
         using var world = new VoiceCraftWorld();
         using var effectSystem = new AudioEffectSystem();
         var server = new TestMcApiServer(world, effectSystem);
-        var peer = new HttpMcApiNetPeer
+        var peer = new HttpMcApiNetPeer(null)
         {
             ConnectionState = McApiConnectionState.Connected
         };
@@ -61,6 +62,7 @@ public class McApiServerTests
         public override string LoginToken => string.Empty;
         public override uint MaxClients => 10;
         public override int ConnectedPeers => 1;
+        public override ImmutableList<McApiNetPeer> Peers => ImmutableList<McApiNetPeer>.Empty;
 
         public override event Action<McApiNetPeer, string>? OnPeerConnected;
         public override event Action<McApiNetPeer, string>? OnPeerDisconnected;

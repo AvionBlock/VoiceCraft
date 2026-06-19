@@ -70,37 +70,31 @@ namespace VoiceCraft.Network.Interfaces
             {
                 case EffectType.Visibility:
                     audioEffect = new VisibilityEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.Proximity:
                     audioEffect = new ProximityEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.Directional:
                     audioEffect = new DirectionalEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.ProximityEcho:
                     audioEffect = new ProximityEchoEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.Echo:
                     audioEffect = new EchoEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.ProximityMuffle:
                     audioEffect = new ProximityMuffleEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.Muffle:
                     audioEffect = new MuffleEffect();
-                    audioEffect.Deserialize(reader);
                     break;
                 case EffectType.None:
                 default:
                     break;
             }
-
+            
+            audioEffect?.Deserialize(reader);
             return audioEffect;
         }
     }

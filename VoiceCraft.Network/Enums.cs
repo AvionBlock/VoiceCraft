@@ -56,6 +56,31 @@ public enum PropertyType : byte
     Double
 }
 
+public enum EventType : byte
+{
+    //Events
+    None,
+    OnEffectUpdated,
+    OnEntityCreated,
+    OnNetworkEntityCreated,
+    OnEntityDestroyed,
+    OnEntityVisibilityUpdated,
+    OnEntityWorldIdUpdated,
+    OnEntityNameUpdated,
+    OnEntityMuteUpdated,
+    OnEntityDeafenUpdated,
+    OnEntityServerMuteUpdated,
+    OnEntityServerDeafenUpdated,
+    OnEntityTalkBitmaskUpdated,
+    OnEntityListenBitmaskUpdated,
+    OnEntityEffectBitmaskUpdated,
+    OnEntityPositionUpdated,
+    OnEntityRotationUpdated,
+    OnEntityPropertyUpdated,
+    OnEntityAudioReceived,
+    OnEntityAudioDataReceived,
+}
+
 public enum VcPacketType : byte
 {
     //Core
@@ -71,6 +96,7 @@ public enum VcPacketType : byte
 
     //Other/Changeable
     //Requests
+    EventRequest,
     SetNameRequest,
     AudioRequest,
     SetMuteRequest,
@@ -89,24 +115,6 @@ public enum VcPacketType : byte
     SetEntityVisibilityRequest,
 
     //Responses
-
-    //Events
-    OnEffectUpdated,
-    OnEntityCreated,
-    OnNetworkEntityCreated,
-    OnEntityDestroyed,
-    OnEntityNameUpdated,
-    OnEntityMuteUpdated,
-    OnEntityDeafenUpdated,
-    OnEntityServerMuteUpdated,
-    OnEntityServerDeafenUpdated,
-    OnEntityTalkBitmaskUpdated,
-    OnEntityListenBitmaskUpdated,
-    OnEntityEffectBitmaskUpdated,
-    OnEntityPositionUpdated,
-    OnEntityRotationUpdated,
-    OnEntityPropertyUpdated,
-    OnEntityAudioReceived
 }
 
 public enum McApiPacketType : byte
@@ -124,6 +132,7 @@ public enum McApiPacketType : byte
 
     //Other/Changeable
     //Requests
+    EventRequest,
     ResetRequest,
     SetEffectRequest,
     ClearEffectsRequest,
@@ -141,50 +150,10 @@ public enum McApiPacketType : byte
     SetEntityEffectBitmaskRequest,
     SetEntityPositionRequest,
     SetEntityRotationRequest,
+    SetEntityPropertyRequest,
 
     //Responses
     ResetResponse,
     CreateEntityResponse,
     DestroyEntityResponse,
-
-    //Events
-    OnEffectUpdated,
-    OnEntityCreated,
-    OnNetworkEntityCreated,
-    OnEntityDestroyed,
-    OnEntityVisibilityUpdated,
-    OnEntityWorldIdUpdated,
-    OnEntityNameUpdated,
-    OnEntityMuteUpdated,
-    OnEntityDeafenUpdated,
-    OnEntityServerMuteUpdated,
-    OnEntityServerDeafenUpdated,
-    OnEntityTalkBitmaskUpdated,
-    OnEntityListenBitmaskUpdated,
-    OnEntityEffectBitmaskUpdated,
-    OnEntityPositionUpdated,
-    OnEntityRotationUpdated,
-    OnEntityAudioReceived
-}
-
-public enum McApiEventType : byte
-{
-    //Events
-    OnEffectUpdated,
-    OnEntityCreated,
-    OnNetworkEntityCreated,
-    OnEntityDestroyed,
-    OnEntityVisibilityUpdated,
-    OnEntityWorldIdUpdated,
-    OnEntityNameUpdated,
-    OnEntityMuteUpdated,
-    OnEntityDeafenUpdated,
-    OnEntityServerMuteUpdated,
-    OnEntityServerDeafenUpdated,
-    OnEntityTalkBitmaskUpdated,
-    OnEntityListenBitmaskUpdated,
-    OnEntityEffectBitmaskUpdated,
-    OnEntityPositionUpdated,
-    OnEntityRotationUpdated,
-    OnEntityAudioReceived
 }

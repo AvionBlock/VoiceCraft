@@ -74,7 +74,7 @@ public class VisibilitySystemTests
     }
 
     private sealed class FakeNetPeer(Guid userGuid, Guid serverUserGuid, string locale, PositioningType positioningType)
-        : VoiceCraftNetPeer(userGuid, serverUserGuid, locale, positioningType)
+        : VoiceCraftNetPeer(null, userGuid, serverUserGuid, locale, positioningType)
     {
         public override VcConnectionState ConnectionState => VcConnectionState.Connected;
     }
