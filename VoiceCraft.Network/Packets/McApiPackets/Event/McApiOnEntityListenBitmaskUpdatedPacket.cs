@@ -23,6 +23,11 @@ public class McApiOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IMc
         Id = reader.GetInt();
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityListenBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
     {

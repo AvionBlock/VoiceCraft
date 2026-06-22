@@ -9,9 +9,9 @@ public class McApiDenyResponsePacket(string requestId, string reason) : IMcApiPa
     {
     }
 
-    public string Reason { get; private set; } = reason;
-
     public McApiPacketType PacketType => McApiPacketType.DenyResponse;
+    public string RequestId { get; private set; } = requestId;
+    public string Reason { get; private set; } = reason;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -25,7 +25,11 @@ public class McApiDenyResponsePacket(string requestId, string reason) : IMcApiPa
         Reason = reader.GetString(Constants.MaxStringLength);
     }
 
-    public string RequestId { get; private set; } = requestId;
+    
+    public void Return()
+    {
+        PacketPool<McApiDenyResponsePacket>.Return(this);
+    }
 
     public McApiDenyResponsePacket Set(string requestId = "", string reasonKey = "")
     {

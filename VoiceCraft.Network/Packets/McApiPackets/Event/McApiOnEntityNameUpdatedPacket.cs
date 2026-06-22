@@ -24,6 +24,11 @@ public class McApiOnEntityNameUpdatedPacket(int id, string value) : IMcApiEventP
         Id = reader.GetInt();
         Value = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityNameUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityNameUpdatedPacket Set(int id = 0, string value = "")
     {

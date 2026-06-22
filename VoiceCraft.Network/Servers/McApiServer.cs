@@ -485,7 +485,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 }

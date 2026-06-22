@@ -23,6 +23,11 @@ public class McApiOnEntityMuteUpdatedPacket(int id, bool value) : IMcApiEventPac
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityMuteUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityMuteUpdatedPacket Set(int id = 0, bool value = false)
     {

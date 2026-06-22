@@ -37,6 +37,11 @@ public class VcOnEntityCreatedPacket(int id, string name, bool muted, bool deafe
         Muted = reader.GetBool();
         Deafened = reader.GetBool();
     }
+    
+    public virtual void Return()
+    {
+        PacketPool<VcOnEntityCreatedPacket>.Return(this);
+    }
 
     public void Set(int id = 0, string name = "", bool muted = false, bool deafened = false)
     {

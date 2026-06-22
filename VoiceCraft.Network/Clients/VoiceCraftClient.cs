@@ -159,9 +159,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         SpeakingState = true;
         var encodeBuffer = ArrayPool<byte>.Shared.Rent(Constants.MaximumEncodedBytes);
-        encodeBuffer.AsSpan().Clear();
+        var packet = PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket());
         try
         {
+            encodeBuffer.AsSpan().Clear();
             var bytesEncoded = _audioEncoder.Encode(
                 buffer,
                 encodeBuffer.AsSpan(0, Constants.MaximumEncodedBytes),
@@ -172,14 +173,15 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 case > Constants.MaximumEncodedBytes:
                     return;
                 default:
-                    SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
-                        .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
+                    packet.Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer);
+                    SendPacket(packet);
                     break;
             }
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(encodeBuffer);
+            packet.Return();
         }
     }
 
@@ -513,6 +515,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             clientEntity.IsVisible = packet.Value;
     }
 
+    //Events
     private void HandleOnEffectUpdatedPacket(VcOnEffectUpdatedPacket packet)
     {
         AudioEffectSystem.SetEffect(packet.Bitmask, packet.Effect);
@@ -632,37 +635,89 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void OnClientWorldIdUpdated(string worldId, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetWorldIdRequestPacket>.GetPacket(() => new VcSetWorldIdRequestPacket()).Set(worldId));
+        var packet = PacketPool<VcSetWorldIdRequestPacket>.GetPacket(() => new VcSetWorldIdRequestPacket());
+        try
+        {
+            packet.Set(worldId);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientNameUpdated(string name, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetNameRequestPacket>.GetPacket(() => new VcSetNameRequestPacket()).Set(name));
+        var packet = PacketPool<VcSetNameRequestPacket>.GetPacket(() => new VcSetNameRequestPacket());
+        try
+        {
+            packet.Set(name);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientMuteUpdated(bool value, VoiceCraftEntity _)
     {
-        SendPacket(PacketPool<VcSetMuteRequestPacket>.GetPacket(() => new VcSetMuteRequestPacket()).Set(value));
+        var packet = PacketPool<VcSetMuteRequestPacket>.GetPacket(() => new VcSetMuteRequestPacket());
+        try
+        {
+            packet.Set(value);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientDeafenUpdated(bool value, VoiceCraftEntity _)
     {
-        SendPacket(PacketPool<VcSetDeafenRequestPacket>.GetPacket(() => new VcSetDeafenRequestPacket()).Set(value));
+        var packet = PacketPool<VcSetDeafenRequestPacket>.GetPacket(() => new VcSetDeafenRequestPacket());
+        try
+        {
+            packet.Set(value);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientPositionUpdated(Vector3 position, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetPositionRequestPacket>.GetPacket(() => new VcSetPositionRequestPacket())
-            .Set(position));
+        var packet = PacketPool<VcSetPositionRequestPacket>.GetPacket(() => new VcSetPositionRequestPacket());
+        try
+        {
+            packet.Set(position);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientRotationUpdated(Vector2 rotation, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetRotationRequestPacket>.GetPacket(() => new VcSetRotationRequestPacket())
-            .Set(rotation));
+        var packet = PacketPool<VcSetRotationRequestPacket>.GetPacket(() => new VcSetRotationRequestPacket());
+        try
+        {
+            packet.Set(rotation);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed, Func<T> packetFactory)
@@ -677,7 +732,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 
@@ -694,7 +749,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 

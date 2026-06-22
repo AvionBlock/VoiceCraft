@@ -26,6 +26,11 @@ public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) :
         Id2 = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityVisibilityUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityVisibilityUpdatedPacket Set(int id = 0, int id2 = 0, bool value = false)
     {

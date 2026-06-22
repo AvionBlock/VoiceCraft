@@ -25,6 +25,11 @@ public class VcOnEntityNameUpdatedPacket(int id, string value) : IVoiceCraftEven
         Id = reader.GetInt();
         Value = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityNameUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityNameUpdatedPacket Set(int id = 0, string value = "")
     {

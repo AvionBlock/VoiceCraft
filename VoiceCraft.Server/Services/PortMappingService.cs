@@ -17,9 +17,19 @@ public sealed class PortMappingService
         TcpMcApiServer.McTcpConfig tcpConfig,
         McWssMcApiServer.McWssMcApiConfig wssConfig)
     {
-        await OpenVoiceCraftAsync(voiceCraftConfig);
+        if (voiceCraftConfig.AutoOpenPort)
+        {
+            var internalPort = (int)voiceCraftConfig.Port;
+            await OpenPortMappingAsync(
+                "VoiceCraft",
+                PortProtocol.Udp,
+                internalPort,
+                GetExternalPort(voiceCraftConfig.ExternalPort, internalPort),
+                GetLifetime(voiceCraftConfig.PortMappingLifetimeMinutes),
+                GetTimeout(voiceCraftConfig.PortMappingTimeoutSeconds));
+        }
 
-        if (httpConfig.Enabled && httpConfig.AutoOpenPort &&
+        if (httpConfig is { Enabled: true, AutoOpenPort: true } &&
             TryGetUriPortAndHost(httpConfig.Hostname, out var httpPort, out var httpHost) &&
             ShouldOpenTransportPort("McHttp", httpHost))
         {
@@ -32,7 +42,7 @@ public sealed class PortMappingService
                 GetTimeout(httpConfig.PortMappingTimeoutSeconds));
         }
 
-        if (tcpConfig.Enabled && tcpConfig.AutoOpenPort && ShouldOpenTransportPort("McTcp", tcpConfig.Hostname))
+        if (tcpConfig is { Enabled: true, AutoOpenPort: true } && ShouldOpenTransportPort("McTcp", tcpConfig.Hostname))
         {
             await OpenPortMappingAsync(
                 "McTcp",
@@ -43,7 +53,7 @@ public sealed class PortMappingService
                 GetTimeout(tcpConfig.PortMappingTimeoutSeconds));
         }
 
-        if (wssConfig.Enabled && wssConfig.AutoOpenPort &&
+        if (wssConfig is { Enabled: true, AutoOpenPort: true } &&
             TryGetUriPortAndHost(wssConfig.Hostname, out var wssPort, out var wssHost) &&
             ShouldOpenTransportPort("McWss", wssHost))
         {
@@ -80,21 +90,6 @@ public sealed class PortMappingService
 
         _leases.Clear();
         _opened.Clear();
-    }
-
-    private async Task OpenVoiceCraftAsync(LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig config)
-    {
-        if (!config.AutoOpenPort)
-            return;
-
-        var internalPort = checked((int)config.Port);
-        await OpenPortMappingAsync(
-            "VoiceCraft",
-            PortProtocol.Udp,
-            internalPort,
-            GetExternalPort(config.ExternalPort, internalPort),
-            GetLifetime(config.PortMappingLifetimeMinutes),
-            GetTimeout(config.PortMappingTimeoutSeconds));
     }
 
     private async Task OpenPortMappingAsync(

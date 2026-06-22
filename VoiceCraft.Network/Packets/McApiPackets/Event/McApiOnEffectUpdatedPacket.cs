@@ -28,6 +28,11 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
         EffectType = (EffectType)reader.GetByte();
     }
 
+    public void Return()
+    {
+        PacketPool<McApiOnEffectUpdatedPacket>.Return(this);
+    }
+
     public McApiOnEffectUpdatedPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
     {
         Bitmask = bitmask;

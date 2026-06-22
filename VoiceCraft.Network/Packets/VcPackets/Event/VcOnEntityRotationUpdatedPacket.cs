@@ -26,6 +26,11 @@ public class VcOnEntityRotationUpdatedPacket(int id, Vector2 value) : IVoiceCraf
         Id = reader.GetInt();
         Value = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityRotationUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityRotationUpdatedPacket Set(int id = 0, Vector2 value = new())
     {

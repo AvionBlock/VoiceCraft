@@ -38,6 +38,7 @@ public class McApiCreateEntityRequestPacket(
     {
     }
 
+    public string RequestId { get; private set; } = requestId;
     public string WorldId { get; private set; } = worldId;
     public string Name { get; private set; } = name;
     public bool Muted { get; private set; } = muted;
@@ -81,7 +82,10 @@ public class McApiCreateEntityRequestPacket(
         Rotation = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
 
-    public string RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<McApiCreateEntityRequestPacket>.Return(this);
+    }
 
     public McApiCreateEntityRequestPacket Set(
         string requestId = "",

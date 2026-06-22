@@ -1,10 +1,10 @@
-using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Network.Packets.VcPackets.Event;
 
 namespace VoiceCraft.Network.Packets.VcPackets;
 
-public interface IVoiceCraftEventPacket : INetSerializable
+public interface IVoiceCraftEventPacket : INetSerializable, IPooledPacket
 {
     EventType EventType { get; }
 
@@ -14,26 +14,32 @@ public interface IVoiceCraftEventPacket : INetSerializable
         switch (eventType)
         {
             case EventType.OnEffectUpdated:
-                packet = PacketPool<VcOnEffectUpdatedPacket>.GetPacket(() => new VcOnEffectUpdatedPacket());
+                packet = PacketPool<VcOnEffectUpdatedPacket>.GetPacket(() =>
+                    new VcOnEffectUpdatedPacket());
                 break;
             case EventType.OnEntityCreated:
-                packet = PacketPool<VcOnEntityCreatedPacket>.GetPacket(() => new VcOnEntityCreatedPacket());
+                packet = PacketPool<VcOnEntityCreatedPacket>.GetPacket(() =>
+                    new VcOnEntityCreatedPacket());
                 break;
             case EventType.OnNetworkEntityCreated:
-                packet =
-                    PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket(() => new VcOnNetworkEntityCreatedPacket());
+                packet = PacketPool<VcOnNetworkEntityCreatedPacket>.GetPacket(() =>
+                    new VcOnNetworkEntityCreatedPacket());
                 break;
             case EventType.OnEntityDestroyed:
-                packet = PacketPool<VcOnEntityDestroyedPacket>.GetPacket(() => new VcOnEntityDestroyedPacket());
+                packet = PacketPool<VcOnEntityDestroyedPacket>.GetPacket(() =>
+                    new VcOnEntityDestroyedPacket());
                 break;
             case EventType.OnEntityNameUpdated:
-                packet = PacketPool<VcOnEntityNameUpdatedPacket>.GetPacket(() => new VcOnEntityNameUpdatedPacket());
+                packet = PacketPool<VcOnEntityNameUpdatedPacket>.GetPacket(() =>
+                    new VcOnEntityNameUpdatedPacket());
                 break;
             case EventType.OnEntityMuteUpdated:
-                packet = PacketPool<VcOnEntityMuteUpdatedPacket>.GetPacket(() => new VcOnEntityMuteUpdatedPacket());
+                packet = PacketPool<VcOnEntityMuteUpdatedPacket>.GetPacket(() =>
+                    new VcOnEntityMuteUpdatedPacket());
                 break;
             case EventType.OnEntityDeafenUpdated:
-                packet = PacketPool<VcOnEntityDeafenUpdatedPacket>.GetPacket(() => new VcOnEntityDeafenUpdatedPacket());
+                packet = PacketPool<VcOnEntityDeafenUpdatedPacket>.GetPacket(() =>
+                    new VcOnEntityDeafenUpdatedPacket());
                 break;
             case EventType.OnEntityServerMuteUpdated:
                 packet = PacketPool<VcOnEntityServerMuteUpdatedPacket>.GetPacket(() =>
@@ -81,64 +87,5 @@ public interface IVoiceCraftEventPacket : INetSerializable
 
         packet?.Deserialize(reader);
         return packet;
-    }
-
-    public static void ReturnPacket(IVoiceCraftEventPacket packet)
-    {
-        switch (packet)
-        {
-            case VcOnEffectUpdatedPacket packetType:
-                PacketPool<VcOnEffectUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityCreatedPacket packetType:
-                if (packetType is VcOnNetworkEntityCreatedPacket networkPacketType)
-                {
-                    PacketPool<VcOnNetworkEntityCreatedPacket>.Return(networkPacketType);
-                    break;
-                }
-                PacketPool<VcOnEntityCreatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityDestroyedPacket packetType:
-                PacketPool<VcOnEntityDestroyedPacket>.Return(packetType);
-                break;
-            case VcOnEntityNameUpdatedPacket packetType:
-                PacketPool<VcOnEntityNameUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityMuteUpdatedPacket packetType:
-                PacketPool<VcOnEntityMuteUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityDeafenUpdatedPacket packetType:
-                PacketPool<VcOnEntityDeafenUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityServerMuteUpdatedPacket packetType:
-                PacketPool<VcOnEntityServerMuteUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityServerDeafenUpdatedPacket packetType:
-                PacketPool<VcOnEntityServerDeafenUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityTalkBitmaskUpdatedPacket packetType:
-                PacketPool<VcOnEntityTalkBitmaskUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityListenBitmaskUpdatedPacket packetType:
-                PacketPool<VcOnEntityListenBitmaskUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityEffectBitmaskUpdatedPacket packetType:
-                PacketPool<VcOnEntityEffectBitmaskUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityPositionUpdatedPacket packetType:
-                PacketPool<VcOnEntityPositionUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityRotationUpdatedPacket packetType:
-                PacketPool<VcOnEntityRotationUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityPropertyUpdatedPacket packetType:
-                PacketPool<VcOnEntityPropertyUpdatedPacket>.Return(packetType);
-                break;
-            case VcOnEntityAudioDataReceivedPacket packetType:
-                PacketPool<VcOnEntityAudioDataReceivedPacket>.Return(packetType);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(packet));
-        }
     }
 }

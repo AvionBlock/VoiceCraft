@@ -24,6 +24,11 @@ public class VcOnEntityMuteUpdatedPacket(int id, bool value) : IVoiceCraftEventP
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityMuteUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityMuteUpdatedPacket Set(int id = 0, bool value = false)
     {

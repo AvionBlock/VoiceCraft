@@ -93,6 +93,11 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ServerMuted = reader.GetBool();
         ServerDeafened = reader.GetBool();
     }
+    
+    public override void Return()
+    {
+        PacketPool<McApiOnNetworkEntityCreatedPacket>.Return(this);
+    }
 
     public McApiOnNetworkEntityCreatedPacket Set(
         int id = 0,

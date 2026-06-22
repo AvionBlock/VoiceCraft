@@ -40,12 +40,20 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         if (_netManager == null)
             StartNetManager();
 
-        var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket()).Set(Environment.TickCount);
-        SendUnconnectedPacket(ip, port, packet);
-        return await GetUnconnectedResponseAsync<VcInfoResponsePacket, ServerInfo>(
-            response => new ServerInfo(response),
-            TimeSpan.FromSeconds(8),
-            token);
+        var packet = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket());
+        try
+        {
+            packet.Set(Environment.TickCount);
+            SendUnconnectedPacket(ip, port, packet);
+            return await GetUnconnectedResponseAsync<VcInfoResponsePacket, ServerInfo>(
+                response => new ServerInfo(response),
+                TimeSpan.FromSeconds(8),
+                token);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     public override async Task ConnectAsync(string ip, int port, Guid userGuid, Guid serverUserGuid, string locale,
@@ -60,10 +68,10 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         Reset();
         var requestId = Guid.NewGuid();
-        var packet = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket())
-            .Set(requestId, userGuid, serverUserGuid, locale, Version, positioningType);
+        var packet = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket());
         try
         {
+            packet.Set(requestId, userGuid, serverUserGuid, locale, Version, positioningType);
             lock (_writer)
             {
                 _writer.Reset();
@@ -86,7 +94,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
         finally
         {
-            PacketPool<VcLoginRequestPacket>.Return(packet);
+            packet.Return();
         }
     }
 
@@ -115,19 +123,12 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
     public override void SendUnconnectedPacket<T>(string ip, int port, T packet)
     {
-        try
+        lock (_writer)
         {
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
-                _netManager?.SendUnconnectedMessage(_writer, ip, port);
-            }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            _writer.Put(packet);
+            _netManager?.SendUnconnectedMessage(_writer, ip, port);
         }
     }
 
@@ -139,19 +140,12 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
             VcDeliveryMethod.Unreliable => DeliveryMethod.Unreliable,
             _ => DeliveryMethod.ReliableOrdered
         };
-        try
+        lock (_writer)
         {
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
-                _netPeer.NetPeer.Send(_writer, method);
-            }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            _writer.Put(packet);
+            _netPeer.NetPeer.Send(_writer, method);
         }
     }
 
@@ -275,19 +269,19 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         {
             case DisconnectReason.ConnectionRejected:
             case DisconnectReason.RemoteConnectionClose:
+            {
+                if (disconnectInfo.AdditionalData.IsNull)
+                    break;
+                ProcessPacket(disconnectInfo.AdditionalData, packet =>
                 {
-                    if (disconnectInfo.AdditionalData.IsNull)
-                        break;
-                    ProcessPacket(disconnectInfo.AdditionalData, packet =>
+                    disconnectReason = packet switch
                     {
-                        disconnectReason = packet switch
-                        {
-                            VcDenyResponsePacket denyResponsePacket => denyResponsePacket.Reason,
-                            VcLogoutRequestPacket logoutRequestPacket => logoutRequestPacket.Reason,
-                            _ => disconnectReason
-                        };
-                    });
-                }
+                        VcDenyResponsePacket denyResponsePacket => denyResponsePacket.Reason,
+                        VcLogoutRequestPacket logoutRequestPacket => logoutRequestPacket.Reason,
+                        _ => disconnectReason
+                    };
+                });
+            }
                 break;
             case DisconnectReason.ConnectionFailed:
             case DisconnectReason.Timeout:
@@ -306,7 +300,8 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         _ = DisconnectAsync(disconnectReason);
     }
 
-    private void NetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
+    private void NetworkReceiveUnconnectedEvent(IPEndPoint remoteEndPoint, NetPacketReader reader,
+        UnconnectedMessageType messageType)
     {
         try
         {

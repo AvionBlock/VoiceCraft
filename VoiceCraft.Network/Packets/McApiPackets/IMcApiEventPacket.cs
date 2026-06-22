@@ -1,10 +1,10 @@
-using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Network.Packets.McApiPackets.Event;
 
 namespace VoiceCraft.Network.Packets.McApiPackets;
 
-public interface IMcApiEventPacket : INetSerializable
+public interface IMcApiEventPacket : INetSerializable, IPooledPacket
 {
     EventType EventType { get; }
 
@@ -96,74 +96,5 @@ public interface IMcApiEventPacket : INetSerializable
 
         packet?.Deserialize(reader);
         return packet;
-    }
-
-    public static void ReturnPacket(IMcApiEventPacket packet)
-    {
-        switch (packet)
-        {
-            case McApiOnEffectUpdatedPacket packetType:
-                PacketPool<McApiOnEffectUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityCreatedPacket packetType:
-                if (packetType is McApiOnNetworkEntityCreatedPacket networkPacketType)
-                {
-                    PacketPool<McApiOnNetworkEntityCreatedPacket>.Return(networkPacketType);
-                    break;
-                }
-
-                PacketPool<McApiOnEntityCreatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityDestroyedPacket packetType:
-                PacketPool<McApiOnEntityDestroyedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityVisibilityUpdatedPacket packetType:
-                PacketPool<McApiOnEntityVisibilityUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityWorldIdUpdatedPacket packetType:
-                PacketPool<McApiOnEntityWorldIdUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityNameUpdatedPacket packetType:
-                PacketPool<McApiOnEntityNameUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityMuteUpdatedPacket packetType:
-                PacketPool<McApiOnEntityMuteUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityDeafenUpdatedPacket packetType:
-                PacketPool<McApiOnEntityDeafenUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityServerMuteUpdatedPacket packetType:
-                PacketPool<McApiOnEntityServerMuteUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityServerDeafenUpdatedPacket packetType:
-                PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityTalkBitmaskUpdatedPacket packetType:
-                PacketPool<McApiOnEntityTalkBitmaskUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityListenBitmaskUpdatedPacket packetType:
-                PacketPool<McApiOnEntityListenBitmaskUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityEffectBitmaskUpdatedPacket packetType:
-                PacketPool<McApiOnEntityEffectBitmaskUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityPositionUpdatedPacket packetType:
-                PacketPool<McApiOnEntityPositionUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityRotationUpdatedPacket packetType:
-                PacketPool<McApiOnEntityRotationUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityPropertyUpdatedPacket packetType:
-                PacketPool<McApiOnEntityPropertyUpdatedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityAudioReceivedPacket packetType:
-                PacketPool<McApiOnEntityAudioReceivedPacket>.Return(packetType);
-                break;
-            case McApiOnEntityAudioDataReceivedPacket packetType:
-                PacketPool<McApiOnEntityAudioDataReceivedPacket>.Return(packetType);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(packet));
-        }
     }
 }

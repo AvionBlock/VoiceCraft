@@ -91,6 +91,11 @@ public class McApiOnEntityCreatedPacket(
         Position = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         Rotation = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
+    
+    public virtual void Return()
+    {
+        PacketPool<McApiOnEntityCreatedPacket>.Return(this);
+    }
 
     public McApiOnEntityCreatedPacket Set(
         int id = 0,

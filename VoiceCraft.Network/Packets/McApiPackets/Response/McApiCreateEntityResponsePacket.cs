@@ -19,10 +19,10 @@ public class McApiCreateEntityResponsePacket(
     {
     }
 
+    public McApiPacketType PacketType => McApiPacketType.CreateEntityResponse;
+    public string RequestId { get; private set; } = requestId;
     public ResponseCodes ResponseCode { get; set; } = responseCode;
     public int Id { get; private set; } = id;
-
-    public McApiPacketType PacketType => McApiPacketType.CreateEntityResponse;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -38,7 +38,10 @@ public class McApiCreateEntityResponsePacket(
         Id = reader.GetInt();
     }
 
-    public string RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<McApiCreateEntityResponsePacket>.Return(this);
+    }
 
     public McApiCreateEntityResponsePacket Set(string requestId = "", ResponseCodes responseCode = ResponseCodes.Ok,
         int id = 0)

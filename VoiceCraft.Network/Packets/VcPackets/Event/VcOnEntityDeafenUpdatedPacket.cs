@@ -23,6 +23,11 @@ public class VcOnEntityDeafenUpdatedPacket(int id, bool value) : IVoiceCraftEven
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityDeafenUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = false)
     {

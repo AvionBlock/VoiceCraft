@@ -23,6 +23,11 @@ public class McApiOnEntityServerDeafenUpdatedPacket(int id, bool value) : IMcApi
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityServerDeafenUpdatedPacket Set(int id = 0, bool value = false)
     {

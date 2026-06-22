@@ -90,6 +90,11 @@ public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) 
             _ => null
         };
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityPropertyUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityPropertyUpdatedPacket Set(int id = 0, string key = "", object? value = null)
     {

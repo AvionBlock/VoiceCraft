@@ -21,6 +21,11 @@ public class VcSetServerMuteRequestPacket(bool value) : IVoiceCraftPacket
     {
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetServerMuteRequestPacket>.Return(this);
+    }
 
     public VcSetServerMuteRequestPacket Set(bool value = false)
     {

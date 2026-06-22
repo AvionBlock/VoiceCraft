@@ -92,6 +92,11 @@ public class McApiSetEntityPropertyRequestPacket(int id, string key, object? val
             _ => null
         };
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityPropertyRequestPacket>.Return(this);
+    }
 
     public McApiSetEntityPropertyRequestPacket Set(int id = 0, string key = "", object? value = null)
     {

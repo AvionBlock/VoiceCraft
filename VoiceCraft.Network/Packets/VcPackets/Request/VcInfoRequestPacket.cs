@@ -20,6 +20,11 @@ public class VcInfoRequestPacket(int tick) : IVoiceCraftPacket
     {
         Tick = reader.GetInt();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcInfoRequestPacket>.Return(this);
+    }
 
     public VcInfoRequestPacket Set(int tick = 0)
     {

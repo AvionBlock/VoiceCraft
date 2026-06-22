@@ -21,18 +21,23 @@ public class VcEventRequestPacket(IVoiceCraftEventPacket? @event) : IVoiceCraftP
 
     public void Deserialize(NetDataReader reader)
     {
+        if (Event != null)
+        {
+            Event.Return();
+            Event = null;
+        }
+        
         var eventType = (EventType)reader.GetByte();
-        Set(IVoiceCraftEventPacket.FromReader(eventType, reader));
+        Event = IVoiceCraftEventPacket.FromReader(eventType, reader);
     }
 
     public VcEventRequestPacket Set(IVoiceCraftEventPacket? @event)
     {
-        if (Event != null)
-        {
-            IVoiceCraftEventPacket.ReturnPacket(Event);
-        }
-
         Event = @event;
         return this;
+    }
+
+    public void Return()
+    {
     }
 }

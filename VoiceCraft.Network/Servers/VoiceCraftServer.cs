@@ -325,7 +325,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 }

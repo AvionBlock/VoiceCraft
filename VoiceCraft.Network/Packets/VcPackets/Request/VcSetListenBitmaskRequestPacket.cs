@@ -21,6 +21,11 @@ public class VcSetListenBitmaskRequestPacket(ushort value) : IVoiceCraftPacket
     {
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetListenBitmaskRequestPacket>.Return(this);
+    }
 
     public VcSetListenBitmaskRequestPacket Set(ushort value = 0)
     {

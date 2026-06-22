@@ -25,6 +25,11 @@ public class McApiSetEntityWorldIdRequestPacket(int id, string value) : IMcApiPa
         Id = reader.GetInt();
         Value = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityWorldIdRequestPacket>.Return(this);
+    }
 
     public McApiSetEntityWorldIdRequestPacket Set(int id = 0, string value = "")
     {

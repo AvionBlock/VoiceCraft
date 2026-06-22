@@ -23,6 +23,11 @@ public class VcOnEntityTalkBitmaskUpdatedPacket(int id, ushort value) : IVoiceCr
         Id = reader.GetInt();
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityTalkBitmaskUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityTalkBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
     {

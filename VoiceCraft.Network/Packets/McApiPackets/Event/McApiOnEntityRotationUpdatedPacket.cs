@@ -25,6 +25,11 @@ public class McApiOnEntityRotationUpdatedPacket(int id, Vector2 value) : IMcApiE
         Id = reader.GetInt();
         Value = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityRotationUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityRotationUpdatedPacket Set(int id = 0, Vector2 value = new())
     {

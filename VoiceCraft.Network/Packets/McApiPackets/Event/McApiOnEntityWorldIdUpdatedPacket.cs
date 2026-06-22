@@ -24,6 +24,11 @@ public class McApiOnEntityWorldIdUpdatedPacket(int id, string value) : IMcApiEve
         Id = reader.GetInt();
         Value = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityWorldIdUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityWorldIdUpdatedPacket Set(int id = 0, string value = "")
     {

@@ -12,6 +12,7 @@ public class McApiLoginRequestPacket(string requestId, string token, Version ver
     {
     }
 
+    public string RequestId { get; private set; } = requestId;
     public string Token { get; private set; } = token;
     public Version Version { get; private set; } = version;
     public EventType[] SubscribeEvents { get; private set; } = subscribeEvents;
@@ -58,8 +59,11 @@ public class McApiLoginRequestPacket(string requestId, string token, Version ver
 
         SubscribeEvents = events.ToArray();
     }
-
-    public string RequestId { get; private set; } = requestId;
+    
+    public void Return()
+    {
+        PacketPool<McApiLoginRequestPacket>.Return(this);
+    }
 
     public McApiLoginRequestPacket Set(string requestId = "", string token = "", Version? version = null,
         EventType[]? subscribeEvents = null)

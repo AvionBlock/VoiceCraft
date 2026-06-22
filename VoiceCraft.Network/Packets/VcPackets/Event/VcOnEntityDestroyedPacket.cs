@@ -20,6 +20,11 @@ public class VcOnEntityDestroyedPacket(int id) : IVoiceCraftEventPacket
     {
         Id = reader.GetInt();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityDestroyedPacket>.Return(this);
+    }
 
     public VcOnEntityDestroyedPacket Set(int id = 0)
     {

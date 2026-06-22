@@ -13,6 +13,11 @@ public class McApiClearEffectsRequestPacket : IMcApiPacket
     public void Deserialize(NetDataReader reader)
     {
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiClearEffectsRequestPacket>.Return(this);
+    }
 
     public McApiClearEffectsRequestPacket Set()
     {

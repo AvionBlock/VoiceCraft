@@ -27,6 +27,11 @@ public class VcDenyResponsePacket(Guid requestId, string reason) : IVoiceCraftPa
         RequestId = reader.GetGuid();
         Reason = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<VcDenyResponsePacket>.Return(this);
+    }
 
     public VcDenyResponsePacket Set(Guid requestId = new(), string reason = "")
     {

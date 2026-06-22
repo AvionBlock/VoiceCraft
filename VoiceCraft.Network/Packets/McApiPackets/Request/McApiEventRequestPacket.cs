@@ -21,17 +21,24 @@ public class McApiEventRequestPacket(IMcApiEventPacket? @event) : IMcApiPacket
 
     public void Deserialize(NetDataReader reader)
     {
+        if (Event != null)
+        {
+            //Return the original event packet.
+            Event.Return();
+            Event = null;
+        }
+        
         var eventType = (EventType)reader.GetByte();
-        Set(IMcApiEventPacket.FromReader(eventType, reader));
+        Event = IMcApiEventPacket.FromReader(eventType, reader);
+    }
+    
+    public void Return()
+    {
+        PacketPool<McApiEventRequestPacket>.Return(this);
     }
 
     public McApiEventRequestPacket Set(IMcApiEventPacket? @event)
     {
-        if (Event != null)
-        {
-            IMcApiEventPacket.ReturnPacket(Event);
-        }
-
         Event = @event;
         return this;
     }

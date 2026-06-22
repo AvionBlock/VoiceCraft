@@ -39,6 +39,11 @@ public class McApiOnEntityAudioDataReceivedPacket(int id, ushort timestamp, floa
         Buffer = new byte[Length];
         reader.GetBytes(Buffer, Length);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityAudioDataReceivedPacket>.Return(this);
+    }
 
     public McApiOnEntityAudioDataReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f,
         int length = 0,

@@ -27,6 +27,11 @@ public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float lo
         Timestamp = reader.GetUShort();
         FrameLoudness = Math.Clamp(reader.GetFloat(), 0f, 1f);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityAudioReceivedPacket>.Return(this);
+    }
 
     public McApiOnEntityAudioReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f)
     {

@@ -20,6 +20,11 @@ public class McApiOnEntityDestroyedPacket(int id) : IMcApiEventPacket
     {
         Id = reader.GetInt();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityDestroyedPacket>.Return(this);
+    }
 
     public McApiOnEntityDestroyedPacket Set(int id = 0)
     {

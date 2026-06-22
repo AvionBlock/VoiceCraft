@@ -40,6 +40,11 @@ public class VcOnEntityAudioDataReceivedPacket(int id, ushort timestamp, float l
         Buffer = new byte[Length];
         reader.GetBytes(Buffer, Length);
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityAudioDataReceivedPacket>.Return(this);
+    }
 
     public VcOnEntityAudioDataReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
         byte[]? data = null)

@@ -23,6 +23,11 @@ public class McApiOnEntityEffectBitmaskUpdatedPacket(int id, ushort value) : IMc
         Id = reader.GetInt();
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityEffectBitmaskUpdatedPacket>.Return(this);
+    }
 
     public McApiOnEntityEffectBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
     {

@@ -22,6 +22,11 @@ public class VcSetWorldIdRequestPacket(string value) : IVoiceCraftPacket
     {
         Value = reader.GetString(Constants.MaxDescriptionStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetWorldIdRequestPacket>.Return(this);
+    }
 
     public VcSetWorldIdRequestPacket Set(string value = "")
     {

@@ -26,6 +26,11 @@ public class VcOnEntityPositionUpdatedPacket(int id, Vector3 value) : IVoiceCraf
         Id = reader.GetInt();
         Value = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityPositionUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityPositionUpdatedPacket Set(int id = 0, Vector3 value = new())
     {

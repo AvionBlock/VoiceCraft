@@ -14,7 +14,6 @@ public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraft
 
     public VcPacketType PacketType => VcPacketType.SetPropertyRequest;
 
-    //NOTE: We currently only support floats but the packet supports other types for future plans.
     public void Serialize(NetDataWriter writer)
     {
         writer.Put(Key, Constants.MaxStringLength);
@@ -69,8 +68,7 @@ public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraft
                 break;
         }
     }
-
-    //NOTE: We currently only support floats but the packet supports other types for future plans.
+    
     public void Deserialize(NetDataReader reader)
     {
         Key = reader.GetString(Constants.MaxStringLength);
@@ -90,6 +88,11 @@ public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraft
             PropertyType.Double => reader.GetDouble(),
             _ => null
         };
+    }
+    
+    public void Return()
+    {
+        PacketPool<VcSetPropertyRequestPacket>.Return(this);
     }
 
     public VcSetPropertyRequestPacket Set(string key = "", object? value = null)

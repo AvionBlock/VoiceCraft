@@ -10,6 +10,7 @@ public class McApiResetRequestPacket(string requestId) : IMcApiPacket, IMcApiRId
     }
 
     public McApiPacketType PacketType => McApiPacketType.ResetRequest;
+    public string RequestId { get; private set; } = requestId;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -21,7 +22,10 @@ public class McApiResetRequestPacket(string requestId) : IMcApiPacket, IMcApiRId
         RequestId = reader.GetString(Constants.MaxStringLength);
     }
 
-    public string RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<McApiResetRequestPacket>.Return(this);
+    }
 
     public void Set(string requestId = "")
     {

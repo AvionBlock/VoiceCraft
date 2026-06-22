@@ -23,6 +23,11 @@ public class VcOnEntityServerDeafenUpdatedPacket(int id, bool value) : IVoiceCra
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityServerDeafenUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityServerDeafenUpdatedPacket Set(int id = 0, bool value = false)
     {

@@ -13,6 +13,11 @@ public class McApiPingRequestPacket : IMcApiPacket
     public void Deserialize(NetDataReader reader)
     {
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiPingRequestPacket>.Return(this);
+    }
 
     public McApiPingRequestPacket Set()
     {

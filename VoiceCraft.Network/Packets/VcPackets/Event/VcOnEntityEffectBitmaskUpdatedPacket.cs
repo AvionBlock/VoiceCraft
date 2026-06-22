@@ -24,6 +24,11 @@ public class VcOnEntityEffectBitmaskUpdatedPacket(int id, ushort value) : IVoice
         Id = reader.GetInt();
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityEffectBitmaskUpdatedPacket>.Return(this);
+    }
 
     public VcOnEntityEffectBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
     {

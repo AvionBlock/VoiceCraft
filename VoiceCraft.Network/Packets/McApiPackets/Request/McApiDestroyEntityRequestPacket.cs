@@ -9,6 +9,7 @@ public class McApiDestroyEntityRequestPacket(string requestId, int id) : IMcApiP
     {
     }
 
+    public string RequestId { get; private set; } = requestId;
     public int Id { get; private set; } = id;
 
     public McApiPacketType PacketType => McApiPacketType.DestroyEntityRequest;
@@ -25,7 +26,10 @@ public class McApiDestroyEntityRequestPacket(string requestId, int id) : IMcApiP
         Id = reader.GetInt();
     }
 
-    public string RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<McApiDestroyEntityRequestPacket>.Return(this);
+    }
 
     public McApiDestroyEntityRequestPacket Set(string requestId = "", int id = 0)
     {

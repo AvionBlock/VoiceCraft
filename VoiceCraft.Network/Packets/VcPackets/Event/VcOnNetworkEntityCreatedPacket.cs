@@ -46,6 +46,11 @@ public class VcOnNetworkEntityCreatedPacket : VcOnEntityCreatedPacket
         ServerMuted = reader.GetBool();
         ServerDeafened = reader.GetBool();
     }
+    
+    public override void Return()
+    {
+        PacketPool<VcOnNetworkEntityCreatedPacket>.Return(this);
+    }
 
     public VcOnNetworkEntityCreatedPacket Set(int id = 0, string name = "", bool muted = false,
         bool deafened = false, Guid userGuid = new(), bool serverMute = false, bool serverDeafen = false)

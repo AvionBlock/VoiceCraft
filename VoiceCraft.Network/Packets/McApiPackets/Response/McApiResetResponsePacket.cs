@@ -16,9 +16,9 @@ public class McApiResetResponsePacket(string requestId, McApiResetResponsePacket
     {
     }
 
-    public ResponseCodes ResponseCode { get; private set; } = responseCode;
-
     public McApiPacketType PacketType => McApiPacketType.ResetResponse;
+    public string RequestId { get; private set; } = requestId;
+    public ResponseCodes ResponseCode { get; private set; } = responseCode;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -32,7 +32,10 @@ public class McApiResetResponsePacket(string requestId, McApiResetResponsePacket
         ResponseCode = (ResponseCodes)reader.GetSByte();
     }
 
-    public string RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<McApiResetResponsePacket>.Return(this);
+    }
 
     public McApiResetResponsePacket Set(string requestId = "",
         ResponseCodes responseCode = ResponseCodes.Ok)
