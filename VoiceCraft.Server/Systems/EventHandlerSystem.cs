@@ -503,8 +503,10 @@ public class EventHandlerSystem : IDisposable
             }
             finally
             {
-                onEffectUpdatedPacket.Return();
                 onNetworkEntityCreatedPacket.Return();
+                onEntityServerMuteUpdatedPacket.Return();
+                onEntityServerDeafenUpdatedPacket.Return();
+                
                 onEntityCreatedPacket.Return();
                 onEntityWorldIdUpdatedPacket.Return();
                 onEntityNameUpdatedPacket.Return();
@@ -516,6 +518,8 @@ public class EventHandlerSystem : IDisposable
                 onEntityListenBitmaskUpdatedPacket.Return();
                 onEntityEffectBitmaskUpdatedPacket.Return();
                 onEntityPropertyUpdatedPacket.Return();
+                
+                onEffectUpdatedPacket.Return();
             }
         });
     }
