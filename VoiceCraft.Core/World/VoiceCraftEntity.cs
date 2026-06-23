@@ -68,13 +68,13 @@ namespace VoiceCraft.Core.World
             foreach (var key in keysToRemove)
                 _visibleEntities.Remove(key, out _);
         }
-        
+
         public void ClearVisibleEntities()
         {
             //Copy Array.
             var entities = _visibleEntities.ToArray();
             _visibleEntities.Clear();
-            
+
             foreach (var entity in entities)
             {
                 OnVisibleEntityRemoved?.Invoke(entity.Value, this);
@@ -104,13 +104,13 @@ namespace VoiceCraft.Core.World
             switch (value)
             {
                 case float floatValue:
-                    if(Math.Abs((float)currentValue - floatValue) < Constants.FloatingPointTolerance) return;
+                    if (Math.Abs((float)currentValue - floatValue) < Constants.FloatingPointTolerance) return;
                     break;
                 default:
                     if (currentValue == (object)value) return;
                     break;
             }
-            
+
             //Set the property and raise the event.
             _properties[key] = value;
             OnPropertyUpdated?.Invoke(key, value, this);
@@ -123,7 +123,7 @@ namespace VoiceCraft.Core.World
                 value = default;
                 return false;
             }
-            
+
             value = typeValue;
             return true;
         }
@@ -133,7 +133,7 @@ namespace VoiceCraft.Core.World
             //Copy Array.
             var properties = _properties.ToArray();
             _properties.Clear();
-            
+
             foreach (var property in properties)
             {
                 OnPropertyUpdated?.Invoke(property.Key, property.Value, this);
@@ -152,7 +152,7 @@ namespace VoiceCraft.Core.World
             if (Destroyed) return;
             Destroyed = true;
             OnDestroyed?.Invoke(this);
-            
+
             //Cleanup
             ClearProperties();
             ClearVisibleEntities();
@@ -177,6 +177,7 @@ namespace VoiceCraft.Core.World
         #region Updatable Properties
 
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities.Values;
+        public IEnumerable<KeyValuePair<string, object>> Properties => _properties;
 
         public string WorldId
         {

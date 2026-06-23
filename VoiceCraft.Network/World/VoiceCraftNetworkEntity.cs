@@ -7,9 +7,7 @@ namespace VoiceCraft.Network.World
 {
     public class VoiceCraftNetworkEntity : VoiceCraftEntity
     {
-        public VoiceCraftNetworkEntity(
-            VoiceCraftNetPeer netPeer,
-            int id) : base(id)
+        public VoiceCraftNetworkEntity(VoiceCraftNetPeer netPeer, int id) : base(id)
         {
             Name = "New Client";
             NetPeer = netPeer;

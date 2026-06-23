@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
 using VoiceCraft.Network.World;
@@ -8,9 +7,8 @@ namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
 public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
 {
-    public McApiOnNetworkEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, string.Empty, string.Empty, false,
-        false, 0, 0, 0, Vector3.Zero, Vector2.Zero, Guid.Empty, Guid.Empty, string.Empty, PositioningType.Server, false,
-        false)
+    public McApiOnNetworkEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, Guid.Empty, Guid.Empty, string.Empty,
+        PositioningType.Server)
     {
     }
 
@@ -18,40 +16,18 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         int id,
         float loudness,
         DateTime lastSpoke,
-        string worldId,
-        string name,
-        bool muted,
-        bool deafened,
-        ushort talkBitmask,
-        ushort listenBitmask,
-        ushort effectBitmask,
-        Vector3 position,
-        Vector2 rotation,
         Guid userGuid,
         Guid serverUserGuid,
         string locale,
-        PositioningType positioningType,
-        bool serverMuted,
-        bool serverDeafened) :
+        PositioningType positioningType) :
         base(id,
             loudness,
-            lastSpoke,
-            worldId,
-            name,
-            muted,
-            deafened,
-            talkBitmask,
-            listenBitmask,
-            effectBitmask,
-            position,
-            rotation)
+            lastSpoke)
     {
         UserGuid = userGuid;
         ServerUserGuid = serverUserGuid;
         Locale = locale;
         PositioningType = positioningType;
-        ServerMuted = serverMuted;
-        ServerDeafened = serverDeafened;
     }
 
     public McApiOnNetworkEntityCreatedPacket(VoiceCraftNetworkEntity entity) : base(entity)
@@ -60,8 +36,6 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ServerUserGuid = entity.ServerUserGuid;
         Locale = entity.Locale;
         PositioningType = entity.PositioningType;
-        ServerMuted = entity.ServerMuted;
-        ServerDeafened = entity.ServerDeafened;
     }
 
     public override EventType EventType => EventType.OnNetworkEntityCreated;
@@ -69,8 +43,6 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
     public Guid ServerUserGuid { get; private set; }
     public string Locale { get; private set; }
     public PositioningType PositioningType { get; private set; }
-    public bool ServerMuted { get; private set; }
-    public bool ServerDeafened { get; private set; }
 
     public override void Serialize(NetDataWriter writer)
     {
@@ -79,8 +51,6 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         writer.Put(ServerUserGuid.ToString(), Constants.MaxStringLength);
         writer.Put(Locale, Constants.MaxStringLength);
         writer.Put((byte)PositioningType);
-        writer.Put(ServerMuted);
-        writer.Put(ServerDeafened);
     }
 
     public override void Deserialize(NetDataReader reader)
@@ -90,10 +60,8 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ServerUserGuid = Guid.Parse(reader.GetString(Constants.MaxStringLength));
         Locale = reader.GetString(Constants.MaxStringLength);
         PositioningType = (PositioningType)reader.GetByte();
-        ServerMuted = reader.GetBool();
-        ServerDeafened = reader.GetBool();
     }
-    
+
     public override void Return()
     {
         PacketPool<McApiOnNetworkEntityCreatedPacket>.Return(this);
@@ -103,30 +71,16 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         int id = 0,
         float loudness = 0.0f,
         DateTime lastSpoke = new(),
-        string worldId = "",
-        string name = "",
-        bool muted = false,
-        bool deafened = false,
-        ushort talkBitmask = 0,
-        ushort listenBitmask = 0,
-        ushort effectBitmask = 0,
-        Vector3 position = new(),
-        Vector2 rotation = new(),
         Guid userGuid = new(),
         Guid serverUserGuid = new(),
         string locale = "",
-        PositioningType positioningType = PositioningType.Server,
-        bool serverMuted = false,
-        bool serverDeafened = false)
+        PositioningType positioningType = PositioningType.Server)
     {
-        base.Set(id, loudness, lastSpoke, worldId, name, muted, deafened, talkBitmask, listenBitmask, effectBitmask,
-            position, rotation);
+        base.Set(id, loudness, lastSpoke);
         UserGuid = userGuid;
         ServerUserGuid = serverUserGuid;
         Locale = locale;
         PositioningType = positioningType;
-        ServerMuted = serverMuted;
-        ServerDeafened = serverDeafened;
         return this;
     }
 
@@ -137,8 +91,6 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ServerUserGuid = entity.ServerUserGuid;
         Locale = entity.Locale;
         PositioningType = entity.PositioningType;
-        ServerMuted = entity.ServerMuted;
-        ServerDeafened = entity.ServerDeafened;
         return this;
     }
 }
