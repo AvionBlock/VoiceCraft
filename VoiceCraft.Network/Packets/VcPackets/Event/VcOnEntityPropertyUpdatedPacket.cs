@@ -96,11 +96,10 @@ public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) 
         PacketPool<VcOnEntityPropertyUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityPropertyUpdatedPacket Set(int id = 0, string key = "", object? value = null)
+    public void Set(int id = 0, string key = "", object? value = null)
     {
         Id = id;
         Key = key;
         Value = value;
-        return this;
     }
 }

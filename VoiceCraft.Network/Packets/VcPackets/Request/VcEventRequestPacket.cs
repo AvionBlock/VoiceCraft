@@ -30,14 +30,14 @@ public class VcEventRequestPacket(IVoiceCraftEventPacket? @event) : IVoiceCraftP
         var eventType = (EventType)reader.GetByte();
         Event = IVoiceCraftEventPacket.FromReader(eventType, reader);
     }
-
-    public VcEventRequestPacket Set(IVoiceCraftEventPacket? @event)
-    {
-        Event = @event;
-        return this;
-    }
-
+    
     public void Return()
     {
+        PacketPool<VcEventRequestPacket>.Return(this);
+    }
+    
+    public void Set(IVoiceCraftEventPacket? @event)
+    {
+        Event = @event;
     }
 }

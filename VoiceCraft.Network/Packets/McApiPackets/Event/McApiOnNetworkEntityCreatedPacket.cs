@@ -7,7 +7,13 @@ namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
 public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
 {
-    public McApiOnNetworkEntityCreatedPacket() : this(0, 0.0f, DateTime.MinValue, Guid.Empty, Guid.Empty, string.Empty,
+    public McApiOnNetworkEntityCreatedPacket() : this(
+        0, 
+        0.0f, 
+        DateTime.MinValue, 
+        Guid.Empty, 
+        Guid.Empty, 
+        string.Empty,
         PositioningType.Server)
     {
     }
@@ -67,7 +73,7 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         PacketPool<McApiOnNetworkEntityCreatedPacket>.Return(this);
     }
 
-    public McApiOnNetworkEntityCreatedPacket Set(
+    public void Set(
         int id = 0,
         float loudness = 0.0f,
         DateTime lastSpoke = new(),
@@ -81,16 +87,14 @@ public class McApiOnNetworkEntityCreatedPacket : McApiOnEntityCreatedPacket
         ServerUserGuid = serverUserGuid;
         Locale = locale;
         PositioningType = positioningType;
-        return this;
     }
 
-    public McApiOnNetworkEntityCreatedPacket Set(VoiceCraftNetworkEntity entity)
+    public void Set(VoiceCraftNetworkEntity entity)
     {
         base.Set(entity);
         UserGuid = entity.UserGuid;
         ServerUserGuid = entity.ServerUserGuid;
         Locale = entity.Locale;
         PositioningType = entity.PositioningType;
-        return this;
     }
 }

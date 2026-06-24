@@ -35,10 +35,9 @@ public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVo
         PacketPool<VcOnEffectUpdatedPacket>.Return(this);
     }
 
-    public VcOnEffectUpdatedPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
+    public void Set(ushort bitmask = 0, IAudioEffect? effect = null)
     {
         Bitmask = bitmask;
         Effect = effect;
-        return this;
     }
 }

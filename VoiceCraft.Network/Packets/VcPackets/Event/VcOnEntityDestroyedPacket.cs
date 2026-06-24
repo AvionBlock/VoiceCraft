@@ -26,9 +26,8 @@ public class VcOnEntityDestroyedPacket(int id) : IVoiceCraftEventPacket
         PacketPool<VcOnEntityDestroyedPacket>.Return(this);
     }
 
-    public VcOnEntityDestroyedPacket Set(int id = 0)
+    public void Set(int id = 0)
     {
         Id = id;
-        return this;
     }
 }

@@ -37,11 +37,9 @@ public class McApiResetResponsePacket(string requestId, McApiResetResponsePacket
         PacketPool<McApiResetResponsePacket>.Return(this);
     }
 
-    public McApiResetResponsePacket Set(string requestId = "",
-        ResponseCodes responseCode = ResponseCodes.Ok)
+    public void Set(string requestId = "", ResponseCodes responseCode = ResponseCodes.Ok)
     {
         RequestId = requestId;
         ResponseCode = responseCode;
-        return this;
     }
 }

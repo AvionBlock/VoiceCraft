@@ -29,10 +29,9 @@ public class McApiOnEntityEffectBitmaskUpdatedPacket(int id, ushort value) : IMc
         PacketPool<McApiOnEntityEffectBitmaskUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityEffectBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
+    public void Set(int id = 0, ushort value = 0)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

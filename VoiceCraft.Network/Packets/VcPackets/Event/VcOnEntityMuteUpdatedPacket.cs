@@ -30,10 +30,9 @@ public class VcOnEntityMuteUpdatedPacket(int id, bool value) : IVoiceCraftEventP
         PacketPool<VcOnEntityMuteUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityMuteUpdatedPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

@@ -46,7 +46,7 @@ public class VcOnEntityAudioDataReceivedPacket(int id, ushort timestamp, float l
         PacketPool<VcOnEntityAudioDataReceivedPacket>.Return(this);
     }
 
-    public VcOnEntityAudioDataReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
+    public void Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
         byte[]? data = null)
     {
         Id = id;
@@ -54,6 +54,5 @@ public class VcOnEntityAudioDataReceivedPacket(int id, ushort timestamp, float l
         FrameLoudness = loudness;
         Length = length;
         Buffer = data ?? [];
-        return this;
     }
 }

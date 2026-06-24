@@ -29,10 +29,9 @@ public class VcOnEntityDeafenUpdatedPacket(int id, bool value) : IVoiceCraftEven
         PacketPool<VcOnEntityDeafenUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityDeafenUpdatedPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

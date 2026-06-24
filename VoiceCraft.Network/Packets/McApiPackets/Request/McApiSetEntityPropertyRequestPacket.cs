@@ -98,11 +98,10 @@ public class McApiSetEntityPropertyRequestPacket(int id, string key, object? val
         PacketPool<McApiSetEntityPropertyRequestPacket>.Return(this);
     }
 
-    public McApiSetEntityPropertyRequestPacket Set(int id = 0, string key = "", object? value = null)
+    public void Set(int id = 0, string key = "", object? value = null)
     {
         Id = id;
         Key = key;
         Value = value;
-        return this;
     }
 }

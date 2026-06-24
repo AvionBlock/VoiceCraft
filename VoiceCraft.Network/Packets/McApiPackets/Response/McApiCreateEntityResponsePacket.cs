@@ -43,12 +43,11 @@ public class McApiCreateEntityResponsePacket(
         PacketPool<McApiCreateEntityResponsePacket>.Return(this);
     }
 
-    public McApiCreateEntityResponsePacket Set(string requestId = "", ResponseCodes responseCode = ResponseCodes.Ok,
+    public void Set(string requestId = "", ResponseCodes responseCode = ResponseCodes.Ok,
         int id = 0)
     {
         RequestId = requestId;
         ResponseCode = responseCode;
         Id = id;
-        return this;
     }
 }

@@ -179,7 +179,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         var wasConnected = httpNetPeer.ConnectionState == McApiConnectionState.Connected;
         httpNetPeer.ConnectionState = McApiConnectionState.Disconnecting;
         var sessionToken = httpNetPeer.SessionToken;
-        var packet = PacketPool<McApiLogoutRequestPacket>.GetPacket(() => new McApiLogoutRequestPacket());
+        var logoutPacket = PacketPool<McApiLogoutRequestPacket>.GetPacket(() => new McApiLogoutRequestPacket());
         try
         {
             if (force)
@@ -188,12 +188,12 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 return;
             }
 
-            packet.Set(netPeer.SessionToken);
-            SendPacket(netPeer, packet);
+            logoutPacket.Set(netPeer.SessionToken);
+            SendPacket(netPeer, logoutPacket);
         }
         finally
         {
-            packet.Return();
+            logoutPacket.Return();
             httpNetPeer.SetSessionToken(string.Empty);
             httpNetPeer.ConnectionState = McApiConnectionState.Disconnected;
             if (wasConnected)

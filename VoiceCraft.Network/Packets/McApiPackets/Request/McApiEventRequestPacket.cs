@@ -37,9 +37,8 @@ public class McApiEventRequestPacket(IMcApiEventPacket? @event) : IMcApiPacket
         PacketPool<McApiEventRequestPacket>.Return(this);
     }
 
-    public McApiEventRequestPacket Set(IMcApiEventPacket? @event)
+    public void Set(IMcApiEventPacket? @event)
     {
         Event = @event;
-        return this;
     }
 }

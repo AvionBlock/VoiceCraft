@@ -26,9 +26,8 @@ public class McApiOnEntityDestroyedPacket(int id) : IMcApiEventPacket
         PacketPool<McApiOnEntityDestroyedPacket>.Return(this);
     }
 
-    public McApiOnEntityDestroyedPacket Set(int id = 0)
+    public void Set(int id = 0)
     {
         Id = id;
-        return this;
     }
 }

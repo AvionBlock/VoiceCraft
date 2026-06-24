@@ -33,10 +33,9 @@ public class VcDenyResponsePacket(Guid requestId, string reason) : IVoiceCraftPa
         PacketPool<VcDenyResponsePacket>.Return(this);
     }
 
-    public VcDenyResponsePacket Set(Guid requestId = new(), string reason = "")
+    public void Set(Guid requestId = new(), string reason = "")
     {
         RequestId = requestId;
         Reason = reason;
-        return this;
     }
 }

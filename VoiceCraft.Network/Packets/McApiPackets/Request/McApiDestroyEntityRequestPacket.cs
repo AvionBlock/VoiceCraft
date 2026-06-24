@@ -31,10 +31,9 @@ public class McApiDestroyEntityRequestPacket(string requestId, int id) : IMcApiP
         PacketPool<McApiDestroyEntityRequestPacket>.Return(this);
     }
 
-    public McApiDestroyEntityRequestPacket Set(string requestId = "", int id = 0)
+    public void Set(string requestId = "", int id = 0)
     {
         RequestId = requestId;
         Id = id;
-        return this;
     }
 }

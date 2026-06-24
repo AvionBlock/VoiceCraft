@@ -32,11 +32,10 @@ public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) :
         PacketPool<McApiOnEntityVisibilityUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityVisibilityUpdatedPacket Set(int id = 0, int id2 = 0, bool value = false)
+    public void Set(int id = 0, int id2 = 0, bool value = false)
     {
         Id = id;
         Id2 = id2;
         Value = value;
-        return this;
     }
 }

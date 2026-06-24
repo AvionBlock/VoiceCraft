@@ -95,10 +95,9 @@ public class VcSetPropertyRequestPacket(string key, object? value) : IVoiceCraft
         PacketPool<VcSetPropertyRequestPacket>.Return(this);
     }
 
-    public VcSetPropertyRequestPacket Set(string key = "", object? value = null)
+    public void Set(string key = "", object? value = null)
     {
         Key = key;
         Value = value;
-        return this;
     }
 }

@@ -31,10 +31,9 @@ public class VcOnEntityNameUpdatedPacket(int id, string value) : IVoiceCraftEven
         PacketPool<VcOnEntityNameUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityNameUpdatedPacket Set(int id = 0, string value = "")
+    public void Set(int id = 0, string value = "")
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

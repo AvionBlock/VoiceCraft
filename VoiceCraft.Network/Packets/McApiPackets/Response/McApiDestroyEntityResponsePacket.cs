@@ -17,7 +17,7 @@ public class McApiDestroyEntityResponsePacket(
     public McApiDestroyEntityResponsePacket() : this(string.Empty, ResponseCodes.Ok)
     {
     }
-    
+
     public McApiPacketType PacketType => McApiPacketType.DestroyEntityResponse;
     public string RequestId { get; private set; } = requestId;
     public ResponseCodes ResponseCode { get; private set; } = responseCode;
@@ -33,17 +33,15 @@ public class McApiDestroyEntityResponsePacket(
         RequestId = reader.GetString(Constants.MaxStringLength);
         ResponseCode = (ResponseCodes)reader.GetSByte();
     }
-    
+
     public void Return()
     {
         PacketPool<McApiDestroyEntityResponsePacket>.Return(this);
     }
 
-    public McApiDestroyEntityResponsePacket Set(string requestId = "",
-        ResponseCodes responseCode = ResponseCodes.Ok)
+    public void Set(string requestId = "", ResponseCodes responseCode = ResponseCodes.Ok)
     {
         RequestId = requestId;
         ResponseCode = responseCode;
-        return this;
     }
 }

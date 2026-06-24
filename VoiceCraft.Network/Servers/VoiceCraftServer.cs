@@ -193,13 +193,20 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
     }
 
     #region Packet Events
-
+    
     private void HandleInfoRequestPacket(VcInfoRequestPacket packet, object? data)
     {
         if (data is not IPEndPoint endPoint) return;
-        var responsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket())
-            .Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
-        SendUnconnectedPacket(endPoint, responsePacket);
+        var infoResponsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket());
+        try
+        {
+            infoResponsePacket.Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
+            SendUnconnectedPacket(endPoint, infoResponsePacket);
+        }
+        finally
+        {
+            infoResponsePacket.Return();
+        }
     }
 
     private void HandleLoginRequestPacket(VcLoginRequestPacket packet, object? data)

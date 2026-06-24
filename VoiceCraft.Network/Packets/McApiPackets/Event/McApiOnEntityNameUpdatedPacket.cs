@@ -30,10 +30,9 @@ public class McApiOnEntityNameUpdatedPacket(int id, string value) : IMcApiEventP
         PacketPool<McApiOnEntityNameUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityNameUpdatedPacket Set(int id = 0, string value = "")
+    public void Set(int id = 0, string value = "")
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

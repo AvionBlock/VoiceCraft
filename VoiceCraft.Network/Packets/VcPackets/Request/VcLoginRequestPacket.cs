@@ -54,7 +54,7 @@ public class VcLoginRequestPacket(
         PacketPool<VcLoginRequestPacket>.Return(this);
     }
 
-    public VcLoginRequestPacket Set(
+    public void Set(
         Guid requestId = new(),
         Guid userGuid = new(),
         Guid serverUserGuid = new(),
@@ -68,6 +68,5 @@ public class VcLoginRequestPacket(
         Locale = locale;
         Version = version ?? new Version(0, 0, 0);
         PositioningType = positioningType;
-        return this;
     }
 }

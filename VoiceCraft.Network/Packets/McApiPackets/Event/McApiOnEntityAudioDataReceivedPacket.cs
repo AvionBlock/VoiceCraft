@@ -45,7 +45,7 @@ public class McApiOnEntityAudioDataReceivedPacket(int id, ushort timestamp, floa
         PacketPool<McApiOnEntityAudioDataReceivedPacket>.Return(this);
     }
 
-    public McApiOnEntityAudioDataReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f,
+    public void Set(int id = 0, ushort timestamp = 0, float loudness = 0f,
         int length = 0,
         byte[]? data = null)
     {
@@ -54,6 +54,5 @@ public class McApiOnEntityAudioDataReceivedPacket(int id, ushort timestamp, floa
         FrameLoudness = loudness;
         Length = length;
         Buffer = data ?? [];
-        return this;
     }
 }

@@ -31,10 +31,9 @@ public class McApiOnEntityRotationUpdatedPacket(int id, Vector2 value) : IMcApiE
         PacketPool<McApiOnEntityRotationUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityRotationUpdatedPacket Set(int id = 0, Vector2 value = new())
+    public void Set(int id = 0, Vector2 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

@@ -30,10 +30,9 @@ public class McApiAcceptResponsePacket(string requestId, string token) : IMcApiP
         PacketPool<McApiAcceptResponsePacket>.Return(this);
     }
 
-    public McApiAcceptResponsePacket Set(string requestId = "", string token = "")
+    public void Set(string requestId = "", string token = "")
     {
         RequestId = requestId;
         Token = token;
-        return this;
     }
 }

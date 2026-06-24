@@ -40,22 +40,15 @@ public class McApiOnEntityCreatedPacket(int id, float loudness, DateTime lastSpo
         PacketPool<McApiOnEntityCreatedPacket>.Return(this);
     }
 
-    public McApiOnEntityCreatedPacket Set(
-        int id = 0,
-        float loudness = 0.0f,
-        DateTime lastSpoke = new())
+    public void Set(int id = 0, float loudness = 0.0f, DateTime lastSpoke = new())
     {
         Id = id;
         Loudness = loudness;
         LastSpoke = lastSpoke;
-        return this;
     }
 
-    public McApiOnEntityCreatedPacket Set(VoiceCraftEntity entity)
+    public void Set(VoiceCraftEntity entity)
     {
-        Id = entity.Id;
-        Loudness = entity.Loudness;
-        LastSpoke = entity.LastSpoke;
-        return this;
+        Set(entity.Id, entity.Loudness, entity.LastSpoke);
     }
 }

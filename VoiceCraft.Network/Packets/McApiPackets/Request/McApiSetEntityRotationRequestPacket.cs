@@ -32,10 +32,9 @@ public class McApiSetEntityRotationRequestPacket(int id, Vector2 value) : IMcApi
         PacketPool<McApiSetEntityRotationRequestPacket>.Return(this);
     }
 
-    public McApiSetEntityRotationRequestPacket Set(int id = 0, Vector2 value = new())
+    public void Set(int id = 0, Vector2 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

@@ -18,9 +18,4 @@ public class McApiClearEffectsRequestPacket : IMcApiPacket
     {
         PacketPool<McApiClearEffectsRequestPacket>.Return(this);
     }
-
-    public McApiClearEffectsRequestPacket Set()
-    {
-        return this;
-    }
 }

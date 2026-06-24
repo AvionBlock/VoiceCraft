@@ -28,9 +28,8 @@ public class VcSetDescriptionRequestPacket(string value) : IVoiceCraftPacket
         PacketPool<VcSetDescriptionRequestPacket>.Return(this);
     }
 
-    public VcSetDescriptionRequestPacket Set(string value = "")
+    public void Set(string value = "")
     {
         Value = value;
-        return this;
     }
 }

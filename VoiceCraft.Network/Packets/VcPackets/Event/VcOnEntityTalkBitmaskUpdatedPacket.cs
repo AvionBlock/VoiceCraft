@@ -29,10 +29,9 @@ public class VcOnEntityTalkBitmaskUpdatedPacket(int id, ushort value) : IVoiceCr
         PacketPool<VcOnEntityTalkBitmaskUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityTalkBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
+    public void Set(int id = 0, ushort value = 0)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

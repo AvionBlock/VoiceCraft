@@ -29,9 +29,8 @@ public class VcSetRotationRequestPacket(Vector2 value) : IVoiceCraftPacket
         PacketPool<VcSetRotationRequestPacket>.Return(this);
     }
 
-    public VcSetRotationRequestPacket Set(Vector2 value = new())
+    public void Set(Vector2 value = new())
     {
         Value = value;
-        return this;
     }
 }

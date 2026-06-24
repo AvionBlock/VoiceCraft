@@ -28,9 +28,8 @@ public class McApiPingResponsePacket(string token = "") : IMcApiPacket
         PacketPool<McApiPingResponsePacket>.Return(this);
     }
 
-    public McApiPingResponsePacket Set(string token = "")
+    public void Set(string token = "")
     {
         Token = token;
-        return this;
     }
 }

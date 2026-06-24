@@ -68,15 +68,15 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
 
         Reset();
         var requestId = Guid.NewGuid();
-        var packet = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket());
+        var loginRequestPacket = PacketPool<VcLoginRequestPacket>.GetPacket(() => new VcLoginRequestPacket());
         try
         {
-            packet.Set(requestId, userGuid, serverUserGuid, locale, Version, positioningType);
+            loginRequestPacket.Set(requestId, userGuid, serverUserGuid, locale, Version, positioningType);
             lock (_writer)
             {
                 _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
+                _writer.Put((byte)loginRequestPacket.PacketType);
+                _writer.Put(loginRequestPacket);
                 var peer = _netManager.Connect(ip, port, _writer);
                 _netPeer = new LiteNetVoiceCraftNetPeer(null, peer, userGuid, serverUserGuid, locale, positioningType);
             }
@@ -94,7 +94,7 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         }
         finally
         {
-            packet.Return();
+            loginRequestPacket.Return();
         }
     }
 

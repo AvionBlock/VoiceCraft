@@ -27,9 +27,8 @@ public class VcSetListenBitmaskRequestPacket(ushort value) : IVoiceCraftPacket
         PacketPool<VcSetListenBitmaskRequestPacket>.Return(this);
     }
 
-    public VcSetListenBitmaskRequestPacket Set(ushort value = 0)
+    public void Set(ushort value = 0)
     {
         Value = value;
-        return this;
     }
 }

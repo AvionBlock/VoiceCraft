@@ -28,9 +28,8 @@ public class VcSetWorldIdRequestPacket(string value) : IVoiceCraftPacket
         PacketPool<VcSetWorldIdRequestPacket>.Return(this);
     }
 
-    public VcSetWorldIdRequestPacket Set(string value = "")
+    public void Set(string value = "")
     {
         Value = value;
-        return this;
     }
 }

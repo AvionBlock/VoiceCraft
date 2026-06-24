@@ -33,11 +33,10 @@ public class McApiOnEntityAudioReceivedPacket(int id, ushort timestamp, float lo
         PacketPool<McApiOnEntityAudioReceivedPacket>.Return(this);
     }
 
-    public McApiOnEntityAudioReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f)
+    public void Set(int id = 0, ushort timestamp = 0, float loudness = 0f)
     {
         Id = id;
         Timestamp = timestamp;
         FrameLoudness = loudness;
-        return this;
     }
 }

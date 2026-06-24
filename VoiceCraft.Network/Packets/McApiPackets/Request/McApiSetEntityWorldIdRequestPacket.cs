@@ -31,10 +31,9 @@ public class McApiSetEntityWorldIdRequestPacket(int id, string value) : IMcApiPa
         PacketPool<McApiSetEntityWorldIdRequestPacket>.Return(this);
     }
 
-    public McApiSetEntityWorldIdRequestPacket Set(int id = 0, string value = "")
+    public void Set(int id = 0, string value = "")
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

@@ -30,10 +30,9 @@ public class VcOnEntityListenBitmaskUpdatedPacket(int id, ushort value) : IVoice
         PacketPool<VcOnEntityListenBitmaskUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityListenBitmaskUpdatedPacket Set(int id = 0, ushort value = 0)
+    public void Set(int id = 0, ushort value = 0)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

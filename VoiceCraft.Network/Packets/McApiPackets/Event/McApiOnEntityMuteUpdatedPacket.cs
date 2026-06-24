@@ -29,10 +29,9 @@ public class McApiOnEntityMuteUpdatedPacket(int id, bool value) : IMcApiEventPac
         PacketPool<McApiOnEntityMuteUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityMuteUpdatedPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

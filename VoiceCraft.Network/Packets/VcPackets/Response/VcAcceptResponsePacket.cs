@@ -27,9 +27,8 @@ public class VcAcceptResponsePacket(Guid requestId) : IVoiceCraftPacket, IVoiceC
         PacketPool<VcAcceptResponsePacket>.Return(this);
     }
 
-    public VcAcceptResponsePacket Set(Guid requestId = new())
+    public void Set(Guid requestId = new())
     {
         RequestId = requestId;
-        return this;
     }
 }

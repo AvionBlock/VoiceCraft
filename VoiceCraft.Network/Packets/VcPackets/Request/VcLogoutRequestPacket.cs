@@ -28,9 +28,8 @@ public class VcLogoutRequestPacket(string reason) : IVoiceCraftPacket
         PacketPool<VcLogoutRequestPacket>.Return(this);
     }
 
-    public VcLogoutRequestPacket Set(string reason = "")
+    public void Set(string reason = "")
     {
         Reason = reason;
-        return this;
     }
 }

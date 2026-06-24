@@ -29,10 +29,9 @@ public class McApiOnEntityServerDeafenUpdatedPacket(int id, bool value) : IMcApi
         PacketPool<McApiOnEntityServerDeafenUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityServerDeafenUpdatedPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

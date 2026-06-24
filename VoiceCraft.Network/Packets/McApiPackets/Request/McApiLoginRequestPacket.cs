@@ -59,19 +59,18 @@ public class McApiLoginRequestPacket(string requestId, string token, Version ver
 
         SubscribeEvents = events.ToArray();
     }
-    
+
     public void Return()
     {
         PacketPool<McApiLoginRequestPacket>.Return(this);
     }
 
-    public McApiLoginRequestPacket Set(string requestId = "", string token = "", Version? version = null,
+    public void Set(string requestId = "", string token = "", Version? version = null,
         EventType[]? subscribeEvents = null)
     {
         RequestId = requestId;
         Token = token;
         Version = version ?? new Version(0, 0, 0);
         SubscribeEvents = subscribeEvents ?? [];
-        return this;
     }
 }

@@ -32,10 +32,9 @@ public class VcOnEntityPositionUpdatedPacket(int id, Vector3 value) : IVoiceCraf
         PacketPool<VcOnEntityPositionUpdatedPacket>.Return(this);
     }
 
-    public VcOnEntityPositionUpdatedPacket Set(int id = 0, Vector3 value = new())
+    public void Set(int id = 0, Vector3 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

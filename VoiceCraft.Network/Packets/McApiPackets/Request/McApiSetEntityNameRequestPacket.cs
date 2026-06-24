@@ -31,10 +31,9 @@ public class McApiSetEntityNameRequestPacket(int id, string value) : IMcApiPacke
         PacketPool<McApiSetEntityNameRequestPacket>.Return(this);
     }
 
-    public McApiSetEntityNameRequestPacket Set(int id = 0, string value = "")
+    public void Set(int id = 0, string value = "")
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

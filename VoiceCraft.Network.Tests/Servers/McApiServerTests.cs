@@ -25,17 +25,8 @@ public class McApiServerTests
         };
         peer.SetSessionToken("session-token");
 
-        var request = new McApiCreateEntityRequestPacket().Set(
-            requestId: "create-1",
-            worldId: "world",
-            name: "Created Entity",
-            muted: true,
-            deafened: false,
-            talkBitmask: 3,
-            listenBitmask: 5,
-            effectBitmask: 7,
-            position: new Vector3(1, 2, 3),
-            rotation: new Vector2(4, 5));
+        var request = new McApiCreateEntityRequestPacket();
+        request.Set(requestId: "create-1");
 
         server.Dispatch(request, peer);
 

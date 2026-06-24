@@ -30,10 +30,9 @@ public class McApiSetEntityDeafenRequestPacket(int id, bool value) : IMcApiPacke
         PacketPool<McApiSetEntityDeafenRequestPacket>.Return(this);
     }
 
-    public McApiSetEntityDeafenRequestPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

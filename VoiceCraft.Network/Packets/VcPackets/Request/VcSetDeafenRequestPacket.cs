@@ -27,9 +27,8 @@ public class VcSetDeafenRequestPacket(bool value) : IVoiceCraftPacket
         PacketPool<VcSetDeafenRequestPacket>.Return(this);
     }
 
-    public VcSetDeafenRequestPacket Set(bool value = false)
+    public void Set(bool value = false)
     {
         Value = value;
-        return this;
     }
 }

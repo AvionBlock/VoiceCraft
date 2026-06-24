@@ -96,11 +96,10 @@ public class McApiOnEntityPropertyUpdatedPacket(int id, string key, object? valu
         PacketPool<McApiOnEntityPropertyUpdatedPacket>.Return(this);
     }
 
-    public McApiOnEntityPropertyUpdatedPacket Set(int id = 0, string key = "", object? value = null)
+    public void Set(int id = 0, string key = "", object? value = null)
     {
         Id = id;
         Key = key;
         Value = value;
-        return this;
     }
 }

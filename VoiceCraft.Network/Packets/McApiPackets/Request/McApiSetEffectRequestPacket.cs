@@ -36,11 +36,10 @@ public class McApiSetEffectRequestPacket(ushort bitmask, IAudioEffect? effect) :
         PacketPool<McApiSetEffectRequestPacket>.Return(this);
     }
 
-    public McApiSetEffectRequestPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
+    public void Set(ushort bitmask = 0, IAudioEffect? effect = null)
     {
         Bitmask = bitmask;
         EffectType = effect?.EffectType ?? EffectType.None;
         Effect = effect;
-        return this;
     }
 }

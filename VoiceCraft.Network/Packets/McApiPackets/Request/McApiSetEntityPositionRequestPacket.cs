@@ -33,10 +33,9 @@ public class McApiSetEntityPositionRequestPacket(int id, Vector3 value) : IMcApi
         PacketPool<McApiSetEntityPositionRequestPacket>.Return(this);
     }
 
-    public McApiSetEntityPositionRequestPacket Set(int id = 0, Vector3 value = new())
+    public void Set(int id = 0, Vector3 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

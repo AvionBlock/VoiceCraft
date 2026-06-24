@@ -26,9 +26,8 @@ public class VcInfoRequestPacket(int tick) : IVoiceCraftPacket
         PacketPool<VcInfoRequestPacket>.Return(this);
     }
 
-    public VcInfoRequestPacket Set(int tick = 0)
+    public void Set(int tick = 0)
     {
         Tick = tick;
-        return this;
     }
 }

@@ -31,10 +31,9 @@ public class McApiDenyResponsePacket(string requestId, string reason) : IMcApiPa
         PacketPool<McApiDenyResponsePacket>.Return(this);
     }
 
-    public McApiDenyResponsePacket Set(string requestId = "", string reasonKey = "")
+    public void Set(string requestId = "", string reasonKey = "")
     {
         RequestId = requestId;
         Reason = reasonKey;
-        return this;
     }
 }

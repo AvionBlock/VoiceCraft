@@ -28,9 +28,8 @@ public class McApiLogoutRequestPacket(string token = "") : IMcApiPacket
         PacketPool<McApiLogoutRequestPacket>.Return(this);
     }
 
-    public McApiLogoutRequestPacket Set(string token = "")
+    public void Set(string token = "")
     {
         Token = token;
-        return this;
     }
 }

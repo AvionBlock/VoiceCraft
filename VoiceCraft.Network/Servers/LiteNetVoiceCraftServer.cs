@@ -206,7 +206,9 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             var id = World.GetNextId();
             var entity = new VoiceCraftNetworkEntity(liteNetPeer, id);
             liteNetPeer.Tag = entity;
+            
             World.AddEntity(entity);
+            entity.Name = "New Client";
             acceptPacket.Set(packet.RequestId);
             SendPacket(liteNetPeer, acceptPacket);
         }

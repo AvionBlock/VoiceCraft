@@ -43,12 +43,11 @@ public class VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int
         PacketPool<VcAudioRequestPacket>.Return(this);
     }
 
-    public VcAudioRequestPacket Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+    public void Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
     {
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
         Buffer = data ?? [];
-        return this;
     }
 }

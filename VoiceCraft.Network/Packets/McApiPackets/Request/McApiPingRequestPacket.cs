@@ -18,9 +18,4 @@ public class McApiPingRequestPacket : IMcApiPacket
     {
         PacketPool<McApiPingRequestPacket>.Return(this);
     }
-
-    public McApiPingRequestPacket Set()
-    {
-        return this;
-    }
 }

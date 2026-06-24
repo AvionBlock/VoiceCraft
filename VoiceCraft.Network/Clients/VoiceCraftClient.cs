@@ -525,12 +525,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         if (World.ContainsEntity(packet.Id)) return;
 
-        var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke())
-        {
-            Name = packet.Name,
-            Muted = packet.Muted,
-            Deafened = packet.Deafened
-        };
+        var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke());
         World.AddEntity(entity);
     }
 
@@ -538,15 +533,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         if (World.ContainsEntity(packet.Id)) return;
 
-        var entity =
-            new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid)
-            {
-                Name = packet.Name,
-                Muted = packet.Muted,
-                Deafened = packet.Deafened,
-                ServerMuted = packet.ServerMuted,
-                ServerDeafened = packet.ServerDeafened
-            };
+        var entity = new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid);
         World.AddEntity(entity);
     }
 

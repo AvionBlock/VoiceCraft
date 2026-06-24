@@ -229,6 +229,7 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
             {
                 netPeer.SubscribedEvents.Add(@event);
             }
+
             return;
         }
 
@@ -269,24 +270,39 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
 
     private void HandlePingRequestPacket(McApiPingRequestPacket _, McApiNetPeer netPeer)
     {
-        SendPacket(netPeer, PacketPool<McApiPingResponsePacket>.GetPacket(() => new McApiPingResponsePacket()).Set());
+        var pingResponsePacket = PacketPool<McApiPingResponsePacket>
+            .GetPacket(() => new McApiPingResponsePacket());
+        try
+        {
+            pingResponsePacket.Set();
+            SendPacket(netPeer, pingResponsePacket);
+        }
+        finally
+        {
+            pingResponsePacket.Return();
+        }
     }
 
     private void HandleResetRequestPacket(McApiResetRequestPacket packet, McApiNetPeer netPeer)
     {
         if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
+        var resetResponsePacket = PacketPool<McApiResetResponsePacket>
+            .GetPacket(() => new McApiResetResponsePacket());
         try
         {
             world.Reset();
             audioEffectSystem.Reset();
-            SendPacket(netPeer,
-                PacketPool<McApiResetResponsePacket>.GetPacket(() => new McApiResetResponsePacket())
-                    .Set(packet.RequestId));
+            resetResponsePacket.Set(packet.RequestId);
+            SendPacket(netPeer, resetResponsePacket);
         }
         catch
         {
-            SendPacket(netPeer, PacketPool<McApiResetResponsePacket>.GetPacket(() => new McApiResetResponsePacket())
-                .Set(packet.RequestId, McApiResetResponsePacket.ResponseCodes.Failure));
+            resetResponsePacket.Set(packet.RequestId, McApiResetResponsePacket.ResponseCodes.Failure);
+            SendPacket(netPeer, resetResponsePacket);
+        }
+        finally
+        {
+            resetResponsePacket.Return();
         }
     }
 
@@ -305,51 +321,47 @@ public abstract class McApiServer(VoiceCraftWorld world, AudioEffectSystem audio
     private void HandleCreateEntityRequestPacket(McApiCreateEntityRequestPacket packet, McApiNetPeer netPeer)
     {
         if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
+        var createEntityResponsePacket = PacketPool<McApiCreateEntityResponsePacket>
+            .GetPacket(() => new McApiCreateEntityResponsePacket());
         try
         {
             var entityId = world.GetNextId();
-            var entity = new VoiceCraftEntity(entityId)
-            {
-                WorldId = packet.WorldId,
-                Name = packet.Name,
-                Muted = packet.Muted,
-                Deafened = packet.Deafened,
-                TalkBitmask = packet.TalkBitmask,
-                ListenBitmask = packet.ListenBitmask,
-                EffectBitmask = packet.EffectBitmask,
-                Position = packet.Position,
-                Rotation = packet.Rotation
-            };
-
+            var entity = new VoiceCraftEntity(entityId);
             world.AddEntity(entity);
-            SendPacket(netPeer, PacketPool<McApiCreateEntityResponsePacket>
-                .GetPacket(() => new McApiCreateEntityResponsePacket())
-                .Set(packet.RequestId, McApiCreateEntityResponsePacket.ResponseCodes.Ok, entity.Id));
+            createEntityResponsePacket.Set(packet.RequestId, McApiCreateEntityResponsePacket.ResponseCodes.Ok,
+                entity.Id);
+            SendPacket(netPeer, createEntityResponsePacket);
         }
         catch
         {
-            SendPacket(netPeer,
-                PacketPool<McApiCreateEntityResponsePacket>.GetPacket(() => new McApiCreateEntityResponsePacket()).Set(
-                    packet.RequestId,
-                    McApiCreateEntityResponsePacket.ResponseCodes.Failure));
+            createEntityResponsePacket.Set(packet.RequestId, McApiCreateEntityResponsePacket.ResponseCodes.Failure);
+            SendPacket(netPeer, createEntityResponsePacket);
+        }
+        finally
+        {
+            createEntityResponsePacket.Return();
         }
     }
 
     private void HandleDestroyEntityRequestPacket(McApiDestroyEntityRequestPacket packet, McApiNetPeer netPeer)
     {
         if (netPeer.ConnectionState != McApiConnectionState.Connected) return;
+        var destroyEntityResponsePacket = PacketPool<McApiDestroyEntityResponsePacket>
+            .GetPacket(() => new McApiDestroyEntityResponsePacket());
         try
         {
             world.DestroyEntity(packet.Id);
-            SendPacket(netPeer, PacketPool<McApiDestroyEntityResponsePacket>
-                .GetPacket(() => new McApiDestroyEntityResponsePacket())
-                .Set(packet.RequestId));
+            destroyEntityResponsePacket.Set(packet.RequestId);
+            SendPacket(netPeer, destroyEntityResponsePacket);
         }
         catch
         {
-            SendPacket(netPeer, PacketPool<McApiDestroyEntityResponsePacket>
-                .GetPacket(() => new McApiDestroyEntityResponsePacket())
-                .Set(packet.RequestId, McApiDestroyEntityResponsePacket.ResponseCodes.NotFound));
+            destroyEntityResponsePacket.Set(packet.RequestId, McApiDestroyEntityResponsePacket.ResponseCodes.NotFound);
+            SendPacket(netPeer, destroyEntityResponsePacket);
+        }
+        finally
+        {
+            destroyEntityResponsePacket.Return();
         }
     }
 

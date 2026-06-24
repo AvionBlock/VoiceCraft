@@ -14,11 +14,11 @@ public class VoiceCraftClientTests
     {
         using var client = new TestVoiceCraftClient();
         var eventPacket = new VcOnEntityCreatedPacket();
-        eventPacket.Set(42, "First");
+        eventPacket.Set(42);
         var packet = new VcEventRequestPacket(eventPacket);
 
         client.Dispatch(packet);
-        eventPacket.Set(42, "Duplicate", true, true);
+        eventPacket.Set(42);
         client.Dispatch(packet);
 
         var entity = Assert.Single(client.World.Entities);
@@ -32,7 +32,8 @@ public class VoiceCraftClientTests
     {
         using var client = new TestVoiceCraftClient();
 
-        var eventPacket = new VcOnEntityDestroyedPacket().Set(404);
+        var eventPacket = new VcOnEntityDestroyedPacket();
+        eventPacket.Set(404);
         var packet = new VcEventRequestPacket(eventPacket);
         client.Dispatch(packet);
 

@@ -27,9 +27,8 @@ public class VcSetMuteRequestPacket(bool value) : IVoiceCraftPacket
         PacketPool<VcSetMuteRequestPacket>.Return(this);
     }
 
-    public VcSetMuteRequestPacket Set(bool value = false)
+    public void Set(bool value = false)
     {
         Value = value;
-        return this;
     }
 }
