@@ -343,10 +343,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 HandleSetEffectBitmaskRequestPacket(setEffectBitmaskRequestPacket);
                 break;
             case VcSetPositionRequestPacket setPositionRequestPacket:
-                HandleSetPositionBitmaskRequestPacket(setPositionRequestPacket);
+                HandleSetPositionRequestPacket(setPositionRequestPacket);
                 break;
             case VcSetRotationRequestPacket setRotationRequestPacket:
-                HandleSetRotationBitmaskRequestPacket(setRotationRequestPacket);
+                HandleSetRotationRequestPacket(setRotationRequestPacket);
                 break;
             case VcSetPropertyRequestPacket setPropertyRequestPacket:
                 HandleSetPropertyRequestPacket(setPropertyRequestPacket);
@@ -483,12 +483,12 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         EffectBitmask = packet.Value;
     }
 
-    private void HandleSetPositionBitmaskRequestPacket(VcSetPositionRequestPacket packet)
+    private void HandleSetPositionRequestPacket(VcSetPositionRequestPacket packet)
     {
         Position = packet.Value;
     }
 
-    private void HandleSetRotationBitmaskRequestPacket(VcSetRotationRequestPacket packet)
+    private void HandleSetRotationRequestPacket(VcSetRotationRequestPacket packet)
     {
         Rotation = packet.Value;
     }

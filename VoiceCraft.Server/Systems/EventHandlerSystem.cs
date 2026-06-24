@@ -818,9 +818,9 @@ public class EventHandlerSystem : IDisposable
                     Send(networkEntity.NetPeer, setTalkBitmaskPacket);
                 }
 
+                vcPacket.Set(entity.Id, bitmask);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
-                    vcPacket.Set(ve.Id, bitmask);
                     SendEvent(ve.NetPeer, vcPacket);
                 }
 
@@ -855,9 +855,9 @@ public class EventHandlerSystem : IDisposable
                     Send(networkEntity.NetPeer, setListenBitmaskPacket);
                 }
 
+                vcPacket.Set(entity.Id, bitmask);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
-                    vcPacket.Set(ve.Id, bitmask);
                     SendEvent(ve.NetPeer, vcPacket);
                 }
 
@@ -892,9 +892,9 @@ public class EventHandlerSystem : IDisposable
                     Send(networkEntity.NetPeer, setEffectBitmaskPacket);
                 }
 
+                vcPacket.Set(entity.Id, bitmask);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
-                    vcPacket.Set(ve.Id, bitmask);
                     SendEvent(ve.NetPeer, vcPacket);
                 }
 
@@ -929,9 +929,9 @@ public class EventHandlerSystem : IDisposable
                     Send(networkEntity.NetPeer, setPositionPacket);
                 }
 
+                vcPacket.Set(entity.Id, position);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
-                    vcPacket.Set(ve.Id, position);
                     SendEvent(ve.NetPeer, vcPacket);
                 }
 
@@ -966,9 +966,9 @@ public class EventHandlerSystem : IDisposable
                     Send(networkEntity.NetPeer, setRotationPacket);
                 }
 
+                vcPacket.Set(entity.Id, rotation);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
-                    vcPacket.Set(ve.Id, rotation);
                     SendEvent(ve.NetPeer, vcPacket);
                 }
 
@@ -1003,9 +1003,9 @@ public class EventHandlerSystem : IDisposable
                     Send(networkEntity.NetPeer, setPropertyPacket);
                 }
 
+                vcPacket.Set(entity.Id, key, value);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
-                    vcPacket.Set(ve.Id, key, value);
                     SendEvent(ve.NetPeer, vcPacket);
                 }
 
@@ -1034,10 +1034,10 @@ public class EventHandlerSystem : IDisposable
 
             try
             {
+                vcPacket.Set(entity.Id, timestamp, frameLoudness, buffer.Length, buffer);
                 foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
                 {
                     if (ve == entity || ve.Deafened || ve.ServerDeafened) continue;
-                    vcPacket.Set(entity.Id, timestamp, frameLoudness, buffer.Length, buffer);
                     SendEvent(ve.NetPeer, vcPacket, VcDeliveryMethod.Unreliable);
                 }
 

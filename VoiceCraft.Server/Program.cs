@@ -36,6 +36,7 @@ public static class Program
         serviceCollection.AddSingleton<HttpMcApiServer>();
         serviceCollection.AddSingleton<TcpMcApiServer>();
         serviceCollection.AddSingleton<McWssMcApiServer>();
+        serviceCollection.AddSingleton<VoiceCraftServer>(x => x.GetRequiredService<LiteNetVoiceCraftServer>());
         serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<HttpMcApiServer>());
         serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<TcpMcApiServer>());
         serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<McWssMcApiServer>());
