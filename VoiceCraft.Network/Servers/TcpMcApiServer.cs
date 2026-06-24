@@ -644,7 +644,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         public uint MaxTimeoutMs { get; set; } = 10000;
 
         [JsonConverter(typeof(JsonBooleanConverter))]
-        public bool AutoOpenPort { get; set; } = true;
+        public bool AutoOpenPort { get; set; }
 
         public HashSet<McApiPacketType> DisabledPacketTypes { get; set; } = [];
     }

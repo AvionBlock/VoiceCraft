@@ -318,7 +318,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         public PositioningType PositioningType { get; set; } = PositioningType.Server;
 
         [JsonConverter(typeof(JsonBooleanConverter))]
-        public bool AutoOpenPort { get; set; } = true;
+        public bool AutoOpenPort { get; set; }
 
         [JsonConverter(typeof(JsonBooleanConverter))]
         public bool EnableVisibilityDisplay { get; set; } = true;

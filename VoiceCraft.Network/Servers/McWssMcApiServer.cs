@@ -471,7 +471,7 @@ public class McWssMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffe
         public uint MaxTimeoutMs { get; set; } = 10000;
 
         [JsonConverter(typeof(JsonBooleanConverter))]
-        public bool AutoOpenPort { get; set; } = true;
+        public bool AutoOpenPort { get; set; }
 
         public string DataTunnelCommand { get; set; } = "voicecraft:data_tunnel";
         public uint CommandsPerTick { get; set; } = 3;
