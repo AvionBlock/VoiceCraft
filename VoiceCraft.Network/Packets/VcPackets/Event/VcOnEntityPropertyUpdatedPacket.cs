@@ -10,8 +10,8 @@ public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) 
 
     public EventType EventType => EventType.OnEntityPropertyUpdated;
     public int Id { get; private set; } = id;
-    public string Key { get; private set; } = string.Empty;
-    public object? Value { get; private set; }
+    public string Key { get; private set; } = key;
+    public object? Value { get; private set; } = value;
     
     public void Serialize(NetDataWriter writer)
     {
