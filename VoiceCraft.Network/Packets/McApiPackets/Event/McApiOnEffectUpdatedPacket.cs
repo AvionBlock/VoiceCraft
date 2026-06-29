@@ -11,7 +11,7 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
 
     public EventType EventType => EventType.OnEffectUpdated;
     public ushort Bitmask { get; private set; } = bitmask;
-    public EffectType EffectType { get; private set; } = effect?.EffectType ?? EffectType.None;
+    public EffectType EffectType => Effect?.EffectType ?? EffectType.None;
     public IAudioEffect? Effect { get; private set; } = effect;
 
     public void Serialize(NetDataWriter writer)
@@ -25,7 +25,9 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
     public void Deserialize(NetDataReader reader)
     {
         Bitmask = reader.GetUShort();
-        EffectType = (EffectType)reader.GetByte();
+        var effectType = (EffectType)reader.GetByte();
+        Effect = IAudioEffect.FromReader(effectType, reader);
+        Effect?.Bitmask = Bitmask;
     }
 
     public void Return()
@@ -36,7 +38,6 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
     public void Set(ushort bitmask = 0, IAudioEffect? effect = null)
     {
         Bitmask = bitmask;
-        EffectType = effect?.EffectType ?? EffectType.None;
         Effect = effect;
     }
 }

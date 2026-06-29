@@ -1,4 +1,5 @@
 using LiteNetLib.Utils;
+using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
@@ -16,7 +17,7 @@ public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) 
     public void Serialize(NetDataWriter writer)
     {
         writer.Put(Id);
-        writer.Put(Key);
+        writer.Put(Key, Constants.MaxStringLength);
         switch (Value)
         {
             case bool v:
@@ -72,7 +73,7 @@ public class VcOnEntityPropertyUpdatedPacket(int id, string key, object? value) 
     public void Deserialize(NetDataReader reader)
     {
         Id = reader.GetInt();
-        Key = reader.GetString();
+        Key = reader.GetString(Constants.MaxStringLength);
         var propertyType = (PropertyType)reader.GetByte();
         Value = propertyType switch
         {
