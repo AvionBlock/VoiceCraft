@@ -53,6 +53,33 @@ public class EchoEffect : IAudioEffect
         Feedback = echoEffect.Feedback;
         WetDry = echoEffect.WetDry;
     }
+    
+    public float EvaluateDelayProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+    {
+        const string property = $"{nameof(EchoEffect)}:Delay";
+        var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+        var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+        if (!propVal1 && !propVal2) return Delay;
+        return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 10.0f);
+    }
+
+    public float EvaluateFeedbackProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+    {
+        const string property = $"{nameof(EchoEffect)}:Feedback";
+        var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+        var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+        if (!propVal1 && !propVal2) return Feedback;
+        return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+    }
+
+    public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+    {
+        const string property = $"{nameof(EchoEffect)}:WetDry";
+        var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+        var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+        if (!propVal1 && !propVal2) return WetDry;
+        return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+    }
 
     public void Serialize(NetDataWriter writer)
     {
@@ -105,10 +132,10 @@ public class EchoEffectProcessor : IAudioEffectProcessor
         if ((bitmask & Effect.Bitmask) == 0) return;
 
         //Cache Values
-        var wet = _effect.WetDry;
+        var wet = _effect.EvaluateWetDryProperty(Entity, to);
         var dry = 1.0f - wet;
-        var feedback = _effect.Feedback;
-        var delay = _effect.Delay;
+        var feedback = _effect.EvaluateFeedbackProperty(Entity, to);
+        var delay = _effect.EvaluateDelayProperty(Entity, to);
         _delayLine.Ensure(EchoEffect.SampleRate, delay);
         delay *= EchoEffect.SampleRate;
 

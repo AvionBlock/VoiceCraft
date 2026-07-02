@@ -43,20 +43,29 @@ namespace VoiceCraft.Network.Audio.Effects
         
         public float EvaluateMinRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string minRangeProperty = $"{nameof(ProximityEffect)}:MinRange";
-            var propVal1 = e1.TryGetProperty<float>(minRangeProperty, out var prop1);
-            var propVal2 = e2.TryGetProperty<float>(minRangeProperty, out var prop2);
+            const string property = $"{nameof(ProximityEffect)}:MinRange";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return MinRange;
-            return Math.Min(propVal1? prop1 : float.MaxValue, propVal2? prop2 : float.MaxValue);
+            return Math.Min(prop1 ?? float.MaxValue, prop2 ?? float.MaxValue);
         }
         
         public float EvaluateMaxRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string maxRangeProperty = $"{nameof(ProximityEffect)}:MaxRange";
-            var propVal1 = e1.TryGetProperty<float>(maxRangeProperty, out var prop1);
-            var propVal2 = e2.TryGetProperty<float>(maxRangeProperty, out var prop2);
+            const string property = $"{nameof(ProximityEffect)}:MaxRange";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return MaxRange;
-            return Math.Min(propVal1? prop1 : float.MinValue, propVal2? prop2 : float.MinValue);
+            return Math.Max(prop1 ?? float.MinValue, prop2 ?? float.MinValue);
+        }
+        
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEffect)}:WetDry";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
         }
 
         public void Serialize(NetDataWriter writer)
@@ -119,7 +128,7 @@ namespace VoiceCraft.Network.Audio.Effects
             if ((bitmask & Effect.Bitmask) == 0) return;
 
             //Cache Values
-            var wet = _effect.WetDry;
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
             var dry = 1.0f - wet;
             var minRange = _effect.EvaluateMinRangeProperty(Entity, to);
             var maxRange = _effect.EvaluateMaxRangeProperty(Entity, to);

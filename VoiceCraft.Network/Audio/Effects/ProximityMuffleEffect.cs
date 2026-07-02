@@ -16,18 +16,18 @@ namespace VoiceCraft.Network.Audio.Effects
         public ushort Bitmask { get; set; }
         
         public event Action<IAudioEffect>? OnDisposed;
-
-        public float WetDry
-        {
-            get;
-            set => field = Math.Clamp(value, 0.0f, 1.0f);
-        } = 1.0f;
         
         public float Factor
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 0.0f;
+
+        public float WetDry
+        {
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
         
         public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
             new ProximityMuffleEffectProcessor(this, entity);
@@ -37,29 +37,38 @@ namespace VoiceCraft.Network.Audio.Effects
             if(audioEffect is not ProximityMuffleEffect proximityMuffleEffect)
                 throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
             Bitmask = proximityMuffleEffect.Bitmask;
-            WetDry = proximityMuffleEffect.WetDry;
             Factor = proximityMuffleEffect.Factor;
+            WetDry = proximityMuffleEffect.WetDry;
         }
         
         public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string factorProperty = $"{nameof(ProximityMuffleEffect)}:Factor";
-            var propVal1 = e1.TryGetProperty<float>(factorProperty, out var prop1);
-            var propVal2 = e2.TryGetProperty<float>(factorProperty, out var prop2);
+            const string property = $"{nameof(ProximityMuffleEffect)}:Factor";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return Factor;
-            return Math.Max(Math.Clamp(prop1, 0f, 1f), Math.Clamp(prop2, 0f, 1f));
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+        }
+        
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityMuffleEffect)}:WetDry";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
         }
         
         public void Serialize(NetDataWriter writer)
         {
-            writer.Put(WetDry);
             writer.Put(Factor);
+            writer.Put(WetDry);
         }
 
         public void Deserialize(NetDataReader reader)
         {
-            WetDry = reader.GetFloat();
             Factor = reader.GetFloat();
+            WetDry = reader.GetFloat();
         }
         
         public void Dispose()
@@ -100,7 +109,7 @@ namespace VoiceCraft.Network.Audio.Effects
             if ((bitmask & Effect.Bitmask) == 0) return;
             
             //Cache Values
-            var wet = _effect.WetDry;
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
             var dry = 1.0f - wet;
             var factor = _effect.EvaluateFactorProperty(Entity, to);
             

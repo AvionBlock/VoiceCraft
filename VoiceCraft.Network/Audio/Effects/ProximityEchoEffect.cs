@@ -31,17 +31,17 @@ namespace VoiceCraft.Network.Audio.Effects
             set => field = Math.Max(value, 0.0f);
         }
 
-        public float WetDry
-        {
-            get;
-            set => field = Math.Clamp(value, 0.0f, 1.0f);
-        } = 1.0f;
-
         public float Factor
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 0.0f;
+
+        public float WetDry
+        {
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
 
         public ProximityEchoEffect()
         {
@@ -58,33 +58,60 @@ namespace VoiceCraft.Network.Audio.Effects
             Bitmask = proximityEchoEffect.Bitmask;
             Delay = proximityEchoEffect.Delay;
             Range = proximityEchoEffect.Range;
-            WetDry = proximityEchoEffect.WetDry;
             Factor = proximityEchoEffect.Factor;
+            WetDry = proximityEchoEffect.WetDry;
+        }
+
+        public float EvaluateDelayProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:Delay";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return Delay;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 10.0f);
+        }
+
+        public float EvaluateRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:Range";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return Range;
+            return Math.Max(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f); //Only Positive Integers.
         }
 
         public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string factorProperty = $"{nameof(ProximityEchoEffect)}:Factor";
-            var propVal1 = e1.TryGetProperty<float>(factorProperty, out var prop1);
-            var propVal2 = e2.TryGetProperty<float>(factorProperty, out var prop2);
+            const string property = $"{nameof(ProximityEchoEffect)}:Factor";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return Factor;
-            return Math.Max(Math.Clamp(prop1, 0f, 1f), Math.Clamp(prop2, 0f, 1f));
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+        }
+
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:WetDry";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
         }
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(Delay);
             writer.Put(Range);
-            writer.Put(WetDry);
             writer.Put(Factor);
+            writer.Put(WetDry);
         }
 
         public void Deserialize(NetDataReader reader)
         {
             Delay = reader.GetFloat();
             Range = reader.GetFloat();
-            WetDry = reader.GetFloat();
             Factor = reader.GetFloat();
+            WetDry = reader.GetFloat();
         }
 
         public void Dispose()
@@ -123,18 +150,21 @@ namespace VoiceCraft.Network.Audio.Effects
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
 
-            var factor = 0f;
-            if (_effect.Range != 0)
+            var factor = 0.0f;
+            var range = _effect.EvaluateRangeProperty(Entity, to);
+            if (range != 0)
             {
                 //The range at which the echo will take effect. Never set to 1.0 as it may cause infinite echo.
-                var range = Math.Clamp(Vector3.Distance(Entity.Position, to.Position) / _effect.Range, 0.0f, 0.9f);
+                var distance = Vector3.Distance(Entity.Position, to.Position);
+                //Safe Divide
+                range = Math.Clamp(distance == 0 ? 0 : distance / _effect.Range, 0.0f, 0.9f);
                 factor = _effect.EvaluateFactorProperty(Entity, to) * range;
             }
 
             //Cache Values
-            var wet = _effect.WetDry;
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
             var dry = 1.0f - wet;
-            var delay = _effect.Delay;
+            var delay = _effect.EvaluateDelayProperty(Entity, to);
             _delayLine.Ensure(ProximityEchoEffect.SampleRate, delay);
             delay *= ProximityEchoEffect.SampleRate;
 
