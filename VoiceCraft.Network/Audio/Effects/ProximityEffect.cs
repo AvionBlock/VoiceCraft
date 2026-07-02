@@ -134,8 +134,10 @@ namespace VoiceCraft.Network.Audio.Effects
             var maxRange = _effect.EvaluateMaxRangeProperty(Entity, to);
             var range = maxRange - minRange;
             if (range == 0) return; //Range is 0. Do not calculate division.
-            var distance = Vector3.Distance(Entity.Position, to.Position);
-            var factor = 1f - Math.Clamp((distance - minRange) / range, 0f, 1f);
+            
+            var distance = Vector3.Distance(Entity.Position, to.Position) - minRange;
+            //Safe Division.
+            var factor = 1f - Math.Clamp(distance == 0 ? 0 : distance / range, 0f, 1f);
             _lerpVolume.TargetVolume = factor;
 
             for (var i = 0; i < buffer.Length; i++)
