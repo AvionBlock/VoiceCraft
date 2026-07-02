@@ -35,7 +35,7 @@ namespace VoiceCraft.Network.Audio.Effects
         
         public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string property = $"{nameof(MuffleEffect)}:WetDry";
+            const string property = $"{nameof(MuffleEffect)}:{nameof(WetDry)}";
             var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
             var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return WetDry;

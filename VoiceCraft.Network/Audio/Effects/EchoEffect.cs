@@ -56,7 +56,7 @@ public class EchoEffect : IAudioEffect
     
     public float EvaluateDelayProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
     {
-        const string property = $"{nameof(EchoEffect)}:Delay";
+        const string property = $"{nameof(EchoEffect)}:{nameof(Delay)}";
         var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
         var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
         if (!propVal1 && !propVal2) return Delay;
@@ -65,7 +65,7 @@ public class EchoEffect : IAudioEffect
 
     public float EvaluateFeedbackProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
     {
-        const string property = $"{nameof(EchoEffect)}:Feedback";
+        const string property = $"{nameof(EchoEffect)}:{nameof(Feedback)}";
         var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
         var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
         if (!propVal1 && !propVal2) return Feedback;
@@ -74,7 +74,7 @@ public class EchoEffect : IAudioEffect
 
     public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
     {
-        const string property = $"{nameof(EchoEffect)}:WetDry";
+        const string property = $"{nameof(EchoEffect)}:{nameof(WetDry)}";
         var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
         var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
         if (!propVal1 && !propVal2) return WetDry;

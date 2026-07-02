@@ -64,7 +64,7 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public float EvaluateDelayProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string property = $"{nameof(ProximityEchoEffect)}:Delay";
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(Delay)}";
             var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
             var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return Delay;
@@ -73,7 +73,7 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public float EvaluateRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string property = $"{nameof(ProximityEchoEffect)}:Range";
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(Range)}";
             var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
             var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return Range;
@@ -82,7 +82,7 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string property = $"{nameof(ProximityEchoEffect)}:Factor";
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(Factor)}";
             var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
             var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return Factor;
@@ -91,7 +91,7 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
         {
-            const string property = $"{nameof(ProximityEchoEffect)}:WetDry";
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(WetDry)}";
             var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
             var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
             if (!propVal1 && !propVal2) return WetDry;
