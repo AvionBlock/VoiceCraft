@@ -118,8 +118,8 @@ public class VoiceCraftEntityTests
         entity.SetProperty("Test:Factor", 5.0f);
         entity.SetProperty("Test2:Factor", 8.0f);
         
-        entity.TryGetProperty("Test:Factor", out float value1);
-        entity.TryGetProperty("Test2:Factor", out float value2);
+        entity.TryGetProperty("Test:Factor", out float? value1);
+        entity.TryGetProperty("Test2:Factor", out float? value2);
         
         Assert.Equal(5.0f, value1);
         Assert.Equal(8.0f, value2);
