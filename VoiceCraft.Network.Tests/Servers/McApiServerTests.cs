@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Numerics;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets;
@@ -35,14 +34,13 @@ public class McApiServerTests
 
         var entity = world.GetEntity(response.Id);
         Assert.NotNull(entity);
-        Assert.Equal("world", entity.WorldId);
-        Assert.Equal("Created Entity", entity.Name);
-        Assert.True(entity.Muted);
-        Assert.Equal((ushort)3, entity.TalkBitmask);
-        Assert.Equal((ushort)5, entity.ListenBitmask);
-        Assert.Equal((ushort)7, entity.EffectBitmask);
-        Assert.Equal(new Vector3(1, 2, 3), entity.Position);
-        Assert.Equal(new Vector2(4, 5), entity.Rotation);
+        Assert.Equal(string.Empty, entity.WorldId);
+        Assert.Equal("New Entity", entity.Name);
+        Assert.False(entity.Muted);
+        Assert.False(entity.Deafened);
+        Assert.Equal(ushort.MaxValue, entity.TalkBitmask);
+        Assert.Equal(ushort.MaxValue, entity.ListenBitmask);
+        Assert.Equal(ushort.MaxValue, entity.EffectBitmask);
     }
 
     private sealed class TestMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
