@@ -18,12 +18,16 @@ public class VoiceCraftClientTests
         var packet = new VcEventRequestPacket(eventPacket);
 
         client.Dispatch(packet);
+        var existingEntity = Assert.Single(client.World.Entities);
+        existingEntity.Name = "First";
+        existingEntity.Muted = true;
+
         eventPacket.Set(42);
         client.Dispatch(packet);
 
         var entity = Assert.Single(client.World.Entities);
         Assert.Equal("First", entity.Name);
-        Assert.False(entity.Muted);
+        Assert.True(entity.Muted);
         Assert.False(entity.Deafened);
     }
 

@@ -15,9 +15,9 @@ public class Z85Tests
     }
 
     [Fact]
-    public void GetString_WithUnpaddedLength_ThrowsArgumentOutOfRangeException()
+    public void GetString_WithUnpaddedLength_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => Z85.GetString([1, 2, 3]));
+        Assert.Throws<ArgumentException>(() => Z85.GetString([1, 2, 3]));
     }
 
     [Fact]
