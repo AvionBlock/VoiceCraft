@@ -152,12 +152,11 @@ namespace VoiceCraft.Network.Audio.Effects
 
             var factor = 0.0f;
             var range = _effect.EvaluateRangeProperty(Entity, to);
-            if (range != 0)
+            if (range != 0) //Range is 0. Do not calculate division.
             {
                 //The range at which the echo will take effect. Never set to 1.0 as it may cause infinite echo.
                 var distance = Vector3.Distance(Entity.Position, to.Position);
-                //Safe Divide
-                range = Math.Clamp(distance == 0 ? 0 : distance / _effect.Range, 0.0f, 0.9f);
+                range = Math.Clamp(distance / range, 0.0f, 0.9f);
                 factor = _effect.EvaluateFactorProperty(Entity, to) * range;
             }
 

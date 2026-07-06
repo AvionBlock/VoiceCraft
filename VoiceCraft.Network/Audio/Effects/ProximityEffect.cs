@@ -136,8 +136,7 @@ namespace VoiceCraft.Network.Audio.Effects
             if (range == 0) return; //Range is 0. Do not calculate division.
             
             var distance = Vector3.Distance(Entity.Position, to.Position) - minRange;
-            //Safe Division.
-            var factor = 1f - Math.Clamp(distance == 0 ? 0 : distance / range, 0f, 1f);
+            var factor = 1f - Math.Clamp(distance / range, 0f, 1f);
             _lerpVolume.TargetVolume = factor;
 
             for (var i = 0; i < buffer.Length; i++)
