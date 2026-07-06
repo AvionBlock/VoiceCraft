@@ -38,12 +38,12 @@
     </ItemGroup>
 
     <!--
-      SoundFlow 1.4.0 packs iOS native assets under runtimes/iOS-arm64 (capital iOS),
+      SoundFlow packs iOS native assets under runtimes/iOS-arm64 (capital iOS),
       but its runtime loader resolves runtimes/ios-arm64 on device. We duplicate the
       framework into the expected lowercase path to prevent DllNotFoundException.
     -->
     <ItemGroup>
-        <_SoundFlowIosRuntime Include="$(NuGetPackageRoot)soundflow\1.4.0\runtimes\iOS-arm64\native\miniaudio.framework\**\*" />
+        <_SoundFlowIosRuntime Include="$(NuGetPackageRoot)soundflow\$(SoundFlowVersion)\runtimes\iOS-arm64\native\miniaudio.framework\**\*" />
         <BundleResource Include="@(_SoundFlowIosRuntime)">
             <Link>runtimes\ios-arm64\native\miniaudio.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </BundleResource>

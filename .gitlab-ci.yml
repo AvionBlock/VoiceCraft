@@ -133,12 +133,12 @@ build:client:linux:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
     - dotnet workload restore
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Linux.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-$ARCH/publish/
+      - VoiceCraft.Client.Linux.$ARCH/
 
 build:client:windows:
   stage: build
@@ -149,16 +149,16 @@ build:client:windows:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
     - dotnet workload restore
-    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true /p:UseSharedCompilation=false
+    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH" /p:UseSharedCompilation=false
     - |
       $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
-      $outFile = "./bin/Release/net10.0-windows/win-$env:ARCH/publish/vc_redist.$env:ARCH.exe"
+      $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"
       Invoke-WebRequest -Uri $uri -OutFile $outFile
   artifacts:
     name: "VoiceCraft.Client.Windows.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/win-$ARCH/publish/
+      - VoiceCraft.Client.Windows.$ARCH/
 
 build:client:android:
   stage: build
@@ -239,11 +239,13 @@ build:client:android:
           -p:AndroidSdkDirectory="$ANDROID_SDK_ROOT" \
           -p:JavaSdkDirectory="$JAVA_HOME"
       fi
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+    - cp ./bin/Release/net10.0-android/android-$ARCH/publish/*.apk "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH/"
   artifacts:
     name: "VoiceCraft.Client.Android.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-$ARCH/publish/*.apk
+      - VoiceCraft.Client.Android.$ARCH/
 
 build:client:ios:
   stage: build
@@ -263,11 +265,13 @@ build:client:ios:
         fi
       fi
     - dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:ValidateXcodeVersion=false /p:UseSharedCompilation=false
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64"
+    - cp ./bin/Release/net10.0-ios/ios-arm64/publish/*.ipa "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64/"
   artifacts:
     name: "VoiceCraft.Client.iOS.arm64"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
+      - VoiceCraft.Client.iOS.arm64/
 
 build:client:macos:
   stage: build
@@ -303,12 +307,18 @@ build:client:macos:
       cd "$OUTPUT_DIR"
       PKG_PATH=$(ls ./publish/*.pkg | head -n 1)
       cp "$PKG_PATH" "VoiceCraft.Client.MacOS.$ARCH.pkg"
+    - |
+      OUTPUT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH"
+      ARTIFACT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client.MacOS.$ARCH"
+      rm -rf "$ARTIFACT_DIR"
+      mkdir -p "$ARTIFACT_DIR"
+      cp "$OUTPUT_DIR/VoiceCraft.Client.MacOS.$ARCH.dmg" "$ARTIFACT_DIR/"
+      cp "$OUTPUT_DIR/VoiceCraft.Client.MacOS.$ARCH.pkg" "$ARTIFACT_DIR/"
   artifacts:
     name: "VoiceCraft.Client.MacOS.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH/VoiceCraft.Client.MacOS.$ARCH.dmg
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH/VoiceCraft.Client.MacOS.$ARCH.pkg
+      - VoiceCraft.Client.MacOS.$ARCH/
 
 build:server:linux:
   stage: build
@@ -319,12 +329,12 @@ build:server:linux:
   script:
     - cd ./VoiceCraft.Server
     - dotnet workload restore
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Server.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Server.Linux.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Server/bin/Release/net10.0/linux-$ARCH/publish/
+      - VoiceCraft.Server.Linux.$ARCH/
 
 build:server:windows:
   stage: build
@@ -335,12 +345,12 @@ build:server:windows:
   script:
     - cd ./VoiceCraft.Server
     - dotnet workload restore
-    - dotnet publish -c Release -r win-$ARCH -p:PublishSingleFile=true
+    - dotnet publish -c Release -r win-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Server.Windows.$ARCH"
   artifacts:
     name: "VoiceCraft.Server.Windows.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Server/bin/Release/net10.0/win-$ARCH/publish/
+      - VoiceCraft.Server.Windows.$ARCH/
 
 package:artifacts:
   stage: package
@@ -359,11 +369,10 @@ package:artifacts:
     name: "VoiceCraft.Artifacts.$CI_COMMIT_REF_SLUG.$CI_PIPELINE_IID"
     expire_in: 30 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/*/publish/
-      - VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-*/publish/
-      - VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-*/publish/*.apk
-      - VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-*/*.dmg
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-*/*.pkg
-      - VoiceCraft.Server/bin/Release/net10.0/win-*/publish/
-      - VoiceCraft.Server/bin/Release/net10.0/linux-*/publish/
+      - VoiceCraft.Client.Windows.*/
+      - VoiceCraft.Client.Linux.*/
+      - VoiceCraft.Client.Android.*/
+      - VoiceCraft.Client.iOS.arm64/
+      - VoiceCraft.Client.MacOS.*/
+      - VoiceCraft.Server.Windows.*/
+      - VoiceCraft.Server.Linux.*/
