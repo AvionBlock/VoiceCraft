@@ -419,27 +419,51 @@ package:artifacts:
         release_name="VoiceCraft $release_version $release_channel"
       fi
 
-      apk add --no-cache zip
+      apk add --no-cache curl zip
 
       package_name="voicecraft"
-      package_file="VoiceCraft.Artifacts.$release_tag.zip"
-      package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
-      artifact_filepath="/voicecraft/$release_tag/VoiceCraft.Artifacts.zip"
+      : > release_assets.env
+      : > release_assets.md
 
-      zip -r "$package_file" \
+      asset_index=0
+      for artifact_dir in \
         VoiceCraft.Client.Windows.* \
         VoiceCraft.Client.Linux.* \
         VoiceCraft.Client.Android.* \
         VoiceCraft.Client.iOS.arm64 \
         VoiceCraft.Client.MacOS.* \
         VoiceCraft.Server.Windows.* \
-        VoiceCraft.Server.Linux.*
+        VoiceCraft.Server.Linux.*; do
+        if [ ! -d "$artifact_dir" ]; then
+          echo "Missing artifact directory: $artifact_dir"
+          exit 1
+        fi
+
+        asset_index=$((asset_index + 1))
+        package_file="$artifact_dir.$release_tag.zip"
+        package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
+        artifact_filepath="/voicecraft/$release_tag/$package_file"
+
+        zip -r "$package_file" "$artifact_dir"
+
+        curl --fail --show-error --silent \
+          --request PUT \
+          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+          --upload-file "$package_file" \
+          "$package_url"
+
+        {
+          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset_index" "$package_file"
+          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset_index" "$package_url"
+          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset_index" "$artifact_filepath"
+        } >> release_assets.env
+
+        printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
+      done
 
       {
         printf 'RELEASE_TAG=%s\n' "$release_tag"
-        printf 'RELEASE_PACKAGE_FILE=%s\n' "$package_file"
-        printf 'RELEASE_PACKAGE_URL=%s\n' "$package_url"
-        printf 'RELEASE_ARTIFACT_FILEPATH=%s\n' "$artifact_filepath"
+        printf 'RELEASE_ASSET_COUNT=%s\n' "$asset_index"
         printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
       } > release.env
 
@@ -450,8 +474,7 @@ package:artifacts:
         printf '- Commit: `%s`\n' "$CI_COMMIT_SHA"
         printf '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
         printf '## Artifacts\n\n'
-        printf 'The full release artifact bundle is attached to this release as `VoiceCraft.Artifacts.zip`.\n'
-        printf 'Package registry URL: `%s`\n' "$package_url"
+        cat release_assets.md
         if [ -n "${RELEASE_NOTES:-}" ]; then
           printf '\n## Notes\n\n%s\n' "$RELEASE_NOTES"
         fi
@@ -465,15 +488,8 @@ package:artifacts:
       dotenv: release.env
     paths:
       - release.env
+      - release_assets.env
       - release_notes.md
-      - VoiceCraft.Artifacts.*.zip
-      - VoiceCraft.Client.Windows.*/
-      - VoiceCraft.Client.Linux.*/
-      - VoiceCraft.Client.Android.*/
-      - VoiceCraft.Client.iOS.arm64/
-      - VoiceCraft.Client.MacOS.*/
-      - VoiceCraft.Server.Windows.*/
-      - VoiceCraft.Server.Linux.*/
 
 release:gitlab:
   stage: release
@@ -489,37 +505,44 @@ release:gitlab:
     - when: never
   script:
     - apk add --no-cache curl jq
-    - echo "Uploading release package $RELEASE_PACKAGE_FILE"
     - test -s release_notes.md
+    - test -s release_assets.env
     - |
-      curl --fail --show-error --silent \
-        --request PUT \
-        --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-        --upload-file "$RELEASE_PACKAGE_FILE" \
-        "$RELEASE_PACKAGE_URL"
+      . ./release_assets.env
+      jq -n '{links: []}' > release_assets.json
+      index=1
+      while [ "$index" -le "$RELEASE_ASSET_COUNT" ]; do
+        eval "asset_name=\${RELEASE_ASSET_${index}_NAME}"
+        eval "asset_url=\${RELEASE_ASSET_${index}_URL}"
+        eval "asset_filepath=\${RELEASE_ASSET_${index}_FILEPATH}"
+
+        jq \
+          --arg name "$asset_name" \
+          --arg url "$asset_url" \
+          --arg filepath "$asset_filepath" \
+          '.links += [{
+            name: $name,
+            url: $url,
+            filepath: $filepath,
+            link_type: "package"
+          }]' \
+          release_assets.json > release_assets.next.json
+        mv release_assets.next.json release_assets.json
+        index=$((index + 1))
+      done
     - |
       jq -n \
         --arg name "VoiceCraft $RELEASE_TAG" \
         --arg tag_name "$RELEASE_TAG" \
         --arg ref "$CI_COMMIT_SHA" \
         --rawfile description release_notes.md \
-        --arg asset_url "$RELEASE_PACKAGE_URL" \
-        --arg filepath "$RELEASE_ARTIFACT_FILEPATH" \
+        --slurpfile assets release_assets.json \
         '{
           name: $name,
           tag_name: $tag_name,
           ref: $ref,
           description: $description,
-          assets: {
-            links: [
-              {
-                name: "VoiceCraft.Artifacts.zip",
-                url: $asset_url,
-                filepath: $filepath,
-                link_type: "package"
-              }
-            ]
-          }
+          assets: $assets[0]
         }' > release_payload.json
     - echo "Creating GitLab release $RELEASE_TAG"
     - |
