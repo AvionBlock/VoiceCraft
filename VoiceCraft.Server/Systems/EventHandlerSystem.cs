@@ -1139,15 +1139,28 @@ public class EventHandlerSystem : IDisposable
         {
             var visibilityPacket = PacketPool<VcSetEntityVisibilityRequestPacket>
                 .GetPacket(() => new VcSetEntityVisibilityRequestPacket());
+            var onEntityPropertyUpdatedPacket = PacketPool<VcOnEntityPropertyUpdatedPacket>
+                .GetPacket(() => new VcOnEntityPropertyUpdatedPacket());
             var onEntityVisibilityUpdatedPacket = PacketPool<McApiOnEntityVisibilityUpdatedPacket>
                 .GetPacket(() => new McApiOnEntityVisibilityUpdatedPacket());
 
             try
             {
-                if (EnableVisibilityDisplay && removedEntity is VoiceCraftNetworkEntity networkEntity)
+                if (removedEntity is VoiceCraftNetworkEntity networkEntity)
                 {
-                    visibilityPacket.Set(entity.Id);
-                    Send(networkEntity.NetPeer, visibilityPacket);
+                    //Update visibility if enabled.
+                    if (EnableVisibilityDisplay)
+                    {
+                        visibilityPacket.Set(entity.Id);
+                        Send(networkEntity.NetPeer, visibilityPacket);
+                    }
+                    
+                    //Clear Properties
+                    foreach (var property in entity.Properties)
+                    {
+                        onEntityPropertyUpdatedPacket.Set(entity.Id, property.Key);
+                        SendEvent(networkEntity.NetPeer, onEntityPropertyUpdatedPacket);
+                    }
                 }
 
                 onEntityVisibilityUpdatedPacket.Set(entity.Id, removedEntity.Id);
@@ -1156,6 +1169,7 @@ public class EventHandlerSystem : IDisposable
             finally
             {
                 visibilityPacket.Return();
+                onEntityPropertyUpdatedPacket.Return();
                 onEntityVisibilityUpdatedPacket.Return();
             }
         });
