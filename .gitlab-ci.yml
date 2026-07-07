@@ -2,6 +2,7 @@ stages:
   - test
   - build
   - package
+  - release
 
 workflow:
   rules:
@@ -22,6 +23,26 @@ variables:
   GIT_CLEAN_FLAGS: "-ffdx -e .nuget/"
   GIT_DEPTH: "0"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  RELEASE_ENABLED:
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    description: "Set to true in a manual pipeline to package artifacts and create a GitLab release."
+  RELEASE_VERSION:
+    value: "1.7.0"
+    description: "Release version without the leading v. Example: 1.7.0"
+  RELEASE_CHANNEL:
+    value: "beta"
+    options:
+      - "stable"
+      - "beta"
+      - "alpha"
+      - "nightly"
+    description: "Release channel. Stable uses tag v<version>; non-stable uses v<version>-<channel>.<pipeline_iid>."
+  RELEASE_NOTES:
+    value: ""
+    description: "Optional extra release notes appended to the generated GitLab release description."
 
 .dotnet_cache:
   cache:
@@ -133,12 +154,12 @@ build:client:linux:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
     - dotnet workload restore
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Linux.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-$ARCH/publish/
+      - VoiceCraft.Client.Linux.$ARCH/
 
 build:client:windows:
   stage: build
@@ -149,16 +170,16 @@ build:client:windows:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
     - dotnet workload restore
-    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true /p:UseSharedCompilation=false
+    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH" /p:UseSharedCompilation=false
     - |
       $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
-      $outFile = "./bin/Release/net10.0-windows/win-$env:ARCH/publish/vc_redist.$env:ARCH.exe"
+      $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"
       Invoke-WebRequest -Uri $uri -OutFile $outFile
   artifacts:
     name: "VoiceCraft.Client.Windows.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/win-$ARCH/publish/
+      - VoiceCraft.Client.Windows.$ARCH/
 
 build:client:android:
   stage: build
@@ -239,11 +260,13 @@ build:client:android:
           -p:AndroidSdkDirectory="$ANDROID_SDK_ROOT" \
           -p:JavaSdkDirectory="$JAVA_HOME"
       fi
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+    - cp ./bin/Release/net10.0-android/android-$ARCH/publish/*.apk "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH/"
   artifacts:
     name: "VoiceCraft.Client.Android.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-$ARCH/publish/*.apk
+      - VoiceCraft.Client.Android.$ARCH/
 
 build:client:ios:
   stage: build
@@ -263,11 +286,13 @@ build:client:ios:
         fi
       fi
     - dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:ValidateXcodeVersion=false /p:UseSharedCompilation=false
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64"
+    - cp ./bin/Release/net10.0-ios/ios-arm64/publish/*.ipa "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64/"
   artifacts:
     name: "VoiceCraft.Client.iOS.arm64"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
+      - VoiceCraft.Client.iOS.arm64/
 
 build:client:macos:
   stage: build
@@ -303,12 +328,18 @@ build:client:macos:
       cd "$OUTPUT_DIR"
       PKG_PATH=$(ls ./publish/*.pkg | head -n 1)
       cp "$PKG_PATH" "VoiceCraft.Client.MacOS.$ARCH.pkg"
+    - |
+      OUTPUT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH"
+      ARTIFACT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client.MacOS.$ARCH"
+      rm -rf "$ARTIFACT_DIR"
+      mkdir -p "$ARTIFACT_DIR"
+      cp "$OUTPUT_DIR/VoiceCraft.Client.MacOS.$ARCH.dmg" "$ARTIFACT_DIR/"
+      cp "$OUTPUT_DIR/VoiceCraft.Client.MacOS.$ARCH.pkg" "$ARTIFACT_DIR/"
   artifacts:
     name: "VoiceCraft.Client.MacOS.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH/VoiceCraft.Client.MacOS.$ARCH.dmg
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH/VoiceCraft.Client.MacOS.$ARCH.pkg
+      - VoiceCraft.Client.MacOS.$ARCH/
 
 build:server:linux:
   stage: build
@@ -319,12 +350,12 @@ build:server:linux:
   script:
     - cd ./VoiceCraft.Server
     - dotnet workload restore
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Server.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Server.Linux.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Server/bin/Release/net10.0/linux-$ARCH/publish/
+      - VoiceCraft.Server.Linux.$ARCH/
 
 build:server:windows:
   stage: build
@@ -335,12 +366,12 @@ build:server:windows:
   script:
     - cd ./VoiceCraft.Server
     - dotnet workload restore
-    - dotnet publish -c Release -r win-$ARCH -p:PublishSingleFile=true
+    - dotnet publish -c Release -r win-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Server.Windows.$ARCH"
   artifacts:
     name: "VoiceCraft.Server.Windows.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Server/bin/Release/net10.0/win-$ARCH/publish/
+      - VoiceCraft.Server.Windows.$ARCH/
 
 package:artifacts:
   stage: package
@@ -348,22 +379,176 @@ package:artifacts:
   tags:
     - ubuntu-docker
   rules:
+    - if: '$RELEASE_ENABLED == "true"'
+      when: on_success
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: manual
     - if: '$CI_COMMIT_TAG'
       when: manual
     - when: never
   script:
-    - echo "Release artifact bundle for $CI_COMMIT_REF_NAME"
+    - |
+      set -eu
+
+      release_version="${RELEASE_VERSION:-}"
+      release_channel="${RELEASE_CHANNEL:-beta}"
+
+      if [ -z "$release_version" ]; then
+        echo "RELEASE_VERSION must be set."
+        exit 1
+      fi
+
+      if ! printf '%s' "$release_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$'; then
+        echo "RELEASE_VERSION must look like 1.7.0 or 1.7.0-rc.1, without a leading v."
+        exit 1
+      fi
+
+      case "$release_channel" in
+        stable|beta|alpha|nightly) ;;
+        *)
+          echo "RELEASE_CHANNEL must be one of: stable, beta, alpha, nightly."
+          exit 1
+          ;;
+      esac
+
+      if [ "$release_channel" = "stable" ]; then
+        release_tag="v$release_version"
+        release_name="VoiceCraft $release_version"
+      else
+        release_tag="v$release_version-$release_channel.$CI_PIPELINE_IID"
+        release_name="VoiceCraft $release_version $release_channel"
+      fi
+
+      apk add --no-cache curl zip
+
+      package_name="voicecraft"
+      : > release_assets.env
+      : > release_assets.md
+
+      asset_index=0
+      for artifact_dir in \
+        VoiceCraft.Client.Windows.* \
+        VoiceCraft.Client.Linux.* \
+        VoiceCraft.Client.Android.* \
+        VoiceCraft.Client.iOS.arm64 \
+        VoiceCraft.Client.MacOS.* \
+        VoiceCraft.Server.Windows.* \
+        VoiceCraft.Server.Linux.*; do
+        if [ ! -d "$artifact_dir" ]; then
+          echo "Missing artifact directory: $artifact_dir"
+          exit 1
+        fi
+
+        asset_index=$((asset_index + 1))
+        package_file="$artifact_dir.$release_tag.zip"
+        package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
+        artifact_filepath="/voicecraft/$release_tag/$package_file"
+
+        zip -r "$package_file" "$artifact_dir"
+
+        curl --fail --show-error --silent \
+          --request PUT \
+          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+          --upload-file "$package_file" \
+          "$package_url"
+
+        {
+          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset_index" "$package_file"
+          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset_index" "$package_url"
+          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset_index" "$artifact_filepath"
+        } >> release_assets.env
+
+        printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
+      done
+
+      {
+        printf 'RELEASE_TAG=%s\n' "$release_tag"
+        printf 'RELEASE_ASSET_COUNT=%s\n' "$asset_index"
+        printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
+      } > release.env
+
+      {
+        printf '# %s\n\n' "$release_name"
+        printf '- Version: `%s`\n' "$release_version"
+        printf '- Channel: `%s`\n' "$release_channel"
+        printf '- Commit: `%s`\n' "$CI_COMMIT_SHA"
+        printf '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
+        printf '## Artifacts\n\n'
+        cat release_assets.md
+        if [ -n "${RELEASE_NOTES:-}" ]; then
+          printf '\n## Notes\n\n%s\n' "$RELEASE_NOTES"
+        fi
+      } > release_notes.md
+
+      echo "Prepared release metadata for $release_tag"
   artifacts:
     name: "VoiceCraft.Artifacts.$CI_COMMIT_REF_SLUG.$CI_PIPELINE_IID"
     expire_in: 30 days
+    reports:
+      dotenv: release.env
     paths:
-      - VoiceCraft.Client/VoiceCraft.Client.Windows/bin/Release/net10.0-windows/*/publish/
-      - VoiceCraft.Client/VoiceCraft.Client.Linux/bin/Release/net10.0/linux-*/publish/
-      - VoiceCraft.Client/VoiceCraft.Client.Android/bin/Release/net10.0-android/android-*/publish/*.apk
-      - VoiceCraft.Client/VoiceCraft.Client.iOS/bin/Release/net10.0-ios/ios-arm64/publish/*.ipa
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-*/*.dmg
-      - VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-*/*.pkg
-      - VoiceCraft.Server/bin/Release/net10.0/win-*/publish/
-      - VoiceCraft.Server/bin/Release/net10.0/linux-*/publish/
+      - release.env
+      - release_assets.env
+      - release_notes.md
+
+release:gitlab:
+  stage: release
+  image: alpine:3.20
+  tags:
+    - ubuntu-docker
+  needs:
+    - job: package:artifacts
+      artifacts: true
+  rules:
+    - if: '$RELEASE_ENABLED == "true"'
+      when: on_success
+    - when: never
+  script:
+    - apk add --no-cache curl jq
+    - test -s release_notes.md
+    - test -s release_assets.env
+    - |
+      . ./release_assets.env
+      jq -n '{links: []}' > release_assets.json
+      index=1
+      while [ "$index" -le "$RELEASE_ASSET_COUNT" ]; do
+        eval "asset_name=\${RELEASE_ASSET_${index}_NAME}"
+        eval "asset_url=\${RELEASE_ASSET_${index}_URL}"
+        eval "asset_filepath=\${RELEASE_ASSET_${index}_FILEPATH}"
+
+        jq \
+          --arg name "$asset_name" \
+          --arg url "$asset_url" \
+          --arg filepath "$asset_filepath" \
+          '.links += [{
+            name: $name,
+            url: $url,
+            filepath: $filepath,
+            link_type: "package"
+          }]' \
+          release_assets.json > release_assets.next.json
+        mv release_assets.next.json release_assets.json
+        index=$((index + 1))
+      done
+    - |
+      jq -n \
+        --arg name "VoiceCraft $RELEASE_TAG" \
+        --arg tag_name "$RELEASE_TAG" \
+        --arg ref "$CI_COMMIT_SHA" \
+        --rawfile description release_notes.md \
+        --slurpfile assets release_assets.json \
+        '{
+          name: $name,
+          tag_name: $tag_name,
+          ref: $ref,
+          description: $description,
+          assets: $assets[0]
+        }' > release_payload.json
+    - echo "Creating GitLab release $RELEASE_TAG"
+    - |
+      curl --fail --show-error --silent \
+        --request POST \
+        --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data @release_payload.json \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"
