@@ -996,16 +996,35 @@ public class EventHandlerSystem : IDisposable
 
             try
             {
+                VoiceCraftNetPeer? netPeer = null;
                 if (entity is VoiceCraftNetworkEntity { PositioningType: PositioningType.Server } networkEntity)
                 {
+                    netPeer = networkEntity.NetPeer;
                     setPropertyPacket.Set(key, value);
                     Send(networkEntity.NetPeer, setPropertyPacket);
                 }
 
+                //Broadcast null value, Null values are removed from the entity properties list which causes de-synced
+                //clients.
                 vcPacket.Set(entity.Id, key, value);
-                foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
+                if (value == null)
                 {
-                    SendEvent(ve.NetPeer, vcPacket);
+                    if (netPeer != null)
+                    {
+                        BroadcastEvent(vcPacket, VcDeliveryMethod.Reliable, netPeer);
+                    }
+                    else
+                    {
+                        BroadcastEvent(vcPacket);
+                    }
+                }
+                //Else, Just broadcast to visible entities only.
+                else
+                {
+                    foreach (var ve in entity.VisibleEntities.Cast<VoiceCraftNetworkEntity>())
+                    {
+                        SendEvent(ve.NetPeer, vcPacket);
+                    }
                 }
 
                 mcApiPacket.Set(entity.Id, key, value);
@@ -1145,21 +1164,10 @@ public class EventHandlerSystem : IDisposable
 
             try
             {
-                if (removedEntity is VoiceCraftNetworkEntity networkEntity)
+                if (EnableVisibilityDisplay && removedEntity is VoiceCraftNetworkEntity networkEntity)
                 {
-                    //Update visibility if enabled.
-                    if (EnableVisibilityDisplay)
-                    {
-                        visibilityPacket.Set(entity.Id);
-                        Send(networkEntity.NetPeer, visibilityPacket);
-                    }
-
-                    //Clear Properties
-                    foreach (var property in entity.Properties)
-                    {
-                        onEntityPropertyUpdatedPacket.Set(entity.Id, property.Key);
-                        SendEvent(networkEntity.NetPeer, onEntityPropertyUpdatedPacket);
-                    }
+                    visibilityPacket.Set(entity.Id);
+                    Send(networkEntity.NetPeer, visibilityPacket);
                 }
 
                 onEntityVisibilityUpdatedPacket.Set(entity.Id, removedEntity.Id);
