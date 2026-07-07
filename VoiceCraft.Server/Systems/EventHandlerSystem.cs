@@ -203,7 +203,7 @@ public class EventHandlerSystem : IDisposable
             {
                 vcPacket.Set(bitmask, effect);
                 BroadcastEvent(vcPacket);
-                
+
                 mcApiPacket.Set(bitmask, effect);
                 BroadcastEventMcApi(mcApiPacket);
             }
@@ -249,7 +249,7 @@ public class EventHandlerSystem : IDisposable
             //Effect Sync
             var onEffectUpdatedPacket = PacketPool<VcOnEffectUpdatedPacket>
                 .GetPacket(() => new VcOnEffectUpdatedPacket());
-            
+
             //Entity Sync
             var onNetworkEntityCreatedPacket = PacketPool<VcOnNetworkEntityCreatedPacket>
                 .GetPacket(() => new VcOnNetworkEntityCreatedPacket());
@@ -267,7 +267,7 @@ public class EventHandlerSystem : IDisposable
                 .GetPacket(() => new VcOnEntityDeafenUpdatedPacket());
             var setEntityVisibilityPacket = PacketPool<VcSetEntityVisibilityRequestPacket>
                 .GetPacket(() => new VcSetEntityVisibilityRequestPacket());
-            
+
             //McApi
             var mcApiOnNetworkEntityCreatedPacket = PacketPool<McApiOnNetworkEntityCreatedPacket>
                 .GetPacket(() => new McApiOnNetworkEntityCreatedPacket());
@@ -286,7 +286,7 @@ public class EventHandlerSystem : IDisposable
                         onEffectUpdatedPacket.Set(effect.Key, effect.Value);
                         SendEvent(networkEntity.NetPeer, onEffectUpdatedPacket);
                     }
-                    
+
                     //Send other entities.
                     foreach (var entity in _world.Entities.Where(x => x != networkEntity))
                     {
@@ -295,11 +295,11 @@ public class EventHandlerSystem : IDisposable
                             //Create
                             onNetworkEntityCreatedPacket.Set(otherNetworkEntity);
                             SendEvent(networkEntity.NetPeer, onNetworkEntityCreatedPacket);
-                            
+
                             //Server Mute
                             onEntityServerMuteUpdatedPacket.Set(entity.Id, otherNetworkEntity.ServerMuted);
                             SendEvent(networkEntity.NetPeer, onEntityServerMuteUpdatedPacket);
-                            
+
                             //Server Deafen
                             onEntityServerDeafenUpdatedPacket.Set(entity.Id, otherNetworkEntity.ServerDeafened);
                             SendEvent(networkEntity.NetPeer, onEntityServerDeafenUpdatedPacket);
@@ -322,13 +322,13 @@ public class EventHandlerSystem : IDisposable
                         //Deafen
                         onEntityDeafenUpdatedPacket.Set(entity.Id, entity.Deafened);
                         SendEvent(networkEntity.NetPeer, onEntityDeafenUpdatedPacket);
-                        
+
                         //Set Visibility if disabled.
                         if (EnableVisibilityDisplay) continue;
                         setEntityVisibilityPacket.Set(entity.Id, true);
                         Send(networkEntity.NetPeer, setEntityVisibilityPacket);
                     }
-                    
+
                     //Broadcast to other clients and McApi.
                     onNetworkEntityCreatedPacket.Set(networkEntity);
                     BroadcastEvent(onNetworkEntityCreatedPacket, VcDeliveryMethod.Reliable, networkEntity.NetPeer);
@@ -340,7 +340,7 @@ public class EventHandlerSystem : IDisposable
 
                     mcApiOnNetworkEntityCreatedPacket.Set(networkEntity);
                     BroadcastEventMcApi(mcApiOnNetworkEntityCreatedPacket);
-                    
+
                     AnsiConsole.MarkupLine(
                         $"[green]{Localizer.Get($"Events.Client.Connected:{networkEntity.UserGuid}")}[/]");
                 }
@@ -410,10 +410,9 @@ public class EventHandlerSystem : IDisposable
                         $"[yellow]{Localizer.Get($"Events.Client.Disconnected:{networkEntity.UserGuid}")}[/]");
                 }
 
-
                 vcPacket.Set(entity.Id);
                 BroadcastEvent(vcPacket);
-                
+
                 mcApiPacket.Set(entity.Id);
                 BroadcastEventMcApi(mcApiPacket);
             }
@@ -432,7 +431,7 @@ public class EventHandlerSystem : IDisposable
             //Effects
             var onEffectUpdatedPacket = PacketPool<McApiOnEffectUpdatedPacket>
                 .GetPacket(() => new McApiOnEffectUpdatedPacket());
-            
+
             //Network Entity
             var onNetworkEntityCreatedPacket = PacketPool<McApiOnNetworkEntityCreatedPacket>
                 .GetPacket(() => new McApiOnNetworkEntityCreatedPacket());
@@ -477,7 +476,7 @@ public class EventHandlerSystem : IDisposable
                         SendEventMcApi(peer, onEffectUpdatedPacket);
                     }
                 }
-                
+
                 //Sync Entities
                 if (peer.SubscribedEvents.Contains(EventType.OnNetworkEntityCreated) ||
                     peer.SubscribedEvents.Contains(EventType.OnEntityCreated))
@@ -489,11 +488,11 @@ public class EventHandlerSystem : IDisposable
                             //Create
                             onNetworkEntityCreatedPacket.Set(networkEntity);
                             SendEventMcApi(peer, onNetworkEntityCreatedPacket);
-                            
+
                             //Server Mute
                             onEntityServerMuteUpdatedPacket.Set(networkEntity.Id, networkEntity.Muted);
                             SendEventMcApi(peer, onEntityServerMuteUpdatedPacket);
-                            
+
                             //Server Deafen
                             onEntityServerDeafenUpdatedPacket.Set(networkEntity.Id, networkEntity.Deafened);
                             SendEventMcApi(peer, onEntityServerDeafenUpdatedPacket);
@@ -508,35 +507,35 @@ public class EventHandlerSystem : IDisposable
                         //WorldId
                         onEntityWorldIdUpdatedPacket.Set(entity.Id, entity.WorldId);
                         SendEventMcApi(peer, onEntityWorldIdUpdatedPacket);
-                        
+
                         //Name
                         onEntityNameUpdatedPacket.Set(entity.Id, entity.Name);
                         SendEventMcApi(peer, onEntityNameUpdatedPacket);
-                        
+
                         //Mute
                         onEntityMuteUpdatedPacket.Set(entity.Id, entity.Muted);
                         SendEventMcApi(peer, onEntityMuteUpdatedPacket);
-                        
+
                         //Deafen
                         onEntityDeafenUpdatedPacket.Set(entity.Id, entity.Deafened);
                         SendEventMcApi(peer, onEntityDeafenUpdatedPacket);
-                        
+
                         //Position
                         onEntityPositionUpdatedPacket.Set(entity.Id, entity.Position);
                         SendEventMcApi(peer, onEntityPositionUpdatedPacket);
-                        
+
                         //Rotation
                         onEntityRotationUpdatedPacket.Set(entity.Id, entity.Rotation);
                         SendEventMcApi(peer, onEntityRotationUpdatedPacket);
-                        
+
                         //TalkBitmask
                         onEntityTalkBitmaskUpdatedPacket.Set(entity.Id, entity.TalkBitmask);
                         SendEventMcApi(peer, onEntityTalkBitmaskUpdatedPacket);
-                        
+
                         //ListenBitmask
                         onEntityListenBitmaskUpdatedPacket.Set(entity.Id, entity.ListenBitmask);
                         SendEventMcApi(peer, onEntityListenBitmaskUpdatedPacket);
-                        
+
                         //Effect Bitmask
                         onEntityEffectBitmaskUpdatedPacket.Set(entity.Id, entity.EffectBitmask);
                         SendEventMcApi(peer, onEntityEffectBitmaskUpdatedPacket);
@@ -556,7 +555,7 @@ public class EventHandlerSystem : IDisposable
             finally
             {
                 onEffectUpdatedPacket.Return();
-                
+
                 onNetworkEntityCreatedPacket.Return();
                 onEntityServerMuteUpdatedPacket.Return();
                 onEntityServerDeafenUpdatedPacket.Return();
@@ -637,7 +636,7 @@ public class EventHandlerSystem : IDisposable
 
                 vcPacket.Set(entity.Id, muted);
                 BroadcastEvent(vcPacket, VcDeliveryMethod.Reliable, entity.NetPeer);
-                
+
                 mcApiPacket.Set(entity.Id, muted);
                 BroadcastEventMcApi(mcApiPacket);
             }
@@ -664,10 +663,10 @@ public class EventHandlerSystem : IDisposable
             {
                 setServerDeafenPacket.Set(deafened);
                 Send(entity.NetPeer, setServerDeafenPacket);
-                
+
                 vcPacket.Set(entity.Id, deafened);
                 BroadcastEvent(vcPacket, VcDeliveryMethod.Reliable, entity.NetPeer);
-                
+
                 mcApiPacket.Set(entity.Id, deafened);
                 BroadcastEventMcApi(mcApiPacket);
             }
@@ -798,7 +797,7 @@ public class EventHandlerSystem : IDisposable
         });
     }
 
-    //Properties
+    //Visible Entities Only
     private void OnEntityTalkBitmaskUpdated(ushort bitmask, VoiceCraftEntity entity)
     {
         _tasks.Enqueue(() =>
@@ -1043,7 +1042,7 @@ public class EventHandlerSystem : IDisposable
 
                 mcApiPacket.Set(entity.Id, timestamp, frameLoudness);
                 BroadcastEventMcApi(mcApiPacket);
-                
+
                 mcApiDataPacket.Set(entity.Id, timestamp, frameLoudness, buffer.Length, buffer);
                 BroadcastEventMcApi(mcApiDataPacket);
             }
@@ -1154,7 +1153,7 @@ public class EventHandlerSystem : IDisposable
                         visibilityPacket.Set(entity.Id);
                         Send(networkEntity.NetPeer, visibilityPacket);
                     }
-                    
+
                     //Clear Properties
                     foreach (var property in entity.Properties)
                     {
