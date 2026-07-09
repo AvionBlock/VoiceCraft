@@ -2,6 +2,5 @@
     <PropertyGroup>
         <Version>1.7.0</Version>
         <AndroidVersion>17</AndroidVersion>
-        <SoundFlowVersion>1.4.1</SoundFlowVersion>
     </PropertyGroup>
 </Project>
