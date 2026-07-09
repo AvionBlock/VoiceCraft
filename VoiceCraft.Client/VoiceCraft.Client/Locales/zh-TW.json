@@ -110,6 +110,9 @@
   },
   "Credits": {
     "Title": "致謝",
+    "Website": null,
+    "SourceCode": null,
+    "Documentation": null,
     "AppVersion": "應用程式版本: {0}",
     "Version": "版本: {0}",
     "Codec": "編解碼器: {0}",

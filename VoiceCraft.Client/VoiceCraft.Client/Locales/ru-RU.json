@@ -110,6 +110,9 @@
   },
   "Credits": {
     "Title": "Авторы",
+    "Website": null,
+    "SourceCode": null,
+    "Documentation": null,
     "AppVersion": "Версия приложения: {0}",
     "Version": "Версия: {0}",
     "Codec": "Кодек: {0}",

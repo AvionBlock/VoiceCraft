@@ -13,8 +13,13 @@ public class DiscordRpcService : IDisposable
         [
             new Button
             {
-                Label = Constants.GithubButton,
-                Url = Constants.GithubButtonUrl
+                Label = Constants.SourceButton,
+                Url = Constants.SourceButtonUrl
+            },
+            new Button
+            {
+                Label = Constants.WebsiteButton,
+                Url = Constants.WebsiteButtonUrl
             }
         ],
         Assets = new Assets

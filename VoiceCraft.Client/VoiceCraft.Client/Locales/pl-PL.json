@@ -110,6 +110,9 @@
   },
   "Credits": {
     "Title": "Twórcy",
+    "Website": null,
+    "SourceCode": null,
+    "Documentation": null,
     "AppVersion": "Wersja aplikacji: {0}",
     "Version": "Wersja: {0}",
     "Codec": "Kodek: {0}",
