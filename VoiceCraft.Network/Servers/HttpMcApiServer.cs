@@ -575,7 +575,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         public uint PortMappingLifetimeMinutes { get; set; } = 60;
         public uint PortMappingTimeoutSeconds { get; set; } = 5;
         public uint MaxClients { get; set; } = 1;
-        public uint MaxTimeoutMs { get; set; } = 10000;
+        public uint MaxTimeoutMs { get; set; } = 20000;
 
         [JsonConverter(typeof(JsonBooleanConverter))]
         public bool AutoOpenPort { get; set; }
