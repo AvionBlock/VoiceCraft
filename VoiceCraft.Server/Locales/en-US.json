@@ -28,6 +28,17 @@
       "ParseJson": "Failed to parse JSON data from the loaded file!"
     }
   },
+  "PortMapper": {
+    "Opening": "Opening {0} port on {1} {2} through NAT...",
+    "Opened": "{0} port on {1} {2} mapping opened via {3}: {4}:{5}",
+    "Closing": "Closing NAT port {0} on {1}",
+    "Closed": "Closed NAT port {0} on {1}",
+    "SkippedLoopback": "Skipping {0} NAT port mapping because it is bound to loopback address {1}.",
+    "Exceptions": {
+      "Open": "{0} port on {1} {2} failed to open through NAT.",
+      "Close": "NAT port {0} on {1} did not close cleanly."
+    }
+  },
   "Title": {
     "Starting": "Starting...",
     "Running": "Running!"

@@ -224,7 +224,7 @@ public static class App
         {
             AnsiConsole.WriteLine(Localizer.Get("McWssServer.Starting"));
             server.Start();
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
         }
         catch(Exception ex)
         {

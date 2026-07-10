@@ -28,6 +28,17 @@
       "ParseJson": "Het is niet gelukt om de JSON-gegevens uit het geladen bestand te parseren!"
     }
   },
+  "PortMapper": {
+    "Opening": null,
+    "Opened": null,
+    "Closing": null,
+    "Closed": null,
+    "SkippedLoopback": null,
+    "Exceptions": {
+      "Open": null,
+      "Close": null
+    }
+  },
   "Title": {
     "Starting": "Starten...",
     "Running": "Draaiende!"

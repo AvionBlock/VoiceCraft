@@ -2,6 +2,7 @@ using System.Net;
 using OpenPort.Net;
 using OpenPort.Net.Models;
 using Spectre.Console;
+using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Servers;
 
 namespace VoiceCraft.Server.Services;
@@ -76,15 +77,18 @@ public sealed class PortMappingService
         {
             try
             {
-                AnsiConsole.MarkupLine("[yellow]Closing NAT port mapping...[/]");
+                AnsiConsole.MarkupLine(
+                    $"[yellow]{Localizer.Get($"PortMapper.Closing:{lease.Mapping.InternalPort},{lease.Mapping.Protocol}")}[/]");
                 await lease.DisposeAsync();
-                AnsiConsole.MarkupLine("[green]NAT port mapping closed.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[green]{Localizer.Get($"PortMapper.Closed:{lease.Mapping.InternalPort},{lease.Mapping.Protocol}")}[/]");
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine(
-                    $"[yellow]NAT port mapping could not be closed cleanly: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
                 LogService.Log(ex);
+                AnsiConsole.MarkupLine(
+                    $"[yellow]{Localizer.Get($"PortMapper.Exceptions.Close:{lease.Mapping.InternalPort},{lease.Mapping.Protocol}")}[/]");
             }
         }
 
@@ -107,7 +111,7 @@ public sealed class PortMappingService
         try
         {
             AnsiConsole.MarkupLine(
-                $"[yellow]Opening {name} {protocol} port {internalPort} through NAT port mapping...[/]");
+                $"[yellow]{Localizer.Get($"PortMapper.Opening:{name},{internalPort},{protocol}")}[/]");
 
             var client = new OpenPortClient(new OpenPortOptions
             {
@@ -124,16 +128,17 @@ public sealed class PortMappingService
             });
 
             var mappedPort = lease.Result.ExternalPort ?? lease.Mapping.ExternalPort;
-            var mappedAddress = lease.Result.ExternalAddress?.ToString() ?? "unknown address";
+            var mappedAddress = lease.Result.ExternalAddress?.ToString() ?? "N.A.";
             AnsiConsole.MarkupLine(
-                $"[green]{name} {protocol} port mapping opened via {lease.Result.Provider}: {mappedAddress}:{mappedPort}[/]");
+                $"[green]{Localizer.Get($"PortMapper.Opened:{name},{internalPort},{protocol},{lease.Result.Provider},{mappedAddress},{mappedPort}")}[/]");
             _leases.Add(lease);
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine(
-                $"[yellow]{name} {protocol} port mapping was not opened: {ex.Message}[/]");
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
             LogService.Log(ex);
+            AnsiConsole.MarkupLine(
+                $"[yellow]{Localizer.Get($"PortMapper.Exceptions.Open:{name},{internalPort},{protocol}")}[/]");
         }
     }
 
@@ -167,7 +172,7 @@ public sealed class PortMappingService
             return true;
 
         AnsiConsole.MarkupLine(
-            $"[yellow]Skipping {name} NAT port mapping because it is bound to loopback address {host}.[/]");
+            $"[yellow]{Localizer.Get($"PortMapper.SkippedLoopback:{name},{host}")}[/]");
         return false;
     }
 

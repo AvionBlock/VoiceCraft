@@ -28,6 +28,17 @@
       "ParseJson": "无法从加载的文件中解析 JSON 数据!"
     }
   },
+  "PortMapper": {
+    "Opening": null,
+    "Opened": null,
+    "Closing": null,
+    "Closed": null,
+    "SkippedLoopback": null,
+    "Exceptions": {
+      "Open": null,
+      "Close": null
+    }
+  },
   "Title": {
     "Starting": "启动中...",
     "Running": "运行中!"

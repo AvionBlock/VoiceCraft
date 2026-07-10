@@ -28,6 +28,17 @@
       "ParseJson": "Nie udalo sie odczytac danych JSON z zaladowanego pliku!"
     }
   },
+  "PortMapper": {
+    "Opening": null,
+    "Opened": null,
+    "Closing": null,
+    "Closed": null,
+    "SkippedLoopback": null,
+    "Exceptions": {
+      "Open": null,
+      "Close": null
+    }
+  },
   "Title": {
     "Starting": "Uruchamianie...",
     "Running": "Dziala!"
