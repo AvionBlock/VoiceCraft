@@ -30,7 +30,7 @@
       "AutomaticGainControllers": "Automatische Verstärkungsregelung",
       "EchoCancelers": "Echo-Unterdrückung",
       "PushToTalk": "Zum Sprechen gedrückt halten",
-      "HardwarePreprocessors": null,
+      "HardwarePreprocessors": "Hardware-Vorprozessoren",
       "PlayPushToTalkCue": "Push-to-Talk-Sounds abspielen",
       "MicrophoneTest": {
         "MicrophoneTest": "Mikrofontest",
@@ -64,8 +64,8 @@
       "Title": "Netzwerkeinstellungen",
       "PositioningType": {
         "Title": "Positionierungstyp",
-        "Server": null,
-        "Client": null
+        "Server": "Server",
+        "Client": "Kunde"
       },
       "McWssListenIp": "MCWSS Listening-IP-Adresse",
       "McWssHostPort": "MCWSS-Host-Port"
@@ -110,9 +110,9 @@
   },
   "Credits": {
     "Title": "Mitwirkende",
-    "Website": null,
-    "SourceCode": null,
-    "Documentation": null,
+    "Website": "Website",
+    "SourceCode": "Quellcode",
+    "Documentation": "Dokumentation",
     "AppVersion": "App-Version: {0}",
     "Version": "Version: {0}",
     "Codec": "Codec: {0}",
@@ -121,6 +121,10 @@
       "Author": "Autor",
       "Translator": "Übersetzer",
       "Programmer": "Programmierer"
+    },
+    "Attributions": {
+      "Title": "Quellenangaben",
+      "FlagsFlatIcon": "Flaggen: FlatIcon"
     }
   },
   "CrashLogs": {

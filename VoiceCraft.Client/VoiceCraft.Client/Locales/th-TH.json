@@ -123,8 +123,8 @@
       "Programmer": "Programmer"
     },
     "Attributions": {
-      "Title": "Attributions",
-      "FlagsFlatIcon": "Flags: FlatIcon"
+      "Title": null,
+      "FlagsFlatIcon": null
     }
   },
   "CrashLogs": {
@@ -203,7 +203,6 @@
       "Muted": "Muted"
     }
   },
-  
   "VoiceCraft": {
     "Notification": {
       "Badge": "VoiceCraft",
@@ -237,7 +236,6 @@
       "Disconnected": "McWss Connection Disconnected!"
     }
   },
-  
   "PermissionsService": {
     "Notification": {
       "Badge": "Permissions Service"

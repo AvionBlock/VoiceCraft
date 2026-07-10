@@ -29,7 +29,7 @@
       "Denoisers": "Ruisonderdrukkers",
       "AutomaticGainControllers": "Automatische versterkingsregelaars",
       "EchoCancelers": "Echo-onderdrukkers",
-      "HardwarePreprocessors": null,
+      "HardwarePreprocessors": "Hardware-preprocessors",
       "PushToTalk": "Ingedrukt houden om te praten",
       "PlayPushToTalkCue": "Push-to-talk-geluiden afspelen",
       "MicrophoneTest": {
@@ -64,8 +64,8 @@
       "Title": "Netwerkinstellingen",
       "PositioningType": {
         "Title": "Positioneringstype",
-        "Server": null,
-        "Client": null
+        "Server": "Server",
+        "Client": "Klant"
       },
       "McWssListenIp": "MCWSS-luister-IP-adres",
       "McWssHostPort": "MCWSS-hostpoort"
@@ -110,9 +110,9 @@
   },
   "Credits": {
     "Title": "Credits",
-    "Website": null,
-    "SourceCode": null,
-    "Documentation": null,
+    "Website": "Website",
+    "SourceCode": "Broncode",
+    "Documentation": "Documentatie",
     "AppVersion": "App-versie: {0}",
     "Version": "Versie: {0}",
     "Codec": "Codec: {0}",
@@ -121,6 +121,10 @@
       "Author": "Auteur",
       "Translator": "Vertaler",
       "Programmer": "Programmeur"
+    },
+    "Attributions": {
+      "Title": "Bronvermeldingen",
+      "FlagsFlatIcon": "Vlaggen: FlatIcon"
     }
   },
   "CrashLogs": {

@@ -29,7 +29,7 @@
       "Denoisers": "降噪器",
       "AutomaticGainControllers": "自动增益控制器",
       "EchoCancelers": "回声消除器",
-      "HardwarePreprocessors": null,
+      "HardwarePreprocessors": "硬件预处理器",
       "PushToTalk": "按住说话",
       "PlayPushToTalkCue": "播放按住说话提示音",
       "MicrophoneTest": {
@@ -64,8 +64,8 @@
       "Title": "网络设置",
       "PositioningType": {
         "Title": "定位类型",
-        "Server": null,
-        "Client": null
+        "Server": "服务器",
+        "Client": "客户"
       },
       "McWssListenIp": "MCWSS 监听 IP 地址",
       "McWssHostPort": "MCWSS 主机端口"
@@ -110,9 +110,9 @@
   },
   "Credits": {
     "Title": "致谢",
-    "Website": null,
-    "SourceCode": null,
-    "Documentation": null,
+    "Website": "网站",
+    "SourceCode": "源代码",
+    "Documentation": "文档",
     "AppVersion": "应用版本: {0}",
     "Version": "版本: {0}",
     "Codec": "编解码器: {0}",
@@ -121,6 +121,10 @@
       "Author": "作者",
       "Translator": "翻译者",
       "Programmer": "程序员"
+    },
+    "Attributions": {
+      "Title": "来源",
+      "FlagsFlatIcon": "国旗：FlatIcon"
     }
   },
   "CrashLogs": {

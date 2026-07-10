@@ -11,14 +11,14 @@
              x:DataType="vm:CreditsViewModel"
              mc:Ignorable="d">
     <ScrollViewer>
-        <StackPanel Spacing="15">
+        <StackPanel Spacing="10">
             <Border Padding="15"
                     VerticalAlignment="Top"
                     Classes="card">
                 <WrapPanel Orientation="Horizontal">
                     <Image VerticalAlignment="Center"
                            Source="avares://VoiceCraft.Client/Assets/avion_logo.png"
-                           Height="150"/>
+                           Height="150" />
                     <StackPanel Spacing="2">
                         <TextBlock Padding="5" FontSize="20" FontWeight="Bold" Text="AvionBlock" />
 
@@ -89,6 +89,22 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </StackPanel>
+            </Border>
+            <Border Padding="15"
+                    VerticalAlignment="Top"
+                    Classes="card">
+                <WrapPanel Orientation="Horizontal">
+                    <StackPanel Spacing="2">
+                        <TextBlock Padding="5"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Text="{locale:Localize Credits.Attributions.Title}" />
+
+                        <HyperlinkButton NavigateUri="https://www.flaticon.com/packs/world-flags-circular-16021817"
+                                         Content="{locale:Localize Credits.Attributions.FlagsFlatIcon}"
+                                         Padding="5" />
+                    </StackPanel>
+                </WrapPanel>
             </Border>
         </StackPanel>
     </ScrollViewer>
