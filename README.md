@@ -16,6 +16,9 @@ Minecraft-side bridges, and an API for custom behavior.
 > VoiceCraft is not a channel-based voice chat by default. It is built around session state, positioning, effects,
 > visibility, and bitmask-based routing that integrations can control through the Addon API and McApi transports.
 
+> [!NOTE]
+> If you are viewing this on GitHub, you are looking at a mirror. Actual development happens over at https://gitlab.avion.team/voicecraft/VoiceCraft
+
 ## Project Description
 
 VoiceCraft is a proximity voice platform for Minecraft-focused deployments. It started around Minecraft Bedrock Edition,
