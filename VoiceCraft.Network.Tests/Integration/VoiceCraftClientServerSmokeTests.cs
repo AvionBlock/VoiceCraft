@@ -144,8 +144,8 @@ public class VoiceCraftClientServerSmokeTests
         using var server = CreateServer(world, out var port);
         using var audioEffectSystem = new AudioEffectSystem();
         using var eventHandlerSystem = new EventHandlerSystem(
-            server,
-            Array.Empty<McApiServer>(),
+            [server],
+            [],
             audioEffectSystem,
             world);
         var visibilitySystem = new VisibilitySystem(world, audioEffectSystem);
@@ -273,14 +273,9 @@ public class VoiceCraftClientServerSmokeTests
         return ((IPEndPoint)socket.LocalEndPoint!).Port;
     }
 
-    private sealed class TestLiteNetVoiceCraftServer : LiteNetVoiceCraftServer
+    private sealed class TestLiteNetVoiceCraftServer(VoiceCraftWorld world) : LiteNetVoiceCraftServer(world)
     {
-        private readonly VoiceCraftWorld _world;
-
-        public TestLiteNetVoiceCraftServer(VoiceCraftWorld world) : base(world)
-        {
-            _world = world;
-        }
+        private readonly VoiceCraftWorld _world = world;
 
         public IReadOnlyCollection<VoiceCraftEntity> WorldSnapshot => _world.Entities.ToArray();
     }

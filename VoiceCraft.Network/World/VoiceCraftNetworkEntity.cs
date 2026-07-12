@@ -5,27 +5,13 @@ using VoiceCraft.Network.NetPeers;
 
 namespace VoiceCraft.Network.World
 {
-    public class VoiceCraftNetworkEntity : VoiceCraftEntity
+    public class VoiceCraftNetworkEntity(VoiceCraftNetPeer netPeer, int id) : VoiceCraftEntity(id)
     {
-        public VoiceCraftNetworkEntity(
-            VoiceCraftNetPeer netPeer,
-            int id) : base(id)
-        {
-            Name = "New Client";
-            NetPeer = netPeer;
-            UserGuid = netPeer.UserGuid;
-            ServerUserGuid = netPeer.ServerUserGuid;
-            Locale = netPeer.Locale;
-            PositioningType = netPeer.PositioningType;
-            ServerMuted = false;
-            ServerDeafened = false;
-        }
-
-        public VoiceCraftNetPeer NetPeer { get; }
-        public Guid UserGuid { get; private set; }
-        public Guid ServerUserGuid { get; private set; }
-        public string Locale { get; private set; }
-        public PositioningType PositioningType { get; }
+        public VoiceCraftNetPeer NetPeer { get; } = netPeer;
+        public Guid UserGuid { get; private set; } = netPeer.UserGuid;
+        public Guid ServerUserGuid { get; private set; } = netPeer.ServerUserGuid;
+        public string Locale { get; private set; } = netPeer.Locale;
+        public PositioningType PositioningType { get; } = netPeer.PositioningType;
 
         public bool ServerMuted
         {
@@ -69,8 +55,6 @@ namespace VoiceCraft.Network.World
         {
             //Doesn't remove the entity from the world.
             Name = "New Client";
-            CaveFactor = 0;
-            MuffleFactor = 0;
             WorldId = string.Empty;
             Position = Vector3.Zero;
             Rotation = Vector2.Zero;
@@ -79,6 +63,8 @@ namespace VoiceCraft.Network.World
             ListenBitmask = ushort.MaxValue;
             ServerMuted = false;
             ServerDeafened = false;
+            //Only clear out properties. Visible entities are handled by the visibility system.
+            ClearProperties();
         }
 
         public override void Destroy()

@@ -29,7 +29,7 @@
       "Denoisers": "Шумоподавители",
       "AutomaticGainControllers": "Автоматическая регулировка усиления",
       "EchoCancelers": "Подавление эха",
-      "HardwarePreprocessors": null,
+      "HardwarePreprocessors": "Аппаратные препроцессоры",
       "PushToTalk": "Удерживай, чтобы говорить",
       "PlayPushToTalkCue": "Проигрывать звуки Push To Talk",
       "MicrophoneTest": {
@@ -64,8 +64,8 @@
       "Title": "Сетевые настройки",
       "PositioningType": {
         "Title": "Тип позиционирования",
-        "Server": null,
-        "Client": null
+        "Server": "Сервер",
+        "Client": "Клиент"
       },
       "McWssListenIp": "IP-адрес прослушивания MCWSS",
       "McWssHostPort": "Порт хоста MCWSS"
@@ -110,6 +110,9 @@
   },
   "Credits": {
     "Title": "Авторы",
+    "Website": "Веб-сайт",
+    "SourceCode": "Исходный код",
+    "Documentation": "Документация",
     "AppVersion": "Версия приложения: {0}",
     "Version": "Версия: {0}",
     "Codec": "Кодек: {0}",
@@ -118,6 +121,10 @@
       "Author": "Автор",
       "Translator": "Переводчик",
       "Programmer": "Разработчик"
+    },
+    "Attributions": {
+      "Title": "Источники",
+      "FlagsFlatIcon": "Флаги: FlatIcon"
     }
   },
   "CrashLogs": {

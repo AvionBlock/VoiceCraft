@@ -40,9 +40,20 @@
 
                     <ComboBox HorizontalAlignment="Stretch"
                               ItemsSource="{Binding Locales}"
-                              DisplayMemberBinding="{Binding Key}"
                               SelectedValue="{Binding LocaleSettingsData.Culture}"
-                              SelectedValueBinding="{Binding Value}" />
+                              SelectedValueBinding="{Binding Culture}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Spacing="5" Orientation="Horizontal">
+                                    <Image RenderOptions.BitmapInterpolationMode="None"
+                                           Source="{Binding ImageIcon}"
+                                           Height="20" />
+                                    <TextBlock Text="{Binding Name}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <TextBlock HorizontalAlignment="Left"
                                VerticalAlignment="Center"

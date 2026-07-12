@@ -2,17 +2,16 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) : IMcApiPacket
+public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) : IMcApiEventPacket
 {
     public McApiOnEntityVisibilityUpdatedPacket() : this(0, 0, false)
     {
     }
 
+    public EventType EventType => EventType.OnEntityVisibilityUpdated;
     public int Id { get; private set; } = id;
     public int Id2 { get; private set; } = id2;
     public bool Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityVisibilityUpdated;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -27,12 +26,16 @@ public class McApiOnEntityVisibilityUpdatedPacket(int id, int id2, bool value) :
         Id2 = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityVisibilityUpdatedPacket>.Return(this);
+    }
 
-    public McApiOnEntityVisibilityUpdatedPacket Set(int id = 0, int id2 = 0, bool value = false)
+    public void Set(int id = 0, int id2 = 0, bool value = false)
     {
         Id = id;
         Id2 = id2;
         Value = value;
-        return this;
     }
 }

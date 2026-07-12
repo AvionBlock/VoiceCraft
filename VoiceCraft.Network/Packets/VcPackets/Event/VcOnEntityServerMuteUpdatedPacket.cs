@@ -2,16 +2,16 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityServerMuteUpdatedPacket(int id, bool value) : IVoiceCraftPacket
+public class VcOnEntityServerMuteUpdatedPacket(int id, bool value) : IVoiceCraftEventPacket
 {
     public VcOnEntityServerMuteUpdatedPacket() : this(0, false)
     {
     }
 
+    public EventType EventType => EventType.OnEntityServerMuteUpdated;
     public int Id { get; private set; } = id;
     public bool Value { get; private set; } = value;
 
-    public VcPacketType PacketType => VcPacketType.OnEntityServerMuteUpdated;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -24,11 +24,15 @@ public class VcOnEntityServerMuteUpdatedPacket(int id, bool value) : IVoiceCraft
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityServerMuteUpdatedPacket>.Return(this);
+    }
 
-    public VcOnEntityServerMuteUpdatedPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

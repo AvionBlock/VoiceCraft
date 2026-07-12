@@ -24,11 +24,15 @@ public class McApiSetEntityDeafenRequestPacket(int id, bool value) : IMcApiPacke
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityDeafenRequestPacket>.Return(this);
+    }
 
-    public McApiSetEntityDeafenRequestPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

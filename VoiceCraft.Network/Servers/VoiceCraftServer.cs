@@ -84,17 +84,15 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetRotationRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
                 break;
-            case VcPacketType.SetCaveFactorRequest:
-                ProcessPacket(reader, onParsed, () => new VcSetCaveFactorRequest());
-                break;
-            case VcPacketType.SetMuffleFactorRequest:
-                ProcessPacket(reader, onParsed, () => new VcSetMuffleFactorRequest());
+            case VcPacketType.SetPropertyRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetPropertyRequestPacket());
                 break;
             case VcPacketType.InfoRequest:
             case VcPacketType.LogoutRequest:
             case VcPacketType.InfoResponse:
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
+            case VcPacketType.EventRequest:
             case VcPacketType.SetServerMuteRequest:
             case VcPacketType.SetServerDeafenRequest:
             case VcPacketType.SetTalkBitmaskRequest:
@@ -103,23 +101,6 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
-            case VcPacketType.OnEffectUpdated:
-            case VcPacketType.OnEntityCreated:
-            case VcPacketType.OnNetworkEntityCreated:
-            case VcPacketType.OnEntityDestroyed:
-            case VcPacketType.OnEntityNameUpdated:
-            case VcPacketType.OnEntityMuteUpdated:
-            case VcPacketType.OnEntityDeafenUpdated:
-            case VcPacketType.OnEntityServerMuteUpdated:
-            case VcPacketType.OnEntityServerDeafenUpdated:
-            case VcPacketType.OnEntityTalkBitmaskUpdated:
-            case VcPacketType.OnEntityListenBitmaskUpdated:
-            case VcPacketType.OnEntityEffectBitmaskUpdated:
-            case VcPacketType.OnEntityPositionUpdated:
-            case VcPacketType.OnEntityRotationUpdated:
-            case VcPacketType.OnEntityCaveFactorUpdated:
-            case VcPacketType.OnEntityMuffleFactorUpdated:
-            case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
         }
@@ -138,6 +119,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.InfoResponse:
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
+            case VcPacketType.EventRequest:
             case VcPacketType.SetNameRequest:
             case VcPacketType.AudioRequest:
             case VcPacketType.SetMuteRequest:
@@ -150,28 +132,10 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcPacketType.SetEffectBitmaskRequest:
             case VcPacketType.SetPositionRequest:
             case VcPacketType.SetRotationRequest:
-            case VcPacketType.SetCaveFactorRequest:
-            case VcPacketType.SetMuffleFactorRequest:
+            case VcPacketType.SetPropertyRequest:
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
-            case VcPacketType.OnEffectUpdated:
-            case VcPacketType.OnEntityCreated:
-            case VcPacketType.OnNetworkEntityCreated:
-            case VcPacketType.OnEntityDestroyed:
-            case VcPacketType.OnEntityNameUpdated:
-            case VcPacketType.OnEntityMuteUpdated:
-            case VcPacketType.OnEntityDeafenUpdated:
-            case VcPacketType.OnEntityServerMuteUpdated:
-            case VcPacketType.OnEntityServerDeafenUpdated:
-            case VcPacketType.OnEntityTalkBitmaskUpdated:
-            case VcPacketType.OnEntityListenBitmaskUpdated:
-            case VcPacketType.OnEntityEffectBitmaskUpdated:
-            case VcPacketType.OnEntityPositionUpdated:
-            case VcPacketType.OnEntityRotationUpdated:
-            case VcPacketType.OnEntityCaveFactorUpdated:
-            case VcPacketType.OnEntityMuffleFactorUpdated:
-            case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
         }
@@ -210,11 +174,8 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
             case VcSetRotationRequestPacket setRotationRequestPacket:
                 HandleSetRotationRequestPacket(setRotationRequestPacket, data);
                 break;
-            case VcSetCaveFactorRequest setCaveFactorRequestPacket:
-                HandleSetCaveFactorRequestPacket(setCaveFactorRequestPacket, data);
-                break;
-            case VcSetMuffleFactorRequest setMuffleFactorRequestPacket:
-                HandleSetMuffleFactorRequestPacket(setMuffleFactorRequestPacket, data);
+            case VcSetPropertyRequestPacket setPropertyRequestPacket:
+                HandleSetPropertyRequestPacket(setPropertyRequestPacket, data);
                 break;
             default:
                 return;
@@ -232,13 +193,20 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
     }
 
     #region Packet Events
-
+    
     private void HandleInfoRequestPacket(VcInfoRequestPacket packet, object? data)
     {
         if (data is not IPEndPoint endPoint) return;
-        var responsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket())
-            .Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
-        SendUnconnectedPacket(endPoint, responsePacket);
+        var infoResponsePacket = PacketPool<VcInfoResponsePacket>.GetPacket(() => new VcInfoResponsePacket());
+        try
+        {
+            infoResponsePacket.Set(Motd, ConnectedPeers, PositioningType, packet.Tick, Version);
+            SendUnconnectedPacket(endPoint, infoResponsePacket);
+        }
+        finally
+        {
+            infoResponsePacket.Return();
+        }
     }
 
     private void HandleLoginRequestPacket(VcLoginRequestPacket packet, object? data)
@@ -339,25 +307,16 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         if (networkEntity.PositioningType != PositioningType.Client) return;
         networkEntity.Rotation = packet.Value;
     }
-
-    private static void HandleSetCaveFactorRequestPacket(VcSetCaveFactorRequest packet, object? data)
+    
+    private static void HandleSetPropertyRequestPacket(VcSetPropertyRequestPacket packet, object? data)
     {
         if (data is not VoiceCraftNetPeer
             {
                 Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
             }) return;
         if (networkEntity.PositioningType != PositioningType.Client) return;
-        networkEntity.CaveFactor = packet.Value;
-    }
-
-    private static void HandleSetMuffleFactorRequestPacket(VcSetMuffleFactorRequest packet, object? data)
-    {
-        if (data is not VoiceCraftNetPeer
-            {
-                Tag: VoiceCraftNetworkEntity networkEntity, ConnectionState: VcConnectionState.Connected
-            }) return;
-        if (networkEntity.PositioningType != PositioningType.Client) return;
-        networkEntity.MuffleFactor = packet.Value;
+        
+        networkEntity.SetProperty(packet.Key, packet.Value);
     }
 
     #endregion
@@ -373,7 +332,7 @@ public abstract class VoiceCraftServer(VoiceCraftWorld world) : IDisposable
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 }

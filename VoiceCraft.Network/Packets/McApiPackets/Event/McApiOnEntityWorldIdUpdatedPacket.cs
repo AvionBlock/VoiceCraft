@@ -3,16 +3,15 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityWorldIdUpdatedPacket(int id, string value) : IMcApiPacket
+public class McApiOnEntityWorldIdUpdatedPacket(int id, string value) : IMcApiEventPacket
 {
     public McApiOnEntityWorldIdUpdatedPacket() : this(0, string.Empty)
     {
     }
 
+    public EventType EventType => EventType.OnEntityWorldIdUpdated;
     public int Id { get; private set; } = id;
     public string Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityWorldIdUpdated;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -25,11 +24,15 @@ public class McApiOnEntityWorldIdUpdatedPacket(int id, string value) : IMcApiPac
         Id = reader.GetInt();
         Value = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityWorldIdUpdatedPacket>.Return(this);
+    }
 
-    public McApiOnEntityWorldIdUpdatedPacket Set(int id = 0, string value = "")
+    public void Set(int id = 0, string value = "")
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

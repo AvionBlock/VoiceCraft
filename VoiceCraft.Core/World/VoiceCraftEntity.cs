@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 
@@ -9,6 +10,7 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftEntity(int id)
     {
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities = new();
+        private readonly ConcurrentDictionary<string, object> _properties = new();
         private float _loudness;
 
         //Properties
@@ -34,8 +36,7 @@ namespace VoiceCraft.Core.World
         public event Action<ushort, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<float, VoiceCraftEntity>? OnCaveFactorUpdated;
-        public event Action<float, VoiceCraftEntity>? OnMuffleFactorUpdated;
+        public event Action<string, object?, VoiceCraftEntity>? OnPropertyUpdated;
 
         //Others
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
@@ -68,6 +69,77 @@ namespace VoiceCraft.Core.World
                 _visibleEntities.Remove(key, out _);
         }
 
+        public void ClearVisibleEntities()
+        {
+            //Copy Array.
+            var entities = _visibleEntities.ToArray();
+            _visibleEntities.Clear();
+
+            foreach (var entity in entities)
+            {
+                OnVisibleEntityRemoved?.Invoke(entity.Value, this);
+            }
+        }
+
+        public void SetProperty<T>(string key, T? value)
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(key.Length, Constants.MaxStringLength, nameof(key));
+            if (value == null)
+            {
+                //Remove the property and raise the event.
+                if (_properties.TryRemove(key, out _))
+                    OnPropertyUpdated?.Invoke(key, null, this);
+                return;
+            }
+
+            //Check for the same value, if it's the same, then return.
+            if (!_properties.TryGetValue(key, out var currentValue) || currentValue is not T)
+            {
+                //Set the property and raise the event.
+                _properties[key] = value;
+                OnPropertyUpdated?.Invoke(key, value, this);
+                return;
+            }
+
+            switch (value)
+            {
+                case float floatValue:
+                    if (Math.Abs((float)currentValue - floatValue) < Constants.FloatingPointTolerance) return;
+                    break;
+                default:
+                    if (currentValue == (object)value) return;
+                    break;
+            }
+
+            //Set the property and raise the event.
+            _properties[key] = value;
+            OnPropertyUpdated?.Invoke(key, value, this);
+        }
+
+        public bool TryGetProperty<T>(string key, [NotNullWhen(true)] out T? value)
+        {
+            if (!_properties.TryGetValue(key, out var currentValue) || currentValue is not T typeValue)
+            {
+                value = default;
+                return false;
+            }
+
+            value = typeValue;
+            return true;
+        }
+
+        public void ClearProperties()
+        {
+            //Copy Array.
+            var properties = _properties.ToArray();
+            _properties.Clear();
+
+            foreach (var property in properties)
+            {
+                OnPropertyUpdated?.Invoke(property.Key, property.Value, this);
+            }
+        }
+
         public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
         {
             _loudness = frameLoudness;
@@ -81,6 +153,10 @@ namespace VoiceCraft.Core.World
             Destroyed = true;
             OnDestroyed?.Invoke(this);
 
+            //Cleanup
+            ClearProperties();
+            ClearVisibleEntities();
+
             //Deregister all events.
             OnWorldIdUpdated = null;
             OnNameUpdated = null;
@@ -91,8 +167,7 @@ namespace VoiceCraft.Core.World
             OnEffectBitmaskUpdated = null;
             OnPositionUpdated = null;
             OnRotationUpdated = null;
-            OnCaveFactorUpdated = null;
-            OnMuffleFactorUpdated = null;
+            OnPropertyUpdated = null;
             OnVisibleEntityAdded = null;
             OnVisibleEntityRemoved = null;
             OnAudioReceived = null;
@@ -102,6 +177,7 @@ namespace VoiceCraft.Core.World
         #region Updatable Properties
 
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities.Values;
+        public IEnumerable<KeyValuePair<string, object>> Properties => _properties;
 
         public string WorldId
         {
@@ -109,7 +185,7 @@ namespace VoiceCraft.Core.World
             set
             {
                 if (field == value) return;
-                if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException();
+                if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException(WorldId);
                 field = value;
                 OnWorldIdUpdated?.Invoke(field, this);
             }
@@ -121,7 +197,7 @@ namespace VoiceCraft.Core.World
             set
             {
                 if (field == value) return;
-                if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException();
+                if (value.Length > Constants.MaxStringLength) throw new ArgumentOutOfRangeException(Name);
                 field = value;
                 OnNameUpdated?.Invoke(field, this);
             }
@@ -187,7 +263,6 @@ namespace VoiceCraft.Core.World
             get;
             set
             {
-                value = Sanitize(value);
                 if (field == value) return;
                 field = value;
                 OnPositionUpdated?.Invoke(field, this);
@@ -199,62 +274,12 @@ namespace VoiceCraft.Core.World
             get;
             set
             {
-                value = Sanitize(value);
                 if (field == value) return;
                 field = value;
                 OnRotationUpdated?.Invoke(field, this);
             }
         }
 
-        public float CaveFactor
-        {
-            get;
-            set
-            {
-                value = ClampFinite(value, 0f, 1f);
-                if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
-                field = value;
-                OnCaveFactorUpdated?.Invoke(field, this);
-            }
-        }
-
-        public float MuffleFactor
-        {
-            get;
-            set
-            {
-                value = ClampFinite(value, 0f, 1f);
-                if (Math.Abs(field - value) < Constants.FloatingPointTolerance) return;
-                field = value;
-                OnMuffleFactorUpdated?.Invoke(field, this);
-            }
-        }
-
         #endregion
-
-        private static Vector3 Sanitize(Vector3 value)
-        {
-            return new Vector3(
-                Sanitize(value.X),
-                Sanitize(value.Y),
-                Sanitize(value.Z));
-        }
-
-        private static Vector2 Sanitize(Vector2 value)
-        {
-            return new Vector2(
-                Sanitize(value.X),
-                Sanitize(value.Y));
-        }
-
-        private static float Sanitize(float value)
-        {
-            return float.IsFinite(value) ? value : 0f;
-        }
-
-        private static float ClampFinite(float value, float min, float max)
-        {
-            return float.IsFinite(value) ? Math.Clamp(value, min, max) : min;
-        }
     }
 }

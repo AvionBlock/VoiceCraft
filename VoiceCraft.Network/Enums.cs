@@ -40,6 +40,47 @@ public enum EffectType : byte
     Muffle
 }
 
+public enum PropertyType : byte
+{
+    Null,
+    Boolean,
+    SByte,
+    Byte,
+    Short,
+    UShort,
+    Int,
+    UInt,
+    Long,
+    ULong,
+    Float,
+    Double
+}
+
+public enum EventType : byte
+{
+    //Events
+    None,
+    OnEffectUpdated,
+    OnEntityCreated,
+    OnNetworkEntityCreated,
+    OnEntityDestroyed,
+    OnEntityVisibilityUpdated,
+    OnEntityWorldIdUpdated,
+    OnEntityNameUpdated,
+    OnEntityMuteUpdated,
+    OnEntityDeafenUpdated,
+    OnEntityServerMuteUpdated,
+    OnEntityServerDeafenUpdated,
+    OnEntityTalkBitmaskUpdated,
+    OnEntityListenBitmaskUpdated,
+    OnEntityEffectBitmaskUpdated,
+    OnEntityPositionUpdated,
+    OnEntityRotationUpdated,
+    OnEntityPropertyUpdated,
+    OnEntityAudioReceived,
+    OnEntityAudioDataReceived,
+}
+
 public enum VcPacketType : byte
 {
     //Core
@@ -55,6 +96,7 @@ public enum VcPacketType : byte
 
     //Other/Changeable
     //Requests
+    EventRequest,
     SetNameRequest,
     AudioRequest,
     SetMuteRequest,
@@ -67,32 +109,12 @@ public enum VcPacketType : byte
     SetEffectBitmaskRequest,
     SetPositionRequest,
     SetRotationRequest,
-    SetCaveFactorRequest,
-    SetMuffleFactorRequest,
+    SetPropertyRequest,
     SetTitleRequest,
     SetDescriptionRequest,
     SetEntityVisibilityRequest,
 
     //Responses
-
-    //Events
-    OnEffectUpdated,
-    OnEntityCreated,
-    OnNetworkEntityCreated,
-    OnEntityDestroyed,
-    OnEntityNameUpdated,
-    OnEntityMuteUpdated,
-    OnEntityDeafenUpdated,
-    OnEntityServerMuteUpdated,
-    OnEntityServerDeafenUpdated,
-    OnEntityTalkBitmaskUpdated,
-    OnEntityListenBitmaskUpdated,
-    OnEntityEffectBitmaskUpdated,
-    OnEntityPositionUpdated,
-    OnEntityRotationUpdated,
-    OnEntityCaveFactorUpdated,
-    OnEntityMuffleFactorUpdated,
-    OnEntityAudioReceived
 }
 
 public enum McApiPacketType : byte
@@ -110,6 +132,7 @@ public enum McApiPacketType : byte
 
     //Other/Changeable
     //Requests
+    EventRequest,
     ResetRequest,
     SetEffectRequest,
     ClearEffectsRequest,
@@ -127,32 +150,10 @@ public enum McApiPacketType : byte
     SetEntityEffectBitmaskRequest,
     SetEntityPositionRequest,
     SetEntityRotationRequest,
-    SetEntityCaveFactorRequest,
-    SetEntityMuffleFactorRequest,
+    SetEntityPropertyRequest,
 
     //Responses
     ResetResponse,
     CreateEntityResponse,
     DestroyEntityResponse,
-
-    //Events
-    OnEffectUpdated,
-    OnEntityCreated,
-    OnNetworkEntityCreated,
-    OnEntityDestroyed,
-    OnEntityVisibilityUpdated,
-    OnEntityWorldIdUpdated,
-    OnEntityNameUpdated,
-    OnEntityMuteUpdated,
-    OnEntityDeafenUpdated,
-    OnEntityServerMuteUpdated,
-    OnEntityServerDeafenUpdated,
-    OnEntityTalkBitmaskUpdated,
-    OnEntityListenBitmaskUpdated,
-    OnEntityEffectBitmaskUpdated,
-    OnEntityPositionUpdated,
-    OnEntityRotationUpdated,
-    OnEntityCaveFactorUpdated,
-    OnEntityMuffleFactorUpdated,
-    OnEntityAudioReceived
 }

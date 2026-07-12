@@ -11,8 +11,18 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         public EffectType EffectType => EffectType.Visibility;
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
+        [JsonIgnore] public ushort Bitmask { get; set; }
+
+        public event Action<IAudioEffect>? OnDisposed;
+
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+            new VisibilityEffectProcessor(this, entity);
+
+        public void Update(IAudioEffect audioEffect)
         {
+            if (audioEffect is not VisibilityEffect visibilityEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = visibilityEffect.Bitmask;
         }
 
         public void Serialize(NetDataWriter writer)
@@ -23,16 +33,6 @@ namespace VoiceCraft.Network.Audio.Effects
         {
         }
 
-        public void Reset()
-        {
-            //Nothing to reset
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
-
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
@@ -41,8 +41,52 @@ namespace VoiceCraft.Network.Audio.Effects
             return !string.IsNullOrWhiteSpace(from.WorldId) && !string.IsNullOrWhiteSpace(to.WorldId) &&
                    from.WorldId == to.WorldId;
         }
+
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
+            }
+        }
     }
-    
+
+    public class VisibilityEffectProcessor : IAudioEffectProcessor
+    {
+        public IAudioEffect Effect { get; }
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
+
+        public VisibilityEffectProcessor(VisibilityEffect effect, VoiceCraftEntity entity)
+        {
+            Effect = effect;
+            Entity = entity;
+            Effect.OnDisposed += _ => Dispose();
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            //Do Nothing
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(VisibilityEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
     public partial class VisibilityEffectGenerationContext : JsonSerializerContext;

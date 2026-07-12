@@ -74,7 +74,7 @@ public class VisibilitySystemTests
     }
 
     private sealed class FakeNetPeer(Guid userGuid, Guid serverUserGuid, string locale, PositioningType positioningType)
-        : VoiceCraftNetPeer(userGuid, serverUserGuid, locale, positioningType)
+        : VoiceCraftNetPeer(null, userGuid, serverUserGuid, locale, positioningType)
     {
         public override VcConnectionState ConnectionState => VcConnectionState.Connected;
     }
@@ -82,18 +82,24 @@ public class VisibilitySystemTests
     private sealed class FakeVisibleEffect(bool result) : IAudioEffect, IVisible
     {
         public EffectType EffectType => EffectType.Visibility;
+        public ushort Bitmask { get; set; }
+        public event Action<IAudioEffect>? OnDisposed;
+        
+        public void Update(IAudioEffect audioEffect)
+        {
+            if (audioEffect is not FakeVisibleEffect effect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = effect.Bitmask;
+        }
+
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity)
+        {
+            throw new NotSupportedException();
+        }
 
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
         {
             return result;
-        }
-
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
-        {
-        }
-
-        public void Reset()
-        {
         }
 
         public void Serialize(NetDataWriter writer)

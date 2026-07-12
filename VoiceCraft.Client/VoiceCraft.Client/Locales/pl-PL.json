@@ -29,7 +29,7 @@
       "Denoisers": "Redukcja szumów",
       "AutomaticGainControllers": "Automatyczna regulacja wzmocnienia",
       "EchoCancelers": "Redukcja echa",
-      "HardwarePreprocessors": null,
+      "HardwarePreprocessors": "Preprocesory sprzętowe",
       "PushToTalk": "Przytrzymaj, aby mówić",
       "PlayPushToTalkCue": "Odtwarzaj dźwięki Push To Talk",
       "MicrophoneTest": {
@@ -64,8 +64,8 @@
       "Title": "Ustawienia sieci",
       "PositioningType": {
         "Title": "Typ pozycjonowania",
-        "Server": null,
-        "Client": null
+        "Server": "Serwer",
+        "Client": "Klient"
       },
       "McWssListenIp": "Adres IP nasłuchiwania MCWSS",
       "McWssHostPort": "Port hosta MCWSS"
@@ -110,6 +110,9 @@
   },
   "Credits": {
     "Title": "Twórcy",
+    "Website": "Strona internetowa",
+    "SourceCode": "Kod źródłowy",
+    "Documentation": "Dokumentacja",
     "AppVersion": "Wersja aplikacji: {0}",
     "Version": "Wersja: {0}",
     "Codec": "Kodek: {0}",
@@ -118,6 +121,10 @@
       "Author": "Autor",
       "Translator": "Tłumacz",
       "Programmer": "Programista"
+    },
+    "Attributions": {
+      "Title": "Źródła",
+      "FlagsFlatIcon": "Flagi: FlatIcon"
     }
   },
   "CrashLogs": {

@@ -16,6 +16,7 @@
     <ItemGroup>
         <PackageReference Include="Fleck"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+        <PackageReference Include="OpenPort.Net"/>
         <PackageReference Include="Spectre.Console"/>
         <PackageReference Include="System.CommandLine"/>
     </ItemGroup>
@@ -26,6 +27,7 @@
         <EmbeddedResource Include="Locales\nl-NL.json"/>
         <EmbeddedResource Include="Locales\en-US.json"/>
         <EmbeddedResource Include="Locales\ru-RU.json"/>
+        <EmbeddedResource Include="Locales\th-TH.json" />
         <EmbeddedResource Include="Locales\zh-CN.json"/>
         <EmbeddedResource Include="Locales\zh-TW.json"/>
     </ItemGroup>

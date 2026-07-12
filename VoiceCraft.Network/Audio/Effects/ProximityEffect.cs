@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
@@ -13,9 +12,15 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class ProximityEffect : IAudioEffect, IVisible
     {
-        private readonly Dictionary<VoiceCraftEntity, SampleLerpVolume> _lerpSampleVolumes = new();
+        public EffectType EffectType => EffectType.Proximity;
 
-        public static int SampleRate => Constants.SampleRate;
+        [JsonIgnore] public ushort Bitmask { get; set; }
+
+        public event Action<IAudioEffect>? OnDisposed;
+
+        public float MinRange { get; set; }
+
+        public float MaxRange { get; set; }
 
         public float WetDry
         {
@@ -23,34 +28,44 @@ namespace VoiceCraft.Network.Audio.Effects
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
 
-        public float MinRange { get; set; }
-        public float MaxRange { get; set; }
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+            new ProximityEffectProcessor(this, entity);
 
-        public EffectType EffectType => EffectType.Proximity;
-
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
+        public void Update(IAudioEffect audioEffect)
         {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((bitmask & effectBitmask) == 0) return; //Not enabled.
-
-            var range = MaxRange - MinRange;
-            if (range == 0) return; //Range is 0. Do not calculate division.
-            var distance = Vector3.Distance(from.Position, to.Position);
-            var factor = 1f - Math.Clamp((distance - MinRange) / range, 0f, 1f);
-            
-            var lerpVolumeSample = GetOrCreateLerpSampleVolume(from);
-            lerpVolumeSample.TargetVolume = factor;
-
-            for (var i = 0; i < buffer.Length; i += 2)
-            {
-                //Channel 1
-                var output = lerpVolumeSample.Transform(buffer[i]);
-                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
-                //Channel 2
-                output = lerpVolumeSample.Transform(buffer[i + 1]);
-                buffer[i + 1] = output * WetDry + buffer[i + 1] * (1.0f - WetDry);
-                lerpVolumeSample.Step();
-            }
+            if (audioEffect is not ProximityEffect proximityEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = proximityEffect.Bitmask;
+            MinRange = proximityEffect.MinRange;
+            MaxRange = proximityEffect.MaxRange;
+            WetDry = proximityEffect.WetDry;
+        }
+        
+        public float EvaluateMinRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEffect)}:{nameof(MinRange)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return MinRange;
+            return Math.Min(prop1 ?? float.MaxValue, prop2 ?? float.MaxValue);
+        }
+        
+        public float EvaluateMaxRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEffect)}:{nameof(MaxRange)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return MaxRange;
+            return Math.Max(prop1 ?? float.MinValue, prop2 ?? float.MinValue);
+        }
+        
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEffect)}:{nameof(WetDry)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
         }
 
         public void Serialize(NetDataWriter writer)
@@ -67,47 +82,84 @@ namespace VoiceCraft.Network.Audio.Effects
             WetDry = reader.GetFloat();
         }
 
-        public void Reset()
-        {
-            //Nothing to reset
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-        }
-
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
         {
             var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
             if ((bitmask & effectBitmask) == 0) return true; //Proximity checking disabled.
+            var maxRange = EvaluateMaxRangeProperty(from, to);
             var distance = Vector3.Distance(from.Position, to.Position);
-            return distance <= MaxRange;
+            return distance <= maxRange;
         }
-        
-        private SampleLerpVolume GetOrCreateLerpSampleVolume(VoiceCraftEntity entity)
+
+        public void Dispose()
         {
-            lock (_lerpSampleVolumes)
+            try
             {
-                if (_lerpSampleVolumes.TryGetValue(entity, out var lerpSampleVolume))
-                    return lerpSampleVolume;
-                lerpSampleVolume = new SampleLerpVolume(SampleRate, TimeSpan.FromMilliseconds(20));
-                _lerpSampleVolumes.TryAdd(entity, lerpSampleVolume);
-                entity.OnDestroyed += RemoveLerpSampleVolume;
-                return lerpSampleVolume;
+                OnDisposed?.Invoke(this);
             }
-        }
-        
-        private void RemoveLerpSampleVolume(VoiceCraftEntity entity)
-        {
-            lock (_lerpSampleVolumes)
+            finally
             {
-                _lerpSampleVolumes.Remove(entity);
-                entity.OnDestroyed -= RemoveLerpSampleVolume;
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
             }
         }
     }
-    
+
+    public class ProximityEffectProcessor : IAudioEffectProcessor
+    {
+        private readonly ProximityEffect _effect;
+        private readonly SampleLerpVolume _lerpVolume;
+
+        public IAudioEffect Effect => _effect;
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
+
+        public ProximityEffectProcessor(ProximityEffect effect, VoiceCraftEntity entity)
+        {
+            _effect = effect;
+            Entity = entity;
+            _lerpVolume = new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20));
+            Effect.OnDisposed += _ => Dispose();
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & Effect.Bitmask) == 0) return;
+
+            //Cache Values
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
+            var dry = 1.0f - wet;
+            var minRange = _effect.EvaluateMinRangeProperty(Entity, to);
+            var maxRange = _effect.EvaluateMaxRangeProperty(Entity, to);
+            var range = maxRange - minRange;
+            if (range == 0) return; //Range is 0. Do not calculate division.
+            
+            var distance = Vector3.Distance(Entity.Position, to.Position) - minRange;
+            var factor = 1f - Math.Clamp(distance / range, 0f, 1f);
+            _lerpVolume.TargetVolume = factor;
+
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                var output = _lerpVolume.Transform(buffer[i]);
+                buffer[i] = output * wet + buffer[i] * dry;
+                _lerpVolume.Step();
+            }
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(ProximityEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
     public partial class ProximityEffectGenerationContext : JsonSerializerContext;

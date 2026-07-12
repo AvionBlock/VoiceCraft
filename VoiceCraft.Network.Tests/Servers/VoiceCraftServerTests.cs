@@ -18,7 +18,9 @@ public class VoiceCraftServerTests
         var server = new TestVoiceCraftServer(world);
         var endpoint = new IPEndPoint(IPAddress.Loopback, 9050);
 
-        server.Dispatch(PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket()).Set(123), endpoint);
+        var request = PacketPool<VcInfoRequestPacket>.GetPacket(() => new VcInfoRequestPacket());
+        request.Set(123);
+        server.Dispatch(request, endpoint);
 
         var response = Assert.IsType<VcInfoResponsePacket>(server.LastUnconnectedPacket);
         Assert.Equal(server.Motd, response.Motd);
@@ -31,7 +33,8 @@ public class VoiceCraftServerTests
     {
         using var world = new VoiceCraftWorld();
         var server = new TestVoiceCraftServer(world);
-        var packet = new VcLoginRequestPacket().Set(
+        var packet = new VcLoginRequestPacket();
+        packet.Set(
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
@@ -95,13 +98,15 @@ public class VoiceCraftServerTests
 
     private static VcLoginRequestPacket CreateValidLoginPacket(PositioningType positioningType)
     {
-        return new VcLoginRequestPacket().Set(
+        var packet = new VcLoginRequestPacket();
+        packet.Set(
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
             "en-US",
             VoiceCraftServer.Version,
             positioningType);
+        return packet;
     }
 
     private sealed class TestVoiceCraftServer(VoiceCraftWorld world) : VoiceCraftServer(world)

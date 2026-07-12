@@ -5,8 +5,8 @@ namespace VoiceCraft.Core
     public static class Constants
     {
         public const int Major = 1; //These need to be the same on both client and server!
-        public const int Minor = 6; //These need to be the same on both client and server!
-        public const int Patch = 1; //This does not need to be the same on client and server.
+        public const int Minor = 7; //These need to be the same on both client and server!
+        public const int Patch = 0; //This does not need to be the same on client and server.
 
         //Tick
         public const int TickRate = 50;
@@ -42,10 +42,17 @@ namespace VoiceCraft.Core
         public const string ExceptionLogsFile = "ExceptionLogs.json";
         public const string TelemetryBaseUrl = "https://vc-api.avion.team";
 
+        //Credits Websites
+        public static readonly Uri SourceButtonUri = new(SourceButtonUrl);
+        public static readonly Uri WebsiteButtonUri = new(WebsiteButtonUrl);
+        public static readonly Uri DocsWebsiteButtonUri = new("https://docs.voicecraft.chat/");
+        
         //RPC
         public const string ApplicationId = "1364434932968984669";
-        public const string GithubButton = "VoiceCraft";
-        public const string GithubButtonUrl = "https://github.com/AvionBlock/VoiceCraft";
+        public const string SourceButton = "VoiceCraft";
+        public const string SourceButtonUrl = "https://gitlab.avion.team/voicecraft/VoiceCraft";
+        public const string WebsiteButton = "Website";
+        public const string WebsiteButtonUrl = "https://voicecraft.chat/";
         public const string LargeImageKey = "vc";
         public const string LargeImageText = "VoiceCraft";
 

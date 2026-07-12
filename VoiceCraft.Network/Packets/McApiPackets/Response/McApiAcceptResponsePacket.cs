@@ -9,9 +9,9 @@ public class McApiAcceptResponsePacket(string requestId, string token) : IMcApiP
     {
     }
 
-    public string Token { get; private set; } = token;
-
     public McApiPacketType PacketType => McApiPacketType.AcceptResponse;
+    public string RequestId { get; private set; } = requestId;
+    public string Token { get; private set; } = token;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -25,12 +25,14 @@ public class McApiAcceptResponsePacket(string requestId, string token) : IMcApiP
         Token = reader.GetString(Constants.MaxStringLength);
     }
 
-    public string RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<McApiAcceptResponsePacket>.Return(this);
+    }
 
-    public McApiAcceptResponsePacket Set(string requestId = "", string token = "")
+    public void Set(string requestId = "", string token = "")
     {
         RequestId = requestId;
         Token = token;
-        return this;
     }
 }

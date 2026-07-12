@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
 using VoiceCraft.Core;
@@ -11,81 +10,129 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class ProximityMuffleEffect : IAudioEffect
     {
-        private readonly Dictionary<VoiceCraftEntity, BiQuadFilter> _biquadFilters = new();
+        public EffectType EffectType => EffectType.ProximityMuffle;
 
-        public static int SampleRate => Constants.SampleRate;
+        [JsonIgnore]
+        public ushort Bitmask { get; set; }
+        
+        public event Action<IAudioEffect>? OnDisposed;
+        
+        public float Factor
+        {
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 0.0f;
 
         public float WetDry
         {
             get;
             set => field = Math.Clamp(value, 0.0f, 1.0f);
         } = 1.0f;
-
-        public EffectType EffectType => EffectType.ProximityMuffle;
-
+        
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+            new ProximityMuffleEffectProcessor(this, entity);
+        
+        public void Update(IAudioEffect audioEffect)
+        {
+            if(audioEffect is not ProximityMuffleEffect proximityMuffleEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = proximityMuffleEffect.Bitmask;
+            Factor = proximityMuffleEffect.Factor;
+            WetDry = proximityMuffleEffect.WetDry;
+        }
+        
+        public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityMuffleEffect)}:{nameof(Factor)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return Factor;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+        }
+        
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityMuffleEffect)}:{nameof(WetDry)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+        }
+        
         public void Serialize(NetDataWriter writer)
         {
+            writer.Put(Factor);
             writer.Put(WetDry);
         }
 
         public void Deserialize(NetDataReader reader)
         {
+            Factor = reader.GetFloat();
             WetDry = reader.GetFloat();
         }
-
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
+        
+        public void Dispose()
         {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((bitmask & effectBitmask) == 0)
-                return;
-
-            var factor = MathF.Max(from.MuffleFactor, to.MuffleFactor);
-            var biQuadFilter = GetOrCreateBiQuadFilter(from);
-            biQuadFilter.SetLowPassFilter(SampleRate, 200, 1);
-
-            for (var i = 0; i < buffer.Length; i++)
+            try
             {
-                var output = biQuadFilter.Transform(buffer[i]) * factor + buffer[i] * (1.0f - factor);
-                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
             }
         }
+    }
+    
+    public class ProximityMuffleEffectProcessor : IAudioEffectProcessor
+    {
+        private readonly ProximityMuffleEffect _effect;
+        private readonly BiQuadFilter _biQuadFilter;
+        
+        public IAudioEffect Effect => _effect;
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
 
-        public void Reset()
+        public ProximityMuffleEffectProcessor(ProximityMuffleEffect effect, VoiceCraftEntity entity)
         {
-            lock (_biquadFilters)
+            _effect = effect;
+            Entity = entity;
+            _biQuadFilter = new BiQuadFilter();
+            Effect.OnDisposed += _ => Dispose();
+            _biQuadFilter.SetLowPassFilter(Constants.SampleRate, 200, 1);
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & Effect.Bitmask) == 0) return;
+            
+            //Cache Values
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
+            var dry = 1.0f - wet;
+            var factor = _effect.EvaluateFactorProperty(Entity, to);
+            
+            for (var i = 0; i < buffer.Length; i++)
             {
-                _biquadFilters.Clear();
+                var output = _biQuadFilter.Transform(buffer[i]) * factor + buffer[i] * (1.0f - factor);
+                buffer[i] = output * wet + buffer[i] * dry;
             }
         }
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-        }
-
-        private BiQuadFilter GetOrCreateBiQuadFilter(VoiceCraftEntity entity)
-        {
-            lock (_biquadFilters)
+            try
             {
-                if (_biquadFilters.TryGetValue(entity, out var biQuadFilter))
-                    return biQuadFilter;
-                biQuadFilter = new BiQuadFilter();
-                _biquadFilters.TryAdd(entity, biQuadFilter);
-                entity.OnDestroyed += RemoveBiQuadFilter;
-                return biQuadFilter;
+                OnDisposed?.Invoke(this);
             }
-        }
-
-        private void RemoveBiQuadFilter(VoiceCraftEntity entity)
-        {
-            lock (_biquadFilters)
+            finally
             {
-                _biquadFilters.Remove(entity);
-                entity.OnDestroyed -= RemoveBiQuadFilter;
+                GC.SuppressFinalize(this);
             }
         }
     }
-    
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(ProximityMuffleEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
     public partial class ProximityMuffleEffectGenerationContext : JsonSerializerContext;

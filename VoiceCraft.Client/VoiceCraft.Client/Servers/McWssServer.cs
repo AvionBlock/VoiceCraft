@@ -219,13 +219,9 @@ public class McWssServer(VoiceCraftEntity client) : IDisposable
         var position = localPlayerUpdatedEvent.body.position;
         var rotation = localPlayerUpdatedEvent.body.rotation;
         var worldId = localPlayerUpdatedEvent.body.worldId;
-        var caveFactor = localPlayerUpdatedEvent.body.caveFactor;
-        var muffleFactor = localPlayerUpdatedEvent.body.mufflefactor;
         client.Name = name;
         client.Position = new Vector3(position.x, position.y, position.z);
         client.Rotation = new Vector2(rotation.x, rotation.y);
         client.WorldId = worldId;
-        client.CaveFactor = caveFactor;
-        client.MuffleFactor = muffleFactor;
     }
 }

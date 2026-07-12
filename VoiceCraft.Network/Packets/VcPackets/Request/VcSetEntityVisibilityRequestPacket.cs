@@ -24,11 +24,15 @@ public class VcSetEntityVisibilityRequestPacket(int id, bool value) : IVoiceCraf
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetEntityVisibilityRequestPacket>.Return(this);
+    }
 
-    public VcSetEntityVisibilityRequestPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

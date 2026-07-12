@@ -38,12 +38,16 @@ public class VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int
         reader.GetBytes(Buffer, Length);
     }
 
-    public VcAudioRequestPacket Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
+    public void Return()
+    {
+        PacketPool<VcAudioRequestPacket>.Return(this);
+    }
+
+    public void Set(ushort timestamp = 0, float loudness = 0f, int length = 0, byte[]? data = null)
     {
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
         Buffer = data ?? [];
-        return this;
     }
 }

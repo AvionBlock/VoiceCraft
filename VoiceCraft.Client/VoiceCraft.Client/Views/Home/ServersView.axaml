@@ -12,8 +12,8 @@
     <Panel>
         <ListBox Background="Transparent"
                  ItemsSource="{Binding ServersSettings.Servers}"
-                 SelectedItem="{Binding SelectedServer}"
-                 SelectionMode="Single">
+                 SelectionMode="Single"
+                 SelectionChanged="Servers_OnSelectionChanged">
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="CornerRadius" Value="5" />

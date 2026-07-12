@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Text.Json.Serialization;
 using LiteNetLib.Utils;
@@ -12,27 +11,18 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class ProximityEchoEffect : IAudioEffect
     {
-        private readonly Dictionary<VoiceCraftEntity, FractionalDelayLine> _delayLines = new();
-
-        private float _delay;
-
-        public ProximityEchoEffect()
-        {
-            Delay = 0.5f;
-        }
-
         public static int SampleRate => Constants.SampleRate;
 
-        public float WetDry
-        {
-            get;
-            set => field = Math.Clamp(value, 0.0f, 1.0f);
-        } = 1.0f;
+        public EffectType EffectType => EffectType.ProximityEcho;
+
+        [JsonIgnore] public ushort Bitmask { get; set; }
+
+        public event Action<IAudioEffect>? OnDisposed;
 
         public float Delay
         {
-            get => _delay / SampleRate;
-            set => _delay = SampleRate * Math.Clamp(value, 0.0f, 10.0f);
+            get => field / SampleRate;
+            set => field = SampleRate * Math.Clamp(value, 0.0f, 10.0f);
         }
 
         public float Range
@@ -41,12 +31,78 @@ namespace VoiceCraft.Network.Audio.Effects
             set => field = Math.Max(value, 0.0f);
         }
 
-        public EffectType EffectType => EffectType.ProximityEcho;
+        public float Factor
+        {
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 0.0f;
+
+        public float WetDry
+        {
+            get;
+            set => field = Math.Clamp(value, 0.0f, 1.0f);
+        } = 1.0f;
+
+        public ProximityEchoEffect()
+        {
+            Delay = 0.5f;
+        }
+
+        public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+            new ProximityEchoEffectProcessor(this, entity);
+
+        public void Update(IAudioEffect audioEffect)
+        {
+            if (audioEffect is not ProximityEchoEffect proximityEchoEffect)
+                throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+            Bitmask = proximityEchoEffect.Bitmask;
+            Delay = proximityEchoEffect.Delay;
+            Range = proximityEchoEffect.Range;
+            Factor = proximityEchoEffect.Factor;
+            WetDry = proximityEchoEffect.WetDry;
+        }
+
+        public float EvaluateDelayProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(Delay)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return Delay;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 10.0f);
+        }
+
+        public float EvaluateRangeProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(Range)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return Range;
+            return Math.Max(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f); //Only Positive Integers.
+        }
+
+        public float EvaluateFactorProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(Factor)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return Factor;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+        }
+
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(ProximityEchoEffect)}:{nameof(WetDry)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
+        }
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(Delay);
             writer.Put(Range);
+            writer.Put(Factor);
             writer.Put(WetDry);
         }
 
@@ -54,71 +110,85 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             Delay = reader.GetFloat();
             Range = reader.GetFloat();
+            Factor = reader.GetFloat();
             WetDry = reader.GetFloat();
         }
 
-        public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
+        public void Dispose()
         {
-            var bitmask = from.TalkBitmask & to.ListenBitmask & from.EffectBitmask & to.EffectBitmask;
-            if ((bitmask & effectBitmask) == 0)
-                return; //There may still be echo from the entity itself but that will phase out over time.
-
-            var factor = 0f;
-            if (Range != 0)
+            try
             {
-                var range = Math.Clamp(Vector3.Distance(from.Position, to.Position) / Range, 0.0f,
-                    0.9f); //The range at which the echo will take effect. Never set to 1.0 as it may cause infinite echo.
-                factor = Math.Max(from.CaveFactor, to.CaveFactor) * range;
+                OnDisposed?.Invoke(this);
+            }
+            finally
+            {
+                OnDisposed = null;
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+
+    public class ProximityEchoEffectProcessor : IAudioEffectProcessor
+    {
+        private readonly ProximityEchoEffect _effect;
+        private readonly FractionalDelayLine _delayLine;
+
+        public IAudioEffect Effect => _effect;
+        public VoiceCraftEntity Entity { get; }
+        public event Action<IAudioEffectProcessor>? OnDisposed;
+
+        public ProximityEchoEffectProcessor(ProximityEchoEffect effect, VoiceCraftEntity entity)
+        {
+            _effect = effect;
+            Entity = entity;
+            _delayLine = new FractionalDelayLine(Constants.SampleRate, _effect.Delay, InterpolationMode.Nearest);
+            Effect.OnDisposed += _ => Dispose();
+        }
+
+        public void Process(VoiceCraftEntity to, Span<float> buffer)
+        {
+            var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
+            if ((bitmask & Effect.Bitmask) == 0) return;
+
+            var factor = 0.0f;
+            var range = _effect.EvaluateRangeProperty(Entity, to);
+            if (range != 0) //Range is 0. Do not calculate division.
+            {
+                //The range at which the echo will take effect. Never set to 1.0 as it may cause infinite echo.
+                var distance = Vector3.Distance(Entity.Position, to.Position);
+                range = Math.Clamp(distance / range, 0.0f, 0.9f);
+                factor = _effect.EvaluateFactorProperty(Entity, to) * range;
             }
 
-            var delayLine = GetOrCreateDelayLine(from);
-            delayLine.Ensure(SampleRate, Delay);
+            //Cache Values
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
+            var dry = 1.0f - wet;
+            var delay = _effect.EvaluateDelayProperty(Entity, to);
+            _delayLine.Ensure(ProximityEchoEffect.SampleRate, delay);
+            delay *= ProximityEchoEffect.SampleRate;
 
             for (var i = 0; i < buffer.Length; i++)
             {
-                var delayed = delayLine.Read(_delay) * factor;
+                var delayed = _delayLine.Read(delay) * factor;
                 var output = buffer[i] + delayed;
-                delayLine.Write(output);
-                buffer[i] = output * WetDry + buffer[i] * (1.0f - WetDry);
-            }
-        }
-
-        public void Reset()
-        {
-            lock (_delayLines)
-            {
-                _delayLines.Clear();
+                _delayLine.Write(output);
+                buffer[i] = output * wet + buffer[i] * dry;
             }
         }
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-        }
-
-        private FractionalDelayLine GetOrCreateDelayLine(VoiceCraftEntity entity)
-        {
-            lock (_delayLines)
+            try
             {
-                if (_delayLines.TryGetValue(entity, out var delayLine))
-                    return delayLine;
-                delayLine = new FractionalDelayLine(SampleRate, Delay, InterpolationMode.Nearest);
-                _delayLines.TryAdd(entity, delayLine);
-                entity.OnDestroyed += RemoveDelayLine;
-                return delayLine;
+                OnDisposed?.Invoke(this);
             }
-        }
-
-        private void RemoveDelayLine(VoiceCraftEntity entity)
-        {
-            lock (_delayLines)
+            finally
             {
-                _delayLines.Remove(entity);
-                entity.OnDestroyed -= RemoveDelayLine;
+                GC.SuppressFinalize(this);
             }
         }
     }
-    
+
     [JsonSourceGenerationOptions(WriteIndented = true)]
     [JsonSerializable(typeof(ProximityEchoEffect), GenerationMode = JsonSourceGenerationMode.Metadata)]
     public partial class ProximityEchoEffectGenerationContext : JsonSerializerContext;

@@ -26,11 +26,15 @@ public class McApiSetEntityRotationRequestPacket(int id, Vector2 value) : IMcApi
         Id = reader.GetInt();
         Value = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityRotationRequestPacket>.Return(this);
+    }
 
-    public McApiSetEntityRotationRequestPacket Set(int id = 0, Vector2 value = new())
+    public void Set(int id = 0, Vector2 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

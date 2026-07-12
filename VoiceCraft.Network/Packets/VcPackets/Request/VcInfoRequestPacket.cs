@@ -8,9 +8,8 @@ public class VcInfoRequestPacket(int tick) : IVoiceCraftPacket
     {
     }
 
-    public int Tick { get; private set; } = tick;
-
     public VcPacketType PacketType => VcPacketType.InfoRequest;
+    public int Tick { get; private set; } = tick;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -21,10 +20,14 @@ public class VcInfoRequestPacket(int tick) : IVoiceCraftPacket
     {
         Tick = reader.GetInt();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcInfoRequestPacket>.Return(this);
+    }
 
-    public VcInfoRequestPacket Set(int tick = 0)
+    public void Set(int tick = 0)
     {
         Tick = tick;
-        return this;
     }
 }

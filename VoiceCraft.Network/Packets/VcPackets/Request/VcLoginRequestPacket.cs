@@ -18,6 +18,7 @@ public class VcLoginRequestPacket(
     {
     }
 
+    public Guid RequestId { get; private set; } = requestId;
     public Guid UserGuid { get; private set; } = userGuid;
     public Guid ServerUserGuid { get; private set; } = serverUserGuid;
     public string Locale { get; private set; } = locale;
@@ -48,9 +49,12 @@ public class VcLoginRequestPacket(
         PositioningType = (PositioningType)reader.GetByte();
     }
 
-    public Guid RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<VcLoginRequestPacket>.Return(this);
+    }
 
-    public VcLoginRequestPacket Set(
+    public void Set(
         Guid requestId = new(),
         Guid userGuid = new(),
         Guid serverUserGuid = new(),
@@ -64,6 +68,5 @@ public class VcLoginRequestPacket(
         Locale = locale;
         Version = version ?? new Version(0, 0, 0);
         PositioningType = positioningType;
-        return this;
     }
 }

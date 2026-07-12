@@ -18,10 +18,13 @@ public class AudioEffectSystem : IDisposable
 {
     private readonly OrderedDictionary<ushort, IAudioEffect> _audioEffects = new();
     private OrderedDictionary<ushort, IAudioEffect> _defaultAudioEffects = new();
-    private volatile ImmutableSortedDictionary<ushort, IAudioEffect> _audioEffectsSnapshot =
-        ImmutableSortedDictionary<ushort, IAudioEffect>.Empty;
+
+    private volatile ImmutableList<KeyValuePair<ushort, IAudioEffect>> _audioEffectsSnapshot =
+        ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
+
     private readonly Lock _lock = new();
-    public IImmutableDictionary<ushort, IAudioEffect> AudioEffects => _audioEffectsSnapshot;
+
+    public ImmutableList<KeyValuePair<ushort, IAudioEffect>> AudioEffects => _audioEffectsSnapshot;
 
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects
     {
@@ -49,30 +52,43 @@ public class AudioEffectSystem : IDisposable
     public void SetEffect(ushort bitmask, IAudioEffect? effect)
     {
         if (bitmask == ushort.MinValue) return; //Setting a bitmask of 0 does literally nothing.
-        lock (_audioEffects)
+        lock (_lock)
         {
             switch (effect)
             {
                 case null when _audioEffects.Remove(bitmask, out var audioEffect):
+                    audioEffect.OnDisposed -= RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
+                    _audioEffectsSnapshot = _audioEffects.ToImmutableList(); //Rebuild
                     audioEffect.Dispose();
-                    _audioEffectsSnapshot = _audioEffects.ToImmutableSortedDictionary();
                     OnEffectSet?.Invoke(bitmask, null);
                     return;
                 case null:
                     return;
             }
 
-            if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && !ReferenceEquals(oldEffect, effect))
-                oldEffect.Dispose();
+            if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && oldEffect.EffectType == effect.EffectType)
+            {
+                oldEffect.Update(effect); //Update old effect with new effect parameters.
+                //Don't need to re-update the snapshot as there have been no effect stack changes.
+                OnEffectSet?.Invoke(bitmask, oldEffect);
+                return;
+            }
+            
+            //Swap Effect.
+            effect.OnDisposed += RemoveEffect; //Subscribe to new effect.
             _audioEffects[bitmask] = effect;
-            _audioEffectsSnapshot = _audioEffects.ToImmutableSortedDictionary();
+            _audioEffectsSnapshot = _audioEffects.ToImmutableList();
+            
+            //Dispose old effect if it exists.
+            oldEffect?.OnDisposed -= RemoveEffect;
+            oldEffect?.Dispose();
             OnEffectSet?.Invoke(bitmask, effect);
         }
     }
 
     public bool TryGetEffect(ushort bitmask, [NotNullWhen(true)] out IAudioEffect? effect)
     {
-        lock (_audioEffects)
+        lock (_lock)
         {
             return _audioEffects.TryGetValue(bitmask, out effect);
         }
@@ -80,11 +96,12 @@ public class AudioEffectSystem : IDisposable
 
     public void ClearEffects()
     {
-        lock (_audioEffects)
+        lock (_lock)
         {
-            var effects = _audioEffects.ToArray(); //Copy the effects.
+            //Clone snapshot and clear everything.
+            var effects = _audioEffectsSnapshot.ToArray();
             _audioEffects.Clear();
-            _audioEffectsSnapshot = ImmutableSortedDictionary<ushort, IAudioEffect>.Empty;
+            _audioEffectsSnapshot = ImmutableList<KeyValuePair<ushort, IAudioEffect>>.Empty;
             foreach (var effect in effects)
             {
                 effect.Value.Dispose();
@@ -93,7 +110,7 @@ public class AudioEffectSystem : IDisposable
         }
     }
 
-    public int Read(Span<float> buffer, VoiceCraftClient client)
+    public int Read(VoiceCraftClient client, Span<float> buffer)
     {
         var bufferLength = buffer.Length;
         var outputBuffer = ArrayPool<float>.Shared.Rent(bufferLength);
@@ -108,7 +125,7 @@ public class AudioEffectSystem : IDisposable
                 entitySpanBuffer.Clear();
                 try
                 {
-                    var entityRead = ProcessEntityAudio(entitySpanBuffer, x, client);
+                    var entityRead = ProcessEntityAudio(x, client, entitySpanBuffer);
                     lock (_lock)
                     {
                         read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
@@ -131,35 +148,6 @@ public class AudioEffectSystem : IDisposable
         }
     }
 
-    private int ProcessEntityAudio(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
-    {
-        var monoCount = buffer.Length / 2;
-        var monoBuffer = ArrayPool<float>.Shared.Rent(monoCount);
-        var monoSpanBuffer = monoBuffer.AsSpan(0, monoCount);
-        monoSpanBuffer.Clear();
-
-        try
-        {
-            var read = from.Read(monoSpanBuffer);
-            if (read <= 0) read = monoCount; //Do a full read.
-            read = SampleMonoToStereo.Read(monoSpanBuffer[..read], buffer); //To Stereo
-            ProcessEntityEffects(buffer[..read], from, to); //Process Effects
-            read = SampleVolume.Read(buffer[..read], from.Volume); //Adjust the volume of the entity.
-            return read;
-        }
-        finally
-        {
-            ArrayPool<float>.Shared.Return(monoBuffer);
-        }
-    }
-
-    private void ProcessEntityEffects(Span<float> buffer, VoiceCraftClientEntity from, VoiceCraftEntity to)
-    {
-        var snapshot = _audioEffectsSnapshot;
-        foreach (var effect in snapshot)
-            effect.Value.Process(from, to, effect.Key, buffer);
-    }
-
     public void Dispose()
     {
         Dispose(true);
@@ -171,5 +159,40 @@ public class AudioEffectSystem : IDisposable
         if (!disposing) return;
         ClearEffects();
         OnEffectSet = null;
+    }
+
+    private int ProcessEntityAudio(VoiceCraftClientEntity from, VoiceCraftEntity to, Span<float> buffer)
+    {
+        var read = from.Read(buffer);
+        if (read <= 0) read = buffer.Length; //Do a full read.
+        ProcessEntityEffects(from, to, buffer[..read]); //Process Effects
+        read = SampleVolume.Read(buffer[..read], from.Volume); //Adjust the volume of the entity.
+        return read;
+    }
+
+    private void ProcessEntityEffects(VoiceCraftClientEntity from, VoiceCraftEntity to, Span<float> buffer)
+    {
+        var snapshot = _audioEffectsSnapshot;
+        foreach (var effect in snapshot)
+        {
+            if (!from.TryGetEffectProcessor(effect.Key, out var processor))
+            {
+                processor = effect.Value.GetProcessor(from);
+                from.SetEffectProcessor(effect.Key, processor);
+            }
+
+            processor.Process(to, buffer);
+        }
+    }
+    
+    private void RemoveEffect(IAudioEffect audioEffect)
+    {
+        lock (_lock)
+        {
+            audioEffect.OnDisposed -= RemoveEffect;
+            if (_audioEffects.Remove(audioEffect.Bitmask, out _))
+                //Update Snapshot if successfully removed.
+                _audioEffectsSnapshot = _audioEffects.ToImmutableList();
+        }
     }
 }
