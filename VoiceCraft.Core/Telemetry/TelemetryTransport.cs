@@ -28,9 +28,14 @@ public class TelemetryTransport
             exception = new Exception(
                 $"Telemetry POST {uri} failed with {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
-            exception = new Exception($"Telemetry POST {uri} failed with exception {ex.GetType().Name}: {ex.Message}");
+            exception = new Exception(
+                $"Telemetry POST {uri} failed with exception {ex.GetType().Name}: {ex.Message}", ex);
         }
 
         throw exception;
@@ -53,10 +58,14 @@ public class TelemetryTransport
             exception = new Exception(
                 $"Telemetry dump POST {uri} failed with {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             exception = new Exception(
-                $"Telemetry dump POST {uri} failed with exception {ex.GetType().Name}: {ex.Message}");
+                $"Telemetry dump POST {uri} failed with exception {ex.GetType().Name}: {ex.Message}", ex);
         }
 
         throw exception;

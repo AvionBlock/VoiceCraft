@@ -175,7 +175,11 @@ public class AllocationRegressionTests
     {
         public EffectType EffectType => EffectType.Visibility;
         public ushort Bitmask { get; set; }
-        public event Action<IAudioEffect>? OnDisposed;
+        public event Action<IAudioEffect>? OnDisposed
+        {
+            add { }
+            remove { }
+        }
 
         public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
         {

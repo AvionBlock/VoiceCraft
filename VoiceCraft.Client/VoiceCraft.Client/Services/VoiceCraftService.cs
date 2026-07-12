@@ -169,7 +169,7 @@ public class VoiceCraftService(
         catch (Exception ex)
         {
             LogService.Log(ex);
-            DisconnectAsync(ex.Message).GetAwaiter().GetResult();
+            await DisconnectAsync(ex.Message);
         }
     }
 
@@ -199,6 +199,9 @@ public class VoiceCraftService(
             _audioPreprocessor = null;
         }
 
+        _audioClipper = null;
+        _pttToneProvider = null;
+
         if (_mcWssServer != null)
         {
             StopMcWssServer(_mcWssServer);
@@ -221,7 +224,7 @@ public class VoiceCraftService(
         if (_audioClipper != null)
             read = _audioClipper.Read(buffer[..read]);
         read = SampleVolume.Read(buffer[..read], client.OutputVolume);
-        _audioPreprocessor?.ProcessPlayback(buffer);
+        _audioPreprocessor?.ProcessPlayback(buffer[..read]);
         return read;
     }
 

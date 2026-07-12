@@ -144,17 +144,14 @@ public class VoiceCraftServerTests
         public override void SendUnconnectedPacket<T>(IPEndPoint endPoint, T packet)
         {
             LastUnconnectedPacket = packet;
-            PacketPool<T>.Return(packet);
         }
 
         public override void SendPacket<T>(VoiceCraftNetPeer vcNetPeer, T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
         {
-            PacketPool<T>.Return(packet);
         }
 
         public override void Broadcast<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable, params VoiceCraftNetPeer?[] excludes)
         {
-            PacketPool<T>.Return(packet);
         }
 
         public override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)

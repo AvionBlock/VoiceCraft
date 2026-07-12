@@ -115,11 +115,13 @@ public class RegisteredBackgroundImage(Guid id, string name, string path)
         {
             using var fileStream = File.OpenRead(Path);
             BackgroundImageBitmap = new Bitmap(fileStream);
+            return;
         }
 
-        if (!AssetLoader.Exists(new Uri(Path))) throw new FileNotFoundException("Could not find image file.", Path);
-        BackgroundImageBitmap = new Bitmap(AssetLoader.Open(new Uri(Path)));
-
+        var uri = new Uri(Path);
+        if (!AssetLoader.Exists(uri)) throw new FileNotFoundException("Could not find image file.", Path);
+        using var assetStream = AssetLoader.Open(uri);
+        BackgroundImageBitmap = new Bitmap(assetStream);
     }
 
     public void UnloadBitmap()

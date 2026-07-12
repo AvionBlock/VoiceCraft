@@ -43,7 +43,7 @@ public class OpusAudioEncoder: IAudioEncoder
     
     public void Dispose()
     {
-        Dispose(false);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
     

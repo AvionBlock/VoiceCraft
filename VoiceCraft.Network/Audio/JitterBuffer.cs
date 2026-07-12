@@ -18,37 +18,20 @@ public class JitterBuffer(TimeSpan maxDropOutTime)
     private readonly LinkedList<JitterPacket> _data = [];
     private ushort? _currentSeqId;
 
-    private JitterPacket? First => _data.First?.Value;
-    private JitterPacket? Last => _data.Last?.Value;
-
-    private static bool IsBeforeWrapAround(JitterPacket? packet)
-    {
-        return IsBeforeWrapAround(packet?.SequenceId ?? 0);
-    }
-
-    private static bool IsBeforeWrapAround(ushort seq)
-    {
-        return seq > ushort.MaxValue / 2 + ushort.MaxValue / 4;
-    }
-
-    private static bool IsAfterWrapAround(JitterPacket? packet)
-    {
-        return packet?.SequenceId < ushort.MaxValue / 4;
-    }
-
     public bool Get([NotNullWhen(true)] out JitterPacket? packet)
     {
         lock (_lock)
         {
             packet = null;
-            if (Last == null) return false;
+            var next = _data.First?.Value;
+            if (next == null) return false;
 
-            if (_currentSeqId.HasValue && _currentSeqId != Last.SequenceId)
-                if (DateTime.UtcNow - Last.ReceivedTime < maxDropOutTime)
+            if (_currentSeqId.HasValue && _currentSeqId != next.SequenceId)
+                if (DateTime.UtcNow - next.ReceivedTime < maxDropOutTime)
                     return false;
 
-            packet = Last;
-            _data.RemoveLast();
+            packet = next;
+            _data.RemoveFirst();
             _currentSeqId = (ushort)(packet.SequenceId + 1);
             return true;
         }
@@ -58,49 +41,25 @@ public class JitterBuffer(TimeSpan maxDropOutTime)
     {
         lock (_lock)
         {
-            if (_data.Count == 0)
-            {
-                _data.AddFirst(current);
-                return;
-            }
-
-            // if seq number is greater or equal than we are waiting for then append to last position
-            if (_currentSeqId.HasValue && _currentSeqId >= current.SequenceId)
-                if (Last?.SequenceId > _currentSeqId ||
-                    (IsAfterWrapAround(Last) && IsBeforeWrapAround(_currentSeqId.Value)))
-                {
-                    _data.AddLast(current);
-                    return;
-                }
-
-            if (IsBeforeWrapAround(Last) && !IsAfterWrapAround(First) &&
-                IsAfterWrapAround(current)) // first incoming packet after wraparound
-            {
-                _data.AddFirst(current);
-                return;
-            }
+            _currentSeqId ??= current.SequenceId;
+            var distance = GetSequenceDistance(_currentSeqId.Value, current.SequenceId);
+            if (distance < 0) return; // The packet has already been played or skipped.
 
             var node = _data.First;
             while (node != null)
             {
-                // if it is packet before wrap around skip all packets after wrap around and then insert the packet
-                if (IsBeforeWrapAround(current) && IsBeforeWrapAround(Last) && IsAfterWrapAround(node.Value))
-                {
-                    node = node.Next;
-                    continue;
-                }
-
-                if ((IsBeforeWrapAround(node.Value) && IsAfterWrapAround(current)) ||
-                    current.SequenceId > node.Value.SequenceId)
+                var nodeDistance = GetSequenceDistance(_currentSeqId.Value, node.Value.SequenceId);
+                if (distance == nodeDistance) return; // Duplicate.
+                if (distance < nodeDistance)
                 {
                     _data.AddBefore(node, current);
-                    break;
+                    return;
                 }
-
-                if (current.SequenceId == node.Value.SequenceId) break;
 
                 node = node.Next;
             }
+
+            _data.AddLast(current);
         }
     }
 
@@ -111,6 +70,11 @@ public class JitterBuffer(TimeSpan maxDropOutTime)
             _currentSeqId = null;
             _data.Clear();
         }
+    }
+
+    private static int GetSequenceDistance(ushort expected, ushort sequenceId)
+    {
+        return unchecked((short)(sequenceId - expected));
     }
 }
 

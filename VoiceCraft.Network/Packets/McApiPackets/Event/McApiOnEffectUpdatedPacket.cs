@@ -32,6 +32,7 @@ public class McApiOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : 
 
     public void Return()
     {
+        Effect = null;
         PacketPool<McApiOnEffectUpdatedPacket>.Return(this);
     }
 

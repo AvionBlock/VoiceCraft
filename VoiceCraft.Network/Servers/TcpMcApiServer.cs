@@ -365,7 +365,8 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
         SendPacketsLogic(tcpNetPeer);
         if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
         //Double the amount of time. We remove the peer.
-        if (DateTime.UtcNow - tcpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
+        if (DateTime.UtcNow - tcpNetPeer.LastUpdate <
+            TimeSpan.FromMilliseconds((long)Config.MaxTimeoutMs * 2)) return;
         Disconnect(tcpNetPeer, true);
     }
 
@@ -417,7 +418,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
             return;
         }
 
-        var wasConnected = mcApiPeer.ConnectionState != McApiConnectionState.Disconnected;
+        var wasConnected = mcApiPeer.ConnectionState == McApiConnectionState.Connected;
         var sessionToken = mcApiPeer.SessionToken;
         mcApiPeer.SetSessionToken(string.Empty);
         mcApiPeer.ConnectionState = McApiConnectionState.Disconnected;
@@ -432,6 +433,7 @@ public class TcpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffect
     {
         lock (_lock)
         {
+            if (_mcApiPeers.Count >= Config.MaxClients) return false;
             if (!_mcApiPeers.TryAdd(client, peer)) return false;
             _peersSnapshot = [.._mcApiPeers.Values];
             return true;
