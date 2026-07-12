@@ -1,4 +1,4 @@
-using System.Numerics;
+using System.Collections.Immutable;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets;
@@ -18,25 +18,14 @@ public class McApiServerTests
         using var world = new VoiceCraftWorld();
         using var effectSystem = new AudioEffectSystem();
         var server = new TestMcApiServer(world, effectSystem);
-        var peer = new HttpMcApiNetPeer
+        var peer = new HttpMcApiNetPeer(null)
         {
             ConnectionState = McApiConnectionState.Connected
         };
         peer.SetSessionToken("session-token");
 
-        var request = new McApiCreateEntityRequestPacket().Set(
-            requestId: "create-1",
-            worldId: "world",
-            name: "Created Entity",
-            muted: true,
-            deafened: false,
-            talkBitmask: 3,
-            listenBitmask: 5,
-            effectBitmask: 7,
-            position: new Vector3(1, 2, 3),
-            rotation: new Vector2(4, 5),
-            caveFactor: 0.25f,
-            muffleFactor: 0.5f);
+        var request = new McApiCreateEntityRequestPacket();
+        request.Set(requestId: "create-1");
 
         server.Dispatch(request, peer);
 
@@ -45,16 +34,13 @@ public class McApiServerTests
 
         var entity = world.GetEntity(response.Id);
         Assert.NotNull(entity);
-        Assert.Equal("world", entity.WorldId);
-        Assert.Equal("Created Entity", entity.Name);
-        Assert.True(entity.Muted);
-        Assert.Equal((ushort)3, entity.TalkBitmask);
-        Assert.Equal((ushort)5, entity.ListenBitmask);
-        Assert.Equal((ushort)7, entity.EffectBitmask);
-        Assert.Equal(new Vector3(1, 2, 3), entity.Position);
-        Assert.Equal(new Vector2(4, 5), entity.Rotation);
-        Assert.Equal(0.25f, entity.CaveFactor);
-        Assert.Equal(0.5f, entity.MuffleFactor);
+        Assert.Equal(string.Empty, entity.WorldId);
+        Assert.Equal("New Entity", entity.Name);
+        Assert.False(entity.Muted);
+        Assert.False(entity.Deafened);
+        Assert.Equal(ushort.MaxValue, entity.TalkBitmask);
+        Assert.Equal(ushort.MaxValue, entity.ListenBitmask);
+        Assert.Equal(ushort.MaxValue, entity.EffectBitmask);
     }
 
     private sealed class TestMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffectSystem)
@@ -65,13 +51,14 @@ public class McApiServerTests
         public override string LoginToken => string.Empty;
         public override uint MaxClients => 10;
         public override int ConnectedPeers => 1;
+        public override ImmutableList<McApiNetPeer> Peers => ImmutableList<McApiNetPeer>.Empty;
 
         public override event Action<McApiNetPeer, string>? OnPeerConnected;
         public override event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
-        public void Dispatch(IMcApiPacket packet, object? data)
+        public void Dispatch(IMcApiPacket packet, McApiNetPeer netPeer)
         {
-            ExecutePacket(packet, data);
+            ExecutePacket(packet, netPeer);
         }
 
         public override void Start()
@@ -99,14 +86,14 @@ public class McApiServerTests
         {
         }
 
-        protected override void AcceptRequest(McApiLoginRequestPacket packet, object? data)
+        protected override void AcceptRequest(McApiLoginRequestPacket packet, McApiNetPeer netPeer)
         {
-            OnPeerConnected?.Invoke((McApiNetPeer)data!, string.Empty);
+            OnPeerConnected?.Invoke(netPeer, string.Empty);
         }
 
-        protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, object? data)
+        protected override void RejectRequest(McApiLoginRequestPacket packet, string reason, McApiNetPeer netPeer)
         {
-            OnPeerDisconnected?.Invoke((McApiNetPeer)data!, reason);
+            OnPeerDisconnected?.Invoke(netPeer, reason);
         }
     }
 }

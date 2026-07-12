@@ -178,9 +178,7 @@ public sealed class ClientTelemetryService(SettingsService settingsService)
             return IsWindows11(Environment.OSVersion.Version) ? "Windows 11" : "Windows";
         if (OperatingSystem.IsLinux())
             return "Linux";
-        return OperatingSystem.IsBrowser()
-            ? "Browser"
-            : RuntimeInformation.OSDescription;
+        return RuntimeInformation.OSDescription;
     }
 
     private static string GetOsVersion(IDeviceInfo? deviceInfo)

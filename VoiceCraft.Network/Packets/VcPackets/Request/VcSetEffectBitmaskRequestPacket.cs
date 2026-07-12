@@ -21,10 +21,14 @@ public class VcSetEffectBitmaskRequestPacket(ushort value) : IVoiceCraftPacket
     {
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetEffectBitmaskRequestPacket>.Return(this);
+    }
 
-    public VcSetEffectBitmaskRequestPacket Set(ushort value = 0)
+    public void Set(ushort value = 0)
     {
         Value = value;
-        return this;
     }
 }

@@ -13,9 +13,9 @@ public class McApiPingRequestPacket : IMcApiPacket
     public void Deserialize(NetDataReader reader)
     {
     }
-
-    public McApiPingRequestPacket Set()
+    
+    public void Return()
     {
-        return this;
+        PacketPool<McApiPingRequestPacket>.Return(this);
     }
 }

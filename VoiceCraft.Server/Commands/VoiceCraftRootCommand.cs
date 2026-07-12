@@ -31,6 +31,11 @@ public class VoiceCraftRootCommand : RootCommand
             Description = "Set the port used by the Minecraft API transports for this run.",
             DefaultValueFactory = _ => null
         };
+        var voicePortOption = new Option<uint?>("--voice-port", "-vp")
+        {
+            Description = "Set the port used by the VoiceCraft server for this run.",
+            DefaultValueFactory = _ => null
+        };
         var serverKeyOption = new Option<string?>("--server-key", "-sk")
         {
             Description = "Set the shared server key used by Minecraft API clients to authenticate.",
@@ -41,6 +46,7 @@ public class VoiceCraftRootCommand : RootCommand
         Add(transportModeOption);
         Add(transportHostOption);
         Add(transportPortOption);
+        Add(voicePortOption);
         Add(serverKeyOption);
         
         SetAction(async result =>
@@ -52,6 +58,7 @@ public class VoiceCraftRootCommand : RootCommand
                 TransportMode = result.GetValue(transportModeOption) ?? [],
                 TransportHost = result.GetValue(transportHostOption),
                 TransportPort = result.GetValue(transportPortOption),
+                VoicePort = result.GetValue(voicePortOption),
                 ServerKey = result.GetValue(serverKeyOption)
             };
             await App.Start(runtimeOptions);

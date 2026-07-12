@@ -24,10 +24,14 @@ public class VcSetPositionRequestPacket(Vector3 value) : IVoiceCraftPacket
     {
         Value = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetPositionRequestPacket>.Return(this);
+    }
 
-    public VcSetPositionRequestPacket Set(Vector3 value = new())
+    public void Set(Vector3 value = new())
     {
         Value = value;
-        return this;
     }
 }

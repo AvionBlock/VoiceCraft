@@ -25,31 +25,19 @@ public class VoiceCraftEntityTests
     }
 
     [Fact]
-    public void CaveFactor_And_MuffleFactor_AreClamped()
+    public void NonFiniteSpatialValues_AreStored()
     {
-        var entity = new VoiceCraftEntity(1);
+        var entity = new VoiceCraftEntity(1)
+        {
+            Position = new Vector3(float.NaN, float.PositiveInfinity, 3),
+            Rotation = new Vector2(float.NegativeInfinity, 5)
+        };
 
-        entity.CaveFactor = 2.0f;
-        entity.MuffleFactor = -1.0f;
-
-        Assert.Equal(1.0f, entity.CaveFactor, 3);
-        Assert.Equal(0.0f, entity.MuffleFactor, 3);
-    }
-
-    [Fact]
-    public void NonFiniteSpatialValues_AreSanitized()
-    {
-        var entity = new VoiceCraftEntity(1);
-
-        entity.Position = new Vector3(float.NaN, float.PositiveInfinity, 3);
-        entity.Rotation = new Vector2(float.NegativeInfinity, 5);
-        entity.CaveFactor = float.NaN;
-        entity.MuffleFactor = float.PositiveInfinity;
-
-        Assert.Equal(new Vector3(0, 0, 3), entity.Position);
-        Assert.Equal(new Vector2(0, 5), entity.Rotation);
-        Assert.Equal(0.0f, entity.CaveFactor, 3);
-        Assert.Equal(0.0f, entity.MuffleFactor, 3);
+        Assert.True(float.IsNaN(entity.Position.X));
+        Assert.True(float.IsPositiveInfinity(entity.Position.Y));
+        Assert.Equal(3, entity.Position.Z);
+        Assert.True(float.IsNegativeInfinity(entity.Rotation.X));
+        Assert.Equal(5, entity.Rotation.Y);
     }
 
     [Fact]
@@ -104,5 +92,107 @@ public class VoiceCraftEntityTests
 
         Assert.Equal(position, entity.Position);
         Assert.Equal(rotation, entity.Rotation);
+    }
+    
+    [Fact]
+    public void Properties_Update()
+    {
+        var entity = new VoiceCraftEntity(1);
+        var raised = 0;
+
+        entity.OnPropertyUpdated += (_, _, _) =>
+        {
+            raised++;
+        };
+        
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        Assert.Equal(2, raised);
+    }
+    
+    [Fact]
+    public void Properties_Get()
+    {
+        var entity = new VoiceCraftEntity(1);
+        
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        
+        entity.TryGetProperty("Test:Factor", out float? value1);
+        entity.TryGetProperty("Test2:Factor", out float? value2);
+        
+        Assert.Equal(5.0f, value1);
+        Assert.Equal(8.0f, value2);
+    }
+    
+    [Fact]
+    public void Same_Properties_NoUpdate()
+    {
+        var entity = new VoiceCraftEntity(1);
+        var raised = 0;
+
+        entity.OnPropertyUpdated += (_, _, _) =>
+        {
+            raised++;
+        };
+        
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        
+        Assert.Equal(2, raised);
+    }
+    
+    [Fact]
+    public void Different_Properties_Update()
+    {
+        var entity = new VoiceCraftEntity(1);
+        var raised = 0;
+
+        entity.OnPropertyUpdated += (_, _, _) =>
+        {
+            raised++;
+        };
+        
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test:Factor", 5.348f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        entity.SetProperty("Test2:Factor", 10.0f);
+        
+        Assert.Equal(4, raised);
+    }
+    
+    [Fact]
+    public void Properties_Removed()
+    {
+        var entity = new VoiceCraftEntity(1);
+        
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        
+        entity.SetProperty<float?>("Test:Factor", null);
+        entity.SetProperty<float?>("Test2:Factor", null);
+        
+        entity.TryGetProperty("Test:Factor", out float? value1);
+        entity.TryGetProperty("Test2:Factor", out float? value2);
+        
+        Assert.Null(value1);
+        Assert.Null(value2);
+    }
+    
+    [Fact]
+    public void Get_Properties_Types_InCompatible()
+    {
+        var entity = new VoiceCraftEntity(1);
+        
+        entity.SetProperty("Test:Factor", 5.0f);
+        entity.SetProperty("Test2:Factor", 8.0f);
+        
+        entity.TryGetProperty("Test:Factor", out int? value1);
+        entity.TryGetProperty("Test2:Factor", out bool? value2);
+        
+        Assert.Null(value1);
+        Assert.Null(value2);
     }
 }

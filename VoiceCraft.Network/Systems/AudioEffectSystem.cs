@@ -57,8 +57,8 @@ public class AudioEffectSystem : IDisposable
             switch (effect)
             {
                 case null when _audioEffects.Remove(bitmask, out var audioEffect):
-                    _audioEffectsSnapshot = _audioEffects.ToImmutableList();
                     audioEffect.OnDisposed -= RemoveEffect; //Unsubscribe from effect dispose as it has been removed.
+                    _audioEffectsSnapshot = _audioEffects.ToImmutableList(); //Rebuild
                     audioEffect.Dispose();
                     OnEffectSet?.Invoke(bitmask, null);
                     return;
@@ -66,33 +66,23 @@ public class AudioEffectSystem : IDisposable
                     return;
             }
 
-            _audioEffects.TryGetValue(bitmask, out var oldEffect);
-            if (oldEffect?.EffectType == effect.EffectType)
+            if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && oldEffect.EffectType == effect.EffectType)
             {
                 oldEffect.Update(effect); //Update old effect with new effect parameters.
                 //Don't need to re-update the snapshot as there have been no effect stack changes.
                 OnEffectSet?.Invoke(bitmask, oldEffect);
                 return;
             }
-
+            
+            //Swap Effect.
             effect.OnDisposed += RemoveEffect; //Subscribe to new effect.
             _audioEffects[bitmask] = effect;
             _audioEffectsSnapshot = _audioEffects.ToImmutableList();
-            oldEffect?.Dispose(); //Dispose old effect if it exists.
+            
+            //Dispose old effect if it exists.
+            oldEffect?.OnDisposed -= RemoveEffect;
+            oldEffect?.Dispose();
             OnEffectSet?.Invoke(bitmask, effect);
-        }
-
-        return;
-
-        void RemoveEffect(IAudioEffect audioEffect)
-        {
-            lock (_lock)
-            {
-                audioEffect.OnDisposed -= RemoveEffect;
-                if (_audioEffects.Remove(bitmask, out _))
-                    //Update Snapshot if successfully removed.
-                    _audioEffectsSnapshot = _audioEffects.ToImmutableList();
-            }
         }
     }
 
@@ -192,6 +182,17 @@ public class AudioEffectSystem : IDisposable
             }
 
             processor.Process(to, buffer);
+        }
+    }
+    
+    private void RemoveEffect(IAudioEffect audioEffect)
+    {
+        lock (_lock)
+        {
+            audioEffect.OnDisposed -= RemoveEffect;
+            if (_audioEffects.Remove(audioEffect.Bitmask, out _))
+                //Update Snapshot if successfully removed.
+                _audioEffectsSnapshot = _audioEffects.ToImmutableList();
         }
     }
 }

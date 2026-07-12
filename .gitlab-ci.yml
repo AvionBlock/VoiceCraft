@@ -1,0 +1,554 @@
+stages:
+  - test
+  - build
+  - package
+  - release
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+
+variables:
+  DOTNET_CLI_HOME: "$CI_PROJECT_DIR/.dotnet-home"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_ANDROID_IMAGE: "registry-gitlab.avion.team/voicecraft/voicecraft.internal/voicecraft.dbuild:latest"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SDK_IMAGE: "registry-gitlab.avion.team/voicecraft/voicecraft.internal/voicecraft.dbuild:latest"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  GIT_CLEAN_FLAGS: "-ffdx -e .nuget/"
+  GIT_DEPTH: "0"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  RELEASE_ENABLED:
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    description: "Set to true in a manual pipeline to package artifacts and create a GitLab release."
+  RELEASE_VERSION:
+    value: "1.7.0"
+    description: "Release version without the leading v. Example: 1.7.0"
+  RELEASE_CHANNEL:
+    value: "beta"
+    options:
+      - "stable"
+      - "beta"
+      - "alpha"
+      - "nightly"
+    description: "Release channel. Stable uses tag v<version>; non-stable uses v<version>-<channel>.<pipeline_iid>."
+  RELEASE_NOTES:
+    value: ""
+    description: "Optional extra release notes appended to the generated GitLab release description."
+
+.dotnet_cache:
+  cache:
+    key: "$CI_JOB_NAME_SLUG"
+    paths:
+      - .nuget/packages/
+
+.linux_dotnet:
+  extends: .dotnet_cache
+  image: "$DOTNET_SDK_IMAGE"
+  tags:
+    - ubuntu-docker
+  before_script:
+    - mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
+    - dotnet --info
+
+.windows_dotnet:
+  extends: .dotnet_cache
+  tags:
+    - windows-shell
+  before_script:
+    - |
+      $ErrorActionPreference = "Stop"
+      if (Get-Variable PSNativeCommandUseErrorActionPreference -ErrorAction SilentlyContinue) {
+        $PSNativeCommandUseErrorActionPreference = $true
+      }
+      $env:DOTNET_CLI_HOME = Join-Path $env:CI_PROJECT_DIR ".dotnet-home"
+      $env:NUGET_PACKAGES = Join-Path $env:CI_PROJECT_DIR ".nuget\packages"
+      New-Item -ItemType Directory -Force -Path $env:DOTNET_CLI_HOME, $env:NUGET_PACKAGES | Out-Null
+    - dotnet --info
+
+.macos_dotnet:
+  extends: .dotnet_cache
+  tags:
+    - macos-shell
+  before_script:
+    - |
+      export DOTNET_CLI_HOME="$CI_PROJECT_DIR/.dotnet-home"
+      export NUGET_PACKAGES="$CI_PROJECT_DIR/.nuget/packages"
+      export PATH="/opt/homebrew/bin:/opt/homebrew/opt/libtool/libexec/gnubin:/opt/homebrew/opt/llvm/bin:/usr/local/bin:/usr/local/opt/libtool/libexec/gnubin:/usr/local/opt/llvm/bin:$PATH"
+      if [ -x "$HOME/.dotnet/dotnet" ]; then
+        export PATH="$HOME/.dotnet:$PATH"
+      fi
+      if [ -x "/usr/local/share/dotnet/dotnet" ]; then
+        export DOTNET_ROOT="/usr/local/share/dotnet"
+        export PATH="$DOTNET_ROOT:$PATH"
+      fi
+      mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
+      ensure_dotnet_workload() {
+        workload="$1"
+        if dotnet workload list | grep -Eq "(^|[[:space:]])${workload}([[:space:]]|$)"; then
+          return 0
+        fi
+
+        lock_dir="$HOME/.dotnet-workload-install.lock"
+        while ! mkdir "$lock_dir" 2>/dev/null; do
+          echo "Waiting for .NET workload install lock: $lock_dir"
+          sleep 5
+        done
+
+        if dotnet workload list | grep -Eq "(^|[[:space:]])${workload}([[:space:]]|$)"; then
+          rmdir "$lock_dir"
+          return 0
+        fi
+
+        if dotnet workload install "$workload"; then
+          status=0
+        else
+          status=$?
+        fi
+        rmdir "$lock_dir"
+        return "$status"
+      }
+    - dotnet --info
+
+.test_job:
+  stage: test
+  variables:
+    MSBuildEnableWorkloadResolver: "false"
+  script:
+    - dotnet restore ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj
+    - dotnet restore ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj
+    - dotnet restore ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj
+    - dotnet test ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj -c Release --no-restore /p:UseSharedCompilation=false
+    - dotnet test ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj -c Release --no-restore /p:UseSharedCompilation=false
+    - dotnet test ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj -c Release --no-restore /p:UseSharedCompilation=false
+
+test:ubuntu:
+  extends:
+    - .test_job
+    - .linux_dotnet
+
+test:macos:
+  extends:
+    - .test_job
+    - .macos_dotnet
+
+test:windows:
+  extends:
+    - .test_job
+    - .windows_dotnet
+
+build:client:linux:
+  stage: build
+  extends: .linux_dotnet
+  parallel:
+    matrix:
+      - ARCH: [x64, arm, arm64]
+  script:
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
+    - dotnet workload restore
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
+  artifacts:
+    name: "VoiceCraft.Client.Linux.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.Linux.$ARCH/
+
+build:client:windows:
+  stage: build
+  extends: .windows_dotnet
+  parallel:
+    matrix:
+      - ARCH: [x64, x86, arm64]
+  script:
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
+    - dotnet workload restore
+    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH" /p:UseSharedCompilation=false
+    - |
+      $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
+      $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"
+      Invoke-WebRequest -Uri $uri -OutFile $outFile
+  artifacts:
+    name: "VoiceCraft.Client.Windows.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.Windows.$ARCH/
+
+build:client:android:
+  stage: build
+  extends: .linux_dotnet
+  image: "$DOTNET_ANDROID_IMAGE"
+  parallel:
+    matrix:
+      - ARCH: [arm64]
+  script:
+    - |
+      if [ -z "$JAVA_HOME" ]; then
+        JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
+        export JAVA_HOME
+      fi
+
+      if [ -z "$ANDROID_SDK_ROOT" ] && [ -n "$ANDROID_HOME" ]; then
+        ANDROID_SDK_ROOT="$ANDROID_HOME"
+        export ANDROID_SDK_ROOT
+      fi
+
+      if [ -z "$ANDROID_SDK_ROOT" ]; then
+        for sdk_root in /opt/android-sdk /opt/android-sdk-linux /usr/lib/android-sdk /android-sdk; do
+          if [ -d "$sdk_root" ]; then
+            ANDROID_SDK_ROOT="$sdk_root"
+            export ANDROID_SDK_ROOT
+            break
+          fi
+        done
+      fi
+
+      if [ -z "$ANDROID_SDK_ROOT" ]; then
+        echo "ANDROID_SDK_ROOT or ANDROID_HOME must be set in $DOTNET_ANDROID_IMAGE"
+        exit 1
+      fi
+
+      export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH"
+      echo "JAVA_HOME=$JAVA_HOME"
+      echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+      if command -v sdkmanager >/dev/null; then
+        sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --version
+      else
+        echo "sdkmanager must be available in $DOTNET_ANDROID_IMAGE"
+        exit 1
+      fi
+
+      if [ ! -d "$ANDROID_SDK_ROOT/licenses" ]; then
+        echo "Android SDK licenses must be accepted in $DOTNET_ANDROID_IMAGE"
+        exit 1
+      fi
+
+      for sdk_component in \
+        "$ANDROID_SDK_ROOT/platform-tools" \
+        "$ANDROID_SDK_ROOT/platforms/android-36" \
+        "$ANDROID_SDK_ROOT/build-tools/36.0.0"; do
+        if [ ! -e "$sdk_component" ]; then
+          echo "Missing Android SDK component in build image: $sdk_component"
+          exit 1
+        fi
+      done
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
+    - dotnet workload restore
+    - |
+      if [ -n "$ANDROID_KEYSTORE" ] && [ "$CI_PIPELINE_SOURCE" != "merge_request_event" ]; then
+        printf '%s' "$ANDROID_KEYSTORE" | base64 --decode > android.keystore
+        dotnet publish -c Release \
+          -r android-$ARCH \
+          -p:AndroidSdkDirectory="$ANDROID_SDK_ROOT" \
+          -p:JavaSdkDirectory="$JAVA_HOME" \
+          -p:AndroidKeyStore=true \
+          -p:AndroidSigningKeyStore=./android.keystore \
+          -p:AndroidSigningKeyAlias="$ALIAS" \
+          -p:AndroidSigningKeyPass="$KEYSTORE_PASSWORD" \
+          -p:AndroidSigningStorePass="$KEYSTORE_PASSWORD"
+      else
+        dotnet publish -c Release \
+          -r android-$ARCH \
+          -p:AndroidSdkDirectory="$ANDROID_SDK_ROOT" \
+          -p:JavaSdkDirectory="$JAVA_HOME"
+      fi
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+    - cp ./bin/Release/net10.0-android/android-$ARCH/publish/*.apk "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH/"
+  artifacts:
+    name: "VoiceCraft.Client.Android.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.Android.$ARCH/
+
+build:client:ios:
+  stage: build
+  extends: .macos_dotnet
+  script:
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.iOS
+    - ensure_dotnet_workload ios
+    - |
+      xcode-select -p
+      xcodebuild -version
+      if ! xcrun simctl list runtimes | grep -q "iOS"; then
+        echo "No iOS simulator runtime detected. Installing the Xcode iOS platform component."
+        if command -v sudo >/dev/null && sudo -n true 2>/dev/null; then
+          sudo -n xcodebuild -downloadPlatform iOS
+        else
+          xcodebuild -downloadPlatform iOS
+        fi
+      fi
+    - dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:ValidateXcodeVersion=false /p:UseSharedCompilation=false
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64"
+    - cp ./bin/Release/net10.0-ios/ios-arm64/publish/*.ipa "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64/"
+  artifacts:
+    name: "VoiceCraft.Client.iOS.arm64"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.iOS.arm64/
+
+build:client:macos:
+  stage: build
+  extends: .macos_dotnet
+  parallel:
+    matrix:
+      - ARCH: [x64, arm64]
+  script:
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.MacOS
+    - ensure_dotnet_workload macos
+    - dotnet restore -r osx-$ARCH
+    - dotnet publish -c Release -r osx-$ARCH --no-restore -p:ValidateXcodeVersion=false /p:UseSharedCompilation=false
+    - |
+      OUTPUT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH"
+      cd "$OUTPUT_DIR"
+      APP_BUNDLE=$(find . -maxdepth 1 -name "*.app" -print -quit)
+      if [ -z "$APP_BUNDLE" ]; then
+        echo "No .app bundle found"
+        exit 1
+      fi
+      rm -rf dmg-root
+      mkdir -p dmg-root
+      cp -R "$APP_BUNDLE" dmg-root/
+      ln -s /Applications dmg-root/Applications
+      hdiutil create \
+        -volname "VoiceCraft" \
+        -srcfolder dmg-root \
+        -ov \
+        -format UDZO \
+        VoiceCraft.Client.MacOS.$ARCH.dmg
+    - |
+      OUTPUT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH"
+      cd "$OUTPUT_DIR"
+      PKG_PATH=$(ls ./publish/*.pkg | head -n 1)
+      cp "$PKG_PATH" "VoiceCraft.Client.MacOS.$ARCH.pkg"
+    - |
+      OUTPUT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client/VoiceCraft.Client.MacOS/bin/Release/net10.0-macos/osx-$ARCH"
+      ARTIFACT_DIR="$CI_PROJECT_DIR/VoiceCraft.Client.MacOS.$ARCH"
+      rm -rf "$ARTIFACT_DIR"
+      mkdir -p "$ARTIFACT_DIR"
+      cp "$OUTPUT_DIR/VoiceCraft.Client.MacOS.$ARCH.dmg" "$ARTIFACT_DIR/"
+      cp "$OUTPUT_DIR/VoiceCraft.Client.MacOS.$ARCH.pkg" "$ARTIFACT_DIR/"
+  artifacts:
+    name: "VoiceCraft.Client.MacOS.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.MacOS.$ARCH/
+
+build:server:linux:
+  stage: build
+  extends: .linux_dotnet
+  parallel:
+    matrix:
+      - ARCH: [x64, arm, arm64]
+  script:
+    - cd ./VoiceCraft.Server
+    - dotnet workload restore
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Server.Linux.$ARCH"
+  artifacts:
+    name: "VoiceCraft.Server.Linux.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Server.Linux.$ARCH/
+
+build:server:windows:
+  stage: build
+  extends: .linux_dotnet
+  parallel:
+    matrix:
+      - ARCH: [x64, x86, arm64]
+  script:
+    - cd ./VoiceCraft.Server
+    - dotnet workload restore
+    - dotnet publish -c Release -r win-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Server.Windows.$ARCH"
+  artifacts:
+    name: "VoiceCraft.Server.Windows.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Server.Windows.$ARCH/
+
+package:artifacts:
+  stage: package
+  image: alpine:3.20
+  tags:
+    - ubuntu-docker
+  rules:
+    - if: '$RELEASE_ENABLED == "true"'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+    - if: '$CI_COMMIT_TAG'
+      when: manual
+    - when: never
+  script:
+    - |
+      set -eu
+
+      release_version="${RELEASE_VERSION:-}"
+      release_channel="${RELEASE_CHANNEL:-beta}"
+
+      if [ -z "$release_version" ]; then
+        echo "RELEASE_VERSION must be set."
+        exit 1
+      fi
+
+      if ! printf '%s' "$release_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$'; then
+        echo "RELEASE_VERSION must look like 1.7.0 or 1.7.0-rc.1, without a leading v."
+        exit 1
+      fi
+
+      case "$release_channel" in
+        stable|beta|alpha|nightly) ;;
+        *)
+          echo "RELEASE_CHANNEL must be one of: stable, beta, alpha, nightly."
+          exit 1
+          ;;
+      esac
+
+      if [ "$release_channel" = "stable" ]; then
+        release_tag="v$release_version"
+        release_name="VoiceCraft $release_version"
+      else
+        release_tag="v$release_version-$release_channel.$CI_PIPELINE_IID"
+        release_name="VoiceCraft $release_version $release_channel"
+      fi
+
+      apk add --no-cache curl zip
+
+      package_name="voicecraft"
+      : > release_assets.env
+      : > release_assets.md
+
+      asset_index=0
+      for artifact_dir in \
+        VoiceCraft.Client.Windows.* \
+        VoiceCraft.Client.Linux.* \
+        VoiceCraft.Client.Android.* \
+        VoiceCraft.Client.iOS.arm64 \
+        VoiceCraft.Client.MacOS.* \
+        VoiceCraft.Server.Windows.* \
+        VoiceCraft.Server.Linux.*; do
+        if [ ! -d "$artifact_dir" ]; then
+          echo "Missing artifact directory: $artifact_dir"
+          exit 1
+        fi
+
+        asset_index=$((asset_index + 1))
+        package_file="$artifact_dir.$release_tag.zip"
+        package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
+        artifact_filepath="/voicecraft/$release_tag/$package_file"
+
+        zip -r "$package_file" "$artifact_dir"
+
+        curl --fail --show-error --silent \
+          --request PUT \
+          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+          --upload-file "$package_file" \
+          "$package_url"
+
+        {
+          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset_index" "$package_file"
+          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset_index" "$package_url"
+          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset_index" "$artifact_filepath"
+        } >> release_assets.env
+
+        printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
+      done
+
+      {
+        printf 'RELEASE_TAG=%s\n' "$release_tag"
+        printf 'RELEASE_ASSET_COUNT=%s\n' "$asset_index"
+        printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
+      } > release.env
+
+      {
+        printf '# %s\n\n' "$release_name"
+        printf '- Version: `%s`\n' "$release_version"
+        printf '- Channel: `%s`\n' "$release_channel"
+        printf '- Commit: `%s`\n' "$CI_COMMIT_SHA"
+        printf '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
+        printf '## Artifacts\n\n'
+        cat release_assets.md
+        if [ -n "${RELEASE_NOTES:-}" ]; then
+          printf '\n## Notes\n\n%s\n' "$RELEASE_NOTES"
+        fi
+      } > release_notes.md
+
+      echo "Prepared release metadata for $release_tag"
+  artifacts:
+    name: "VoiceCraft.Artifacts.$CI_COMMIT_REF_SLUG.$CI_PIPELINE_IID"
+    expire_in: 30 days
+    reports:
+      dotenv: release.env
+    paths:
+      - release.env
+      - release_assets.env
+      - release_notes.md
+
+release:gitlab:
+  stage: release
+  image: alpine:3.20
+  tags:
+    - ubuntu-docker
+  needs:
+    - job: package:artifacts
+      artifacts: true
+  rules:
+    - if: '$RELEASE_ENABLED == "true"'
+      when: on_success
+    - when: never
+  script:
+    - apk add --no-cache curl jq
+    - test -s release_notes.md
+    - test -s release_assets.env
+    - |
+      . ./release_assets.env
+      jq -n '{links: []}' > release_assets.json
+      index=1
+      while [ "$index" -le "$RELEASE_ASSET_COUNT" ]; do
+        eval "asset_name=\${RELEASE_ASSET_${index}_NAME}"
+        eval "asset_url=\${RELEASE_ASSET_${index}_URL}"
+        eval "asset_filepath=\${RELEASE_ASSET_${index}_FILEPATH}"
+
+        jq \
+          --arg name "$asset_name" \
+          --arg url "$asset_url" \
+          --arg filepath "$asset_filepath" \
+          '.links += [{
+            name: $name,
+            url: $url,
+            filepath: $filepath,
+            link_type: "package"
+          }]' \
+          release_assets.json > release_assets.next.json
+        mv release_assets.next.json release_assets.json
+        index=$((index + 1))
+      done
+    - |
+      jq -n \
+        --arg name "VoiceCraft $RELEASE_TAG" \
+        --arg tag_name "$RELEASE_TAG" \
+        --arg ref "$CI_COMMIT_SHA" \
+        --rawfile description release_notes.md \
+        --slurpfile assets release_assets.json \
+        '{
+          name: $name,
+          tag_name: $tag_name,
+          ref: $ref,
+          description: $description,
+          assets: $assets[0]
+        }' > release_payload.json
+    - echo "Creating GitLab release $RELEASE_TAG"
+    - |
+      curl --fail --show-error --silent \
+        --request POST \
+        --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data @release_payload.json \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"

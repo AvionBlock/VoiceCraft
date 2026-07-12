@@ -103,21 +103,14 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
         if (_effectProcessors.TryGetValue(bitmask, out var oldProcessor))
         {
-            //Dispose old processor if it exists.
+            //Dispose old processor if it exists. We dispose properly after switching out processor.
             oldProcessor.OnDisposed -= RemoveEffect;
-            oldProcessor.Dispose();
         }
 
         //Set new processor.
+        processor.OnDisposed += RemoveEffect; //Subscribe to new effect.
         _effectProcessors[bitmask] = processor;
-        processor.OnDisposed += RemoveEffect;
-        return;
-
-        void RemoveEffect(IAudioEffectProcessor effectProcessor)
-        {
-            effectProcessor.OnDisposed -= RemoveEffect;
-            _effectProcessors.Remove(bitmask, out _);
-        }
+        oldProcessor?.Dispose();
     }
 
     public bool TryGetEffectProcessor(ushort bitmask, [NotNullWhen(true)] out IAudioEffectProcessor? effect)
@@ -196,6 +189,12 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         {
             _jitterBuffer.Reset(); //Also reset the jitter buffer.
         }
+    }
+    
+    private void RemoveEffect(IAudioEffectProcessor effectProcessor)
+    {
+        effectProcessor.OnDisposed -= RemoveEffect;
+        _effectProcessors.Remove(effectProcessor.Effect.Bitmask, out _);
     }
 
     private int GetNextPacket(Span<float> buffer)

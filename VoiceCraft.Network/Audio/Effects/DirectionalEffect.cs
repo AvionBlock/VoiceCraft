@@ -10,8 +10,6 @@ namespace VoiceCraft.Network.Audio.Effects
 {
     public class DirectionalEffect : IAudioEffect
     {
-        public static int SampleRate => Constants.SampleRate;
-
         public EffectType EffectType => EffectType.Directional;
 
         [JsonIgnore] public ushort Bitmask { get; set; }
@@ -33,6 +31,15 @@ namespace VoiceCraft.Network.Audio.Effects
                 throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
             Bitmask = directionalEffect.Bitmask;
             WetDry = directionalEffect.WetDry;
+        }
+        
+        public float EvaluateWetDryProperty(VoiceCraftEntity e1, VoiceCraftEntity e2)
+        {
+            const string property = $"{nameof(DirectionalEffect)}:{nameof(WetDry)}";
+            var propVal1 = e1.TryGetProperty<float?>(property, out var prop1);
+            var propVal2 = e2.TryGetProperty<float?>(property, out var prop2);
+            if (!propVal1 && !propVal2) return WetDry;
+            return Math.Clamp(Math.Max(prop1 ?? 0.0f, prop2 ?? 0.0f), 0.0f, 1.0f);
         }
 
         public void Serialize(NetDataWriter writer)
@@ -84,6 +91,9 @@ namespace VoiceCraft.Network.Audio.Effects
             var bitmask = Entity.TalkBitmask & to.ListenBitmask & Entity.EffectBitmask & to.EffectBitmask;
             if ((bitmask & Effect.Bitmask) == 0) return;
 
+            //Cache Values
+            var wet = _effect.EvaluateWetDryProperty(Entity, to);
+            var dry = 1.0f - wet;
             var rot = (float)(Math.Atan2(to.Position.Z - Entity.Position.Z, to.Position.X - Entity.Position.X) -
                               to.Rotation.Y * Math.PI / 180);
             var left = (float)Math.Max(0.5 - Math.Cos(rot) * 0.5, 0.2);
@@ -92,12 +102,12 @@ namespace VoiceCraft.Network.Audio.Effects
             _lerpVolume[0].TargetVolume = left;
             _lerpVolume[1].TargetVolume = right;
             
-            for (var i = 0; i < buffer.Length; i++)
+            for (var i = 0; i < buffer.Length; i += 2)
             {
-                for (var c = 0; c < 2 && c + i < buffer.Length; c++)
+                for (var c = 0; c < 2; c++)
                 {
-                    var output = _lerpVolume[c].Transform(buffer[i]);
-                    buffer[i] = output * _effect.WetDry + buffer[i] * (1.0f - _effect.WetDry);
+                    var output = _lerpVolume[c].Transform(buffer[i + c]);
+                    buffer[i + c] = output * wet + buffer[i + c] * dry;
                     _lerpVolume[c].Step();
                 }
             }

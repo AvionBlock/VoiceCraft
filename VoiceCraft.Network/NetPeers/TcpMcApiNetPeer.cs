@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using VoiceCraft.Network.Servers;
 
 namespace VoiceCraft.Network.NetPeers;
 
-public class TcpMcApiNetPeer(TcpClient client) : McApiNetPeer
+public class TcpMcApiNetPeer(TcpMcApiServer? server, TcpClient client) : McApiNetPeer(server)
 {
     private string _sessionToken = string.Empty;
     private readonly Lock _responseLock = new();

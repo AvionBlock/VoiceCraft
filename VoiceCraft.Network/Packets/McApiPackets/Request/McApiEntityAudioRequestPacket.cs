@@ -45,15 +45,19 @@ public class McApiEntityAudioRequestPacket(
         Buffer = new byte[Length];
         reader.GetBytes(Buffer, Length);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiEntityAudioRequestPacket>.Return(this);
+    }
 
-    public McApiEntityAudioRequestPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
+    public void Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
         byte[]? data = null)
     {
         Id = id;
         Timestamp = timestamp;
         FrameLoudness = loudness;
         Length = length;
-        Buffer = data ?? Array.Empty<byte>();
-        return this;
+        Buffer = data ?? [];
     }
 }

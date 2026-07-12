@@ -44,8 +44,13 @@ public class VcInfoResponsePacket(
         Tick = reader.GetInt();
         Version = new Version(reader.GetInt(), reader.GetInt(), reader.GetInt());
     }
+    
+    public void Return()
+    {
+        PacketPool<VcInfoResponsePacket>.Return(this);
+    }
 
-    public VcInfoResponsePacket Set(string motd = "", int clients = 0,
+    public void Set(string motd = "", int clients = 0,
         PositioningType positioningType = PositioningType.Server,
         int tick = 0, Version? version = null)
     {
@@ -54,6 +59,5 @@ public class VcInfoResponsePacket(
         PositioningType = positioningType;
         Tick = tick;
         Version = version ?? new Version(0, 0, 0);
-        return this;
     }
 }

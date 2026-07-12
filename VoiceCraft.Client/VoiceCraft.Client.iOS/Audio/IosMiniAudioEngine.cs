@@ -108,6 +108,9 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
 {
     private AVAudioEngine? _engine;
     private AVAudioFormat? _tapFormat;
+    private double _resampleSourceRate;
+    private double _resampleSourcePosition = 1d;
+    private float[]? _resamplePreviousFrame;
     private bool _sessionActivatedByMe;
     private readonly uint _periodFrames;
     private readonly object _captureLock = new();
@@ -138,13 +141,13 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
 
         _engine = new AVAudioEngine();
         var inputNode = _engine.InputNode;
-        _tapFormat = new AVAudioFormat(
-            AVAudioCommonFormat.PCMFloat32,
-            Format.SampleRate,
-            (uint)Math.Max(1, Format.Channels),
-            false);
+        _tapFormat = inputNode.GetBusOutputFormat(0);
+        if (_tapFormat.SampleRate <= 0 || _tapFormat.ChannelCount <= 0)
+            throw new InvalidOperationException("Failed to start iOS capture engine. The input node reported an invalid format.");
 
-        inputNode.InstallTapOnBus(0, _periodFrames, _tapFormat, OnInputBuffer);
+        ResetResampler(_tapFormat.SampleRate);
+
+        inputNode.InstallTapOnBus(0, _periodFrames, null!, OnInputBuffer);
         _engine.Prepare();
 
         NSError? startError;
@@ -184,6 +187,7 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
         lock (_captureLock)
         {
             _stagingCount = 0;
+            ResetResampler(0);
         }
 
         IsRunning = false;
@@ -227,12 +231,13 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
             }
         }
 
-        var outputLength = frameCount * targetChannels;
-        var outputBuffer = ArrayPool<float>.Shared.Rent(outputLength);
+        var convertedLength = frameCount * targetChannels;
+        var convertedBuffer = ArrayPool<float>.Shared.Rent(convertedLength);
+        var outputBuffer = ArrayPool<float>.Shared.Rent(CalculateResampledLength(frameCount, buffer.Format.SampleRate) * targetChannels);
         try
         {
-            var output = outputBuffer.AsSpan(0, outputLength);
-            output.Clear();
+            var converted = convertedBuffer.AsSpan(0, convertedLength);
+            converted.Clear();
 
             for (var frame = 0; frame < frameCount; frame++)
             {
@@ -248,7 +253,7 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
                         sum += sample;
                     }
 
-                    output[frame] = sum / sourceChannels;
+                    converted[frame] = sum / sourceChannels;
                     continue;
                 }
 
@@ -259,7 +264,7 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
                         sample = 0f;
 
                     for (var ch = 0; ch < targetChannels; ch++)
-                        output[frame * targetChannels + ch] = sample;
+                        converted[frame * targetChannels + ch] = sample;
                     continue;
                 }
 
@@ -270,18 +275,122 @@ internal sealed class IosAudioCaptureDevice : AudioCaptureDevice
                     if (!float.IsFinite(sample))
                         sample = 0f;
 
-                    output[frame * targetChannels + ch] = sample;
+                    converted[frame * targetChannels + ch] = sample;
                 }
             }
 
-            PushCapturedSamples(output);
+            var outputFrames = ResampleIfNeeded(
+                converted,
+                frameCount,
+                targetChannels,
+                buffer.Format.SampleRate,
+                outputBuffer);
+            PushCapturedSamples(outputBuffer.AsSpan(0, outputFrames * targetChannels));
         }
         finally
         {
             foreach (var channel in source)
                 ArrayPool<float>.Shared.Return(channel);
+            ArrayPool<float>.Shared.Return(convertedBuffer);
             ArrayPool<float>.Shared.Return(outputBuffer);
         }
+    }
+
+    private int ResampleIfNeeded(
+        ReadOnlySpan<float> source,
+        int sourceFrames,
+        int channels,
+        double sourceSampleRate,
+        float[] outputBuffer)
+    {
+        if (sourceFrames <= 0)
+            return 0;
+
+        if (sourceSampleRate <= 0)
+            sourceSampleRate = Format.SampleRate;
+
+        if (Math.Abs(sourceSampleRate - Format.SampleRate) < 1d)
+        {
+            lock (_captureLock)
+            {
+                ResetResampler(sourceSampleRate);
+                StorePreviousFrame(source, sourceFrames, channels);
+            }
+
+            source.CopyTo(outputBuffer);
+            return sourceFrames;
+        }
+
+        lock (_captureLock)
+        {
+            if (Math.Abs(sourceSampleRate - _resampleSourceRate) >= 1d || _resamplePreviousFrame?.Length != channels)
+                ResetResampler(sourceSampleRate);
+
+            var step = sourceSampleRate / Math.Max(1d, Format.SampleRate);
+            var outputFrames = 0;
+
+            while (_resampleSourcePosition <= sourceFrames + double.Epsilon)
+            {
+                var sourceIndex = (int)Math.Floor(_resampleSourcePosition);
+                var fraction = _resampleSourcePosition - sourceIndex;
+
+                if (sourceIndex == sourceFrames)
+                {
+                    for (var ch = 0; ch < channels; ch++)
+                        outputBuffer[outputFrames * channels + ch] = source[(sourceFrames - 1) * channels + ch];
+                }
+                else
+                {
+                    for (var ch = 0; ch < channels; ch++)
+                    {
+                        var left = GetFrameSample(source, sourceFrames, channels, sourceIndex, ch);
+                        var right = GetFrameSample(source, sourceFrames, channels, sourceIndex + 1, ch);
+                        outputBuffer[outputFrames * channels + ch] = left + (right - left) * (float)fraction;
+                    }
+                }
+
+                outputFrames++;
+                _resampleSourcePosition += step;
+            }
+
+            _resampleSourcePosition -= sourceFrames;
+            StorePreviousFrame(source, sourceFrames, channels);
+
+            return outputFrames;
+        }
+    }
+
+    private float GetFrameSample(ReadOnlySpan<float> source, int sourceFrames, int channels, int frame, int channel)
+    {
+        if (frame <= 0)
+            return _resamplePreviousFrame?[channel] ?? source[channel];
+
+        if (frame > sourceFrames)
+            frame = sourceFrames;
+
+        return source[(frame - 1) * channels + channel];
+    }
+
+    private void StorePreviousFrame(ReadOnlySpan<float> source, int sourceFrames, int channels)
+    {
+        _resamplePreviousFrame ??= new float[channels];
+        for (var ch = 0; ch < channels; ch++)
+            _resamplePreviousFrame[ch] = source[(sourceFrames - 1) * channels + ch];
+    }
+
+    private void ResetResampler(double sourceSampleRate)
+    {
+        _resampleSourceRate = sourceSampleRate;
+        _resampleSourcePosition = 1d;
+        _resamplePreviousFrame = null;
+    }
+
+    private int CalculateResampledLength(int sourceFrames, double sourceSampleRate)
+    {
+        if (sourceSampleRate <= 0 || Math.Abs(sourceSampleRate - Format.SampleRate) < 1d)
+            return sourceFrames;
+
+        return Math.Max(1, (int)Math.Ceiling(sourceFrames * Format.SampleRate / sourceSampleRate) + 2);
     }
 
     private void PushCapturedSamples(ReadOnlySpan<float> samples)

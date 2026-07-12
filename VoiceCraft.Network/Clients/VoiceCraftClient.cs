@@ -20,6 +20,7 @@ namespace VoiceCraft.Network.Clients;
 public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 {
     protected bool Disposed;
+
     //Audio
     private readonly Func<IAudioDecoder> _audioDecoderFactory;
     private readonly IAudioEncoder _audioEncoder;
@@ -147,9 +148,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         _sendTimestamp += 1; //Add to timestamp even though we aren't really connected.
         var shouldDrop = ConnectionState != VcConnectionState.Connected ||
-            ServerMuted ||
-            Muted ||
-            (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs;
+                         ServerMuted ||
+                         Muted ||
+                         (DateTime.UtcNow - _lastAudioPeakTime).TotalMilliseconds > Constants.SilenceThresholdMs;
         if (shouldDrop)
         {
             SpeakingState = false;
@@ -158,9 +159,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
 
         SpeakingState = true;
         var encodeBuffer = ArrayPool<byte>.Shared.Rent(Constants.MaximumEncodedBytes);
-        encodeBuffer.AsSpan().Clear();
+        var packet = PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket());
         try
         {
+            encodeBuffer.AsSpan().Clear();
             var bytesEncoded = _audioEncoder.Encode(
                 buffer,
                 encodeBuffer.AsSpan(0, Constants.MaximumEncodedBytes),
@@ -171,14 +173,15 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 case > Constants.MaximumEncodedBytes:
                     return;
                 default:
-                    SendPacket(PacketPool<VcAudioRequestPacket>.GetPacket(() => new VcAudioRequestPacket())
-                        .Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer));
+                    packet.Set(_sendTimestamp, frameLoudness, bytesEncoded, encodeBuffer);
+                    SendPacket(packet);
                     break;
             }
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(encodeBuffer);
+            packet.Return();
         }
     }
 
@@ -196,6 +199,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         ServerDeafened = false;
         World.Reset();
         AudioEffectSystem.Reset();
+        //We clear both for the reset.
+        ClearProperties();
+        ClearVisibleEntities();
     }
 
     public void Dispose()
@@ -220,6 +226,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case VcPacketType.DenyResponse:
                 ProcessPacket(reader, onParsed, () => new VcDenyResponsePacket());
+                break;
+            case VcPacketType.EventRequest:
+                ProcessPacket(reader, onParsed, () => new VcEventRequestPacket());
                 break;
             case VcPacketType.SetNameRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetNameRequestPacket());
@@ -248,6 +257,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.SetRotationRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetRotationRequestPacket());
                 break;
+            case VcPacketType.SetPropertyRequest:
+                ProcessPacket(reader, onParsed, () => new VcSetPropertyRequestPacket());
+                break;
             case VcPacketType.SetTitleRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetTitleRequestPacket());
                 break;
@@ -256,51 +268,6 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 break;
             case VcPacketType.SetEntityVisibilityRequest:
                 ProcessPacket(reader, onParsed, () => new VcSetEntityVisibilityRequestPacket());
-                break;
-            case VcPacketType.OnEffectUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEffectUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityCreated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityCreatedPacket());
-                break;
-            case VcPacketType.OnNetworkEntityCreated:
-                ProcessPacket(reader, onParsed, () => new VcOnNetworkEntityCreatedPacket());
-                break;
-            case VcPacketType.OnEntityDestroyed:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityDestroyedPacket());
-                break;
-            case VcPacketType.OnEntityNameUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityNameUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityMuteUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityMuteUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityDeafenUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityDeafenUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityServerMuteUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityServerMuteUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityServerDeafenUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityServerDeafenUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityTalkBitmaskUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityTalkBitmaskUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityListenBitmaskUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityListenBitmaskUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityEffectBitmaskUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityEffectBitmaskUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityPositionUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityPositionUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityRotationUpdated:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityRotationUpdatedPacket());
-                break;
-            case VcPacketType.OnEntityAudioReceived:
-                ProcessPacket(reader, onParsed, () => new VcOnEntityAudioReceivedPacket());
                 break;
             case VcPacketType.InfoRequest:
             case VcPacketType.LoginRequest:
@@ -325,6 +292,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.LogoutRequest:
             case VcPacketType.AcceptResponse:
             case VcPacketType.DenyResponse:
+            case VcPacketType.EventRequest:
             case VcPacketType.SetNameRequest:
             case VcPacketType.AudioRequest:
             case VcPacketType.SetMuteRequest:
@@ -337,24 +305,10 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcPacketType.SetEffectBitmaskRequest:
             case VcPacketType.SetPositionRequest:
             case VcPacketType.SetRotationRequest:
+            case VcPacketType.SetPropertyRequest:
             case VcPacketType.SetTitleRequest:
             case VcPacketType.SetDescriptionRequest:
             case VcPacketType.SetEntityVisibilityRequest:
-            case VcPacketType.OnEffectUpdated:
-            case VcPacketType.OnEntityCreated:
-            case VcPacketType.OnNetworkEntityCreated:
-            case VcPacketType.OnEntityDestroyed:
-            case VcPacketType.OnEntityNameUpdated:
-            case VcPacketType.OnEntityMuteUpdated:
-            case VcPacketType.OnEntityDeafenUpdated:
-            case VcPacketType.OnEntityServerMuteUpdated:
-            case VcPacketType.OnEntityServerDeafenUpdated:
-            case VcPacketType.OnEntityTalkBitmaskUpdated:
-            case VcPacketType.OnEntityListenBitmaskUpdated:
-            case VcPacketType.OnEntityEffectBitmaskUpdated:
-            case VcPacketType.OnEntityPositionUpdated:
-            case VcPacketType.OnEntityRotationUpdated:
-            case VcPacketType.OnEntityAudioReceived:
             default:
                 return;
         }
@@ -367,6 +321,9 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             //Core. DO NOT CHANGE
             //Responses
             //Requests
+            case VcEventRequestPacket eventRequestPacket:
+                HandleEventRequestPacket(eventRequestPacket);
+                break;
             case VcSetNameRequestPacket setNameRequestPacket:
                 HandleSetNameRequestPacket(setNameRequestPacket);
                 break;
@@ -386,10 +343,13 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
                 HandleSetEffectBitmaskRequestPacket(setEffectBitmaskRequestPacket);
                 break;
             case VcSetPositionRequestPacket setPositionRequestPacket:
-                HandleSetPositionBitmaskRequestPacket(setPositionRequestPacket);
+                HandleSetPositionRequestPacket(setPositionRequestPacket);
                 break;
             case VcSetRotationRequestPacket setRotationRequestPacket:
-                HandleSetRotationBitmaskRequestPacket(setRotationRequestPacket);
+                HandleSetRotationRequestPacket(setRotationRequestPacket);
+                break;
+            case VcSetPropertyRequestPacket setPropertyRequestPacket:
+                HandleSetPropertyRequestPacket(setPropertyRequestPacket);
                 break;
             case VcSetTitleRequestPacket setTitleRequestPacket:
                 HandleSetTitleRequestPacket(setTitleRequestPacket);
@@ -400,10 +360,45 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcSetEntityVisibilityRequestPacket setEntityVisibilityRequestPacket:
                 HandleSetEntityVisibilityRequestPacket(setEntityVisibilityRequestPacket);
                 break;
-
             //Responses
+            default:
+                return;
+        }
+    }
 
-            //Events
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Disposed) return;
+        if (disposing)
+        {
+            _audioEncoder.Dispose();
+            World.Dispose();
+            AudioEffectSystem.Dispose();
+
+            Destroy();
+
+            OnWorldIdUpdated -= OnClientWorldIdUpdated;
+            OnNameUpdated -= OnClientNameUpdated;
+            OnMuteUpdated -= OnClientMuteUpdated;
+            OnDeafenUpdated -= OnClientDeafenUpdated;
+            OnPositionUpdated -= OnClientPositionUpdated;
+            OnRotationUpdated -= OnClientRotationUpdated;
+
+            OnSetTitle = null;
+            OnSetDescription = null;
+            OnSpeakingUpdated = null;
+            OnServerMuteUpdated = null;
+            OnServerDeafenUpdated = null;
+        }
+
+        Disposed = true;
+    }
+
+    //Packet Handling
+    private void HandleEventRequestPacket(VcEventRequestPacket packet)
+    {
+        switch (packet.Event)
+        {
             case VcOnEffectUpdatedPacket onEffectUpdatedPacket:
                 HandleOnEffectUpdatedPacket(onEffectUpdatedPacket);
                 break;
@@ -449,43 +444,15 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             case VcOnEntityRotationUpdatedPacket onEntityRotationUpdatedPacket:
                 HandleOnEntityRotationUpdatedPacket(onEntityRotationUpdatedPacket);
                 break;
-            case VcOnEntityAudioReceivedPacket onEntityAudioReceivedPacket:
-                HandleOnEntityAudioReceivedPacket(onEntityAudioReceivedPacket);
+            case VcOnEntityPropertyUpdatedPacket onEntityPropertyUpdatedPacket:
+                HandleOnEntityPropertyUpdatedPacket(onEntityPropertyUpdatedPacket);
                 break;
-            default:
-                return;
+            case VcOnEntityAudioDataReceivedPacket onEntityAudioDataReceivedPacket:
+                HandleOnEntityAudioDataReceivedPacket(onEntityAudioDataReceivedPacket);
+                break;
         }
     }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (Disposed) return;
-        if (disposing)
-        {
-            _audioEncoder.Dispose();
-            World.Dispose();
-            AudioEffectSystem.Dispose();
-
-            Destroy();
-
-            OnWorldIdUpdated -= OnClientWorldIdUpdated;
-            OnNameUpdated -= OnClientNameUpdated;
-            OnMuteUpdated -= OnClientMuteUpdated;
-            OnDeafenUpdated -= OnClientDeafenUpdated;
-            OnPositionUpdated -= OnClientPositionUpdated;
-            OnRotationUpdated -= OnClientRotationUpdated;
-
-            OnSetTitle = null;
-            OnSetDescription = null;
-            OnSpeakingUpdated = null;
-            OnServerMuteUpdated = null;
-            OnServerDeafenUpdated = null;
-        }
-
-        Disposed = true;
-    }
-
-    //Packet Handling
     private void HandleSetNameRequestPacket(VcSetNameRequestPacket packet)
     {
         Name = packet.Value;
@@ -516,14 +483,19 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         EffectBitmask = packet.Value;
     }
 
-    private void HandleSetPositionBitmaskRequestPacket(VcSetPositionRequestPacket packet)
+    private void HandleSetPositionRequestPacket(VcSetPositionRequestPacket packet)
     {
         Position = packet.Value;
     }
 
-    private void HandleSetRotationBitmaskRequestPacket(VcSetRotationRequestPacket packet)
+    private void HandleSetRotationRequestPacket(VcSetRotationRequestPacket packet)
     {
         Rotation = packet.Value;
+    }
+
+    private void HandleSetPropertyRequestPacket(VcSetPropertyRequestPacket packet)
+    {
+        SetProperty(packet.Key, packet.Value);
     }
 
     private void HandleSetTitleRequestPacket(VcSetTitleRequestPacket packet)
@@ -543,6 +515,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
             clientEntity.IsVisible = packet.Value;
     }
 
+    //Events
     private void HandleOnEffectUpdatedPacket(VcOnEffectUpdatedPacket packet)
     {
         AudioEffectSystem.SetEffect(packet.Bitmask, packet.Effect);
@@ -552,12 +525,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         if (World.ContainsEntity(packet.Id)) return;
 
-        var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke())
-        {
-            Name = packet.Name,
-            Muted = packet.Muted,
-            Deafened = packet.Deafened
-        };
+        var entity = new VoiceCraftClientEntity(packet.Id, _audioDecoderFactory.Invoke());
         World.AddEntity(entity);
     }
 
@@ -565,15 +533,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     {
         if (World.ContainsEntity(packet.Id)) return;
 
-        var entity =
-            new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid)
-            {
-                Name = packet.Name,
-                Muted = packet.Muted,
-                Deafened = packet.Deafened,
-                ServerMuted = packet.ServerMuted,
-                ServerDeafened = packet.ServerDeafened
-            };
+        var entity = new VoiceCraftClientNetworkEntity(packet.Id, _audioDecoderFactory.Invoke(), packet.UserGuid);
         World.AddEntity(entity);
     }
 
@@ -645,7 +605,13 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         entity?.Rotation = packet.Value;
     }
 
-    private void HandleOnEntityAudioReceivedPacket(VcOnEntityAudioReceivedPacket packet)
+    private void HandleOnEntityPropertyUpdatedPacket(VcOnEntityPropertyUpdatedPacket packet)
+    {
+        var entity = World.GetEntity(packet.Id);
+        entity?.SetProperty(packet.Key, packet.Value);
+    }
+
+    private void HandleOnEntityAudioDataReceivedPacket(VcOnEntityAudioDataReceivedPacket packet)
     {
         if (Deafened || ServerDeafened) return;
         var entity = World.GetEntity(packet.Id);
@@ -656,37 +622,89 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
     private void OnClientWorldIdUpdated(string worldId, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetWorldIdRequestPacket>.GetPacket(() => new VcSetWorldIdRequestPacket()).Set(worldId));
+        var packet = PacketPool<VcSetWorldIdRequestPacket>.GetPacket(() => new VcSetWorldIdRequestPacket());
+        try
+        {
+            packet.Set(worldId);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientNameUpdated(string name, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetNameRequestPacket>.GetPacket(() => new VcSetNameRequestPacket()).Set(name));
+        var packet = PacketPool<VcSetNameRequestPacket>.GetPacket(() => new VcSetNameRequestPacket());
+        try
+        {
+            packet.Set(name);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientMuteUpdated(bool value, VoiceCraftEntity _)
     {
-        SendPacket(PacketPool<VcSetMuteRequestPacket>.GetPacket(() => new VcSetMuteRequestPacket()).Set(value));
+        var packet = PacketPool<VcSetMuteRequestPacket>.GetPacket(() => new VcSetMuteRequestPacket());
+        try
+        {
+            packet.Set(value);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientDeafenUpdated(bool value, VoiceCraftEntity _)
     {
-        SendPacket(PacketPool<VcSetDeafenRequestPacket>.GetPacket(() => new VcSetDeafenRequestPacket()).Set(value));
+        var packet = PacketPool<VcSetDeafenRequestPacket>.GetPacket(() => new VcSetDeafenRequestPacket());
+        try
+        {
+            packet.Set(value);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientPositionUpdated(Vector3 position, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetPositionRequestPacket>.GetPacket(() => new VcSetPositionRequestPacket())
-            .Set(position));
+        var packet = PacketPool<VcSetPositionRequestPacket>.GetPacket(() => new VcSetPositionRequestPacket());
+        try
+        {
+            packet.Set(position);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void OnClientRotationUpdated(Vector2 rotation, VoiceCraftEntity _)
     {
         if (PositioningType != PositioningType.Client) return;
-        SendPacket(PacketPool<VcSetRotationRequestPacket>.GetPacket(() => new VcSetRotationRequestPacket())
-            .Set(rotation));
+        var packet = PacketPool<VcSetRotationRequestPacket>.GetPacket(() => new VcSetRotationRequestPacket());
+        try
+        {
+            packet.Set(rotation);
+            SendPacket(packet);
+        }
+        finally
+        {
+            packet.Return();
+        }
     }
 
     private void ProcessPacket<T>(NetDataReader reader, Action<IVoiceCraftPacket> onParsed, Func<T> packetFactory)
@@ -701,7 +719,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 
@@ -718,7 +736,7 @@ public abstract class VoiceCraftClient : VoiceCraftEntity, IDisposable
         }
         finally
         {
-            PacketPool<T>.Return(packet);
+            packet.Return();
         }
     }
 

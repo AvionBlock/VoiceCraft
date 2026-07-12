@@ -5,6 +5,7 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
+using VoiceCraft.Server.Services;
 using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
@@ -36,6 +37,7 @@ public static class App
         //Other
         var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
         var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetryService>();
+        var portMappingService = Program.ServiceProvider.GetRequiredService<PortMappingService>();
 
         try
         {
@@ -70,6 +72,11 @@ public static class App
             StartServer(httpMcApiServer);
             StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
+            await portMappingService.OpenAsync(
+                liteNetServer.Config,
+                httpMcApiServer.Config,
+                tcpMcApiServer.Config,
+                mcWssMcApiServer.Config);
 
             //Server Started
             //Table for Server Setup Display
@@ -174,7 +181,11 @@ public static class App
         }
         finally
         {
+            await portMappingService.CloseAsync();
             liteNetServer.Dispose();
+            httpMcApiServer.Dispose();
+            tcpMcApiServer.Dispose();
+            mcWssMcApiServer.Dispose();
             Cts.Dispose();
         }
     }
@@ -198,8 +209,10 @@ public static class App
             server.Start();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
         }
-        catch
+        catch(Exception ex)
         {
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+            LogService.Log(ex);
             throw new Exception(Localizer.Get("VoiceCraftServer.Exceptions.Failed"));
         }
     }
@@ -211,10 +224,12 @@ public static class App
         {
             AnsiConsole.WriteLine(Localizer.Get("McWssServer.Starting"));
             server.Start();
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
         }
-        catch
+        catch(Exception ex)
         {
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+            LogService.Log(ex);
             throw new Exception(Localizer.Get("McWssServer.Exceptions.Failed"));
         }
     }
@@ -257,7 +272,7 @@ public static class App
     {
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
         server.Stop();
-        AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopped"));
+        AnsiConsole.WriteLine($"[green]{Localizer.Get("VoiceCraftServer.Stopped")}[/]");
     }
 
     private static void StopServer(McWssMcApiServer server)
@@ -265,7 +280,7 @@ public static class App
         if (!server.Config.Enabled) return;
         AnsiConsole.WriteLine(Localizer.Get("McWssServer.Stopping"));
         server.Stop();
-        AnsiConsole.WriteLine(Localizer.Get("McWssServer.Stopped"));
+        AnsiConsole.WriteLine($"[green]{Localizer.Get("McWssServer.Stopped")}[/]");
     }
 
     private static void StopServer(HttpMcApiServer server)

@@ -32,7 +32,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
         App.ServiceCollection.AddSingleton<IBackgroundService>(x =>
             new NativeBackgroundService(
                 x.GetRequiredService<PermissionsService>(),
-                x.GetRequiredService));
+                serviceType => x.GetRequiredService(serviceType)));
         App.ServiceCollection.AddTransient<VoiceCraftClient>(x =>
             new LiteNetVoiceCraftClient(
                 x.GetRequiredService<IAudioEncoder>(),
