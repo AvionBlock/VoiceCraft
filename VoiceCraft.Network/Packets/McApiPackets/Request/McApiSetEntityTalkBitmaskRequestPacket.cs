@@ -24,11 +24,15 @@ public class McApiSetEntityTalkBitmaskRequestPacket(int id, ushort value) : IMcA
         Id = reader.GetInt();
         Value = reader.GetUShort();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityTalkBitmaskRequestPacket>.Return(this);
+    }
 
-    public McApiSetEntityTalkBitmaskRequestPacket Set(int id = 0, ushort value = 0)
+    public void Set(int id = 0, ushort value = 0)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

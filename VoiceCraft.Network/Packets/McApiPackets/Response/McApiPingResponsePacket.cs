@@ -22,10 +22,14 @@ public class McApiPingResponsePacket(string token = "") : IMcApiPacket
     {
         Token = reader.GetString(Constants.MaxStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiPingResponsePacket>.Return(this);
+    }
 
-    public McApiPingResponsePacket Set(string token = "")
+    public void Set(string token = "")
     {
         Token = token;
-        return this;
     }
 }

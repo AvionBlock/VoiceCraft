@@ -3,16 +3,15 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityRotationUpdatedPacket(int id, Vector2 value) : IMcApiPacket
+public class McApiOnEntityRotationUpdatedPacket(int id, Vector2 value) : IMcApiEventPacket
 {
     public McApiOnEntityRotationUpdatedPacket() : this(0, Vector2.Zero)
     {
     }
 
+    public EventType EventType => EventType.OnEntityRotationUpdated;
     public int Id { get; private set; } = id;
     public Vector2 Value { get; private set; } = value;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityRotationUpdated;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -26,11 +25,15 @@ public class McApiOnEntityRotationUpdatedPacket(int id, Vector2 value) : IMcApiP
         Id = reader.GetInt();
         Value = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityRotationUpdatedPacket>.Return(this);
+    }
 
-    public McApiOnEntityRotationUpdatedPacket Set(int id = 0, Vector2 value = new())
+    public void Set(int id = 0, Vector2 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

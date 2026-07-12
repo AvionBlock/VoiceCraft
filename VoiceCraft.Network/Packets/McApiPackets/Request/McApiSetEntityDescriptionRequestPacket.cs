@@ -25,11 +25,15 @@ public class McApiSetEntityDescriptionRequestPacket(int id, string value) : IMcA
         Id = reader.GetInt();
         Value = reader.GetString(Constants.MaxDescriptionStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityDescriptionRequestPacket>.Return(this);
+    }
 
-    public McApiSetEntityDescriptionRequestPacket Set(int id = 0, string value = "")
+    public void Set(int id = 0, string value = "")
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

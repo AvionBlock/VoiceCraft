@@ -52,6 +52,13 @@ public class ServerProperties
             _properties.McTcpConfig.LoginToken = options.ServerKey;
             _properties.McWssConfig.LoginToken = options.ServerKey;
         }
+        
+        if (!string.IsNullOrWhiteSpace(options.TransportHost))
+        {
+            _properties.McTcpConfig.Hostname = options.TransportHost;
+            _properties.McHttpConfig.Hostname = SetUriHost(_properties.McHttpConfig.Hostname, options.TransportHost);
+            _properties.McWssConfig.Hostname = SetUriHost(_properties.McWssConfig.Hostname, options.TransportHost);
+        }
 
         if (options.TransportPort is >= 1 and <= 65535)
         {
@@ -60,11 +67,9 @@ public class ServerProperties
             _properties.McWssConfig.Hostname = SetUriPort(_properties.McWssConfig.Hostname, options.TransportPort.Value);
         }
 
-        if (!string.IsNullOrWhiteSpace(options.TransportHost))
+        if (options.VoicePort is >= 1 and <= 65535)
         {
-            _properties.McTcpConfig.Hostname = options.TransportHost;
-            _properties.McHttpConfig.Hostname = SetUriHost(_properties.McHttpConfig.Hostname, options.TransportHost);
-            _properties.McWssConfig.Hostname = SetUriHost(_properties.McWssConfig.Hostname, options.TransportHost);
+            _properties.VoiceCraftConfig.Port = options.VoicePort.Value;
         }
 
         if (options.TransportMode.Length > 0)
@@ -235,6 +240,7 @@ public class RuntimeOptions
     public string[] TransportMode { get; init; } = [];
     public string? TransportHost { get; init; }
     public int? TransportPort { get; init; }
+    public uint? VoicePort { get; init; }
     public string? ServerKey { get; init; }
 }
 

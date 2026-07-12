@@ -21,10 +21,14 @@ public class VcSetServerDeafenRequestPacket(bool value) : IVoiceCraftPacket
     {
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetServerDeafenRequestPacket>.Return(this);
+    }
 
-    public VcSetServerDeafenRequestPacket Set(bool value = false)
+    public void Set(bool value = false)
     {
         Value = value;
-        return this;
     }
 }

@@ -1,55 +1,87 @@
 # VoiceCraft Proximity Chat
 
-Proximity voice chat software for Minecraft Bedrock Edition supporting Windows, Android, iOS, Linux and MacOS.
+Cross-platform proximity voice chat for Minecraft servers and integrations, with client apps, a standalone voice server,
+Minecraft-side bridges, and an API for custom behavior.
 
 <p align="center">
   <img style="margin: 10" width="300" height="300" src="./VoiceCraft.Client/VoiceCraft.Client/Assets/vc.png"/>
 </p>
 
 > [!WARNING]
-> VOICECRAFT DOES NOT REQUIRE THE USE OF ANY THIRD PARTY SERVICE! VOICECRAFT IS ALSO NOT A MOD, PLUGIN OR STANDALONE
-> ADDON/WORLD! It is a collection of both addons, servers and client software working together in order to simulate
-> proximity chat.
+> VoiceCraft does not require any third-party service. The hosted dashboard at https://voicecraft.chat is optional.
+> VoiceCraft is also not a single mod, plugin, or standalone addon world. It is a set of clients, server software,
+> addons, plugins, and protocol integrations working together to simulate proximity chat.
 
 > [!NOTE]
-> VoiceCraft is also not a standard voice chat that comes with groups or channels. It is designed to be customized
-> through the api allowing recreation of channels, proximity, effects and more through the session based Addon API. This
-> is essentially up to the server owner to install or add-on developer to implement.
+> VoiceCraft is not a channel-based voice chat by default. It is built around session state, positioning, effects,
+> visibility, and bitmask-based routing that integrations can control through the Addon API and McApi transports.
+
+> [!NOTE]
+> If you are viewing this on GitHub, you are looking at a mirror. Actual development happens over at https://gitlab.avion.team/voicecraft/VoiceCraft
 
 ## Project Description
 
-VoiceCraft is a cross-platform proximity voice chat solution for minecraft bedrock edition. VoiceCraft supports a wide
-range of devices to increase its availability to players and can indirectly support any other devices such as consoles
-through the standard binding system.
+VoiceCraft is a proximity voice platform for Minecraft-focused deployments. It started around Minecraft Bedrock Edition,
+but the core runtime is not limited to Bedrock-only setups: it can be connected to Bedrock worlds through addons, to
+Java/Geyser environments through VoiceCraft.Java, and to custom integrations through the exposed API transports.
 
-VoiceCraft is developed in C# for both the server and client application which uses the avalonia framework and uses an
-addon developed in JavaScript to establish a connection to the vanilla minecraft server.
-VoiceCraft also uses the opus codec for audio data compression and SpeexDSP for voice enhancements with optional support
-for hardware related preprocessors on android devices.
+Players run a VoiceCraft client, the server owner runs or hosts a VoiceCraft server, and a Minecraft-side integration
+sends player position, world, visibility, mute/deafen, and audio-effect state into the voice layer. VoiceCraft then routes
+voice only to the entities that should hear it.
 
-There is also a comprehensive API system in place that addon developer's can use to customize VoiceCraft's behavior,
-audio effects, audio simulations, authentication, and more!
+VoiceCraft is developed in C# for the server and client applications. The client UI is built with Avalonia, audio uses
+Opus for compression and SpeexDSP/SoundFlow for processing and device I/O, and the network layer provides both the
+VoiceCraft client protocol and Minecraft-facing transports such as McHttp, McWss, and McTcp.
 
 <p align="center">
   <img width="800" src="./Images/MainPage.png">
 </p>
 
-## Packages, Guides And Resources
+## Resources
 
-- ### [Wiki](https://voicecraft.avion.team/en)
-- ### [Latest Release](https://github.com/AvionBlock/VoiceCraft/releases/latest)
-- ### [Addon](https://github.com/AvionBlock/VoiceCraft-Addon)
-- ### [GeyserVoice](https://github.com/AvionBlock/GeyserVoice)
-- ### [PocketMine Plugin](https://github.com/AvionBlock/VoiceCraft-PocketMine)
-- ### [Docker Package](https://github.com/AvionBlock/VoiceCraft-Docker/pkgs/container/voicecraft)
-- ### [Docker Page](https://hub.docker.com/r/sinevector241/voicecraft/tags)
+| Resource | Link | Description |
+|----------|------|-------------|
+| Documentation | https://docs.voicecraft.chat | Installation, downloads, server setup, transports, operations, ecosystem guides, and API references. |
+| Free hosting | https://voicecraft.chat | Official dashboard for creating and managing hosted VoiceCraft voice servers without manual deployment. |
+| Primary repository | https://gitlab.avion.team/voicecraft/VoiceCraft | Main development repository for issues, merge requests, releases, and source code. |
+| GitHub mirror | https://github.com/AvionBlock/VoiceCraft | Public mirror of the main repository. |
+| Downloads | https://docs.voicecraft.chat/download | Latest client, server, addon, and release links. |
+| Ecosystem overview | https://docs.voicecraft.chat/ecosystem/overview | How VoiceCraft, VoiceCraft.Addon, VoiceCraft.Java, Docker, and deployment topologies fit together. |
+
+## Packages And Integrations
+
+| Package | What it is | Use it when |
+|---------|------------|-------------|
+| `VoiceCraft.Client` | Cross-platform player application for microphone capture, playback, settings, server profiles, and voice connection. | Players need to join a VoiceCraft server from Windows, Linux, macOS, Android, or iOS. |
+| `VoiceCraft.Server` | Standalone voice backend that owns sessions, entities, routing, effects, and Minecraft API transports. | You self-host VoiceCraft or run it behind Docker, a panel, VoiceCraft.Java auto-start, or the official hosting dashboard. |
+| `VoiceCraft.Addon` | Bedrock addon packages and scripting surface for binding Bedrock worlds to VoiceCraft. | You run Bedrock Dedicated Server, local Bedrock worlds, or custom Bedrock addon behavior. |
+| `VoiceCraft.Java` | Java-side bridge for Paper/Folia and proxy networks, including Java/Geyser/Floodgate topologies. | You run Java server state, Geyser players, or a proxy network and want to feed player state into VoiceCraft through McTcp. |
+| WIP `VoiceCraft.PocketMine` | PocketMine integration for servers that use PocketMine instead of a vanilla Bedrock stack. | Your Minecraft server runtime is PocketMine and needs a VoiceCraft bridge. |
+| Docker package | Containerized VoiceCraft server runtime. | You deploy VoiceCraft with Docker, compose files, panels, or infrastructure automation. |
+| Hosted VoiceCraft | Managed server runtime at https://voicecraft.chat. | You want a free VoiceCraft server without manually installing, updating, or supervising the backend process. |
+
+## Repository Projects
+
+| Project | Description |
+|---------|-------------|
+| `VoiceCraft.Client/VoiceCraft.Client` | Shared Avalonia client application, views, settings, localization, audio pipeline, and network client logic. |
+| `VoiceCraft.Client/VoiceCraft.Client.Windows` | Windows desktop launcher and platform packaging target. |
+| `VoiceCraft.Client/VoiceCraft.Client.Linux` | Linux desktop launcher and platform packaging target. |
+| `VoiceCraft.Client/VoiceCraft.Client.MacOS` | macOS desktop launcher and platform packaging target. |
+| `VoiceCraft.Client/VoiceCraft.Client.Android` | Android mobile target. |
+| `VoiceCraft.Client/VoiceCraft.Client.iOS` | iOS mobile target. |
+| `VoiceCraft.Server` | Console server application, runtime configuration, localization, commands, and service wiring. |
+| `VoiceCraft.Network` | VoiceCraft and McApi packets, clients, servers, transports, entities, audio effects, jitter buffering, and world state. |
+| `VoiceCraft.Core` | Shared constants, models, audio abstractions, helpers, telemetry transport, and common runtime code. |
+| `VoiceCraft.*.Tests` | Unit and protocol coverage for client, core, and network behavior. |
+| `VoiceCraft.Tools` | Development and measurement tools used by maintainers. |
 
 ## Supported Devices
 
 - ✅ Fully and natively supported.
-- ❎ Can be supported but no reason to.
-- ❗ Unknown status (limited support)
-- ❌ Not planned, Not supported.
+- ❎ Can be supported but no reason to publish.
+- ❗ Work in progress or limited support.
+- ❌ Not planned or not supported.
 
 | Device      | x64 | x86 | arm32 | arm64 | Supported Audio Backends         |
 |-------------|-----|-----|-------|-------|:---------------------------------|
@@ -57,36 +89,52 @@ audio effects, audio simulations, authentication, and more!
 | Android     | ❎   | ❎   | ❌     | ✅     | AAudio, OpenSL                   |
 | Windows     | ✅   | ✅   | ❌     | ✅     | WinMM, WASAPI, DirectSound, JACK |
 | iOS         | ❌   | ❌   | ✅     | ✅     | Core Audio                       |
-| MacOS       | ✅   | ❌   | ❌     | ✅     | Core Audio, JACK                 |
-| Web         | ❗   | ❗   | ❗     | ❗     | Web API                          |
-| XBOX        | ❌   | ❌   | ❌     | ❌     | N.A.                             |
+| macOS       | ✅   | ❌   | ❌     | ✅     | Core Audio, JACK                 |
+| Xbox        | ❌   | ❌   | ❌     | ❌     | N.A.                             |
 | PlayStation | ❌   | ❌   | ❌     | ❌     | N.A.                             |
 | Switch      | ❌   | ❌   | ❌     | ❌     | N.A.                             |
 
-## Hosts
+## Hosting
 
-- Atrioxhosting €0.63/m: https://atrioxhost.com/voicecraft
+VoiceCraft can be self-hosted, containerized, managed by VoiceCraft.Java, or created through the official free hosting
+dashboard:
+
+- Official hosted servers: https://voicecraft.chat
+- Self-hosting and operations docs: https://docs.voicecraft.chat
+- Download center: https://docs.voicecraft.chat/download
+
+The hosted dashboard is a convenience service. It is not required for private servers, custom deployments, Docker setups,
+or local development.
 
 ## Project Dependencies
 
 > [!NOTE]
-> All dotnet and microsoft extension packages aren't listed. If you wish to view all dependencies, You can look at
-> the [Directory.Packages.props](./Directory.Packages.props) file.
-
-### All Projects
-
-- [Avalonia](https://github.com/AvaloniaUI/Avalonia)
-- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
+> .NET and Microsoft extension packages are not listed here. To view all centrally managed dependency versions, see
+> [Directory.Packages.props](./Directory.Packages.props).
 
 ### Client
 
+- [Avalonia](https://github.com/AvaloniaUI/Avalonia)
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
 - [Message.Avalonia](https://github.com/xiyaowong/Message.Avalonia)
 - [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
-- [Soundflow](https://github.com/LSXPrime/SoundFlow/tree/master)
+- [SoundFlow](https://github.com/LSXPrime/SoundFlow)
+- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet)
+
+### Network
+
+- [LiteNetLib](https://github.com/RevenantX/LiteNetLib)
+- [Fleck](https://github.com/statianzo/Fleck)
 
 ### Server
 
+- [Fleck](https://github.com/statianzo/Fleck)
 - [Spectre.Console](https://github.com/spectreconsole/spectre.console)
+- [System.CommandLine](https://github.com/dotnet/command-line-api)
+
+### Tests
+
+- [xUnit](https://github.com/xunit/xunit)
+- [coverlet](https://github.com/coverlet-coverage/coverlet)

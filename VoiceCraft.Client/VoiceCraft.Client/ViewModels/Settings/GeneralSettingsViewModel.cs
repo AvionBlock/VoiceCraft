@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
@@ -15,7 +17,7 @@ public partial class GeneralSettingsViewModel
 {
     private readonly NavigationService _navigationService;
 
-    [ObservableProperty] public partial ObservableCollection<KeyValuePair<string, string>> Locales { get; set; } = [];
+    [ObservableProperty] public partial ObservableCollection<CultureDataViewModel> Locales { get; set; } = [];
 
     //Language Settings
     [ObservableProperty] public partial LocaleSettingsDataViewModel LocaleSettingsData { get; set; }
@@ -32,7 +34,9 @@ public partial class GeneralSettingsViewModel
     public GeneralSettingsViewModel(NavigationService navigationService, SettingsService settingsService)
     {
         foreach (var locale in Localizer.Languages)
-            Locales.Add(new KeyValuePair<string, string>(CultureInfo.GetCultureInfo(locale).NativeName, locale));
+            Locales.Add(new CultureDataViewModel(CultureInfo.GetCultureInfo(locale).NativeName,
+                locale,
+                LoadImage($"avares://VoiceCraft.Client/Assets/Flags/{locale}.png")));
         _navigationService = navigationService;
         LocaleSettingsData = new LocaleSettingsDataViewModel(settingsService);
         TelemetrySettingsData = new TelemetrySettingsDataViewModel(settingsService);
@@ -54,5 +58,10 @@ public partial class GeneralSettingsViewModel
     {
         if (DisableBackButton) return;
         _navigationService.Back();
+    }
+
+    private static Bitmap? LoadImage(string path)
+    {
+        return AssetLoader.Exists(new Uri(path)) ? new Bitmap(AssetLoader.Open(new Uri(path))) : null;
     }
 }

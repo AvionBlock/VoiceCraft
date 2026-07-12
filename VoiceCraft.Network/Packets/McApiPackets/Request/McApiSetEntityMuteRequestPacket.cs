@@ -24,11 +24,15 @@ public class McApiSetEntityMuteRequestPacket(int id, bool value) : IMcApiPacket
         Id = reader.GetInt();
         Value = reader.GetBool();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityMuteRequestPacket>.Return(this);
+    }
 
-    public McApiSetEntityMuteRequestPacket Set(int id = 0, bool value = false)
+    public void Set(int id = 0, bool value = false)
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

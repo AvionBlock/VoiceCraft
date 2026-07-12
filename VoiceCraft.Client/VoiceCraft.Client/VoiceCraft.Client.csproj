@@ -42,5 +42,7 @@
         <EmbeddedResource Include="Locales\ru-RU.json"/>
         <EmbeddedResource Include="Locales\zh-CN.json"/>
         <EmbeddedResource Include="Locales\zh-TW.json"/>
+        <None Remove="Locales\th-TH.json" />
+        <EmbeddedResource Include="Locales\th-TH.json" />
     </ItemGroup>
 </Project>

@@ -10,7 +10,7 @@ namespace VoiceCraft.Core.World
     public class VoiceCraftEntity(int id)
     {
         private readonly ConcurrentDictionary<int, VoiceCraftEntity> _visibleEntities = new();
-        private readonly ConcurrentDictionary<string, float> _properties = new();
+        private readonly ConcurrentDictionary<string, object> _properties = new();
         private float _loudness;
 
         //Properties
@@ -36,7 +36,7 @@ namespace VoiceCraft.Core.World
         public event Action<ushort, VoiceCraftEntity>? OnEffectBitmaskUpdated;
         public event Action<Vector3, VoiceCraftEntity>? OnPositionUpdated;
         public event Action<Vector2, VoiceCraftEntity>? OnRotationUpdated;
-        public event Action<string, float?, VoiceCraftEntity>? OnPropertyUpdated;
+        public event Action<string, object?, VoiceCraftEntity>? OnPropertyUpdated;
 
         //Others
         public event Action<VoiceCraftEntity, VoiceCraftEntity>? OnVisibleEntityAdded;
@@ -69,30 +69,75 @@ namespace VoiceCraft.Core.World
                 _visibleEntities.Remove(key, out _);
         }
 
-        public void SetProperty(string name, float? value)
+        public void ClearVisibleEntities()
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(name.Length, Constants.MaxStringLength, nameof(name));
-            if (value == null)
+            //Copy Array.
+            var entities = _visibleEntities.ToArray();
+            _visibleEntities.Clear();
+
+            foreach (var entity in entities)
             {
-                if (_properties.TryRemove(name, out _))
-                    OnPropertyUpdated?.Invoke(name, value, this);
-                return;
+                OnVisibleEntityRemoved?.Invoke(entity.Value, this);
             }
-            
-            _properties[name] = (float)value;
-            OnPropertyUpdated?.Invoke(name, value, this);
         }
 
-        public bool TryGetProperty(string name, [NotNullWhen(true)] out float? value)
+        public void SetProperty<T>(string key, T? value)
         {
-            if (_properties.TryGetValue(name, out var v))
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(key.Length, Constants.MaxStringLength, nameof(key));
+            if (value == null)
             {
-                value = v;
-                return true;
+                //Remove the property and raise the event.
+                if (_properties.TryRemove(key, out _))
+                    OnPropertyUpdated?.Invoke(key, null, this);
+                return;
             }
 
-            value = null;
-            return false;
+            //Check for the same value, if it's the same, then return.
+            if (!_properties.TryGetValue(key, out var currentValue) || currentValue is not T)
+            {
+                //Set the property and raise the event.
+                _properties[key] = value;
+                OnPropertyUpdated?.Invoke(key, value, this);
+                return;
+            }
+
+            switch (value)
+            {
+                case float floatValue:
+                    if (Math.Abs((float)currentValue - floatValue) < Constants.FloatingPointTolerance) return;
+                    break;
+                default:
+                    if (currentValue == (object)value) return;
+                    break;
+            }
+
+            //Set the property and raise the event.
+            _properties[key] = value;
+            OnPropertyUpdated?.Invoke(key, value, this);
+        }
+
+        public bool TryGetProperty<T>(string key, [NotNullWhen(true)] out T? value)
+        {
+            if (!_properties.TryGetValue(key, out var currentValue) || currentValue is not T typeValue)
+            {
+                value = default;
+                return false;
+            }
+
+            value = typeValue;
+            return true;
+        }
+
+        public void ClearProperties()
+        {
+            //Copy Array.
+            var properties = _properties.ToArray();
+            _properties.Clear();
+
+            foreach (var property in properties)
+            {
+                OnPropertyUpdated?.Invoke(property.Key, property.Value, this);
+            }
         }
 
         public virtual void ReceiveAudio(byte[] buffer, ushort timestamp, float frameLoudness)
@@ -107,6 +152,10 @@ namespace VoiceCraft.Core.World
             if (Destroyed) return;
             Destroyed = true;
             OnDestroyed?.Invoke(this);
+
+            //Cleanup
+            ClearProperties();
+            ClearVisibleEntities();
 
             //Deregister all events.
             OnWorldIdUpdated = null;
@@ -128,6 +177,7 @@ namespace VoiceCraft.Core.World
         #region Updatable Properties
 
         public IEnumerable<VoiceCraftEntity> VisibleEntities => _visibleEntities.Values;
+        public IEnumerable<KeyValuePair<string, object>> Properties => _properties;
 
         public string WorldId
         {

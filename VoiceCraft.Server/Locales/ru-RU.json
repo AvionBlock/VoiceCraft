@@ -28,6 +28,17 @@
       "ParseJson": "Не удалось разобрать JSON-данные из загруженного файла!"
     }
   },
+  "PortMapper": {
+    "Opening": null,
+    "Opened": null,
+    "Closing": null,
+    "Closed": null,
+    "SkippedLoopback": null,
+    "Exceptions": {
+      "Open": null,
+      "Close": null
+    }
+  },
   "Title": {
     "Starting": "Запуск...",
     "Running": "Работает!"

@@ -2,15 +2,14 @@ using LiteNetLib.Utils;
 
 namespace VoiceCraft.Network.Packets.McApiPackets.Event;
 
-public class McApiOnEntityDestroyedPacket(int id) : IMcApiPacket
+public class McApiOnEntityDestroyedPacket(int id) : IMcApiEventPacket
 {
     public McApiOnEntityDestroyedPacket() : this(0)
     {
     }
 
+    public EventType EventType => EventType.OnEntityDestroyed;
     public int Id { get; private set; } = id;
-
-    public McApiPacketType PacketType => McApiPacketType.OnEntityDestroyed;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -21,10 +20,14 @@ public class McApiOnEntityDestroyedPacket(int id) : IMcApiPacket
     {
         Id = reader.GetInt();
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiOnEntityDestroyedPacket>.Return(this);
+    }
 
-    public McApiOnEntityDestroyedPacket Set(int id = 0)
+    public void Set(int id = 0)
     {
         Id = id;
-        return this;
     }
 }

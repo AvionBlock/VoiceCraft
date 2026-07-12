@@ -3,22 +3,21 @@ using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVoiceCraftPacket
+public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVoiceCraftEventPacket
 {
     public VcOnEffectUpdatedPacket() : this(0, null)
     {
     }
 
+    public EventType EventType => EventType.OnEffectUpdated;
     public ushort Bitmask { get; private set; } = bitmask;
     public EffectType EffectType => Effect?.EffectType ?? EffectType.None;
     public IAudioEffect? Effect { get; private set; } = effect;
 
-    public VcPacketType PacketType => VcPacketType.OnEffectUpdated;
-
     public void Serialize(NetDataWriter writer)
     {
         writer.Put(Bitmask);
-        writer.Put((byte)(Effect?.EffectType ?? EffectType.None));
+        writer.Put((byte)EffectType);
         if (Effect != null)
             writer.Put(Effect);
     }
@@ -31,10 +30,14 @@ public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVo
         Effect?.Bitmask = Bitmask;
     }
 
-    public VcOnEffectUpdatedPacket Set(ushort bitmask = 0, IAudioEffect? effect = null)
+    public void Return()
+    {
+        PacketPool<VcOnEffectUpdatedPacket>.Return(this);
+    }
+
+    public void Set(ushort bitmask = 0, IAudioEffect? effect = null)
     {
         Bitmask = bitmask;
         Effect = effect;
-        return this;
     }
 }

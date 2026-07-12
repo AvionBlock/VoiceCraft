@@ -10,6 +10,7 @@ public class VcAcceptResponsePacket(Guid requestId) : IVoiceCraftPacket, IVoiceC
     }
 
     public VcPacketType PacketType => VcPacketType.AcceptResponse;
+    public Guid RequestId { get; private set; } = requestId;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -21,11 +22,13 @@ public class VcAcceptResponsePacket(Guid requestId) : IVoiceCraftPacket, IVoiceC
         RequestId = reader.GetGuid();
     }
 
-    public Guid RequestId { get; private set; } = requestId;
+    public void Return()
+    {
+        PacketPool<VcAcceptResponsePacket>.Return(this);
+    }
 
-    public VcAcceptResponsePacket Set(Guid requestId = new())
+    public void Set(Guid requestId = new())
     {
         RequestId = requestId;
-        return this;
     }
 }

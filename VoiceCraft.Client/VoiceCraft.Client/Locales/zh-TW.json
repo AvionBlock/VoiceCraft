@@ -29,7 +29,7 @@
       "Denoisers": "降噪器",
       "AutomaticGainControllers": "自動增益控制器",
       "EchoCancelers": "回聲消除器",
-      "HardwarePreprocessors": null,
+      "HardwarePreprocessors": "硬體預處理器",
       "PushToTalk": "按住說話",
       "PlayPushToTalkCue": "播放按住說話提示音",
       "MicrophoneTest": {
@@ -64,8 +64,8 @@
       "Title": "網路設定",
       "PositioningType": {
         "Title": "定位類型",
-        "Server": null,
-        "Client": null
+        "Server": "伺服器",
+        "Client": "客戶"
       },
       "McWssListenIp": "MCWSS 監聽 IP 位址",
       "McWssHostPort": "MCWSS 主機連接埠"
@@ -110,6 +110,9 @@
   },
   "Credits": {
     "Title": "致謝",
+    "Website": "網站",
+    "SourceCode": "原始碼",
+    "Documentation": "文件",
     "AppVersion": "應用程式版本: {0}",
     "Version": "版本: {0}",
     "Codec": "編解碼器: {0}",
@@ -118,6 +121,10 @@
       "Author": "作者",
       "Translator": "翻譯者",
       "Programmer": "程式設計師"
+    },
+    "Attributions": {
+      "Title": "來源標示",
+      "FlagsFlatIcon": "圖示：FlatIcon"
     }
   },
   "CrashLogs": {

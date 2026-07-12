@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using VoiceCraft.Core;
+using VoiceCraft.Network.Interfaces;
 
 namespace VoiceCraft.Network
 {
-    public static class PacketPool<T>
+    public static class PacketPool<T> where T : IPooledPacket
     {
         private static readonly ConcurrentBag<T> Packets = [];
 

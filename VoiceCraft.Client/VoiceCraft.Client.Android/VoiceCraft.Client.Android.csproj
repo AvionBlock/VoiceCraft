@@ -6,7 +6,7 @@
         <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
         <TargetPlatformVersion>36</TargetPlatformVersion>
         <Nullable>enable</Nullable>
-        <ApplicationId>com.AvionBlock.VoiceCraft.Client</ApplicationId>
+        <ApplicationId>team.avion.voicecraft</ApplicationId>
         <ApplicationVersion>$(AndroidVersion)</ApplicationVersion>
         <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>

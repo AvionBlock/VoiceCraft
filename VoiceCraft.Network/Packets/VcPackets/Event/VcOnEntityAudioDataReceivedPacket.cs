@@ -4,20 +4,20 @@ using VoiceCraft.Core;
 
 namespace VoiceCraft.Network.Packets.VcPackets.Event;
 
-public class VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] buffer)
-    : IVoiceCraftPacket
+public class VcOnEntityAudioDataReceivedPacket(int id, ushort timestamp, float loudness, int length, byte[] buffer)
+    : IVoiceCraftEventPacket
 {
-    public VcOnEntityAudioReceivedPacket() : this(0, 0, 0.0f, 0, [])
+    public VcOnEntityAudioDataReceivedPacket() : this(0, 0, 0.0f, 0, [])
     {
     }
 
+    public EventType EventType => EventType.OnEntityAudioDataReceived;
     public int Id { get; private set; } = id;
     public ushort Timestamp { get; private set; } = timestamp;
     public float FrameLoudness { get; private set; } = loudness;
     public int Length { get; private set; } = length;
     public byte[] Buffer { get; private set; } = buffer;
 
-    public VcPacketType PacketType => VcPacketType.OnEntityAudioReceived;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -40,8 +40,13 @@ public class VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudn
         Buffer = new byte[Length];
         reader.GetBytes(Buffer, Length);
     }
+    
+    public void Return()
+    {
+        PacketPool<VcOnEntityAudioDataReceivedPacket>.Return(this);
+    }
 
-    public VcOnEntityAudioReceivedPacket Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
+    public void Set(int id = 0, ushort timestamp = 0, float loudness = 0f, int length = 0,
         byte[]? data = null)
     {
         Id = id;
@@ -49,6 +54,5 @@ public class VcOnEntityAudioReceivedPacket(int id, ushort timestamp, float loudn
         FrameLoudness = loudness;
         Length = length;
         Buffer = data ?? [];
-        return this;
     }
 }

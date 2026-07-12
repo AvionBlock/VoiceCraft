@@ -23,10 +23,14 @@ public class VcSetRotationRequestPacket(Vector2 value) : IVoiceCraftPacket
     {
         Value = new Vector2(reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetRotationRequestPacket>.Return(this);
+    }
 
-    public VcSetRotationRequestPacket Set(Vector2 value = new())
+    public void Set(Vector2 value = new())
     {
         Value = value;
-        return this;
     }
 }

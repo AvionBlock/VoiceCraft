@@ -13,9 +13,9 @@ public class McApiClearEffectsRequestPacket : IMcApiPacket
     public void Deserialize(NetDataReader reader)
     {
     }
-
-    public McApiClearEffectsRequestPacket Set()
+    
+    public void Return()
     {
-        return this;
+        PacketPool<McApiClearEffectsRequestPacket>.Return(this);
     }
 }

@@ -27,11 +27,15 @@ public class McApiSetEntityPositionRequestPacket(int id, Vector3 value) : IMcApi
         Id = reader.GetInt();
         Value = new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
     }
+    
+    public void Return()
+    {
+        PacketPool<McApiSetEntityPositionRequestPacket>.Return(this);
+    }
 
-    public McApiSetEntityPositionRequestPacket Set(int id = 0, Vector3 value = new())
+    public void Set(int id = 0, Vector3 value = new())
     {
         Id = id;
         Value = value;
-        return this;
     }
 }

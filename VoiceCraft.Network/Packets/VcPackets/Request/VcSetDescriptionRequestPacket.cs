@@ -22,10 +22,14 @@ public class VcSetDescriptionRequestPacket(string value) : IVoiceCraftPacket
     {
         Value = reader.GetString(Constants.MaxDescriptionStringLength);
     }
+    
+    public void Return()
+    {
+        PacketPool<VcSetDescriptionRequestPacket>.Return(this);
+    }
 
-    public VcSetDescriptionRequestPacket Set(string value = "")
+    public void Set(string value = "")
     {
         Value = value;
-        return this;
     }
 }

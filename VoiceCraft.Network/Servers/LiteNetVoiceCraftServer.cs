@@ -79,44 +79,32 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     public override void SendUnconnectedPacket<T>(IPEndPoint endPoint, T packet)
     {
         if (!_netManager.IsRunning) return;
-        try
+        lock (_writer)
         {
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
-                _netManager.SendUnconnectedMessage(_writer, endPoint);
-            }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            _writer.Put(packet);
+            _netManager.SendUnconnectedMessage(_writer, endPoint);
         }
     }
 
     public override void SendPacket<T>(VoiceCraftNetPeer vcNetPeer, T packet,
         VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
     {
-        if (!_netManager.IsRunning || vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
+        if (!_netManager.IsRunning ||
+            vcNetPeer.Server != this ||
+            vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
         var method = deliveryMethod switch
         {
             VcDeliveryMethod.Unreliable => DeliveryMethod.Unreliable,
             _ => DeliveryMethod.ReliableOrdered
         };
-        try
+        lock (_writer)
         {
-            lock (_writer)
-            {
-                _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
-                liteNetPeer.NetPeer.Send(_writer, method);
-            }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            _writer.Put(packet);
+            liteNetPeer.NetPeer.Send(_writer, method);
         }
     }
 
@@ -129,32 +117,29 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             VcDeliveryMethod.Unreliable => DeliveryMethod.Unreliable,
             _ => DeliveryMethod.ReliableOrdered
         };
-        try
+        lock (_writer)
         {
-            lock (_writer)
+            _writer.Reset();
+            _writer.Put((byte)packet.PacketType);
+            _writer.Put(packet);
+            foreach (var netPeer in _netPeers.Values)
             {
-                _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
-                foreach (var netPeer in _netPeers.Values)
-                {
-                    if (excludes.Contains(netPeer)) continue;
-                    netPeer.NetPeer.Send(_writer, method);
-                }
+                if (excludes.Contains(netPeer)) continue;
+                netPeer.NetPeer.Send(_writer, method);
             }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
         }
     }
 
     public override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)
     {
-        if (vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
-        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket()).Set(reason);
+        if (!_netManager.IsRunning ||
+            vcNetPeer.Server != this ||
+            vcNetPeer is not LiteNetVoiceCraftNetPeer liteNetPeer) return;
+
+        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket());
         try
         {
+            logoutPacket.Set(reason);
             lock (_writer)
             {
                 _writer.Reset();
@@ -171,7 +156,7 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
         }
         finally
         {
-            PacketPool<VcLogoutRequestPacket>.Return(logoutPacket);
+            logoutPacket.Return();
         }
     }
 
@@ -184,20 +169,21 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             return;
         }
 
-        var packet = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket()).Set(reason);
+        var logoutPacket = PacketPool<VcLogoutRequestPacket>.GetPacket(() => new VcLogoutRequestPacket());
         try
         {
+            logoutPacket.Set(reason);
             lock (_writer)
             {
                 _writer.Reset();
-                _writer.Put((byte)packet.PacketType);
-                _writer.Put(packet);
+                _writer.Put((byte)logoutPacket.PacketType);
+                _writer.Put(logoutPacket);
                 _netManager.DisconnectAll(_writer.Data, 0, _writer.Length);
             }
         }
         finally
         {
-            PacketPool<VcLogoutRequestPacket>.Return(packet);
+            logoutPacket.Return();
         }
     }
 
@@ -205,8 +191,14 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     {
         if (data is not ConnectionRequest request) return;
         var peer = request.Accept();
-        var liteNetPeer = new LiteNetVoiceCraftNetPeer(peer, packet.UserGuid, packet.ServerUserGuid, packet.Locale,
+        var liteNetPeer = new LiteNetVoiceCraftNetPeer(
+            this,
+            peer,
+            packet.UserGuid,
+            packet.ServerUserGuid,
+            packet.Locale,
             packet.PositioningType);
+        var acceptPacket = PacketPool<VcAcceptResponsePacket>.GetPacket(() => new VcAcceptResponsePacket());
         try
         {
             if (!_netPeers.TryAdd(peer, liteNetPeer))
@@ -214,34 +206,40 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
             var id = World.GetNextId();
             var entity = new VoiceCraftNetworkEntity(liteNetPeer, id);
             liteNetPeer.Tag = entity;
+            
             World.AddEntity(entity);
-            SendPacket(liteNetPeer,
-                PacketPool<VcAcceptResponsePacket>.GetPacket(() => new VcAcceptResponsePacket()).Set(packet.RequestId));
+            entity.Name = "New Client";
+            acceptPacket.Set(packet.RequestId);
+            SendPacket(liteNetPeer, acceptPacket);
         }
         catch
         {
             Disconnect(liteNetPeer, "VoiceCraft.DisconnectReason.Error");
+        }
+        finally
+        {
+            acceptPacket.Return();
         }
     }
 
     protected override void RejectRequest(VcLoginRequestPacket packet, string reason, object? data)
     {
         if (data is not ConnectionRequest request) return;
-        var responsePacket = PacketPool<VcDenyResponsePacket>.GetPacket(() => new VcDenyResponsePacket())
-            .Set(packet.RequestId, reason);
+        var denyPacket = PacketPool<VcDenyResponsePacket>.GetPacket(() => new VcDenyResponsePacket());
         try
         {
+            denyPacket.Set(packet.RequestId, reason);
             lock (_writer)
             {
                 _writer.Reset();
-                _writer.Put((byte)responsePacket.PacketType);
-                _writer.Put(responsePacket);
+                _writer.Put((byte)denyPacket.PacketType);
+                _writer.Put(denyPacket);
                 request.Reject(_writer);
             }
         }
         finally
         {
-            PacketPool<VcDenyResponsePacket>.Return(responsePacket);
+            denyPacket.Return();
         }
     }
 
@@ -312,9 +310,15 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     {
         public string Language { get; set; } = Constants.DefaultLanguage;
         public uint Port { get; set; } = 9050;
+        public uint ExternalPort { get; set; }
+        public uint PortMappingLifetimeMinutes { get; set; } = 60;
+        public uint PortMappingTimeoutSeconds { get; set; } = 5;
         public uint MaxClients { get; set; } = 100;
         public string Motd { get; set; } = "VoiceCraft Proximity Chat!";
         public PositioningType PositioningType { get; set; } = PositioningType.Server;
+
+        [JsonConverter(typeof(JsonBooleanConverter))]
+        public bool AutoOpenPort { get; set; }
 
         [JsonConverter(typeof(JsonBooleanConverter))]
         public bool EnableVisibilityDisplay { get; set; } = true;
