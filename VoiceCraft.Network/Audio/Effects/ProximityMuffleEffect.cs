@@ -88,7 +88,8 @@ namespace VoiceCraft.Network.Audio.Effects
     public class ProximityMuffleEffectProcessor : IAudioEffectProcessor
     {
         private readonly ProximityMuffleEffect _effect;
-        private readonly BiQuadFilter _biQuadFilter;
+        private readonly BiQuadFilter[] _biQuadFilters;
+        private bool _disposed;
         
         public IAudioEffect Effect => _effect;
         public VoiceCraftEntity Entity { get; }
@@ -98,9 +99,13 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             _effect = effect;
             Entity = entity;
-            _biQuadFilter = new BiQuadFilter();
-            Effect.OnDisposed += _ => Dispose();
-            _biQuadFilter.SetLowPassFilter(Constants.SampleRate, 200, 1);
+            _biQuadFilters = new BiQuadFilter[Constants.PlaybackChannels];
+            for (var channel = 0; channel < _biQuadFilters.Length; channel++)
+            {
+                _biQuadFilters[channel] = new BiQuadFilter();
+                _biQuadFilters[channel].SetLowPassFilter(Constants.SampleRate, 200, 1);
+            }
+            Effect.OnDisposed += OnEffectDisposed;
         }
 
         public void Process(VoiceCraftEntity to, Span<float> buffer)
@@ -113,23 +118,37 @@ namespace VoiceCraft.Network.Audio.Effects
             var dry = 1.0f - wet;
             var factor = _effect.EvaluateFactorProperty(Entity, to);
             
-            for (var i = 0; i < buffer.Length; i++)
+            for (var i = 0; i < buffer.Length; i += Constants.PlaybackChannels)
             {
-                var output = _biQuadFilter.Transform(buffer[i]) * factor + buffer[i] * (1.0f - factor);
-                buffer[i] = output * wet + buffer[i] * dry;
+                for (var channel = 0; channel < Constants.PlaybackChannels && i + channel < buffer.Length; channel++)
+                {
+                    var index = i + channel;
+                    var output = _biQuadFilters[channel].Transform(buffer[index]) * factor +
+                                 buffer[index] * (1.0f - factor);
+                    buffer[index] = output * wet + buffer[index] * dry;
+                }
             }
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+            Effect.OnDisposed -= OnEffectDisposed;
             try
             {
                 OnDisposed?.Invoke(this);
             }
             finally
             {
+                OnDisposed = null;
                 GC.SuppressFinalize(this);
             }
+        }
+
+        private void OnEffectDisposed(IAudioEffect _)
+        {
+            Dispose();
         }
     }
 

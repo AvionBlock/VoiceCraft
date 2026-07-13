@@ -33,6 +33,7 @@ public class McApiSetEffectRequestPacket(ushort bitmask, IAudioEffect? effect) :
     
     public void Return()
     {
+        Effect = null;
         PacketPool<McApiSetEffectRequestPacket>.Return(this);
     }
 

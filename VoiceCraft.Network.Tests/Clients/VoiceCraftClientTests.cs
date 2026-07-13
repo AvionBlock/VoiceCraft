@@ -79,12 +79,10 @@ public class VoiceCraftClientTests
 
         public override void SendUnconnectedPacket<T>(string ip, int port, T packet)
         {
-            PacketPool<T>.Return(packet);
         }
 
         public override void SendPacket<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
         {
-            PacketPool<T>.Return(packet);
         }
     }
 

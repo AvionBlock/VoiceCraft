@@ -32,6 +32,7 @@ public class VcOnEffectUpdatedPacket(ushort bitmask, IAudioEffect? effect) : IVo
 
     public void Return()
     {
+        Effect = null;
         PacketPool<VcOnEffectUpdatedPacket>.Return(this);
     }
 

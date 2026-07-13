@@ -143,6 +143,37 @@ public class VoiceCraftEntityTests
         
         Assert.Equal(2, raised);
     }
+
+    [Fact]
+    public void Same_NonFloat_Property_DoesNotRaiseDuplicateUpdate()
+    {
+        var entity = new VoiceCraftEntity(1);
+        var raised = 0;
+        entity.OnPropertyUpdated += (_, _, _) => raised++;
+
+        entity.SetProperty("Test:Count", 5);
+        entity.SetProperty("Test:Count", 5);
+        entity.SetProperty("Test:Name", new string('x', 3));
+        entity.SetProperty("Test:Name", new string('x', 3));
+
+        Assert.Equal(2, raised);
+    }
+
+    [Fact]
+    public void ClearProperties_RaisesRemovalEventsWithNullValues()
+    {
+        var entity = new VoiceCraftEntity(1);
+        entity.SetProperty("Test:Count", 5);
+        entity.SetProperty("Test:Name", "value");
+        var removedValues = new List<object?>();
+        entity.OnPropertyUpdated += (_, value, _) => removedValues.Add(value);
+
+        entity.ClearProperties();
+
+        Assert.Empty(entity.Properties);
+        Assert.Equal(2, removedValues.Count);
+        Assert.All(removedValues, Assert.Null);
+    }
     
     [Fact]
     public void Different_Properties_Update()

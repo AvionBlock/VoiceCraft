@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
@@ -10,25 +11,90 @@ using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.World;
 
 internal sealed class FakeNetPeer(Guid userGuid, Guid serverUserGuid, string locale, PositioningType positioningType)
-    : VoiceCraftNetPeer(userGuid, serverUserGuid, locale, positioningType)
+    : VoiceCraftNetPeer(null, userGuid, serverUserGuid, locale, positioningType)
 {
     public override VcConnectionState ConnectionState => VcConnectionState.Connected;
 }
 
+internal delegate void FakeEffectProcessorAction(
+    VoiceCraftEntity from,
+    VoiceCraftEntity to,
+    ushort effectBitmask,
+    Span<float> buffer);
+
+internal sealed class FakeAudioEffectProcessor : IAudioEffectProcessor
+{
+    private readonly FakeEffectProcessorAction _process;
+    private bool _disposed;
+
+    public IAudioEffect Effect { get; }
+    public VoiceCraftEntity Entity { get; }
+    public event Action<IAudioEffectProcessor>? OnDisposed;
+
+    public FakeAudioEffectProcessor(
+        IAudioEffect effect,
+        VoiceCraftEntity entity,
+        FakeEffectProcessorAction process)
+    {
+        Effect = effect;
+        Entity = entity;
+        _process = process;
+        Effect.OnDisposed += OnEffectDisposed;
+    }
+
+    public void Process(VoiceCraftEntity to, Span<float> buffer)
+    {
+        _process(Entity, to, Effect.Bitmask, buffer);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        Effect.OnDisposed -= OnEffectDisposed;
+        try
+        {
+            OnDisposed?.Invoke(this);
+        }
+        finally
+        {
+            OnDisposed = null;
+            GC.SuppressFinalize(this);
+        }
+    }
+
+    private void OnEffectDisposed(IAudioEffect _)
+    {
+        Dispose();
+    }
+}
+
 internal sealed class FakeVisibleEffect(bool result) : IAudioEffect, IVisible
 {
+    private bool _disposed;
+    private bool _result = result;
+
     public EffectType EffectType => EffectType.Visibility;
+    public ushort Bitmask { get; set; }
+    public event Action<IAudioEffect>? OnDisposed;
+
+    public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+        new FakeAudioEffectProcessor(this, entity, Process);
+
+    public void Update(IAudioEffect audioEffect)
+    {
+        if (audioEffect is not FakeVisibleEffect visibleEffect)
+            throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+        Bitmask = visibleEffect.Bitmask;
+        _result = visibleEffect._result;
+    }
 
     public bool Visibility(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask)
     {
-        return result;
+        return _result;
     }
 
     public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
-    {
-    }
-
-    public void Reset()
     {
     }
 
@@ -42,40 +108,74 @@ internal sealed class FakeVisibleEffect(bool result) : IAudioEffect, IVisible
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+        try
+        {
+            OnDisposed?.Invoke(this);
+        }
+        finally
+        {
+            OnDisposed = null;
+            GC.SuppressFinalize(this);
+        }
     }
 }
 
 internal sealed class FakeProcessingEffect(int stride) : IAudioEffect
 {
+    private bool _disposed;
+    private int _stride = Math.Max(1, stride);
+
     public EffectType EffectType => EffectType.Echo;
+    public ushort Bitmask { get; set; }
+    public event Action<IAudioEffect>? OnDisposed;
+
+    public IAudioEffectProcessor GetProcessor(VoiceCraftEntity entity) =>
+        new FakeAudioEffectProcessor(this, entity, Process);
+
+    public void Update(IAudioEffect audioEffect)
+    {
+        if (audioEffect is not FakeProcessingEffect processingEffect)
+            throw new ArgumentException("Unexpected Audio Effect Type!", nameof(audioEffect));
+        Bitmask = processingEffect.Bitmask;
+        _stride = processingEffect._stride;
+    }
 
     public void Process(VoiceCraftEntity from, VoiceCraftEntity to, ushort effectBitmask, Span<float> buffer)
     {
         var scale = 0.02f * ((effectBitmask & 0xF) + 1);
-        for (var i = 0; i < buffer.Length; i += stride)
-            buffer[i] = (buffer[i] + from.CaveFactor + to.MuffleFactor) * scale;
-    }
-
-    public void Reset()
-    {
+        for (var i = 0; i < buffer.Length; i += _stride)
+            buffer[i] = (buffer[i] + from.Position.X + to.Position.Y) * scale;
     }
 
     public void Serialize(NetDataWriter writer)
     {
-        writer.Put(stride);
+        writer.Put(_stride);
     }
 
     public void Deserialize(NetDataReader reader)
     {
-        _ = reader.GetInt();
+        _stride = Math.Max(1, reader.GetInt());
     }
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+        try
+        {
+            OnDisposed?.Invoke(this);
+        }
+        finally
+        {
+            OnDisposed = null;
+            GC.SuppressFinalize(this);
+        }
     }
 }
 
-internal sealed class FakeMcApiPeer(FakeMcApiServer? server, string sessionToken, McApiConnectionState connectionState = McApiConnectionState.Connected)
+internal sealed class FakeMcApiPeer(string sessionToken, FakeMcApiServer? server = null, McApiConnectionState connectionState = McApiConnectionState.Connected)
     : McApiNetPeer(server)
 {
     public override McApiConnectionState ConnectionState { get; set; } = connectionState;
@@ -86,7 +186,7 @@ internal sealed class FakeMcApiPayloadPacket(int payloadBytes) : IMcApiPacket
 {
     private readonly byte[] _payload = Enumerable.Repeat((byte)0x5A, Math.Max(0, payloadBytes)).ToArray();
 
-    public McApiPacketType PacketType => McApiPacketType.OnEntityAudioReceived;
+    public McApiPacketType PacketType => McApiPacketType.EntityAudioRequest;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -99,6 +199,10 @@ internal sealed class FakeMcApiPayloadPacket(int payloadBytes) : IMcApiPacket
         var length = reader.GetUShort();
         var buffer = new byte[length];
         reader.GetBytes(buffer, length);
+    }
+
+    public void Return()
+    {
     }
 }
 
@@ -106,7 +210,7 @@ internal sealed class FakeVcPayloadPacket(int payloadBytes) : IVoiceCraftPacket
 {
     private readonly byte[] _payload = Enumerable.Repeat((byte)0x47, Math.Max(0, payloadBytes)).ToArray();
 
-    public VcPacketType PacketType => VcPacketType.OnEntityAudioReceived;
+    public VcPacketType PacketType => VcPacketType.AudioRequest;
 
     public void Serialize(NetDataWriter writer)
     {
@@ -119,6 +223,10 @@ internal sealed class FakeVcPayloadPacket(int payloadBytes) : IVoiceCraftPacket
         var length = reader.GetUShort();
         var buffer = new byte[length];
         reader.GetBytes(buffer, length);
+    }
+
+    public void Return()
+    {
     }
 }
 
@@ -134,6 +242,7 @@ internal sealed class FakeMcApiServer(VoiceCraftWorld world, VoiceCraft.Network.
     public override string LoginToken => string.Empty;
     public override uint MaxClients => 10_000;
     public override int ConnectedPeers => _peers.Count;
+    public override ImmutableList<McApiNetPeer> Peers => _peers.Cast<McApiNetPeer>().ToImmutableList();
     public override event Action<McApiNetPeer, string>? OnPeerConnected;
     public override event Action<McApiNetPeer, string>? OnPeerDisconnected;
 
@@ -167,37 +276,23 @@ internal sealed class FakeMcApiServer(VoiceCraftWorld world, VoiceCraft.Network.
 
     public override void SendPacket<T>(McApiNetPeer netPeer, T packet)
     {
-        try
-        {
-            _writer.Reset();
-            _writer.Put((byte)packet.PacketType);
-            _writer.Put(packet);
-            TotalBytesWritten += _writer.Length;
-            TotalPacketsWritten++;
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
-        }
+        _writer.Reset();
+        _writer.Put((byte)packet.PacketType);
+        _writer.Put(packet);
+        TotalBytesWritten += _writer.Length;
+        TotalPacketsWritten++;
     }
 
     public override void Broadcast<T>(T packet, params McApiNetPeer?[] excludes)
     {
-        try
+        _writer.Reset();
+        _writer.Put((byte)packet.PacketType);
+        _writer.Put(packet);
+        foreach (var peer in _peers)
         {
-            _writer.Reset();
-            _writer.Put((byte)packet.PacketType);
-            _writer.Put(packet);
-            foreach (var peer in _peers)
-            {
-                if (excludes.Contains(peer)) continue;
-                TotalBytesWritten += _writer.Length;
-                TotalPacketsWritten++;
-            }
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
+            if (excludes.Contains(peer)) continue;
+            TotalBytesWritten += _writer.Length;
+            TotalPacketsWritten++;
         }
     }
 
@@ -242,50 +337,29 @@ internal sealed class FakeLiteNetVoiceCraftServer(VoiceCraftWorld world) : LiteN
 
     public override void SendUnconnectedPacket<T>(System.Net.IPEndPoint endPoint, T packet)
     {
-        try
-        {
-            _writer.Reset();
-            _writer.Put((byte)packet.PacketType);
-            _writer.Put(packet);
-            TotalBytesWritten += _writer.Length;
-            TotalPacketsWritten++;
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
-        }
+        _writer.Reset();
+        _writer.Put((byte)packet.PacketType);
+        _writer.Put(packet);
+        TotalBytesWritten += _writer.Length;
+        TotalPacketsWritten++;
     }
 
     public override void SendPacket<T>(VoiceCraftNetPeer vcNetPeer, T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable)
     {
-        try
-        {
-            _writer.Reset();
-            _writer.Put((byte)packet.PacketType);
-            _writer.Put(packet);
-            TotalBytesWritten += _writer.Length;
-            TotalPacketsWritten++;
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
-        }
+        _writer.Reset();
+        _writer.Put((byte)packet.PacketType);
+        _writer.Put(packet);
+        TotalBytesWritten += _writer.Length;
+        TotalPacketsWritten++;
     }
 
     public override void Broadcast<T>(T packet, VcDeliveryMethod deliveryMethod = VcDeliveryMethod.Reliable, params VoiceCraftNetPeer?[] excludes)
     {
-        try
-        {
-            _writer.Reset();
-            _writer.Put((byte)packet.PacketType);
-            _writer.Put(packet);
-            TotalBytesWritten += _writer.Length;
-            TotalPacketsWritten++;
-        }
-        finally
-        {
-            PacketPool<T>.Return(packet);
-        }
+        _writer.Reset();
+        _writer.Put((byte)packet.PacketType);
+        _writer.Put(packet);
+        TotalBytesWritten += _writer.Length;
+        TotalPacketsWritten++;
     }
 
     public override void Disconnect(VoiceCraftNetPeer vcNetPeer, string reason, bool force = false)

@@ -83,7 +83,11 @@ public class VisibilitySystemTests
     {
         public EffectType EffectType => EffectType.Visibility;
         public ushort Bitmask { get; set; }
-        public event Action<IAudioEffect>? OnDisposed;
+        public event Action<IAudioEffect>? OnDisposed
+        {
+            add { }
+            remove { }
+        }
         
         public void Update(IAudioEffect audioEffect)
         {

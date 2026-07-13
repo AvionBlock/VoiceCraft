@@ -311,10 +311,10 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 ArrayPool<byte>.Shared.Return(data);
             }
 
-            var token = context.Request.Headers.Get("Authorization")?.Remove(0, 7);
+            var token = ParseAuthorizationToken(context.Request.Headers.Get("Authorization"));
             HttpMcApiNetPeer? netPeer;
             //Locked because we read from _mcApiPeers.
-            if (context.Request.Url?.AbsolutePath.StartsWith("/connect") ?? false)
+            if (IsConnectPath(context.Request.Url?.AbsolutePath))
             {
                 netPeer = HandleConnectRequest(packets);
             }
@@ -329,6 +329,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
                 ReceivePacketsLogic(netPeer, packets, token);
             }
 
+            packets.Clear();
             SendPacketsLogic(context, netPeer, packets);
         }
         catch
@@ -360,10 +361,17 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
 
         ReceivePacketsLogic(netPeer, packets, netPeer.SessionToken);
         var sw = new SpinWait();
-        while (netPeer.ConnectionState == McApiConnectionState.Connecting)
+        var timeoutMs = Math.Clamp((long)Config.MaxTimeoutMs, 1, int.MaxValue);
+        var deadline = Environment.TickCount64 + timeoutMs;
+        while (netPeer.ConnectionState == McApiConnectionState.Connecting &&
+               _httpServer != null &&
+               Environment.TickCount64 < deadline)
         {
             sw.SpinOnce();
         }
+
+        if (netPeer.ConnectionState == McApiConnectionState.Connecting)
+            netPeer.ConnectionState = McApiConnectionState.Disconnected;
 
         if (netPeer.ConnectionState != McApiConnectionState.Connected)
         {
@@ -373,6 +381,10 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         else if (!TryRemoveHttpPeer(tempToken, out _) || !TryAddHttpPeer(netPeer.SessionToken, netPeer))
         {
             throw new Exception(); //Failure
+        }
+        else
+        {
+            netPeer.SetLookupToken(netPeer.SessionToken);
         }
 
         return netPeer;
@@ -473,7 +485,8 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs)) return;
         Disconnect(httpNetPeer);
         //Double the amount of time. We remove the peer.
-        if (DateTime.UtcNow - httpNetPeer.LastUpdate < TimeSpan.FromMilliseconds(Config.MaxTimeoutMs * 2)) return;
+        if (DateTime.UtcNow - httpNetPeer.LastUpdate <
+            TimeSpan.FromMilliseconds((long)Config.MaxTimeoutMs * 2)) return;
         Disconnect(httpNetPeer, true);
     }
 
@@ -506,6 +519,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
     {
         lock (_lock)
         {
+            if (_mcApiPeers.Count >= Config.MaxClients) return false;
             if (!_mcApiPeers.TryAdd(token, peer)) return false;
             _peersSnapshot = [.._mcApiPeers.Values];
             return true;
@@ -562,6 +576,22 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
 
         return $"{Uri.UriSchemeHttp}://{host}:{port}/";
+    }
+
+    private static string? ParseAuthorizationToken(string? authorizationHeader)
+    {
+        const string bearerPrefix = "Bearer ";
+        if (string.IsNullOrWhiteSpace(authorizationHeader) ||
+            !authorizationHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        var token = authorizationHeader[bearerPrefix.Length..].Trim();
+        return token.Length == 0 ? null : token;
+    }
+
+    private static bool IsConnectPath(string? absolutePath)
+    {
+        return string.Equals(absolutePath?.TrimEnd('/'), "/connect", StringComparison.OrdinalIgnoreCase);
     }
 
     public class HttpMcApiConfig

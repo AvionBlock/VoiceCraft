@@ -23,7 +23,7 @@ public class OpusAudioDecoder : IAudioDecoder
     
     public void Dispose()
     {
-        Dispose(false);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
     

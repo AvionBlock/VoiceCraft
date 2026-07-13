@@ -15,12 +15,12 @@ public class VcSetTitleRequestPacket(string value) : IVoiceCraftPacket
 
     public void Serialize(NetDataWriter writer)
     {
-        writer.Put(Value, Constants.MaxDescriptionStringLength);
+        writer.Put(Value, Constants.MaxStringLength);
     }
 
     public void Deserialize(NetDataReader reader)
     {
-        Value = reader.GetString(Constants.MaxDescriptionStringLength);
+        Value = reader.GetString(Constants.MaxStringLength);
     }
     
     public void Return()

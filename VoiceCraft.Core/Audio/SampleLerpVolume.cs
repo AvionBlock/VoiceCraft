@@ -11,7 +11,7 @@ namespace VoiceCraft.Core.Audio
             {
                 if (Math.Abs(field - value) < Constants.FloatingPointTolerance)
                     return; //Return since it's the same target volume, and we don't want to reset the counter.
-                _previousVolume = field;
+                _previousVolume = CurrentVolume;
                 field = value;
                 _fadeSamplesPosition = 0; //Reset position since we have a new target.
             }
@@ -22,32 +22,34 @@ namespace VoiceCraft.Core.Audio
             get;
             set
             {
-                field = value;
-                var newSamples = (int)(value.TotalMilliseconds * _sampleRate / 1000);
-                if (newSamples < _fadeSamplesPosition) //Make sure we don't overshoot the target when lerping.
-                {
-                    _fadeSamplesPosition = newSamples;
-                }
+                if (value < TimeSpan.Zero)
+                    throw new ArgumentOutOfRangeException(nameof(value), "Fade duration cannot be negative.");
 
-                _fadeSamplesDuration = newSamples;
+                var currentVolume = CurrentVolume;
+                field = value;
+                _fadeSamplesDuration = (int)(value.TotalMilliseconds * _sampleRate / 1000);
+                _previousVolume = currentVolume;
+                _fadeSamplesPosition = 0;
             }
         }
 
         private readonly int _sampleRate;
         private float _previousVolume;
-        private float _fadeSamplesDuration;
-        private float _fadeSamplesPosition;
+        private int _fadeSamplesDuration;
+        private int _fadeSamplesPosition;
 
         public SampleLerpVolume(int sampleRate, TimeSpan fadeDuration)
         {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
             _sampleRate = sampleRate;
+            _previousVolume = TargetVolume;
             FadeDuration = fadeDuration;
         }
 
         //Transforms values. (Can be multiple channels, interprets as 1 sample)
         public float Transform(float sample)
         {
-            var value = Lerp(_previousVolume, TargetVolume, _fadeSamplesPosition / _fadeSamplesDuration); 
+            var value = CurrentVolume;
             sample = Math.Clamp(sample * value, -1, 1);
             return sample;
         }
@@ -55,9 +57,14 @@ namespace VoiceCraft.Core.Audio
         //Step forward 1 sample.
         public void Step()
         {
-            if(_fadeSamplesPosition > _fadeSamplesDuration) return;
-            _fadeSamplesPosition++;
+            if (_fadeSamplesPosition < _fadeSamplesDuration)
+                _fadeSamplesPosition++;
         }
+
+        private float CurrentVolume => _fadeSamplesDuration == 0
+            ? TargetVolume
+            : Lerp(_previousVolume, TargetVolume,
+                Math.Clamp((float)_fadeSamplesPosition / _fadeSamplesDuration, 0, 1));
 
         private static float Lerp(float current, float target, float by)
         {
