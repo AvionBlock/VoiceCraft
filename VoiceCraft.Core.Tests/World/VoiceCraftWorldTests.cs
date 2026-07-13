@@ -31,6 +31,19 @@ public class VoiceCraftWorldTests
     }
 
     [Fact]
+    public void EntityDestroy_RemovesEntityFromPublishedSnapshot()
+    {
+        using var world = new VoiceCraftWorld();
+        var entity = new VoiceCraftEntity(1);
+        world.AddEntity(entity);
+
+        entity.Destroy();
+
+        Assert.Null(world.GetEntity(entity.Id));
+        Assert.Empty(world.Entities);
+    }
+
+    [Fact]
     public void GetNextId_SkipsOccupiedIds_AndResetsAfterClear()
     {
         using var world = new VoiceCraftWorld();

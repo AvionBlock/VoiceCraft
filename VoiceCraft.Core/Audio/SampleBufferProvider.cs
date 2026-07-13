@@ -37,12 +37,12 @@ namespace VoiceCraft.Core.Audio
 
         public int Read(Span<T> buffer)
         {
-            if (!_isReading && Count < PrefillSize) return 0;
-            _isReading = true;
-            var read = 0;
-            
             lock (_lock)
             {
+                if (!_isReading && _buffer.Count < PrefillSize) return 0;
+
+                _isReading = true;
+                var read = 0;
                 for (var i = 0; i < buffer.Length; i++)
                 {
                     if (_buffer.TryDequeue(out var sample))
@@ -56,8 +56,12 @@ namespace VoiceCraft.Core.Audio
                         break; // Queue is empty.
                     }
                 }
+
+                if (_buffer.Count == 0)
+                    _isReading = false;
+
+                return read;
             }
-            return read;
         }
 
         public void Reset()
@@ -65,6 +69,7 @@ namespace VoiceCraft.Core.Audio
             lock (_lock)
             {
                 _buffer.Clear();
+                _isReading = false;
             }
         }
     }

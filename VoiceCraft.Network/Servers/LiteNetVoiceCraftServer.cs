@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json.Serialization;
@@ -71,9 +72,17 @@ public class LiteNetVoiceCraftServer : VoiceCraftServer
     public override void Stop()
     {
         if (!_netManager.IsRunning) return;
+        var entities = _netPeers.Values
+            .Select(peer => peer.Tag)
+            .OfType<VoiceCraftNetworkEntity>()
+            .ToArray();
         DisconnectAll("VoiceCraft.DisconnectReason.Shutdown");
         _netManager.Stop();
         _netPeers.Clear();
+
+        foreach (var entity in entities)
+            if (World.ContainsEntity(entity.Id))
+                World.DestroyEntity(entity.Id);
     }
 
     public override void SendUnconnectedPacket<T>(IPEndPoint endPoint, T packet)

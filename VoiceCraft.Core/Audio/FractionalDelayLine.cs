@@ -185,8 +185,19 @@ namespace VoiceCraft.Core.Audio
         {
             if (size <= Size) return;
 
-            Array.Resize(ref _delayLine, size);
+            var previousDelayLine = _delayLine;
+            var previousSize = Size;
+            var preservedSampleCount = previousSize - 1;
+            var resizedDelayLine = new float[size];
 
+            for (var delay = 1; delay <= preservedSampleCount; delay++)
+            {
+                var previousIndex = (_n - delay + previousSize) % previousSize;
+                resizedDelayLine[preservedSampleCount - delay] = previousDelayLine[previousIndex];
+            }
+
+            _delayLine = resizedDelayLine;
+            _n = preservedSampleCount;
             Size = size;
         }
 

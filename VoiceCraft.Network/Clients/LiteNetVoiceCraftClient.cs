@@ -112,11 +112,17 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
             _netManager?.DisconnectPeer(_netPeer.NetPeer);
         }
 
-        while (_netPeer?.ConnectionState == VcConnectionState.Disconnecting)
+        var disconnectDeadline = Environment.TickCount64 + 2_000;
+        while (_netPeer?.ConnectionState == VcConnectionState.Disconnecting &&
+               Environment.TickCount64 < disconnectDeadline)
         {
-            await Task.Delay(1);
+            await Task.Delay(10).ConfigureAwait(false);
         }
 
+        if (_netPeer?.ConnectionState == VcConnectionState.Disconnecting)
+            StopNetManager();
+
+        _netPeer = null;
         ConnectionState = VcConnectionState.Disconnected;
         OnDisconnected?.Invoke(reason);
     }
@@ -190,10 +196,10 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         CancellationToken token = default)
         where TPacket : IVoiceCraftPacket
     {
-        var tcs = new TaskCompletionSource<TResult>();
+        var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var cts = new CancellationTokenSource(timeout);
-        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
-        token.Register(() => tcs.TrySetException(new OperationCanceledException()));
+        using var timeoutRegistration = cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+        using var cancellationRegistration = token.Register(() => tcs.TrySetCanceled(token));
 
         OnUnconnectedPacketReceived += EventCallback;
         try
@@ -209,7 +215,14 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         void EventCallback(IVoiceCraftPacket packet)
         {
             if (packet is not TPacket typedPacket) return;
-            tcs.TrySetResult(selector(typedPacket));
+            try
+            {
+                tcs.TrySetResult(selector(typedPacket));
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
         }
     }
 
@@ -220,18 +233,21 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         CancellationToken token = default)
         where TPacket : IVoiceCraftPacket, IVoiceCraftRIdPacket
     {
-        var tcs = new TaskCompletionSource<TResult>();
-        var dTcs = new TaskCompletionSource<string?>();
+        var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dTcs = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var cts = new CancellationTokenSource(timeout);
-        cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
-        token.Register(() => tcs.TrySetException(new OperationCanceledException()));
+        using var timeoutRegistration = cts.Token.Register(() => tcs.TrySetException(new TimeoutException()));
+        using var cancellationRegistration = token.Register(() => tcs.TrySetCanceled(token));
 
         OnDisconnected += OnDisconnectedCallback;
         OnPacketReceived += EventCallback;
         try
         {
-            var result = await Task.WhenAny(tcs.Task, dTcs.Task).ConfigureAwait(false);
-            return result == tcs.Task ? tcs.Task.Result : throw new Exception(dTcs.Task.Result);
+            var completedTask = await Task.WhenAny(tcs.Task, dTcs.Task).ConfigureAwait(false);
+            if (completedTask == tcs.Task)
+                return await tcs.Task.ConfigureAwait(false);
+
+            throw new Exception(await dTcs.Task.ConfigureAwait(false));
         }
         finally
         {
@@ -242,7 +258,14 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
         void EventCallback(IVoiceCraftPacket packet)
         {
             if (packet is not TPacket typedPacket || typedPacket.RequestId != requestId) return;
-            tcs.TrySetResult(selector(typedPacket));
+            try
+            {
+                tcs.TrySetResult(selector(typedPacket));
+            }
+            catch (Exception ex)
+            {
+                tcs.TrySetException(ex);
+            }
         }
 
         void OnDisconnectedCallback(string? reason)

@@ -11,8 +11,9 @@ using VoiceCraft.Network.Clients;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
-public partial class CreditsViewModel : ViewModelBase
+public partial class CreditsViewModel : ViewModelBase, IDisposable
 {
+    private bool _disposed;
     //private readonly Bitmap? _defaultIcon = LoadImage("avares://VoiceCraft.Client/Assets/Contributors/vc.png");
 
     [ObservableProperty] public partial string AppVersion { get; set; } = string.Empty;
@@ -48,7 +49,21 @@ public partial class CreditsViewModel : ViewModelBase
 
     private static Bitmap? LoadImage(string path)
     {
-        return AssetLoader.Exists(new Uri(path)) ? new Bitmap(AssetLoader.Open(new Uri(path))) : null;
+        var uri = new Uri(path);
+        if (!AssetLoader.Exists(uri)) return null;
+        using var stream = AssetLoader.Open(uri);
+        return new Bitmap(stream);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        Localizer.Instance.OnLanguageChanged -= UpdateLocalizations;
+        foreach (var contributor in Contributors)
+            contributor.Dispose();
+        Contributors.Clear();
+        GC.SuppressFinalize(this);
     }
 
     private void UpdateLocalizations(string language = "")

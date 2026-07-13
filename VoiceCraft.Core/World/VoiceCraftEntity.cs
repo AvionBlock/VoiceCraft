@@ -107,7 +107,7 @@ namespace VoiceCraft.Core.World
                     if (Math.Abs((float)currentValue - floatValue) < Constants.FloatingPointTolerance) return;
                     break;
                 default:
-                    if (currentValue == (object)value) return;
+                    if (Equals(currentValue, value)) return;
                     break;
             }
 
@@ -136,7 +136,7 @@ namespace VoiceCraft.Core.World
 
             foreach (var property in properties)
             {
-                OnPropertyUpdated?.Invoke(property.Key, property.Value, this);
+                OnPropertyUpdated?.Invoke(property.Key, null, this);
             }
         }
 

@@ -16,6 +16,7 @@ public partial class GeneralSettingsViewModel
     : ViewModelBase, IDisposable
 {
     private readonly NavigationService _navigationService;
+    private bool _disposed;
 
     [ObservableProperty] public partial ObservableCollection<CultureDataViewModel> Locales { get; set; } = [];
 
@@ -46,6 +47,11 @@ public partial class GeneralSettingsViewModel
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+        foreach (var locale in Locales)
+            locale.Dispose();
+        Locales.Clear();
         NotificationSettingsData.Dispose();
         TelemetrySettingsData.Dispose();
         LocaleSettingsData.Dispose();
@@ -62,6 +68,9 @@ public partial class GeneralSettingsViewModel
 
     private static Bitmap? LoadImage(string path)
     {
-        return AssetLoader.Exists(new Uri(path)) ? new Bitmap(AssetLoader.Open(new Uri(path))) : null;
+        var uri = new Uri(path);
+        if (!AssetLoader.Exists(uri)) return null;
+        using var stream = AssetLoader.Open(uri);
+        return new Bitmap(stream);
     }
 }
