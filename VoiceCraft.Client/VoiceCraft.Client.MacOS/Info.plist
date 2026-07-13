@@ -11,9 +11,9 @@
 	<key>CFBundleIdentifier</key>
 	<string>team.avion.voicecraft</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.7.0</string>
+	<string>1.7.1</string>
 	<key>CFBundleVersion</key>
-	<string>1.7.0</string>
+	<string>1.7.1</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon.icns</string>
 	<key>LSApplicationCategoryType</key>
