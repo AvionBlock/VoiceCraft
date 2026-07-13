@@ -70,6 +70,7 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         private readonly DirectionalEffect _effect;
         private readonly SampleLerpVolume[] _lerpVolume;
+        private bool _disposed;
         public IAudioEffect Effect => _effect;
         public VoiceCraftEntity Entity { get; }
         public event Action<IAudioEffectProcessor>? OnDisposed;
@@ -83,7 +84,7 @@ namespace VoiceCraft.Network.Audio.Effects
                 new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20)),
                 new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20))
             ];
-            Effect.OnDisposed += _ => Dispose();
+            Effect.OnDisposed += OnEffectDisposed;
         }
 
         public void Process(VoiceCraftEntity to, Span<float> buffer)
@@ -115,14 +116,23 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+            Effect.OnDisposed -= OnEffectDisposed;
             try
             {
                 OnDisposed?.Invoke(this);
             }
             finally
             {
+                OnDisposed = null;
                 GC.SuppressFinalize(this);
             }
+        }
+
+        private void OnEffectDisposed(IAudioEffect _)
+        {
+            Dispose();
         }
     }
 

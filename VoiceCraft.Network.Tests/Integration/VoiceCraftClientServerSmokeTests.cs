@@ -37,6 +37,17 @@ public class VoiceCraftClientServerSmokeTests
     }
 
     [Fact]
+    public async Task PingAsync_PreCanceledToken_PropagatesCancellation()
+    {
+        using var client = CreateClient();
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client.PingAsync(IPAddress.Loopback.ToString(), GetFreeUdpPort(), cancellation.Token));
+    }
+
+    [Fact]
     public async Task ConnectAndDisconnectAsync_UpdatesConnectionStateAndServerPeerCount()
     {
         using var world = new VoiceCraftWorld();
@@ -75,6 +86,35 @@ public class VoiceCraftClientServerSmokeTests
         await disconnectTask;
 
         Assert.Equal(VcConnectionState.Disconnected, client.ConnectionState);
+        Assert.Empty(server.WorldSnapshot);
+    }
+
+    [Fact]
+    public async Task Stop_RemovesConnectedEntitiesFromWorld()
+    {
+        using var world = new VoiceCraftWorld();
+        using var server = CreateServer(world, out var port);
+        using var client = CreateClient();
+        server.Start();
+
+        var connectTask = client.ConnectAsync(
+            IPAddress.Loopback.ToString(),
+            port,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "en-US",
+            PositioningType.Client);
+        await PumpUntilCompletedAsync(connectTask, () =>
+        {
+            server.Update();
+            client.Update();
+        });
+        await connectTask;
+        Assert.Single(server.WorldSnapshot);
+
+        server.Stop();
+
+        Assert.Equal(0, server.ConnectedPeers);
         Assert.Empty(server.WorldSnapshot);
     }
 

@@ -109,6 +109,7 @@ namespace VoiceCraft.Network.Audio.Effects
     {
         private readonly ProximityEffect _effect;
         private readonly SampleLerpVolume _lerpVolume;
+        private bool _disposed;
 
         public IAudioEffect Effect => _effect;
         public VoiceCraftEntity Entity { get; }
@@ -119,7 +120,7 @@ namespace VoiceCraft.Network.Audio.Effects
             _effect = effect;
             Entity = entity;
             _lerpVolume = new SampleLerpVolume(Constants.SampleRate, TimeSpan.FromMilliseconds(20));
-            Effect.OnDisposed += _ => Dispose();
+            Effect.OnDisposed += OnEffectDisposed;
         }
 
         public void Process(VoiceCraftEntity to, Span<float> buffer)
@@ -139,24 +140,38 @@ namespace VoiceCraft.Network.Audio.Effects
             var factor = 1f - Math.Clamp(distance / range, 0f, 1f);
             _lerpVolume.TargetVolume = factor;
 
-            for (var i = 0; i < buffer.Length; i++)
+            for (var i = 0; i < buffer.Length; i += Constants.PlaybackChannels)
             {
-                var output = _lerpVolume.Transform(buffer[i]);
-                buffer[i] = output * wet + buffer[i] * dry;
+                for (var channel = 0; channel < Constants.PlaybackChannels && i + channel < buffer.Length; channel++)
+                {
+                    var index = i + channel;
+                    var output = _lerpVolume.Transform(buffer[index]);
+                    buffer[index] = output * wet + buffer[index] * dry;
+                }
+
                 _lerpVolume.Step();
             }
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+            Effect.OnDisposed -= OnEffectDisposed;
             try
             {
                 OnDisposed?.Invoke(this);
             }
             finally
             {
+                OnDisposed = null;
                 GC.SuppressFinalize(this);
             }
+        }
+
+        private void OnEffectDisposed(IAudioEffect _)
+        {
+            Dispose();
         }
     }
 

@@ -272,7 +272,7 @@ public static class App
     {
         AnsiConsole.WriteLine(Localizer.Get("VoiceCraftServer.Stopping"));
         server.Stop();
-        AnsiConsole.WriteLine($"[green]{Localizer.Get("VoiceCraftServer.Stopped")}[/]");
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Stopped")}[/]");
     }
 
     private static void StopServer(McWssMcApiServer server)
@@ -280,7 +280,7 @@ public static class App
         if (!server.Config.Enabled) return;
         AnsiConsole.WriteLine(Localizer.Get("McWssServer.Stopping"));
         server.Stop();
-        AnsiConsole.WriteLine($"[green]{Localizer.Get("McWssServer.Stopped")}[/]");
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Stopped")}[/]");
     }
 
     private static void StopServer(HttpMcApiServer server)

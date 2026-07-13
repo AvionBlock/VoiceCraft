@@ -110,7 +110,7 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
     {
         ThrowIfDisposed();
         var shortBuffer = ArrayPool<short>.Shared.Rent(buffer.Length);
-        var shortSpanBuffer = shortBuffer.AsSpan();
+        var shortSpanBuffer = shortBuffer.AsSpan(0, buffer.Length);
         shortSpanBuffer.Clear();
 
         try
@@ -131,7 +131,7 @@ public class SpeexDspPreprocessor : IAudioPreprocessor
     {
         ThrowIfDisposed();
         var shortBuffer = ArrayPool<short>.Shared.Rent(buffer.Length);
-        var shortSpanBuffer = shortBuffer.AsSpan();
+        var shortSpanBuffer = shortBuffer.AsSpan(0, buffer.Length);
         shortSpanBuffer.Clear();
         try
         {

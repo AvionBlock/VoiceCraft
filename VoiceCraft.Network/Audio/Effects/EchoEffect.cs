@@ -112,7 +112,8 @@ public class EchoEffect : IAudioEffect
 public class EchoEffectProcessor : IAudioEffectProcessor
 {
     private readonly EchoEffect _effect;
-    private readonly FractionalDelayLine _delayLine;
+    private readonly FractionalDelayLine[] _delayLines;
+    private bool _disposed;
 
     public IAudioEffect Effect => _effect;
     public VoiceCraftEntity Entity { get; }
@@ -122,8 +123,11 @@ public class EchoEffectProcessor : IAudioEffectProcessor
     {
         _effect = effect;
         Entity = entity;
-        _delayLine = new FractionalDelayLine(Constants.SampleRate, _effect.Delay, InterpolationMode.Nearest);
-        Effect.OnDisposed += _ => Dispose();
+        _delayLines = new FractionalDelayLine[Constants.PlaybackChannels];
+        for (var channel = 0; channel < _delayLines.Length; channel++)
+            _delayLines[channel] =
+                new FractionalDelayLine(Constants.SampleRate, _effect.Delay, InterpolationMode.Nearest);
+        Effect.OnDisposed += OnEffectDisposed;
     }
 
     public void Process(VoiceCraftEntity to, Span<float> buffer)
@@ -136,28 +140,42 @@ public class EchoEffectProcessor : IAudioEffectProcessor
         var dry = 1.0f - wet;
         var feedback = _effect.EvaluateFeedbackProperty(Entity, to);
         var delay = _effect.EvaluateDelayProperty(Entity, to);
-        _delayLine.Ensure(EchoEffect.SampleRate, delay);
-        delay *= EchoEffect.SampleRate;
+        foreach (var delayLine in _delayLines)
+            delayLine.Ensure(EchoEffect.SampleRate, delay);
+        var delaySamples = delay * EchoEffect.SampleRate;
 
-        for (var i = 0; i < buffer.Length; i++)
+        for (var i = 0; i < buffer.Length; i += Constants.PlaybackChannels)
         {
-            var delayed = _delayLine.Read(delay);
-            var output = buffer[i] + delayed * feedback;
-            _delayLine.Write(output);
-            buffer[i] = output * wet + buffer[i] * dry;
+            for (var channel = 0; channel < Constants.PlaybackChannels && i + channel < buffer.Length; channel++)
+            {
+                var index = i + channel;
+                var delayed = _delayLines[channel].Read(delaySamples);
+                var output = buffer[index] + delayed * feedback;
+                _delayLines[channel].Write(output);
+                buffer[index] = output * wet + buffer[index] * dry;
+            }
         }
     }
 
     public void Dispose()
     {
+        if (_disposed) return;
+        _disposed = true;
+        Effect.OnDisposed -= OnEffectDisposed;
         try
         {
             OnDisposed?.Invoke(this);
         }
         finally
         {
+            OnDisposed = null;
             GC.SuppressFinalize(this);
         }
+    }
+
+    private void OnEffectDisposed(IAudioEffect _)
+    {
+        Dispose();
     }
 }
 

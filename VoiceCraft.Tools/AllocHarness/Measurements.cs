@@ -144,7 +144,7 @@ internal static class Measurements
         using var effectSystem = new AudioEffectSystem();
         var server = new FakeMcApiServer(world, effectSystem);
         for (var i = 0; i < scenario.P1; i++)
-            server.AddPeer(new FakeMcApiPeer(server, $"peer-{i}"));
+            server.AddPeer(new FakeMcApiPeer($"peer-{i}", server));
 
         return MeasureAction(() =>
         {
@@ -163,7 +163,7 @@ internal static class Measurements
         using var effectSystem = new AudioEffectSystem();
         using var liteNetServer = new FakeLiteNetVoiceCraftServer(world);
         using var mcApiServer = new FakeMcApiServer(world, effectSystem);
-        using var eventHandlerSystem = new EventHandlerSystem(liteNetServer, [mcApiServer], effectSystem, world);
+        using var eventHandlerSystem = new EventHandlerSystem([liteNetServer], [mcApiServer], effectSystem, world);
 
         var sourceEntity = new VoiceCraftEntity(1);
         world.AddEntity(sourceEntity);
@@ -203,7 +203,7 @@ internal static class Measurements
         using var effectSystem = new AudioEffectSystem();
         using var liteNetServer = new FakeLiteNetVoiceCraftServer(world);
         using var mcApiServer = new FakeMcApiServer(world, effectSystem);
-        using var eventHandlerSystem = new EventHandlerSystem(liteNetServer, [mcApiServer], effectSystem, world);
+        using var eventHandlerSystem = new EventHandlerSystem([liteNetServer], [mcApiServer], effectSystem, world);
 
         for (var i = 0; i < scenario.P1; i++)
             world.AddEntity(CreateEntityForSync(i));
@@ -232,28 +232,29 @@ internal static class Measurements
         using var effectSystem = new AudioEffectSystem();
         var source = new VoiceCraftEntity(1)
         {
-            CaveFactor = 0.4f,
-            MuffleFactor = 0.1f
+            Position = new Vector3(0.4f, 0.1f, 0f)
         };
         var targets = Enumerable.Range(0, scenario.P2)
             .Select(i => new VoiceCraftEntity(i + 2)
             {
-                CaveFactor = (i % 5) / 5f,
-                MuffleFactor = (i % 7) / 7f
+                Position = new Vector3((i % 5) / 5f, (i % 7) / 7f, 0f)
             })
             .ToArray();
 
         for (var i = 0; i < scenario.P1; i++)
             effectSystem.SetEffect((ushort)(1 << i), new FakeProcessingEffect((i % 4) + 1));
 
+        var processors = effectSystem.AudioEffects
+            .Select(effect => effect.Value.GetProcessor(source))
+            .ToArray();
         var buffer = new float[960];
 
         return MeasureAction(() =>
         {
             Array.Fill(buffer, 0.25f);
             foreach (var target in targets)
-                foreach (var effect in effectSystem.AudioEffects)
-                    effect.Value.Process(source, target, effect.Key, buffer);
+                foreach (var processor in processors)
+                    processor.Process(target, buffer);
 
             GC.KeepAlive(buffer[0]);
         }, scenario.P3);
@@ -517,8 +518,9 @@ internal static class Measurements
         {
             var writer = new NetDataWriter();
             writer.Put((byte)McApiPacketType.SetEntityPositionRequest);
-            var packet = new McApiSetEntityPositionRequestPacket()
-                .Set(i + 1, new Vector3(i, i + 1, i + 2));
+            var packet = new McApiSetEntityPositionRequestPacket(
+                i + 1,
+                new Vector3(i, i + 1, i + 2));
             writer.Put(packet);
 
             if (packetBytes > writer.Length)
@@ -738,16 +740,17 @@ internal static class Measurements
 
     private static VoiceCraftEntity CreateEntityForSync(int id)
     {
-        return id % 3 == 0
-            ? CreateNetworkEntity(id + 1)
-            : new VoiceCraftEntity(id + 1)
-            {
-                Name = $"Entity {id + 1}",
-                WorldId = $"world-{id % 4}",
-                Position = new Vector3(id, id * 0.5f, id * 0.25f),
-                Rotation = new Vector2(id % 360, (id * 2) % 360),
-                CaveFactor = (id % 5) / 5f,
-                MuffleFactor = (id % 7) / 7f
-            };
+        if (id % 3 == 0) return CreateNetworkEntity(id + 1);
+
+        var entity = new VoiceCraftEntity(id + 1)
+        {
+            Name = $"Entity {id + 1}",
+            WorldId = $"world-{id % 4}",
+            Position = new Vector3(id, id * 0.5f, id * 0.25f),
+            Rotation = new Vector2(id % 360, (id * 2) % 360)
+        };
+        entity.SetProperty("CaveFactor", (id % 5) / 5f);
+        entity.SetProperty("MuffleFactor", (id % 7) / 7f);
+        return entity;
     }
 }

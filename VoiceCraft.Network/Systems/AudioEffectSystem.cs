@@ -66,9 +66,19 @@ public class AudioEffectSystem : IDisposable
                     return;
             }
 
+            effect.Bitmask = bitmask;
+
             if (_audioEffects.TryGetValue(bitmask, out var oldEffect) && oldEffect.EffectType == effect.EffectType)
             {
-                oldEffect.Update(effect); //Update old effect with new effect parameters.
+                try
+                {
+                    oldEffect.Update(effect); //Update old effect with new effect parameters.
+                }
+                finally
+                {
+                    if (!ReferenceEquals(oldEffect, effect))
+                        effect.Dispose();
+                }
                 //Don't need to re-update the snapshot as there have been no effect stack changes.
                 OnEffectSet?.Invoke(bitmask, oldEffect);
                 return;
@@ -128,7 +138,7 @@ public class AudioEffectSystem : IDisposable
                     var entityRead = ProcessEntityAudio(x, client, entitySpanBuffer);
                     lock (_lock)
                     {
-                        read = SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
+                        SampleMixer.Read(entitySpanBuffer[..entityRead], outputBuffer);
                         // ReSharper disable once AccessToModifiedClosure
                         read = Math.Max(read, entityRead);
                     }

@@ -20,8 +20,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
     private readonly JitterBuffer _jitterBuffer = new(TimeSpan.FromMilliseconds(100));
 
     private readonly SampleBufferProvider<float> _outputBuffer =
-        new(Constants.OutputBufferSize * Constants.PlaybackChannels)
-            { PrefillSize = Constants.PrefillBufferSize * Constants.PlaybackChannels };
+        new(Constants.OutputBufferSize)
+            { PrefillSize = Constants.PrefillBufferSize };
 
     private DateTime _lastPacket = DateTime.MinValue;
     private readonly ConcurrentDictionary<ushort, IAudioEffectProcessor> _effectProcessors = new();
@@ -141,7 +141,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
                 return 0;
             }
 
-            read = SampleMonoToStereo.Read(monoSpanBuffer, buffer);
+            read = SampleMonoToStereo.Read(monoSpanBuffer[..read], buffer);
             Speaking = true;
             return read;
         }
@@ -160,6 +160,8 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
 
     public override void Destroy()
     {
+        if (Destroyed) return;
+
         _jitterBuffer.Reset();
         lock (_lock)
         {
@@ -188,6 +190,7 @@ public class VoiceCraftClientEntity : VoiceCraftEntity
         lock (_lock)
         {
             _jitterBuffer.Reset(); //Also reset the jitter buffer.
+            _lastPacket = DateTime.MinValue;
         }
     }
     

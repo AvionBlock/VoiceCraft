@@ -26,11 +26,13 @@ namespace VoiceCraft.Core.World
 
         public void Reset()
         {
+            VoiceCraftEntity[] entities;
             lock (_lock)
             {
-                var entities = _entities.Values.ToArray(); //Copy Array
-                foreach (var entity in entities) entity.Reset();
+                entities = _entities.Values.ToArray(); //Copy Array
             }
+
+            foreach (var entity in entities) entity.Reset();
         }
 
         public event Action<VoiceCraftEntity>? OnEntityCreated;
@@ -94,9 +96,10 @@ namespace VoiceCraft.Core.World
 
         public void ClearEntities()
         {
-            var snapshot = _entitiesSnapshot;
+            ImmutableList<VoiceCraftEntity> snapshot;
             lock (_lock)
             {
+                snapshot = _entitiesSnapshot;
                 //Copy Array.
                 _entities.Clear();
                 _entitiesSnapshot = ImmutableList<VoiceCraftEntity>.Empty;
@@ -113,12 +116,19 @@ namespace VoiceCraft.Core.World
 
         private void RemoveEntity(VoiceCraftEntity entity)
         {
+            var removed = false;
             lock (_lock)
             {
                 entity.OnDestroyed -= RemoveEntity;
                 if (_entities.Remove(entity.Id, out _))
-                    OnEntityDestroyed?.Invoke(entity);
+                {
+                    _entitiesSnapshot = [.._entities.Select(x => x.Value)];
+                    removed = true;
+                }
             }
+
+            if (removed)
+                OnEntityDestroyed?.Invoke(entity);
         }
     }
 }

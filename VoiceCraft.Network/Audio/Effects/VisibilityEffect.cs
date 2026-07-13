@@ -58,6 +58,7 @@ namespace VoiceCraft.Network.Audio.Effects
 
     public class VisibilityEffectProcessor : IAudioEffectProcessor
     {
+        private bool _disposed;
         public IAudioEffect Effect { get; }
         public VoiceCraftEntity Entity { get; }
         public event Action<IAudioEffectProcessor>? OnDisposed;
@@ -66,7 +67,7 @@ namespace VoiceCraft.Network.Audio.Effects
         {
             Effect = effect;
             Entity = entity;
-            Effect.OnDisposed += _ => Dispose();
+            Effect.OnDisposed += OnEffectDisposed;
         }
 
         public void Process(VoiceCraftEntity to, Span<float> buffer)
@@ -76,14 +77,23 @@ namespace VoiceCraft.Network.Audio.Effects
 
         public void Dispose()
         {
+            if (_disposed) return;
+            _disposed = true;
+            Effect.OnDisposed -= OnEffectDisposed;
             try
             {
                 OnDisposed?.Invoke(this);
             }
             finally
             {
+                OnDisposed = null;
                 GC.SuppressFinalize(this);
             }
+        }
+
+        private void OnEffectDisposed(IAudioEffect _)
+        {
+            Dispose();
         }
     }
 
