@@ -7,7 +7,7 @@
         <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
         <AssemblyName>VoiceCraft</AssemblyName>
         <ApplicationTitle>VoiceCraft</ApplicationTitle>
-        <ApplicationId>team.avion.voicecraft</ApplicationId>
+        <ApplicationId>chat.voicecraft.client</ApplicationId>
         <InfoPlist>Info.plist</InfoPlist>
         <ApplicationVersion>$(Version)</ApplicationVersion>
         <ApplicationDisplayVersion>$(Version)</ApplicationDisplayVersion>
