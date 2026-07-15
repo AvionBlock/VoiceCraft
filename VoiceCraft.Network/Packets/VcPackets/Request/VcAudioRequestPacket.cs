@@ -40,6 +40,7 @@ public class VcAudioRequestPacket(ushort timestamp = 0, float loudness = 0f, int
 
     public void Return()
     {
+        Set();
         PacketPool<VcAudioRequestPacket>.Return(this);
     }
 

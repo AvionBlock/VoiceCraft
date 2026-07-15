@@ -97,19 +97,26 @@ public partial class VoiceViewModel(
                 backgroundService.StartServiceAsync<VoiceCraftService>((x, updateTitle, updateDescription) =>
                 {
                     SetService(x);
+                    using var disconnected = new ManualResetEventSlim(false);
+                    void SignalDisconnected()
+                    {
+                        disconnected.Set();
+                    }
+
                     try
                     {
                         x.OnUpdateTitle += updateTitle;
                         x.OnUpdateDescription += updateDescription;
+                        x.OnDisconnected += SignalDisconnected;
                         x.ConnectAsync(startNavigationData.Ip, startNavigationData.Port).GetAwaiter().GetResult();
-                        var sw = new SpinWait();
                         while (x.ConnectionState == VcConnectionState.Connected)
                         {
-                            sw.SpinOnce();
+                            disconnected.Wait(TimeSpan.FromSeconds(1));
                         }
                     }
                     finally
                     {
+                        x.OnDisconnected -= SignalDisconnected;
                         x.OnUpdateTitle -= updateTitle;
                         x.OnUpdateDescription -= updateDescription;
                     }

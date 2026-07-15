@@ -48,6 +48,7 @@ public class McApiEntityAudioRequestPacket(
     
     public void Return()
     {
+        Set();
         PacketPool<McApiEntityAudioRequestPacket>.Return(this);
     }
 
