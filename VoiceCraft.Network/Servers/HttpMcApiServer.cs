@@ -316,7 +316,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
             //Locked because we read from _mcApiPeers.
             if (IsConnectPath(context.Request.Url?.AbsolutePath))
             {
-                netPeer = HandleConnectRequest(packets);
+                netPeer = await HandleConnectRequestAsync(packets);
             }
             else if (string.IsNullOrWhiteSpace(token) || !TryGetHttpPeer(token, out netPeer))
             {
@@ -346,7 +346,7 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
     }
 
-    private HttpMcApiNetPeer HandleConnectRequest(List<byte[]> packets)
+    private async Task<HttpMcApiNetPeer> HandleConnectRequestAsync(List<byte[]> packets)
     {
         var tempToken = Guid.NewGuid().ToString();
         var netPeer = new HttpMcApiNetPeer(this)
@@ -360,14 +360,14 @@ public class HttpMcApiServer(VoiceCraftWorld world, AudioEffectSystem audioEffec
         }
 
         ReceivePacketsLogic(netPeer, packets, netPeer.SessionToken);
-        var sw = new SpinWait();
         var timeoutMs = Math.Clamp((long)Config.MaxTimeoutMs, 1, int.MaxValue);
         var deadline = Environment.TickCount64 + timeoutMs;
         while (netPeer.ConnectionState == McApiConnectionState.Connecting &&
                _httpServer != null &&
                Environment.TickCount64 < deadline)
         {
-            sw.SpinOnce();
+            var remainingMs = Math.Min(10, Math.Max(1, deadline - Environment.TickCount64));
+            await Task.Delay((int)remainingMs);
         }
 
         if (netPeer.ConnectionState == McApiConnectionState.Connecting)

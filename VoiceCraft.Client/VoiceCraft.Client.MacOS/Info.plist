@@ -9,7 +9,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleIdentifier</key>
-	<string>team.avion.voicecraft</string>
+	<string>chat.voicecraft.client</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.7.1</string>
 	<key>CFBundleVersion</key>
