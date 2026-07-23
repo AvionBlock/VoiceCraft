@@ -26,7 +26,7 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Maui.Essentials" Version="10.0.80" />
+    <PackageVersion Include="Microsoft.Maui.Essentials" Version="10.0.90" />
     <PackageVersion Include="OpusSharp" Version="1.6.8" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.3" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
