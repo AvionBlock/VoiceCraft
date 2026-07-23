@@ -19,7 +19,8 @@ public partial class VoiceViewModel(
     NotificationService notificationService,
     NavigationService navigationService,
     SettingsService settingsService,
-    IBackgroundService backgroundService)
+    IBackgroundService backgroundService,
+    ClipboardService clipboardService)
     : ViewModelBase, IDisposable
 {
     private VoiceCraftService? _service;
@@ -29,9 +30,18 @@ public partial class VoiceViewModel(
     [ObservableProperty] public partial bool IsServerDeafened { get; set; }
     [ObservableProperty] public partial bool IsServerMuted { get; set; }
     [ObservableProperty] public partial bool IsSpeaking { get; set; }
-    [ObservableProperty] public partial string StatusDescriptionText { get; set; } = string.Empty;
     [ObservableProperty] public partial string StatusTitleText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CopyDescriptionCommand))]
+    public partial string StatusDescriptionText { get; set; } = string.Empty;
+
     public override bool DisableBackButton { get; protected set; } = true;
+
+    private bool IsDescriptionCopyable()
+    {
+        return !string.IsNullOrWhiteSpace(StatusDescriptionText);
+    }
 
     public void Dispose()
     {
@@ -86,6 +96,20 @@ public partial class VoiceViewModel(
         await _service.DisconnectAsync("VoiceCraft.DisconnectReason.Manual");
     }
 
+    [RelayCommand(CanExecute = nameof(IsDescriptionCopyable))]
+    private async Task CopyDescription()
+    {
+        try
+        {
+            await clipboardService.SetTextAsync(StatusDescriptionText);
+            notificationService.SendSuccessNotification("Voice.Notification.Badge", "Voice.Notification.Copied");
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification("Voice.Notification.Badge", ex.Message);
+        }
+    }
+
     public override void OnAppearing(object? data = null)
     {
         switch (data)
@@ -98,11 +122,6 @@ public partial class VoiceViewModel(
                 {
                     SetService(x);
                     using var disconnected = new ManualResetEventSlim(false);
-                    void SignalDisconnected()
-                    {
-                        disconnected.Set();
-                    }
-
                     try
                     {
                         x.OnUpdateTitle += updateTitle;
@@ -119,6 +138,13 @@ public partial class VoiceViewModel(
                         x.OnDisconnected -= SignalDisconnected;
                         x.OnUpdateTitle -= updateTitle;
                         x.OnUpdateDescription -= updateDescription;
+                    }
+
+                    return;
+
+                    void SignalDisconnected()
+                    {
+                        disconnected.Set();
                     }
                 }).ContinueWith(x =>
                 {

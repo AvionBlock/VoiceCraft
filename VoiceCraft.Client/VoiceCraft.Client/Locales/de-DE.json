@@ -200,6 +200,10 @@
     "Modal": {
       "Volume": "Lautstärke",
       "Muted": "Stumm"
+    },
+    "Notification": {
+      "Badge": "Stimme",
+      "Copied": "Statusbeschreibung in die Zwischenablage kopiert."
     }
   },
   "VoiceCraft": {

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels;
 
 namespace VoiceCraft.Client.Views;
@@ -10,6 +11,7 @@ public partial class MainView : UserControl
     public MainView()
     {
         InitializeComponent();
+        NotificationService.SetNotificationManager(NotificationManager);
     }
     
     protected override void OnLoaded(RoutedEventArgs e)

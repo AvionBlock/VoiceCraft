@@ -200,6 +200,10 @@
     "Modal": {
       "Volume": "音量",
       "Muted": "已靜音"
+    },
+    "Notification": {
+      "Badge": "語音",
+      "Copied": "狀態描述已複製到剪貼簿。"
     }
   },
   "VoiceCraft": {

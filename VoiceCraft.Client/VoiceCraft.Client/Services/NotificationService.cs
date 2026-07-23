@@ -1,6 +1,5 @@
 using System;
-using Message.Avalonia;
-using Message.Avalonia.Models;
+using Avalonia.Controls.Notifications;
 using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Services;
@@ -8,33 +7,40 @@ namespace VoiceCraft.Client.Services;
 public class NotificationService(
     SettingsService settingsService)
 {
+    private static WindowNotificationManager? _notificationManager;
+
+    public static void SetNotificationManager(WindowNotificationManager manager)
+    {
+        _notificationManager = manager;
+    }
+
     public void SendNotification(string title, string message)
     {
         if (settingsService.NotificationSettings.DisableNotifications) return;
-        MessageManager.Default.ShowInformationMessage(Localizer.Get(message), new MessageOptions
-        {
-            Title = Localizer.Get(title),
-            Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
-        });
+        _notificationManager?.Show(new Notification(
+            Localizer.Get(title),
+            Localizer.Get(message),
+            NotificationType.Information,
+            TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)));
     }
 
     public void SendSuccessNotification(string title, string message)
     {
         if (settingsService.NotificationSettings.DisableNotifications) return;
-        MessageManager.Default.ShowSuccessMessage(Localizer.Get(message), new MessageOptions
-        {
-            Title = Localizer.Get(title),
-            Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
-        });
+        _notificationManager?.Show(new Notification(
+            Localizer.Get(title),
+            Localizer.Get(message),
+            NotificationType.Success,
+            TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)));
     }
 
     public void SendErrorNotification(string title, string message)
     {
         if (settingsService.NotificationSettings.DisableNotifications) return;
-        MessageManager.Default.ShowErrorMessage(Localizer.Get(message), new MessageOptions
-        {
-            Title = Localizer.Get(title),
-            Duration = TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)
-        });
+        _notificationManager?.Show(new Notification(
+            Localizer.Get(title),
+            Localizer.Get(message),
+            NotificationType.Error,
+            TimeSpan.FromMilliseconds(settingsService.NotificationSettings.DismissDelayMs)));
     }
 }
