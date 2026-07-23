@@ -43,6 +43,7 @@ public class VcOnEntityAudioDataReceivedPacket(int id, ushort timestamp, float l
     
     public void Return()
     {
+        Set();
         PacketPool<VcOnEntityAudioDataReceivedPacket>.Return(this);
     }
 

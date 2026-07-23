@@ -117,7 +117,6 @@ or local development.
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia)
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
-- [Message.Avalonia](https://github.com/xiyaowong/Message.Avalonia)
 - [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
 - [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
 - [SoundFlow](https://github.com/LSXPrime/SoundFlow)

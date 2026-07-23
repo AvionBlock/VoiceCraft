@@ -94,85 +94,96 @@
             </ListBox.ItemTemplate>
         </ListBox>
 
-        <StackPanel Grid.Row="1"
-                    VerticalAlignment="Bottom"
-                    HorizontalAlignment="Center"
-                    Orientation="Horizontal"
-                    Margin="0,0,0,10"
-                    Spacing="10">
-            <ToggleButton CornerRadius="50"
-                          Width="50"
-                          Height="50"
-                          IsChecked="{Binding IsMuted}"
-                          Command="{Binding ToggleMuteCommand}">
-                <Panel>
-                    <PathIcon Data="{StaticResource MicOnRegular}"
-                              Classes.IsSpeaking="{Binding IsSpeaking}">
-                        <PathIcon.IsVisible>
-                            <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                <Binding Path="!IsMuted" />
-                                <Binding Path="!IsServerMuted" />
-                            </MultiBinding>
-                        </PathIcon.IsVisible>
-                        <PathIcon.Styles>
-                            <Style Selector="PathIcon.IsSpeaking">
-                                <Setter Property="Foreground" Value="{DynamicResource SuccessAccentBrush}" />
-                            </Style>
-                        </PathIcon.Styles>
-                    </PathIcon>
-                    <PathIcon Data="{StaticResource MicOffRegular}"
-                              Classes.IsServerMuted="{Binding IsServerMuted}">
-                        <PathIcon.IsVisible>
-                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                <Binding Path="IsMuted" />
-                                <Binding Path="IsServerMuted" />
-                            </MultiBinding>
-                        </PathIcon.IsVisible>
-                        <PathIcon.Styles>
-                            <Style Selector="PathIcon.IsServerMuted">
-                                <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
-                            </Style>
-                        </PathIcon.Styles>
-                    </PathIcon>
-                </Panel>
-            </ToggleButton>
-            <ToggleButton CornerRadius="50"
-                          Width="50"
-                          Height="50"
-                          IsChecked="{Binding IsDeafened}"
-                          Command="{Binding ToggleDeafenCommand}">
-                <Panel>
-                    <PathIcon Data="{StaticResource SpeakerRegular}">
-                        <PathIcon.IsVisible>
-                            <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                <Binding Path="!IsDeafened" />
-                                <Binding Path="!IsServerDeafened" />
-                            </MultiBinding>
-                        </PathIcon.IsVisible>
-                    </PathIcon>
-                    <PathIcon Data="{StaticResource SpeakerOffRegular}"
-                              Classes.IsServerDeafened="{Binding IsServerDeafened}">
-                        <PathIcon.IsVisible>
-                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                <Binding Path="IsDeafened" />
-                                <Binding Path="IsServerDeafened" />
-                            </MultiBinding>
-                        </PathIcon.IsVisible>
-                        <PathIcon.Styles>
-                            <Style Selector="PathIcon.IsServerDeafened">
-                                <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
-                            </Style>
-                        </PathIcon.Styles>
-                    </PathIcon>
-                </Panel>
-            </ToggleButton>
-            <Button Background="{DynamicResource ErrorBackgroundBrush}"
-                    CornerRadius="50"
-                    Width="50"
+        <Panel Grid.Row="1">
+            <StackPanel VerticalAlignment="Bottom"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Margin="0,0,0,10"
+                        Spacing="10">
+                <ToggleButton CornerRadius="50"
+                              Width="50"
+                              Height="50"
+                              IsChecked="{Binding IsMuted}"
+                              Command="{Binding ToggleMuteCommand}">
+                    <Panel>
+                        <PathIcon Data="{StaticResource MicOnRegular}"
+                                  Classes.IsSpeaking="{Binding IsSpeaking}">
+                            <PathIcon.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="!IsMuted" />
+                                    <Binding Path="!IsServerMuted" />
+                                </MultiBinding>
+                            </PathIcon.IsVisible>
+                            <PathIcon.Styles>
+                                <Style Selector="PathIcon.IsSpeaking">
+                                    <Setter Property="Foreground" Value="{DynamicResource SuccessAccentBrush}" />
+                                </Style>
+                            </PathIcon.Styles>
+                        </PathIcon>
+                        <PathIcon Data="{StaticResource MicOffRegular}"
+                                  Classes.IsServerMuted="{Binding IsServerMuted}">
+                            <PathIcon.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                    <Binding Path="IsMuted" />
+                                    <Binding Path="IsServerMuted" />
+                                </MultiBinding>
+                            </PathIcon.IsVisible>
+                            <PathIcon.Styles>
+                                <Style Selector="PathIcon.IsServerMuted">
+                                    <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                                </Style>
+                            </PathIcon.Styles>
+                        </PathIcon>
+                    </Panel>
+                </ToggleButton>
+                <ToggleButton CornerRadius="50"
+                              Width="50"
+                              Height="50"
+                              IsChecked="{Binding IsDeafened}"
+                              Command="{Binding ToggleDeafenCommand}">
+                    <Panel>
+                        <PathIcon Data="{StaticResource SpeakerRegular}">
+                            <PathIcon.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="!IsDeafened" />
+                                    <Binding Path="!IsServerDeafened" />
+                                </MultiBinding>
+                            </PathIcon.IsVisible>
+                        </PathIcon>
+                        <PathIcon Data="{StaticResource SpeakerOffRegular}"
+                                  Classes.IsServerDeafened="{Binding IsServerDeafened}">
+                            <PathIcon.IsVisible>
+                                <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                    <Binding Path="IsDeafened" />
+                                    <Binding Path="IsServerDeafened" />
+                                </MultiBinding>
+                            </PathIcon.IsVisible>
+                            <PathIcon.Styles>
+                                <Style Selector="PathIcon.IsServerDeafened">
+                                    <Setter Property="Foreground" Value="{DynamicResource ErrorBackgroundBrush}" />
+                                </Style>
+                            </PathIcon.Styles>
+                        </PathIcon>
+                    </Panel>
+                </ToggleButton>
+                <Button Background="{DynamicResource ErrorBackgroundBrush}"
+                        CornerRadius="50"
+                        Width="50"
+                        Height="50"
+                        Command="{Binding DisconnectCommand}">
+                    <PathIcon Data="{StaticResource CallEndRegular}" />
+                </Button>
+            </StackPanel>
+            
+            <Button Width="50"
                     Height="50"
-                    Command="{Binding DisconnectCommand}">
-                <PathIcon Data="{StaticResource CallEndRegular}" />
+                    CornerRadius="50"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,10,10"
+                    Command="{Binding CopyDescriptionCommand, UpdateSourceTrigger=PropertyChanged}">
+                <PathIcon Data="{StaticResource CopyRegular}" />
             </Button>
-        </StackPanel>
+        </Panel>
     </Grid>
 </UserControl>

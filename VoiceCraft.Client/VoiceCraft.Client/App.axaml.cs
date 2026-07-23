@@ -44,13 +44,14 @@ public class App : Application
         {
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
+            var mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
 
             switch (ApplicationLifetime)
             {
                 case IClassicDesktopStyleApplicationLifetime desktop:
                     desktop.MainWindow = new MainWindow
                     {
-                        DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                        DataContext = mainViewModel
                     };
                     serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(desktop.MainWindow);
 
@@ -64,7 +65,7 @@ public class App : Application
                     {
                         var mainView = new MainView
                         {
-                            DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                            DataContext = mainViewModel
                         };
                         RegisterClipboardWhenAttached(serviceProvider, mainView);
                         return mainView;
@@ -73,7 +74,7 @@ public class App : Application
                 case ISingleViewApplicationLifetime singleViewPlatform:
                     var singleView = new MainView
                     {
-                        DataContext = serviceProvider.GetRequiredService<MainViewModel>()
+                        DataContext = mainViewModel
                     };
                     RegisterClipboardWhenAttached(serviceProvider, singleView);
                     singleViewPlatform.MainView = singleView;
@@ -84,25 +85,26 @@ public class App : Application
         }
         catch (Exception ex)
         {
+            var errorViewModel = new ErrorViewModel { ErrorMessage = ex.ToString() };
             switch (ApplicationLifetime)
             {
                 case IClassicDesktopStyleApplicationLifetime desktop:
                     desktop.MainWindow = new ErrorMainWindow
                     {
                         Content = new ErrorView(),
-                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                        DataContext = errorViewModel
                     };
                     break;
                 case IActivityApplicationLifetime activityLifetime:
-                    activityLifetime.MainViewFactory = () => new MainView()
+                    activityLifetime.MainViewFactory = () => new ErrorView()
                     {
-                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                        DataContext = errorViewModel
                     };
                     break;
                 case ISingleViewApplicationLifetime singleViewPlatform:
                     singleViewPlatform.MainView = new ErrorView
                     {
-                        DataContext = new ErrorViewModel { ErrorMessage = ex.ToString() }
+                        DataContext = errorViewModel
                     };
                     break;
             }
@@ -268,8 +270,8 @@ public class App : Application
     {
         control.AttachedToVisualTree += (_, _) =>
         {
-            if (TopLevel.GetTopLevel(control) is { } topLevel)
-                serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
+            if (TopLevel.GetTopLevel(control) is not { } topLevel) return;
+            serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
         };
     }
 }

@@ -201,9 +201,12 @@
     "Modal": {
       "Volume": "Volume",
       "Muted": "Muted"
+    },
+    "Notification": {
+      "Badge": "Voice",
+      "Copied": "Status description copied to clipboard."
     }
   },
-  
   "VoiceCraft": {
     "Notification": {
       "Badge": "VoiceCraft",

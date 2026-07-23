@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels"
-             xmlns:msg="https://github.com/xiyaowong/Message.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VoiceCraft.Client.Views.MainView"
              x:DataType="vm:MainViewModel">
@@ -39,6 +38,7 @@
                 </Style>
             </Border.Styles>
         </Border>
-        <msg:MessageHost Position="{ OnFormFactor Default=BottomLeft, Mobile=TopCenter }" />
+        <WindowNotificationManager x:Name="NotificationManager"
+                                   Position="{ OnFormFactor Default=BottomLeft, Mobile=TopCenter }" />
     </Panel>
 </UserControl>

@@ -200,6 +200,10 @@
     "Modal": {
       "Volume": "Głośność",
       "Muted": "Wyciszony"
+    },
+    "Notification": {
+      "Badge": "Głos",
+      "Copied": "Opis statusu został skopiowany do schowka."
     }
   },
   "VoiceCraft": {

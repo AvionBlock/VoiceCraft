@@ -200,6 +200,10 @@
     "Modal": {
       "Volume": "Volume",
       "Muted": "Gedempt"
+    },
+    "Notification": {
+      "Badge": "Stem",
+      "Copied": "De statusbeschrijving is naar het klembord gekopieerd."
     }
   },
   "VoiceCraft": {

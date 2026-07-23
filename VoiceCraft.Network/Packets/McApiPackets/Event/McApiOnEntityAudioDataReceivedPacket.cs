@@ -42,6 +42,7 @@ public class McApiOnEntityAudioDataReceivedPacket(int id, ushort timestamp, floa
     
     public void Return()
     {
+        Set();
         PacketPool<McApiOnEntityAudioDataReceivedPacket>.Return(this);
     }
 
