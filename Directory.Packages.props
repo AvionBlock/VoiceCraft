@@ -14,8 +14,6 @@
     <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.iOS" Version="$(AvaloniaVersion)" />
     <PackageVersion Include="Avalonia.Android" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="4.150.1" />
-    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.6-preview.3.1" />
     <PackageVersion Include="Fleck" Version="1.2.0" />
     <PackageVersion Include="LiteNetLib" Version="2.1.4" />
     <PackageVersion Include="OpenPort.Net" Version="1.0.0" />
@@ -28,7 +26,8 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Maui.Essentials" Version="10.0.90" />
     <PackageVersion Include="OpusSharp" Version="1.6.8" />
-    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.3" />
+    <!-- DO NOT UPDATE Xamarin.AndroidX.Core.SplashScreen! Newer versions break the build! -->
+    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
     <PackageVersion Include="System.CommandLine" Version="2.0.10" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
