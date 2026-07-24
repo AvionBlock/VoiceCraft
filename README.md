@@ -106,6 +106,17 @@ dashboard:
 The hosted dashboard is a convenience service. It is not required for private servers, custom deployments, Docker setups,
 or local development.
 
+## Communities
+
+List of communities maintaining or using VoiceCraft recognized by AvionBlock.
+
+### Aera Studio
+
+A Thai-based Minecraft studio that develops and maintains a localized version of VoiceCraft for the Thai Minecraft community.
+
+- Discord: https://discord.gg/fNcUtDgD9A
+- Website: https://voicecraft-download-aera-studio.onrender.com/app/windows
+
 ## Project Dependencies
 
 > [!NOTE]
