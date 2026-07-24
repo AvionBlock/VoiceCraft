@@ -1,4 +1,3 @@
-using System;
 using Android.Media;
 using Android.OS;
 using Android.Runtime;
