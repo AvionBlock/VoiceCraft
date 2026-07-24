@@ -11,13 +11,20 @@ public partial class MainView : UserControl
     public MainView()
     {
         InitializeComponent();
-        NotificationService.SetNotificationManager(NotificationManager);
     }
     
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        var insetsManager = TopLevel.GetTopLevel(this)?.InsetsManager;
+        NotificationService.SetNotificationManager(NotificationManager);
+        
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) return;
+        var clipboard = topLevel.Clipboard;
+        var insetsManager = topLevel.InsetsManager;
+        
+        if(clipboard != null)
+            ClipboardService.SetClipboardManager(clipboard);
 
         if (insetsManager == null) return;
         insetsManager.DisplayEdgeToEdgePreference = true;

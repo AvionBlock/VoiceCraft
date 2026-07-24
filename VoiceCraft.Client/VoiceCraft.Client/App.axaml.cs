@@ -53,7 +53,6 @@ public class App : Application
                     {
                         DataContext = mainViewModel
                     };
-                    serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(desktop.MainWindow);
 
                     desktop.MainWindow.Closing += (__, ___) =>
                     {
@@ -67,7 +66,6 @@ public class App : Application
                         {
                             DataContext = mainViewModel
                         };
-                        RegisterClipboardWhenAttached(serviceProvider, mainView);
                         return mainView;
                     };
                     break;
@@ -76,7 +74,6 @@ public class App : Application
                     {
                         DataContext = mainViewModel
                     };
-                    RegisterClipboardWhenAttached(serviceProvider, singleView);
                     singleViewPlatform.MainView = singleView;
                     break;
             }
@@ -264,14 +261,5 @@ public class App : Application
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
         _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
-    }
-
-    private static void RegisterClipboardWhenAttached(IServiceProvider serviceProvider, Control control)
-    {
-        control.AttachedToVisualTree += (_, _) =>
-        {
-            if (TopLevel.GetTopLevel(control) is not { } topLevel) return;
-            serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
-        };
     }
 }
