@@ -1,4 +1,5 @@
 using System;
+using System.Web;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -9,6 +10,7 @@ using Microsoft.Maui.ApplicationModel;
 using SoundFlow.Abstracts;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Locales;
+using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
@@ -274,14 +276,40 @@ public class App : Application
     private static void HandleUriActivation(object? sender, ActivatedEventArgs e)
     {
         if (e is not ProtocolActivatedEventArgs protocolArgs || e.Kind != ActivationKind.OpenUri) return;
-        var serviceProvider = ServiceProvider;
-        if (serviceProvider == null) return;
         switch (protocolArgs.Uri.Host)
         {
             case "add-server":
-                var service = serviceProvider.GetService<NavigationService>();
-                service?.NavigateTo<AddServerViewModel>();
+                HandleAddServerUriActivation(protocolArgs.Uri);
                 break;
+        }
+    }
+
+    private static void HandleAddServerUriActivation(Uri uri)
+    {
+        var serviceProvider = ServiceProvider;
+        if (serviceProvider == null) return;
+        var settingsService = serviceProvider.GetService<SettingsService>();
+        var notificationService = serviceProvider.GetService<NotificationService>();
+        if (settingsService == null || notificationService == null) return;
+        var queries = HttpUtility.ParseQueryString(uri.Query);
+
+        try
+        {
+            var server = new Server()
+            {
+                Name = queries["name"] ?? throw new InvalidOperationException("Name Missing"),
+                Ip = queries["ip"] ?? throw new InvalidOperationException("Ip Missing"),
+                Port = ushort.Parse(queries["port"] ?? throw new InvalidOperationException("Port Missing")),
+            };
+            settingsService.ServersSettings.AddServer(server);
+            notificationService.SendSuccessNotification(
+                "AddServer.Notification.Badge",
+                $"AddServer.Notification.Added:{server.Name}");
+            _ = settingsService.SaveAsync();
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification("AddServer.Notification.Badge", ex.Message);
         }
     }
 }
