@@ -78,6 +78,8 @@ public class LiteNetVoiceCraftClient : VoiceCraftClient
                 _writer.Put((byte)loginRequestPacket.PacketType);
                 _writer.Put(loginRequestPacket);
                 var peer = _netManager.Connect(ip, port, _writer);
+                if(peer == null)
+                    throw new Exception("Connection Failure!");
                 _netPeer = new LiteNetVoiceCraftNetPeer(null, peer, userGuid, serverUserGuid, locale, positioningType);
             }
 

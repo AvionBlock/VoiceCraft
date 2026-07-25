@@ -12,8 +12,27 @@ namespace VoiceCraft.Client.Android;
     Label = "VoiceCraft",
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
+    LaunchMode =  LaunchMode.SingleInstance,
     MainLauncher = true,
-    ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
+    Exported = true,
+    ConfigurationChanges =
+        ConfigChanges.Orientation |
+        ConfigChanges.ScreenSize |
+        ConfigChanges.UiMode)]
+[IntentFilter([
+        global::Android.Content.Intent.ActionView
+    ],
+    Categories =
+    [
+        global::Android.Content.Intent.CategoryDefault,
+        global::Android.Content.Intent.CategoryBrowsable
+    ],
+    DataScheme = "voicecraft",
+    DataHosts = [
+        "open",
+        "add-server"
+    ],
+    AutoVerify = true)]
 public class MainActivity : AvaloniaMainActivity
 {
     protected override void OnCreate(Bundle? app)
@@ -21,7 +40,7 @@ public class MainActivity : AvaloniaMainActivity
         base.OnCreate(app);
         Platform.Init(this, app);
     }
-    
+
     public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
         Permission[] grantResults)
     {
@@ -32,9 +51,9 @@ public class MainActivity : AvaloniaMainActivity
     public override void OnBackPressed()
     {
         if (BackButtonBehavior()) return;
-        #pragma warning disable
+#pragma warning disable
         base.OnBackPressed();
-        #pragma warning restore
+#pragma warning restore
     }
 
     private static bool BackButtonBehavior()

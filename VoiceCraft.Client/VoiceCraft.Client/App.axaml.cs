@@ -44,6 +44,7 @@ public class App : Application
         {
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
+            SetupUriActivation();
             var mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
 
             switch (ApplicationLifetime)
@@ -261,5 +262,26 @@ public class App : Application
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
         _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
+    }
+
+    private void SetupUriActivation()
+    {
+        var activatableLifetime = this.TryGetFeature<IActivatableLifetime>();
+        if (activatableLifetime == null) return;
+        activatableLifetime.Activated += HandleUriActivation;
+    }
+
+    private static void HandleUriActivation(object? sender, ActivatedEventArgs e)
+    {
+        if (e is not ProtocolActivatedEventArgs protocolArgs || e.Kind != ActivationKind.OpenUri) return;
+        var serviceProvider = ServiceProvider;
+        if (serviceProvider == null) return;
+        switch (protocolArgs.Uri.Host)
+        {
+            case "add-server":
+                var service = serviceProvider.GetService<NavigationService>();
+                service?.NavigateTo<AddServerViewModel>();
+                break;
+        }
     }
 }
