@@ -1,4 +1,5 @@
 using System;
+using System.Web;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -9,6 +10,7 @@ using Microsoft.Maui.ApplicationModel;
 using SoundFlow.Abstracts;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Locales;
+using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
 using VoiceCraft.Client.ViewModels;
@@ -44,6 +46,7 @@ public class App : Application
         {
             var serviceProvider = BuildServiceProvider();
             SetupServices(serviceProvider);
+            SetupUriActivation();
             var mainViewModel = serviceProvider.GetRequiredService<MainViewModel>();
 
             switch (ApplicationLifetime)
@@ -53,7 +56,6 @@ public class App : Application
                     {
                         DataContext = mainViewModel
                     };
-                    serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(desktop.MainWindow);
 
                     desktop.MainWindow.Closing += (__, ___) =>
                     {
@@ -67,7 +69,6 @@ public class App : Application
                         {
                             DataContext = mainViewModel
                         };
-                        RegisterClipboardWhenAttached(serviceProvider, mainView);
                         return mainView;
                     };
                     break;
@@ -76,7 +77,6 @@ public class App : Application
                     {
                         DataContext = mainViewModel
                     };
-                    RegisterClipboardWhenAttached(serviceProvider, singleView);
                     singleViewPlatform.MainView = singleView;
                     break;
             }
@@ -266,12 +266,50 @@ public class App : Application
         _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
     }
 
-    private static void RegisterClipboardWhenAttached(IServiceProvider serviceProvider, Control control)
+    private void SetupUriActivation()
     {
-        control.AttachedToVisualTree += (_, _) =>
+        var activatableLifetime = this.TryGetFeature<IActivatableLifetime>();
+        if (activatableLifetime == null) return;
+        activatableLifetime.Activated += HandleUriActivation;
+    }
+
+    private static void HandleUriActivation(object? sender, ActivatedEventArgs e)
+    {
+        if (e is not ProtocolActivatedEventArgs protocolArgs || e.Kind != ActivationKind.OpenUri) return;
+        switch (protocolArgs.Uri.Host)
         {
-            if (TopLevel.GetTopLevel(control) is not { } topLevel) return;
-            serviceProvider.GetRequiredService<ClipboardService>().RegisterTopLevel(topLevel);
-        };
+            case "add-server":
+                HandleAddServerUriActivation(protocolArgs.Uri);
+                break;
+        }
+    }
+
+    private static void HandleAddServerUriActivation(Uri uri)
+    {
+        var serviceProvider = ServiceProvider;
+        if (serviceProvider == null) return;
+        var settingsService = serviceProvider.GetService<SettingsService>();
+        var notificationService = serviceProvider.GetService<NotificationService>();
+        if (settingsService == null || notificationService == null) return;
+        var queries = HttpUtility.ParseQueryString(uri.Query);
+
+        try
+        {
+            var server = new Server()
+            {
+                Name = queries["name"] ?? throw new InvalidOperationException("Name Missing"),
+                Ip = queries["ip"] ?? throw new InvalidOperationException("Ip Missing"),
+                Port = ushort.Parse(queries["port"] ?? throw new InvalidOperationException("Port Missing")),
+            };
+            settingsService.ServersSettings.AddServer(server);
+            notificationService.SendSuccessNotification(
+                "AddServer.Notification.Badge",
+                $"AddServer.Notification.Added:{server.Name}");
+            _ = settingsService.SaveAsync();
+        }
+        catch (Exception ex)
+        {
+            notificationService.SendErrorNotification("AddServer.Notification.Badge", ex.Message);
+        }
     }
 }

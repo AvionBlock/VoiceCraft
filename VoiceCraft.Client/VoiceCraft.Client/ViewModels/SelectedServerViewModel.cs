@@ -53,8 +53,8 @@ public partial class SelectedServerViewModel(
         }
 
         _cts = new CancellationTokenSource();
-        _ = UpdateClientLoopAsync(_cts.Token);
-        _ = PingerLogicAsync(_cts.Token);
+        _ = Task.Run(() => UpdateClientLoopAsync(_cts.Token));
+        _ = Task.Run(() => PingerLogicAsync(_cts.Token));
     }
 
     public override void OnDisappearing()
@@ -144,7 +144,7 @@ public partial class SelectedServerViewModel(
             }
         }
         // We don't need the when's. It's an extra unnecessary check.
-        catch (OperationCanceledException)
+        catch
         {
             // Expected while leaving the selected server view.
         }
@@ -161,9 +161,9 @@ public partial class SelectedServerViewModel(
             }
         }
         // We don't need the when's. It's an extra unnecessary check.
-        catch (OperationCanceledException)
+        catch
         {
-            // Expected while leaving the selected server view.
+            //Do Nothing
         }
     }
 }

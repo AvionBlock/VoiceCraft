@@ -1,7 +1,6 @@
 using System;
 using LiteNetLib;
 using VoiceCraft.Network.Servers;
-using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Network.NetPeers;
 

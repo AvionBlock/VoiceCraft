@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;

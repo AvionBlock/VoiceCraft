@@ -132,6 +132,8 @@ public partial class VoiceViewModel(
                         {
                             disconnected.Wait(TimeSpan.FromSeconds(1));
                         }
+
+                        SignalDisconnected();
                     }
                     finally
                     {
@@ -158,6 +160,7 @@ public partial class VoiceViewModel(
                     notificationService.SendNotification(
                         "VoiceCraft.Notification.Badge",
                         "VoiceCraft.Notification.Error");
+
                     OnDisconnected();
                 });
                 break;

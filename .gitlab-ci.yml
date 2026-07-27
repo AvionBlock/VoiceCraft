@@ -169,8 +169,8 @@ build:client:windows:
       - ARCH: [x64, x86, arm64]
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
-    - dotnet workload restore
-    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH" /p:UseSharedCompilation=false
+    - dotnet restore -r "win-$env:ARCH"
+    - dotnet publish -c Release -r "win-$env:ARCH" --no-restore -p:PublishSingleFile=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH" /p:UseSharedCompilation=false
     - |
       $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
       $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"

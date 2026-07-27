@@ -1,4 +1,3 @@
-using System;
 using Android.Media;
 using Android.OS;
 using Android.Runtime;
@@ -57,7 +56,7 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         var nativeStorage = new NativeStorageService();
         LogService.NativeStorageService = nativeStorage;
         LogService.Load();
-        AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+        AndroidEnvironment.UnhandledExceptionRaiser += AndroidEnvironmentOnUnhandledExceptionRaiser;
 
         var audioManager = (AudioManager?)Context.GetSystemService(AudioService);
         if (audioManager == null)
@@ -93,12 +92,11 @@ public class AndroidApp : AvaloniaAndroidApplication<App>
         App.ServiceCollection.AddTransient<Microsoft.Maui.ApplicationModel.Permissions.Microphone>();
     }
 
-    private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    private static void AndroidEnvironmentOnUnhandledExceptionRaiser(object? sender, RaiseThrowableEventArgs e)
     {
         try
         {
-            if (e.ExceptionObject is Exception ex)
-                LogService.LogCrash(ex);
+            LogService.LogCrash(e.Exception);
         }
         catch (Exception writeEx)
         {

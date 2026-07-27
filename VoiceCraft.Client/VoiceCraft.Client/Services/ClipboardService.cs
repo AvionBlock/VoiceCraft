@@ -7,11 +7,11 @@ namespace VoiceCraft.Client.Services;
 
 public class ClipboardService
 {
-    private IClipboard? _clipboard;
+    private static IClipboard? _clipboard;
 
-    public void RegisterTopLevel(TopLevel topLevel)
+    public static void SetClipboardManager(IClipboard clipboard)
     {
-        _clipboard = topLevel.Clipboard;
+        _clipboard = clipboard;
     }
 
     public async Task SetTextAsync(string text)
