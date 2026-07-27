@@ -23,7 +23,6 @@ public partial class MainViewModel : ObservableObject
         HotKeyService hotKeyService,
         IBackgroundService backgroundService)
     {
-        Console.WriteLine("Debug: MainView");
         _navigationService = navigationService;
         
         themesService.OnBackgroundImageChanged += backgroundImage =>
