@@ -47,28 +47,21 @@ public class AndroidBackgroundService : Service
         {
             service.Dispose();
         }
+
         base.OnDestroy();
     }
 
     private async Task BackgroundLogic()
     {
-        try
+        while (!Services.IsEmpty)
         {
-            while (!Services.IsEmpty)
-            {
-                //Delay
-                await Task.Delay(500);
-                UpdateNotification();
-            }
+            //Delay
+            await Task.Delay(500);
+            UpdateNotification();
+            Console.WriteLine("test");
         }
-        catch
-        {
-            //Do Nothing
-        }
-        finally
-        {
-            StopSelf();
-        }
+
+        StopSelf();
     }
 
     //Notification
@@ -95,9 +88,16 @@ public class AndroidBackgroundService : Service
 
     private void UpdateNotification()
     {
-        var notificationManager = GetSystemService(NotificationService) as NotificationManager;
-        var notification = CreateNotification(Title, Description);
-        notification.SetSmallIcon(ResourceConstant.Drawable.Icon);
-        notificationManager?.Notify(NotificationId, notification.Build());
+        try
+        {
+            var notificationManager = GetSystemService(NotificationService) as NotificationManager;
+            var notification = CreateNotification(Title, Description);
+            notification.SetSmallIcon(ResourceConstant.Drawable.Icon);
+            notificationManager?.Notify(NotificationId, notification.Build());
+        }
+        catch
+        {
+            //Do Nothing.
+        }
     }
 }

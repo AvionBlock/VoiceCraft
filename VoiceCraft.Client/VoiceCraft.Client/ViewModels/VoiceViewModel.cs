@@ -120,10 +120,10 @@ public partial class VoiceViewModel(
             case VoiceStartNavigationData startNavigationData:
                 backgroundService.StartServiceAsync<VoiceCraftService>((x, updateTitle, updateDescription) =>
                 {
-                    SetService(x);
                     using var disconnected = new ManualResetEventSlim(false);
                     try
                     {
+                        SetService(x);
                         x.OnUpdateTitle += updateTitle;
                         x.OnUpdateDescription += updateDescription;
                         x.OnDisconnected += SignalDisconnected;
@@ -183,10 +183,10 @@ public partial class VoiceViewModel(
         _service.OnEntityAdded += OnEntityAdded;
         _service.OnEntityRemoved += OnEntityRemoved;
 
-        StatusTitleText = _service.Title;
-        StatusDescriptionText = _service.Description;
-        IsMuted = _service.Muted;
-        IsDeafened = _service.Deafened;
+        OnUpdateTitle(_service.Title);
+        OnUpdateDescription(_service.Description);
+        OnUpdateMute(_service.Muted);
+        OnUpdateDeafen(_service.Deafened);
     }
 
     private void OnUpdateTitle(string title)
