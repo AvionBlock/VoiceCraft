@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
@@ -23,7 +22,6 @@ public partial class MainViewModel : ObservableObject
         HotKeyService hotKeyService,
         IBackgroundService backgroundService)
     {
-        Console.WriteLine("Debug: MainView");
         _navigationService = navigationService;
         
         themesService.OnBackgroundImageChanged += backgroundImage =>
