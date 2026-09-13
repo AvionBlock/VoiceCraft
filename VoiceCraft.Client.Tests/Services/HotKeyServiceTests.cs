@@ -67,7 +67,7 @@ public class HotKeyServiceTests
 
     private static void InitializeLocalizer()
     {
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Client");
     }
 
     private sealed class TestHotKeyService(IEnumerable<HotKeyAction> actions, SettingsService settingsService)

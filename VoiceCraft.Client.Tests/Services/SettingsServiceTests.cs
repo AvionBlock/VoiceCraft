@@ -1,6 +1,4 @@
-using System.Text;
 using System.Text.Json;
-using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
@@ -65,7 +63,7 @@ public class SettingsServiceTests
         var storage = new FakeStorageService
         {
             ExistsResult = true,
-            StoredBytes = Encoding.UTF8.GetBytes("{")
+            StoredBytes = "{"u8.ToArray()
         };
 
         var service = new SettingsService(storage);
@@ -76,13 +74,13 @@ public class SettingsServiceTests
 
     private static void InitializeLocalizer()
     {
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Client");
     }
 
     private sealed class FakeStorageService : StorageService
     {
         public bool ExistsResult { get; set; }
-        public byte[] StoredBytes { get; set; } = Encoding.UTF8.GetBytes("{}");
+        public byte[] StoredBytes { get; set; } = "{}"u8.ToArray();
         public string? LastSavedPath { get; private set; }
 
         public override bool Exists(string directory)

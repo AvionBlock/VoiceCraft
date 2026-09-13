@@ -4,10 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using VoiceCraft.Core;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Locales;
+namespace VoiceCraft.Core.Locales;
 
 public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLocalizer
 {

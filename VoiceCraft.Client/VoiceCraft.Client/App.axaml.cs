@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using SoundFlow.Abstracts;
 using VoiceCraft.Client.Audio;
-using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
@@ -264,7 +263,7 @@ public class App : Application
 
     private void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Client");
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
         _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
     }
