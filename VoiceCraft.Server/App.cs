@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
@@ -14,7 +15,8 @@ public static class App
 {
     private static bool _shuttingDown;
     private static readonly CancellationTokenSource Cts = new();
-    private static string? _bufferedCommand;
+    private static readonly ConcurrentQueue<string> QueuedCommands = new();
+    private static readonly SemaphoreSlim TelemetrySemaphore = new (1, 1);
 
     public static async Task Start(RuntimeOptions runtimeOptions)
     {
@@ -46,8 +48,7 @@ public static class App
             AnsiConsole.WriteLine(Localizer.Get("Startup.Starting"));
 
             //Properties
-            properties.Load(runtimeOptions.ExitOnInvalidProperties);
-            properties.ApplyRuntimeOverrides(runtimeOptions);
+            properties.Load(runtimeOptions);
             AnsiConsole.MarkupLine(properties.TelemetryEnabled
                 ? "[aqua]Telemetry is enabled. VoiceCraft sends anonymous startup, heartbeat, and crash diagnostics. Set \"TelemetryEnabled\": false in config/ServerProperties.json to disable it.[/]"
                 : "[aqua]Telemetry is disabled in config/ServerProperties.json.[/]");
@@ -61,7 +62,7 @@ public static class App
             eventHandlerSystem.EnableVisibilityDisplay = properties.VoiceCraftConfig.EnableVisibilityDisplay;
             audioEffectSystem.DefaultAudioEffects = properties.DefaultAudioEffects;
 
-            //Setup Servers
+            //Setup Server Configs
             liteNetServer.Config = properties.VoiceCraftConfig;
             mcWssMcApiServer.Config = properties.McWssConfig;
             httpMcApiServer.Config = properties.McHttpConfig;
@@ -72,52 +73,21 @@ public static class App
             StartServer(httpMcApiServer);
             StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
+            RegisterCommands(rootCommand);
+
+            //Open Ports
             await portMappingService.OpenAsync(
                 liteNetServer.Config,
                 httpMcApiServer.Config,
                 tcpMcApiServer.Config,
                 mcWssMcApiServer.Config);
 
-            //Server Started
-            //Table for Server Setup Display
-            var serverSetupTable = new Table()
-                .AddColumn(Localizer.Get("Tables.ServerSetup.Server"))
-                .AddColumn(Localizer.Get("Tables.ServerSetup.Port"))
-                .AddColumn(Localizer.Get("Tables.ServerSetup.Protocol"));
-
-            serverSetupTable.AddRow(
-                "[green]VoiceCraft[/]",
-                liteNetServer.Config.Port.ToString(),
-                "[aqua]UDP[/]");
-            serverSetupTable.AddRow(
-                $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
-                httpMcApiServer.Config.Enabled ? httpMcApiServer.Config.Hostname : "[red]-[/]",
-                $"[{(httpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
-            serverSetupTable.AddRow(
-                $"[{(tcpMcApiServer.Config.Enabled ? "green" : "red")}]McTcp[/]",
-                tcpMcApiServer.Config.Enabled
-                    ? $"{tcpMcApiServer.Config.Hostname}:{tcpMcApiServer.Config.Port}"
-                    : "[red]-[/]",
-                $"[{(tcpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP[/]");
-            serverSetupTable.AddRow(
-                $"[{(mcWssMcApiServer.Config.Enabled ? "green" : "red")}]McWss[/]",
-                mcWssMcApiServer.Config.Enabled ? mcWssMcApiServer.Config.Hostname : "[red]-[/]",
-                $"[{(mcWssMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/WS[/]");
-
-            //Register Commands
-            AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
-            rootCommand.Description = Localizer.Get("Commands.RootCommand.Description");
-            var commandCount = 0;
-            foreach (var command in Program.ServiceProvider.GetServices<Command>())
-            {
-                rootCommand.Add(command);
-                commandCount++;
-            }
-
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Startup.Commands.Success:{commandCount}")}[/]");
-
-            //Server finished.
-            AnsiConsole.Write(serverSetupTable);
+            //Server started.
+            AnsiConsole.Write(CreateConfigurationTable(
+                liteNetServer,
+                httpMcApiServer,
+                tcpMcApiServer,
+                mcWssMcApiServer));
             AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
             AnsiConsole.MarkupLine("\0\0\0"); //This is here for docker images to detect server is running.
             Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
@@ -128,10 +98,11 @@ public static class App
                 mcWssMcApiServer));
 
             StartCommandTask();
+            StartTelemetryTask(telemetry, properties, liteNetServer, httpMcApiServer, tcpMcApiServer, mcWssMcApiServer);
             var startTime = DateTime.UtcNow;
-            var lastTelemetryAt = DateTime.UtcNow;
-            Task? telemetryReportTask = null;
             while (!Cts.IsCancellationRequested)
+            {
+                await TelemetrySemaphore.WaitAsync();
                 try
                 {
                     liteNetServer.Update();
@@ -140,20 +111,7 @@ public static class App
                     mcWssMcApiServer.Update();
                     visibilitySystem.Update();
                     eventHandlerSystem.Update();
-                    await FlushCommand(rootCommand);
-                    if (properties.TelemetryEnabled &&
-                        DateTime.UtcNow - lastTelemetryAt >= ServerTelemetryService.HeartbeatInterval)
-                    {
-                        if (telemetryReportTask == null || telemetryReportTask.IsCompleted)
-                        {
-                            lastTelemetryAt = DateTime.UtcNow;
-                            telemetryReportTask = telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
-                                liteNetServer,
-                                httpMcApiServer,
-                                tcpMcApiServer,
-                                mcWssMcApiServer));
-                        }
-                    }
+                    await NextCommandAsync(rootCommand);
 
                     var dist = DateTime.UtcNow - startTime;
                     var delay = Constants.TickRate - dist.TotalMilliseconds;
@@ -165,6 +123,11 @@ public static class App
                 {
                     AnsiConsole.MarkupLine($"[red]{ex}[/]");
                 }
+                finally
+                {
+                    TelemetrySemaphore.Release();
+                }
+            }
 
             StopServer(liteNetServer);
             StopServer(httpMcApiServer);
@@ -201,6 +164,39 @@ public static class App
         Cts.Cancel();
     }
 
+    private static Table CreateConfigurationTable(
+        LiteNetVoiceCraftServer liteNetServer,
+        HttpMcApiServer httpMcApiServer,
+        TcpMcApiServer tcpMcApiServer,
+        McWssMcApiServer mcWssMcApiServer)
+    {
+        var serverSetupTable = new Table()
+            .AddColumn(Localizer.Get("Tables.ServerSetup.Server"))
+            .AddColumn(Localizer.Get("Tables.ServerSetup.Port"))
+            .AddColumn(Localizer.Get("Tables.ServerSetup.Protocol"));
+
+        serverSetupTable.AddRow(
+            "[green]VoiceCraft[/]",
+            liteNetServer.Config.Port.ToString(),
+            "[aqua]UDP[/]");
+        serverSetupTable.AddRow(
+            $"[{(httpMcApiServer.Config.Enabled ? "green" : "red")}]McHttp[/]",
+            httpMcApiServer.Config.Enabled ? httpMcApiServer.Config.Hostname : "[red]-[/]",
+            $"[{(httpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/HTTP[/]");
+        serverSetupTable.AddRow(
+            $"[{(tcpMcApiServer.Config.Enabled ? "green" : "red")}]McTcp[/]",
+            tcpMcApiServer.Config.Enabled
+                ? $"{tcpMcApiServer.Config.Hostname}:{tcpMcApiServer.Config.Port}"
+                : "[red]-[/]",
+            $"[{(tcpMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP[/]");
+        serverSetupTable.AddRow(
+            $"[{(mcWssMcApiServer.Config.Enabled ? "green" : "red")}]McWss[/]",
+            mcWssMcApiServer.Config.Enabled ? mcWssMcApiServer.Config.Hostname : "[red]-[/]",
+            $"[{(mcWssMcApiServer.Config.Enabled ? "aqua" : "red")}]TCP/WS[/]");
+
+        return serverSetupTable;
+    }
+
     private static void StartServer(LiteNetVoiceCraftServer server)
     {
         try
@@ -209,7 +205,7 @@ public static class App
             server.Start();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("VoiceCraftServer.Success")}[/]");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
             LogService.Log(ex);
@@ -226,7 +222,7 @@ public static class App
             server.Start();
             AnsiConsole.MarkupLine($"[green]{Localizer.Get("McWssServer.Success")}[/]");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
             LogService.Log(ex);
@@ -299,19 +295,50 @@ public static class App
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Stopped")}[/]");
     }
 
-    private static async Task FlushCommand(RootCommand rootCommand)
+    private static void RegisterCommands(RootCommand rootCommand)
     {
+        AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
+        rootCommand.Description = Localizer.Get("Commands.RootCommand.Description");
+        var commandCount = 0;
+        foreach (var command in Program.ServiceProvider.GetServices<Command>())
+        {
+            rootCommand.Add(command);
+            commandCount++;
+        }
+
+        AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Startup.Commands.Success:{commandCount}")}[/]");
+    }
+
+    private static void StartCommandTask()
+    {
+        Task.Run(() =>
+        {
+            string? command = null;
+            while (!Cts.IsCancellationRequested && !_shuttingDown)
+            {
+                if (!string.IsNullOrWhiteSpace(command))
+                {
+                    QueuedCommands.Enqueue(command);
+                }
+
+                command = Console.ReadLine();
+            }
+        });
+    }
+
+    private static async Task NextCommandAsync(RootCommand rootCommand)
+    {
+        if (!QueuedCommands.TryDequeue(out var command)) return;
         try
         {
-            if (_bufferedCommand == null) return;
-            var parseResult = rootCommand.Parse(_bufferedCommand);
+            var parseResult = rootCommand.Parse(command);
             if (parseResult.Errors.Count == 0)
             {
                 await parseResult.InvokeAsync();
                 return;
             }
 
-            AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
+            AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{command}")}[/]");
             foreach (var parseError in parseResult.Errors)
             {
                 AnsiConsole.MarkupLine($"[red]{parseError}[/]");
@@ -319,30 +346,31 @@ public static class App
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{_bufferedCommand}")}[/]");
+            AnsiConsole.MarkupLine($"[red]{Localizer.Get($"Commands.Exception:{command}")}[/]");
             AnsiConsole.MarkupLine($"[red]{ex}[/]");
             LogService.Log(ex);
         }
-        finally
-        {
-            _bufferedCommand = null;
-        }
     }
 
-    private static void StartCommandTask()
+    private static void StartTelemetryTask(
+        ServerTelemetryService telemetry,
+        ServerProperties properties,
+        LiteNetVoiceCraftServer liteNetServer,
+        HttpMcApiServer httpMcApiServer,
+        TcpMcApiServer tcpMcApiServer,
+        McWssMcApiServer mcWssMcApiServer)
     {
+        if (!properties.TelemetryEnabled) return;
         Task.Run(async () =>
         {
             while (!Cts.IsCancellationRequested && !_shuttingDown)
             {
-                if (_bufferedCommand != null)
-                {
-                    await Task.Delay(1);
-                    continue;
-                }
-
-                _bufferedCommand = Console.ReadLine();
-                if (Cts.IsCancellationRequested || _shuttingDown) return;
+                await telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
+                    liteNetServer,
+                    httpMcApiServer,
+                    tcpMcApiServer,
+                    mcWssMcApiServer));
+                await Task.Delay(ServerTelemetryService.HeartbeatInterval);
             }
         });
     }
@@ -353,16 +381,24 @@ public static class App
         TcpMcApiServer tcpMcApiServer,
         McWssMcApiServer mcWssMcApiServer)
     {
-        return new ServerTelemetrySnapshot
+        TelemetrySemaphore.Wait();
+        try
         {
-            Version = VoiceCraftServer.Version.ToString(),
-            Language = Localizer.Instance.Language,
-            PositioningType = liteNetServer.Config.PositioningType.ToString(),
-            EnableVisibilityDisplay = liteNetServer.Config.EnableVisibilityDisplay,
-            McHttpEnabled = httpMcApiServer.Config.Enabled,
-            McTcpEnabled = tcpMcApiServer.Config.Enabled,
-            McWssEnabled = mcWssMcApiServer.Config.Enabled,
-            ConnectedClients = liteNetServer.ConnectedPeers
-        };
+            return new ServerTelemetrySnapshot
+            {
+                Version = VoiceCraftServer.Version.ToString(),
+                Language = Localizer.Instance.Language,
+                PositioningType = liteNetServer.Config.PositioningType.ToString(),
+                EnableVisibilityDisplay = liteNetServer.Config.EnableVisibilityDisplay,
+                McHttpEnabled = httpMcApiServer.Config.Enabled,
+                McTcpEnabled = tcpMcApiServer.Config.Enabled,
+                McWssEnabled = mcWssMcApiServer.Config.Enabled,
+                ConnectedClients = liteNetServer.ConnectedPeers
+            };
+        }
+        finally
+        {
+            TelemetrySemaphore.Release();
+        }
     }
 }

@@ -14,7 +14,6 @@ public class ServerProperties
     private const string ConfigPath = "config";
 
     private ServerPropertiesStructure _properties = new();
-    private Dictionary<ushort, JsonElement> DefaultAudioEffectsConfig => _properties.DefaultAudioEffectsConfig;
 
     public LiteNetVoiceCraftServer.LiteNetVoiceCraftConfig VoiceCraftConfig => _properties.VoiceCraftConfig;
     public McWssMcApiServer.McWssMcApiConfig McWssConfig => _properties.McWssConfig;
@@ -24,27 +23,34 @@ public class ServerProperties
     public string TelemetryToken => _properties.TelemetryToken;
     public OrderedDictionary<ushort, IAudioEffect> DefaultAudioEffects { get; } = [];
 
-    public void Load(bool throwOnInvalidProperties)
+    public void Load(RuntimeOptions options)
     {
-        var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName, SearchOption.AllDirectories);
-        if (files.Length == 0)
+        try
         {
-            if (throwOnInvalidProperties)
-                throw new Exception(Localizer.Get("ServerProperties.FailNotFound"));
-            AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
-            _properties = CreateConfigFile();
-            ParseAudioEffects();
-            AnsiConsole.MarkupLine($"[green]{Localizer.Get($"ServerProperties.Success")}[/]");
-            return;
-        }
+            var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName,
+                SearchOption.AllDirectories);
+            if (files.Length == 0)
+            {
+                if (options.ExitOnInvalidProperties)
+                    throw new Exception(Localizer.Get("ServerProperties.FailNotFound"));
+                AnsiConsole.MarkupLine($"[yellow]{Localizer.Get("ServerProperties.NotFound")}[/]");
+                _properties = CreateConfigFile();
+                AnsiConsole.MarkupLine($"[green]{Localizer.Get($"ServerProperties.Success")}[/]");
+                return;
+            }
 
-        var file = files[0];
-        _properties = LoadFile(file, throwOnInvalidProperties);
-        ParseAudioEffects();
-        AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
+            var file = files[0];
+            _properties = LoadFile(file, options.ExitOnInvalidProperties);
+            AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
+        }
+        finally
+        {
+            ParseAudioEffects(_properties.DefaultAudioEffectsConfig);
+            ApplyRuntimeOverrides(options);
+        }
     }
 
-    public void ApplyRuntimeOverrides(RuntimeOptions options)
+    private void ApplyRuntimeOverrides(RuntimeOptions options)
     {
         if (!string.IsNullOrWhiteSpace(options.ServerKey))
         {
@@ -52,7 +58,7 @@ public class ServerProperties
             _properties.McTcpConfig.LoginToken = options.ServerKey;
             _properties.McWssConfig.LoginToken = options.ServerKey;
         }
-        
+
         if (!string.IsNullOrWhiteSpace(options.TransportHost))
         {
             _properties.McTcpConfig.Hostname = options.TransportHost;
@@ -63,8 +69,10 @@ public class ServerProperties
         if (options.TransportPort is >= 1 and <= 65535)
         {
             _properties.McTcpConfig.Port = options.TransportPort.Value;
-            _properties.McHttpConfig.Hostname = SetUriPort(_properties.McHttpConfig.Hostname, options.TransportPort.Value);
-            _properties.McWssConfig.Hostname = SetUriPort(_properties.McWssConfig.Hostname, options.TransportPort.Value);
+            _properties.McHttpConfig.Hostname =
+                SetUriPort(_properties.McHttpConfig.Hostname, options.TransportPort.Value);
+            _properties.McWssConfig.Hostname =
+                SetUriPort(_properties.McWssConfig.Hostname, options.TransportPort.Value);
         }
 
         if (options.VoicePort is >= 1 and <= 65535)
@@ -73,7 +81,50 @@ public class ServerProperties
         }
 
         if (options.TransportMode.Length > 0)
+        {
             ApplyTransportModeOverrides(options.TransportMode);
+        }
+    }
+
+    private void ApplyTransportModeOverrides(IReadOnlyCollection<string> transportModes)
+    {
+        _properties.McHttpConfig.Enabled = false;
+        _properties.McTcpConfig.Enabled = false;
+        _properties.McWssConfig.Enabled = false;
+
+        foreach (var transportMode in ParseTransportModes(transportModes))
+        {
+            switch (transportMode)
+            {
+                case "http":
+                    _properties.McHttpConfig.Enabled = true;
+                    break;
+                case "tcp":
+                    _properties.McTcpConfig.Enabled = true;
+                    break;
+                case "wss":
+                case "ws":
+                case "websocket":
+                case "websockets":
+                    _properties.McWssConfig.Enabled = true;
+                    break;
+                default:
+                    throw new ArgumentException(
+                        $"Unsupported transport mode '{transportMode}'. Supported values are: http, tcp, wss.");
+            }
+        }
+    }
+
+    private void ParseAudioEffects(Dictionary<ushort, JsonElement> audioEffects)
+    {
+        foreach (var effect in audioEffects)
+        {
+            if (effect.Key == 0) continue;
+            var audioEffect = IAudioEffect.FromJsonElement(effect.Value);
+            if (audioEffect == null) continue;
+            audioEffect.Bitmask = effect.Key;
+            DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
+        }
     }
 
     private static ServerPropertiesStructure LoadFile(string path, bool throwOnInvalidConfig)
@@ -108,7 +159,9 @@ public class ServerProperties
         try
         {
             if (!Directory.Exists(path))
+            {
                 Directory.CreateDirectory(path);
+            }
 
             File.WriteAllText(filePath,
                 JsonSerializer.Serialize(properties,
@@ -122,18 +175,6 @@ public class ServerProperties
         }
 
         return properties;
-    }
-
-    private void ParseAudioEffects()
-    {
-        foreach (var effect in DefaultAudioEffectsConfig)
-        {
-            if (effect.Key == 0) continue;
-            var audioEffect = IAudioEffect.FromJsonElement(effect.Value);
-            if (audioEffect == null) continue;
-            audioEffect.Bitmask = effect.Key;
-            DefaultAudioEffects.TryAdd(effect.Key, audioEffect);
-        }
     }
 
     private static string SetUriHost(string configuredHostname, string host)
@@ -156,35 +197,6 @@ public class ServerProperties
         {
             Port = port
         }.Uri.ToString();
-    }
-
-    private void ApplyTransportModeOverrides(IReadOnlyCollection<string> transportModes)
-    {
-        _properties.McHttpConfig.Enabled = false;
-        _properties.McTcpConfig.Enabled = false;
-        _properties.McWssConfig.Enabled = false;
-
-        foreach (var transportMode in ParseTransportModes(transportModes))
-        {
-            switch (transportMode)
-            {
-                case "http":
-                    _properties.McHttpConfig.Enabled = true;
-                    break;
-                case "tcp":
-                    _properties.McTcpConfig.Enabled = true;
-                    break;
-                case "wss":
-                case "ws":
-                case "websocket":
-                case "websockets":
-                    _properties.McWssConfig.Enabled = true;
-                    break;
-                default:
-                    throw new ArgumentException(
-                        $"Unsupported transport mode '{transportMode}'. Supported values are: http, tcp, wss.");
-            }
-        }
     }
 
     private static IEnumerable<string> ParseTransportModes(IEnumerable<string> transportModes)
