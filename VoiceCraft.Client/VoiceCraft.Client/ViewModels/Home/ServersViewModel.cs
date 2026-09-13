@@ -31,13 +31,13 @@ public partial class ServersViewModel(
     private void OpenServer(ServerDataViewModel? server)
     {
         if (server == null) return;
-        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.Server));
+        navigationService.NavigateTo<SelectedServerViewModel>(new SelectedServerNavigationData(server.ServerSettings));
     }
 
     [RelayCommand]
     private void DeleteServer(ServerDataViewModel serverData)
     {
-        ServersSettings.ServersSettings.RemoveServer(serverData.Server);
+        ServersSettings.ServersSettings.RemoveServer(serverData.ServerSettings);
         notificationService.SendSuccessNotification(
             "Servers.Notification.Badge",
             $"Servers.Notification.Removed:{serverData.Name}");
@@ -48,6 +48,6 @@ public partial class ServersViewModel(
     private void EditServer(ServerDataViewModel? server)
     {
         if (server == null) return;
-        navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(server.Server));
+        navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(server.ServerSettings));
     }
 }

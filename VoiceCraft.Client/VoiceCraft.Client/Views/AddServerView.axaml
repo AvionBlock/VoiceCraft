@@ -35,9 +35,9 @@
                     Classes="card">
                 <StackPanel Spacing="10">
                     <TextBlock Text="{locale:Localize AddServer.Name}" />
-                    <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding Server.Name}" />
+                    <TextBox MaxLength="{x:Static server:ServerSettings.NameLimit}" Text="{Binding ServerSettings.Name}" />
                     <TextBlock Text="{locale:Localize AddServer.IP}" />
-                    <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding Server.Ip}" />
+                    <TextBox MaxLength="{x:Static server:ServerSettings.IpLimit}" Text="{Binding ServerSettings.Ip}" />
                     <TextBlock Text="{locale:Localize AddServer.Port}" />
                     <NumericUpDown Increment="1"
                                    Maximum="65535"

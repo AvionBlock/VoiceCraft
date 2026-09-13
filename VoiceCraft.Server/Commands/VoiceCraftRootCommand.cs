@@ -11,6 +11,21 @@ public class VoiceCraftRootCommand : RootCommand
             Description = "Exits when the VoiceCraft server fails to parse the ServerProperties.json file.",
             DefaultValueFactory = _ => false
         };
+        var disableCommands = new Option<bool>("--disable-commands", "-dc")
+        {
+            Description = "Disables runtime commands.",
+            DefaultValueFactory = _ => false
+        };
+        var disableColor = new Option<bool>("--disable-color", "-d-clr")
+        {
+            Description = "Disables printing color to the console.",
+            DefaultValueFactory = _ => false
+        };
+        var disableAnsi = new Option<bool>("--disable-ansi", "-da")
+        {
+            Description = "Disables printing VT/ANSI escape sequences.",
+            DefaultValueFactory = _ => false
+        };
         var languageOption = new Option<string?>("--language", "-l")
         {
             Description = "The language to use when voicecraft starts. Overrides the ServerProperties.json file.",
@@ -42,6 +57,9 @@ public class VoiceCraftRootCommand : RootCommand
             DefaultValueFactory = _ => null
         };
         Add(exitOnInvalidPropertiesOption);
+        Add(disableCommands);
+        Add(disableColor);
+        Add(disableAnsi);
         Add(languageOption);
         Add(transportModeOption);
         Add(transportHostOption);
@@ -54,6 +72,9 @@ public class VoiceCraftRootCommand : RootCommand
             var runtimeOptions = new RuntimeOptions
             {
                 ExitOnInvalidProperties = result.GetValue(exitOnInvalidPropertiesOption),
+                DisableCommands = result.GetValue(disableCommands),
+                DisableColor = result.GetValue(disableColor),
+                DisableAnsi = result.GetValue(disableAnsi),
                 Language = result.GetValue(languageOption),
                 TransportMode = result.GetValue(transportModeOption) ?? [],
                 TransportHost = result.GetValue(transportHostOption),

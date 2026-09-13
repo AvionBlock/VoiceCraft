@@ -39,7 +39,7 @@ public partial class SelectedServerViewModel(
     public override void OnAppearing(object? data = null)
     {
         if (data is SelectedServerNavigationData navigationData)
-            SelectedServer = new ServerDataViewModel(navigationData.Server, settingsService);
+            SelectedServer = new ServerDataViewModel(navigationData.ServerSettings, settingsService);
 
         Latency = Localizer.Get("SelectedServer.ServerInfo.Status.Pinging");
         Motd = string.Empty;
@@ -94,14 +94,14 @@ public partial class SelectedServerViewModel(
     private void EditServer()
     {
         if (SelectedServer == null) return;
-        navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(SelectedServer.Server));
+        navigationService.NavigateTo<EditServerViewModel>(new EditServerNavigationData(SelectedServer.ServerSettings));
     }
 
     [RelayCommand]
     private void DeleteServer()
     {
         if (SelectedServer == null) return;
-        ServersSettings.ServersSettings.RemoveServer(SelectedServer.Server);
+        ServersSettings.ServersSettings.RemoveServer(SelectedServer.ServerSettings);
         notificationService.SendSuccessNotification(
             "SelectedServer.Notification.Badge",
             $"SelectedServer.Notification.Removed:{SelectedServer.Name}");

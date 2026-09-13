@@ -15,6 +15,7 @@
         <AppIcon>AppIcon</AppIcon>
         <XSAppIconAssets>Resources/Assets.xcassets/AppIcon.appiconset</XSAppIconAssets>
         <Nullable>enable</Nullable>
+        <SelfContained>true</SelfContained>
     </PropertyGroup>
 
     <ItemGroup>

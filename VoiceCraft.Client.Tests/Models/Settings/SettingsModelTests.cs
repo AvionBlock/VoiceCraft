@@ -37,15 +37,15 @@ public class SettingsModelTests
     public void ServersSettings_AddServer_ValidatesAndPreservesNewestFirst()
     {
         var settings = new ServersSettings();
-        var first = new Server { Name = "Alpha", Ip = "127.0.0.1", Port = 9050 };
-        var second = new Server { Name = "Beta", Ip = "127.0.0.2", Port = 9051 };
+        var first = new ServerSettings { Name = "Alpha", Ip = "127.0.0.1", Port = 9050 };
+        var second = new ServerSettings { Name = "Beta", Ip = "127.0.0.2", Port = 9051 };
 
         settings.AddServer(first);
         settings.AddServer(second);
 
         Assert.Equal(["Beta", "Alpha"], settings.Servers.Select(x => x.Name));
-        Assert.Throws<ArgumentException>(() => settings.AddServer(new Server { Name = "", Ip = "127.0.0.1", Port = 9050 }));
-        Assert.Throws<ArgumentException>(() => settings.AddServer(new Server { Name = "Alpha", Ip = "", Port = 9050 }));
+        Assert.Throws<ArgumentException>(() => settings.AddServer(new ServerSettings { Name = "", Ip = "127.0.0.1", Port = 9050 }));
+        Assert.Throws<ArgumentException>(() => settings.AddServer(new ServerSettings { Name = "Alpha", Ip = "", Port = 9050 }));
     }
 
     [Fact]
@@ -71,14 +71,14 @@ public class SettingsModelTests
     [Fact]
     public void Server_ValidatePropertyLimits()
     {
-        var server = new Server();
+        var server = new ServerSettings();
 
         server.Name = "Voice";
         server.Ip = "192.168.0.1";
         server.Port = 9050;
 
         Assert.Equal("Voice", server.Name);
-        Assert.Throws<ArgumentException>(() => server.Name = new string('a', Server.NameLimit + 1));
-        Assert.Throws<ArgumentException>(() => server.Ip = new string('b', Server.IpLimit + 1));
+        Assert.Throws<ArgumentException>(() => server.Name = new string('a', ServerSettings.NameLimit + 1));
+        Assert.Throws<ArgumentException>(() => server.Ip = new string('b', ServerSettings.IpLimit + 1));
     }
 }

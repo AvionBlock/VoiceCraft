@@ -9,7 +9,7 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
 {
     private readonly SettingsService _settingsService;
 
-    public readonly Server Server;
+    public readonly ServerSettings ServerSettings;
     private bool _disposed;
     [ObservableProperty] public partial string Ip { get; set; }
     [ObservableProperty] public partial string Name { get; set; }
@@ -17,20 +17,20 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
 
     private bool _updating;
 
-    public ServerDataViewModel(Server server, SettingsService settingsService)
+    public ServerDataViewModel(ServerSettings serverSettings, SettingsService settingsService)
     {
-        Server = server;
+        ServerSettings = serverSettings;
         _settingsService = settingsService;
-        Server.OnUpdated += Update;
-        Name = Server.Name;
-        Ip = Server.Ip;
-        Port = Server.Port;
+        ServerSettings.OnUpdated += Update;
+        Name = ServerSettings.Name;
+        Ip = ServerSettings.Ip;
+        Port = ServerSettings.Port;
     }
 
     public void Dispose()
     {
         if (_disposed) return;
-        Server.OnUpdated -= Update;
+        ServerSettings.OnUpdated -= Update;
 
         _disposed = true;
         GC.SuppressFinalize(this);
@@ -42,7 +42,7 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
 
         if (_updating) return;
         _updating = true;
-        Server.Name = value;
+        ServerSettings.Name = value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
@@ -53,7 +53,7 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
 
         if (_updating) return;
         _updating = true;
-        Server.Ip = value;
+        ServerSettings.Ip = value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
@@ -64,19 +64,19 @@ public partial class ServerDataViewModel : ObservableObject, IDisposable
 
         if (_updating) return;
         _updating = true;
-        Server.Port = value;
+        ServerSettings.Port = value;
         _ = _settingsService.SaveAsync();
         _updating = false;
     }
 
-    private void Update(Server server)
+    private void Update(ServerSettings serverSettings)
     {
         if (_updating) return;
         _updating = true;
 
-        Name = server.Name;
-        Ip = server.Ip;
-        Port = server.Port;
+        Name = serverSettings.Name;
+        Ip = serverSettings.Ip;
+        Port = serverSettings.Port;
 
         _updating = false;
     }

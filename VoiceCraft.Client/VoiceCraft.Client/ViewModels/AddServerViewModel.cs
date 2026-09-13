@@ -13,11 +13,11 @@ public partial class AddServerViewModel(
 {
     private bool _updatingPort;
 
-    [ObservableProperty] public partial Server Server { get; set; } = new();
+    [ObservableProperty] public partial ServerSettings ServerSettings { get; set; } = new();
     [ObservableProperty] public partial decimal? ServerPort { get; set; } = 9050;
     [ObservableProperty] public partial ServersSettings Servers { get; set; } = settings.ServersSettings;
 
-    partial void OnServerChanged(Server value)
+    partial void OnServerSettingsChanged(ServerSettings value)
     {
         _updatingPort = true;
         ServerPort = value.Port;
@@ -30,7 +30,7 @@ public partial class AddServerViewModel(
         if (value == null) return;
         var clamped = Math.Clamp(decimal.ToInt32(decimal.Round(value.Value)), 1, 65535);
         _updatingPort = true;
-        Server.Port = (ushort)clamped;
+        ServerSettings.Port = (ushort)clamped;
         if (ServerPort != clamped)
             ServerPort = clamped;
         _updatingPort = false;
@@ -47,11 +47,11 @@ public partial class AddServerViewModel(
     {
         try
         {
-            Servers.AddServer(Server);
+            Servers.AddServer(ServerSettings);
             notificationService.SendSuccessNotification(
                 "AddServer.Notification.Badge",
-                $"AddServer.Notification.Added:{Server.Name}");
-            Server = new Server();
+                $"AddServer.Notification.Added:{ServerSettings.Name}");
+            ServerSettings = new ServerSettings();
             _ = settings.SaveAsync();
             navigationService.Back();
         }

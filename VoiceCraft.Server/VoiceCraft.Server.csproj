@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <TrimMode>link</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
+        <SelfContained>true</SelfContained>
     </PropertyGroup>
 
     <ItemGroup>

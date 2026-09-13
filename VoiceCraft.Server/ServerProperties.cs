@@ -248,6 +248,9 @@ public class ServerPropertiesStructure
 public class RuntimeOptions
 {
     public bool ExitOnInvalidProperties { get; init; }
+    public bool DisableCommands { get; init; }
+    public bool DisableColor { get; init; }
+    public bool DisableAnsi { get; init; }
     public string? Language { get; init; }
     public string[] TransportMode { get; init; } = [];
     public string? TransportHost { get; init; }

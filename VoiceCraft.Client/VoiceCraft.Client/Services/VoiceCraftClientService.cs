@@ -16,7 +16,7 @@ using VoiceCraft.Network.World;
 
 namespace VoiceCraft.Client.Services;
 
-public class VoiceCraftService(
+public class VoiceCraftClientService(
     VoiceCraftClient client,
     AudioService audioService,
     SettingsService settingsService,

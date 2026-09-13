@@ -8,6 +8,7 @@
         <TrimMode>link</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <SelfContained>true</SelfContained>
     </PropertyGroup>
 
     <PropertyGroup>

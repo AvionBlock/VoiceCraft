@@ -11,15 +11,20 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
 
-public static class App
+public class App
 {
     private static bool _shuttingDown;
     private static readonly CancellationTokenSource Cts = new();
     private static readonly ConcurrentQueue<string> QueuedCommands = new();
-    private static readonly SemaphoreSlim TelemetrySemaphore = new (1, 1);
+    private static readonly SemaphoreSlim TelemetrySemaphore = new(1, 1);
 
     public static async Task Start(RuntimeOptions runtimeOptions)
     {
+        if (runtimeOptions.DisableAnsi)
+            AnsiConsole.Console.Profile.Capabilities.Ansi = false;
+        if (runtimeOptions.DisableColor)
+            AnsiConsole.Console.Profile.Capabilities.ColorSystem = ColorSystem.NoColors;
+
         var languageOverriden = !string.IsNullOrWhiteSpace(runtimeOptions.Language);
         //Set language if overriden.
         if (languageOverriden)
@@ -73,7 +78,7 @@ public static class App
             StartServer(httpMcApiServer);
             StartServer(tcpMcApiServer);
             StartServer(mcWssMcApiServer);
-            RegisterCommands(rootCommand);
+            RegisterCommands(runtimeOptions, rootCommand);
 
             //Open Ports
             await portMappingService.OpenAsync(
@@ -97,7 +102,7 @@ public static class App
                 tcpMcApiServer,
                 mcWssMcApiServer));
 
-            StartCommandTask();
+            StartCommandTask(runtimeOptions);
             StartTelemetryTask(telemetry, properties, liteNetServer, httpMcApiServer, tcpMcApiServer, mcWssMcApiServer);
             var startTime = DateTime.UtcNow;
             while (!Cts.IsCancellationRequested)
@@ -295,8 +300,9 @@ public static class App
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Stopped")}[/]");
     }
 
-    private static void RegisterCommands(RootCommand rootCommand)
+    private static void RegisterCommands(RuntimeOptions options, RootCommand rootCommand)
     {
+        if (options.DisableCommands) return;
         AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
         rootCommand.Description = Localizer.Get("Commands.RootCommand.Description");
         var commandCount = 0;
@@ -309,8 +315,9 @@ public static class App
         AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Startup.Commands.Success:{commandCount}")}[/]");
     }
 
-    private static void StartCommandTask()
+    private static void StartCommandTask(RuntimeOptions options)
     {
+        if (options.DisableCommands) return;
         Task.Run(() =>
         {
             string? command = null;

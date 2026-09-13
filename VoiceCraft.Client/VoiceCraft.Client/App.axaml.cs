@@ -130,7 +130,7 @@ public class App : Application
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
-        ServiceCollection.AddSingleton<VoiceCraftService>();
+        ServiceCollection.AddSingleton<VoiceCraftClientService>();
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -295,7 +295,7 @@ public class App : Application
 
         try
         {
-            var server = new Server()
+            var server = new ServerSettings()
             {
                 Name = queries["name"] ?? throw new InvalidOperationException("Name Missing"),
                 Ip = queries["ip"] ?? throw new InvalidOperationException("Ip Missing"),
