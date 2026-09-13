@@ -82,7 +82,7 @@ public class VoiceCraftRootCommand : RootCommand
                 VoicePort = result.GetValue(voicePortOption),
                 ServerKey = result.GetValue(serverKeyOption)
             };
-            await App.Start(runtimeOptions);
+            await App.StartAsync(runtimeOptions);
         });
     }
 }

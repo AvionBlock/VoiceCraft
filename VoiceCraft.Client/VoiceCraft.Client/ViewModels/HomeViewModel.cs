@@ -14,12 +14,17 @@ public partial class HomeViewModel : ViewModelBase
     [ObservableProperty] public partial ListItemTemplate? SelectedListItem { get; set; }
     [ObservableProperty] public partial string Title { get; set; }
 
-    public HomeViewModel(ServersViewModel servers, SettingsViewModel settings, CreditsViewModel credits,
+    public HomeViewModel(
+        ServersViewModel servers,
+        HostServerViewModel hostServer,
+        SettingsViewModel settings, 
+        CreditsViewModel credits,
         CrashLogViewModel crashLog)
     {
         Items =
         [
             new ListItemTemplate("Servers.Title", servers, "HomeRegular"),
+            new ListItemTemplate("HostServer.Title", hostServer, "HomeRegular"),
             new ListItemTemplate("Settings.Title", settings, "SettingsRegular"),
             new ListItemTemplate("Credits.Title", credits, "InformationRegular"),
             new ListItemTemplate("CrashLogs.Title", crashLog, "NotebookErrorRegular")

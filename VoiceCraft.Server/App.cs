@@ -11,14 +11,14 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
 
-public class App
+public static class App
 {
     private static bool _shuttingDown;
     private static readonly CancellationTokenSource Cts = new();
     private static readonly ConcurrentQueue<string> QueuedCommands = new();
     private static readonly SemaphoreSlim TelemetrySemaphore = new(1, 1);
 
-    public static async Task Start(RuntimeOptions runtimeOptions)
+    public static async Task StartAsync(RuntimeOptions runtimeOptions)
     {
         if (runtimeOptions.DisableAnsi)
             AnsiConsole.Console.Profile.Capabilities.Ansi = false;

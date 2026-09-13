@@ -131,6 +131,7 @@ public class App : Application
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
         ServiceCollection.AddSingleton<VoiceCraftClientService>();
+        ServiceCollection.AddTransient<VoiceCraftServerService>();
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -142,6 +143,7 @@ public class App : Application
 
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
+        ServiceCollection.AddSingleton<AddServerViewModel>();
         ServiceCollection.AddTransient<EditServerViewModel>();
         ServiceCollection.AddTransient<GeneralSettingsViewModel>();
         ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
@@ -154,8 +156,8 @@ public class App : Application
         ServiceCollection.AddTransient<VoiceViewModel>();
 
         //Home Pages
-        ServiceCollection.AddSingleton<AddServerViewModel>();
         ServiceCollection.AddSingleton<ServersViewModel>();
+        ServiceCollection.AddSingleton<HostServerViewModel>();
         ServiceCollection.AddSingleton<SettingsViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
         ServiceCollection.AddSingleton<CrashLogViewModel>();
@@ -169,6 +171,7 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HostServerView>(typeof(HostServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);

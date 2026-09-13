@@ -44,4 +44,11 @@
         <EmbeddedResource Include="Locales\zh-TW.json"/>
         <EmbeddedResource Include="Locales\th-TH.json" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\Home\HostServerView.axaml.cs">
+        <DependentUpon>HostView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>
