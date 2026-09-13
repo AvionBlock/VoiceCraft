@@ -8,14 +8,47 @@
              xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
              x:DataType="vm:HostServerViewModel">
     <Panel>
-        <Border Padding="15"
-                VerticalAlignment="Top"
-                Classes="card">
-            <Button HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center"
+        <ScrollViewer>
+            <Border Padding="15"
+                    VerticalAlignment="Top"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Margin="10"
+                               VerticalAlignment="Center"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Text="{locale:Localize HostServer.RuntimeOverrides.Title}"
+                               TextAlignment="Left" />
+
+                    <ToggleButton HorizontalAlignment="Stretch">
+                        <TextBlock Text="{locale:Localize HostServer.RuntimeOverrides.ExitOnInvalidProperties}" />
+                    </ToggleButton>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+        <StackPanel VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10"
+                    Spacing="10">
+            <Button Background="{DynamicResource SuccessBackgroundBrush}"
+                    CornerRadius="50"
+                    Width="50"
+                    Height="50"
                     Command="{Binding StartServerCommand}">
-                <TextBlock Text="{locale:Localize Host.Title}" TextAlignment="Center" />
+                <TextBlock Text="{locale:Localize HostServer.StartServer}" TextAlignment="Center" />
             </Button>
-        </Border>
+            <Button Background="{DynamicResource ErrorBackgroundBrush}"
+                    CornerRadius="50"
+                    Width="50"
+                    Height="50">
+                <TextBlock Text="{locale:Localize HostServer.StopServer}" TextAlignment="Center" />
+            </Button>
+            <Button CornerRadius="50"
+                    Width="50"
+                    Height="50">
+                <TextBlock Text="{locale:Localize HostServer.ViewConsole}" TextAlignment="Center" />
+            </Button>
+        </StackPanel>
     </Panel>
 </UserControl>
