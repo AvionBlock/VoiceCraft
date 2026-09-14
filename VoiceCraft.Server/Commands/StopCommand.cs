@@ -5,11 +5,11 @@ namespace VoiceCraft.Server.Commands;
 
 public class StopCommand : Command
 {
-    public StopCommand() : base(
+    public StopCommand(App app) : base(
         Localizer.Get("Commands.Stop.Name"),
         Localizer.Get("Commands.Stop.Description"))
     {
         Aliases.Add("shutdown");
-        SetAction(_ => { App.Shutdown(); });
+        SetAction(__ => { _ = app.ShutdownAsync(); });
     }
 }

@@ -1,10 +1,11 @@
 using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace VoiceCraft.Server.Commands;
 
 public class VoiceCraftRootCommand : RootCommand
 {
-    public VoiceCraftRootCommand() : base("VoiceCraft application server root command.")
+    public VoiceCraftRootCommand(IServiceProvider serviceProvider) : base("VoiceCraft application server root command.")
     {
         var exitOnInvalidPropertiesOption = new Option<bool>("--exit-on-invalid-properties", "-eip")
         {
@@ -24,6 +25,11 @@ public class VoiceCraftRootCommand : RootCommand
         var disableAnsi = new Option<bool>("--disable-ansi", "-da")
         {
             Description = "Disables printing VT/ANSI escape sequences.",
+            DefaultValueFactory = _ => false
+        };
+        var failFast = new Option<bool>("--fail-fast", "-ff")
+        {
+            Description = "Fails faster by skipping the shutdown timeout and immediately throwing the error.",
             DefaultValueFactory = _ => false
         };
         var languageOption = new Option<string?>("--language", "-l")
@@ -60,6 +66,7 @@ public class VoiceCraftRootCommand : RootCommand
         Add(disableCommands);
         Add(disableColor);
         Add(disableAnsi);
+        Add(failFast);
         Add(languageOption);
         Add(transportModeOption);
         Add(transportHostOption);
@@ -75,6 +82,7 @@ public class VoiceCraftRootCommand : RootCommand
                 DisableCommands = result.GetValue(disableCommands),
                 DisableColor = result.GetValue(disableColor),
                 DisableAnsi = result.GetValue(disableAnsi),
+                FailFast = result.GetValue(failFast),
                 Language = result.GetValue(languageOption),
                 TransportMode = result.GetValue(transportModeOption) ?? [],
                 TransportHost = result.GetValue(transportHostOption),
@@ -82,7 +90,7 @@ public class VoiceCraftRootCommand : RootCommand
                 VoicePort = result.GetValue(voicePortOption),
                 ServerKey = result.GetValue(serverKeyOption)
             };
-            await App.StartAsync(runtimeOptions);
+            await serviceProvider.GetRequiredService<App>().StartAsync(runtimeOptions);
         });
     }
 }

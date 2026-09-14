@@ -11,15 +11,21 @@ using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Server;
 
-public static class App
+public class App(IServiceProvider serviceProvider)
 {
-    private static bool _shuttingDown;
-    private static readonly CancellationTokenSource Cts = new();
-    private static readonly ConcurrentQueue<string> QueuedCommands = new();
-    private static readonly SemaphoreSlim TelemetrySemaphore = new(1, 1);
+    private bool _running;
+    private readonly CancellationTokenSource _cts = new();
+    private readonly ConcurrentQueue<string> _queuedCommands = new();
+    private readonly SemaphoreSlim _telemetrySemaphore = new(1, 1);
 
-    public static async Task StartAsync(RuntimeOptions runtimeOptions)
+    public async Task StartAsync(RuntimeOptions runtimeOptions)
     {
+        if (_cts.IsCancellationRequested)
+            throw new InvalidOperationException("Server operation canceled!");
+        if (_running)
+            throw new InvalidOperationException("Server already running!");
+        _running = true;
+
         if (runtimeOptions.DisableAnsi)
             AnsiConsole.Console.Profile.Capabilities.Ansi = false;
         if (runtimeOptions.DisableColor)
@@ -31,20 +37,20 @@ public static class App
             Localizer.Instance.Language = runtimeOptions.Language ?? "en-US";
 
         //Servers
-        var liteNetServer = Program.ServiceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
-        var mcWssMcApiServer = Program.ServiceProvider.GetRequiredService<McWssMcApiServer>();
-        var httpMcApiServer = Program.ServiceProvider.GetRequiredService<HttpMcApiServer>();
-        var tcpMcApiServer = Program.ServiceProvider.GetRequiredService<TcpMcApiServer>();
+        var liteNetServer = serviceProvider.GetRequiredService<LiteNetVoiceCraftServer>();
+        var mcWssMcApiServer = serviceProvider.GetRequiredService<McWssMcApiServer>();
+        var httpMcApiServer = serviceProvider.GetRequiredService<HttpMcApiServer>();
+        var tcpMcApiServer = serviceProvider.GetRequiredService<TcpMcApiServer>();
         //Systems
-        var eventHandlerSystem = Program.ServiceProvider.GetRequiredService<EventHandlerSystem>();
-        var visibilitySystem = Program.ServiceProvider.GetRequiredService<VisibilitySystem>();
-        var audioEffectSystem = Program.ServiceProvider.GetRequiredService<AudioEffectSystem>();
+        var eventHandlerSystem = serviceProvider.GetRequiredService<EventHandlerSystem>();
+        var visibilitySystem = serviceProvider.GetRequiredService<VisibilitySystem>();
+        var audioEffectSystem = serviceProvider.GetRequiredService<AudioEffectSystem>();
         //Commands
-        var rootCommand = Program.ServiceProvider.GetRequiredService<RootCommand>();
+        var rootCommand = serviceProvider.GetRequiredService<RootCommand>();
         //Other
-        var properties = Program.ServiceProvider.GetRequiredService<ServerProperties>();
-        var telemetry = Program.ServiceProvider.GetRequiredService<ServerTelemetryService>();
-        var portMappingService = Program.ServiceProvider.GetRequiredService<PortMappingService>();
+        var properties = serviceProvider.GetRequiredService<ServerProperties>();
+        var telemetry = serviceProvider.GetRequiredService<ServerTelemetryService>();
+        var portMappingService = serviceProvider.GetRequiredService<PortMappingService>();
 
         try
         {
@@ -105,9 +111,9 @@ public static class App
             StartCommandTask(runtimeOptions);
             StartTelemetryTask(telemetry, properties, liteNetServer, httpMcApiServer, tcpMcApiServer, mcWssMcApiServer);
             var startTime = DateTime.UtcNow;
-            while (!Cts.IsCancellationRequested)
+            while (!_cts.IsCancellationRequested)
             {
-                await TelemetrySemaphore.WaitAsync();
+                await _telemetrySemaphore.WaitAsync();
                 try
                 {
                     liteNetServer.Update();
@@ -130,7 +136,7 @@ public static class App
                 }
                 finally
                 {
-                    TelemetrySemaphore.Release();
+                    _telemetrySemaphore.Release();
                 }
             }
 
@@ -142,10 +148,18 @@ public static class App
         }
         catch (Exception ex)
         {
+            const int shutdownDelay = 10000;
             AnsiConsole.MarkupLine($"[red]{Localizer.Get("Startup.Failed")}[/]");
             AnsiConsole.MarkupLine($"[red]{ex}[/]");
-            Shutdown(10000);
+
+            if (!runtimeOptions.FailFast)
+            {
+                AnsiConsole.MarkupLine($"[bold yellow]{Localizer.Get($"Shutdown.StartingIn:{shutdownDelay}")}[/]");
+                await Task.Delay(shutdownDelay);
+            }
+
             LogService.Log(ex);
+            throw;
         }
         finally
         {
@@ -154,19 +168,21 @@ public static class App
             httpMcApiServer.Dispose();
             tcpMcApiServer.Dispose();
             mcWssMcApiServer.Dispose();
-            Cts.Dispose();
+            _cts.Dispose();
+            _running = false;
         }
     }
 
-    public static void Shutdown(uint delayMs = 0)
+    public async Task ShutdownAsync()
     {
-        if (Cts.IsCancellationRequested || _shuttingDown) return;
-        _shuttingDown = true;
-        AnsiConsole.MarkupLine(delayMs > 0
-            ? $"[bold yellow]{Localizer.Get($"Shutdown.StartingIn:{delayMs}")}[/]"
-            : $"[bold yellow]{Localizer.Get("Shutdown.Starting")}[/]");
-        Task.Delay((int)delayMs).Wait();
-        Cts.Cancel();
+        if (_cts.IsCancellationRequested || !_running) return;
+        AnsiConsole.MarkupLine($"[bold yellow]{Localizer.Get("Shutdown.Starting")}[/]");
+        await _cts.CancelAsync();
+
+        while (_running)
+        {
+            await Task.Delay(1);
+        }
     }
 
     private static Table CreateConfigurationTable(
@@ -300,13 +316,13 @@ public static class App
         AnsiConsole.MarkupLine($"[green]{Localizer.Get("McTcpServer.Stopped")}[/]");
     }
 
-    private static void RegisterCommands(RuntimeOptions options, RootCommand rootCommand)
+    private void RegisterCommands(RuntimeOptions options, RootCommand rootCommand)
     {
         if (options.DisableCommands) return;
         AnsiConsole.WriteLine(Localizer.Get("Startup.Commands.Registering"));
         rootCommand.Description = Localizer.Get("Commands.RootCommand.Description");
         var commandCount = 0;
-        foreach (var command in Program.ServiceProvider.GetServices<Command>())
+        foreach (var command in serviceProvider.GetServices<Command>())
         {
             rootCommand.Add(command);
             commandCount++;
@@ -315,17 +331,17 @@ public static class App
         AnsiConsole.MarkupLine($"[green]{Localizer.Get($"Startup.Commands.Success:{commandCount}")}[/]");
     }
 
-    private static void StartCommandTask(RuntimeOptions options)
+    private void StartCommandTask(RuntimeOptions options)
     {
         if (options.DisableCommands) return;
         Task.Run(() =>
         {
             string? command = null;
-            while (!Cts.IsCancellationRequested && !_shuttingDown)
+            while (!_cts.IsCancellationRequested)
             {
                 if (!string.IsNullOrWhiteSpace(command))
                 {
-                    QueuedCommands.Enqueue(command);
+                    _queuedCommands.Enqueue(command);
                 }
 
                 command = Console.ReadLine();
@@ -333,9 +349,9 @@ public static class App
         });
     }
 
-    private static async Task NextCommandAsync(RootCommand rootCommand)
+    private async Task NextCommandAsync(RootCommand rootCommand)
     {
-        if (!QueuedCommands.TryDequeue(out var command)) return;
+        if (!_queuedCommands.TryDequeue(out var command)) return;
         try
         {
             var parseResult = rootCommand.Parse(command);
@@ -359,7 +375,7 @@ public static class App
         }
     }
 
-    private static void StartTelemetryTask(
+    private void StartTelemetryTask(
         ServerTelemetryService telemetry,
         ServerProperties properties,
         LiteNetVoiceCraftServer liteNetServer,
@@ -370,7 +386,7 @@ public static class App
         if (!properties.TelemetryEnabled) return;
         Task.Run(async () =>
         {
-            while (!Cts.IsCancellationRequested && !_shuttingDown)
+            while (!_cts.IsCancellationRequested)
             {
                 await telemetry.ReportHeartbeatAsync(CreateTelemetrySnapshot(
                     liteNetServer,
@@ -382,13 +398,13 @@ public static class App
         });
     }
 
-    private static ServerTelemetrySnapshot CreateTelemetrySnapshot(
+    private ServerTelemetrySnapshot CreateTelemetrySnapshot(
         LiteNetVoiceCraftServer liteNetServer,
         HttpMcApiServer httpMcApiServer,
         TcpMcApiServer tcpMcApiServer,
         McWssMcApiServer mcWssMcApiServer)
     {
-        TelemetrySemaphore.Wait();
+        _telemetrySemaphore.Wait();
         try
         {
             return new ServerTelemetrySnapshot
@@ -405,7 +421,7 @@ public static class App
         }
         finally
         {
-            TelemetrySemaphore.Release();
+            _telemetrySemaphore.Release();
         }
     }
 }

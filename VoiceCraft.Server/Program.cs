@@ -15,20 +15,23 @@ namespace VoiceCraft.Server;
 public static class Program
 {
     public static readonly ServiceProvider ServiceProvider = BuildServiceProvider();
-
+    
     public static void Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Server");
         FleckLog.LogAction = (_, _, _) => { }; //Remove all websocket logs.
         LogService.Load(); //Load Logs.
-        new VoiceCraftRootCommand().Parse(args).InvokeAsync().GetAwaiter().GetResult();
+        new VoiceCraftRootCommand(ServiceProvider).Parse(args).InvokeAsync().GetAwaiter().GetResult();
         ServiceProvider.Dispose(); //Dispose
     }
 
     private static ServiceProvider BuildServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
+        
+        //Application
+        serviceCollection.AddSingleton<App>(x => new App(x));
 
         //Servers
         serviceCollection.AddSingleton<LiteNetVoiceCraftServer>();

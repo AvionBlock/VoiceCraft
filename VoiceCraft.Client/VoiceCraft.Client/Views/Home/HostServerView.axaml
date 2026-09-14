@@ -31,18 +31,29 @@
                     Orientation="Horizontal"
                     Margin="0,0,0,10"
                     Spacing="10">
-            <Button Background="{DynamicResource SuccessBackgroundBrush}"
-                    CornerRadius="50"
+            <Button CornerRadius="50"
                     Width="50"
                     Height="50"
-                    Command="{Binding StartServerCommand}">
-                <TextBlock Text="{locale:Localize HostServer.StartServer}" TextAlignment="Center" />
-            </Button>
-            <Button Background="{DynamicResource ErrorBackgroundBrush}"
-                    CornerRadius="50"
-                    Width="50"
-                    Height="50">
-                <TextBlock Text="{locale:Localize HostServer.StopServer}" TextAlignment="Center" />
+                    Command="{Binding ToggleServerCommand}"
+                    Classes.IsHosting="{Binding IsHosting}"
+                    Classes.IsNotHosting="{Binding !IsHosting}">
+                <Panel>
+                    <PathIcon Data="{StaticResource MicOnRegular}"
+                              IsVisible="{Binding !IsHosting}">
+                    </PathIcon>
+                    <PathIcon Data="{StaticResource MicOffRegular}"
+                              IsVisible="{Binding IsHosting}">
+                    </PathIcon>
+                </Panel>
+                
+                <Button.Styles>
+                    <Style Selector="Button.IsHosting">
+                        <Setter Property="Background" Value="{DynamicResource ErrorBackgroundBrush}"/>
+                    </Style>
+                    <Style Selector="Button.IsNotHosting">
+                        <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                    </Style>
+                </Button.Styles>
             </Button>
             <Button CornerRadius="50"
                     Width="50"

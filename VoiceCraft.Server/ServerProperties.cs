@@ -251,6 +251,7 @@ public class RuntimeOptions
     public bool DisableCommands { get; init; }
     public bool DisableColor { get; init; }
     public bool DisableAnsi { get; init; }
+    public bool FailFast { get; init; }
     public string? Language { get; init; }
     public string[] TransportMode { get; init; } = [];
     public string? TransportHost { get; init; }
