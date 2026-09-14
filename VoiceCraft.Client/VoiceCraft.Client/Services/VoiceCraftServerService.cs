@@ -48,10 +48,6 @@ public class VoiceCraftServerService : IDisposable
         {
             await Server.ShutdownAsync();
         }
-        catch
-        {
-            //Do Nothing
-        }
         finally
         {
             OnStopped?.Invoke(ex);

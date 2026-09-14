@@ -92,8 +92,5 @@ public partial class HostServerViewModel(
         notificationService.SendErrorNotification(
             "VoiceCraft.Notification.Badge",
             ex.Message);
-        notificationService.SendNotification(
-            "VoiceCraft.Notification.Badge",
-            "VoiceCraft.Notification.Error");
     }
 }
