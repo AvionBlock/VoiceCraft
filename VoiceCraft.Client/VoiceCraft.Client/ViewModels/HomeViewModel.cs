@@ -24,7 +24,7 @@ public partial class HomeViewModel : ViewModelBase
         Items =
         [
             new ListItemTemplate("Servers.Title", servers, "HomeRegular"),
-            new ListItemTemplate("HostServer.Title", hostServer, "HomeRegular"),
+            new ListItemTemplate("HostServer.Title", hostServer, "GlobeDesktopRegular"),
             new ListItemTemplate("Settings.Title", settings, "SettingsRegular"),
             new ListItemTemplate("Credits.Title", credits, "InformationRegular"),
             new ListItemTemplate("CrashLogs.Title", crashLog, "NotebookErrorRegular")

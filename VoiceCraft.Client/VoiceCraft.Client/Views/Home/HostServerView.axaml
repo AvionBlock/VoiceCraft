@@ -38,10 +38,10 @@
                     Classes.IsHosting="{Binding IsHosting}"
                     Classes.IsNotHosting="{Binding !IsHosting}">
                 <Panel>
-                    <PathIcon Data="{StaticResource MicOnRegular}"
+                    <PathIcon Data="{StaticResource PlayCircleRegular}"
                               IsVisible="{Binding !IsHosting}">
                     </PathIcon>
-                    <PathIcon Data="{StaticResource MicOffRegular}"
+                    <PathIcon Data="{StaticResource StopRegular}"
                               IsVisible="{Binding IsHosting}">
                     </PathIcon>
                 </Panel>
