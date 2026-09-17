@@ -17,7 +17,7 @@ public partial class HomeViewModel : ViewModelBase
     public HomeViewModel(
         ServersViewModel servers,
         HostServerViewModel hostServer,
-        SettingsViewModel settings, 
+        SettingsViewModel settings,
         CreditsViewModel credits,
         CrashLogViewModel crashLog)
     {

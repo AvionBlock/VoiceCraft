@@ -43,24 +43,6 @@ public partial class VoiceViewModel(
         return !string.IsNullOrWhiteSpace(StatusDescriptionText);
     }
 
-    public void Dispose()
-    {
-        if (_clientService != null)
-        {
-            _clientService.OnDisconnected -= OnDisconnected;
-            _clientService.OnUpdateTitle -= OnUpdateTitle;
-            _clientService.OnUpdateMute -= OnUpdateMute;
-            _clientService.OnUpdateDeafen -= OnUpdateDeafen;
-            _clientService.OnUpdateServerMute -= OnUpdateServerMute;
-            _clientService.OnUpdateServerDeafen -= OnUpdateServerDeafen;
-            _clientService.OnUpdateSpeaking -= OnUpdateSpeaking;
-            _clientService.OnEntityAdded -= OnEntityAdded;
-            _clientService.OnEntityRemoved -= OnEntityRemoved;
-        }
-
-        GC.SuppressFinalize(this);
-    }
-
     [RelayCommand]
     private void OpenEntity(EntityDataViewModel? entity)
     {
@@ -108,6 +90,24 @@ public partial class VoiceViewModel(
         {
             notificationService.SendErrorNotification("Voice.Notification.Badge", ex.Message);
         }
+    }
+    
+    public void Dispose()
+    {
+        if (_clientService != null)
+        {
+            _clientService.OnDisconnected -= OnDisconnected;
+            _clientService.OnUpdateTitle -= OnUpdateTitle;
+            _clientService.OnUpdateMute -= OnUpdateMute;
+            _clientService.OnUpdateDeafen -= OnUpdateDeafen;
+            _clientService.OnUpdateServerMute -= OnUpdateServerMute;
+            _clientService.OnUpdateServerDeafen -= OnUpdateServerDeafen;
+            _clientService.OnUpdateSpeaking -= OnUpdateSpeaking;
+            _clientService.OnEntityAdded -= OnEntityAdded;
+            _clientService.OnEntityRemoved -= OnEntityRemoved;
+        }
+
+        GC.SuppressFinalize(this);
     }
 
     public override void OnAppearing(object? data = null)

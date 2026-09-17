@@ -14,6 +14,7 @@ namespace VoiceCraft.Client.Services;
 
 public class VoiceCraftServerService : IDisposable
 {
+    public bool IsRunning { get; private set; }
     private ServiceProvider ServiceProvider { get; }
     private VoiceCraft.Server.App Server { get; }
 
@@ -30,6 +31,7 @@ public class VoiceCraftServerService : IDisposable
     {
         try
         {
+            IsRunning = true;
             OnStarted?.Invoke();
             await Server.StartAsync(runtimeOptions);
         }
@@ -50,6 +52,7 @@ public class VoiceCraftServerService : IDisposable
         }
         finally
         {
+            IsRunning = false;
             OnStopped?.Invoke(ex);
         }
     }

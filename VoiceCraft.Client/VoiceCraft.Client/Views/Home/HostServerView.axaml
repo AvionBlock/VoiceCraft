@@ -21,7 +21,7 @@
                                TextAlignment="Left" />
                     
                     <TextBox AcceptsReturn="True"
-                             Text="{Binding ServerProperties}"
+                             Text="{Binding ServerProperties, UpdateSourceTrigger=LostFocus}"
                              Focusable="True"/>
                 </StackPanel>
             </Border>
@@ -35,14 +35,14 @@
                     Width="50"
                     Height="50"
                     Command="{Binding ToggleServerCommand}"
-                    Classes.IsHosting="{Binding IsHosting}"
-                    Classes.IsNotHosting="{Binding !IsHosting}">
+                    Classes.IsHosting="{Binding IsRunning}"
+                    Classes.IsNotHosting="{Binding !IsRunning}">
                 <Panel>
                     <PathIcon Data="{StaticResource PlayCircleRegular}"
-                              IsVisible="{Binding !IsHosting}">
+                              IsVisible="{Binding !IsRunning}">
                     </PathIcon>
                     <PathIcon Data="{StaticResource StopRegular}"
-                              IsVisible="{Binding IsHosting}">
+                              IsVisible="{Binding IsRunning}">
                     </PathIcon>
                 </Panel>
                 
@@ -59,6 +59,13 @@
                     Width="50"
                     Height="50">
                 <TextBlock Text="{locale:Localize HostServer.ViewConsole}" TextAlignment="Center" />
+            </Button>
+            
+            <Button CornerRadius="50"
+                    Width="50"
+                    Height="50"
+                    Command="{Binding ResetPropertiesCommand}">
+                <PathIcon Data="{StaticResource ArrowSyncCircleRegular}" />
             </Button>
         </StackPanel>
     </Panel>
