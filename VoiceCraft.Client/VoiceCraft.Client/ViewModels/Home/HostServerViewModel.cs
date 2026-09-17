@@ -14,6 +14,7 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
     private readonly NotificationService _notificationService;
     private readonly IBackgroundService _backgroundService;
     private readonly HostServerSettings _hostServerSettings;
+    private readonly NavigationService _navigationService;
 
     private VoiceCraftServerService? _serverService;
 
@@ -24,11 +25,13 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
     public HostServerViewModel(
         NotificationService notificationService,
         IBackgroundService backgroundService,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        NavigationService navigationService)
     {
         _notificationService = notificationService;
         _backgroundService = backgroundService;
         _hostServerSettings = settingsService.HostServerSettings;
+        _navigationService = navigationService;
 
         ServerProperties = JsonSerializer.Serialize<Server.ServerPropertiesStructure>(
             _hostServerSettings.ServerProperties,
@@ -63,6 +66,12 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
                 "VoiceCraft.Notification.Badge",
                 ex.Message);
         }
+    }
+
+    [RelayCommand]
+    private void ViewConsole()
+    {
+        _navigationService.NavigateTo<HostServerConsoleViewModel>();
     }
 
     [RelayCommand]
@@ -104,7 +113,9 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
                     DisableCommands = true,
                     DisableColor = true,
                     DisableAnsi = true,
-                    FailFast = true
+                    FailFast = true,
+
+                    ServerProperties = _hostServerSettings.ServerProperties
                 };
                 x.StartAsync(runtimeOptions).GetAwaiter().GetResult();
             });

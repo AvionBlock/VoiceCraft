@@ -27,6 +27,13 @@ public class ServerProperties
     {
         try
         {
+            if (options.ServerProperties != null)
+            {
+                _properties = options.ServerProperties;
+                AnsiConsole.MarkupLine($"[green]{Localizer.Get("ServerProperties.Success")}[/]");
+                return;
+            }
+
             var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, FileName,
                 SearchOption.AllDirectories);
             if (files.Length == 0)
@@ -247,17 +254,21 @@ public class ServerPropertiesStructure
 
 public class RuntimeOptions
 {
-    public bool ExitOnInvalidProperties { get; init; }
-    public bool DisableCommands { get; init; }
-    public bool DisableColor { get; init; }
-    public bool DisableAnsi { get; init; }
-    public bool FailFast { get; init; }
-    public string? Language { get; init; }
-    public string[] TransportMode { get; init; } = [];
-    public string? TransportHost { get; init; }
-    public int? TransportPort { get; init; }
-    public uint? VoicePort { get; init; }
-    public string? ServerKey { get; init; }
+    public bool ExitOnInvalidProperties { get; set; }
+    public bool DisableCommands { get; set; }
+    public bool DisableColor { get; set; }
+    public bool DisableAnsi { get; set; }
+    public bool FailFast { get; set; }
+    public string? Language { get; set; }
+    public string[] TransportMode { get; set; } = [];
+    public string? TransportHost { get; set; }
+    public int? TransportPort { get; set; }
+    public uint? VoicePort { get; set; }
+    public string? ServerKey { get; set; }
+
+    //Internal Runtime Options
+    public TextWriter? TextWriter { get; set; }
+    public ServerPropertiesStructure? ServerProperties { get; set; }
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true)]

@@ -57,8 +57,9 @@
             </Button>
             <Button CornerRadius="50"
                     Width="50"
-                    Height="50">
-                <TextBlock Text="{locale:Localize HostServer.ViewConsole}" TextAlignment="Center" />
+                    Height="50"
+                    Command="{Binding ViewConsoleCommand}">
+                <PathIcon Data="{StaticResource SlideTextRegular}" />
             </Button>
             
             <Button CornerRadius="50"

@@ -39,5 +39,12 @@
         <DependentUpon>HostView.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\HostServerConsoleView.axaml.cs">
+        <DependentUpon>ErrorView.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Error\ErrorView.axaml.cs">
+        <DependentUpon>HostServerConsoleView.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

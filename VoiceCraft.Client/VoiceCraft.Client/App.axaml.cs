@@ -152,6 +152,7 @@ public class App : Application
         ServiceCollection.AddTransient<HotKeySettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
         ServiceCollection.AddTransient<SelectedServerViewModel>();
+        ServiceCollection.AddTransient<HostServerConsoleViewModel>();
         ServiceCollection.AddTransient<VoiceViewModel>();
 
         //Home Pages
@@ -171,6 +172,7 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
         ServiceCollection.AddKeyedTransient<Control, HostServerView>(typeof(HostServerView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HostServerConsoleView>(typeof(HostServerConsoleView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);

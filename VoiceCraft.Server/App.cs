@@ -30,6 +30,8 @@ public class App(IServiceProvider serviceProvider)
             AnsiConsole.Console.Profile.Capabilities.Ansi = false;
         if (runtimeOptions.DisableColor)
             AnsiConsole.Console.Profile.Capabilities.ColorSystem = ColorSystem.NoColors;
+        if (runtimeOptions.TextWriter != null)
+            AnsiConsole.Console.Profile.Out = new AnsiConsoleOutput(runtimeOptions.TextWriter);
 
         var languageOverriden = !string.IsNullOrWhiteSpace(runtimeOptions.Language);
         //Set language if overriden.

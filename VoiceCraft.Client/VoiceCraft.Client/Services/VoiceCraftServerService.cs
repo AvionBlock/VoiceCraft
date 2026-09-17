@@ -2,6 +2,7 @@ using System;
 using System.CommandLine;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using VoiceCraft.Client.Controls;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
@@ -18,6 +19,8 @@ public class VoiceCraftServerService : IDisposable
     private ServiceProvider ServiceProvider { get; }
     private VoiceCraft.Server.App Server { get; }
 
+    public EventBufferedTextWriter ConsoleEventOutput { get; }
+
     public event Action? OnStarted;
     public event Action<Exception?>? OnStopped;
 
@@ -25,6 +28,7 @@ public class VoiceCraftServerService : IDisposable
     {
         ServiceProvider = BuildServiceProvider();
         Server = ServiceProvider.GetRequiredService<VoiceCraft.Server.App>();
+        ConsoleEventOutput = new EventBufferedTextWriter();
     }
 
     public async Task StartAsync(RuntimeOptions runtimeOptions)
@@ -32,15 +36,19 @@ public class VoiceCraftServerService : IDisposable
         try
         {
             IsRunning = true;
+            
+            runtimeOptions.TextWriter = ConsoleEventOutput;
+            ConsoleEventOutput.Clear();
+            
             OnStarted?.Invoke();
             await Server.StartAsync(runtimeOptions);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await StopAsync(ex);
             return;
         }
-        
+
         await StopAsync();
     }
 
