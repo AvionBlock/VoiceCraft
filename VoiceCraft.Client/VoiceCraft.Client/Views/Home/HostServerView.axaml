@@ -17,12 +17,12 @@
                                VerticalAlignment="Center"
                                FontSize="20"
                                FontWeight="Bold"
-                               Text="{locale:Localize HostServer.RuntimeOverrides.Title}"
+                               Text="{locale:Localize HostServer.ServerProperties.Title}"
                                TextAlignment="Left" />
-
-                    <ToggleButton HorizontalAlignment="Stretch">
-                        <TextBlock Text="{locale:Localize HostServer.RuntimeOverrides.ExitOnInvalidProperties}" />
-                    </ToggleButton>
+                    
+                    <TextBox AcceptsReturn="True"
+                             Text="{Binding ServerProperties}"
+                             Focusable="True"/>
                 </StackPanel>
             </Border>
         </ScrollViewer>

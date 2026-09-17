@@ -1,9 +1,12 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Server;
+using LogService = VoiceCraft.Client.Services.LogService;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -12,6 +15,10 @@ public partial class HostServerViewModel(
     IBackgroundService backgroundService) : ViewModelBase
 {
     private VoiceCraftServerService? _serverService;
+
+    [ObservableProperty]
+    public partial string ServerProperties { get; set; } = JsonSerializer.Serialize<ServerPropertiesStructure>(
+        new ServerPropertiesStructure(), ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
 
     [ObservableProperty] public partial bool IsHosting { get; set; }
 
