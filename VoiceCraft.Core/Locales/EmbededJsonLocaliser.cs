@@ -22,7 +22,7 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
     {
         _languageStrings = null;
         Languages.Clear();
-        
+
         var assembly = Assembly.GetExecutingAssembly();
         var resources = assembly.GetManifestResourceNames();
 
@@ -53,11 +53,14 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
     {
         var splitString = key.Split(':', 2);
         if (splitString.Length <= 0) return key;
+
         var translation = GetTranslation(splitString[0]);
+        if (translation == null) return key;
         try
         {
             if (splitString.Length != 2) return translation;
-            var variables = splitString[1].Split(',').Select(GetTranslation).ToArray<object?>();
+
+            var variables = splitString[1].Split(',').Select(x => GetTranslation(x) ?? x).ToArray<object?>();
             translation = string.Format(translation, variables);
             return translation;
         }
@@ -67,10 +70,10 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
         }
     }
 
-    private string GetTranslation(string key)
+    private string? GetTranslation(string key)
     {
         if (_languageStrings is null)
-            return key;
+            return null;
 
         var dict = _languageStrings;
 
@@ -82,6 +85,6 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
         }
 
         var node = dict?[key[start..]];
-        return node?.GetValueKind() != JsonValueKind.String ? key : node.GetValue<string>().Replace("\\n", "\n");
+        return node?.GetValueKind() != JsonValueKind.String ? null : node.GetValue<string>().Replace("\\n", "\n");
     }
 }

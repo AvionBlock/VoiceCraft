@@ -31,6 +31,7 @@ public class CombinedLocaliser(IBaseLocalizer defaultLocalizer, params IBaseLoca
     {
         var result = defaultLocalizer.Get(key);
         if (result != key) return result;
+        
         foreach (var localizer in localizers)
         {
             result = localizer.Get(key);
