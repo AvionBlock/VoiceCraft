@@ -83,7 +83,6 @@ public class HttpMcApiServerTests
         using var effects = new AudioEffectSystem();
         using var server = CreateServer(world, effects, out var baseAddress);
         using var client = new HttpClient();
-        server.Config.MaxTimeoutMs = 20;
         server.Start();
         var login = new McApiLoginRequestPacket();
         login.Set("request-1", "login-token", McApiServer.Version, []);
@@ -94,6 +93,7 @@ public class HttpMcApiServerTests
         using var response = await responseTask;
         Assert.Single(server.Peers);
 
+        server.Config.MaxTimeoutMs = 20;
         await Task.Delay(60);
         server.Update();
 
