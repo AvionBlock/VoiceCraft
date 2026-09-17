@@ -22,7 +22,7 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
     {
         _languageStrings = null;
         Languages.Clear();
-
+        
         var assembly = Assembly.GetExecutingAssembly();
         var resources = assembly.GetManifestResourceNames();
 
@@ -67,7 +67,7 @@ public class EmbeddedJsonLocalizer(string languageJsonDirectory = "") : IBaseLoc
         }
     }
 
-    public string GetTranslation(string key)
+    private string GetTranslation(string key)
     {
         if (_languageStrings is null)
             return key;

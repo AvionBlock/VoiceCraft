@@ -265,7 +265,9 @@ public class App : Application
 
     private void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Client");
+        Localizer.BaseLocalizer = new CombinedLocaliser(
+            new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Client"),
+            new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Server"));
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
         _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
     }

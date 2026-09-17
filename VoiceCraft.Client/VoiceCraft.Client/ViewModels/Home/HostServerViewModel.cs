@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
+using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.ViewModels.Home;
 
@@ -105,7 +106,7 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            await _backgroundService.StartServiceAsync<VoiceCraftServerService>((x, updateTitle, updateDescription) =>
+            await _backgroundService.StartServiceAsync<VoiceCraftServerService>((x, _, _) =>
             {
                 SetService(x);
                 var runtimeOptions = new Server.RuntimeOptions()
@@ -114,6 +115,7 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
                     DisableColor = true,
                     DisableAnsi = true,
                     FailFast = true,
+                    Language = Localizer.Instance.Language,
 
                     ServerProperties = _hostServerSettings.ServerProperties
                 };
