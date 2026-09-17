@@ -1,31 +1,31 @@
 {
   "Startup": {
-    "Starting": "Server starting...",
-    "Success": "Server successfully started!",
-    "Failed": "An error occurred while trying to startup the server!",
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์...",
+    "Success": "เริ่มเซิร์ฟเวอร์สำเร็จ!",
+    "Failed": "เกิดข้อผิดพลาดขณะเริ่มเซิร์ฟเวอร์!",
     "Commands": {
-      "Registering": "Registering commands...",
-      "Success": "Successfully registered {0} commands!"
+      "Registering": "กำลังลงทะเบียนคำสั่ง...",
+      "Success": "ลงทะเบียนคำสั่งสำเร็จ {0} คำสั่ง!"
     }
   },
   "Shutdown": {
-    "Starting": "Shutting down server...",
-    "StartingIn": "Shutting down server in {0}ms...",
-    "Success": "Successfully shutdown server!"
+    "Starting": "กำลังปิดเซิร์ฟเวอร์...",
+    "StartingIn": "จะปิดเซิร์ฟเวอร์ในอีก {0}ms...",
+    "Success": "ปิดเซิร์ฟเวอร์สำเร็จ!"
   },
   "ServerProperties": {
-    "Loading": "Loading ServerProperties.json file at {0}",
-    "Success": "Successfully loaded server properties!",
-    "Failed": "Failed to load server properties! Falling back to default properties! Error: {0}",
-    "NotFound": "ServerProperties.json was not found in the current and/or sub directories! Generating file...",
-    "FailNotFound": "ServerProperties.json was not found in the current and/or sub directories!",
+    "Loading": "กำลังโหลด ServerProperties.json ที่ {0}",
+    "Success": "โหลดค่าเซิร์ฟเวอร์สำเร็จ!",
+    "Failed": "โหลดค่าเซิร์ฟเวอร์ไม่สำเร็จ! ใช้ค่าเริ่มต้นแทน ข้อผิดพลาด: {0}",
+    "NotFound": "ไม่พบ ServerProperties.json ในโฟลเดอร์ปัจจุบันหรือโฟลเดอร์ย่อย! กำลังสร้างไฟล์...",
+    "FailNotFound": "ไม่พบ ServerProperties.json ในโฟลเดอร์ปัจจุบันหรือโฟลเดอร์ย่อย!",
     "Generating": {
-      "Generating": "Generating ServerProperties.json file at {0}",
-      "Success": "Successfully generated ServerProperties.json file at {0}",
-      "Failed": "Failed to generate ServerProperties.json file at {0}! Error: {1}"
+      "Generating": "กำลังสร้าง ServerProperties.json ที่ {0}",
+      "Success": "สร้าง ServerProperties.json สำเร็จที่ {0}",
+      "Failed": "สร้าง ServerProperties.json ไม่สำเร็จที่ {0}! ข้อผิดพลาด: {1}"
     },
     "Exceptions": {
-      "ParseJson": "Failed to parse JSON data from the loaded file!"
+      "ParseJson": "อ่านข้อมูล JSON จากไฟล์ที่โหลดไม่สำเร็จ!"
     }
   },
   "PortMapper": {
@@ -40,227 +40,227 @@
     }
   },
   "Title": {
-    "Starting": "Starting...",
-    "Running": "Running!"
+    "Starting": "กำลังเริ่ม...",
+    "Running": "ทำงานอยู่!"
   },
   "Events": {
     "Client": {
-      "Connected": "Client Connected! UserGuid: {0}",
-      "Disconnected": "Client Disconnected! UserGuid: {0}"
+      "Connected": "ไคลเอนต์เชื่อมต่อแล้ว! UserGuid: {0}",
+      "Disconnected": "ไคลเอนต์ตัดการเชื่อมต่อแล้ว! UserGuid: {0}"
     },
     "McApi": {
       "Client": {
-        "Connected": "McApi Client Connected! Token: {0}",
-        "Disconnected": "McApi Client Disconnected! Token: {0}"
+        "Connected": "McApi ไคลเอนต์เชื่อมต่อแล้ว! Token: {0}",
+        "Disconnected": "McApi ไคลเอนต์ตัดการเชื่อมต่อแล้ว! Token: {0}"
       }
     }
   },
   "VoiceCraftServer": {
-    "Starting": "Starting VoiceCraft server...",
-    "Success": "Successfully started the VoiceCraft server!",
-    "Stopping": "Stopping VoiceCraft server...",
-    "Stopped": "Successfully stopped the VoiceCraft server!",
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ VoiceCraft...",
+    "Success": "เริ่มเซิร์ฟเวอร์ VoiceCraft สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ VoiceCraft...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ VoiceCraft สำเร็จ!",
     "Exceptions": {
-      "Failed": "Failed to start VoiceCraft Server! Please check if another process is using the same port!"
+      "Failed": "เริ่มเซิร์ฟเวอร์ VoiceCraft ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
     }
   },
   "McWssServer": {
-    "Starting": "Starting McWss server...",
-    "Success": "Successfully started the McWss server!",
-    "Stopping": "Stopping McWss server...",
-    "Stopped": "Successfully stopped the McWss server!",
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ McWss...",
+    "Success": "เริ่มเซิร์ฟเวอร์ McWss สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ McWss...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ McWss สำเร็จ!",
     "Exceptions": {
-      "Failed": "Failed to start McWss Server! Please check if another process is using the same port!"
+      "Failed": "เริ่มเซิร์ฟเวอร์ McWss ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
     }
   },
   "McHttpServer": {
-    "Starting": "Starting McHttp server...",
-    "Success": "Successfully started the McHttp server!",
-    "Stopping": "Stopping McHttp server...",
-    "Stopped": "Successfully stopped the McHttp server!",
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ McHttp...",
+    "Success": "เริ่มเซิร์ฟเวอร์ McHttp สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ McHttp...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ McHttp สำเร็จ!",
     "Exceptions": {
-      "Failed": "Failed to start McHttp Server! Please check if another process is using the same port!"
+      "Failed": "เริ่มเซิร์ฟเวอร์ McHttp ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
     }
   },
   "McTcpServer": {
-    "Starting": "Starting McTcp server...",
-    "Success": "Successfully started the McTcp server!",
-    "Stopping": "Stopping McTcp server...",
-    "Stopped": "Successfully stopped the McTcp server!",
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ McTcp...",
+    "Success": "เริ่มเซิร์ฟเวอร์ McTcp สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ McTcp...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ McTcp สำเร็จ!",
     "Exceptions": {
-      "Failed": "Failed to start McTcp Server! Please check if another process is using the same port!"
+      "Failed": "เริ่มเซิร์ฟเวอร์ McTcp ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
     }
   },
   "Tables": {
     "ServerSetup": {
-      "Server": "Server",
-      "Port": "Port",
-      "Protocol": "Protocol"
+      "Server": "เซิร์ฟเวอร์",
+      "Port": "พอร์ต",
+      "Protocol": "โปรโตคอล"
     },
     "ListCommandEntities": {
       "Id": "Id",
-      "Name": "Name",
-      "Position": "Position",
-      "Rotation": "Rotation",
+      "Name": "ชื่อ",
+      "Position": "ตำแหน่ง",
+      "Rotation": "การหมุน",
       "WorldId": "WorldId"
     }
   },
   "Commands": {
-    "Exception": "An error occurred while trying to execute the command {0}!",
+    "Exception": "เกิดข้อผิดพลาดขณะรันคำสั่ง {0}!",
     "Exceptions": {
-      "EntityNotFound": "Could not find entity with the id: {0}",
-      "EntityNotAClient": "Entity with id {0} is not a client entity!"
+      "EntityNotFound": "ไม่พบเอนทิตีรหัส: {0}",
+      "EntityNotAClient": "เอนทิตีรหัส {0} ไม่ใช่ไคลเอนต์!"
     },
     "RootCommand": {
-      "Description": "Executes a VoiceCraft command."
+      "Description": "รันคำสั่ง VoiceCraft"
     },
     "List": {
       "Name": "list",
-      "Description": "Lists entities.",
-      "Showing": "Showing {0} entities.",
+      "Description": "แสดงรายการเอนทิตี",
+      "Showing": "แสดง {0} เอนทิตี",
       "Options": {
         "ClientsOnly": {
           "Name": "clientsOnly",
-          "Description": "Shows networked client entities only."
+          "Description": "แสดงเฉพาะเอนทิตีไคลเอนต์ที่เชื่อมต่อเครือข่าย"
         },
         "Limit": {
           "Name": "limit",
-          "Description": "Limits the number of shown entities."
+          "Description": "จำกัดจำนวนเอนทิตีที่แสดง"
         }
       },
       "Exceptions": {
-        "LimitArgument": "Limit cannot be less than zero!"
+        "LimitArgument": "ค่า limit ต้องไม่ต่ำกว่าศูนย์!"
       }
     },
     "SetTitle": {
       "Name": "settitle",
-      "Description": "Sets a title for a client entity's application.",
+      "Description": "ตั้งชื่อเรื่องบนแอปของไคลเอนต์",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The client's entity id."
+          "Description": "รหัสเอนทิตีของไคลเอนต์"
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set for the title."
+          "Description": "ค่าชื่อเรื่องที่จะตั้ง"
         }
       }
     },
     "SetDescription": {
       "Name": "setdescription",
-      "Description": "Sets a description for a client entity's application.",
+      "Description": "ตั้งคำอธิบายบนแอปของไคลเอนต์",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The client's entity id."
+          "Description": "รหัสเอนทิตีของไคลเอนต์"
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set for the description."
+          "Description": "ค่าคำอธิบายที่จะตั้ง"
         }
       }
     },
     "SetPosition": {
       "Name": "setposition",
-      "Description": "Sets a position for an entity.",
+      "Description": "ตั้งตำแหน่งของเอนทิตี",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         },
         "X": {
           "Name": "x",
-          "Description": "The X position to set."
+          "Description": "ตำแหน่งแกน X"
         },
         "Y": {
           "Name": "y",
-          "Description": "The Y position to set."
+          "Description": "ตำแหน่งแกน Y"
         },
         "Z": {
           "Name": "z",
-          "Description": "The Z position to set."
+          "Description": "ตำแหน่งแกน Z"
         }
       }
     },
     "SetWorldId": {
       "Name": "setworldid",
-      "Description": "Sets a WorldId for an entity.",
+      "Description": "ตั้ง WorldId ของเอนทิตี",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set the entity's WorldId."
+          "Description": "ค่า WorldId ที่จะตั้ง"
         }
       }
     },
     "SetName": {
       "Name": "setname",
-      "Description": "Sets a name for an entity.",
+      "Description": "ตั้งชื่อของเอนทิตี",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         },
         "Value": {
           "Name": "value",
-          "Description": "The value to set the entity's Name."
+          "Description": "ชื่อที่จะตั้งให้เอนทิตี"
         }
       }
     },
     "Stop": {
       "Name": "stop",
-      "Description": "Stops the server."
+      "Description": "หยุดเซิร์ฟเวอร์"
     },
     "Kick": {
       "Name": "kick",
-      "Description": "Kicks a client.",
+      "Description": "เตะไคลเอนต์ออก",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         }
       }
     },
     "Mute": {
       "Name": "mute",
-      "Description": "Mutes an entity/client.",
+      "Description": "ปิดไมค์เอนทิตี/ไคลเอนต์",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         }
       }
     },
     "Unmute": {
       "Name": "unmute",
-      "Description": "Unmutes an entity/client.",
+      "Description": "เปิดไมค์เอนทิตี/ไคลเอนต์",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         }
       }
     },
     "Deafen": {
       "Name": "deafen",
-      "Description": "Deafens an entity/client.",
+      "Description": "ปิดหูเอนทิตี/ไคลเอนต์",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         }
       }
     },
     "Undeafen": {
       "Name": "undeafen",
-      "Description": "Undeafens an entity/client.",
+      "Description": "เปิดหูเอนทิตี/ไคลเอนต์",
       "Arguments": {
         "Id": {
           "Name": "id",
-          "Description": "The entity's id."
+          "Description": "รหัสเอนทิตี"
         }
       }
     }

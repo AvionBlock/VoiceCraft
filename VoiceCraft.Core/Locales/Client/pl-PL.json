@@ -6,6 +6,16 @@
       "Removed": "{0} został usunięty."
     }
   },
+  "HostServer": {
+    "Title": null,
+    "ServerProperties": {
+      "Title": null
+    },
+    "Notification": {
+      "Badge": null,
+      "ResetProperties": null
+    }
+  },
   "Settings": {
     "Title": "Ustawienia",
     "General": {
@@ -153,7 +163,11 @@
     "Accept": "Akceptuj",
     "Decline": "Odrzuć"
   },
-    "AddServer": {
+  
+  "HostServerConsole": {
+    "Title": null
+  },
+  "AddServer": {
     "Title": "Dodaj serwer",
     "Name": "Nazwa",
     "IP": "IP",

@@ -15,6 +15,16 @@
       "Removed": "ลบ {0} แล้ว"
     }
   },
+  "HostServer": {
+    "Title": null,
+    "ServerProperties": {
+      "Title": null
+    },
+    "Notification": {
+      "Badge": null,
+      "ResetProperties": null
+    }
+  },
   "Settings": {
     "Title": "ตั้งค่า",
     "General": {
@@ -165,6 +175,10 @@
     "DumpBody": "อัปโหลด crash dump เฉพาะเมื่อกดปุ่ม dump link ในหน้าบันทึกแครชเท่านั้น",
     "Accept": "ยอมรับ",
     "Decline": "ปฏิเสธ"
+  },
+
+  "HostServerConsole": {
+    "Title": null
   },
   "AddServer": {
     "Title": "เพิ่มเซิร์ฟเวอร์",

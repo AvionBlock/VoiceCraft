@@ -6,6 +6,16 @@
       "Removed": "{0} has been removed."
     }
   },
+  "HostServer": {
+    "Title": "Host Server",
+    "ServerProperties": {
+      "Title": "Server Properties"
+    },
+    "Notification": {
+      "Badge": "Host Server",
+      "ResetProperties": "Reset server properties."
+    }
+  },
   "Settings": {
     "Title": "Settings",
     "General": {
@@ -154,6 +164,9 @@
     "Decline": "Decline"
   },
 
+  "HostServerConsole": {
+    "Title": "Host Server Console"
+  },
   "AddServer": {
     "Title": "Add Server",
     "Name": "Name",

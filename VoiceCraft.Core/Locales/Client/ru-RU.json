@@ -6,6 +6,16 @@
       "Removed": "{0} удалён."
     }
   },
+  "HostServer": {
+    "Title": null,
+    "ServerProperties": {
+      "Title": null
+    },
+    "Notification": {
+      "Badge": null,
+      "ResetProperties": null
+    }
+  },
   "Settings": {
     "Title": "Настройки",
     "General": {
@@ -152,6 +162,10 @@
     "DumpBody": "Краш-дампы загружаются только когда вы сами нажимаете кнопку ссылки на дамп в журнале сбоев.",
     "Accept": "Принять",
     "Decline": "Отклонить"
+  },
+
+  "HostServerConsole": {
+    "Title": null
   },
   "AddServer": {
     "Title": "Добавить сервер",

@@ -6,6 +6,16 @@
       "Removed": "{0} 已刪除。"
     }
   },
+  "HostServer": {
+    "Title": null,
+    "ServerProperties": {
+      "Title": null
+    },
+    "Notification": {
+      "Badge": null,
+      "ResetProperties": null
+    }
+  },
   "Settings": {
     "Title": "設定",
     "General": {
@@ -152,6 +162,10 @@
     "DumpBody": "只有當你在當機記錄中明確按下傾印連結按鈕時，當機傾印才會上傳。",
     "Accept": "接受",
     "Decline": "拒絕"
+  },
+  
+  "HostServerConsole": {
+    "Title": null
   },
   "AddServer": {
     "Title": "新增伺服器",
