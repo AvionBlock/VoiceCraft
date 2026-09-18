@@ -16,13 +16,13 @@
     }
   },
   "HostServer": {
-    "Title": null,
+    "Title": "โฮสต์เซิร์ฟเวอร์",
     "ServerProperties": {
-      "Title": null
+      "Title": "คุณสมบัติเซิร์ฟเวอร์"
     },
     "Notification": {
-      "Badge": null,
-      "ResetProperties": null
+      "Badge": "โฮสต์เซิร์ฟเวอร์",
+      "ResetProperties": "รีเซ็ตคุณสมบัติของเซิร์ฟเวอร์"
     }
   },
   "Settings": {
@@ -178,7 +178,7 @@
   },
 
   "HostServerConsole": {
-    "Title": null
+    "Title": "คอนโซลเซิร์ฟเวอร์โฮสต์"
   },
   "AddServer": {
     "Title": "เพิ่มเซิร์ฟเวอร์",

@@ -7,13 +7,13 @@
     }
   },
   "HostServer": {
-    "Title": null,
+    "Title": "Host-Server",
     "ServerProperties": {
-      "Title": null
+      "Title": "Servereigenschaften"
     },
     "Notification": {
-      "Badge": null,
-      "ResetProperties": null
+      "Badge": "Host-Server",
+      "ResetProperties": "Servereigenschaften zurücksetzen."
     }
   },
   "Settings": {
@@ -165,7 +165,7 @@
   },
   
   "HostServerConsole": {
-    "Title": null
+    "Title": "Host-Server-Konsole"
   },
   "AddServer": {
     "Title": "Server hinzufügen",

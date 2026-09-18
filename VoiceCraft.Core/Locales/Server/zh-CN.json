@@ -29,14 +29,14 @@
     }
   },
   "PortMapper": {
-    "Opening": null,
-    "Opened": null,
-    "Closing": null,
-    "Closed": null,
-    "SkippedLoopback": null,
+    "Opening": "正在通过 NAT 打开 {1} {2} 上的 {0} 端口...",
+    "Opened": "已通过 {3}: {4}:{5} 打开 {1} {2} 上的 {0} 端口映射",
+    "Closing": "正在关闭 {1} 上的 {0} NAT 端口",
+    "Closed": "已关闭 {1} 上的 {0} NAT 端口",
+    "SkippedLoopback": "跳过 {0} NAT 端口映射，因为它绑定到了回环地址 {1}。",
     "Exceptions": {
-      "Open": null,
-      "Close": null
+      "Open": "{1} 上的 {0} 端口 {2} 无法通过 NAT 打开。",
+      "Close": "{1} 上的 NAT 端口 {0} 未正常关闭。"
     }
   },
   "Title": {

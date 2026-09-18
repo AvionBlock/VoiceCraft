@@ -7,13 +7,13 @@
     }
   },
   "HostServer": {
-    "Title": null,
+    "Title": "Hostserver",
     "ServerProperties": {
-      "Title": null
+      "Title": "Server-eigenschappen"
     },
     "Notification": {
-      "Badge": null,
-      "ResetProperties": null
+      "Badge": "Hostserver",
+      "ResetProperties": "De eigenschappen van de server opnieuw instellen."
     }
   },
   "Settings": {
@@ -165,7 +165,7 @@
   },
   
   "HostServerConsole": {
-    "Title": null
+    "Title": "Console van de hostserver"
   },
   "AddServer": {
     "Title": "Server toevoegen",

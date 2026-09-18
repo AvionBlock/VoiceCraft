@@ -29,14 +29,14 @@
     }
   },
   "PortMapper": {
-    "Opening": null,
-    "Opened": null,
-    "Closing": null,
-    "Closed": null,
-    "SkippedLoopback": null,
+    "Opening": "正在透過 NAT 開啟 {1} {2} 上的 {0} 埠...",
+    "Opened": "已透過 {3}: {4}:{5} 開啟 {1} {2} 上的 {0} 埠映射",
+    "Closing": "正在關閉 {1} 上的 {0} NAT 埠",
+    "Closed": "已關閉 {1} 上的 {0} NAT 埠",
+    "SkippedLoopback": "跳過 {0} NAT 埠映射，因為它已綁定至迴圈位址 {1}。",
     "Exceptions": {
-      "Open": null,
-      "Close": null
+      "Open": "{1} 上的 {0} 埠 {2} 無法透過 NAT 開啟。",
+      "Close": "{1} 上的 NAT 埠 {0} 未能正常關閉。"
     }
   },
   "Title": {

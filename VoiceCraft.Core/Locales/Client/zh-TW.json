@@ -7,13 +7,13 @@
     }
   },
   "HostServer": {
-    "Title": null,
+    "Title": "主伺服器",
     "ServerProperties": {
-      "Title": null
+      "Title": "伺服器屬性"
     },
     "Notification": {
-      "Badge": null,
-      "ResetProperties": null
+      "Badge": "主伺服器",
+      "ResetProperties": "重設伺服器屬性。"
     }
   },
   "Settings": {
@@ -165,7 +165,7 @@
   },
   
   "HostServerConsole": {
-    "Title": null
+    "Title": "主伺服器控制台"
   },
   "AddServer": {
     "Title": "新增伺服器",

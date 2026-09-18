@@ -29,14 +29,14 @@
     }
   },
   "PortMapper": {
-    "Opening": null,
-    "Opened": null,
-    "Closing": null,
-    "Closed": null,
-    "SkippedLoopback": null,
+    "Opening": "Otwieranie portu {0} na {1} {2} przez NAT...",
+    "Opened": "Otwarto mapowanie portu {0} na {1} {2} poprzez {3}: {4}:{5}",
+    "Closing": "Zamykanie portu NAT {0} na {1}",
+    "Closed": "Port NAT {0} na {1} został zamknięty",
+    "SkippedLoopback": "Pomijanie mapowania portu NAT {0}, ponieważ jest on powiązany z adresem pętli zwrotnej {1}.",
     "Exceptions": {
-      "Open": null,
-      "Close": null
+      "Open": "Nie udało się otworzyć portu {0} na {1} {2} przez NAT.",
+      "Close": "Port NAT {0} na {1} nie został poprawnie zamknięty."
     }
   },
   "Title": {

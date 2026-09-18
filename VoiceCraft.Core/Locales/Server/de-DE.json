@@ -29,14 +29,14 @@
     }
   },
   "PortMapper": {
-    "Opening": null,
-    "Opened": null,
-    "Closing": null,
-    "Closed": null,
-    "SkippedLoopback": null,
+    "Opening": "Port {0} auf {1} {2} über NAT öffnen...",
+    "Opened": "Port {0} auf {1} {2} wurde über {3}: {4}:{5} geöffnet",
+    "Closing": "NAT-Port {0} auf {1} schließen",
+    "Closed": "NAT-Port {0} auf {1} geschlossen",
+    "SkippedLoopback": "Die NAT-Portzuordnung {0} wird übersprungen, da sie an die Loopback-Adresse {1} gebunden ist.",
     "Exceptions": {
-      "Open": null,
-      "Close": null
+      "Open": "Der Port {0} auf {1} {2} konnte über NAT nicht geöffnet werden.",
+      "Close": "Der NAT-Port {0} auf {1} wurde nicht ordnungsgemäß geschlossen."
     }
   },
   "Title": {

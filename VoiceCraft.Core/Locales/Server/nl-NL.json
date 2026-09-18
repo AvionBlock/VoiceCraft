@@ -29,14 +29,14 @@
     }
   },
   "PortMapper": {
-    "Opening": null,
-    "Opened": null,
-    "Closing": null,
-    "Closed": null,
-    "SkippedLoopback": null,
+    "Opening": "Poort {0} op {1} {2} wordt geopend via NAT...",
+    "Opened": "Poort {0} op {1} {2} is geopend via {3}: {4}:{5}",
+    "Closing": "NAT-poort {0} op {1} wordt gesloten",
+    "Closed": "NAT-poort {0} op {1} is gesloten",
+    "SkippedLoopback": "NAT-poorttoewijzing {0} wordt overgeslagen omdat deze is gekoppeld aan het loopback-adres {1}.",
     "Exceptions": {
-      "Open": null,
-      "Close": null
+      "Open": "Het openen van poort {0} op {1} {2} via NAT is mislukt.",
+      "Close": "NAT-poort {0} op {1} is niet correct gesloten."
     }
   },
   "Title": {
