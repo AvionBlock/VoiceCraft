@@ -32,8 +32,7 @@
                 HorizontalAlignment="Stretch"
                 Classes="card"
                 Margin="10,0,10,10">
-            <TextBlock TextElement.FontSize="14"
-                       TextElement.LetterSpacing="1"
+            <TextBlock FontFamily="{StaticResource Hack-Italic}"
                        Text="{Binding Output}" />
         </Border>
     </Grid>
