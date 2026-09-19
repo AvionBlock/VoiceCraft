@@ -1,12 +1,11 @@
 using System;
 using VoiceCraft.Client.Services;
-using VoiceCraft.Server;
 
 namespace VoiceCraft.Client.Models.Settings;
 
 public class HostServerSettings : Setting<HostServerSettings>
 {
-    public ServerPropertiesStructure ServerProperties
+    public Server.Runtime.ServerPropertiesStructure ServerProperties
     {
         get;
         set

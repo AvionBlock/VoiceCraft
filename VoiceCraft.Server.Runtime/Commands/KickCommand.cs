@@ -3,7 +3,7 @@ using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.World;
 
-namespace VoiceCraft.Server.Commands;
+namespace VoiceCraft.Server.Runtime.Commands;
 
 public class KickCommand : Command
 {

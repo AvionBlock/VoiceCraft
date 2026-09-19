@@ -6,9 +6,10 @@ using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
-using VoiceCraft.Server.Commands;
-using VoiceCraft.Server.Services;
-using VoiceCraft.Server.Systems;
+using VoiceCraft.Server.Runtime;
+using VoiceCraft.Server.Runtime.Commands;
+using VoiceCraft.Server.Runtime.Services;
+using VoiceCraft.Server.Runtime.Systems;
 
 namespace VoiceCraft.Server;
 
@@ -21,6 +22,7 @@ public static class Program
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Server");
         FleckLog.LogAction = (_, _, _) => { }; //Remove all websocket logs.
+        LogService.TelemetryService = ServiceProvider.GetService<ServerTelemetryService>();
         LogService.Load(); //Load Logs.
         new VoiceCraftRootCommand(ServiceProvider).Parse(args).InvokeAsync().GetAwaiter().GetResult();
         ServiceProvider.Dispose(); //Dispose

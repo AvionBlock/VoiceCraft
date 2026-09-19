@@ -1,7 +1,7 @@
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 
-namespace VoiceCraft.Server.Commands;
+namespace VoiceCraft.Server.Runtime.Commands;
 
 public class StopCommand : Command
 {

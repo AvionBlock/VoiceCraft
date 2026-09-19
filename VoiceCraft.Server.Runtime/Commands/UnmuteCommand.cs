@@ -3,17 +3,17 @@ using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.World;
 
-namespace VoiceCraft.Server.Commands;
+namespace VoiceCraft.Server.Runtime.Commands;
 
-public class DeafenCommand : Command
+public class UnmuteCommand : Command
 {
-    public DeafenCommand(VoiceCraftWorld world) : base(
-        Localizer.Get("Commands.Deafen.Name"),
-        Localizer.Get("Commands.Deafen.Description"))
+    public UnmuteCommand(VoiceCraftWorld world) : base(
+        Localizer.Get("Commands.Unmute.Name"),
+        Localizer.Get("Commands.Unmute.Description"))
     {
-        var idArgument = new Argument<int>(Localizer.Get("Commands.Deafen.Arguments.Id.Name"))
+        var idArgument = new Argument<int>(Localizer.Get("Commands.Unmute.Arguments.Id.Name"))
         {
-            Description = Localizer.Get("Commands.Deafen.Arguments.Id.Description")
+            Description = Localizer.Get("Commands.Unmute.Arguments.Id.Description")
         };
         Add(idArgument);
 
@@ -27,10 +27,10 @@ public class DeafenCommand : Command
                 case null:
                     throw new Exception(Localizer.Get($"Commands.Exceptions.EntityNotFound:{id}"));
                 case VoiceCraftNetworkEntity networkEntity:
-                    networkEntity.ServerDeafened = true;
+                    networkEntity.ServerMuted = false;
                     return;
                 default:
-                    entity.Deafened = true;
+                    entity.Muted = false;
                     break;
             }
         });

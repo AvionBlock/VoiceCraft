@@ -1,14 +1,15 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Diagnostics;
 
-namespace VoiceCraft.Server;
+namespace VoiceCraft.Server.Runtime;
 
 public static class LogService
 {
+    public static ServerTelemetryService? TelemetryService { get; set; }
+    
     private const string FileName = "CrashLogs.json";
     private const string ConfigPath = "config";
     private const int Limit = 100;
@@ -124,7 +125,7 @@ public static class LogService
 
     private static async Task AttachDumpUrlAsync(DateTime timestamp, Exception exception)
     {
-        var telemetry = Program.ServiceProvider.GetService<ServerTelemetryService>();
+        var telemetry = TelemetryService;
         if (telemetry == null)
             return;
 

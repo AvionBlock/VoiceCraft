@@ -5,7 +5,7 @@ using Spectre.Console;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Servers;
 
-namespace VoiceCraft.Server.Services;
+namespace VoiceCraft.Server.Runtime.Services;
 
 public sealed class PortMappingService
 {

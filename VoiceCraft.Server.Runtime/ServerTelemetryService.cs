@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Telemetry;
 
-namespace VoiceCraft.Server;
+namespace VoiceCraft.Server.Runtime;
 
 public sealed class ServerTelemetryService(ServerProperties properties)
 {

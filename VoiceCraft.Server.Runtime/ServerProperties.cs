@@ -6,7 +6,7 @@ using VoiceCraft.Network.Audio.Effects;
 using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Network.Servers;
 
-namespace VoiceCraft.Server;
+namespace VoiceCraft.Server.Runtime;
 
 public class ServerProperties
 {

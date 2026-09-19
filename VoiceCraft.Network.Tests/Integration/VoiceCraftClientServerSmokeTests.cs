@@ -7,7 +7,7 @@ using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Network.World;
-using VoiceCraft.Server.Systems;
+using VoiceCraft.Server.Runtime.Systems;
 
 namespace VoiceCraft.Network.Tests.Integration;
 

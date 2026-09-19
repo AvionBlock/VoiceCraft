@@ -6,10 +6,10 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
-using VoiceCraft.Server.Services;
-using VoiceCraft.Server.Systems;
+using VoiceCraft.Server.Runtime.Services;
+using VoiceCraft.Server.Runtime.Systems;
 
-namespace VoiceCraft.Server;
+namespace VoiceCraft.Server.Runtime;
 
 public class App(IServiceProvider serviceProvider)
 {

@@ -4,12 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using VoiceCraft.Client.Controls;
 using VoiceCraft.Core.World;
-using VoiceCraft.Network.Servers;
-using VoiceCraft.Network.Systems;
-using VoiceCraft.Server;
-using VoiceCraft.Server.Commands;
-using VoiceCraft.Server.Services;
-using VoiceCraft.Server.Systems;
 
 namespace VoiceCraft.Client.Services;
 
@@ -17,7 +11,7 @@ public class VoiceCraftServerService : IDisposable
 {
     public bool IsRunning { get; private set; }
     private ServiceProvider ServiceProvider { get; }
-    private VoiceCraft.Server.App Server { get; }
+    private Server.Runtime.App Server { get; }
 
     public EventBufferedTextWriter ConsoleEventOutput { get; }
 
@@ -27,11 +21,11 @@ public class VoiceCraftServerService : IDisposable
     public VoiceCraftServerService()
     {
         ServiceProvider = BuildServiceProvider();
-        Server = ServiceProvider.GetRequiredService<VoiceCraft.Server.App>();
+        Server = ServiceProvider.GetRequiredService<Server.Runtime.App>();
         ConsoleEventOutput = new EventBufferedTextWriter();
     }
 
-    public async Task StartAsync(RuntimeOptions runtimeOptions)
+    public async Task StartAsync(Server.Runtime.RuntimeOptions runtimeOptions)
     {
         try
         {
@@ -76,43 +70,43 @@ public class VoiceCraftServerService : IDisposable
         var serviceCollection = new ServiceCollection();
 
         //Application
-        serviceCollection.AddSingleton<VoiceCraft.Server.App>(x => new VoiceCraft.Server.App(x));
+        serviceCollection.AddSingleton<Server.Runtime.App>(x => new Server.Runtime.App(x));
 
         //Servers
-        serviceCollection.AddSingleton<LiteNetVoiceCraftServer>();
-        serviceCollection.AddSingleton<HttpMcApiServer>();
-        serviceCollection.AddSingleton<TcpMcApiServer>();
-        serviceCollection.AddSingleton<McWssMcApiServer>();
-        serviceCollection.AddSingleton<VoiceCraftServer>(x => x.GetRequiredService<LiteNetVoiceCraftServer>());
-        serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<HttpMcApiServer>());
-        serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<TcpMcApiServer>());
-        serviceCollection.AddSingleton<McApiServer>(x => x.GetRequiredService<McWssMcApiServer>());
+        serviceCollection.AddSingleton<Network.Servers.LiteNetVoiceCraftServer>();
+        serviceCollection.AddSingleton<Network.Servers.HttpMcApiServer>();
+        serviceCollection.AddSingleton<Network.Servers.TcpMcApiServer>();
+        serviceCollection.AddSingleton<Network.Servers.McWssMcApiServer>();
+        serviceCollection.AddSingleton<Network.Servers.VoiceCraftServer>(x => x.GetRequiredService<Network.Servers.LiteNetVoiceCraftServer>());
+        serviceCollection.AddSingleton<Network.Servers.McApiServer>(x => x.GetRequiredService<Network.Servers.HttpMcApiServer>());
+        serviceCollection.AddSingleton<Network.Servers.McApiServer>(x => x.GetRequiredService<Network.Servers.TcpMcApiServer>());
+        serviceCollection.AddSingleton<Network.Servers.McApiServer>(x => x.GetRequiredService<Network.Servers.McWssMcApiServer>());
 
         //Systems
-        serviceCollection.AddSingleton<EventHandlerSystem>();
-        serviceCollection.AddSingleton<AudioEffectSystem>();
-        serviceCollection.AddSingleton<VisibilitySystem>();
+        serviceCollection.AddSingleton<Server.Runtime.Systems.EventHandlerSystem>();
+        serviceCollection.AddSingleton<Network.Systems.AudioEffectSystem>();
+        serviceCollection.AddSingleton<Network.Systems.VisibilitySystem>();
 
         //Commands
         var rootCommand = new RootCommand();
         serviceCollection.AddSingleton(rootCommand);
-        serviceCollection.AddSingleton<Command, SetPositionCommand>();
-        serviceCollection.AddSingleton<Command, SetWorldIdCommand>();
-        serviceCollection.AddSingleton<Command, ListCommand>();
-        serviceCollection.AddSingleton<Command, SetTitleCommand>();
-        serviceCollection.AddSingleton<Command, SetDescriptionCommand>();
-        serviceCollection.AddSingleton<Command, SetNameCommand>();
-        serviceCollection.AddSingleton<Command, StopCommand>();
-        serviceCollection.AddSingleton<Command, MuteCommand>();
-        serviceCollection.AddSingleton<Command, UnmuteCommand>();
-        serviceCollection.AddSingleton<Command, DeafenCommand>();
-        serviceCollection.AddSingleton<Command, UndeafenCommand>();
-        serviceCollection.AddSingleton<Command, KickCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.SetPositionCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.SetWorldIdCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.ListCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.SetTitleCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.SetDescriptionCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.SetNameCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.StopCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.MuteCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.UnmuteCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.DeafenCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.UndeafenCommand>();
+        serviceCollection.AddSingleton<Command, Server.Runtime.Commands.KickCommand>();
 
         //Other
-        serviceCollection.AddSingleton<ServerProperties>();
-        serviceCollection.AddSingleton<ServerTelemetryService>();
-        serviceCollection.AddSingleton<PortMappingService>();
+        serviceCollection.AddSingleton<Server.Runtime.ServerProperties>();
+        serviceCollection.AddSingleton<Server.Runtime.ServerTelemetryService>();
+        serviceCollection.AddSingleton<Server.Runtime.Services.PortMappingService>();
         serviceCollection.AddSingleton<VoiceCraftWorld>();
         return serviceCollection.BuildServiceProvider();
     }

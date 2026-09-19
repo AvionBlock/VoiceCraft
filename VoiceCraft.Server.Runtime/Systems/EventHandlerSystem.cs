@@ -16,7 +16,7 @@ using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Network.World;
 
-namespace VoiceCraft.Server.Systems;
+namespace VoiceCraft.Server.Runtime.Systems;
 
 public class EventHandlerSystem : IDisposable
 {

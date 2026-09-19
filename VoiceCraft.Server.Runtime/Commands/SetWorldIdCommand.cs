@@ -2,7 +2,7 @@ using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 
-namespace VoiceCraft.Server.Commands;
+namespace VoiceCraft.Server.Runtime.Commands;
 
 public class SetWorldIdCommand : Command
 {

@@ -34,15 +34,15 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
         _hostServerSettings = settingsService.HostServerSettings;
         _navigationService = navigationService;
 
-        ServerProperties = JsonSerializer.Serialize<Server.ServerPropertiesStructure>(
+        ServerProperties = JsonSerializer.Serialize<Server.Runtime.ServerPropertiesStructure>(
             _hostServerSettings.ServerProperties,
-            Server.ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
+            Server.Runtime.ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
     }
 
     partial void OnServerPropertiesChanging(string value)
     {
-        var serverProperties = JsonSerializer.Deserialize<Server.ServerPropertiesStructure>(value,
-            Server.ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
+        var serverProperties = JsonSerializer.Deserialize<Server.Runtime.ServerPropertiesStructure>(value,
+            Server.Runtime.ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
         if (serverProperties == null)
             throw new ArgumentException();
 
@@ -54,9 +54,9 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            ServerProperties = JsonSerializer.Serialize<Server.ServerPropertiesStructure>(
-                new Server.ServerPropertiesStructure(),
-                Server.ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
+            ServerProperties = JsonSerializer.Serialize<Server.Runtime.ServerPropertiesStructure>(
+                new Server.Runtime.ServerPropertiesStructure(),
+                Server.Runtime.ServerPropertiesStructureGenerationContext.Default.ServerPropertiesStructure);
             _notificationService.SendSuccessNotification(
                 "HostServer.Notification.Badge",
                 $"HostServer.Notification.ResetProperties");
@@ -109,7 +109,7 @@ public partial class HostServerViewModel : ViewModelBase, IDisposable
             await _backgroundService.StartServiceAsync<VoiceCraftServerService>((x, _, _) =>
             {
                 SetService(x);
-                var runtimeOptions = new Server.RuntimeOptions()
+                var runtimeOptions = new Server.Runtime.RuntimeOptions()
                 {
                     DisableCommands = true,
                     DisableColor = true,
