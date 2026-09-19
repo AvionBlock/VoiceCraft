@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 internal static class Stats
 {
     public static NumericStats BuildLongStats(long[] values)

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 internal static class BenchmarkRunner
 {
     public static BenchmarkRunResult Run(BenchmarkDefinition benchmark, Options options)

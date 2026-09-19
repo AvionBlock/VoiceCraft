@@ -1,3 +1,4 @@
+using System;
 using System.CommandLine;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;

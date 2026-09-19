@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 internal static class BenchmarkCatalog
 {
     public static Dictionary<string, BenchmarkDefinition> Build()

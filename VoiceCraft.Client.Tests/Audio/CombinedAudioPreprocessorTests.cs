@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Interfaces;

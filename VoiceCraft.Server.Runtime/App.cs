@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using VoiceCraft.Core;

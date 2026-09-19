@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 var benchmarkDefinitions = BenchmarkCatalog.Build();
 var options = OptionsParser.Parse(args, benchmarkDefinitions);
 

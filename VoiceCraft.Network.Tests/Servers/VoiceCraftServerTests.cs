@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using Xunit;
 using VoiceCraft.Core.World;

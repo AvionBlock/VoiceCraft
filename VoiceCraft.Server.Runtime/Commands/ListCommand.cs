@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.CommandLine;
+using System.Linq;
 using Spectre.Console;
 using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;

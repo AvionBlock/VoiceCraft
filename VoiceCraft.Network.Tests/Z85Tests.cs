@@ -1,3 +1,4 @@
+using System;
 using LiteNetLib.Utils;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using Xunit;

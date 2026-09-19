@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 internal static class OptionsParser
 {
     public static Options Parse(string[] args, IReadOnlyDictionary<string, BenchmarkDefinition> benchmarkDefinitions)
