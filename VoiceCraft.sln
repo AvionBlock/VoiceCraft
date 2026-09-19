@@ -23,6 +23,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Core", "VoiceCraft.Core\VoiceCraft.Core.csproj", "{D789BEEE-6F40-4971-99FB-6058587BDCC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C1985940-0CD7-4C0D-9F3C-780C64790A84}"
+	ProjectSection(SolutionItems) = preProject
+		InternalAnsiConsoleOutput.cs = InternalAnsiConsoleOutput.cs
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceCraft.Server", "VoiceCraft.Server\VoiceCraft.Server.csproj", "{D9B5546C-7B63-45FF-9426-B876A373CA2B}"
 EndProject

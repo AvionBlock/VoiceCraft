@@ -31,7 +31,7 @@ public class App(IServiceProvider serviceProvider)
         if (runtimeOptions.DisableColor)
             AnsiConsole.Console.Profile.Capabilities.ColorSystem = ColorSystem.NoColors;
         if (runtimeOptions.TextWriter != null)
-            AnsiConsole.Console.Profile.Out = new AnsiConsoleOutput(runtimeOptions.TextWriter);
+            AnsiConsole.Console = new SimpleConsole(runtimeOptions.TextWriter);
 
         var languageOverriden = !string.IsNullOrWhiteSpace(runtimeOptions.Language);
         //Set language if overriden.
@@ -68,8 +68,9 @@ public class App(IServiceProvider serviceProvider)
             //Set locale if not overriden.
             if (!languageOverriden)
                 Localizer.Instance.Language = properties.VoiceCraftConfig.Language;
+
             //Loaded, Set the title.
-            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Starting")}";
+            SetTitle($"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Starting")}");
 
             //Setup Audio Effects
             eventHandlerSystem.EnableVisibilityDisplay = properties.VoiceCraftConfig.EnableVisibilityDisplay;
@@ -103,7 +104,7 @@ public class App(IServiceProvider serviceProvider)
                 mcWssMcApiServer));
             AnsiConsole.MarkupLine($"[bold green]{Localizer.Get("Startup.Success")}[/]");
             AnsiConsole.MarkupLine("\0\0\0"); //This is here for docker images to detect server is running.
-            Console.Title = $"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}";
+            SetTitle($"VoiceCraft - {VoiceCraftServer.Version}: {Localizer.Get("Title.Running")}");
             await telemetry.ReportStartupAsync(CreateTelemetrySnapshot(
                 liteNetServer,
                 httpMcApiServer,
@@ -184,6 +185,18 @@ public class App(IServiceProvider serviceProvider)
         while (_running)
         {
             await Task.Delay(1);
+        }
+    }
+
+    private static void SetTitle(string title)
+    {
+        try
+        {
+            Console.Title = title;
+        }
+        catch
+        {
+            //Do Nothing
         }
     }
 
