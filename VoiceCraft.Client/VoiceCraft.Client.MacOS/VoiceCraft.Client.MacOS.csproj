@@ -14,9 +14,9 @@
         <ValidateXcodeVersion>false</ValidateXcodeVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <TrimMode>link</TrimMode>
+        <TrimMode>full</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
-        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
         <SelfContained>true</SelfContained>
     </PropertyGroup>
 

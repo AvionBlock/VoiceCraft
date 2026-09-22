@@ -12,7 +12,7 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>
-        <TrimMode>link</TrimMode>
+        <TrimMode>full</TrimMode>
         <SelfContained>true</SelfContained>
     </PropertyGroup>
 

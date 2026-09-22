@@ -3,7 +3,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <TrimMode>link</TrimMode>
+        <TrimMode>full</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
 

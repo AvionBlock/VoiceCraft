@@ -29,7 +29,7 @@ build:client:linux:
   script: 
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
     - dotnet workload restore
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:PublishTrimmed=true -p:PublishAot=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:PublishTrimmed=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Linux.$ARCH"
     expire_in: 14 days
