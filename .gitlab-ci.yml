@@ -5,7 +5,7 @@ stages:
 
 variables:
   # Dotnet
-  DOTNET_SDK_IMAGE: "registry-gitlab.avion.team/voicecraft/voicecraft.build:latest"
+  DOTNET_SDK_IMAGE: "mcr.microsoft.com/dotnet/sdk:10.0"
   DOTNET_CLI_HOME: "$CI_PROJECT_DIR/.dotnet-home"
   # Nuget
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
@@ -39,6 +39,7 @@ build:client:linux:
       - ARCH: [x64, arm, arm64]
   script: 
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
+    - dotnet restore -r linux-$ARCH
     - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:PublishTrimmed=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Linux.$ARCH"
@@ -56,6 +57,7 @@ build:client:windows:
       - ARCH: [x64, x86, arm64]
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
+    - dotnet restore -r "win-$env:ARCH"
     - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -p:PublishTrimmed=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH"
     - $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
     - $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"
