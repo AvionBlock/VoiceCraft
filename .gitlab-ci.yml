@@ -3,14 +3,20 @@ stages:
   - package
   - release
 
+variables:
+  # Dotnet
+  DOTNET_CLI_HOME: "$CI_PROJECT_DIR/.dotnet-home"
+  # Nuget
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+
+# SDK Install
 .dotnet:
   image: "$DOTNET_SDK_IMAGE"
-  tags:
-    - ubuntu-docker
   before_script:
     - mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
     - dotnet --info
 
+# Build Client
 build:client:linux:
   extends: .dotnet
   stage: build
