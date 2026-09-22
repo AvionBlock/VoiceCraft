@@ -91,6 +91,49 @@ public class AudioEffectProcessorTests
         Assert.Equal(1, disposedCount);
     }
 
+    [Theory]
+    [InlineData(EffectType.Visibility)]
+    [InlineData(EffectType.Proximity)]
+    [InlineData(EffectType.Directional)]
+    [InlineData(EffectType.ProximityEcho)]
+    [InlineData(EffectType.Echo)]
+    [InlineData(EffectType.ProximityMuffle)]
+    [InlineData(EffectType.Muffle)]
+    public void Processor_DoesNotChangeAudioWhenEffectIsMaskedOff(EffectType effectType)
+    {
+        var source = new VoiceCraftEntity(1) { TalkBitmask = 0 };
+        var target = new VoiceCraftEntity(2);
+        using var effect = CreateEffect(effectType);
+        effect.Bitmask = 1;
+        using var processor = effect.GetProcessor(source);
+        float[] buffer = [1f, -0.5f, 0.25f, 0f];
+
+        processor.Process(target, buffer);
+
+        Assert.Equal([1f, -0.5f, 0.25f, 0f], buffer);
+    }
+
+    [Theory]
+    [InlineData(EffectType.Visibility)]
+    [InlineData(EffectType.Proximity)]
+    [InlineData(EffectType.Directional)]
+    [InlineData(EffectType.ProximityEcho)]
+    [InlineData(EffectType.Echo)]
+    [InlineData(EffectType.ProximityMuffle)]
+    [InlineData(EffectType.Muffle)]
+    public void DisposingEffect_DisposesItsProcessor(EffectType effectType)
+    {
+        using var effect = CreateEffect(effectType);
+        using var processor = effect.GetProcessor(new VoiceCraftEntity(1));
+        var disposedCount = 0;
+        processor.OnDisposed += _ => disposedCount++;
+
+        effect.Dispose();
+        effect.Dispose();
+
+        Assert.Equal(1, disposedCount);
+    }
+
     private static IAudioEffect CreateEffect(EffectType effectType)
     {
         return effectType switch
