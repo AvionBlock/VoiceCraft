@@ -43,6 +43,14 @@ variables:
     - $env:NUGET_PACKAGES = Join-Path $env:CI_PROJECT_DIR ".nuget\packages"
     - New-Item -ItemType Directory -Force -Path $env:DOTNET_CLI_HOME, $env:NUGET_PACKAGES | Out-Null
     - dotnet --version
+
+.dotnet:macos:
+  variables:
+    MSBuildEnableWorkloadResolver: "true"
+  before_script:
+    - export PATH="/usr/local/share/dotnet:/opt/homebrew/bin:/usr/local/bin:$PATH"
+    - mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
+    - dotnet --version
   
 # Tests
 .test:
@@ -83,6 +91,13 @@ test:windows:
   stage: test
   tags:
     - windows-shell
+
+test:macos:
+  extends:
+    - .dotnet:macos
+    - .test
+  tags:
+    - macos-shell
 
 # Build Client
 build:client:linux:
@@ -125,3 +140,50 @@ build:client:windows:
       - VoiceCraft.Client.Windows.$ARCH/
     exclude:
       - VoiceCraft.Client.Windows.$ARCH/*.pdb
+
+build:client:macos:
+  extends: .dotnet:macos
+  stage: build
+  tags:
+    - macos-shell
+  parallel:
+    matrix:
+      - ARCH: [x64, arm64]
+  script:
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.MacOS
+    - xcodebuild -version
+    - dotnet restore -r "osx-$ARCH"
+    - dotnet publish -c Release -r "osx-$ARCH" --no-restore -p:UseSharedCompilation=false
+    - |
+      output_dir="$PWD/bin/Release/net10.0-macos/osx-$ARCH"
+      app_bundle=$(find "$output_dir" -maxdepth 2 -name '*.app' -print -quit)
+      if [ -z "$app_bundle" ]; then
+        echo "No macOS app bundle found in $output_dir"
+        exit 1
+      fi
+      artifact_dir="$CI_PROJECT_DIR/VoiceCraft.Client.MacOS.$ARCH"
+      mkdir -p "$artifact_dir"
+      hdiutil create -volname VoiceCraft -srcfolder "$app_bundle" -ov -format UDZO "$artifact_dir/VoiceCraft.Client.MacOS.$ARCH.dmg"
+      pkgbuild --component "$app_bundle" --install-location /Applications "$artifact_dir/VoiceCraft.Client.MacOS.$ARCH.pkg"
+  artifacts:
+    name: "VoiceCraft.Client.MacOS.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.MacOS.$ARCH/
+
+build:client:ios:
+  extends: .dotnet:macos
+  stage: build
+  tags:
+    - macos-shell
+  script:
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.iOS
+    - xcodebuild -version
+    - dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:UseSharedCompilation=false
+    - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64"
+    - cp ./bin/Release/net10.0-ios/ios-arm64/publish/*.ipa "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64/"
+  artifacts:
+    name: "VoiceCraft.Client.iOS.arm64"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.iOS.arm64/
