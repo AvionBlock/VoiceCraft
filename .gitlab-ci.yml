@@ -9,17 +9,28 @@ variables:
   DOTNET_CLI_HOME: "$CI_PROJECT_DIR/.dotnet-home"
   # Nuget
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
-
+  
 # SDK Install
 .dotnet:
   image: "$DOTNET_SDK_IMAGE"
+
+.dotnet:linux:
+  extends: .dotnet
   before_script:
     - mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
     - dotnet --info
 
+.dotnet:windows:
+  extends: .dotnet
+  before_script:
+    - $env:DOTNET_CLI_HOME = Join-Path $env:CI_PROJECT_DIR ".dotnet-home"
+    - $env:NUGET_PACKAGES = Join-Path $env:CI_PROJECT_DIR ".nuget\packages"
+    - New-Item -ItemType Directory -Force -Path $env:DOTNET_CLI_HOME, $env:NUGET_PACKAGES | Out-Null
+    - dotnet --info
+  
 # Build Client
 build:client:linux:
-  extends: .dotnet
+  extends: .dotnet:linux
   stage: build
   tags:
     - ubuntu-docker
@@ -37,7 +48,7 @@ build:client:linux:
       - VoiceCraft.Client.Linux.$ARCH/
     
 build:client:windows:
-  extends: .dotnet
+  extends: .dotnet:windows
   stage: build
   tags:
     - windows-shell
