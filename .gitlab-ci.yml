@@ -18,6 +18,7 @@ variables:
   extends: .dotnet
   before_script:
     - mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
+    - dotnet workload repair
     - dotnet --info
 
 .dotnet:windows:
@@ -26,6 +27,7 @@ variables:
     - $env:DOTNET_CLI_HOME = Join-Path $env:CI_PROJECT_DIR ".dotnet-home"
     - $env:NUGET_PACKAGES = Join-Path $env:CI_PROJECT_DIR ".nuget\packages"
     - New-Item -ItemType Directory -Force -Path $env:DOTNET_CLI_HOME, $env:NUGET_PACKAGES | Out-Null
+    - dotnet workload repair
     - dotnet --info
   
 # Build Client
