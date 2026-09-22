@@ -126,3 +126,5 @@ build:client:windows:
     expire_in: 14 days
     paths:
       - VoiceCraft.Client.Windows.$ARCH/
+    exclude:
+      - VoiceCraft.Client.Windows.$ARCH/*.pdb
