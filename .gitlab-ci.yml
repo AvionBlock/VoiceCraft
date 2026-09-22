@@ -3,9 +3,18 @@ stages:
   - package
   - release
 
-build:client:linux:
-  stage: build
+.dotnet:
+  extends: .dotnet_cache
   image: "$DOTNET_SDK_IMAGE"
+  tags:
+    - ubuntu-docker
+  before_script:
+    - mkdir -p "$DOTNET_CLI_HOME" "$NUGET_PACKAGES"
+    - dotnet --info
+
+build:client:linux:
+  extends: .dotnet
+  stage: build
   tags:
     - ubuntu-docker
   parallel: 
