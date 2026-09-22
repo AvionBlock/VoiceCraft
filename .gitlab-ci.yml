@@ -4,7 +4,6 @@ stages:
   - release
 
 .dotnet:
-  extends: .dotnet_cache
   image: "$DOTNET_SDK_IMAGE"
   tags:
     - ubuntu-docker
