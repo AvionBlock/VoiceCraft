@@ -7,6 +7,7 @@ using VoiceCraft.Core.Locales;
 
 namespace VoiceCraft.Client.Tests.Services;
 
+[Collection("SharedLocalizer")]
 public class HotKeyServiceTests
 {
     [Fact]

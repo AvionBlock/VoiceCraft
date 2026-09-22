@@ -48,17 +48,14 @@ variables:
 .test:
   stage: test
   script:
-    - dotnet test ./VoiceCraft.Core.Tests/VoiceCraft.Core.Tests.csproj -c Release -p:UseSharedCompilation=false --collect:"XPlat Code Coverage" --logger "junit;LogFileName=junit.xml" --results-directory TestResults/Core
-    - dotnet test ./VoiceCraft.Network.Tests/VoiceCraft.Network.Tests.csproj -c Release -p:UseSharedCompilation=false --collect:"XPlat Code Coverage" --logger "junit;LogFileName=junit.xml" --results-directory TestResults/Network
-    - dotnet test ./VoiceCraft.Client.Tests/VoiceCraft.Client.Tests.csproj -c Release -p:UseSharedCompilation=false --collect:"XPlat Code Coverage" --logger "junit;LogFileName=junit.xml" --results-directory TestResults/Client
-    - dotnet test ./VoiceCraft.Server.Runtime.Tests/VoiceCraft.Server.Runtime.Tests.csproj -c Release -p:UseSharedCompilation=false --collect:"XPlat Code Coverage" --logger "junit;LogFileName=junit.xml" --results-directory TestResults/Server
+    - dotnet test ./VoiceCraft.Tests/VoiceCraft.Tests.csproj -c Release -p:UseSharedCompilation=false --collect:"XPlat Code Coverage" --logger "junit;LogFileName=junit.xml" --results-directory TestResults
   artifacts:
     when: always
     expire_in: 14 days
     paths:
       - TestResults/
     reports:
-      junit: TestResults/**/junit.xml
+      junit: TestResults/junit.xml
       coverage_report:
         coverage_format: cobertura
         path: TestResults/**/coverage.cobertura.xml

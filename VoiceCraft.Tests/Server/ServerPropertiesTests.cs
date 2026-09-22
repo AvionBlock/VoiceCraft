@@ -5,6 +5,7 @@ using Xunit;
 
 namespace VoiceCraft.Server.Runtime.Tests;
 
+[Collection("SharedLocalizer")]
 public class ServerPropertiesTests
 {
     [Fact]
