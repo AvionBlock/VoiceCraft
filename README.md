@@ -129,7 +129,7 @@ A Thai-based Minecraft studio that develops and maintains a localized version of
 - [SpeexDSPSharp](https://github.com/AvionBlock/SpeexDSPSharp)
 - [OpusSharp](https://github.com/AvionBlock/OpusSharp)
 - [SharpHook](https://github.com/TolikPylypchuk/SharpHook)
-- [discord-rpc-csharp](https://github.com/Lachee/discord-rpc-csharp)
+- [DiscordRPC-NativeAOT](https://github.com/samse1337/DiscordRPC-NativeAOT)
 - [SoundFlow](https://github.com/LSXPrime/SoundFlow)
 - [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet)
 
