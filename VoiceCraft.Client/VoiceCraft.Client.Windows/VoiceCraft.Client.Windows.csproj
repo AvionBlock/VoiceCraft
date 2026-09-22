@@ -5,7 +5,7 @@
         One for Windows with net10.0-windows TFM, one for MacOS with net10.0-macos and one with net10.0 TFM for Linux.-->
         <TargetFramework>net10.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
-        <TrimMode>full</TrimMode>
+        <TrimMode>link</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
         <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
         <SelfContained>true</SelfContained>
