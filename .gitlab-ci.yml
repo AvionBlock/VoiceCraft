@@ -13,6 +13,7 @@ variables:
   DOTNET_CLI_UI_LANGUAGE: "en"
   MSBuildEnableWorkloadResolver: "false"
   NUGET_CLI_LANGUAGE: "en"
+  GIT_CLEAN_FLAGS: "-ffdx -e .nuget/"
   # Nuget
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   
@@ -46,7 +47,7 @@ build:client:linux:
   script: 
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
     - dotnet restore -r linux-$ARCH
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Linux.$ARCH"
     expire_in: 14 days
@@ -64,7 +65,7 @@ build:client:windows:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
     - dotnet restore -r "win-$env:ARCH"
-    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH"
+    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH"
     - $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
     - $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"
     - Invoke-WebRequest -Uri $uri -OutFile $outFile
