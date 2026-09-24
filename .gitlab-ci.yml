@@ -222,11 +222,13 @@ build:client:android:
       wget -q -P ./jdk https://aka.ms/download-jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
       tar -xvzf ./jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz -C ./jdk
       rm ./jdk/*.tar.gz
+      
     - export ANDROID_HOME=${CI_PROJECT_DIR}/android-sdk
     - export JAVA_HOME=${CI_PROJECT_DIR}/jdk/`dir ./jdk | tail -1`
   script:
-    - echo $ANDROID_HOME
-    - echo $JAVA_HOME
+    - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
+    - dotnet workload restore
+    - dotnet publish -c Release -r android-$ARCH -p:UseSharedCompilation=false
 
 build:client:ios:
   rules:
