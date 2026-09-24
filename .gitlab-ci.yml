@@ -212,6 +212,7 @@ build:client:android:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
     - curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash
+    - source /root/.bashrc
     - android update
     - android sdk install platforms/android-${ANDROID_COMPILE_SDK} build-tools/${ANDROID_BUILD_TOOLS}
   script:
