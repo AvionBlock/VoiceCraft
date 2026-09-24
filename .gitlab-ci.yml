@@ -214,8 +214,7 @@ build:client:android:
     - mkdir -p ./android-sdk/cmdline-tools
     - wget -P ./android-sdk/cmdline-tools https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
     - unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
-    - mv ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/latest
-    - dir ./android-sdk/cmdline-tools
+    - mv ./android-sdk/cmdline-tools/cmdline-tools ./android-sdk/cmdline-tools/latest
     - echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}"
   script:
     - dir
