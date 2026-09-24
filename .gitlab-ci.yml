@@ -228,7 +228,7 @@ build:client:android:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
     - dotnet workload restore
-    - dotnet publish -c Release -r "android-$ARCH" -p:UseSharedCompilation=false -p:MSBuildEnableWorkloadResolver=true
+    - dotnet publish -c Release -r android-arm64
 
 build:client:ios:
   rules:
