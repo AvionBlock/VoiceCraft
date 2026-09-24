@@ -219,7 +219,7 @@ build:client:android:
     - wget -P ./jdk https://aka.ms/download-jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
     - tar -xvzf ./jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz -C ./jdk
     - export ANDROID_HOME=${CI_PROJECT_DIR}/android-sdk
-    - export JAVA_HOME=${CI_PROJECT_DIR}/jdk/`find . -type d | tail -1`
+    - export JAVA_HOME=${CI_PROJECT_DIR}/jdk/`find . -mindepth 1 -maxdepth 1 -type d -print -quit | tail -1`
   script:
     - echo $ANDROID_HOME
     - echo $JAVA_HOME
