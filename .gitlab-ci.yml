@@ -227,7 +227,7 @@ build:client:android:
     - export JAVA_HOME=${CI_PROJECT_DIR}/jdk/`dir ./jdk | tail -1`
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
-    - dotnet workload restore
+    - dotnet workload restore -r "android-$ARCH"
     - dotnet publish -c Release -r android-$ARCH -p:UseSharedCompilation=false
 
 build:client:ios:
