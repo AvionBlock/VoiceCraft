@@ -210,10 +210,11 @@ build:client:android:
   before_script: 
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
-    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
+    - wget -quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
     - unzip -d android-sdk-linux android-sdk.zip
   script:
     - dir ./android-sdk-linux
+    - dir ./android-sdk-linux/cmdline-tools
 
 build:client:ios:
   rules:
