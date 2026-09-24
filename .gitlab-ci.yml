@@ -216,13 +216,13 @@ build:client:android:
     - unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
     - mv ./android-sdk/cmdline-tools/cmdline-tools ./android-sdk/cmdline-tools/latest
     - echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS}"
-    - export ANDROID_HOME=$CI_PROJECT_DIR/android-sdk
     - wget -P ./jdk https://aka.ms/download-jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
     - tar -xvzf ./jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz -C ./jdk
-    - dir ./jdk
-    - export JAVA_HOME=$CI_PROJECT_DIR/jdk
+    - export ANDROID_HOME=${CI_PROJECT_DIR}/android-sdk
+    - export JAVA_HOME=${CI_PROJECT_DIR}/jdk/`find . -type d | tail -1`
   script:
-    - dir
+    - echo $ANDROID_HOME
+    - echo $JAVA_HOME
 
 build:client:ios:
   rules:
