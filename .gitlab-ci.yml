@@ -12,12 +12,24 @@ variables:
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
   DOTNET_CLI_UI_LANGUAGE: "en"
+  # Android
+  MS_OPENJDK_VERSION: "25.0.4.1"
+  ANDROID_CLI_TOOLS: "15859902"
   # Nuget
   NUGET_CLI_LANGUAGE: "en"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   # Other
   GIT_CLEAN_FLAGS: "-ffdx -e .nuget/"
   MSBuildEnableWorkloadResolver: "false"
+  
+  # Options
+  BUILD_LINUX_CLIENT: "false"
+  BUILD_WINDOWS_CLIENT: "false"
+  BUILD_MACOS_CLIENT: "false"
+  BUILD_IOS_CLIENT: "false"
+  BUILD_ANDROID_CLIENT: "true"
+  BUILD_LINUX_SERVER: "false"
+  BUILD_WINDOWS_SERVER: "false"
   
 # SDK Install
 .dotnet:
@@ -102,6 +114,8 @@ test:macos:
 
 # Build Client
 build:client:linux:
+  rules:
+    - if: $BUILD_LINUX_CLIENT == "true"
   extends: .dotnet:linux
   stage: build
   tags:
@@ -120,6 +134,8 @@ build:client:linux:
       - VoiceCraft.Client.Linux.$ARCH/
     
 build:client:windows:
+  rules:
+    - if: $BUILD_WINDOWS_CLIENT == "true"
   extends: .dotnet:windows
   stage: build
   tags:
@@ -143,6 +159,8 @@ build:client:windows:
       - VoiceCraft.Client.Windows.$ARCH/*.pdb
 
 build:client:macos:
+  rules:
+    - if: $BUILD_MACOS_CLIENT == "true"
   extends: .dotnet:macos
   stage: build
   tags:
@@ -171,8 +189,27 @@ build:client:macos:
     expire_in: 14 days
     paths:
       - VoiceCraft.Client.MacOS.$ARCH/
+    
+build:client:android:
+  rules:
+    - if: $BUILD_ANDROID_CLIENT == "true"
+  extends: .dotnet:linux
+  stage: build
+  tags:
+    - ubuntu-docker
+  parallel:
+    matrix:
+      - ARCH: [ arm64 ]
+  before_script: 
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes wget zip unzip
+    - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-$ANDROID_CLI_TOOLS_latest.zip
+    - unzip -d android-sdk-linux android-sdk.zip
+    - dir ./android-sdk-linux
 
 build:client:ios:
+  rules:
+    - if: $BUILD_IOS_CLIENT == "true"
   extends: .dotnet:macos
   stage: build
   tags:
@@ -191,6 +228,8 @@ build:client:ios:
 
 # Build Server
 build:server:linux:
+  rules:
+    - if: $BUILD_LINUX_SERVER == "true"
   extends: .dotnet:linux
   stage: build
   tags:
@@ -209,6 +248,8 @@ build:server:linux:
       - VoiceCraft.Server.Linux.$ARCH/
     
 build:server:windows:
+  rules:
+    - if: $BUILD_LINUX_SERVER == "true"
   extends: .dotnet:windows
   stage: build
   tags:
