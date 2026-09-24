@@ -12,11 +12,12 @@ variables:
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
   DOTNET_CLI_UI_LANGUAGE: "en"
-  MSBuildEnableWorkloadResolver: "false"
-  NUGET_CLI_LANGUAGE: "en"
-  GIT_CLEAN_FLAGS: "-ffdx -e .nuget/"
   # Nuget
+  NUGET_CLI_LANGUAGE: "en"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  # Other
+  GIT_CLEAN_FLAGS: "-ffdx -e .nuget/"
+  MSBuildEnableWorkloadResolver: "false"
   
 # SDK Install
 .dotnet:
@@ -187,3 +188,42 @@ build:client:ios:
     expire_in: 14 days
     paths:
       - VoiceCraft.Client.iOS.arm64/
+
+# Build Server
+build:server:linux:
+  extends: .dotnet:linux
+  stage: build
+  tags:
+    - ubuntu-docker
+  parallel:
+    matrix:
+      - ARCH: [x64, arm, arm64]
+  script:
+    - cd ./VoiceCraft.Server
+    - dotnet restore -r linux-$ARCH
+    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$CI_PROJECT_DIR/VoiceCraft.Server.Linux.$ARCH"
+  artifacts:
+    name: "VoiceCraft.Server.Linux.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Server.Linux.$ARCH/
+    
+build:server:windows:
+  extends: .dotnet:windows
+  stage: build
+  tags:
+    - windows-shell
+  parallel:
+    matrix:
+      - ARCH: [x64, x86, arm64]
+  script:
+    - cd ./VoiceCraft.Server
+    - dotnet restore -r "win-$env:ARCH"
+    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$env:CI_PROJECT_DIR\VoiceCraft.Server.Windows.$env:ARCH"
+  artifacts:
+    name: "VoiceCraft.Server.Windows.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Server.Windows.$ARCH/
+    exclude:
+      - VoiceCraft.Server.Windows.$ARCH/*.pdb
