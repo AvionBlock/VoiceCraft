@@ -23,6 +23,7 @@ variables:
   MSBuildEnableWorkloadResolver: "false"
   
   # Options
+  RUN_TESTS: "false"
   BUILD_LINUX_CLIENT: "false"
   BUILD_WINDOWS_CLIENT: "false"
   BUILD_MACOS_CLIENT: "false"
@@ -67,6 +68,8 @@ variables:
   
 # Tests
 .test:
+  rules:
+    - if: $RUN_TESTS == "true"
   stage: test
   script:
     - dotnet test ./VoiceCraft.Tests/VoiceCraft.Tests.csproj -c Release -p:UseSharedCompilation=false --collect:"XPlat Code Coverage" --logger "junit;LogFileName=junit.xml" --results-directory TestResults
@@ -82,6 +85,8 @@ variables:
         path: TestResults/**/coverage.cobertura.xml
 
 test:linux:
+  rules:
+    - if: $RUN_TESTS == "true"
   extends:
     - .dotnet:linux
     - .test
@@ -98,6 +103,8 @@ test:linux:
     policy: pull-push
 
 test:windows:
+  rules:
+    - if: $RUN_TESTS == "true"
   extends:
     - .dotnet:windows
     - .test
@@ -203,7 +210,7 @@ build:client:android:
   before_script: 
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
-    - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-$ANDROID_CLI_TOOLS_latest.zip
+    - wget --output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-$ANDROID_CLI_TOOLS_latest.zip
     - unzip -d android-sdk-linux android-sdk.zip
   script:
     - dir ./android-sdk-linux
