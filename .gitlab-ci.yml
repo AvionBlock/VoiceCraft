@@ -13,7 +13,7 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
   DOTNET_CLI_UI_LANGUAGE: "en"
   # Android
-  MS_OPENJDK_VERSION: "25.0.4.1"
+  MS_OPENJDK: "25.0.4.1"
   ANDROID_CLI_TOOLS: "15859902"
   ANDROID_COMPILE_SDK: "36.1"
   ANDROID_BUILD_TOOLS: "36.1.0"
@@ -212,13 +212,14 @@ build:client:android:
   before_script: 
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
-    - mkdir -p ./android-sdk/cmdline-tools
     - wget -P ./android-sdk/cmdline-tools https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
     - unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
     - mv ./android-sdk/cmdline-tools/cmdline-tools ./android-sdk/cmdline-tools/latest
     - echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS}"
-    - dir ./android-sdk
     - export ANDROID_HOME=./android-sdk
+    - wget -P ./jdk https://aka.ms/download-jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
+    - unzip -d ./jdk ./jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
+    - dir ./jdk
   script:
     - dir
 
