@@ -212,12 +212,16 @@ build:client:android:
   before_script: 
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
-    - wget -P ./android-sdk/cmdline-tools https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
-    - unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip && rm ./android-sdk/cmdline-tools/*.zip
-    - mv ./android-sdk/cmdline-tools/cmdline-tools ./android-sdk/cmdline-tools/latest
-    - echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS}"
-    - wget -P ./jdk https://aka.ms/download-jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
-    - tar -xvzf ./jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz -C ./jdk && rm ./jdk/*.tar.gz
+    - |
+      wget -q -P ./android-sdk/cmdline-tools https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
+      unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
+      rm ./android-sdk/cmdline-tools/*.zip
+      mv ./android-sdk/cmdline-tools/cmdline-tools ./android-sdk/cmdline-tools/latest
+      echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}" "platform-tools" "build-tools;${ANDROID_BUILD_TOOLS}"
+    - |
+      wget -q -P ./jdk https://aka.ms/download-jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz
+      tar -xvzf ./jdk/microsoft-jdk-${MS_OPENJDK}-linux-x64.tar.gz -C ./jdk
+      rm ./jdk/*.tar.gz
     - export ANDROID_HOME=${CI_PROJECT_DIR}/android-sdk
     - export JAVA_HOME=${CI_PROJECT_DIR}/jdk/`dir ./jdk | tail -1`
   script:
