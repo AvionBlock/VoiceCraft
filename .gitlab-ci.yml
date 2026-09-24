@@ -211,11 +211,11 @@ build:client:android:
   before_script: 
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
-    - mkdir -p ./android-sdk
-    - wget -P ./android-sdk https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
-    - unzip -d ./android-sdk ./android-sdk/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
+    - mkdir -p ./android-sdk/cmdline-tools
+    - wget -P ./android-sdk/cmdline-tools https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
+    - unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
     - mv ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/latest
-    - dir ./android-sdk/latest
+    - dir ./android-sdk/cmdline-tools
     - echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}"
   script:
     - dir
