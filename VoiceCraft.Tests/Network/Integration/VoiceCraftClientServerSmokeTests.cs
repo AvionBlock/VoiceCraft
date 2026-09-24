@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network;
 using VoiceCraft.Network.Clients;
@@ -325,7 +326,7 @@ public class VoiceCraftClientServerSmokeTests
         public IReadOnlyCollection<VoiceCraftEntity> WorldSnapshot => _world.Entities.ToArray();
     }
 
-    private sealed class FakeAudioEncoder : Core.Interfaces.IAudioEncoder
+    private sealed class FakeAudioEncoder : IAudioEncoder
     {
         public int Encode(Span<float> data, Span<byte> output, int samples)
         {
@@ -340,7 +341,7 @@ public class VoiceCraftClientServerSmokeTests
         }
     }
 
-    private sealed class FakeAudioDecoder : Core.Interfaces.IAudioDecoder
+    private sealed class FakeAudioDecoder : IAudioDecoder
     {
         public int Decode(Span<byte> buffer, Span<float> output, int samples)
         {
