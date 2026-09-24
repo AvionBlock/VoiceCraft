@@ -73,8 +73,19 @@ VoiceCraft client protocol and Minecraft-facing transports such as McHttp, McWss
 | `VoiceCraft.Server` | Console server application, runtime configuration, localization, commands, and service wiring. |
 | `VoiceCraft.Network` | VoiceCraft and McApi packets, clients, servers, transports, entities, audio effects, jitter buffering, and world state. |
 | `VoiceCraft.Core` | Shared constants, models, audio abstractions, helpers, telemetry transport, and common runtime code. |
-| `VoiceCraft.*.Tests` | Unit and protocol coverage for client, core, and network behavior. |
+| `VoiceCraft.Tests` | Unit and integration tests for client, core, network, and server configuration. |
 | `VoiceCraft.Tools` | Development and measurement tools used by maintainers. |
+
+## Testing
+
+The test project targets .NET 10. Run it directly so the solution's Android and iOS projects do not require their workloads:
+
+```powershell
+$env:MSBuildEnableWorkloadResolver = 'false'
+dotnet test VoiceCraft.Tests/VoiceCraft.Tests.csproj -c Release
+```
+
+CI runs the suite on Linux and Windows and publishes JUnit results and Cobertura coverage.
 
 ## Supported Devices
 
