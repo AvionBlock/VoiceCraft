@@ -14,8 +14,8 @@ variables:
   DOTNET_CLI_UI_LANGUAGE: "en"
   # Android
   MS_OPENJDK_VERSION: "25.0.4.1"
-  ANDROID_CLI_TOOLS: "15859902"
   ANDROID_COMPILE_SDK: "36.1"
+  ANDROID_BUILD_TOOLS: "36.1.0"
   # Nuget
   NUGET_CLI_LANGUAGE: "en"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
@@ -208,14 +208,12 @@ build:client:android:
   parallel:
     matrix:
       - ARCH: [ arm64 ]
-  before_script: 
+  before_script:
     - apt-get --quiet update --yes
     - apt-get --quiet install --yes wget zip unzip
-    - mkdir -p ./android-sdk/cmdline-tools
-    - wget -P ./android-sdk/cmdline-tools https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
-    - unzip -d ./android-sdk/cmdline-tools ./android-sdk/cmdline-tools/commandlinetools-linux-${ANDROID_CLI_TOOLS}_latest.zip
-    - mv ./android-sdk/cmdline-tools/cmdline-tools ./android-sdk/cmdline-tools/latest
-    - echo y | ./android-sdk/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-${ANDROID_COMPILE_SDK}"
+    - curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash
+    - android update
+    - android sdk install platforms/android-${ANDROID_COMPILE_SDK} build-tools/${ANDROID_BUILD_TOOLS}
   script:
     - dir
 
