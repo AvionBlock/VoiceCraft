@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using LiteNetLib.Utils;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Packets.McApiPackets;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Servers;
+namespace VoiceCraft.Tests.Network.Servers;
 
 public class HttpMcApiServerTests
 {
@@ -48,10 +48,8 @@ public class HttpMcApiServerTests
         using var server = CreateServer(world, effects, out var baseAddress);
         using var client = new HttpClient();
         server.Start();
-        using var request = new HttpRequestMessage(HttpMethod.Post, baseAddress)
-        {
-            Content = new StringContent(Pack(new McApiPingRequestPacket()), Encoding.UTF8, "text/plain")
-        };
+        using var request = new HttpRequestMessage(HttpMethod.Post, baseAddress);
+        request.Content = new StringContent(Pack(new McApiPingRequestPacket()), Encoding.UTF8, "text/plain");
         request.Headers.TryAddWithoutValidation("Authorization", "x");
 
         using var response = await client.SendAsync(request);

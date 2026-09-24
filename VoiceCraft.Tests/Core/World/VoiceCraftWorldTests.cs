@@ -1,8 +1,7 @@
 using System;
-using Xunit;
 using VoiceCraft.Core.World;
 
-namespace VoiceCraft.Core.Tests.World;
+namespace VoiceCraft.Tests.Core.World;
 
 public class VoiceCraftWorldTests
 {

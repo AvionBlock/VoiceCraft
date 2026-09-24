@@ -1,9 +1,7 @@
-using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio.Effects;
 using VoiceCraft.Network.Systems;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Systems;
+namespace VoiceCraft.Tests.Network.Systems;
 
 public class AudioEffectSystemTests
 {

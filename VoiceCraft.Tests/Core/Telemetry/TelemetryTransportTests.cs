@@ -2,9 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Core.Telemetry;
-using Xunit;
 
-namespace VoiceCraft.Core.Tests.Telemetry;
+namespace VoiceCraft.Tests.Core.Telemetry;
 
 public class TelemetryTransportTests
 {
@@ -13,7 +12,7 @@ public class TelemetryTransportTests
     {
         var transport = new TelemetryTransport();
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             transport.SendTelemetryAsync(new TelemetryEventRequest(), cancellation.Token));
@@ -24,7 +23,7 @@ public class TelemetryTransportTests
     {
         var transport = new TelemetryTransport();
         using var cancellation = new CancellationTokenSource();
-        cancellation.Cancel();
+        await cancellation.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             transport.SendDumpAsync(new TelemetryDumpRequest(), cancellation.Token));

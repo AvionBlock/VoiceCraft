@@ -1,14 +1,14 @@
 using System;
 using System.Net;
-using Xunit;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Request;
 using VoiceCraft.Network.Packets.VcPackets.Response;
 using VoiceCraft.Network.Servers;
 
-namespace VoiceCraft.Network.Tests.Servers;
+namespace VoiceCraft.Tests.Network.Servers;
 
 public class VoiceCraftServerTests
 {

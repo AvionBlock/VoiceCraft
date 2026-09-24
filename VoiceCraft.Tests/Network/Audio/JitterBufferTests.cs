@@ -1,8 +1,7 @@
 using System;
-using Xunit;
 using VoiceCraft.Network.Audio;
 
-namespace VoiceCraft.Network.Tests.Audio;
+namespace VoiceCraft.Tests.Network.Audio;
 
 public class JitterBufferTests
 {

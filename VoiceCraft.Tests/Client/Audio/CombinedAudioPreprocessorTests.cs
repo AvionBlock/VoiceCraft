@@ -4,7 +4,7 @@ using VoiceCraft.Client.Audio;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Interfaces;
 
-namespace VoiceCraft.Client.Tests.Audio;
+namespace VoiceCraft.Tests.Client.Audio;
 
 public class CombinedAudioPreprocessorTests
 {

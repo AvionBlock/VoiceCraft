@@ -1,9 +1,9 @@
 using System;
 using LiteNetLib.Utils;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests;
+namespace VoiceCraft.Tests.Network;
 
 public class Z85Tests
 {

@@ -2,13 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using VoiceCraft.Core.Interfaces;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Clients;
 using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
 using VoiceCraft.Network.Packets.VcPackets.Request;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Clients;
+namespace VoiceCraft.Tests.Network.Clients;
 
 public class VoiceCraftClientTests
 {

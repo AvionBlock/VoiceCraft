@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.ViewModels;
 
-namespace VoiceCraft.Client.Tests.Services;
+namespace VoiceCraft.Tests.Client.Services;
 
 public class NavigationServiceTests
 {

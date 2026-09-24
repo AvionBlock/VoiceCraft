@@ -1,8 +1,7 @@
 using System.Text.Json;
 using VoiceCraft.Core.JsonConverters;
-using Xunit;
 
-namespace VoiceCraft.Core.Tests.JsonConverters;
+namespace VoiceCraft.Tests.Core.JsonConverters;
 
 public class JsonBooleanConverterTests
 {

@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using LiteNetLib.Utils;
-using Xunit;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
-using VoiceCraft.Network.Packets.VcPackets;
 using VoiceCraft.Network.Packets.VcPackets.Event;
 using VoiceCraft.Network.Packets.VcPackets.Request;
 using VoiceCraft.Network.Packets.VcPackets.Response;
 
-namespace VoiceCraft.Network.Tests.Packets;
+namespace VoiceCraft.Tests.Network.Packets;
 
 public class PacketSerializationTests
 {

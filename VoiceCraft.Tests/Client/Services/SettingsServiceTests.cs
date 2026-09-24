@@ -6,7 +6,7 @@ using VoiceCraft.Client.Services;
 using VoiceCraft.Core;
 using VoiceCraft.Core.Locales;
 
-namespace VoiceCraft.Client.Tests.Services;
+namespace VoiceCraft.Tests.Client.Services;
 
 [Collection("SharedLocalizer")]
 public class SettingsServiceTests

@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using VoiceCraft.Client.Services;
 
-namespace VoiceCraft.Client.Tests.Services;
+namespace VoiceCraft.Tests.Client.Services;
 
 public class LogServiceTests
 {

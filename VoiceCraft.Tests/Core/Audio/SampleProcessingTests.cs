@@ -1,10 +1,9 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using Xunit;
 using VoiceCraft.Core.Audio;
 
-namespace VoiceCraft.Core.Tests.Audio;
+namespace VoiceCraft.Tests.Core.Audio;
 
 public class SampleProcessingTests
 {

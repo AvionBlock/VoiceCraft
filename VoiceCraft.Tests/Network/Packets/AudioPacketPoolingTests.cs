@@ -2,9 +2,8 @@ using VoiceCraft.Network.Packets.McApiPackets.Event;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.VcPackets.Event;
 using VoiceCraft.Network.Packets.VcPackets.Request;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Packets;
+namespace VoiceCraft.Tests.Network.Packets;
 
 public class AudioPacketPoolingTests
 {

@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Core.Locales;
 
-namespace VoiceCraft.Client.Tests.Services;
+namespace VoiceCraft.Tests.Client.Services;
 
 [Collection("SharedLocalizer")]
 public class HotKeyServiceTests

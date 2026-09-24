@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using VoiceCraft.Core.Locales;
-using Xunit;
+using VoiceCraft.Server.Runtime;
 
-namespace VoiceCraft.Server.Runtime.Tests;
+namespace VoiceCraft.Tests.Server.Runtime;
 
 [Collection("SharedLocalizer")]
 public class ServerPropertiesTests

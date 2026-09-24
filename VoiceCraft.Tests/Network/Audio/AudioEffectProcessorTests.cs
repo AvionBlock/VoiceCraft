@@ -2,11 +2,11 @@ using System;
 using System.Numerics;
 using VoiceCraft.Core;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Audio.Effects;
 using VoiceCraft.Network.Interfaces;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Audio;
+namespace VoiceCraft.Tests.Network.Audio;
 
 public class AudioEffectProcessorTests
 {
@@ -15,13 +15,12 @@ public class AudioEffectProcessorTests
     {
         var from = new VoiceCraftEntity(1);
         var to = new VoiceCraftEntity(2);
-        using var effect = new EchoEffect
-        {
-            Bitmask = 1,
-            Delay = 1f / Constants.SampleRate,
-            Feedback = 1f,
-            WetDry = 1f
-        };
+        using var effect = new EchoEffect();
+        effect.Bitmask = 1;
+        effect.Delay = 1f / Constants.SampleRate;
+        effect.Feedback = 1f;
+        effect.WetDry = 1f;
+        
         using var processor = effect.GetProcessor(from);
         Span<float> buffer = [1f, 0f, 0f, 0f];
 
@@ -38,7 +37,10 @@ public class AudioEffectProcessorTests
     {
         var from = new VoiceCraftEntity(1);
         var to = new VoiceCraftEntity(2);
-        using var effect = new MuffleEffect { Bitmask = 1, WetDry = 1f };
+        using var effect = new MuffleEffect();
+        effect.Bitmask = 1;
+        effect.WetDry = 1f;
+        
         using var processor = effect.GetProcessor(from);
         Span<float> buffer = [1f, 1f, 0f, 0f, 0f, 0f];
 
@@ -53,13 +55,12 @@ public class AudioEffectProcessorTests
     {
         var from = new VoiceCraftEntity(1);
         var to = new VoiceCraftEntity(2) { Position = new Vector3(10, 0, 0) };
-        using var effect = new ProximityEffect
-        {
-            Bitmask = 1,
-            MinRange = 0,
-            MaxRange = 10,
-            WetDry = 1f
-        };
+        using var effect = new ProximityEffect();
+        effect.Bitmask = 1;
+        effect.MinRange = 0;
+        effect.MaxRange = 10;
+        effect.WetDry = 1f;
+        
         using var processor = effect.GetProcessor(from);
         Span<float> buffer = [1f, 1f, 1f, 1f];
 
@@ -80,8 +81,8 @@ public class AudioEffectProcessorTests
     [InlineData(EffectType.Muffle)]
     public void ProcessorDispose_UnsubscribesFromEffectAndIsIdempotent(EffectType effectType)
     {
-        using var effect = CreateEffect(effectType);
-        using var processor = effect.GetProcessor(new VoiceCraftEntity(1));
+        var effect = CreateEffect(effectType);
+        var processor = effect.GetProcessor(new VoiceCraftEntity(1));
         var disposedCount = 0;
         processor.OnDisposed += _ => disposedCount++;
 
@@ -123,8 +124,8 @@ public class AudioEffectProcessorTests
     [InlineData(EffectType.Muffle)]
     public void DisposingEffect_DisposesItsProcessor(EffectType effectType)
     {
-        using var effect = CreateEffect(effectType);
-        using var processor = effect.GetProcessor(new VoiceCraftEntity(1));
+        var effect = CreateEffect(effectType);
+        var processor = effect.GetProcessor(new VoiceCraftEntity(1));
         var disposedCount = 0;
         processor.OnDisposed += _ => disposedCount++;
 

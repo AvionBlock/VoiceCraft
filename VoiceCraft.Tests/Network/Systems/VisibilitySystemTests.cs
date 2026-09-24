@@ -1,14 +1,14 @@
 using System;
 using LiteNetLib.Utils;
-using Xunit;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
 using VoiceCraft.Network.Interfaces;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Systems;
 using VoiceCraft.Network.World;
 
-namespace VoiceCraft.Network.Tests.Systems;
+namespace VoiceCraft.Tests.Network.Systems;
 
 public class VisibilitySystemTests
 {

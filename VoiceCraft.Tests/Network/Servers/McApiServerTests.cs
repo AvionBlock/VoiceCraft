@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Immutable;
 using VoiceCraft.Core.World;
+using VoiceCraft.Network;
 using VoiceCraft.Network.NetPeers;
 using VoiceCraft.Network.Packets.McApiPackets;
 using VoiceCraft.Network.Packets.McApiPackets.Request;
 using VoiceCraft.Network.Packets.McApiPackets.Response;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Servers;
+namespace VoiceCraft.Tests.Network.Servers;
 
 public class McApiServerTests
 {

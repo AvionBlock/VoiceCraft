@@ -5,9 +5,8 @@ using VoiceCraft.Core;
 using VoiceCraft.Core.Audio;
 using VoiceCraft.Core.Interfaces;
 using VoiceCraft.Network.World;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.World;
+namespace VoiceCraft.Tests.Network.World;
 
 public class VoiceCraftClientEntityTests
 {

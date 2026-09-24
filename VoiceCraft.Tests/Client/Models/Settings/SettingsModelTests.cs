@@ -4,7 +4,7 @@ using System.Linq;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Core;
 
-namespace VoiceCraft.Client.Tests.Models.Settings;
+namespace VoiceCraft.Tests.Client.Models.Settings;
 
 public class SettingsModelTests
 {

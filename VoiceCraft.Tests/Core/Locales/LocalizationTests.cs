@@ -1,8 +1,7 @@
 using System.IO;
 using VoiceCraft.Core.Locales;
-using Xunit;
 
-namespace VoiceCraft.Core.Tests.Locales;
+namespace VoiceCraft.Tests.Core.Locales;
 
 public class LocalizationTests
 {

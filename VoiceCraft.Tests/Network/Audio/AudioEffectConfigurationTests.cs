@@ -1,9 +1,8 @@
 using System.Numerics;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Audio.Effects;
-using Xunit;
 
-namespace VoiceCraft.Network.Tests.Audio;
+namespace VoiceCraft.Tests.Network.Audio;
 
 public class AudioEffectConfigurationTests
 {
@@ -65,7 +64,10 @@ public class AudioEffectConfigurationTests
     {
         var source = new VoiceCraftEntity(1);
         var target = new VoiceCraftEntity(2);
-        using var effect = new ProximityEffect { MinRange = 8, WetDry = 0.25f };
+        using var effect = new ProximityEffect();
+        effect.MinRange = 8;
+        effect.WetDry = 0.25f;
+        
         source.SetProperty("ProximityEffect:MinRange", 6f);
         target.SetProperty("ProximityEffect:MinRange", 3f);
         source.SetProperty("ProximityEffect:WetDry", 2f);
@@ -84,7 +86,9 @@ public class AudioEffectConfigurationTests
     {
         var source = new VoiceCraftEntity(1);
         var target = new VoiceCraftEntity(2);
-        using var effect = new EchoEffect { Delay = 0.5f, Feedback = 0.25f };
+        using var effect = new EchoEffect();
+        effect.Delay = 0.5f;
+        effect.Feedback = 0.25f;
 
         Assert.Equal(0.5f, effect.EvaluateDelayProperty(source, target), 3);
         Assert.Equal(0.25f, effect.EvaluateFeedbackProperty(source, target));
@@ -100,7 +104,9 @@ public class AudioEffectConfigurationTests
     {
         var source = new VoiceCraftEntity(1);
         var target = new VoiceCraftEntity(2);
-        using var effect = new ProximityMuffleEffect { Factor = 0.2f };
+        using var effect = new ProximityMuffleEffect();
+        effect.Factor = 0.2f;
+        
         source.SetProperty("ProximityMuffleEffect:Factor", 0.4f);
         target.SetProperty("ProximityMuffleEffect:Factor", 0.8f);
 
