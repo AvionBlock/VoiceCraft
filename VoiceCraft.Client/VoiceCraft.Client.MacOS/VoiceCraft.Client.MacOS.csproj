@@ -20,7 +20,6 @@
 
     <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
         <UseSharedCompilation>false</UseSharedCompilation>
-        <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
         <SelfContained>true</SelfContained>
         <TrimMode>link</TrimMode>

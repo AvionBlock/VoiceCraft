@@ -12,7 +12,7 @@
     <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
         <UseSharedCompilation>false</UseSharedCompilation>
         <PublishSingleFile>true</PublishSingleFile>
-        <PublishTrimmed Condition="'$(Platform)' != 'x86'">true</PublishTrimmed>
+        <PublishTrimmed Condition="'$(RuntimeIdentifier)' != 'win-x86'">true</PublishTrimmed>
         <SelfContained>true</SelfContained>
         <TrimMode>link</TrimMode>
     </PropertyGroup>
