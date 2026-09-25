@@ -230,7 +230,27 @@ build:client:android:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
     - dotnet workload restore
-    - dotnet publish -c Release -r "android-$ARCH" -o "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+    - |
+      if [ -n "${ANDROID_KEYSTORE:-}" ] && [ "${CI_PIPELINE_SOURCE:-}" != "merge_request_event" ]; then
+        if [ -z "${ALIAS:-}" ] || [ -z "${KEYSTORE_PASSWORD:-}" ]; then
+          echo "Android signing requires ALIAS and KEYSTORE_PASSWORD." >&2
+          exit 1
+        fi
+
+        keystore="$(mktemp)"
+        trap 'rm -f "$keystore"' EXIT
+        printf '%s' "$ANDROID_KEYSTORE" | base64 --decode > "$keystore"
+
+        dotnet publish -c Release -r "android-$ARCH" -o "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH" \
+          -p:AndroidKeyStore=true \
+          -p:AndroidSigningKeyStore="$keystore" \
+          -p:AndroidSigningKeyAlias="$ALIAS" \
+          -p:AndroidSigningKeyPass=env:KEYSTORE_PASSWORD \
+          -p:AndroidSigningStorePass=env:KEYSTORE_PASSWORD
+      else
+        echo "Android signing skipped: no keystore or merge request pipeline."
+        dotnet publish -c Release -r "android-$ARCH" -o "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+      fi
   artifacts:
     name: "VoiceCraft.Client.Android.$ARCH"
     expire_in: 14 days
