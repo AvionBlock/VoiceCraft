@@ -25,14 +25,14 @@ variables:
   MSBuildEnableWorkloadResolver: "false"
   
   # Options
-  RUN_TESTS: "false"
-  BUILD_LINUX_CLIENT: "false"
-  BUILD_WINDOWS_CLIENT: "false"
-  BUILD_MACOS_CLIENT: "false"
-  BUILD_IOS_CLIENT: "false"
+  RUN_TESTS: "true"
+  BUILD_LINUX_CLIENT: "true"
+  BUILD_WINDOWS_CLIENT: "true"
+  BUILD_MACOS_CLIENT: "true"
+  BUILD_IOS_CLIENT: "true"
   BUILD_ANDROID_CLIENT: "true"
-  BUILD_LINUX_SERVER: "false"
-  BUILD_WINDOWS_SERVER: "false"
+  BUILD_LINUX_SERVER: "true"
+  BUILD_WINDOWS_SERVER: "true"
   
 # SDK Install
 .dotnet:
@@ -135,7 +135,7 @@ build:client:linux:
   script: 
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Linux
     - dotnet restore -r linux-$ARCH
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
+    - dotnet publish -c Release -r "linux-$ARCH" -o "$CI_PROJECT_DIR/VoiceCraft.Client.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Linux.$ARCH"
     expire_in: 14 days
@@ -155,7 +155,7 @@ build:client:windows:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Windows
     - dotnet restore -r "win-$env:ARCH"
-    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH"
+    - dotnet publish -c Release -r "win-$env:ARCH" -o "$env:CI_PROJECT_DIR\VoiceCraft.Client.Windows.$env:ARCH"
     - $uri = "https://aka.ms/vc14/vc_redist.$env:ARCH.exe"
     - $outFile = Join-Path $env:CI_PROJECT_DIR "VoiceCraft.Client.Windows.$env:ARCH\vc_redist.$env:ARCH.exe"
     - Invoke-WebRequest -Uri $uri -OutFile $outFile
@@ -181,7 +181,7 @@ build:client:macos:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.MacOS
     - xcodebuild -version
     - dotnet restore -r "osx-$ARCH"
-    - dotnet publish -c Release -r "osx-$ARCH" --no-restore -p:UseSharedCompilation=false
+    - dotnet publish -c Release -r "osx-$ARCH" --no-restore
     - |
       output_dir="$PWD/bin/Release/net10.0-macos/osx-$ARCH"
       app_bundle=$(find "$output_dir" -maxdepth 2 -name '*.app' -print -quit)
@@ -230,12 +230,12 @@ build:client:android:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
     - dotnet workload restore
-    - dotnet publish -c Release -r "android-$ARCH" -p:UseSharedCompilation=false -o "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+    - dotnet publish -c Release -r "android-$ARCH" -o "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
   artifacts:
     name: "VoiceCraft.Client.Android.$ARCH"
     expire_in: 14 days
     paths:
-      - VoiceCraft.Client.Android.$ARCH/
+      - VoiceCraft.Client.Android.$ARCH/*.apk
 
 build:client:ios:
   rules:
@@ -247,7 +247,7 @@ build:client:ios:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.iOS
     - xcodebuild -version
-    - dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false -p:UseSharedCompilation=false
+    - dotnet publish -c Release -r ios-arm64 -p:BuildIpa=true -p:EnableCodeSigning=false
     - mkdir -p "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64"
     - cp ./bin/Release/net10.0-ios/ios-arm64/publish/*.ipa "$CI_PROJECT_DIR/VoiceCraft.Client.iOS.arm64/"
   artifacts:
@@ -270,7 +270,7 @@ build:server:linux:
   script:
     - cd ./VoiceCraft.Server
     - dotnet restore -r linux-$ARCH
-    - dotnet publish -c Release -r linux-$ARCH -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$CI_PROJECT_DIR/VoiceCraft.Server.Linux.$ARCH"
+    - dotnet publish -c Release -r linux-$ARCH -o "$CI_PROJECT_DIR/VoiceCraft.Server.Linux.$ARCH"
   artifacts:
     name: "VoiceCraft.Server.Linux.$ARCH"
     expire_in: 14 days
@@ -290,7 +290,7 @@ build:server:windows:
   script:
     - cd ./VoiceCraft.Server
     - dotnet restore -r "win-$env:ARCH"
-    - dotnet publish -c Release -r "win-$env:ARCH" -p:PublishSingleFile=true -p:UseSharedCompilation=false -o "$env:CI_PROJECT_DIR\VoiceCraft.Server.Windows.$env:ARCH"
+    - dotnet publish -c Release -r "win-$env:ARCH" -o "$env:CI_PROJECT_DIR\VoiceCraft.Server.Windows.$env:ARCH"
   artifacts:
     name: "VoiceCraft.Server.Windows.$ARCH"
     expire_in: 14 days

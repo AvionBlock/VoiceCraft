@@ -14,10 +14,16 @@
         <ValidateXcodeVersion>false</ValidateXcodeVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <TrimMode>link</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
         <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
+        <UseSharedCompilation>false</UseSharedCompilation>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
         <SelfContained>true</SelfContained>
+        <TrimMode>link</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>

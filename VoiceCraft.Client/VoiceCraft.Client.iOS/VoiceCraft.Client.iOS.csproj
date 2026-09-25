@@ -18,6 +18,12 @@
         <SelfContained>true</SelfContained>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
+        <UseSharedCompilation>false</UseSharedCompilation>
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>link</TrimMode>
+    </PropertyGroup>
+
     <ItemGroup>
         <ImageAsset Include="Resources\Assets.xcassets\AppIcon.appiconset\**\*" />
         <BundleResource Remove="Resources\Assets.xcassets\**\*" />

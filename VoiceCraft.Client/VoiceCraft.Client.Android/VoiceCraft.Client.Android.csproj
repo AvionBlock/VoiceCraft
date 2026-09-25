@@ -12,8 +12,14 @@
         <AndroidPackageFormat>apk</AndroidPackageFormat>
         <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
         <RunAOTCompilation>true</RunAOTCompilation>
-        <TrimMode>link</TrimMode>
         <SelfContained>true</SelfContained>
+        <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
+        <UseSharedCompilation>false</UseSharedCompilation>
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>link</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,14 +27,6 @@
             <Link>Resources\drawable\Icon.png</Link>
         </AndroidResource>
     </ItemGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <AndroidLinkMode>SdkOnly</AndroidLinkMode>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <AndroidLinkMode>SdkOnly</AndroidLinkMode>
-    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Android"/>
