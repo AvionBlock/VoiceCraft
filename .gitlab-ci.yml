@@ -230,7 +230,7 @@ build:client:android:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
     - dotnet workload restore
-    - dotnet publish -c Release -r "android-ARCH" -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME"
+    - dotnet publish -c Release -r "android-$ARCH" -p:AndroidSdkDirectory="$ANDROID_HOME" -p:JavaSdkDirectory="$JAVA_HOME"
 
 build:client:ios:
   rules:
