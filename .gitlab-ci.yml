@@ -230,7 +230,12 @@ build:client:android:
   script:
     - cd ./VoiceCraft.Client/VoiceCraft.Client.Android
     - dotnet workload restore
-    - dotnet publish -c Release -r "android-$ARCH"
+    - dotnet publish -c Release -r "android-$ARCH" -p:UseSharedCompilation=false -o "$CI_PROJECT_DIR/VoiceCraft.Client.Android.$ARCH"
+  artifacts:
+    name: "VoiceCraft.Client.Android.$ARCH"
+    expire_in: 14 days
+    paths:
+      - VoiceCraft.Client.Android.$ARCH/
 
 build:client:ios:
   rules:
