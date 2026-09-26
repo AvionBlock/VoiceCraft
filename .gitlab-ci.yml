@@ -399,8 +399,7 @@ package:gitlab:
         package_file="$artifact.$release_tag.zip"
         package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
         artifact_filepath="/voicecraft/$release_tag/$package_file"
-      
-        echo "$package_file"
-        echo "$artifact"
         zip -r "$package_file" "$artifact"
+      
+        curl --fail --show-error --silent --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
       done
