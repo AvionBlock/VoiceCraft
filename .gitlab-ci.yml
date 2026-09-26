@@ -458,7 +458,7 @@ release:gitlab:
     - when: never
   before_script:
     - apt-get --quiet update --yes
-    - apt-get --quiet install --yes zip jq
+    - apt-get --quiet install --yes zip curl jq
   script:
     - test -s release_notes.md
     - test -s release_assets.env
