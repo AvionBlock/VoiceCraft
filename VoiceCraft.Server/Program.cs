@@ -16,7 +16,7 @@ namespace VoiceCraft.Server;
 
 public static class Program
 {
-    public static readonly ServiceProvider ServiceProvider = BuildServiceProvider();
+    private static readonly ServiceProvider ServiceProvider = BuildServiceProvider();
     
     public static void Main(string[] args)
     {

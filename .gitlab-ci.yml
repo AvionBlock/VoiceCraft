@@ -34,6 +34,28 @@ variables:
   BUILD_LINUX_SERVER: "true"
   BUILD_WINDOWS_SERVER: "true"
   
+  # Manual Options
+  RELEASE_ENABLED:
+    value: "false"
+    options:
+      - "false"
+      - "true"
+    description: "Set to true in a manual pipeline to package artifacts and create a GitLab release."
+  RELEASE_VERSION:
+    value: "1.7.2"
+    description: "Release version without the leading v. Example: 1.7.2"
+  RELEASE_CHANNEL:
+    value: "beta"
+    options:
+      - "stable"
+      - "beta"
+      - "alpha"
+      - "nightly"
+    description: "Release channel. Stable uses tag v<version>; non-stable uses v<version>-<channel>.<pipeline_id>."
+  RELEASE_NOTES:
+    value: ""
+    description: "Optional extra release notes appended to the generated GitLab release description."
+  
 # SDK Install
 .dotnet:
   image: "$DOTNET_SDK_IMAGE"
@@ -318,3 +340,100 @@ build:server:windows:
       - VoiceCraft.Server.Windows.$ARCH/
     exclude:
       - VoiceCraft.Server.Windows.$ARCH/*.pdb
+
+release:gitlab:
+  stage: release
+  tags:
+    - ubuntu-docker
+  rules:
+    - if: '$RELEASE_ENABLED == "true"'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+    - if: '$CI_COMMIT_TAG'
+      when: manual
+    - when: never
+  script:
+    - |
+      release_version="${RELEASE_VERSION:-}"
+      release_channel="${RELEASE_CHANNEL:-beta}"
+      
+      if [ -z "$release_version" ]; then
+        echo "RELEASE_VERSION must be set."
+        exit 1
+      fi
+      
+      if ! printf '%s' "$release_version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$'; then
+        echo "RELEASE_VERSION must look like 1.7.0 or 1.7.0-rc.1, without a leading v."
+        exit 1
+      fi
+      
+      if [[ $release_channel != @(stable|beta|alpha|nightly) ]]; then
+          echo "RELEASE_CHANNEL must be one of: stable, beta, alpha, nightly."
+          exit 1
+      fi
+      
+      if [ "$release_channel" = "stable" ]; then
+        release_tag="v$release_version"
+        release_name="VoiceCraft $release_version"
+      else
+        release_tag="v$release_version-$release_channel.$CI_PIPELINE_IID"
+        release_name="VoiceCraft $release_version $release_channel"
+      fi
+    - |
+      package_name="voicecraft"
+      : > release_assets.env
+      : > release_assets.md
+      
+      asset = 0
+      artifacts = "VoiceCraft.Client.Windows.*|VoiceCraft.Client.Linux.*|VoiceCraft.Client.Android.*|VoiceCraft.Client.iOS.*|VoiceCraft.Client.MacOS.*|VoiceCraft.Server.Windows.*|VoiceCraft.Server.Linux.*"
+      for artifact in $artifacts
+      do
+        if [ ! -d "$artifact" ]; then
+          echo "Missing artifact directory: $artifact"
+          exit 1
+        fi
+      
+        ((asset++))
+        package_file="$artifact.$release_tag.zip"
+        package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
+        artifact_filepath="/voicecraft/$release_tag/$package_file"
+        zip -r "$package_file" "$artifact"
+      
+        curl --fail --show-error --silent --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
+        {
+          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset_index" "$package_file"
+          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset_index" "$package_url"
+          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset_index" "$artifact_filepath"
+        } >> release_assets.env
+
+        printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
+      done
+      
+      {
+        printf 'RELEASE_TAG=%s\n' "$release_tag"
+        printf 'RELEASE_ASSET_COUNT=%s\n' "$asset_index"
+        printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
+      } > release.env
+      
+      {
+        printf '# %s\n\n' "$release_name"
+        printf '- Version: `%s`\n' "$release_version"
+        printf '- Channel: `%s`\n' "$release_channel"
+        printf '- Commit: `%s`\n' "$CI_COMMIT_SHA"
+        printf '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
+        printf '## Artifacts\n\n'
+        cat release_assets.md
+        if [ -n "${RELEASE_NOTES:-}" ]; then
+          printf '\n## Notes\n\n%s\n' "$RELEASE_NOTES"
+        fi
+      } > release_notes.md
+  artifacts:
+    name: "VoiceCraft.Artifacts.$CI_COMMIT_REF_SLUG.$CI_PIPELINE_IID"
+    expire_in: 30 days
+    reports:
+      dotenv: release.env
+    paths:
+      - release.env
+      - release_assets.env
+      - release_notes.md
