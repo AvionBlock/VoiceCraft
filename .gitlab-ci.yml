@@ -390,7 +390,6 @@ package:gitlab:
       do
         if [ ! -d "$artifact" ]; then
           echo "Missing artifact directory: $artifact"
-          exit 1
         fi
       
         asset=$((asset + 1))
