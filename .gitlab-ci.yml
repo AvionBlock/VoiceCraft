@@ -401,14 +401,12 @@ package:gitlab:
         package_file="$artifact.$release_tag.zip"
         package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
         artifact_filepath="/voicecraft/$release_tag/$package_file"
-        zip -r "$package_file" "$artifact"
-      
-        curl --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
+        
         {
           printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset" "$package_file"
           printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset" "$package_url"
           printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset" "$artifact_filepath"
-        }
+        } >> release_assets.env
 
         printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
       done
