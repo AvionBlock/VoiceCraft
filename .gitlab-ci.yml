@@ -403,7 +403,7 @@ package:gitlab:
         artifact_filepath="/voicecraft/$release_tag/$package_file"
         zip -r "$package_file" "$artifact"
       
-        curl --fail --show-error --silent --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
+        curl --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
         {
           printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset" "$package_file"
           printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset" "$package_url"
