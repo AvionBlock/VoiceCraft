@@ -425,7 +425,13 @@ package:gitlab:
       } > release.env
       
       {
-        printf '# %s\n\n' "$release_name"
+        printf -- '# %s\n\n' "$release_name"
+        printf -- '- Version: `%s`\n' "$release_version"
+        printf -- '- Channel: `%s`\n' "$release_channel"
+        printf -- '- Commit: `%s`\n' "$CI_COMMIT_SHA"
+        printf -- '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
+        printf -- '## Artifacts\n\n'
+        cat release_assets.md
       } > release_notes.md
       
       echo "Prepared release metadata for $release_tag"
