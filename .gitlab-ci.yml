@@ -426,7 +426,6 @@ package:gitlab:
       
       {
         printf '# %s\n\n' "$release_name"
-        printf '- Version: `%s`\n' "$release_version"
       } > release_notes.md
       
       echo "Prepared release metadata for $release_tag"
