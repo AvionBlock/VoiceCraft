@@ -26,7 +26,7 @@ variables:
   
   # Options
   RUN_TESTS: "false"
-  BUILD_LINUX_CLIENT: "false"
+  BUILD_LINUX_CLIENT: "true"
   BUILD_WINDOWS_CLIENT: "false"
   BUILD_MACOS_CLIENT: "false"
   BUILD_IOS_CLIENT: "false"
@@ -385,6 +385,7 @@ package:gitlab:
       fi
     - |
       asset=0
+      failed=1
       artifacts="VoiceCraft.Client.Windows.* VoiceCraft.Client.Linux.* VoiceCraft.Client.Android.* VoiceCraft.Client.iOS.* VoiceCraft.Client.MacOS.* VoiceCraft.Server.Windows.* VoiceCraft.Server.Linux.*"
       for artifact in $artifacts
       do
@@ -393,6 +394,7 @@ package:gitlab:
           continue
         fi
       
+        failed=0
         asset=$((asset + 1))
         package_file="$artifact_dir.$release_tag.zip"
         package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
