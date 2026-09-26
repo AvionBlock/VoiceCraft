@@ -416,7 +416,7 @@ package:gitlab:
         printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
       done
       
-      if [ $failed ]; then
+      if [ $failed -eq 1 ]; then
         echo "Failed to upload 1 artifact"
         exit 1
       fi
