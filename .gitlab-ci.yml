@@ -425,13 +425,70 @@ package:gitlab:
       } > release.env
       
       {
-        printf -- '# %s\n\n' "$release_name"
+        printf '# %s\n\n' "$release_name"
         printf -- '- Version: `%s`\n' "$release_version"
         printf -- '- Channel: `%s`\n' "$release_channel"
         printf -- '- Commit: `%s`\n' "$CI_COMMIT_SHA"
         printf -- '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
-        printf -- '## Artifacts\n\n'
+        printf '## Artifacts\n\n'
         cat release_assets.md
       } > release_notes.md
       
       echo "Prepared release metadata for $release_tag"
+  artifacts:
+    name: "VoiceCraft.Artifacts.$CI_COMMIT_REF_SLUG.$CI_PIPELINE_IID"
+    expire_in: 30 days
+    reports:
+      dotenv: release.env
+    paths:
+      - release.env
+      - release_assets.env
+      - release_notes.md
+
+release:gitlab:
+  stage: release
+  tags:
+    - ubuntu-docker
+  needs:
+    - job: package:gitlab
+      artifacts: true
+  rules:
+    - if: '$RELEASE_ENABLED == "true"'
+      when: on_success
+    - when: never
+  before_script:
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes zip jq
+  script:
+    - test -s release_notes.md
+    - test -s release_assets.env
+    - |
+      . ./release_assets.env
+      jq -n '{links: []}' > release_assets.json
+      index=1
+      while [ "$index" -le "$RELEASE_ASSET_COUNT" ]; do
+        eval "asset_name=\${RELEASE_ASSET_${index}_NAME}"
+        eval "asset_url=\${RELEASE_ASSET_${index}_URL}"
+        eval "asset_filepath=\${RELEASE_ASSET_${index}_FILEPATH}"
+
+        jq --arg name "$asset_name" --arg url "$asset_url" --arg filepath "$asset_filepath" \
+          '.links += [{
+            name: $name,
+            url: $url,
+            filepath: $filepath,
+            link_type: "package"
+          }]' release_assets.json > release_assets.next.json
+        mv release_assets.next.json release_assets.json
+        index=$((index + 1))
+      done
+    - |
+      jq -n --arg name "VoiceCraft $RELEASE_TAG" --arg tag_name "$RELEASE_TAG" --arg ref "$CI_COMMIT_SHA" --rawfile description release_notes.md --slurpfile assets release_assets.json \
+        '{
+          name: $name,
+          tag_name: $tag_name,
+          ref: $ref,
+          description: $description,
+          assets: $assets[0]
+        }' > release_payload.json
+    - echo "Creating GitLab release $RELEASE_TAG"
+    - curl --fail --show-error --silent --request POST --header "JOB-TOKEN: $CI_JOB_TOKEN" --header "Content-Type: application/json" --data @release_payload.json "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"
