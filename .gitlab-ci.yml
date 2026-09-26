@@ -353,6 +353,9 @@ release:gitlab:
     - if: '$CI_COMMIT_TAG'
       when: manual
     - when: never
+  before_script: 
+    - apt-get --quiet update --yes
+    - apt-get --quiet install --yes zip curl
   script:
     - |
       release_version="${RELEASE_VERSION:-}"
@@ -385,8 +388,8 @@ release:gitlab:
       : > release_assets.env
       : > release_assets.md
       
-      asset = 0
-      artifacts = "VoiceCraft.Client.Windows.*|VoiceCraft.Client.Linux.*|VoiceCraft.Client.Android.*|VoiceCraft.Client.iOS.*|VoiceCraft.Client.MacOS.*|VoiceCraft.Server.Windows.*|VoiceCraft.Server.Linux.*"
+      asset=0
+      artifacts="VoiceCraft.Client.Windows.*|VoiceCraft.Client.Linux.*|VoiceCraft.Client.Android.*|VoiceCraft.Client.iOS.*|VoiceCraft.Client.MacOS.*|VoiceCraft.Server.Windows.*|VoiceCraft.Server.Linux.*"
       for artifact in $artifacts
       do
         if [ ! -d "$artifact" ]; then
@@ -402,9 +405,9 @@ release:gitlab:
       
         curl --fail --show-error --silent --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
         {
-          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset_index" "$package_file"
-          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset_index" "$package_url"
-          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset_index" "$artifact_filepath"
+          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset" "$package_file"
+          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset" "$package_url"
+          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset" "$artifact_filepath"
         } >> release_assets.env
 
         printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
@@ -412,7 +415,7 @@ release:gitlab:
       
       {
         printf 'RELEASE_TAG=%s\n' "$release_tag"
-        printf 'RELEASE_ASSET_COUNT=%s\n' "$asset_index"
+        printf 'RELEASE_ASSET_COUNT=%s\n' "$asset"
         printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
       } > release.env
       
