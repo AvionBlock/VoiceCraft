@@ -384,6 +384,10 @@ package:gitlab:
         release_name="VoiceCraft $release_version $release_channel"
       fi
     - |
+      package_name="voicecraft"
+      : > release_assets.env
+      : > release_assets.md
+      
       asset=0
       failed=1
       artifacts="VoiceCraft.Client.Windows.* VoiceCraft.Client.Linux.* VoiceCraft.Client.Android.* VoiceCraft.Client.iOS.* VoiceCraft.Client.MacOS.* VoiceCraft.Server.Windows.* VoiceCraft.Server.Linux.*"
@@ -401,5 +405,14 @@ package:gitlab:
         artifact_filepath="/voicecraft/$release_tag/$package_file"
         zip -r "$package_file" "$artifact"
       
+        echo "$package_file"
+        echo "$package_url"
+      
         curl --fail --show-error --silent --request PUT --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$package_file" "$package_url"
+      
+        {
+          printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset" "$package_file"
+          printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset" "$package_url"
+          printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset" "$artifact_filepath"
+        } >> release_assets.env
       done
