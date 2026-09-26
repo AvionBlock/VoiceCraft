@@ -25,14 +25,14 @@ variables:
   MSBuildEnableWorkloadResolver: "false"
   
   # Options
-  RUN_TESTS: "false"
+  RUN_TESTS: "true"
   BUILD_LINUX_CLIENT: "true"
-  BUILD_WINDOWS_CLIENT: "false"
-  BUILD_MACOS_CLIENT: "false"
-  BUILD_IOS_CLIENT: "false"
-  BUILD_ANDROID_CLIENT: "false"
-  BUILD_LINUX_SERVER: "false"
-  BUILD_WINDOWS_SERVER: "false"
+  BUILD_WINDOWS_CLIENT: "true"
+  BUILD_MACOS_CLIENT: "true"
+  BUILD_IOS_CLIENT: "true"
+  BUILD_ANDROID_CLIENT: "true"
+  BUILD_LINUX_SERVER: "true"
+  BUILD_WINDOWS_SERVER: "true"
   
   # Manual Options
   RELEASE_ENABLED:
@@ -430,7 +430,7 @@ package:gitlab:
         printf -- '- Channel: `%s`\n' "$release_channel"
         printf -- '- Commit: `%s`\n' "$CI_COMMIT_SHA"
         printf -- '- Pipeline: `%s`\n' "$CI_PIPELINE_URL"
-        printf -- '- Original Release: `%s`\n\n' "$CI_PROJECT_URL/-/releases/$release_version"
+        printf -- '- Original Release: `%s`\n\n' "$CI_PROJECT_URL/-/releases/$release_tag"
         printf '## Artifacts\n\n'
         cat release_assets.md
       } > release_notes.md
