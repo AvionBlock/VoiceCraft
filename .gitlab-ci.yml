@@ -52,9 +52,6 @@ variables:
       - "alpha"
       - "nightly"
     description: "Release channel. Stable uses tag v<version>; non-stable uses v<version>-<channel>.<pipeline_id>."
-  RELEASE_NOTES:
-    value: ""
-    description: "Optional extra release notes appended to the generated GitLab release description."
   
 # SDK Install
 .dotnet:
@@ -426,5 +423,15 @@ package:gitlab:
         printf 'RELEASE_ASSET_COUNT=%s\n' "$asset"
         printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
       } > release.env
+      
+      {
+        printf '# %s\n\n' "$release_name"
+        printf '- Version: `%s`\n' "$release_version"
+        printf '- Channel: `%s`\n' "$release_channel"
+        printf '- Commit: `%s`\n' "$CI_COMMIT_SHA"
+        printf '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
+        printf '## Artifacts\n\n'
+        cat release_assets.md
+      } > release_notes.md
       
       echo "Prepared release metadata for $release_tag"
