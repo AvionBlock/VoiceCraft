@@ -390,8 +390,12 @@ package:gitlab:
       do
         if [ ! -d "$artifact" ]; then
           echo "Missing artifact directory: $artifact"
+          continue
         fi
       
         asset=$((asset + 1))
-        echo "$asset"
+        package_file="$artifact_dir.$release_tag.zip"
+        package_url="$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$package_name/$release_tag/$package_file"
+        artifact_filepath="/voicecraft/$release_tag/$package_file"
+        zip -r "$package_file" "$artifact_dir"
       done
