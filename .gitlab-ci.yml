@@ -491,4 +491,5 @@ release:gitlab:
           assets: $assets[0]
         }' > release_payload.json
     - echo "Creating GitLab release $RELEASE_TAG"
-    - curl --fail --show-error --silent --request POST --header "JOB-TOKEN: $CI_JOB_TOKEN" --header "Content-Type: application/json" --data @release_payload.json "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"
+    - |
+      curl --fail --show-error --silent --request POST --header "JOB-TOKEN: $CI_JOB_TOKEN" --header "Content-Type: application/json" --data @release_payload.json "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"
