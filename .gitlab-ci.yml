@@ -341,7 +341,7 @@ build:server:windows:
     exclude:
       - VoiceCraft.Server.Windows.$ARCH/*.pdb
 
-release:gitlab:
+package:gitlab:
   stage: package
   tags:
     - ubuntu-docker
@@ -389,7 +389,7 @@ release:gitlab:
       : > release_assets.md
       
       asset=0
-      artifacts="VoiceCraft.Client.Windows.*|VoiceCraft.Client.Linux.*|VoiceCraft.Client.Android.*|VoiceCraft.Client.iOS.*|VoiceCraft.Client.MacOS.*|VoiceCraft.Server.Windows.*|VoiceCraft.Server.Linux.*"
+      artifacts="VoiceCraft.Client.Windows.* VoiceCraft.Client.Linux.* VoiceCraft.Client.Android.* VoiceCraft.Client.iOS.* VoiceCraft.Client.MacOS.* VoiceCraft.Server.Windows.* VoiceCraft.Server.Linux.*"
       for artifact in $artifacts
       do
         if [ ! -d "$artifact" ]; then
