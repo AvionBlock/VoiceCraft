@@ -36,7 +36,7 @@ variables:
   
   # Manual Options
   RELEASE_ENABLED:
-    value: "true"
+    value: "false"
     options:
       - "false"
       - "true"
@@ -45,7 +45,7 @@ variables:
     value: "1.7.2"
     description: "Release version without the leading v. Example: 1.7.2"
   RELEASE_CHANNEL:
-    value: "stable"
+    value: "alpha"
     options:
       - "stable"
       - "beta"
