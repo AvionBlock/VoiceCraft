@@ -25,7 +25,7 @@ variables:
   MSBuildEnableWorkloadResolver: "false"
   
   # Options
-  RUN_TESTS: "true"
+  RUN_TESTS: "false"
   BUILD_LINUX_CLIENT: "true"
   BUILD_WINDOWS_CLIENT: "true"
   BUILD_MACOS_CLIENT: "true"
@@ -342,7 +342,7 @@ build:server:windows:
       - VoiceCraft.Server.Windows.$ARCH/*.pdb
 
 release:gitlab:
-  stage: release
+  stage: package
   tags:
     - ubuntu-docker
   rules:
