@@ -427,17 +427,4 @@ package:gitlab:
         printf 'PACKAGE_JOB_ID=%s\n' "$CI_JOB_ID"
       } > release.env
       
-      {
-        printf '# %s\n\n' "$release_name"
-        printf '- Version: `%s`\n' "$release_version"
-        printf '- Channel: `%s`\n' "$release_channel"
-        printf '- Commit: `%s`\n' "$CI_COMMIT_SHA"
-        printf '- Pipeline: `%s`\n\n' "$CI_PIPELINE_URL"
-        printf '## Artifacts\n\n'
-        cat release_assets.md
-        if [ -n "${RELEASE_NOTES:-}" ]; then
-          printf '\n## Notes\n\n%s\n' "$RELEASE_NOTES"
-        fi
-      } > release_notes.md
-      
       echo "Prepared release metadata for $release_tag"
