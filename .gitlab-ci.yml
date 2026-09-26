@@ -408,7 +408,7 @@ package:gitlab:
           printf 'RELEASE_ASSET_%s_NAME=%s\n' "$asset" "$package_file"
           printf 'RELEASE_ASSET_%s_URL=%s\n' "$asset" "$package_url"
           printf 'RELEASE_ASSET_%s_FILEPATH=%s\n' "$asset" "$artifact_filepath"
-        } >> release_assets.env
+        }
 
         printf '%s\n' "- [$package_file]($package_url)" >> release_assets.md
       done
