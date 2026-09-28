@@ -23,7 +23,7 @@ public partial class VoiceViewModel(
     ClipboardService clipboardService)
     : ViewModelBase, IDisposable
 {
-    private VoiceCraftService? _service;
+    private VoiceCraftClientService? _clientService;
     [ObservableProperty] public partial ObservableCollection<EntityDataViewModel> Entities { get; set; } = [];
     [ObservableProperty] public partial bool IsDeafened { get; set; }
     [ObservableProperty] public partial bool IsMuted { get; set; }
@@ -43,24 +43,6 @@ public partial class VoiceViewModel(
         return !string.IsNullOrWhiteSpace(StatusDescriptionText);
     }
 
-    public void Dispose()
-    {
-        if (_service != null)
-        {
-            _service.OnDisconnected -= OnDisconnected;
-            _service.OnUpdateTitle -= OnUpdateTitle;
-            _service.OnUpdateMute -= OnUpdateMute;
-            _service.OnUpdateDeafen -= OnUpdateDeafen;
-            _service.OnUpdateServerMute -= OnUpdateServerMute;
-            _service.OnUpdateServerDeafen -= OnUpdateServerDeafen;
-            _service.OnUpdateSpeaking -= OnUpdateSpeaking;
-            _service.OnEntityAdded -= OnEntityAdded;
-            _service.OnEntityRemoved -= OnEntityRemoved;
-        }
-
-        GC.SuppressFinalize(this);
-    }
-
     [RelayCommand]
     private void OpenEntity(EntityDataViewModel? entity)
     {
@@ -71,29 +53,29 @@ public partial class VoiceViewModel(
     [RelayCommand]
     private void ToggleMute()
     {
-        if (_service == null) return;
-        _service.Muted = !_service.Muted;
-        IsMuted = _service.Muted;
+        if (_clientService == null) return;
+        _clientService.Muted = !_clientService.Muted;
+        IsMuted = _clientService.Muted;
     }
 
     [RelayCommand]
     private void ToggleDeafen()
     {
-        if (_service == null) return;
-        _service.Deafened = !_service.Deafened;
-        IsDeafened = _service.Deafened;
+        if (_clientService == null) return;
+        _clientService.Deafened = !_clientService.Deafened;
+        IsDeafened = _clientService.Deafened;
     }
 
     [RelayCommand]
     private async Task Disconnect()
     {
-        if (_service == null || _service.ConnectionState == VcConnectionState.Disconnected)
+        if (_clientService == null || _clientService.ConnectionState == VcConnectionState.Disconnected)
         {
             navigationService.Back(); //If disconnected. Return to previous page.
             return;
         }
 
-        await _service.DisconnectAsync("VoiceCraft.DisconnectReason.Manual");
+        await _clientService.DisconnectAsync("VoiceCraft.DisconnectReason.Manual");
     }
 
     [RelayCommand(CanExecute = nameof(IsDescriptionCopyable))]
@@ -109,21 +91,39 @@ public partial class VoiceViewModel(
             notificationService.SendErrorNotification("Voice.Notification.Badge", ex.Message);
         }
     }
+    
+    public void Dispose()
+    {
+        if (_clientService != null)
+        {
+            _clientService.OnDisconnected -= OnDisconnected;
+            _clientService.OnUpdateTitle -= OnUpdateTitle;
+            _clientService.OnUpdateMute -= OnUpdateMute;
+            _clientService.OnUpdateDeafen -= OnUpdateDeafen;
+            _clientService.OnUpdateServerMute -= OnUpdateServerMute;
+            _clientService.OnUpdateServerDeafen -= OnUpdateServerDeafen;
+            _clientService.OnUpdateSpeaking -= OnUpdateSpeaking;
+            _clientService.OnEntityAdded -= OnEntityAdded;
+            _clientService.OnEntityRemoved -= OnEntityRemoved;
+        }
+
+        GC.SuppressFinalize(this);
+    }
 
     public override void OnAppearing(object? data = null)
     {
         switch (data)
         {
             case VoiceNavigationData navigationData:
-                SetService(navigationData.VoiceCraftService);
+                SetService(navigationData.VoiceCraftClientService);
                 break;
             case VoiceStartNavigationData startNavigationData:
-                backgroundService.StartServiceAsync<VoiceCraftService>((x, updateTitle, updateDescription) =>
+                backgroundService.StartServiceAsync<VoiceCraftClientService>((x, updateTitle, updateDescription) =>
                 {
-                    SetService(x);
                     using var disconnected = new ManualResetEventSlim(false);
                     try
                     {
+                        SetService(x);
                         x.OnUpdateTitle += updateTitle;
                         x.OnUpdateDescription += updateDescription;
                         x.OnDisconnected += SignalDisconnected;
@@ -167,26 +167,26 @@ public partial class VoiceViewModel(
         }
     }
 
-    private void SetService(VoiceCraftService service)
+    private void SetService(VoiceCraftClientService voiceCraftClientService)
     {
-        _service = service;
+        _clientService = voiceCraftClientService;
 
         //Register events first.
-        _service.OnDisconnected += OnDisconnected;
-        _service.OnUpdateTitle += OnUpdateTitle;
-        _service.OnUpdateDescription += OnUpdateDescription;
-        _service.OnUpdateMute += OnUpdateMute;
-        _service.OnUpdateDeafen += OnUpdateDeafen;
-        _service.OnUpdateServerMute += OnUpdateServerMute;
-        _service.OnUpdateServerDeafen += OnUpdateServerDeafen;
-        _service.OnUpdateSpeaking += OnUpdateSpeaking;
-        _service.OnEntityAdded += OnEntityAdded;
-        _service.OnEntityRemoved += OnEntityRemoved;
+        _clientService.OnDisconnected += OnDisconnected;
+        _clientService.OnUpdateTitle += OnUpdateTitle;
+        _clientService.OnUpdateDescription += OnUpdateDescription;
+        _clientService.OnUpdateMute += OnUpdateMute;
+        _clientService.OnUpdateDeafen += OnUpdateDeafen;
+        _clientService.OnUpdateServerMute += OnUpdateServerMute;
+        _clientService.OnUpdateServerDeafen += OnUpdateServerDeafen;
+        _clientService.OnUpdateSpeaking += OnUpdateSpeaking;
+        _clientService.OnEntityAdded += OnEntityAdded;
+        _clientService.OnEntityRemoved += OnEntityRemoved;
 
-        StatusTitleText = _service.Title;
-        StatusDescriptionText = _service.Description;
-        IsMuted = _service.Muted;
-        IsDeafened = _service.Deafened;
+        OnUpdateTitle(_clientService.Title);
+        OnUpdateDescription(_clientService.Description);
+        OnUpdateMute(_clientService.Muted);
+        OnUpdateDeafen(_clientService.Deafened);
     }
 
     private void OnUpdateTitle(string title)
@@ -203,18 +203,18 @@ public partial class VoiceViewModel(
     {
         Dispatcher.UIThread.Invoke(() =>
         {
-            if (_service != null)
+            if (_clientService != null)
             {
-                _service.OnDisconnected -= OnDisconnected;
-                _service.OnUpdateTitle -= OnUpdateTitle;
-                _service.OnUpdateDescription -= OnUpdateDescription;
-                _service.OnUpdateMute -= OnUpdateMute;
-                _service.OnUpdateDeafen -= OnUpdateDeafen;
-                _service.OnUpdateServerMute -= OnUpdateServerMute;
-                _service.OnUpdateServerDeafen -= OnUpdateServerDeafen;
-                _service.OnUpdateSpeaking -= OnUpdateSpeaking;
-                _service.OnEntityAdded -= OnEntityAdded;
-                _service.OnEntityRemoved -= OnEntityRemoved;
+                _clientService.OnDisconnected -= OnDisconnected;
+                _clientService.OnUpdateTitle -= OnUpdateTitle;
+                _clientService.OnUpdateDescription -= OnUpdateDescription;
+                _clientService.OnUpdateMute -= OnUpdateMute;
+                _clientService.OnUpdateDeafen -= OnUpdateDeafen;
+                _clientService.OnUpdateServerMute -= OnUpdateServerMute;
+                _clientService.OnUpdateServerDeafen -= OnUpdateServerDeafen;
+                _clientService.OnUpdateSpeaking -= OnUpdateSpeaking;
+                _clientService.OnEntityAdded -= OnEntityAdded;
+                _clientService.OnEntityRemoved -= OnEntityRemoved;
             }
 
             navigationService.Back();

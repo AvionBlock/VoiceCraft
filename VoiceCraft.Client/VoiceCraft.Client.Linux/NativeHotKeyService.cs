@@ -11,7 +11,8 @@ public class NativeHotKeyService : HotKeyService
     private readonly EventLoopGlobalHook _hook;
     private readonly List<string> _pressedInputs = [];
 
-    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) : base(registeredHotKeyActions, settingsService)
+    public NativeHotKeyService(IEnumerable<HotKeyAction> registeredHotKeyActions, SettingsService settingsService) :
+        base(registeredHotKeyActions, settingsService)
     {
         _hook = new EventLoopGlobalHook();
         _hook.KeyPressed += OnKeyPressed;
@@ -23,7 +24,11 @@ public class NativeHotKeyService : HotKeyService
     public override void Initialize()
     {
         if (_initialized) return;
-        _ = _hook.RunAsync();
+        _ = _hook.RunAsync().ContinueWith(x =>
+        {
+            if (x.Exception != null)
+                LogService.Log(x.Exception);
+        });
         _initialized = true;
     }
 

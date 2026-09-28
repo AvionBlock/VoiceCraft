@@ -7,7 +7,7 @@ namespace VoiceCraft.Client.Models.Settings;
 
 public class ServersSettings : Setting<ServersSettings>
 {
-    private List<Server> _servers = [];
+    private List<ServerSettings> _servers = [];
 
     public bool HideServerAddresses
     {
@@ -19,7 +19,7 @@ public class ServersSettings : Setting<ServersSettings>
         }
     }
 
-    public IEnumerable<Server> Servers
+    public IEnumerable<ServerSettings> Servers
     {
         get => _servers;
         set
@@ -31,26 +31,26 @@ public class ServersSettings : Setting<ServersSettings>
 
     public override event Action<ServersSettings>? OnUpdated;
 
-    public void AddServer(Server server)
+    public void AddServer(ServerSettings serverSettings)
     {
-        if (string.IsNullOrWhiteSpace(server.Name))
+        if (string.IsNullOrWhiteSpace(serverSettings.Name))
             throw new ArgumentException("Settings.Servers.Validation.Name");
-        if (string.IsNullOrWhiteSpace(server.Ip))
+        if (string.IsNullOrWhiteSpace(serverSettings.Ip))
             throw new ArgumentException("Settings.Servers.Validation.Ip");
-        if (server.Port < 1)
+        if (serverSettings.Port < 1)
             throw new ArgumentException("Settings.Servers.Validation.Port");
-        if (server.Name.Length > Server.NameLimit)
-            throw new ArgumentException($"Settings.Servers.Validation.NameLimit:{Server.NameLimit}");
-        if (server.Ip.Length > Server.IpLimit)
-            throw new ArgumentException($"Settings.Servers.Validation.IpLimit:{Server.IpLimit}");
+        if (serverSettings.Name.Length > ServerSettings.NameLimit)
+            throw new ArgumentException($"Settings.Servers.Validation.NameLimit:{ServerSettings.NameLimit}");
+        if (serverSettings.Ip.Length > ServerSettings.IpLimit)
+            throw new ArgumentException($"Settings.Servers.Validation.IpLimit:{ServerSettings.IpLimit}");
 
-        _servers.Insert(0, server);
+        _servers.Insert(0, serverSettings);
         OnUpdated?.Invoke(this);
     }
 
-    public void RemoveServer(Server server)
+    public void RemoveServer(ServerSettings serverSettings)
     {
-        _servers.Remove(server);
+        _servers.Remove(serverSettings);
         OnUpdated?.Invoke(this);
     }
 
@@ -68,7 +68,7 @@ public class ServersSettings : Setting<ServersSettings>
     }
 }
 
-public class Server : Setting<Server>
+public class ServerSettings : Setting<ServerSettings>
 {
     public const int NameLimit = 12;
     public const int IpLimit = 30;
@@ -109,11 +109,11 @@ public class Server : Setting<Server>
         }
     } = 9050;
 
-    public override event Action<Server>? OnUpdated;
+    public override event Action<ServerSettings>? OnUpdated;
 
     public override object Clone()
     {
-        var clone = (Server)MemberwiseClone();
+        var clone = (ServerSettings)MemberwiseClone();
         clone.OnUpdated = null;
         return clone;
     }

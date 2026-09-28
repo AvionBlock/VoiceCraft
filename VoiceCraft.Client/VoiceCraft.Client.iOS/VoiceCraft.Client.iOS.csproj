@@ -15,6 +15,13 @@
         <AppIcon>AppIcon</AppIcon>
         <XSAppIconAssets>Resources/Assets.xcassets/AppIcon.appiconset</XSAppIconAssets>
         <Nullable>enable</Nullable>
+        <SelfContained>true</SelfContained>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
+        <UseSharedCompilation>false</UseSharedCompilation>
+        <PublishTrimmed>true</PublishTrimmed>
+        <TrimMode>link</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>

@@ -18,7 +18,7 @@
                        VerticalAlignment="Center"
                        FontSize="20"
                        FontWeight="Bold"
-                       Text="{Binding EditableServer.Name}"
+                       Text="{Binding EditableServerSettings.Name}"
                        TextAlignment="Center" />
             <Button Padding="10"
                     VerticalAlignment="Stretch"
@@ -36,9 +36,9 @@
                     Classes="card">
                 <StackPanel Spacing="15">
                     <TextBlock Text="{locale:Localize 'EditServer.Name'}" />
-                    <TextBox MaxLength="{x:Static server:Server.NameLimit}" Text="{Binding EditableServer.Name}" />
+                    <TextBox MaxLength="{x:Static server:ServerSettings.NameLimit}" Text="{Binding EditableServerSettings.Name}" />
                     <TextBlock Text="{locale:Localize 'EditServer.IP'}" />
-                    <TextBox MaxLength="{x:Static server:Server.IpLimit}" Text="{Binding EditableServer.Ip}" />
+                    <TextBox MaxLength="{x:Static server:ServerSettings.IpLimit}" Text="{Binding EditableServerSettings.Ip}" />
                     <TextBlock Text="{locale:Localize 'EditServer.Port'}" />
                     <NumericUpDown Increment="1"
                                    Maximum="65535"

@@ -1,0 +1,320 @@
+{
+  "Servers": {
+    "Title": "เซิร์ฟเวอร์",
+    "Empty": {
+      "Title": "ยังไม่มีเซิร์ฟเวอร์",
+      "Description": "เพิ่มเซิร์ฟเวอร์เสียง Aera แรกของคุณเพื่อเริ่มใช้งาน",
+      "Action": "เพิ่มเซิร์ฟเวอร์"
+    },
+    "Action": {
+      "Edit": "แก้ไข",
+      "Delete": "ลบ"
+    },
+    "Notification": {
+      "Badge": "เซิร์ฟเวอร์",
+      "Removed": "ลบ {0} แล้ว"
+    }
+  },
+  "HostServer": {
+    "Title": "โฮสต์เซิร์ฟเวอร์",
+    "ServerProperties": {
+      "Title": "คุณสมบัติเซิร์ฟเวอร์"
+    },
+    "Notification": {
+      "Badge": "โฮสต์เซิร์ฟเวอร์",
+      "ResetProperties": "รีเซ็ตคุณสมบัติของเซิร์ฟเวอร์"
+    }
+  },
+  "Settings": {
+    "Title": "ตั้งค่า",
+    "General": {
+      "Title": "ตั้งค่าทั่วไป",
+      "Language": "ภาษา",
+      "NotificationDismiss": "เวลาซ่อนแจ้งเตือนอัตโนมัติ (มิลลิวินาที)",
+      "DisableNotifications": "ปิดการแจ้งเตือน",
+      "HideServerAddresses": "ซ่อนที่อยู่ IP เซิร์ฟเวอร์",
+      "EnableTelemetry": "ส่งสถิติการใช้งานแบบไม่ระบุตัวตน"
+    },
+    "Appearance": {
+      "Title": "หน้าตา",
+      "Theme": "ธีม",
+      "BackgroundImage": "รูปพื้นหลัง"
+    },
+    "Input": {
+      "Title": "ตั้งค่าไมค์",
+      "InputDevices": "อุปกรณ์ไมค์",
+      "InputVolume": "ระดับเสียงไมค์",
+      "MicrophoneSensitivity": "ความไวไมโครโฟน",
+      "Denoisers": "ลดเสียงรบกวน",
+      "AutomaticGainControllers": "ปรับระดับเสียงอัตโนมัติ",
+      "EchoCancelers": "ตัดเสียงสะท้อน",
+      "HardwarePreprocessors": "ประมวลผลเสียงจากฮาร์ดแวร์",
+      "PushToTalk": "กดเพื่อพูด",
+      "PlayPushToTalkCue": "เล่นเสียงเมื่อกดเพื่อพูด",
+      "MicrophoneTest": {
+        "MicrophoneTest": "ทดสอบไมค์",
+        "Test": "ทดสอบ"
+      },
+      "Notification": {
+        "Badge": "ตั้งค่าไมค์"
+      },
+      "Validation": {
+        "InputVolume": "ระดับเสียงไมค์ต้องอยู่ระหว่าง 0 ถึง 2",
+        "MicrophoneSensitivity": "ความไวไมค์ต้องอยู่ระหว่าง 0 ถึง 2"
+      },
+      "Permissions": {
+        "MicrophoneNotGranted": "ยังไม่ได้อนุญาตให้ใช้ไมโครโฟน"
+      }
+    },
+    "Output": {
+      "Title": "ตั้งค่าลำโพง",
+      "OutputDevices": "อุปกรณ์ลำโพง",
+      "OutputVolume": "ระดับเสียงลำโพง",
+      "AudioClippers": "จำกัดระดับเสียง",
+      "TestOutput": "ทดสอบเสียงออก",
+      "Notification": {
+        "Badge": "ตั้งค่าลำโพง"
+      },
+      "Validation": {
+        "OutputVolume": "ระดับเสียงลำโพงต้องอยู่ระหว่าง 0 ถึง 2"
+      }
+    },
+    "Network": {
+      "Title": "ตั้งค่าเครือข่าย",
+      "PositioningType": {
+        "Title": "การคำนวณตำแหน่งเสียง",
+        "Server": "ฝั่งเซิร์ฟเวอร์",
+        "Client": "ฝั่งไคลเอนต์"
+      },
+      "McWssListenIp": "IP รับ MCWSS",
+      "McWssHostPort": "พอร์ต MCWSS"
+    },
+    "HotKey": {
+      "Title": "ปุ่มลัด",
+      "Rebind": "เปลี่ยนปุ่ม",
+      "CapturePrompt": "กดปุ่มคีย์บอร์ดหรือเมาส์",
+      "SaveBinding": "บันทึกปุ่ม",
+      "CancelRebind": "ยกเลิก",
+      "Actions": {
+        "Mute": "ปิดไมค์",
+        "Deafen": "ปิดเสียง",
+        "PushToTalk": "กดเพื่อพูด"
+      }
+    },
+    "Advanced": {
+      "Title": "ตั้งค่าขั้นสูง",
+      "TriggerGc": "เรียก GC",
+      "Crash": "ทดสอบแครช",
+      "ResetAllSettings": "รีเซ็ตการตั้งค่าทั้งหมด",
+      "Notification": {
+        "GC": {
+          "Badge": "GC",
+          "Triggered": "เรียก Garbage Collection แล้ว ล้างหน่วยความจำ {0} MB"
+        },
+        "Reset": {
+          "Badge": "ตั้งค่า",
+          "Done": "รีเซ็ตการตั้งค่าแล้ว รีสตาร์ทแอปเพื่อใช้ธีมและภาษาใหม่"
+        }
+      }
+    },
+    "Servers": {
+      "Validation": {
+        "Name": "ชื่อเซิร์ฟเวอร์ห้ามว่าง!",
+        "Ip": "IP เซิร์ฟเวอร์ห้ามว่าง!",
+        "Port": "พอร์ตต้องอยู่ระหว่าง 1 ถึง 65535!",
+        "NameLimit": "ชื่อเซิร์ฟเวอร์ยาวเกิน {0} ตัวอักษร!",
+        "IpLimit": "IP ยาวเกิน {0} ตัวอักษร!"
+      }
+    }
+  },
+  "Credits": {
+    "Title": "เครดิต",
+    "Website": "เว็บไซต์",
+    "SourceCode": "ซอร์สโค้ด",
+    "Documentation": "เอกสารประกอบ",
+    "AppVersion": "เวอร์ชันแอป: {0}",
+    "Version": "เวอร์ชัน: {0}",
+    "Codec": "Codec: {0}",
+    "Contributors": "ผู้ร่วมพัฒนา",
+    "Studio": "Aera Studio",
+    "AeraCommunityMaintainer": "ผู้ดูแลชุมชนไทย (Windows, Android, บิลด์ภาษาไทย)",
+    "Roles": {
+      "Author": "ผู้สร้าง",
+      "Translator": "ผู้แปล",
+      "Programmer": "โปรแกรมเมอร์",
+      "ProjectOwner": "เจ้าของโปรเจกต์",
+      "AeraStudioOwner": "Aera Studio / เจ้าของโปรเจกต์"
+    },
+    "Attributions": {
+      "Title": "การระบุแหล่งที่มา",
+      "FlagsFlatIcon": "ธงชาติ: FlatIcon"
+    }
+  },
+  "CrashLogs": {
+    "Title": "บันทึกแครช",
+    "Action": {
+      "DumpLink": "ลิงก์ Dump"
+    },
+    "Notification": {
+      "Badge": "บันทึกแครช",
+      "Cleared": "ล้างบันทึกทั้งหมดแล้ว",
+      "Copied": "คัดลอกบันทึกแครชแล้ว",
+      "DumpCopied": "คัดลอกลิงก์ crash dump แล้ว",
+      "DumpUploadFailed": "อัปโหลด crash dump ไม่สำเร็จ",
+      "DumpUnavailable": "ไม่มีลิงก์ dump สำหรับบันทึกนี้",
+      "Empty": "ไม่มีบันทึกแครชให้คัดลอก"
+    }
+  },
+  "TelemetryConsent": {
+    "Title": "ช่วยพัฒนา Aera",
+    "Description": "Aera ส่งสถิติการใช้งานแบบไม่ระบุตัวตน เพื่อช่วยวิเคราะห์แครชและปรับปรุงความเสถียรบนทุกแพลตฟอร์ม",
+    "CollectsTitle": "ข้อมูลที่เก็บ",
+    "CollectsBody": "เวอร์ชันแอป แพลตฟอร์ม ระบบปฏิบัติการ สถาปัตยกรรม CPU/หน่วยความจำ ภาษา และจำนวนครั้งที่เปิดแอป (ไม่ระบุตัวตน)",
+    "NotCollectedTitle": "ข้อมูลที่ไม่เก็บอัตโนมัติ",
+    "NotCollectedBody": "เราไม่อัปโหลดรายชื่อเซิร์ฟเวอร์ โทเค็น การตั้งค่า หรือข้อความแชทโดยอัตโนมัติ",
+    "DumpBody": "อัปโหลด crash dump เฉพาะเมื่อกดปุ่ม dump link ในหน้าบันทึกแครชเท่านั้น",
+    "Accept": "ยอมรับ",
+    "Decline": "ปฏิเสธ"
+  },
+
+  "HostServerConsole": {
+    "Title": "คอนโซลเซิร์ฟเวอร์โฮสต์"
+  },
+  "AddServer": {
+    "Title": "เพิ่มเซิร์ฟเวอร์",
+    "Name": "ชื่อ",
+    "BrandingHint": "ชื่อเซิร์ฟดึงจาก Motd อัตโนมัติเมื่อบันทึก (ตั้งใน ServerProperties.json)",
+    "IP": "IP",
+    "Port": "พอร์ต",
+    "Notification": {
+      "Badge": "เพิ่มเซิร์ฟเวอร์",
+      "Added": "เพิ่ม {0} แล้ว"
+    }
+  },
+  "EditServer": {
+    "Title": "แก้ไขเซิร์ฟเวอร์",
+    "Name": "ชื่อ",
+    "BrandingHint": "ชื่อเซิร์ฟอัปเดตจาก Motd อัตโนมัติเมื่อบันทึก",
+    "IP": "IP",
+    "Port": "พอร์ต",
+    "Notification": {
+      "Badge": "แก้ไขเซิร์ฟเวอร์",
+      "Edited": "แก้ไข {0} แล้ว"
+    }
+  },
+  "SelectedServer": {
+    "Address": "ที่อยู่",
+    "PingInformation": "ข้อมูล Ping",
+    "Connect": "เชื่อมต่อ",
+    "Edit": "แก้ไขเซิร์ฟเวอร์",
+    "Delete": "ลบเซิร์ฟเวอร์",
+    "ServerInfo": {
+      "Title": "ข้อมูลเซิร์ฟเวอร์",
+      "Status": {
+        "Latency": "ความหน่วง: {0}",
+        "Motd": "MOTD: {0}",
+        "PositioningType": "ประเภทตำแหน่ง: {0}",
+        "ConnectedClients": "ผู้เล่นที่เชื่อมต่อ: {0}",
+        "Version": "เวอร์ชัน: {0}",
+        "Pinging": "กำลัง Ping..."
+      }
+    },
+    "Notification": {
+      "Badge": "เซิร์ฟเวอร์ที่เลือก",
+      "Failed": "เริ่มระบบเสียงไม่สำเร็จ",
+      "Removed": "ลบ {0} แล้ว"
+    }
+  },
+  "Voice": {
+    "Modal": {
+      "Volume": "ระดับเสียง",
+      "Muted": "ปิดเสียงแล้ว"
+    },
+    "Notification": {
+      "Badge": "เสียง",
+      "Copied": "คําอธิบายสถานะคัดลอกไปยังคลิปบอร์ด"
+    }
+  },
+  "VoiceCraft": {
+    "Notification": {
+      "Badge": "Aera",
+      "Error": "เกิดข้อผิดพลาดขณะเชื่อมต่อ",
+      "Disconnected": "ตัดการเชื่อมต่อแล้ว สาเหตุ: {0}"
+    },
+    "Status": {
+      "Initializing": "กำลังเริ่มต้น...",
+      "Connecting": "กำลังเชื่อมต่อ...",
+      "Connected": "เชื่อมต่อแล้ว",
+      "Disconnected": "ตัดการเชื่อมต่อแล้ว สาเหตุ: {0}"
+    },
+    "DescriptionStatus": {
+      "McWss": "MCWSS กำลังฟัง: {0}:{1}"
+    },
+    "DisconnectReason": {
+      "Manual": "ตัดการเชื่อมต่อด้วยตนเอง",
+      "ServerFull": "เซิร์ฟเวอร์เต็ม",
+      "IncompatibleVersion": "เวอร์ชันไคลเอนต์/เซิร์ฟเวอร์ไม่ตรงกัน",
+      "ServerSidedOnly": "เซิร์ฟเวอร์รองรับเฉพาะตำแหน่งฝั่งเซิร์ฟเวอร์",
+      "ClientSidedOnly": "เซิร์ฟเวอร์รองรับเฉพาะตำแหน่งฝั่งไคลเอนต์",
+      "Kicked": "ถูกเตะออกจากเซิร์ฟเวอร์",
+      "Shutdown": "เซิร์ฟเวอร์ปิดแล้ว",
+      "Error": "เกิดข้อผิดพลาดขณะเชื่อมต่อ"
+    }
+  },
+  "McWss": {
+    "Notification": {
+      "Badge": "McWss",
+      "Connected": "เชื่อมต่อ MCWss แล้ว: {0}",
+      "Disconnected": "ตัดการเชื่อมต่อ MCWSS แล้ว"
+    }
+  },
+  "PermissionsService": {
+    "Notification": {
+      "Badge": "สิทธิ์การใช้งาน"
+    }
+  },
+  "AudioService": {
+    "Preprocessors": {
+      "Speex": "Speex Preprocessor"
+    },
+    "Clippers": {
+      "None": "ไม่ใช้",
+      "Hard": "Hard Clipper",
+      "TanhSoft": "Tanh Soft Clipper"
+    },
+    "AudioDeviceInfo": {
+      "Default": "ค่าเริ่มต้น",
+      "DefaultDevice": "{0} - ค่าเริ่มต้น"
+    }
+  },
+  "ThemesService": {
+    "Themes": {
+      "Default": "ค่าเริ่มต้น",
+      "Dark": "มืด",
+      "DarkPurple": "ม่วงมืด",
+      "DarkGreen": "เขียวมืด",
+      "Light": "สว่าง",
+      "Aera": "Aera"
+    },
+    "BackgroundImages": {
+      "None": "ไม่มี",
+      "DockNight": "Dock Night",
+      "DockDay": "Dock Day",
+      "LethalCraft": "Lethal Craft",
+      "BlockSenseSpawn": "BlockSense Spawn",
+      "SineSmpBase": "SineSMP Base",
+      "AeraGrid": "Aera Grid"
+    }
+  },
+  "BackgroundService": {
+    "Title": "Aera",
+    "Description": "กำลังทำงาน...",
+    "Permissions": {
+      "NotificationNotGranted": "ต้องอนุญาตการแจ้งเตือนเพื่อแสดงสถานะการทำงานเบื้องหลัง",
+      "MicrophoneNotGranted": "ยังไม่ได้อนุญาตให้ใช้ไมโครโฟน"
+    }
+  },
+  "ViewLocatorService": {
+    "NotFound": "ไม่พบหน้า: {0}"
+  }
+}

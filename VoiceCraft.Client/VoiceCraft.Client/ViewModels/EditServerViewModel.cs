@@ -15,17 +15,17 @@ public partial class EditServerViewModel(
 {
     private bool _updatingPort;
 
-    [ObservableProperty] public partial Server EditableServer { get; set; } = new();
+    [ObservableProperty] public partial ServerSettings EditableServerSettings { get; set; } = new();
     [ObservableProperty] public partial decimal? EditableServerPort { get; set; } = 9050;
-    [ObservableProperty] public partial Server Server { get; set; } = new();
+    [ObservableProperty] public partial ServerSettings ServerSettings { get; set; } = new();
 
     public override void OnAppearing(object? data = null)
     {
         if (data is not EditServerNavigationData navigationData) return;
-        Server = navigationData.Server;
-        EditableServer = (Server)navigationData.Server.Clone();
+        ServerSettings = navigationData.ServerSettings;
+        EditableServerSettings = (ServerSettings)navigationData.ServerSettings.Clone();
         _updatingPort = true;
-        EditableServerPort = EditableServer.Port;
+        EditableServerPort = EditableServerSettings.Port;
         _updatingPort = false;
     }
 
@@ -35,7 +35,7 @@ public partial class EditServerViewModel(
         if (value == null) return;
         var clamped = Math.Clamp(decimal.ToInt32(decimal.Round(value.Value)), 1, 65535);
         _updatingPort = true;
-        EditableServer.Port = (ushort)clamped;
+        EditableServerSettings.Port = (ushort)clamped;
         if (EditableServerPort != clamped)
             EditableServerPort = clamped;
         _updatingPort = false;
@@ -55,14 +55,14 @@ public partial class EditServerViewModel(
             if (EditableServerPort == null)
                 throw new Exception("Server port must be between 1 and 65535.");
 
-            Server.Name = EditableServer.Name;
-            Server.Ip = EditableServer.Ip;
-            Server.Port = EditableServer.Port;
+            ServerSettings.Name = EditableServerSettings.Name;
+            ServerSettings.Ip = EditableServerSettings.Ip;
+            ServerSettings.Port = EditableServerSettings.Port;
 
             notificationService.SendNotification(
                 "EditServer.Notification.Badge",
-                $"EditServer.Notification.Edited:{Server.Name}");
-            EditableServer = new Server();
+                $"EditServer.Notification.Edited:{ServerSettings.Name}");
+            EditableServerSettings = new ServerSettings();
             _ = settings.SaveAsync();
             navigationService.Back();
         }

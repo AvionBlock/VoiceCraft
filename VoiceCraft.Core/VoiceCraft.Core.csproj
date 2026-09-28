@@ -4,4 +4,22 @@
         <Nullable>enable</Nullable>
         <IsAotCompatible>true</IsAotCompatible>
     </PropertyGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="Locales\Client\de-DE.json" />
+      <EmbeddedResource Include="Locales\Client\en-US.json" />
+      <EmbeddedResource Include="Locales\Client\nl-NL.json" />
+      <EmbeddedResource Include="Locales\Client\pl-PL.json" />
+      <EmbeddedResource Include="Locales\Client\ru-RU.json" />
+      <EmbeddedResource Include="Locales\Client\th-TH.json" />
+      <EmbeddedResource Include="Locales\Client\zh-CN.json" />
+      <EmbeddedResource Include="Locales\Client\zh-TW.json" />
+      <EmbeddedResource Include="Locales\Server\de-DE.json" />
+      <EmbeddedResource Include="Locales\Server\en-US.json" />
+      <EmbeddedResource Include="Locales\Server\nl-NL.json" />
+      <EmbeddedResource Include="Locales\Server\pl-PL.json" />
+      <EmbeddedResource Include="Locales\Server\ru-RU.json" />
+      <EmbeddedResource Include="Locales\Server\th-TH.json" />
+      <EmbeddedResource Include="Locales\Server\zh-CN.json" />
+      <EmbeddedResource Include="Locales\Server\zh-TW.json" />
+    </ItemGroup>
 </Project>

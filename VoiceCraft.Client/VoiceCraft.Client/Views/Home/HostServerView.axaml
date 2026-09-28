@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="VoiceCraft.Client.Views.Home.HostServerView"
+             xmlns:locale="clr-namespace:VoiceCraft.Client.Locales"
+             xmlns:vm="clr-namespace:VoiceCraft.Client.ViewModels.Home"
+             x:DataType="vm:HostServerViewModel">
+    <Panel>
+        <ScrollViewer>
+            <Border Padding="15"
+                    VerticalAlignment="Top"
+                    Classes="card">
+                <StackPanel Spacing="10">
+                    <TextBlock Margin="10"
+                               VerticalAlignment="Center"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Text="{locale:Localize HostServer.ServerProperties.Title}"
+                               TextAlignment="Left" />
+                    
+                    <TextBox AcceptsReturn="True"
+                             Text="{Binding ServerProperties, UpdateSourceTrigger=LostFocus}"
+                             Focusable="True"/>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+        <StackPanel VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,10"
+                    Spacing="10">
+            <Button CornerRadius="50"
+                    Width="50"
+                    Height="50"
+                    Command="{Binding ToggleServerCommand}"
+                    Classes.IsHosting="{Binding IsRunning}"
+                    Classes.IsNotHosting="{Binding !IsRunning}">
+                <Panel>
+                    <PathIcon Data="{StaticResource PlayCircleRegular}"
+                              IsVisible="{Binding !IsRunning}">
+                    </PathIcon>
+                    <PathIcon Data="{StaticResource StopRegular}"
+                              IsVisible="{Binding IsRunning}">
+                    </PathIcon>
+                </Panel>
+                
+                <Button.Styles>
+                    <Style Selector="Button.IsHosting">
+                        <Setter Property="Background" Value="{DynamicResource ErrorBackgroundBrush}"/>
+                    </Style>
+                    <Style Selector="Button.IsNotHosting">
+                        <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                    </Style>
+                </Button.Styles>
+            </Button>
+            <Button CornerRadius="50"
+                    Width="50"
+                    Height="50"
+                    Command="{Binding ViewConsoleCommand}">
+                <PathIcon Data="{StaticResource SlideTextRegular}" />
+            </Button>
+            
+            <Button CornerRadius="50"
+                    Width="50"
+                    Height="50"
+                    Command="{Binding ResetPropertiesCommand}">
+                <PathIcon Data="{StaticResource ArrowSyncCircleRegular}" />
+            </Button>
+        </StackPanel>
+    </Panel>
+</UserControl>

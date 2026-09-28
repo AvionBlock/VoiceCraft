@@ -2,34 +2,26 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TrimMode>link</TrimMode>
         <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_IsPublishing)' == 'yes'">
+        <UseSharedCompilation>false</UseSharedCompilation>
+        <PublishSingleFile>true</PublishSingleFile>
+        <PublishTrimmed>true</PublishTrimmed>
+        <SelfContained>true</SelfContained>
+        <TrimMode>link</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
         <ProjectReference Include="..\VoiceCraft.Network\VoiceCraft.Network.csproj"/>
+        <ProjectReference Include="..\VoiceCraft.Server.Runtime\VoiceCraft.Server.Runtime.csproj"/>
     </ItemGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="Fleck"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
-        <PackageReference Include="OpenPort.Net"/>
-        <PackageReference Include="Spectre.Console"/>
-        <PackageReference Include="System.CommandLine"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Include="Locales\de-DE.json"/>
-        <EmbeddedResource Include="Locales\pl-PL.json"/>
-        <EmbeddedResource Include="Locales\nl-NL.json"/>
-        <EmbeddedResource Include="Locales\en-US.json"/>
-        <EmbeddedResource Include="Locales\ru-RU.json"/>
-        <EmbeddedResource Include="Locales\th-TH.json" />
-        <EmbeddedResource Include="Locales\zh-CN.json"/>
-        <EmbeddedResource Include="Locales\zh-TW.json"/>
     </ItemGroup>
 
 </Project>

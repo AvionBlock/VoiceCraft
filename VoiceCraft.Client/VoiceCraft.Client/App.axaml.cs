@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using SoundFlow.Abstracts;
 using VoiceCraft.Client.Audio;
-using VoiceCraft.Client.Locales;
 using VoiceCraft.Client.Models.Settings;
 using VoiceCraft.Client.Services;
 using VoiceCraft.Client.Themes.Dark;
@@ -130,7 +129,8 @@ public class App : Application
             y => (Permissions.BasePermission)x.GetRequiredService(y)));
         ServiceCollection.AddSingleton<ThemesService>();
         ServiceCollection.AddSingleton<SettingsService>();
-        ServiceCollection.AddSingleton<VoiceCraftService>();
+        ServiceCollection.AddSingleton<VoiceCraftClientService>();
+        ServiceCollection.AddTransient<VoiceCraftServerService>();
 
         //Pages Registry
         ServiceCollection.AddSingleton<MainViewModel>();
@@ -142,6 +142,7 @@ public class App : Application
 
         //Main Pages
         ServiceCollection.AddSingleton<HomeViewModel>();
+        ServiceCollection.AddSingleton<AddServerViewModel>();
         ServiceCollection.AddTransient<EditServerViewModel>();
         ServiceCollection.AddTransient<GeneralSettingsViewModel>();
         ServiceCollection.AddTransient<AppearanceSettingsViewModel>();
@@ -151,11 +152,12 @@ public class App : Application
         ServiceCollection.AddTransient<HotKeySettingsViewModel>();
         ServiceCollection.AddTransient<AdvancedSettingsViewModel>();
         ServiceCollection.AddTransient<SelectedServerViewModel>();
+        ServiceCollection.AddTransient<HostServerConsoleViewModel>();
         ServiceCollection.AddTransient<VoiceViewModel>();
 
         //Home Pages
-        ServiceCollection.AddSingleton<AddServerViewModel>();
         ServiceCollection.AddSingleton<ServersViewModel>();
+        ServiceCollection.AddSingleton<HostServerViewModel>();
         ServiceCollection.AddSingleton<SettingsViewModel>();
         ServiceCollection.AddSingleton<CreditsViewModel>();
         ServiceCollection.AddSingleton<CrashLogViewModel>();
@@ -169,6 +171,8 @@ public class App : Application
         ServiceCollection.AddKeyedTransient<Control, EditServerView>(typeof(EditServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, AddServerView>(typeof(AddServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, ServersView>(typeof(ServersView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HostServerView>(typeof(HostServerView).FullName);
+        ServiceCollection.AddKeyedTransient<Control, HostServerConsoleView>(typeof(HostServerConsoleView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SelectedServerView>(typeof(SelectedServerView).FullName);
         ServiceCollection.AddKeyedTransient<Control, SettingsView>(typeof(SettingsView).FullName);
         ServiceCollection.AddKeyedTransient<Control, CreditsView>(typeof(CreditsView).FullName);
@@ -261,7 +265,9 @@ public class App : Application
 
     private void SetupServices(IServiceProvider serviceProvider)
     {
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Client.Locales");
+        Localizer.BaseLocalizer = new CombinedLocaliser(
+            new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Client"),
+            new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Server"));
         DataTemplates.Add(serviceProvider.GetRequiredService<ViewLocatorService>());
         _ = serviceProvider.GetRequiredService<ClientTelemetryService>().ReportStartupAsync();
     }
@@ -295,7 +301,7 @@ public class App : Application
 
         try
         {
-            var server = new Server()
+            var server = new ServerSettings()
             {
                 Name = queries["name"] ?? throw new InvalidOperationException("Name Missing"),
                 Ip = queries["ip"] ?? throw new InvalidOperationException("Ip Missing"),

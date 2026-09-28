@@ -1,0 +1,268 @@
+{
+  "Startup": {
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์...",
+    "Success": "เริ่มเซิร์ฟเวอร์สำเร็จ!",
+    "Failed": "เกิดข้อผิดพลาดขณะเริ่มเซิร์ฟเวอร์!",
+    "Commands": {
+      "Registering": "กำลังลงทะเบียนคำสั่ง...",
+      "Success": "ลงทะเบียนคำสั่งสำเร็จ {0} คำสั่ง!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "กำลังปิดเซิร์ฟเวอร์...",
+    "StartingIn": "จะปิดเซิร์ฟเวอร์ในอีก {0}ms...",
+    "Success": "ปิดเซิร์ฟเวอร์สำเร็จ!"
+  },
+  "ServerProperties": {
+    "Loading": "กำลังโหลด ServerProperties.json ที่ {0}",
+    "Success": "โหลดค่าเซิร์ฟเวอร์สำเร็จ!",
+    "Failed": "โหลดค่าเซิร์ฟเวอร์ไม่สำเร็จ! ใช้ค่าเริ่มต้นแทน ข้อผิดพลาด: {0}",
+    "NotFound": "ไม่พบ ServerProperties.json ในโฟลเดอร์ปัจจุบันหรือโฟลเดอร์ย่อย! กำลังสร้างไฟล์...",
+    "FailNotFound": "ไม่พบ ServerProperties.json ในโฟลเดอร์ปัจจุบันหรือโฟลเดอร์ย่อย!",
+    "Generating": {
+      "Generating": "กำลังสร้าง ServerProperties.json ที่ {0}",
+      "Success": "สร้าง ServerProperties.json สำเร็จที่ {0}",
+      "Failed": "สร้าง ServerProperties.json ไม่สำเร็จที่ {0}! ข้อผิดพลาด: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "อ่านข้อมูล JSON จากไฟล์ที่โหลดไม่สำเร็จ!"
+    }
+  },
+  "PortMapper": {
+    "Opening": "การเปิดพอร์ต {0} บน {1} {2} ผ่าน NAT",
+    "Opened": "พอร์ต {0} บน {1} {2} การแมปเปิดผ่าน {3}: {4}:{5}",
+    "Closing": "การปิดพอร์ต NAT {0} บน {1}",
+    "Closed": "ปิดพอร์ต NAT {0} บน {1}",
+    "SkippedLoopback": "ข้ามการแมปพอร์ต {0} NAT เนื่องจากถูกผูกไว้กับที่อยู่แบบวนซ้ํา {1}",
+    "Exceptions": {
+      "Open": "พอร์ต {0} บน {1} {2} ไม่สามารถเปิดผ่าน NAT ได้",
+      "Close": "พอร์ต NAT {0} บน {1} ปิดไม่สนิท"
+    }
+  },
+  "Title": {
+    "Starting": "กำลังเริ่ม...",
+    "Running": "ทำงานอยู่!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "ไคลเอนต์เชื่อมต่อแล้ว! UserGuid: {0}",
+      "Disconnected": "ไคลเอนต์ตัดการเชื่อมต่อแล้ว! UserGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi ไคลเอนต์เชื่อมต่อแล้ว! Token: {0}",
+        "Disconnected": "McApi ไคลเอนต์ตัดการเชื่อมต่อแล้ว! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ VoiceCraft...",
+    "Success": "เริ่มเซิร์ฟเวอร์ VoiceCraft สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ VoiceCraft...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ VoiceCraft สำเร็จ!",
+    "Exceptions": {
+      "Failed": "เริ่มเซิร์ฟเวอร์ VoiceCraft ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ McWss...",
+    "Success": "เริ่มเซิร์ฟเวอร์ McWss สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ McWss...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ McWss สำเร็จ!",
+    "Exceptions": {
+      "Failed": "เริ่มเซิร์ฟเวอร์ McWss ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ McHttp...",
+    "Success": "เริ่มเซิร์ฟเวอร์ McHttp สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ McHttp...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ McHttp สำเร็จ!",
+    "Exceptions": {
+      "Failed": "เริ่มเซิร์ฟเวอร์ McHttp ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
+    }
+  },
+  "McTcpServer": {
+    "Starting": "กำลังเริ่มเซิร์ฟเวอร์ McTcp...",
+    "Success": "เริ่มเซิร์ฟเวอร์ McTcp สำเร็จ!",
+    "Stopping": "กำลังหยุดเซิร์ฟเวอร์ McTcp...",
+    "Stopped": "หยุดเซิร์ฟเวอร์ McTcp สำเร็จ!",
+    "Exceptions": {
+      "Failed": "เริ่มเซิร์ฟเวอร์ McTcp ไม่สำเร็จ! ตรวจสอบว่ามีโปรเซสอื่นใช้พอร์ตเดียวกันอยู่หรือไม่!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "เซิร์ฟเวอร์",
+      "Port": "พอร์ต",
+      "Protocol": "โปรโตคอล"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "ชื่อ",
+      "Position": "ตำแหน่ง",
+      "Rotation": "การหมุน",
+      "WorldId": "WorldId"
+    }
+  },
+  "Commands": {
+    "Exception": "เกิดข้อผิดพลาดขณะรันคำสั่ง {0}!",
+    "Exceptions": {
+      "EntityNotFound": "ไม่พบเอนทิตีรหัส: {0}",
+      "EntityNotAClient": "เอนทิตีรหัส {0} ไม่ใช่ไคลเอนต์!"
+    },
+    "RootCommand": {
+      "Description": "รันคำสั่ง VoiceCraft"
+    },
+    "List": {
+      "Name": "list",
+      "Description": "แสดงรายการเอนทิตี",
+      "Showing": "แสดง {0} เอนทิตี",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "clientsOnly",
+          "Description": "แสดงเฉพาะเอนทิตีไคลเอนต์ที่เชื่อมต่อเครือข่าย"
+        },
+        "Limit": {
+          "Name": "limit",
+          "Description": "จำกัดจำนวนเอนทิตีที่แสดง"
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "ค่า limit ต้องไม่ต่ำกว่าศูนย์!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitle",
+      "Description": "ตั้งชื่อเรื่องบนแอปของไคลเอนต์",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตีของไคลเอนต์"
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "ค่าชื่อเรื่องที่จะตั้ง"
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "setdescription",
+      "Description": "ตั้งคำอธิบายบนแอปของไคลเอนต์",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตีของไคลเอนต์"
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "ค่าคำอธิบายที่จะตั้ง"
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setposition",
+      "Description": "ตั้งตำแหน่งของเอนทิตี",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        },
+        "X": {
+          "Name": "x",
+          "Description": "ตำแหน่งแกน X"
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "ตำแหน่งแกน Y"
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "ตำแหน่งแกน Z"
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setworldid",
+      "Description": "ตั้ง WorldId ของเอนทิตี",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "ค่า WorldId ที่จะตั้ง"
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setname",
+      "Description": "ตั้งชื่อของเอนทิตี",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        },
+        "Value": {
+          "Name": "value",
+          "Description": "ชื่อที่จะตั้งให้เอนทิตี"
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "หยุดเซิร์ฟเวอร์"
+    },
+    "Kick": {
+      "Name": "kick",
+      "Description": "เตะไคลเอนต์ออก",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        }
+      }
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "ปิดไมค์เอนทิตี/ไคลเอนต์",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "เปิดไมค์เอนทิตี/ไคลเอนต์",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "ปิดหูเอนทิตี/ไคลเอนต์",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "เปิดหูเอนทิตี/ไคลเอนต์",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "รหัสเอนทิตี"
+        }
+      }
+    }
+  }
+}

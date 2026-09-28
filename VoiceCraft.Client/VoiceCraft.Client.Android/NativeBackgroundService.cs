@@ -117,6 +117,10 @@ public class NativeBackgroundService(PermissionsService permissionsService, Func
                 {
                     startAction.Invoke();
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
                 finally
                 {
                     Dispose();

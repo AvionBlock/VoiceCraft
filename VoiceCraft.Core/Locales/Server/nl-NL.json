@@ -1,0 +1,268 @@
+{
+  "Startup": {
+    "Starting": "Server starten...",
+    "Success": "Server succesvol gestart!",
+    "Failed": "Er is een fout opgetreden tijdens het opstarten van de server!",
+    "Commands": {
+      "Registering": "Opdrachten registeren...",
+      "Success": "Succesvol {0} opdrachten geregistreerd!"
+    }
+  },
+  "Shutdown": {
+    "Starting": "Server wordt afgesloten...",
+    "StartingIn": "Server wordt afgesloten over {0}ms...",
+    "Success": "Server succesvol afgesloten!"
+  },
+  "ServerProperties": {
+    "Loading": "Laden van ServerProperties.json bestand op {0}",
+    "Success": "Servereigenschappen succesvol geladen!",
+    "Failed": "Laden van de servereigenschappen is mislukt! Terugvallen op standaardeigenschappen! Fout: {0}",
+    "NotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen! Bestand genereren...",
+    "FailNotFound": "ServerProperties.json is niet gevonden in de huidige en/of submappen!",
+    "Generating": {
+      "Generating": "Genereren van het ServerProperties.json-bestand op {0}",
+      "Success": "Succesvol het ServerProperties.json-bestand gegenereerd op {0}",
+      "Failed": "Het genereren van het ServerProperties.json-bestand op {0} is mislukt! Fout: {1}"
+    },
+    "Exceptions": {
+      "ParseJson": "Het is niet gelukt om de JSON-gegevens uit het geladen bestand te parseren!"
+    }
+  },
+  "PortMapper": {
+    "Opening": "Poort {0} op {1} {2} wordt geopend via NAT...",
+    "Opened": "Poort {0} op {1} {2} is geopend via {3}: {4}:{5}",
+    "Closing": "NAT-poort {0} op {1} wordt gesloten",
+    "Closed": "NAT-poort {0} op {1} is gesloten",
+    "SkippedLoopback": "NAT-poorttoewijzing {0} wordt overgeslagen omdat deze is gekoppeld aan het loopback-adres {1}.",
+    "Exceptions": {
+      "Open": "Het openen van poort {0} op {1} {2} via NAT is mislukt.",
+      "Close": "NAT-poort {0} op {1} is niet correct gesloten."
+    }
+  },
+  "Title": {
+    "Starting": "Starten...",
+    "Running": "Draaiende!"
+  },
+  "Events": {
+    "Client": {
+      "Connected": "Client verbonden! GebruikerGuid: {0}",
+      "Disconnected": "Client verbinding verbroken! GebruikerGuid: {0}"
+    },
+    "McApi": {
+      "Client": {
+        "Connected": "McApi Client verbonden! Token: {0}",
+        "Disconnected": "McApi Client verbinding verbroken! Token: {0}"
+      }
+    }
+  },
+  "VoiceCraftServer": {
+    "Starting": "VoiceCraft-server starten...",
+    "Success": "De VoiceCraft-server is succesvol gestart!",
+    "Stopping": "VoiceCraft-server stoppen...",
+    "Stopped": "De VoiceCraft-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van VoiceCraft-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "McWssServer": {
+    "Starting": "McWss-server starten...",
+    "Success": "De McWss-server is succesvol gestart!",
+    "Stopping": "McWss-server stoppen...",
+    "Stopped": "De McWss-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van McWss-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "McHttpServer": {
+    "Starting": "McHttp-server starten...",
+    "Success": "De McHttp-server is succesvol gestart!",
+    "Stopping": "McHttp-server stoppen...",
+    "Stopped": "De McHttp-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van McHttp-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "McTcpServer": {
+    "Starting": "McTcp-server starten...",
+    "Success": "De McTcp-server is succesvol gestart!",
+    "Stopping": "McTcp-server stoppen...",
+    "Stopped": "De McTcp-server is succesvol gestopt!",
+    "Exceptions": {
+      "Failed": "Het starten van McTcp-server is mislukt! Controleer of een ander proces dezelfde poort gebruikt!"
+    }
+  },
+  "Tables": {
+    "ServerSetup": {
+      "Server": "Server",
+      "Port": "Poort",
+      "Protocol": "Protocol"
+    },
+    "ListCommandEntities": {
+      "Id": "Id",
+      "Name": "Naam",
+      "Position": "Positie",
+      "Rotation": "Rotatie",
+      "WorldId": "WereldId"
+    }
+  },
+  "Commands": {
+    "Exception": "Er is een fout opgetreden bij het uitvoeren van de opdracht {0}!",
+    "Exceptions": {
+      "EntityNotFound": "Kan geen entiteit vinden met het id: {0}",
+      "EntityNotAClient": "Entiteit met id {0} is geen client entiteit!"
+    },
+    "RootCommand": {
+      "Description": "Voert een VoiceCraft opdracht uit."
+    },
+    "List": {
+      "Name": "lijst",
+      "Description": "Geeft een overzicht van alle entiteiten.",
+      "Showing": "{0} entiteiten worden weergegeven.",
+      "Options": {
+        "ClientsOnly": {
+          "Name": "alleenClients",
+          "Description": "Toon alleen netwerk verbonden client entiteiten."
+        },
+        "Limit": {
+          "Name": "limiet",
+          "Description": "Limiteer het aantal weergegeven entiteiten."
+        }
+      },
+      "Exceptions": {
+        "LimitArgument": "Limiet mag niet kleiner zijn dan nul!"
+      }
+    },
+    "SetTitle": {
+      "Name": "settitel",
+      "Description": "Stelt een titel in voor de applicatie van een client entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De client z'n entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "De waarde om in te stellen van de titel."
+        }
+      }
+    },
+    "SetDescription": {
+      "Name": "seteigenschap",
+      "Description": "Stelt een beschrijving in voor de applicatie van een client entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De client z'n entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "The waarde om in te stellen van de beschrijving."
+        }
+      }
+    },
+    "SetPosition": {
+      "Name": "setpositie",
+      "Description": "Stelt de positie in voor een entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        },
+        "X": {
+          "Name": "x",
+          "Description": "De X positie om in te stellen."
+        },
+        "Y": {
+          "Name": "y",
+          "Description": "De Y positie om in te stellen."
+        },
+        "Z": {
+          "Name": "z",
+          "Description": "De Z positie om in te stellen."
+        }
+      }
+    },
+    "SetWorldId": {
+      "Name": "setwereldid",
+      "Description": "Stelt een WereldId in voor een entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "De wereld ID om in te stellen."
+        }
+      }
+    },
+    "SetName": {
+      "Name": "setnaam",
+      "Description": "Stelt een naam in voor een entiteit.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        },
+        "Value": {
+          "Name": "waarde",
+          "Description": "De waarde om in te stellen voor de entiteit z'n naam."
+        }
+      }
+    },
+    "Stop": {
+      "Name": "stop",
+      "Description": "Stopt de server."
+    },
+    "Kick": {
+      "Name": "kick",
+      "Description": "Schop een client uit de server.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
+    },
+    "Mute": {
+      "Name": "mute",
+      "Description": "Demp een entiteit/client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
+    },
+    "Unmute": {
+      "Name": "unmute",
+      "Description": "Hef het dempen op van een entiteit/client.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
+    },
+    "Deafen": {
+      "Name": "deafen",
+      "Description": "Maak een entiteit/client onhoorbaar.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
+    },
+    "Undeafen": {
+      "Name": "undeafen",
+      "Description": "Maak een entiteit/client hoorbaar.",
+      "Arguments": {
+        "Id": {
+          "Name": "id",
+          "Description": "De entiteit id."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <IsAotCompatible>true</IsAotCompatible>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\VoiceCraft.Core\VoiceCraft.Core.csproj"/>
+        <ProjectReference Include="..\VoiceCraft.Network\VoiceCraft.Network.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Fleck"/>
+        <PackageReference Include="OpenPort.Net"/>
+        <PackageReference Include="Spectre.Console"/>
+        <PackageReference Include="System.CommandLine"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
+    </ItemGroup>
+</Project>

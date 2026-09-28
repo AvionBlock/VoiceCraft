@@ -8,7 +8,8 @@
              x:DataType="vm:MainViewModel">
     <Panel Background="{DynamicResource ApplicationBackgroundBrush}"
            VerticalAlignment="Stretch"
-           HorizontalAlignment="Stretch">
+           HorizontalAlignment="Stretch"
+           Focusable="{Binding !HasModal}">
         <Image Classes="background" Source="{Binding BackgroundImage}" Stretch="UniformToFill" />
         <TransitioningContentControl Content="{Binding Content}" />
         <Border Background="{DynamicResource BackgroundBrush}"

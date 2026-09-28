@@ -1,3 +1,4 @@
+using System;
 using System.CommandLine;
 using System.Diagnostics;
 using Fleck;
@@ -6,30 +7,34 @@ using VoiceCraft.Core.Locales;
 using VoiceCraft.Core.World;
 using VoiceCraft.Network.Servers;
 using VoiceCraft.Network.Systems;
-using VoiceCraft.Server.Commands;
-using VoiceCraft.Server.Locales;
-using VoiceCraft.Server.Services;
-using VoiceCraft.Server.Systems;
+using VoiceCraft.Server.Runtime;
+using VoiceCraft.Server.Runtime.Commands;
+using VoiceCraft.Server.Runtime.Services;
+using VoiceCraft.Server.Runtime.Systems;
 
 namespace VoiceCraft.Server;
 
 public static class Program
 {
-    public static readonly ServiceProvider ServiceProvider = BuildServiceProvider();
-
+    private static readonly ServiceProvider ServiceProvider = BuildServiceProvider();
+    
     public static void Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Server.Locales");
+        Localizer.BaseLocalizer = new EmbeddedJsonLocalizer("VoiceCraft.Core.Locales.Server");
         FleckLog.LogAction = (_, _, _) => { }; //Remove all websocket logs.
+        LogService.TelemetryService = ServiceProvider.GetService<ServerTelemetryService>();
         LogService.Load(); //Load Logs.
-        new VoiceCraftRootCommand().Parse(args).InvokeAsync().GetAwaiter().GetResult();
+        new VoiceCraftRootCommand(ServiceProvider).Parse(args).InvokeAsync().GetAwaiter().GetResult();
         ServiceProvider.Dispose(); //Dispose
     }
 
     private static ServiceProvider BuildServiceProvider()
     {
         var serviceCollection = new ServiceCollection();
+        
+        //Application
+        serviceCollection.AddSingleton<App>(x => new App(x));
 
         //Servers
         serviceCollection.AddSingleton<LiteNetVoiceCraftServer>();

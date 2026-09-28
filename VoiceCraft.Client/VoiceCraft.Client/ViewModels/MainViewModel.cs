@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using VoiceCraft.Client.Models;
@@ -53,7 +52,7 @@ public partial class MainViewModel : ObservableObject
         // change to HomeView 
         navigationService.NavigateTo<HomeViewModel>();
 
-        var voiceCraftService = backgroundService.GetService<VoiceCraftService>();
+        var voiceCraftService = backgroundService.GetService<VoiceCraftClientService>();
         if (voiceCraftService != null)
             navigationService.NavigateTo<VoiceViewModel>(new VoiceNavigationData(voiceCraftService));
 
